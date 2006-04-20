@@ -1,0 +1,84 @@
+# optical properties db for default windows and most of the information
+# required to automatically build transparent constructions & tmc files.
+#
+#
+# 12 char id |  description       | thick | blind
+EC_50/40-clr  :SR-Electrochr-clr   12/12/6  Ele-ch
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.500  0.103  0.634  1.370
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.263 0.241 0.208 0.139 0.069 0.400 0.376 0.337 0.245 0.135
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.537 0.551 0.547 0.479 0.320
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.097 0.092 0.085 0.063 0.034
+# 12 char id |  description       | thick | blind
+EC_10/10-col  :SR-Electrochr-col   12/12/6  Ele-ch
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.100  0.060  0.911  1.370
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.029 0.023 0.018 0.010 0.005 0.100 0.093 0.084 0.064 0.037
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.891 0.890 0.853 0.700 0.442
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.020 0.017 0.014 0.009 0.005
+# 12 char id |  description       | thick | blind
+EC_60/50-clr  :SR-Electrochr-clr   12/12/6  Ele-ch
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.600  0.103  0.569  1.370
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.328 0.301 0.260 0.173 0.086 0.500 0.470 0.421 0.306 0.168
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.472 0.491 0.495 0.445 0.303
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.097 0.092 0.085 0.063 0.034
+# 12 char id |  description       | thick | blind
+EC_20/20-col  :SR-Electrochr-col   12/12/6  Ele-ch
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.200  0.060  0.882  1.370
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.058 0.046 0.036 0.020 0.010 0.200 0.186 0.168 0.128 0.074
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.862 0.867 0.835 0.690 0.437
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.020 0.017 0.014 0.009 0.005
+# 12 char id |  description       | thick | blind
+DCF6533_06n   :St-Roch Cool-Lite K (KN172)
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.655  0.263  0.000  1.30
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.332 0.310 0.273 0.184 0.083 0.406 0.388 0.351 0.254 0.134
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.340 0.354 0.361 0.367 0.294
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.066 0.069 0.069 0.059 0.042
+# 12 char id |  description       | thick | blind
+DCF6136_06n   :St-Roch Cool-Lite K (KN169)
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.610  0.263  0.000  1.40
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.360 0.344 0.306 0.214 0.096 0.406 0.388 0.351 0.254 0.134
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.340 0.354 0.361 0.367 0.294
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.066 0.069 0.069 0.059 0.042
+# 12 char id |  description       | thick | blind
+DCF6749_06nb   :St-Roch 6-12-6 EKOplus
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.671  0.149  0.356  1.93
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.495 0.473 0.445 0.294 0.132 0.406 0.388 0.351 0.254 0.134
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.149 0.157 0.161 0.158 0.134
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.207 0.219 0.224 0.220 0.186
+# 12 char id |  description       | thick | blind
+DCF7456_06nb   :St-Roch 6-12-6 Planith
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.743  0.242  0.293  1.31
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.465 0.445 0.397 0.281 0.136 0.563 0.548 0.502 0.379 0.212
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.189 0.203 0.212 0.213 0.190
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.520 0.104 0.108 0.108 0.101 0.077

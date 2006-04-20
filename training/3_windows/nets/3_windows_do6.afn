@@ -1,0 +1,42 @@
+    8   10   10    1.000    (nodes, components, connections, wind reduction)
+ Node         Fld. Type   Height    Temperature    Data_1       Data_2
+ manager         1    0   1.5000       20.000           0.       40.500    
+ manager_t_b     1    0   1.5000       20.000           0.       40.500    
+ manager_bi      1    0   1.5000       20.000           0.       40.501    
+ adjacent        1    0  0.50000E-01    manager               0.       10.000    
+ g_ext           1    3   1.9500           0.       6.0000       180.00    
+ low_glz_ext     1    3   1.1500           0.       5.0000       180.00    
+ hi_glz_ext      1    3   2.7500           0.       5.0000       180.00    
+ bi_glz          1    3   1.9500           0.       5.0000       180.00    
+ Comp   Type C+ L+ Description
+ win_1.68      110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+     1.00000    1.68000
+ win_low.84    110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+     1.00000   0.840000
+ hi_win.84     110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+     1.00000   0.840000
+ bi_win        130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+     1.00000   0.880000    1.88000   0.600000   0.600000
+ door_cra      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03   0.800000
+ door_crb      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03   0.800000
+ door_crc      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03   0.800000
+ win_cb        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03    2.00000
+ win_cc        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03    2.00000
+ win_ca[1]     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+     1.00000    5.00000E-03    2.00000
+ +Node         dHght   -Node         dHght   Comp     Snod1  Snod2
+ g_ext         0.000   manager      -0.500   win_ca[1]                               
+ low_glz_ext   0.000   manager_t_b  -0.500   win_cb                                  
+ bi_glz        0.000   manager_bi   -0.500   win_cc                                  
+ g_ext         0.000   manager       0.450   win_1.68                                
+ low_glz_ext   0.000   manager_t_b  -0.350   win_low.84                              
+ hi_glz_ext    0.000   manager_t_b   1.250   hi_win.84                               
+ bi_glz        0.000   manager_bi    0.450   bi_win                                  
+ adjacent      0.000   manager      -1.450   door_cra                                
+ adjacent      0.000   manager_t_b  -1.450   door_crb                                
+ adjacent      0.000   manager_bi   -1.450   door_crc                                

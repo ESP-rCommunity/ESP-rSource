@@ -1,0 +1,132 @@
+DESCRIPTION OF THE TESTS:
+=========================
+
+ISOTHERMAL TESTS & TESTS NOT INFLUENCING THE VELOCITY FILED 
+===========================================================
+
+1.     basic.dfd - Basic test case. Many other cases are a variation of it. 
+                   Isothermal mixing ventilation, k-eps model, no blockages, 
+                   no conflations, one inflow at west, one outflow at upper 
+                   wall, no sources, stationary, default solver, 3D.  
+
+2.     block.dfd - "Basic" with 3 blockages - middle, corner, two-wall-adjacent 
+                   (top-wall). 
+
+3.    block2.dfd - Like "Block.dfd", but two of the blockages forming a 
+                   narrow channel in front of the air-supply-jet. Needs lower 
+                   underrelaxation factors. 
+
+4.    block3.dfd - Like "Block2.dfd", but the two plates are now perpendicular 
+                   to the air-supply jet. Very low underrelaxation factors 
+                   required. 
+
+5.    blockc.dfd - "Basic" + blockages and CO2 concentration.
+
+6.    blockh.dfd - "Basic" + blockages and humidity.
+
+7.  blocklma.dfd - "Basic" + blockages and LMA calculated
+                   (one of them quite enlarged to get areas of poor LMA).  
+
+8.  basiclma.dfd - "Basic" with calculation of the LMA at the end.
+
+9.    co2_so.dfd - "Basic" with a CO2 source in the middle of room.
+
+10.   hum_so.dfd - "Basic" with a humidity source in the middle of room.
+
+11.      lma.dfd - "Basic" but inflow south, outflow east, with calculation 
+                   of the LMA at the end (i.e. rotating axes). 
+
+12.      sso.dfs - "Basic" + small supply orifices test.
+
+13.      tm1.dfd - "Basic" + the most simple non-isothermal case - no coupling 
+                   with velocity field, inflow 25C, outflow 20C, initial 
+                   temperature 15C, no sources, all walls adiabatic.  
+
+14.   porous.dfd - Like "Block3.dfd", but now the first plate is made like a 
+                   porous media. The second plate has been removed. Test for a 
+                   large number of blockages. 
+
+15. basicsol.dfd - "Basic" but inflow low, outflow north (i.e. rotating axes) 
+                   and used for testing advanced (bi-cg) solver. 
+
+21. tst33vol.dfd - "Basic" but with 33 (large number) different boundary 
+                   conditions.
+
+25.    bi-cg.dfd - A room with about 25 000 control volumes which converges 
+                   to test the basic solver.
+
+26.    bi-cg.dfd - A room with about 25 000 control volumes which converges 
+                   to test the bi-conjugate gradients solver.
+
+xx. hugegrid.dfd - A test for 100 iterations with about 330000 control volumes
+                   (requires dfs to be recompiled for larger domain size). 
+
+
+
+NON-ISOTHERMAL TESTS INFLUENCING THE VELOCITY FILED 
+===================================================
+
+16.    displ.dfd - "Tm1a.dfd" with heat flux at one wall, fixed temperature at  
+                   the second, GGDH (General Gradient Diffusion Hypothesis), 
+                   full t-v-coupling. 
+
+17.    displ.dfd - "Tm1a.dfd" with heat flux at one wall, fixed temperature at  
+                   the second, SGDH (Single Gradient Diffusion Hypothesis), 
+                   full t-v-coupling. 
+
+18. displ_si.dfd - "Displ.dfd", but the temperature sources are turned into 
+                   sinks. 
+
+19.   tm1_so.dfd - "Basic" with a heat sink in the middle of room, full
+                   t-v-coupling.
+
+20.   tm2_so.dfd - "Basic" with a heat source in the middle of room, 
+                   Boussinesque t-v-coupling.
+
+22.     tm1a.dfd - "Tm1.dfd", but with full t-v (temperature-velocity) coupling.
+
+23.     tm1b.dfd - "Tm1.dfd", but with Boussinesque approximation. Different 
+                   inflow and initial temperatures (as well as urf's) are
+                   needed to converge.  
+
+24.   blockt.dfd - "Block.dfd", heat flux at all three of them, SGDH, full t-v. 
+
+27. dispggdh.dfd - "Displ.dfd", but with GGDH.  
+
+
+
+PARAMETERS VARIED IN THE TESTS:
+===============================
+1.    Inflow and outflow positioned at different walls. 
+2.    Adding sources which do not influence velocity field: 
+      temperature, humidity, CO2 sources. 
+3.    Testing blockages. 
+4.    Fixed temperature at the walls or fixed heat flux at the walls. 
+5.    Isothermal or fixed heat flux conditions at blockages. 
+6.    Different types of gridding - rotation of axes. 
+7.    Different buoyancy types - full or Boussinesque. 
+8.    With GGDH or with SGDH (displacement ventilation). 
+9.    Heat sources as well as heat sinks in the middle of the room. 
+10.   Heat sources as well as heat sinks at the walls. 
+11.   With or without LMAge. 
+12.   Different solvers for the linear set of equations. 
+13.   Small Supply Orifices. 
+
+
+PROCEDURE:
+==========
+
+To run the tests execute the shell scripts TEST.csh and answer the 
+questions.  The scripts will run each of the above tests, producing 
+a .mon, .time and .TEC file.  The contents of the .mon and .TEC files 
+should be approximately the same as those in the corresponding files 
+in the Archive folder (the final results produced will be slightly 
+different on different operating systems).  The script TECdiff.csh 
+will check the differences between the .TEC files and those in the 
+supplied folder.
+
+The .time files are for developers to check that they have not 
+adversly effected the running time of the module.
+
+To check results against archival version run the script TEC_checker.csh
+in the Models folder.

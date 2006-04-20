@@ -1,0 +1,566 @@
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Sensible heating load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+office              0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              0.0000 09-Jul@00h00       0.0000 09-Jul@00h00            --           --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Sensible cooling load (kW)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           0.0000 09-Jul@00h30       -1.0000 10-Jul@08h30      -0.3274      0.4545
+office              0.0000 09-Jul@00h30       -0.5683 11-Jul@16h30      -0.0765      0.1411
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              0.0000 09-Jul@00h00       -1.568 11-Jul@16h30            --           --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Zone db temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           36.56 11-Jul@14h30        26.93 10-Jul@08h30        32.67        2.380
+office              26.88 15-Jul@17h30        20.36 09-Jul@05h30        23.94        1.348
+roof_space          54.03 11-Jul@15h30        13.31 09-Jul@05h30        26.89        8.929
+ 
+   All              54.03      --             13.31      --             27.83             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Resultant temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           35.43 11-Jul@14h30        26.15 09-Jul@04h30        31.77        2.286
+office              26.36 15-Jul@17h30        20.20 09-Jul@06h30        23.81        1.380
+roof_space          54.72 11-Jul@14h30        13.32 09-Jul@05h30        27.14        9.103
+ 
+   All              54.72      --             13.32      --             27.57             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Control pt temperature (degC)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           36.56 11-Jul@14h30        26.93 10-Jul@08h30        32.67        2.380
+office              26.88 15-Jul@17h30        20.36 09-Jul@05h30        23.94        1.348
+roof_space          54.03 11-Jul@15h30        13.31 09-Jul@05h30        26.89        8.929
+ 
+   All              54.03      --             13.31      --             27.83             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Infiltration (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           -2.583 10-Jul@10h30       -84.69 15-Jul@20h30       -22.28       15.49
+office              1.798 13-Jul@13h30        -23.25 15-Jul@02h30       -4.644       5.515
+roof_space          0.5333 12-Jul@07h30       -333.1 10-Jul@15h30       -96.38       80.24
+ 
+   All              1.798      --             -333.1      --            -41.10            --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Ventilation (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           0.0000 09-Jul@05h30       -40.76 14-Jul@15h30       -7.610       10.01
+office              24.36 15-Jul@20h30        0.0000 09-Jul@00h30       1.324        4.421
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              24.36      --             -40.76      --            -2.095            --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+#  Output (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+office              0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              0.0000      --            0.0000      --            0.0000            --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+#  Misc. output (-)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+office              0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              0.0000      --            0.0000      --            0.0000            --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total casual gain convective (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           1432. 10-Jul@10h30        640.0 09-Jul@00h30        828.6        324.2
+office              144.0 10-Jul@10h30        0.0000 09-Jul@00h30       34.29        58.94
+roof_space          280.0 10-Jul@10h30        0.0000 09-Jul@00h30       66.67        114.6
+ 
+   All              1432.      --             0.0000      --            309.8             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total casual gain radiant (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           442.0 10-Jul@10h30        160.0 09-Jul@00h30        227.1        115.4
+office              64.00 10-Jul@10h30        0.0000 09-Jul@00h30       15.24        26.19
+roof_space          408.0 10-Jul@10h30        0.0000 09-Jul@00h30       97.14        167.0
+ 
+   All              442.0      --             0.0000      --            113.2             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Solar entering from outside (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           2345. 11-Jul@10h30        0.0000 09-Jul@00h30       653.4        746.4
+office              819.7 10-Jul@15h30        0.0000 09-Jul@00h30       185.3        233.1
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              2345.      --             0.0000      --            279.6             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total solar absorbed in zn (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           2246. 11-Jul@10h30        0.0000 09-Jul@00h30       628.1        715.9
+office              798.0 10-Jul@15h30        0.0000 09-Jul@00h30       181.1        227.0
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              2246.      --             0.0000      --            269.7             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Zone relative humidity (%)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           100.0 11-Jul@17h30        22.26 09-Jul@15h30        60.86        23.22
+office              100.0 10-Jul@15h30        31.71 09-Jul@16h30        70.45        24.11
+roof_space          88.59 13-Jul@06h30        10.97 11-Jul@15h30        44.13        18.01
+ 
+   All              100.0      --             10.97      --             58.48             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total casual gain (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           1874. 10-Jul@10h30        800.0 09-Jul@00h30        1056.        454.2
+office              208.0 10-Jul@10h30        0.0000 09-Jul@00h30       49.52        107.6
+roof_space          688.0 10-Jul@10h30        0.0000 09-Jul@00h30       163.8        281.6
+ 
+   All              1874.      --             0.0000      --            423.0             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total casual gain convective (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           1432. 10-Jul@10h30        640.0 09-Jul@00h30        828.6        324.2
+office              144.0 10-Jul@10h30        0.0000 09-Jul@00h30       34.29        58.94
+roof_space          280.0 10-Jul@10h30        0.0000 09-Jul@00h30       66.67        114.6
+ 
+   All              1432.      --             0.0000      --            309.8             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total casual gain radiant (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           442.0 10-Jul@10h30        160.0 09-Jul@00h30        227.1        115.4
+office              64.00 10-Jul@10h30        0.0000 09-Jul@00h30       15.24        26.19
+roof_space          408.0 10-Jul@10h30        0.0000 09-Jul@00h30       97.14        167.0
+ 
+   All              442.0      --             0.0000      --            113.2             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total occupant gain (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           540.0 10-Jul@10h30        0.0000 09-Jul@00h30       128.6        221.0
+office              180.0 10-Jul@10h30        0.0000 09-Jul@00h30       42.86        73.67
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              540.0      --             0.0000      --            57.14             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total lighting gain (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           84.00 10-Jul@10h30        0.0000 09-Jul@00h30       20.00        34.38
+office              28.00 10-Jul@10h30        0.0000 09-Jul@00h30       6.667        11.46
+roof_space          688.0 10-Jul@10h30        0.0000 09-Jul@00h30       163.8        281.6
+ 
+   All              688.0      --             0.0000      --            63.49             --
+ 
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+# Total small power gain (W)
+Description Max_value Max_occur Min_value Min_occur Ave_value Std_dev
+reception           1250. 10-Jul@10h30        800.0 09-Jul@00h30        907.1        206.8
+office              0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       75.82
+roof_space          0.0000 09-Jul@00h30       0.0000 09-Jul@00h30       0.0000       0.0000
+ 
+   All              1250.      --             0.0000      --            302.4             --
+# Timestep performance metrics.
+# Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+# Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+#
+# Sun-09-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+10h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+11h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+12h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+13h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+14h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+15h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+16h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+17h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Mon-10-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Tue-11-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Wed-12-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Thu-13-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Fri-14-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+#
+# Sat-15-Jul timestep misc. listing
+#
+#Time receptionOccCasG(W) officeOccCasG(W) roof_spaceOccCasG(W) receptionLitCasG(W) officeLitCasG(W)
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+10h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+11h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+12h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+13h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+14h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+15h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+16h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+17h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling  Humidification   Dehumidification
+ id name             Energy   No. of   Energy   No. of   Energy   No. of  Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd   (kWhrs)  Hr rqd  (kWhrs)  Hr rqd
+  1 reception          0.00    0.0     -55.00   60.0       0.00    0.0       0.00    0.0
+  2 office             0.00    0.0     -12.86   52.0       0.00    0.0       0.00    0.0
+  3 roof_space         0.00    0.0       0.00    0.0       0.00    0.0       0.00    0.0
+ 
+    All                0.00    0.0     -67.86  112.0       0.00    0.0       0.00    0.0
+ 
+Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+ 
+ Casual gains distribution (kWhrs) for reception   ( 1)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt           21.60       17.28        4.11 @opq        1.09        3.02        0.00
+                                           0.21 @trn        0.21        0.00        0.00
+ Lights            3.36        0.00        3.20 @opq        0.85        2.35        0.00
+                                           0.16 @trn        0.16        0.00        0.00
+ Equipt          152.40      121.92       29.02 @opq        7.69       21.32        0.00
+                                           1.46 @trn        1.46        0.00        0.00
+ Totals          177.36      139.20       38.16           11.47       26.69        0.00
+ Number of hours occupied:     45.00
+ Number of hours with lights:      0.00
+ Number of hours with small power:    168.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for office      ( 2)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt            7.20        5.76        1.40 @opq        0.39        0.72        0.29
+                                           0.04 @trn        0.04        0.00        0.00
+ Lights            1.12        0.00        1.09 @opq        0.30        0.56        0.23
+                                           0.03 @trn        0.03        0.00        0.00
+ Equipt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Totals            8.32        5.76        2.56            0.76        1.28        0.52
+ Number of hours occupied:     45.00
+ Number of hours with lights:      0.00
+ Number of hours with small power:      0.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for roof_space  ( 3)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Lights           27.52       11.20       16.32 @opq        9.64        6.68        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Equipt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Totals           27.52       11.20       16.32            9.64        6.68        0.00
+ Number of hours occupied:      0.00
+ Number of hours with lights:     45.00
+ Number of hours with small power:      0.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for ALL SELECTED ZONES
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |     external    internal     ground
+ Occupt           28.80       23.04        5.51 @opq        1.48        3.74        0.29
+                                           0.25 @trn        0.25        0.00        0.00
+ Lights           32.00       11.20       20.61 @opq       10.79        9.59        0.23
+                                           0.19 @trn        0.19        0.00        0.00
+ Equipt          152.40      121.92       29.02 @opq        7.69       21.32        0.00
+                                           1.46 @trn        1.46        0.00        0.00
+ Totals          213.20      156.16       57.04            21.87       34.65        0.52
+ 
+ (@opq & @trn = associated with opaque or transparent surfaces)
+Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 1: reception
+ 
+                                Gain         Loss
+ Infiltration air load           0.000      -3.743
+ Ventilation air load            0.000      -1.278
+ Occupt casual gains            17.280       0.000
+ Lights casual gains             0.000       0.000
+ Equipt casual gains           121.920       0.000
+ Opaque MLC convec: ext          1.160     -18.560
+ Opaque MLC convec: int          0.960     -49.267
+ Transp MLC convec: ext          1.365     -14.580
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         0.000     -55.000
+ Totals                        142.685    -142.429
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 2: office
+ 
+                                Gain         Loss
+ Infiltration air load           0.013      -0.793
+ Ventilation air load            0.222       0.000
+ Occupt casual gains             5.760       0.000
+ Lights casual gains             0.000       0.000
+ Equipt casual gains             0.000       0.000
+ Opaque MLC convec: ext          1.494      -0.823
+ Opaque MLC convec: int          6.839      -0.205
+ Transp MLC convec: ext          1.742      -1.338
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         0.000     -12.860
+ Totals                         16.071     -16.019
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 3: roof_space
+ 
+                                Gain         Loss
+ Infiltration air load           0.001     -16.192
+ Ventilation air load            0.000       0.000
+ Occupt casual gains             0.000       0.000
+ Lights casual gains            11.200       0.000
+ Equipt casual gains             0.000       0.000
+ Opaque MLC convec: ext          3.962      -8.263
+ Opaque MLC convec: int         13.653      -4.292
+ Transp MLC convec: ext          0.000       0.000
+ Transp MLC convec: int          0.000       0.000
+ No plant input/extract
+ Totals                         28.816     -28.746
+ 
+Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period| Transp surfs   | Opaque surfs  | Casual Gains |Infilt.|Ventil |    Plant      |Solar radiation|
+             in  |extern  |other  |extern |other  |convec radiant|       |       |Heating|Cooling|absor |entering|
+                 |facing  |facing |facing |facing |              |       |       |       |       |inside|zone    |
+ reception    Jul    -13.2     0.0   -17.4   -48.3   139.2    38.2    -3.7    -1.3     0.0   -55.0   105.5   109.8
+ office       Jul      0.4     0.0     0.7     6.6     5.8     2.6    -0.8     0.2     0.0   -12.9    30.4    31.1
+ roof_space   Jul      0.0     0.0    -4.3     9.4    11.2    16.3   -16.2     0.0     0.0     0.0     0.0     0.0
+ 
+ All zones    Jul     -13.      0.    -21.    -32.    156.     57.    -21.     -1.      0.    -68.    136.    141.
+ 
+ 
+Lib: bld_basic_af1.cfg.wcs_: ESRU Standard summer test: bld_basic_af1
+Period: Sun-09-Jul@00h30(1967) to Sat-15-Jul@23h30(1967) : sim@60m, output@60m
+ Zones: reception office roof_space
+ Not filtered by occupancy
+Zone db temperature (degC)
+ Bin   data range       Distri-  freq.   cumulative  cumulative
+                        bution    (%)   distribution  freq (%)
+  0  <13.0     0 0.0 0.0 0.0
+  1  13.00-15.00             6    1.19        6        1.19
+  2  15.00-17.00            10    1.98       16        3.17
+  3  17.00-19.00            19    3.77       35        6.94
+  4  19.00-21.00            29    5.75       64       12.70
+  5  21.00-23.00            35    6.94       99       19.64
+  6  23.00-25.00           124   24.60      223       44.25
+  7  25.00-27.00            42    8.33      265       52.58
+  8  27.00-29.00            26    5.16      291       57.74
+  9  29.00-31.00            34    6.75      325       64.48
+ 10  31.00-33.00            51   10.12      376       74.60
+ 11  33.00-35.00            66   13.10      442       87.70
+ 12  35.00-37.00            41    8.13      483       95.83
+ 13  37.00-39.00             3    0.60      486       96.43
+ 14  39.00-41.00             5    0.99      491       97.42
+ 15  41.00-43.00             5    0.99      496       98.41
+ 16  43.00-45.00             2    0.40      498       98.81
+ 17  45.00-47.00             0    0.00      498       98.81
+ 18  47.00-49.00             2    0.40      500       99.21
+ 19  49.00-51.00             0    0.00      500       99.21
+ 20  51.00-53.00             2    0.40      502       99.60
+ 21  53.00-55.00             2    0.40      504      100.00
+ 22  >55.0     0 0.0 0.0 0.0
+ 

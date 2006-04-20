@@ -1,0 +1,38 @@
+Project notes for burdie.cfg
+Description: burdie house detailed model
+In directory: /usr3/nick/mould/burdie+vapour/cfg
+By: nick
+Date: 14 6 96 
+Project reference: 
+Notes: 
+_____________________________
+
+Burdiehouse - Edinburgh
+-----------------------
+
+The object of this simulation model is to asses the indoor air quality 
+and mould growth conditions in a poorly insulated and designed Scottish 
+dwelling. The building in question is located on the Burdiehouse estate 
+on the outskirts of Edinburgh. The building is a 1940's pre-fabricated  
+type construction.
+
+Some of the major defects of the building include;
+
+* Poor insulation levels
+* Poorly fitting steel framed windows and doors
+* Structure prone to thermal bridging
+
+Because of these defects the buildings are prone to low indoor
+temperatures, condensation and mould growth.
+
+The building modelled was part of a Napier University solar heating 
+experiment, where the house is fitted with heat recovery equipment in  
+the loft, the heat recovery system removes warm, solar heated air from  
+the loft space an transports it to the upper hall.  
+
+Of particular interest to the modeller is the north bedroom (bedroom 3) 
+is modelled in greater detail than the rest of the house. The bedroom
+has a vapour flow network associated with it, enabling wall surface 
+conditions to be determined for mould growth assesments.
+
+ 

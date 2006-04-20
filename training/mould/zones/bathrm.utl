@@ -1,0 +1,16 @@
+# ESRU optional files for bathrm          defined by file 
+# ../zones/bathrm.utl
+   0    # timestep air flow
+   0    # timestep casual gains
+   0    # view factor
+   0    # shading/insolation db
+   0    # convective transfer coef
+   0    # blind/shutter control
+   1    # transparent construction
+../zones/bathrm.tmc
+   0    # casual gain control
+   0    # obstructions
+   0    # control volumes file
+   0    # connections file
+   0    # nodes coordinates file
+   0    # nodes temperature file

@@ -1,0 +1,174 @@
+DFS DESCRIPTION  # dfs composition file
+# ************** CONFLATION TYPE **********************
+# Four conflation mechanisms are currently available:
+#  0 : Dfs operates in stand-alone mode (ie. no conflation).
+#  1 : Thermal conflation via convection coefficients.
+#  2 : Simultaneous thermal conflation. 
+#  3 : Air-flow conflation.
+*conflation 0
+# ************** TITLE ********************************
+INCO test room No 1
+# ************** GEOMETRY AND CFD GRIDDING ************
+# Number of gridding regions:
+# X-direction  Y-direction  Z-direction
+            3            3            3
+# Axis  number of cells    length    power law coeff
+     X         -9            3.75         1.25
+     X          1            0.20         1.00
+     X          1            0.25         1.00
+     Y         -4            1.65         1.12
+     Y          1            0.30         1.00
+     Y         -4            1.65         1.12
+     Z         -7            2.05         1.20
+     Z          1            0.20         1.00
+     Z         -3            0.75         1.15
+#
+# ************** EQUATIONS TO BE SOLVED ***************
+#
+# U : calculate velocity component in X-direction
+# V : calculate velocity component in Y-direction
+# W : calculate velocity component in Z-direction
+# T : calculate temperature
+# C : calculate species concentration
+# K : calculate the turbulent kinetic energy
+# E : calculate dispersion of turbulent kinetic energy
+# B : include buoyancy effects in transport equations 
+#     for z-dir momentum, turbulent kinetic energy,
+#     and dispersion of turbulent kinetic energy
+# Q : apply Boussinesq approximation in calculating the
+#     buoyancy force terms; B must also be specified
+# Z : apply constant and uniform eddy viscosity 0-eqn
+#     turbulence model
+  U V W k Epsilon                                                                 
+# ************** AIR FLOW OPENINGS ********************
+#
+# Define openings through which air flows into or out
+# of the CFD domain.  The number of openings, the
+# location of the openings, and the boundary conditions
+# at the openings are specified here.  Refer to section
+# 5.9.4 of the ESP-r Data Model Summary.
+#
+# Number of openings
+  2
+# Six planes define the boundaries of the CFD domain.
+# The planes normal to the x-axis are named east and
+# west; the planes normal to the y-axis are named south
+# and north; and the planes normal to the z-axis are
+# named low and high.  The names of these planes are
+# used to specify the location of the air-flow openings,
+# along with the cell locations of the openings.  Refer
+# to section 5.9.4 of the ESP-r Data Model Summary for
+# the syntax of the air-flow opening definitions.
+# If there is type 3 conflation, the linkage between the
+# dfs air-flow openings and ESP-rs air-flow network are
+# made here; refer to section 5.9.9 of the ESP-r Data
+# Model Summary for details on how to specify these
+# connections.
+#
+# type | face | Ii  If  Ji  Jf  Ki  Kf |  P or flow |  T   
+#      |      |                        |(Pa)or(kg/s)|(degT)
+  Vel   West     1   1   5   5   8   8     0.101      0.0
+  Vel   High    10  10   5   5  11  11     -0.101      0.0
+#
+# ************** SOLID BOUNDARIES *********************
+#
+# Define the solid boundaries for the CFD domain.  The
+# number of solid boundaries, their locations, and their
+# boundary conditions are specified here.  Refer to
+# section 5.9.5 of the ESP-r Data Model Summary.
+# Number of solid boundaries
+ 12
+#
+# The solid boundaries are defined in a similar manner
+# as the air-flow openings (refer to the section above).
+# Note that if a surface is broken by an air-flow
+# opening, it must be defined as two separate solid
+# boundaries.  In the example below, there are two solid
+# boundaries on surface High: one extends over the
+# first five cells in the y-direction and the other
+# extends over the last four cells, the sixth cell being
+# occupied by an air-flow opening.
+# If type 1 or type 2 conflation exists between bps and
+# dfs, the boundary condtion must be specified by a bps
+# surface name (ie. the name given to the surface in
+# prj).  For example, this boundary condition,
+#         Temp              South     1   1   1   1    3  15        sud
+# matches the dfs surface named South to the bps surface
+# named sud.  Refer to section 5.9.9 of the ESP-r Data
+# Model Summary for more details.
+# This template file is configured for a dfs-only
+# simulation.  As such numeric values are prescribed for
+# the solid boundary temperatures.
+# type | face | Ii  If  Ji  Jf  Ki  Kf |  T or flow
+#      |      |                        |(Pa)or(kg/s)
+  Temp   East   11  11   1   9   1  11     20.0
+  Temp   North   1  11   9   9   1  11     20.0
+  Temp   South   1  11   1   1   1  11     20.0
+  Temp   Low     1  11   1   9   1   1     20.0
+  Temp   West    1   1   1   9   1   7     20.0
+  Temp   West    1   1   1   4   8   8     20.0
+  Temp   West    1   1   6   9   8   8     20.0
+  Temp   West    1   1   1   9   9  11     20.0
+  Temp   High    1   9   1   9  11  11     20.0
+  Temp   High   10  10   1   4  11  11     20.0
+  Temp   High   10  10   6   9  11  11     20.0
+  Temp   High   11  11   1   9  11  11     20.0
+#
+# ********* HEAT AND CONCENTRATION SOURCES,BLOCKING ***
+# Refer to sect 5.9.6 of the ESP-r Data Model Summary.
+# Number of heat/concentration sources
+  0
+# Source type    Ii  If  Ji  Jf  Ki  Kf   T(C) or Q(W) or C(-) or CF(kg/s)   Yes(blocked) or No
+#
+#
+# ******** ITERATION CONTROL AND RELAXATION FACTORS ***
+# Specify the maximum number of iterations allowed for
+# the solver and the convergence criteria (ie. maximum
+# residuals).  Refer to section 5.9.7 of the ESP-r Data
+# Model Summary.
+#   Max. iterations   Convergence criteria   renormalize residuals?
+   500   0.000500    No    
+# Number of relaxation factors
+ 6
+#    type        variable       value
+     Linear           U        0.75
+     Linear           V        0.75
+     Linear           W        0.75
+     Linear           P        1.00
+     Linear           k        0.6
+     Linear     Epsilon        0.6
+# The number of solution sweeps used by the solver can
+# be independently controlled for each variable.
+# Specifying a 0 on the next data line indicates that
+# default sweeping will be used.
+  0
+#
+#
+# ************** INITIAL CONDITIONS *******************
+# Refer to sect 5.9.7 of the ESP-r Data Model Summary.
+# Number of variables to be initiated
+ 5
+#   Variable          initial value
+           U        0.010
+           V        0.000
+           W        0.010
+           k      0.05000
+     Epsilon      0.05000
+#
+#
+# ************** RESULTS OUTPUT ***********************
+#
+# Refer to sect 5.9.8 of the ESP-r Data Model Summary.
+# Time-step interval to print results   result file name
+         1                             CFD.cfdres
+# Flow vector file name, to be used for flow vis.
+               CFD.vectors
+# Monitoring pos IMON  JMON  KMON  monitoring file name
+          4    5     8                   CFD.mon
+#
+#
+# ************** RE-INITIALIZING **********************
+#
+# Refer to sect 5.9.7 of the ESP-r Data Model Summary.
+# Re-initialize simulation ?  Yes or No
+                               no

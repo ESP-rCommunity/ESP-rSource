@@ -1,0 +1,4814 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C Configuration control file definition.
+
+      SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
+#include "building.h"
+#include "plant.h"
+#include "epara.h"
+#include "net_flow.h"
+#include "control.h"
+#include "power.h"
+
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+      common/c1/ncomp,ncon
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/cctl/icascf(mcom)
+      common/cctlnm/ctldoc,lctlf
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
+      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
+     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
+     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
+     &       bmiscd(mcf,mbcdt,mbcdp,misc)
+
+      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
+     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
+     &       pmiscd(mcl,mpcdt,mpcdp,misc)
+
+      common/fctl4/iasocc(mcc,mcmp),nfsup(mcc)
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+
+      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
+     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
+     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
+     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C Electrical control.
+      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
+     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
+     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
+     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      common/user/browse
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+
+C mptback is pointer from position in display list to the control loop.
+C ipeerptbk is pointer from position in display to day type.
+      dimension mptback(35),iperptbk(35)
+      CHARACTER*43 VERT(35)
+      CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
+      CHARACTER outs*124,H*72,LASCI*72,zname*12,cfgroot*24
+      character zdesc*64
+      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
+      character glctldoc*248
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*72
+      character sfile*72,snpfile*72,fs*1
+      logical LINKED,OK,dok,XST,browse,unixok
+
+C Zeroize all control data.
+      CALL EZCTLI
+      CTLDOC  ='no overall control description supplied'
+      znctldoc='no zone control description supplied'
+      plctldoc='no plant control description supplied'
+      flctldoc='no flow control description supplied'
+      glctldoc='no global control description supplied'
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Attempt to read in the control file. If no current name then suggest
+C one. If an existing name also provide option to deference it.
+ 44   if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
+        if(browse)then
+          call usrmsg('There is no control associated with this model',
+     &                'returning with no change.','W')
+          return
+        endif
+        LN=max(1,LNBLNK(cfgroot))
+        if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
+          WRITE(LCTLF,'(2a)')cfgroot(1:ln),'.ctl'
+        else
+          WRITE(LCTLF,'(4a)') ctlpth(1:lnblnk(ctlpth)),fs,
+     &         cfgroot(1:ln),'.ctl'
+        endif
+
+C Present current/default name and a browse option. If browse selected
+C then set iclkok variable and jump to browse functions.
+        LASCI=LCTLF
+        H(1)='The system control file holds the definition of the'
+        H(2)='building/ plant control systems. The file is optional.'
+        H(3)='The browse option presents a list of files in the '
+        H(4)='project `ctl` folder.'
+        H(5)='The ignore option returns without changing the model.'
+        CALL EASKS2CMD(LASCI,' Control file? (browse see help)',' ',
+     &    'ignore','browse',iclkok,72,' ','Control file',IER,4)
+        if(iclkok.eq.1)then
+          return
+        endif
+      else
+        LASCI=LCTLF
+        if(browse)then
+          CALL ERPFREE(ICTLF,ISTAT)
+          call FINDFIL(LCTLF,XST)
+          if(XST)then
+            call edisp(iuout,'Reading existing control file...')
+            CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+            goto 54
+          else
+            call usrmsg('Control file was not found. You are browsing',
+     &        'so returning without change to the model.','W')
+            return
+          endif
+        endif
+        H(1)='The system control file holds the definition of the'
+        H(2)='building/ plant control systems. The file is optional.'
+        H(3)='The dereference option clears the name of the control '
+        H(4)='file but does not alter information within the control'
+        H(5)='description. You can re-establish control by including '
+        H(6)='the control file name in a later session. '
+        CALL EASKS2CMD(LASCI,' Control file? (see help)',
+     &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,6)
+      endif
+      call usrmsg(' ',' ','- ')
+
+C If user wishes to deselect the current control reset file name to
+C blank and save the configuration file.
+      if(iclkok.eq.1)then
+        if(cfgok.and.(.NOT.browse))then
+          LCTLF='  '
+          CALL EMKCFG('-',IER)
+          call usrmsg(' ',' ','- ')
+        else
+          call usrmsg('Cannot save control data while in browse ',
+     &                'mode, you must `own` the model!','W')
+          goto 92
+        endif
+        return
+      elseif(iclkok.eq.2)then
+        call edisp(iuout,'2nd alternate selected')
+        sfile=' '
+        snpfile=' '
+        call edisp(iuout,' ')
+        call browsefilelist('?','ctl','fil',sfile,snpfile,nfile,iier)
+        if(nfile.gt.0)then
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('b','ctl','fil',sfile,snpfile,nfile,
+     &        iier)
+          if(snpfile(1:2).ne.'  ')then
+            write(LASCI,'(3a)')ctlpth(1:lnblnk(ctlpth)),fs,
+     &        snpfile(1:lnblnk(snpfile))
+          else
+            LASCI=LCTLF
+          endif
+        else
+          LASCI=LCTLF
+        endif
+      endif
+      IF(LASCI(1:2).NE.'  ')LCTLF=LASCI
+      ICTLF=IFIL+1
+      CALL ERPFREE(ICTLF,ISTAT)
+      call FINDFIL(LCTLF,XST)
+      IF(XST)THEN
+        CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+      else
+        CALL EASKAB(' File not found.','Options:',
+     &    'specify another','make new file',IW,0)
+        if(IW.eq.1)goto 44
+
+C Set defaults and ask user which control to focus on first.
+        LINKED=.FALSE.
+        call ADDCNTL(icfoc,'A',IER)
+      endif
+
+C Setup for multi-page menu.
+  54  MHEAD=8
+      MCTL=6
+      call totctlper(icfoc,ncper)
+      ILEN=ncper
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup, rescan for length of the list.
+   92 IER=0
+      call totctlper(icfoc,ncper)
+      ILEN=ncper
+      IVERT=-3
+      write(VERT(2),'(A,A27)')   'b description: ',ctldoc(1:27)
+      if(icfoc.eq.0)then
+        write(VERT(1),'(A)')     'a control focus >> zones'
+        write(VERT(3),'(A,A27)') 'c description: ',znctldoc(1:27)
+        write(VERT(4),'(A,I2)')  '  loops      : ',ncf
+        VERT(5)=                 'd link loops to zones'
+      elseif(icfoc.eq.1)then
+        write(VERT(1),'(A)')     'a control focus >> plant'
+        write(VERT(3),'(A,A27)') 'c description: ',plctldoc(1:27)
+        write(VERT(4),'(A,I2)')  '  loops      : ',ncl
+        VERT(5)=                 ' '
+      elseif(icfoc.eq.2)then
+        write(VERT(1),'(A)')     'a control focus >> vent/hydronic'
+        write(VERT(3),'(A,A27)') 'c description: ',flctldoc(1:27)
+        write(VERT(4),'(A,I2)')  '  loops      : ',ncc
+        VERT(5)=                 ' '
+      elseif(icfoc.eq.3)then
+        write(VERT(1),'(A)')     'a control focus >> global'
+        write(VERT(3),'(A,A27)') 'c description: ',glctldoc(1:27)
+        write(VERT(4),'(A,I2)')  '  loops      : ',ngf
+        VERT(5)=                 '                                    '
+      elseif(icfoc.eq.4)then
+        write(VERT(1),'(A)')     'a control focus >> power'
+        write(VERT(3),'(A,A27)') 'c description: ',elctldoc(1:27)
+        write(VERT(4),'(A,I2)')  '  loops      : ',necl
+        VERT(5)=                 '                                    '
+      endif
+      VERT(6)= ' _________________________________________'
+      VERT(7)= ' cntl| sensor |actuator|day |valid |period'
+      VERT(8)= ' loop|location|location|type|during|in day'
+      m=MHEAD
+
+C Keep track of how many items will be in the variable length section
+C of the menu.
+      listct=0
+      if(icfoc.eq.0.and.ncf.gt.0)then
+        do 88 II=1,ncf
+          NN=nbcdt(ii)
+          if(nbcdt(ii).eq.0)NN=3
+          do 87 IJ=1,NN
+            listct=listct+1
+            if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
+              m=m+1
+              mptback(m)=II
+              CALL EMKEY(M-MHEAD+4,KEY,IER)
+              if(nbcdt(ii).eq.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+     &            IBSN(II,1),IBSN(II,2),IBSN(II,3),IBAN(II,1),
+     &            IBAN(II,2),IBAN(II,3),' wkd',ibcdv(II,IJ,1),
+     &            ibcdv(II,IJ,2),nbcdp(II,1)
+              elseif(nbcdt(ii).eq.0.and.IJ.eq.2)then
+                iperptbk(m)=2
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sat',ibcdv(II,2,1),ibcdv(II,2,2),nbcdp(II,2)
+              elseif(nbcdt(ii).eq.0.and.IJ.eq.3)then
+                iperptbk(m)=3
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sun',ibcdv(II,3,1),ibcdv(II,3,2),nbcdp(II,3)
+              endif
+              if(nbcdt(ii).ne.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+     &            IBSN(II,1),IBSN(II,2),IBSN(II,3),IBAN(II,1),
+     &            IBAN(II,2),IBAN(II,3),IJ,ibcdv(II,IJ,1),
+     &            ibcdv(II,IJ,2),nbcdp(II,IJ)
+              elseif(nbcdt(ii).ne.0.and.IJ.gt.1)then
+                iperptbk(m)=IJ
+                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
+     &            IJ,ibcdv(II,IJ,1),ibcdv(II,IJ,2),nbcdp(II,IJ)
+              endif
+            endif
+  87      continue
+  88    continue
+      elseif(icfoc.eq.1.and.ncl.gt.0)then
+        do 188 II=1,ncl
+          NN=NPCDT(II)
+          if(NPCDT(II).eq.0)NN=3
+          do 187 IJ=1,NN
+            listct=listct+1
+            if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
+              m=m+1
+              mptback(m)=II
+              CALL EMKEY(M-MHEAD+4,KEY,IER)
+              if(npcdt(ii).eq.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+     &            IPSN(II,1),IPSN(II,2),IPSN(II,3),IPAN(II,1),
+     &            IPAN(II,2),IPAN(II,3),' wkd',ipcdv(II,IJ,1),
+     &            ipcdv(II,IJ,2),npcdp(II,1)
+              elseif(npcdt(ii).eq.0.and.IJ.eq.2)then
+                iperptbk(m)=2
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sat',ipcdv(II,2,1),ipcdv(II,2,2),npcdp(II,2)
+              elseif(npcdt(ii).eq.0.and.IJ.eq.3)then
+                iperptbk(m)=3
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sun',ipcdv(II,3,1),ipcdv(II,3,2),npcdp(II,3)
+              endif
+              if(npcdt(ii).ne.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+     &            IPSN(II,1),IPSN(II,2),IPSN(II,3),IPAN(II,1),
+     &            IPAN(II,2),IPAN(II,3),IJ,ipcdv(II,IJ,1),
+     &            ipcdv(II,IJ,2),npcdp(II,IJ)
+              elseif(npcdt(ii).ne.0.and.IJ.gt.1)then
+                iperptbk(m)=IJ
+                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
+     &            IJ,ipcdv(II,IJ,1),ipcdv(II,IJ,2),npcdp(II,IJ)
+              endif
+            endif
+ 187      continue
+ 188    continue
+      elseif(icfoc.eq.2.and.ncc.gt.0)then
+        do 288 II=1,ncc
+          NN=NFCDT(II)
+          if(NFCDT(II).eq.0)NN=3
+          do 287 IJ=1,NN
+            listct=listct+1
+            if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
+              m=m+1
+              mptback(m)=II
+              CALL EMKEY(M-MHEAD+4,KEY,IER)
+              if(nfcdt(ii).eq.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+     &            IFSN(II,1),IFSN(II,2),IFSN(II,3),IFAN(II,1),
+     &            IFAN(II,2),IFAN(II,3),' wkd',ifcdv(II,IJ,1),
+     &            ifcdv(II,IJ,2),nfcdp(II,1)
+              elseif(nfcdt(ii).eq.0.and.IJ.eq.2)then
+                iperptbk(m)=2
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sat',ifcdv(II,2,1),ifcdv(II,2,2),nfcdp(II,2)
+              elseif(nfcdt(ii).eq.0.and.IJ.eq.3)then
+                iperptbk(m)=3
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sun',ifcdv(II,3,1),ifcdv(II,3,2),nfcdp(II,3)
+              endif
+              if(nfcdt(ii).ne.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+     &            IFSN(II,1),IFSN(II,2),IFSN(II,3),IFAN(II,1),
+     &            IFAN(II,2),IFAN(II,3),IJ,ifcdv(II,IJ,1),
+     &            ifcdv(II,IJ,2),nfcdp(II,IJ)
+              elseif(nfcdt(ii).ne.0.and.IJ.gt.1)then
+                iperptbk(m)=IJ
+                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
+     &            IJ,ifcdv(II,IJ,1),ifcdv(II,IJ,2),nfcdp(II,IJ)
+              endif
+            endif
+ 287      continue
+ 288    continue
+      elseif(icfoc.eq.3.and.ngf.gt.0)then
+        do 388 II=1,ngf
+          NN=NGCDT(II)
+          if(NGCDT(II).eq.0)NN=3
+          do 387 IJ=1,NN
+            listct=listct+1
+            if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
+              m=m+1
+              mptback(m)=II
+              CALL EMKEY(M-MHEAD+4,KEY,IER)
+              if(ngcdt(ii).eq.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+     &            IGSN(II,1),IGSN(II,2),IGSN(II,3),IGAN(II,1),
+     &            IGAN(II,2),IGAN(II,3),' wkd',igcdv(II,IJ,1),
+     &            igcdv(II,IJ,2),ngcdp(II,1)
+              elseif(ngcdt(ii).eq.0.and.IJ.eq.2)then
+                iperptbk(m)=2
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sat',igcdv(II,2,1),igcdv(II,2,2),ngcdp(II,2)
+              elseif(ngcdt(ii).eq.0.and.IJ.eq.3)then
+                iperptbk(m)=3
+                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
+     &            ' Sun',igcdv(II,3,1),igcdv(II,3,2),ngcdp(II,3)
+              endif
+              if(ngcdt(ii).ne.0.and.IJ.eq.1)then
+                iperptbk(m)=1
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+     &            IGSN(II,1),IGSN(II,2),IGSN(II,3),IGAN(II,1),
+     &            IGAN(II,2),IGAN(II,3),IJ,igcdv(II,IJ,1),
+     &            igcdv(II,IJ,2),ngcdp(II,IJ)
+              elseif(ngcdt(ii).ne.0.and.IJ.gt.1)then
+                iperptbk(m)=IJ
+                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
+     &            IJ,igcdv(II,IJ,1),igcdv(II,IJ,2),ngcdp(II,IJ)
+              endif
+            endif
+ 387      continue
+ 388    continue
+      elseif(icfoc.eq.4.and.necl.gt.0)then
+
+C Power controls.
+      endif
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list, include page facility text.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)='  ________________________________________'
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 Page ------- Part: ',I2,' of ',I2,
+     &    ' -----------')
+      ENDIF
+      VERT(M+2)  ='+ add/delete/copy control loop or day type'
+      VERT(M+3)  ='! list or check current control data      '
+      VERT(M+4)  ='> save control data                       '
+      VERT(M+5)  ='? help                                    '
+      VERT(M+6)  ='- exit this menu                          '
+
+C Help text for this menu.
+      H(1) ='In order to provide realistic controls for zones,'
+      H(2) ='plant systems and fluid flow networks, a configuration'
+      H(3) ='control file must be created.  If this does not exist'
+      H(4) ='then the simulation will be free floating.'
+      H(5) =' '
+      H(6) ='Toggle the control focus to switch between controlled'
+      H(7) ='entities and select a control definition to edit it.'
+      H(8) =' '
+      H(9) ='The data required is as follows.'
+      H(10)='1. control system title, then for each sub-system'
+      H(11)='   (zones, plant, flow & global):'
+      H(12)='2. title & no. of control loops, then for each loop:'
+      H(13)='3. sensor & actuator location, number of day'
+      H(14)='   types, then for each day type:'
+      H(15)='4. start & finish dates of validity'
+      H(16)='   number of control periods, then for each:'
+      H(17)='5. controller type, control law, start time'
+      H(18)='   number of data items associated with'
+      H(19)='   control law and data values.'
+      H(20)=' '
+      H(21)='To edit a control loop (or one of its attributes) select'
+      H(22)='it. '
+
+C Now display the menu.
+      CALL EMENU('Controls',VERT,MVERT,IVERT)
+
+      IF(IVERT.EQ.1)THEN
+
+C Toggle focus
+        icfoc=icfoc+1
+        if(icfoc.gt.4)icfoc=0
+      ELSEIF(IVERT.EQ.2)THEN
+
+C Edit project level description.
+        H(1)='The overall control system is described by a brief' 
+        H(2)='description (<64 characters) which will be included'
+        H(3)='in reports. '
+        t248=ctldoc
+        CALL EASKS248(t248,' Overall project control description? ',
+     &    ' ',72,'base_case','overall control desc',IER,3)
+        if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')ctldoc=t248
+        IF(ctldoc(1:5).EQ.'NONE ')GOTO 92
+      ELSEIF(IVERT.EQ.3)THEN
+
+C Edit building/plant/flow/global control description.
+        H(1)='Description (<248 char) of zone control system.'
+        if(icfoc.eq.0)then
+          t248=znctldoc
+          CALL EASKS248(t248,' ',' Zone control description?',
+     &      72,'base_case','building control descr.',IER,1)
+          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')znctldoc=t248
+        elseif(icfoc.eq.1)then
+          t248=plctldoc
+          CALL EASKS248(t248,' ',' Plant control description?',
+     &      72,'base_case','plant control descr.',IER,1)
+          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')plctldoc=t248
+        elseif(icfoc.eq.2)then
+          t248=flctldoc
+          CALL EASKS248(t248,' ',' Flow control description?',
+     &      72,'base_case','flow control descr.',IER,1)
+          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')flctldoc=t248
+        elseif(icfoc.eq.3)then
+          t248=glctldoc
+          CALL EASKS248(t248,' ',' Global control description?',
+     &      72,'base_case','global control descr.',IER,1)
+          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')glctldoc=t248
+        elseif(icfoc.eq.4)then
+          t248=elctldoc
+          CALL EASKS248(t248,' ',' Power control description?',
+     &      72,'base_case','power control descr.',IER,1)
+          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')elctldoc=t248
+        endif
+      ELSEIF(IVERT.EQ.5)THEN
+
+c Relate control functions to the appropriate zones
+c from the configuration file.
+        if(icfoc.eq.0)then
+          NZ=NCOMP
+          H(1)='This should match current system configuration file.'
+          CALL EASKI(NZ,' ',' Number zones in the model?',
+     &      1,'F',MCOM,'F',NCOMP,'no of zones',IER,1)
+          IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
+
+c Match single zone with single control function.
+          ICASCF(1)=1
+          LINKED=.TRUE.
+          GOTO 92
+
+c Relate control function to associated zone.
+c Remember zero implies no control.
+  304     IF(NZ.EQ.1)then
+            H(1)='This is the index of the control. A 0 means no'
+            H(2)='control, 1 is first control function, etc.)'
+            CALL EASKI(ICASCF(1),' Associated control for',
+     &        ' first zone?',0,'F',MCOM,'F',0,
+     &        'associated control',IER,2)
+          else
+            do 311 IJ=1,NZ
+              write(outs,'(A,A,A,I2,A)')' For ',zname(IJ),'(',IJ,')'
+              CALL EASKI(ICASCF(IJ),outs,
+     &          ' Associated control?',0,'F',MCOM,'F',0,
+     &          'associated control',IER,2)
+  311       continue
+          endif
+
+c Check for out-of-allowable range.
+          IF(NZ.gt.0)then
+           DO 300 I=1,NZ
+            IF(ICASCF(I).LT.0.OR.ICASCF(I).GT.NCF)then
+             write(outs,'(A,I2,A)')' Zone ',I,
+     &         ' refers to a non-existent'
+             call usrmsg(outs,' control.  Please respecify.','W')
+             goto 304
+            endif
+  300      CONTINUE
+          endif
+
+C Flag that links made.
+          LINKED=.TRUE.
+        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.icfoc.eq.4)then
+          continue
+        endif
+
+      ELSEIF(IVERT.EQ.MVERT)THEN
+        if(icfoc.eq.0)then
+          if(.NOT.LINKED)then
+            dok=.false.
+            h(1)='This messsage was presented because you probably'
+            h(2)='have not associated the control loops with zones'
+            h(3)='in the model during the current editing session. '
+            h(4)=' '
+            h(5)='Just to be certain, re-check these associations '
+            h(6)='to see that they are ok. '
+            CALL ASKOK(' The control functions have not yet been ',
+     &        ' linked to the thermal zones. Exit anyway?',
+     &        OK,dok,6)
+            IF(OK)then
+              return
+            else
+              goto 92
+            endif
+          else
+            return
+          endif
+        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.icfoc.eq.4)then
+          RETURN
+        endif
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C Explanation
+
+C << compose a "tell me more" section. >>
+        CALL PHELPD('control help',22,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C Save the control file.
+        LASCI=LCTLF
+        CALL EASKS(LASCI,' Control file?',' ',72,' ','Control file',
+     &    IER,22)
+        IF(LASCI(1:2).NE.'  ')LCTLF=LASCI
+
+C Save current information into a descriptive file
+C and save the system configuration file if not browsing.
+        if(cfgok.and.(.NOT.browse))then
+          ICTLF=IFIL+1
+          CALL CTLWRT(ICTLF,IER)
+          call edisp(IUOUT,' Saving system configuration file.')
+          CALL EMKCFG('-',IER)
+        else
+          call usrmsg('Cannot save control data while in browse ',
+     &                'mode, you must `own` the model!','W')
+          goto 92
+        endif
+      ELSEIF(IVERT.EQ.(MVERT-3))THEN
+        CALL EASKABC('Options:',' ',
+     &    'list control loops','check control loops','continue',IRC,2)
+        if(irc.eq.1)then
+
+C List control data.
+          call edisp(itru,' ')
+          call edisp(itru,' Overall description: ')
+          call edisp248(itru,ctldoc,72)
+
+          if(icfoc.eq.0.and.NCF.gt.0)then
+            WRITE(outs,'(a,I2,a)')' Zones control includes ',
+     &        NCF,' functions.'
+            call edisp(itru,outs)
+            call edisp248(itru,znctldoc,72)
+            do 144 ii=1,NCF
+              call LSTCNTL(itru,0,ii,IER)
+ 144        continue
+            call LSTCNTL(itru,0,0,IER)
+          endif
+          if(icfoc.eq.1.and.NCL.gt.0)then
+            call edisp(itru,' ')
+            WRITE(outs,'(a,I2,a)')' Plant control includes ',
+     &        NCL,' loops.'
+            call edisp(itru,outs)
+            call edisp248(itru,plctldoc,72)
+            do 145 ii=1,NCL
+              call LSTCNTL(itru,1,ii,IER)
+ 145        continue
+          endif
+          if(icfoc.eq.2.and.NCC.gt.0)then
+            call edisp(itru,' ')
+            WRITE(outs,'(a,I2,a)')' Flow control includes ',
+     &        NCC,' loops.'
+            call edisp(itru,outs)
+            call edisp248(itru,flctldoc,72)
+            do 146 ii=1,NCC
+              call LSTCNTL(itru,2,ii,IER)
+ 146        continue
+          endif
+          if(icfoc.eq.3.and.NGF.gt.0)then
+            call edisp(itru,' ')
+            WRITE(outs,'(a,I2,a)')' Global control includes ',
+     &        NGF,' loops.'
+            call edisp(itru,outs)
+            call edisp248(itru,flctldoc,72)
+            do 147 ii=1,NGF
+              call LSTCNTL(itru,3,ii,IER)
+ 147        continue
+          endif
+          if(icfoc.eq.4.and.NECL.gt.0)then
+            call edisp(itru,' ')
+            WRITE(outs,'(a,I2,a)')' Power control includes ',
+     &        NECL,' loops.'
+            call edisp(itru,outs)
+            call edisp248(itru,elctldoc,72)
+            do 247 ii=1,NECL
+              call LSTCNTL(itru,4,ii,IER)
+ 247        continue
+          endif
+        elseif(irc.eq.2)then
+          call ezctlc(iier)
+        endif
+      ELSEIF(IVERT.EQ.(MVERT-4))THEN
+
+C Add or delete a zone control function.
+C Warn user to update any connections to plant loops.
+        h(1)='This adds or deletes a control loop or addes or deletes'
+        h(2)='or copies a day type (unless wkd:sat:sun). '
+        CALL EASKATOG('Options:',' ','delete loop','add loop',
+     &  'copy loop','delete/add/copy day type','continue',' ',' ',IW,2)
+        if(IW.eq.1)then
+          call ADDCNTL(icfoc,'D',IER)
+        elseif(IW.eq.2)then
+          call ADDCNTL(icfoc,'A',IER)
+        elseif(IW.eq.3)then
+          call ADDCNTL(icfoc,'C',IER)
+        elseif(IW.eq.4)then
+
+C Add or delete a control day type (unless Weekday/Sat/Sun).
+C Begin by selecting the loop to focus on.
+          if(icfoc.eq.0)then
+            CALL EASKI(IFOC,'Index of zone control function to act on?',
+     &          ' ',0,'F',ncf,'F',0,'associated control',IER,2)
+            nn=nbcdt(IFOC)
+          elseif(icfoc.eq.1)then
+            CALL EASKI(IFOC,'Index of plant control function ?',
+     &          ' ',0,'F',ncl,'F',0,'associated control',IER,2)
+            nn=npcdt(IFOC)
+          elseif(icfoc.eq.2)then
+            CALL EASKI(IFOC,'Index of flow control function to act on?',
+     &          ' ',0,'F',ncc,'F',0,'associated control',IER,2)
+            nn=nfcdt(IFOC)
+          elseif(icfoc.eq.3)then
+            CALL EASKI(IFOC,'Index of global control function ?',
+     &          ' ',0,'F',ngf,'F',0,'associated control',IER,2)
+            nn=ngcdt(IFOC)
+          elseif(icfoc.eq.4)then
+            CALL EASKI(IFOC,'Index of power control function ?',
+     &          ' ',0,'F',necl,'F',0,'associated control',IER,2)
+            nn=necdt(IFOC)
+          endif
+          if(nn.eq.0)then
+            call usrmsg(' For the special case of Weekday, Saturday',
+     &      ' Sunday - add/ delete day type is not applicable.','W')
+            goto 92
+          endif 
+          call ADDCTLD(icfoc,IFOC,IER)
+        elseif(IW.eq.5)then
+          goto 92
+        endif
+        call edisp(iuout,
+     &' You may need to update links to zones, plant or flow networks.')
+      ELSEIF(IVERT.EQ.(MVERT-5))THEN
+
+C If there are enough items, allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MHEAD+M+1))THEN
+
+C Edit control function.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        ii=mptback(IVERT)
+        idi=iperptbk(IVERT)
+
+C List out the current details of the control loop.
+  64    CALL EVCNTRL(icfoc,II,1,1,'S',SSTR)
+        call edisp(itru,' ')
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(outs,65)II,SSTR(1:LN)
+  65    FORMAT(' The sensor for function ',I2,' ',a)
+        call edisp(itru,outs)
+
+        CALL EVCNTRL(icfoc,II,1,1,'A',SSTR)
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(outs,75)II,SSTR(1:LN)
+  75    FORMAT(' The actuator for function ',I2,' is ',a)
+        call edisp(itru,outs)
+
+C Pull up a multi-choice dialog to see what should be edited.
+        CALL EPMENSV
+        h(1)='Attributes of a control can be edited:'
+        h(2)=' a) sensor location'
+        h(3)=' b) actuator location'
+        h(4)=' c) for each day type the period of validity and details'
+        h(5)='    of each period during the day.'
+        if(icfoc.eq.0)then
+          call LSTCNTLD(itru,0,ii,idi,IER)
+          write(outs,'(a,i2,a)') 'Zone control function (',II,
+     &      ') editing.'
+        elseif(icfoc.eq.1)then
+          call LSTCNTLD(itru,1,ii,idi,IER)
+          write(outs,'(a,i2,a)') 'Plant control function (',II,
+     &      ') editing.'
+        elseif(icfoc.eq.2)then
+          call LSTCNTLD(itru,2,ii,idi,IER)
+          write(outs,'(a,i2,a)') 'Flow control function (',II,
+     &      ') editing.'
+        elseif(icfoc.eq.3)then
+          call LSTCNTLD(itru,3,ii,idi,IER)
+          write(outs,'(a,i2,a)') 'Global control function (',II,
+     &      ') editing.'
+        elseif(icfoc.eq.4)then
+          call LSTCNTLD(itru,4,ii,idi,IER)
+          write(outs,'(a,i2,a)') 'Power control function (',II,
+     &      ') editing.'
+        endif
+        idno=0
+        isw=0
+        call MENUATOL(outs,'Editing options',
+     &   'a sensor details','b actuator details',
+     &   'c period of validity','d period data',' ',' ',
+     &   ' ',' ',' ',' ',' ',' ',isw,idno,5)
+        if(ISW.eq.0)then
+          goto 92
+        elseif(ISW.eq.1)then
+
+C Edit sensor location. 
+          CALL EPMENSV
+          if(icfoc.eq.0)then
+            isn1=IBSN(II,1)
+            isn2=IBSN(II,2)
+            isn3=IBSN(II,3)
+            isn4=IBSN(II,4)
+            call senloc('Select an option:','Zone sensor',icfoc,II,
+     &        isn1,isn2,isn3,isn4,isense,nsupl,'zone sensor',IER)
+            IBSN(II,1)=isn1
+            IBSN(II,2)=isn2
+            IBSN(II,3)=isn3
+            IBSN(II,4)=isn4
+          elseif(icfoc.eq.1)then
+            isn1=IPSN(II,1)
+            isn2=IPSN(II,2)
+            isn3=IPSN(II,3)
+            call senloc('Select an option:','Plant sensor',icfoc,II,
+     &        isn1,isn2,isn3,isn4,isense,nsupl,'plant sensor',IER)
+            IPSN(II,1)=isn1
+            IPSN(II,2)=isn2
+            IPSN(II,3)=isn3
+          elseif(icfoc.eq.2)then
+            isn1=IFSN(II,1)
+            isn2=IFSN(II,2)
+            isn3=IFSN(II,3)
+            isn4=IFSN(II,4)
+            call senloc('Select an option:','Flow sensor',icfoc,II,
+     &        isn1,isn2,isn3,isn4,isense,nsupl,'flow sensor',IER)
+            IFSN(II,1)=isn1
+            IFSN(II,2)=isn2
+            IFSN(II,3)=isn3
+            IFSN(II,4)=isn4
+
+C Note isense is sensed flow condition used tp determine the flow controller type.    
+            IFCTYP(II,1,1)=isense
+            nfsup(ii)=nsupl
+
+C Because changes in flow sensor usually require changes to actuation
+C call the flow actuation interactions now.
+            ian1=IFAN(II,1)
+            ian2=IFAN(II,2)
+            ian3=IFAN(II,3)
+            call actloc('Select an option:','Flow actuator',icfoc,II,
+     &        0,ian1,ian2,ian3,'flow actuator',IER)
+            IFAN(II,1)=ian1
+            IFAN(II,2)=ian2
+            IFAN(II,3)=ian3
+          elseif(icfoc.eq.3)then
+            ign1=IGSN(II,1)
+            ign2=IGSN(II,2)
+            ign3=IGSN(II,3)
+            ign4=IGSN(II,4)
+            call senloc('Select an option:','Global sensor',icfoc,II,
+     &        ign1,ign2,ign3,ign4,isense,nsupl,'global sensor',IER)
+            IGSN(II,1)=ign1
+            IGSN(II,2)=ign2
+            IGSN(II,3)=ign3
+            IGSN(II,4)=ign4
+          elseif(icfoc.eq.4)then
+            ien1=IESN(II,1)
+            ien2=IESN(II,2)
+            ien3=IESN(II,3)
+            call senloc('Select an option:','Power sensor',icfoc,II,
+     &        ien1,ien2,ien3,ien4,isense,nsupl,'power sensor',IER)
+            IESN(II,1)=ien1
+            IESN(II,2)=ien2
+            IESN(II,3)=ien3
+          endif
+          CALL EPMENRC
+          if (ICFOC.ne.2) then
+            call usrmsg('After editing the sensor location it may also',
+     &        'be necessary to update actuator location.','W')
+          endif
+          goto 64
+        elseif(ISW.eq.2)then
+
+C Edit actuator location.
+C If sensor location -99 ask for up to three surfaces where
+C substitutions will occur.
+          CALL EPMENSV
+          if(icfoc.eq.0)then 
+            isn1=IBSN(II,1)
+            ian1=IBAN(II,1)
+            ian2=IBAN(II,2)
+            ian3=IBAN(II,3)
+            call actloc('Select an option:','Zone actuator',icfoc,II,
+     &        isn1,ian1,ian2,ian3,'zone actuator',IER)
+            IBAN(II,1)=ian1
+            IBAN(II,2)=ian2
+            IBAN(II,3)=ian3
+          elseif(icfoc.eq.1)then
+            ian1=IPAN(II,1)
+            ian2=IPAN(II,2)
+            ian3=IPAN(II,3)
+            call actloc('Select an option:','Plant actuator',icfoc,II,
+     &        0,ian1,ian2,ian3,'plant actuator',IER)
+            IPAN(II,1)=ian1
+            IPAN(II,2)=ian2
+            IPAN(II,3)=ian3
+          elseif(icfoc.eq.2)then
+            ian1=IFAN(II,1)
+            ian2=IFAN(II,2)
+            ian3=IFAN(II,3)
+            call actloc('Select an option:','Flow actuator',icfoc,II,
+     &        0,ian1,ian2,ian3,'flow actuator',IER)
+            IFAN(II,1)=ian1
+            IFAN(II,2)=ian2
+            IFAN(II,3)=ian3
+          elseif(icfoc.eq.3)then
+            ign1=IGAN(II,1)
+            ign2=IGAN(II,2)
+            ign3=IGAN(II,3)
+            call actloc('Select an option:','Global actuator',icfoc,II,
+     &        0,ign1,ign2,ign3,'global actuator',IER)
+            IGAN(II,1)=ign1
+            IGAN(II,2)=ign2
+            IGAN(II,3)=ign3
+          elseif(icfoc.eq.4)then
+            ien1=IEAN(II,1)
+            ien2=IEAN(II,2)
+            ien3=IEAN(II,3)
+            call actloc('Select an option:','Power actuator',icfoc,II,
+     &        0,ien1,ien2,ien3,'power actuator',IER)
+            IEAN(II,1)=ien1
+            IEAN(II,2)=ien2
+            IEAN(II,3)=ien3
+          endif
+          CALL EPMENRC
+          call usrmsg(' ',' ','-')
+          goto 64
+        elseif(ISW.eq.3)then
+
+C Edit date of validity (day type index is idi).
+   48     if(icfoc.eq.0)then 
+            IBDOY=IBCDV(II,idi,1)
+            IEDOY=IBCDV(II,idi,2)
+            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+            IBCDV(II,idi,1)=IBDOY
+            IBCDV(II,idi,2)=IEDOY
+            IF(IBCDV(II,idi,2).LT.IBCDV(II,idi,1))GOTO 48
+          elseif(icfoc.eq.1)then 
+            IBDOY=IPCDV(II,idi,1)
+            IEDOY=IPCDV(II,idi,2)
+            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+            IPCDV(II,idi,1)=IBDOY
+            IPCDV(II,idi,2)=IEDOY
+            IF(IPCDV(II,idi,2).LT.IPCDV(II,idi,1))GOTO 48
+          elseif(icfoc.eq.2)then 
+            IBDOY=IFCDV(II,idi,1)
+            IEDOY=IFCDV(II,idi,2)
+            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+            IFCDV(II,idi,1)=IBDOY
+            IFCDV(II,idi,2)=IEDOY
+            IF(IFCDV(II,idi,2).LT.IFCDV(II,idi,1))GOTO 48
+          elseif(icfoc.eq.3)then
+            IBDOY=IGCDV(II,idi,1)
+            IEDOY=IGCDV(II,idi,2)
+            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+            IGCDV(II,idi,1)=IBDOY
+            IGCDV(II,idi,2)=IEDOY
+            IF(IGCDV(II,idi,2).LT.IGCDV(II,idi,1))GOTO 48
+          elseif(icfoc.eq.4)then
+            IBDOY=IECDV(II,idi,1)
+            IEDOY=IECDV(II,idi,2)
+            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+            IECDV(II,idi,1)=IBDOY
+            IECDV(II,idi,2)=IEDOY
+            IF(IECDV(II,idi,2).LT.IECDV(II,idi,1))GOTO 48
+          endif 
+          goto 64
+        elseif(ISW.eq.4)then
+
+C Edit period data (day type index is idi), first list the
+C current day type data..
+          CALL EPMENSV
+          if(icfoc.eq.0)then
+            call LSTCNTLD(itru,0,II,idi,IER)
+            CALL EBCNTRL(ITRC,II,idi,IER)
+          elseif(icfoc.eq.1)then
+            call LSTCNTLD(itru,1,II,idi,IER)
+            CALL EPCNTRL(ITRC,II,idi,IER)
+          elseif(icfoc.eq.2)then
+            call LSTCNTLD(itru,2,II,idi,IER)
+            CALL EFCNTRL(II,idi,IER)
+          elseif(icfoc.eq.3)then
+            call LSTCNTLD(itru,3,II,idi,IER)
+            CALL EGCNTRL(ITRC,II,idi,IER)
+          elseif(icfoc.eq.4)then
+            call LSTCNTLD(itru,4,II,idi,IER)
+            CALL edisp(iuout,'power editing not available')
+          endif
+          CALL EPMENRC
+          goto 64
+        elseif(ISW.eq.0)then
+          GOTO 92
+        endif
+      ELSE
+        IVERT=-1
+        GOTO 92
+      ENDIF
+      IVERT=-4
+      call usrmsg(' ',' ','-')
+      GOTO 92
+
+      END
+
+C ***** totctlper
+C Finds the current number of periods in all control loops
+C of type icfoc.
+      subroutine totctlper(icfoc,ncper)
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+#include "control.h"
+#include "power.h"
+      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
+     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
+     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
+     &       bmiscd(mcf,mbcdt,mbcdp,misc)
+      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
+     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
+     &       pmiscd(mcl,mpcdt,mpcdp,misc)
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
+     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
+     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
+     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
+     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
+     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
+     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+      if(icfoc.eq.0)then
+        ncper=0
+        if(ncf.gt.0)then
+          do 888 II=1,ncf
+            NN=nbcdt(ii)
+            if(nbcdt(ii).eq.0)NN=3
+            do 887 IJ=1,NN
+              ncper=ncper+1
+  887       continue
+  888     continue
+        endif
+      elseif(icfoc.eq.1)then
+        ncper=0
+        if(ncl.gt.0)then
+          do 886 II=1,ncl
+            NN=npcdt(ii)
+            if(npcdt(ii).eq.0)NN=3
+            do 885 IJ=1,NN
+              ncper=ncper+1
+  885       continue
+  886     continue
+        endif
+      elseif(icfoc.eq.2)then
+        ncper=0
+        if(ncc.gt.0)then
+          do 884 II=1,ncc
+            NN=nfcdt(ii)
+            if(nfcdt(ii).eq.0)NN=3
+            do 883 IJ=1,NN
+              ncper=ncper+1
+  883       continue
+  884     continue
+        endif
+      elseif(icfoc.eq.3)then
+        ncper=0
+        if(ngf.gt.0)then
+          do 882 II=1,ngf
+            NN=ngcdt(ii)
+            if(ngcdt(ii).eq.0)NN=3
+            do 881 IJ=1,NN
+              ncper=ncper+1
+  881       continue
+  882     continue
+        endif
+      elseif(icfoc.eq.4)then
+        ncper=0
+        if(necl.gt.0)then
+          do 782 II=1,necl
+            NN=necdt(ii)
+            if(necdt(ii).eq.0)NN=3
+            do 781 IJ=1,NN
+              ncper=ncper+1
+  781       continue
+  782     continue
+        endif
+      endif
+      return
+      end
+
+C *********** EBCNTRL
+C Edit building control function II.
+      SUBROUTINE EBCNTRL(ITRC,II,IV,IER)
+#include "building.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
+     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
+     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
+     &       bmiscd(mcf,mbcdt,mbcdp,misc)
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+      DIMENSION SALT(21),IVALS(21)
+      CHARACTER*82 VERT(20)
+
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
+      character outsa*84,outsb*84,outsc*84
+      logical close1,close2,close3,close4
+
+C Number of building functions and day type must be > 0.
+      IF(II.LE.0.OR.IV.LE.0)RETURN
+
+C Building control day types.
+      J=IV
+      JJ=J
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
+      WRITE(vert(2),'(a,i3)')     ' number of periods:',NBCDP(II,JJ)
+      WRITE(vert(3),'(a)') ' ________________________________________'
+      WRITE(vert(4),'(a)')
+     &' per|start|sensed  |actuated | control law     | data'
+      WRITE(vert(5),'(a)')
+     &' no.|time |property|property |                 |     '
+      LL=NBCDP(II,JJ)
+
+C Generate menu entry for each period in day type.
+      m=5
+      DO 91 KP=1,LL
+        KK=KP
+        m=m+1
+        call stfctl(0,II,JJ,KK)
+        CALL EVCNTRL(0,II,JJ,KK,'T',SSTR)
+        CALL EVCNTRL(0,II,JJ,KK,'L',TMP)
+        NITEMS=INT(cm(1))
+        WRITE(outsa,'(i2,F6.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
+        outsb=' '
+        outsc=' '
+        if(NITEMS.gt.0)then
+          if(NITEMS.LE.8)then
+            write(outsb,'(8F9.1)')(cm(L),L=2,NITEMS+1)
+          else
+            write(outsb,'(8F9.1,a)')(cm(L),L=2,9),'..'
+          endif
+          call SDELIM(outsb,outsc,'S',IW)
+        endif
+        CALL EMKEY(M-5,KEY,IER)
+        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
+     &    outsa(1:46),outsc(1:32)
+  91  continue
+      m=m+1
+      WRITE(vert(m),'(a)') ' ________________________________________'
+      m=m+1
+      WRITE(vert(m),'(a)') '* add/ delete a period '
+      m=m+1
+      WRITE(vert(m),'(a)') '? help '
+      m=m+1
+      WRITE(vert(m),'(a)') '- exit  '
+      mvert=m
+
+C Help text for this menu.
+      h(1) ='A number of control periods can be defined for each'
+      h(2) ='control day type. Each period has a start time (i.e.'
+      h(3) ='they do not overlap), a sensed property, an actuated'
+      h(4) ='property, a control law and miscel. data which defines'
+      h(5) ='capacity, setpoints, etc.'
+      h(6) ='  '
+      h(7) ='Note: if no change required in an item then accept the'
+      h(8) ='current value.'
+ 
+C Now display the menu.
+      CALL EMENU('Control periods',VERT,MVERT,IVERT)
+      if(IVERT.EQ.mvert)then
+        return
+      elseif(IVERT.EQ.mvert-1)then
+
+C Explanation
+       CALL PHELPD('control period help',8,'-',0,0,IER)
+      elseif(IVERT.EQ.mvert-2)then
+
+C Add or delete a period.
+        h(1)='Periods are added to the end of the list. '
+        CALL EASKABC('Options:',' ',
+     &    'add period','delete period','continue',iad,1)
+        if(iad.eq.1)then
+          call addctldp(0,II,JJ,'A',iier)
+        elseif(iad.eq.2)then
+          call addctldp(0,II,JJ,'D',iier)
+        endif
+        goto 92
+      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
+
+C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
+C stuff into working common array 'cm' for editing.  At end
+C of if:elseif:else recover.
+        KK=IVERT-5
+        call stfctl(0,II,JJ,KK)
+
+        NITEMS=INT(cm(1))
+        if(NITEMS.gt.0)then
+          WRITE(outs,'(a,i3,a)')' For period',KK,' current data is...'
+          call edisp(iuout,outs)
+          if(NITEMS.LE.13)then
+            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+          else
+            write(outs,'(13F9.1)')(cm(L),L=2,13)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+            if(NITEMS.LE.26)then
+              write(outs,'(13F9.1)')(cm(L),L=14,NITEMS)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            else
+              write(outs,'(13F9.1)')(cm(L),L=14,26)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            endif
+          endif
+        else
+          WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
+          call edisp(iuout,outs)
+        endif
+        call edisp(iuout,' ')
+
+C If thermophysical property substitution set type and law and jump
+C to periods.
+        if(IBSN(II,1).eq.-99)then
+          ictyp=0
+          iclaw=1
+          goto 62
+        endif
+        ictyp=0
+        SALT(1)= 'Basic controller for heating/cooling   '
+        SALT(2)= 'Free-float controller                  '
+        SALT(3)= 'Basic pre-heat or pre-cool controller  '
+        SALT(4)= 'Fixed heat injection and extraction    '
+        SALT(5)= 'PID control action for heating/cooling '
+        SALT(6)= 'Flux connection between zone & plant   '
+        SALT(7)= 'Multi-stage control with hysteresis    '
+        SALT(8)= 'Variable supply temp with constraints  '
+        SALT(9)= 'Heat pipe from `outside` to inside     '
+        SALT(10)='Separate flux ON & OFF set points      '
+        SALT(11)='Match sensed/recorded value (ideal)    '
+        SALT(12)='Match sensed/recorded value (on/off)   '
+        SALT(13)='Time-proportioning (on/off) control    '
+        SALT(14)='Floating `three-position` control      '
+        SALT(15)='Optimum start control                  '
+        SALT(16)='Optimum stop control                   '
+        SALT(17)='Fuzzy Logic PI-PD control              '
+        SALT(18)='Null controller.                       '
+        SALT(19)='Multi-sensor heating/cooling           '
+        SALT(20)='Evaporative source (surface)           '
+        SALT(21)='Slave Capacity Controller              '
+        if(iclaw.ne.0)then
+          write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
+          call edisp(iuout,outs)
+          IX=1
+        else
+          IX=iclaw
+        endif
+        H(1)='See ESP-r Data Model section 9 for details. '
+  63    CALL EPICKS(IX,IVALS,' ',' Control law: ',
+     &         40,21,SALT,'control law',IER,1)
+        if(ix.eq.0.or.IVALS(1).eq.0)goto 63
+        iclaw=IVALS(1)
+        IBCLAW(II,JJ,KK)=iclaw
+
+  62    H(1)='See ESP-r Data Model section 9 for details. '
+        CALL EASKR(tcps,' ',' Period start time ? ',
+     &    0.,'F',24.,'F',0.,'control start',IER,1)
+        if(KK.GT.1)then
+          IF(TBCPS(II,JJ,KK-1).GE.tcps)then
+            call usrmsg(' Periods out of order..',' ','W')
+            GOTO 62
+          endif
+        else
+          CALL ECLOSE(tcps,0.0,0.001,close1)
+          IF(.NOT.close1)then
+            call usrmsg(' ',' First control must begin @ 0','W')
+            GOTO 62
+          endif
+        endif
+
+C If thermophysical property substitution then ask for misc. data.
+        if(IBSN(II,1).eq.-99)then
+          if(int(cm(2)).eq.0)then
+            outs=' Current property substitution is OFF'
+          elseif(int(cm(2)).eq.1)then
+            outs=' Current property substitution is ON'
+          endif
+          cm(1)=4.0
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKR(cm(2),outs,' Substitution: 0) off, 1)on ? ',
+     &      0.,'F',1.,'F',0.,'subst on/off',IER,1)
+
+  28      WRITE(HOLD,'(3f8.0)')cm(3),cm(4),cm(5)
+          H(1)='These are the indices of the multilayer construction'
+          H(2)='for the 1st, 2nd and 3rd surfaces to which '
+          H(3)='susbsitutions are to be made. If less than 3 surfs'
+          H(4)='then assign `0` to latter.'
+          if(IBAN(II,1).ne.0)then
+            CALL EASKS(HOLD,' MLC index for 1st, 2nd, 3rd surfaces ',
+     &        ' : ',40,'  0   0  0  ','index for subst',IER,3)
+            K=0
+            CALL EGETWR(HOLD,K,cm(3),1.,18.,'F','1st sur mlc',IER)
+            CALL EGETWR(HOLD,K,cm(4),1.,18.,'F','2nd sur mlc',IER)
+            CALL EGETWR(HOLD,K,cm(5),1.,18.,'F','3rd sur mlc',IER)
+            if(ier.ne.0)goto 28
+          else
+            cm(3)=0.
+            cm(4)=0.
+            cm(5)=0.
+          endif
+          call extrctl(0,II,JJ,KK)
+          goto 92
+        endif
+
+C Make assumptions about the additional data that will be required.
+        H(1)='See ESP-r Data Model section 9 for details. '
+        if(IBCLAW(II,JJ,KK).eq.1.or.IBCLAW(II,JJ,KK).eq.3)then
+
+C Basic control or pre-heat/cool.
+          call edisp(iuout,' Basic controller:')
+          cm(1)=7.0
+  43      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='Heat delivery may be less than the max. If minimium'
+          H(2)='heating > 0 then heating will continue at a re- '
+          H(3)='duced level even when the setpoint is reached. '
+          CALL EASKS(HOLD,' Max & Min heat capacity, Max & Min cool ',
+     &      ' capacity for basic control: ',40,' 1000. 0. 1000. 0. ',
+     &      'max min heat cool',IER,3)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Max Cool',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,999999.,'F','Min Cool',IER)
+          if(ier.ne.0)goto 43
+
+  44      WRITE(HOLD,'(2f8.2)')cm(6),cm(7)
+          H(1)='If you do not wish cooling use a high set point. '
+          H(2)='A 0 deg.C setpoint does NOT turn it off. '
+          CALL EASKS(HOLD,' Heating & cooling setpoints:',
+     &      '  ',40,' 20. 24. ','heat cool setpoints',IER,2)
+          K=0
+          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Heat setp',IER)
+          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool setp',IER)
+          if(ier.ne.0)goto 44
+
+
+          H(1)='In addition to temperature control, you can also'
+          H(2)='specify relative humidity (RH) control. '
+          H(3)='Two methods of RH control are available:'
+          H(4)=' '  
+          H(5)='(1) Injection or extraction of moisture into the'
+          H(6)='    zone, allowing independent RH control.'
+          H(7)=' '
+          H(8)='(2) Heating and cooling the zone to alter RH: CAUTION'
+          H(9)='    this will over-ride existing temperature control.' 
+          H(10)=' '
+          H(11)='Depending on the control method selected '
+          H(12)='dehumidification or heating will commence if the'
+          H(13)='RH rises above the upper relative humidity set'
+          H(14)='point. Humidification or cooling  commences if the'
+          H(15)='RH falls below the lower RH set point.'
+          H(16)='For RH control method 1 humidification and '
+          H(17)='dehumidification capacities are specified in g/s'
+          H(18)='where 1 g/s of moisture added or removed from the air'
+          H(19)='equates to a latent gain/loss of (approx) +/-2.5kW.'
+          H(20)='For RH control method 2 the existing heating and '
+          H(21)='cooling capacities are used.'
+          CALL EASKABC('Do you want to control zone humidity?',' ',
+     &'Control humidity','Uncontrolled humidity','Continue',IRHC,21)
+          IF(IRHC.EQ.1) THEN
+            CALL EASKABC('How do you want to control zone humidity?',
+     &' ','Moisture injection','Temperature control (see help)',
+     &'Continue',IRHT,21)
+            cm(1)=11.0
+            IF(IRHT.EQ.1) THEN            
+              CALL EASKR(cm(8),'Upper humidity set point (%) :',' ',
+     &        0.,'F',100.,'F',40.,'RH upper',IER,21)
+              CALL EASKR(cm(9),'Lower humidity set point (%) :',' ',
+     &        0.,'F',cm(8),'F',40.,'RH lower',IER,21)
+              CALL EASKR(cm(10),'Max Humidification rate (g/s) :',' ',
+     &        0.,'F',0.,'-',2.,'hum capacity',IER,21)
+              CALL EASKR(cm(11),'Max Dehumidification rate (g/s) :',
+     &        ' ',0.,'F',0.,'-',2.,'dehum capacity',IER,21)
+              cm(12)=1.0
+            ELSEIF(IRHT.EQ.2)THEN
+              CALL EASKR(cm(8),'Upper humidity set point (%) :',' ',
+     &        0.,'F',100.,'F',40.,'RH upper',IER,21)
+              CALL EASKR(cm(9),'Lower humidity set point (%) :',' ',
+     &        0.,'F',cm(8),'F',40.,'RH lower',IER,21)
+              cm(10)=0.0
+              cm(11)=0.0
+              cm(12)=2.0
+            ELSE
+              cm(8)=0.0
+              cm(1)=7.0
+            ENDIF
+          ELSE
+            cm(8)=0.0
+          ENDIF
+
+C If no cooling capacity then set cooling set point to 100C.
+          CALL ECLOSE(cm(4),0.0,0.001,close1)
+          CALL ECLOSE(cm(5),0.0,0.001,close2)
+          if(close1.and.close2)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &    ' Zero cooling capacity - setting cooling setpoint to 100C.')
+            cm(7)=100.
+          endif
+        elseif(IBCLAW(II,JJ,KK).eq.2)then
+
+C Free-floating control.
+          call edisp(iuout,' ')
+          call edisp(iuout,' Free floating control has no data.')
+          cm(1)=0.0
+        elseif(IBCLAW(II,JJ,KK).eq.4)then
+
+C Ideal fixed injection.
+          call edisp(iuout,' Ideal fixed injection controller:')
+          cm(1)=4.0
+  45      WRITE(HOLD,'(2f8.0,2f7.2)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='Heating and cooling are fixed at the flux given'
+          H(2)='is the actuation temperature range is exceeded.'
+          CALL EASKS(HOLD,
+     &    ' Heat & Cool flux, Heating & Cooling actuation points for',
+     &      ' ideal fixed injection: ',40,' 1000. 1000. 18. 100. ',
+     &      'ideal fixed',IER,2)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Heat flux',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Cool flux',IER)
+          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Heat set',IER)
+          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Cool set',IER)
+          if(ier.ne.0)goto 45
+        elseif(IBCLAW(II,JJ,KK).eq.5)then
+
+C PID controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current PID control data is:')
+            call edisp(iuout,' Mode, Max Htg W, Min Htg W, Htg SP, 
+     &       Htg TR')
+            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+            call edisp(iuout,' Max Clg W, Min Clg W, Clg SP, Clg TR') 
+            write(outs,'(4F9.2)')cm(7),cm(8),cm(9),cm(10)
+            call edisp(iuout,outs)
+
+            I2=INT(cm(2))
+            if(I2.eq.2)then
+              call edisp(iuout,' Integral action time [secs]')
+              write(outs,'(F9.2)')cm(11)
+              call edisp(iuout,outs)
+            elseif(I2.eq.3)then
+              call edisp(iuout,' Derivative action time [secs]')
+              write(outs,'(F9.2)')cm(11)
+              call edisp(iuout,outs)            
+            elseif(I2.eq.4)then
+              call edisp(iuout,' IAT [s]. DAT [s]')
+              write(outs,'(2F9.2)')cm(11),cm(12)
+              call edisp(iuout,outs)
+            endif
+            call edisp(iuout,' ')
+          endif
+
+C Define mode, number of items, std items, then mode specific items.
+          H(1)=' Mode options are:'
+          H(2)='   1: Proportional control'
+          H(3)='   2: P+I control'
+          H(4)='   3: P+D control'          
+          H(5)='   4: P+I+D control'
+          H(6)='                   '
+          H(7)=' The number of data items required is in the range'
+          H(8)=' 9 to 11 and depends on the PID mode selected, i.e.,'
+          H(9)='   P   -   9 items required,'
+          H(10)='   PI  -   10 items required,'
+          H(11)='   PD  -   10 items required,'
+          H(12)='   PID -   11 items required,'
+          H(13)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(2),' ',' PID mode ? ',
+     &      1.,'F',4.,'F',1.,' PID mode',IER,13)
+          CALL ECLOSE(cm(2),1.0,0.001,close1)
+          CALL ECLOSE(cm(2),2.0,0.001,close2)
+          CALL ECLOSE(cm(2),3.0,0.001,close3)
+          CALL ECLOSE(cm(2),4.0,0.001,close4)
+          if(close1)cm(1)=9.
+          if(close2)cm(1)=10.
+          if(close3)cm(1)=10.
+          if(close4)cm(1)=11.
+
+ 146      WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
+          H(1)='Heat delivery may be less than the max. If minimium'
+          H(2)='heating > 0 then heating will continue at a re- '
+          H(3)='duced level even when the setpoint is reached. '
+          CALL EASKS(HOLD,
+     &      ' Max & Min heating cap [W], Heat set pt, throtl range',
+     &      ' for PID control: ',40,' 1000. 0.  20. 1. ',
+     &      'PID max min heat cool',IER,3)
+          K=0
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Min Heat',IER)
+          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat setp',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Throt rng',IER)
+          if(ier.ne.0)goto 146
+
+ 147      WRITE(HOLD,'(2f8.0,2f7.2)')cm(7),cm(8),cm(9),cm(10)
+          H(1)='If you do not wish cooling use a high clg set point.'
+          H(2)='A 0 deg.C cooling setpoint does NOT turn it off. '
+          CALL EASKS(HOLD,
+     &      ' Max & Min cooling cap [W], Cooling set pt, throtl range',
+     &      ' for PID control: ',40,' 1000. 0.  100. 1. ',
+     &      'PID max min cool cool',IER,3)
+          K=0
+          CALL EGETWR(HOLD,K,cm(7),0.,999999.,'F','Max Cool',IER)
+          CALL EGETWR(HOLD,K,cm(8),0.,999999.,'F','Min Cool',IER)
+          CALL EGETWR(HOLD,K,cm(9),-100.,100.,'F','Cool setp',IER)
+          CALL EGETWR(HOLD,K,cm(10),0.,100.,'F','Throt range',IER)
+          if(ier.ne.0)goto 147
+                
+          I2=INT(cm(2))        
+          if(I2.eq.2)then         
+            CALL EASKR(cm(11),' ',' Integral action time [seconds]?',
+     &         1.,'F',0.,'-',1.,' integral action time',IER,0)
+          else if(I2.eq.3)then
+            CALL EASKR(cm(11),' ',' Derivative action time [seconds]?', 
+     &         0.,'F',0.,'-',1.,' derivative action time',IER,0)
+          else if(I2.eq.4)then
+            CALL EASKR(cm(11),' ',' Integral action time [seconds]?',
+     &         1.,'F',0.,'-',1.,' integral action time',IER,0)
+            CALL EASKR(cm(12),' ','Derivative action time [seconds]?',
+     &         0.,'F',0.,'-',1.,' derivative action time',IER,0)
+          endif
+        elseif(IBCLAW(II,JJ,KK).eq.6)then
+
+C Zone - plant connector.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current zone - plant connector data is:')
+            call edisp(iuout,
+     &      ' Supply comp & node, Index, Max Heat W, Mac Cool W')
+            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+            call edisp(iuout,' Extract Cmpt & Var')
+            write(outs,'(2F9.2)') cm(7),cm(8)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+
+          H(1)=' The number of data items required is either '
+          H(2)=' 5 or 7 and depends on whether there is '
+          H(3)=' an extract component (e.g extract fan/duct) :' 
+          H(4)=' 5 items if no extract component; 7 if there is.'
+          H(5)='   - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items (see help) ?',
+     &      5.,'F',7.,'F',7.,'no. of misc data items',IER,5)
+
+          H(1)=' This is the plant component which supplies'
+          H(2)=' the energy to the zone - e.g. a radiator in'
+          H(3)=' a heating system.'          
+          CALL EASKR(cm(2),' ',' Supply plant component (index) ? ',
+     &      0.,'F',0.,'-',1.,' sply plt comp no',IER,3)
+
+          H(1)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(3),' ',' Plant node within supply component ? ',
+     &      0.,'F',0.,'-',1.,'plant node',IER,1)
+          CALL EASKR(cm(4),'  Coupling index',
+     &      ' 1.) mCp(0s-0a) calc, 2.) hrA(0s-0a) ? ',
+     &      1.,'F',2.,'F',1.,'coupling index',IER,1)
+
+C Check if coupling index = 1. If so determine if the most recent
+C zone temperatures should be used when determining the zone 
+C flux (Q=m'Cp(Ts' + Ta)) or if the flux should be calculated
+C using zone temperatures from the previous timestep :
+C (Q=m'Cp(Ts' + Ta'))
+          call eclose(cm(4), 1.0, 0.01,close1)
+          if ( close1 ) then
+            H(1)= ' bps uses a sequential solution method to '
+            H(2)= ' simulate the behavior of the buidling and '
+            H(3)= ' plant systems. The building domain is solved'
+            H(4)= ' first, followed by the plant domain. After '
+            H(5)= ' solution of both domains is complete, the '
+            H(6)= ' results are saved and the simulation moves'
+            H(7)= ' on to the next time step.'
+            H(8)= ' '
+            H(9)= ' Since the plant domain is solved after the '
+            H(10)=' building domain, the building domain solver '
+            H(11)=' must use the plant injection temperature from'
+            H(12)=' the previous timestep when calculating the '
+            H(13)=' amount of heat injected into the zone. Two '
+            H(14)=' methodologies for calculating the amount of '
+            H(15)=' heat injection/extraction:'
+            H(16)=' '
+            H(17)=' 1) Sequential boundry conditions: bps can ' 
+            H(18)='    use the plant boundary conditions from '
+            H(19)='    the previous time step and zone boundary'
+            H(20)='    conditions from the present time step to'
+            H(21)='    solve the zone-side energy balance. This'
+            H(22)='    approach can lead to inequality between'
+            H(23)='    the heat flux injected into the zone and '
+            H(24)='    the amount extracted from the plant, '
+            H(25)='    especially at larger time steps.'
+            H(26)=' 2) Concurrent boundary conditions: bps can '
+            H(27)='    can use the the zone and plant conditions'
+            H(28)='    from the pervious time step to calcuate '
+            H(29)='    the heat injection that prevailed over '
+            H(30)='    the previous timestep, and inject this '
+            H(31)='    into the zone on the current timestep. '
+            H(32)='    This approach ensures that the heat flows'
+            H(33)='    calculated in the building and plant '
+            H(34)='    domains can be reconciled over the '
+            H(35)='    sumulation period'
+            H(36)=' '
+            
+            CALL EASKAB(
+     &        'Zone heat injection calculatuion method?',
+     &        'Options:',
+     &        'Sequential boundary conditions',
+     &        'Concurrent boundary conditions',IW,36)
+
+            if (IW .eq. 2) cm(4) = 5.0
+
+          endif
+          CALL EASKR(cm(5),' ',' Max heating flux (W) ? ',
+     &      0.,'F',0.,'-',1000.,'max heat flux',IER,1)
+          CALL EASKR(cm(6),' ',' Max cooling flux (W) ? ',
+     &      0.,'-',0.,'-',1000.,'max cool flux',IER,1)
+
+          IF(int(cm(1)).EQ.7)THEN
+           H(1)=' This is the plant component which is coupled to'
+           H(2)=' the zone in order to extract air from the zone.'
+           CALL EASKR(cm(7),' ',' Extract plant component ? ',
+     &      0.,'F',0.,'-',1.,' extract plant compt',IER,2)
+
+           CALL EASKR(cm(8),' ',' Extract comp`t node ? ',
+     &      0.,'F',0.,'-',1.,' extract comp`t node ',IER,0)
+          ENDIF
+        elseif(IBCLAW(II,JJ,KK).eq.7)then
+
+C Multi-stage.
+          call edisp(iuout,' Multistage controller:')
+          cm(1)=12.0
+ 148      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,' Heat flux (W): OFF, Stages 1, 2, 3 for',
+     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
+     &      'multistage heating',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Heat OFF',IER)
+          CALL EGETWR(HOLD,K,cm(3),cm(2),999999.,'F','Htstg1',IER)
+          CALL EGETWR(HOLD,K,cm(4),cm(3),999999.,'F','Htstg2',IER)
+          CALL EGETWR(HOLD,K,cm(5),cm(4),999999.,'F','Htstg3',IER)
+          if(ier.ne.0)goto 148
+
+  49      WRITE(HOLD,'(4f8.0)')cm(6),cm(7),cm(8),cm(9)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,' Cooling flux (W): OFF, Stages 1, 2, 3 for',
+     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
+     &      'multistage cooling',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Cool OFF',IER)
+          CALL EGETWR(HOLD,K,cm(7),cm(6),999999.,'F','Clstg1',IER)
+          CALL EGETWR(HOLD,K,cm(8),cm(7),999999.,'F','Clstg2',IER)
+          CALL EGETWR(HOLD,K,cm(9),cm(8),999999.,'F','Clstg3',IER)
+          if(ier.ne.0)goto 49
+
+  50      WRITE(HOLD,'(4f8.2)')cm(10),cm(11),cm(12),cm(13)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &     ' Heating setpoint & deadband, Cooling setpoint & deadband',
+     &     ' for multistage control: ',40,' 18. 2. 100. 2. ',
+     &      'multi setpoints',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(10),-100.,100.,'F','Heat set',IER)
+          CALL EGETWR(HOLD,K,cm(11),0.,10.,'F','Heat dead',IER)
+          CALL EGETWR(HOLD,K,cm(12),-100.,100.,'F','Cool set',IER)
+          CALL EGETWR(HOLD,K,cm(13),0.,10.,'F','Cool dead',IER)
+          if(ier.ne.0)goto 50
+ 
+C If no cooling capacity then set cooling set point to 100C.
+          CALL ECLOSE(cm(7),0.0,0.001,close1)
+          CALL ECLOSE(cm(8),0.0,0.001,close2)
+          CALL ECLOSE(cm(9),0.0,0.001,close3)
+          if(close1.and.close2.and.close3)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' No cooling capacity defined - setting')
+            call edisp(iuout,' the cooling setpoint high (100 deg.C).')
+            cm(12)=100.
+            cm(13)=1.
+          endif
+        elseif(IBCLAW(II,JJ,KK).eq.8)then
+
+C Variable supply temperature with limit constraints.
+          call edisp(iuout,' Variable supply temp controller:')
+          cm(1)=6.0
+  51      WRITE(HOLD,'(2f7.2,f7.3,2f7.2)')cm(2),cm(3),cm(4),cm(5),
+     &        cm(6)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    ' Max & Min supply temp, air flow rate(m^3/sec), heat & cool',
+     &    ' setpoints for variable supply: ',40,
+     &      ' 30.  10.  1.  18.  24. ','var supply',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),-10.,100.,'F','Max suplyt',IER)
+          CALL EGETWR(HOLD,K,cm(3),-10.,100.,'F','Min suplyt',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.  ,999.,'F','air rate',IER)
+          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','heat set',IER)
+          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','cool set',IER)
+          if(ier.ne.0)goto 51
+
+          CALL EASKR(cm(7),' Cooling availability..',
+     &      ' 0.) cooling, 1.) no cooling ? ',
+     &      0.,'F',1.,'F',0.,'cool avail',IER,1)
+        elseif(IBCLAW(II,JJ,KK).eq.9)then
+
+C Heat pipe.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current heat pipe data is:')
+            call edisp(iuout,
+     &' Iter indx, Surf, Out node, In node, Crit T, Max iter, Toler W')
+            write(outs,'(7F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),
+     &        cm(7),cm(8)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+          cm(1)=9.0
+          CALL EASKR(cm(2),' Iteration index',
+     &      ' 0) no iteration,  1) iteration ? ',
+     &      0.,'F',1.,'-',0.,'iteration index',IER,1)
+
+          CALL EASKR(cm(3),' ',' Surface no with heat pipe ? ',
+     &      1.,'F',8.,'F',1.,'surface with heatpipe',IER,1)
+          CALL EASKR(cm(4),' ',' Outer node for heatpipe ? ',
+     &      1.,'F',8.,'F',1.,'outer node',IER,1)
+          CALL EASKR(cm(5),' ',' Inner node for heatpipe ? ',
+     &      1.,'F',8.,'F',2.,'inner node',IER,1)
+          CALL EASKR(cm(6),' ',' Critical temperature ? ',
+     &      -100.,'F',100.,'F',25.,'critical temp',IER,1)
+          CALL EASKR(cm(7),' ',' Maximum no of iterations ? ',
+     &      1.,'F',100.,'F',1.,'max iterations',IER,1)
+          CALL EASKR(cm(8),' ',' Flux difference tolerance ? ',
+     &      1.,'F',1000.,'F',10.,'flux tolerance',IER,1)
+          CALL EASKR(cm(9),' Trace flag...',
+     &    ' 0) no trace, 1) trace ? ',0.,'F',1.,'F',0.,'trace',IER,1)
+        elseif(IBCLAW(II,JJ,KK).eq.10)then
+
+C On-off control.
+          cm(1)=6.0
+  55      WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &      ' Maxiumu heating and cooling capacity for',
+     &      ' separate flux controller: ',40,' 10000. 10000. ',
+     &      ' separate flux capacity',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Cool',IER)
+          if(ier.ne.0)goto 55
+
+  56      WRITE(HOLD,'(4f8.2)')cm(4),cm(5),cm(6),cm(7)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,' Heating ON & OFF, Cooling ON & OFF set-',
+     &     ' points for separate flux control: ',40,' 18. 10. 100. 88.',
+     &      'prop max min set',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Heat ON',IER)
+          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat OFF',IER)
+          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Cool ON',IER)
+          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool OFF',IER)
+          if(ier.ne.0)goto 56
+        elseif(IBCLAW(II,JJ,KK).eq.11)then
+
+C Match temp to a function of multi-sensor values (ideal mode).
+C << this logic is used for the cased of a setpoint temperature
+C << defined in a temporal file.
+          H(1)=' - Refer ESP-r Data Model section 9 '
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current `Ideal Match Temp to Multi-Sen` data:')
+            call edisp(iuout,
+     &     ' Max H W, Min H W, Max C W, Min C W, No. Axy Sen, Sen mode')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+            
+            I6=INT(cm(6))
+            ndx=0
+            if(I6.gt.2) I6=2
+            DO 123 L=1,I6              
+              ndx=8+4*(L-1)
+              call edisp(iuout,' Auxliary Sensor Details')              
+              write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
+             call edisp(iuout,outs)
+             if(INT(cm(7)).eq.4)then
+              ndx=12+(L-1)+4*(I6-1)         
+              write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
+              call edisp(iuout,outs)
+             endif
+123        continue   
+          endif
+
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 10 to 16 and depends on the auxiliary sensor mode' 
+          H(3)=' selected.'
+          H(4)='                                   |no. of| |no. of|'
+          H(5)='          Function                 |aux sn| |items |'
+          H(6)= '---------------------------------------------------'
+          H(7)=' greatest val of aux`y sensors         1       10 '
+          H(8)='   `      `  `    `     `              2       14 '  
+          H(9)=' least val of aux`y sensors            1       10 '
+          H(10)='   `    `  `    `     `               2       14 ' 
+          H(11)=' mean val of aux`y sensors            1       10 '
+          H(12)='   `   `  `    `     `                2       14 '
+          H(13)=' weighting of aux`y sensors           2       16 '
+          H(14)=' '
+          H(15)='plus 1 item for scaling factor (i.e. a % offset)'
+          H(16)='plus 1 item for offset factor (absolute offset) '
+          H(17)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ',
+     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,17)
+
+  53      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='Heat delivery is normally set high so that the '
+          H(2)='target temperature is attained. The heating minimum '
+          H(3)='is normally 0 but if > 0 then heating will continue'
+          H(4)='at the minimum even when the temperature is'
+          H(5)='reached. '
+          H(6)='In the unlikely event that you want to control to'
+          H(7)='another temperature but allow no cooling capacity '
+          H(8)='the control may not work properly.'
+          CALL EASKS(HOLD,
+     &      ' Max & Min heat capacity, Max & Min cool capacity for',
+     &      ' matching another temp: ',40,' 10000. 0. 10000. 0. ',
+     &      ' track another max min heat cool',IER,8)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Max Cool',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,999999.,'F','Min Cool',IER)
+          if(ier.ne.0)goto 53
+
+          H(1)=' At present, this is limited to 2 auxiliary sensors'
+          H(2)=' which may be located outside or in other zone(s).'
+          CALL EASKR(cm(6),' ',' No of auxiliary sensors ? ',
+     &      0.,'F',2.,'F',1.,'no. of auxiliary sensors',IER,2)
+
+          H(1)=' The sensor modes options are:'
+          H(2)=' 1: (ref sensor)-(greatest value of aux sensors)' 
+          H(3)=' 2: (ref sensor)-(least value of aux sensors)'
+          H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
+          H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
+          CALL EASKR(cm(7),' ',' Multi-sensor mode ? ',
+     &      1.,'F',4.,'F',0.,' multi-sensor mode',IER,5)
+          
+C Auxiliary sensor details,
+          I6=INT(cm(6))  
+          H(1)='The sensor details are essentially the same as '
+          H(2)='required in a control point sensor ie. '
+          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(4)='   = -1 measuring plant component,  '
+          H(5)='   = -2 measuring mix air:radiant,'
+          H(6)='   = -3 ambient where the 2nd item is:'
+          H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
+          H(8)='        3 = wind dir, 4 = diffuse rad, '
+          H(9)='        5 = direc norm rad, 6 = RH'
+          h(10)=' '
+          H(11)=' - Refer ESP-r Data Model section 9 '
+          DO 125 L=1,I6
+            ndx=8+4*(L-1)
+            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
+     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,13)
+            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,13)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,13)          
+            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,13)
+125       continue          
+          
+          I7=INT(cm(7))
+          if(I7.eq.4)then
+           DO 126 L=1,I6
+C Weighted auxiliary sensors mode,
+            ndx=12+(L-1)+4*(I6-1)         
+            H(1)=' The sensor weightings must total exactly 100.0'
+            CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
+     &        0.,'F',100.,'F',50.,' Aux sensor weighting',IER,1)
+126        continue
+          endif
+
+C At end of data add in scaling factor and offset.
+          H(1)=' The sensor weightings must total exactly 100.0'
+          CALL EASKR(cm(ndx+1),' ',' Scaling factor ? ',
+     &        0.,'F',10.,'F',1.,' scaling factor',IER,1)
+          H(1)=' The sensor weightings must total exactly 100.0'
+          CALL EASKR(cm(ndx+1),' ',' Offset factor ? ',
+     &        0.,'F',10.,'F',1.,' offset factor',IER,1)
+        elseif(IBCLAW(II,JJ,KK).eq.12)then
+
+C Match temp to a function of multi-sensor values (on-off mode).
+          H(1)=' - Refer ESP-r Data Model section 9 '
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current `Ideal Match Temp to Multi-Sen` data:')
+            call edisp(iuout,
+     &  ' Max Htg W, Max Clg W, Htg Dif, Clg Dif,No. Axy Sen, Sen mode')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+            
+            I6=INT(cm(6))
+            DO 133 L=1,I6              
+              ndx=8+4*(L-1)
+              call edisp(iuout,' Auxiliary Sensor Details')
+              write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
+              call edisp(iuout,outs)
+              if(INT(cm(7)).eq.4)then
+                ndx=12+(L-1)+4*(I6-1)         
+                write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
+                call edisp(iuout,outs)
+             endif
+133        continue   
+          endif
+
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 10 to 16 and depends on the auxiliary sensor mode' 
+          H(3)=' selected.'
+          H(4)='                                   |no. of| |no. of|'
+          H(5)='          Function                 |aux sn| |items |'
+          H(6)= '---------------------------------------------------'
+          H(7)=' greatest val of aux`y sensors         1       10 '
+          H(8)='   `      `  `    `     `              2       14 '  
+          H(9)=' least val of aux`y sensors            1       10 '
+          H(10)='   `    `  `    `     `               2       14 ' 
+          H(11)=' mean val of aux`y sensors            1       10 '
+          H(12)='   `   `  `    `     `                2       14 '
+          H(13)=' weighting of aux`y sensors           2       16 '
+          H(14)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ',
+     &      10.,'F',16.,'F',10.,'no. of misc data items',IER,14)
+
+ 153      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='Heat delivery is normally set high so that the '
+          H(2)='target temperature is attained. The heating minimum '
+          H(3)='is normally 0 but if > 0 then heating will continue'
+          H(4)='at the minimum even when the temperature is'
+          H(5)='reached. '
+          H(6)='In the unlikely event that you want to control to'
+          H(7)='another temperature but allow no cooling capacity '
+          H(8)='the control may not work properly.'
+          CALL EASKS(HOLD,
+     &      ' Max & Min heat capacity, Max & Min cool capacity for',
+     &      ' matching another temp: ',40,' 10000. 0. 10000. 0. ',
+     &      ' track another max min heat cool',IER,8)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Max Cool',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,999999.,'F','Min Cool',IER)
+          if(ier.ne.0)goto 153
+
+          H(1)=' At present, this is limited to 2 auxiliary sensors'
+          H(2)=' which may be located outside or in other zone(s).'
+          CALL EASKR(cm(6),' ',' No of auxiliary sensors ? ',
+     &      0.,'F',2.,'F',1.,'no. of auxiliary sensors',IER,2)
+
+          H(1)=' The sensor modes options are:'
+          H(2)=' 1: (ref sensor)-(greatest value of aux sensors)' 
+          H(3)=' 2: (ref sensor)-(least value of aux sensors)'
+          H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
+          H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
+          CALL EASKR(cm(7),' ',' Multi-sensor mode ? ',
+     &      1.,'F',4.,'F',0.,' multi-sensor mode',IER,5)
+
+C Auxiliary sensor details,
+          I6=INT(cm(6))          
+          H(1)='The items are essentially the same as required in a'
+          H(2)=' control point sensor. '
+          DO 135 L=1,I6
+            ndx=8+4*(L-1)
+            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
+     &        -3.,'F',0.,'-',0.,' Aux sen detail 1st item',IER,2)
+            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,2)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,2)
+            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,2)
+135       continue 
+
+          I7=INT(cm(7))
+          if(I7.eq.4)then
+           DO 136 L=1,I6
+
+C Weighted auxiliary sensors mode,   
+            ndx=12+(L-1)+4*(I6-1)
+            H(1)=' The sensor weightings must total exactly 100.0'
+            CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
+     &       0.,'F',100.,'F',50.,' Aux sensor weighting',IER,1)
+136        continue
+          endif 
+        elseif(IBCLAW(II,JJ,KK).eq.13)then
+
+C Time-proportioning on-off control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,'time-proportioning on-off control data:-')
+            call edisp(iuout,' Max Htg Cap W, Max Clg Cap W,
+     & Htg ON set-pt deg.C, Htg OFF set-pt deg.C, Clg ON set-pt deg.C, 
+     & Clg OFF set-pt deg.C')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+            call edisp(iuout,' Tot htg time mins, Min htg ON mins,
+     & Min htg OFF mins, Tot clg time mins, Min clg ON mins, 
+     & MIn clg OFF mins')     
+            write(outs,'(6F9.2)')cm(8),cm(9),cm(10),cm(11),
+     &        cm(12),cm(13)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+
+          cm(1)=12.
+          H(1)='Data items are in the order of the display. See the'
+          H(2)='tutorial for more information.'
+          do 29 MM=2,13
+            write(outs,'(A,I3)')' time-proportioning on-off item ',MM-1
+            CALL EASKR(cm(MM),outs,' value: ',
+     &        0.,'-',0.,'-',1.,'miscel data',IER,2)
+  29      continue
+        elseif(IBCLAW(II,JJ,KK).eq.14)then
+
+C Floating (`three-position') control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')   
+            call edisp(iuout,' Floating `3-position` control data is:')
+            call edisp(iuout,' Htg set-pt, Htg db, Htg shut diff, Htg
+     & open diff, Clg set-pt ')
+            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6) 
+            call edisp(iuout,outs)
+            call edisp(iuout,' Clg db, Clg open diff, Clg shut diff, 
+     & Max htg W, Min htg W')
+            write(outs,'(5F9.2)')cm(7),cm(8),cm(9),cm(10),cm(11)
+            call edisp(iuout,outs)
+            call edisp(iuout,'ROC htg, Max clg W, Min clg W, ROC clg')
+           write(outs,'(4F9.2)')cm(12),cm(13),cm(14),cm(15)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+
+          cm(1)=14.
+          H(1)=' The rate of change of heating & cooling (items 11 &' 
+          H(2)=' 14) are in terms of building time-steps.'
+          H(3)=' Data requested:   (deg.C)'
+          H(4)=' Heating set-point, deadband, upper & lower diff'
+          H(5)=' Cooling set-point, deadband, upper & lower diff'
+          H(6)=' Max & Min heating capacity (W) '
+          H(7)=' Rate of change of heating  '
+          H(8)=' Max & Min cooling capacity (W) '
+          H(9)=' Rate of change of cooling  '
+          H(10)=' - Refer ESP-r Data Model section 9 '
+          do 31 MM=2,15
+            write(outs,'(A,I3)')' 3-position Item ',MM-1
+            CALL EASKR(cm(MM),outs,' value: ',
+     &        0.,'-',0.,'-',1.,'miscel data',IER,10)
+  31      continue
+        elseif(IBCLAW(II,JJ,KK).eq.15)then
+
+C Logic Optimum Start Controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Logic Optimum Start control data is:')
+            call edisp(iuout,' Htg cpcy, Set pt, Temp Diff, DTOA,
+     & Min time diff, Init. Guess Opt.')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+            
+            I7=INT(cm(7))
+            IF(I7.EQ.1)THEN
+              call edisp(iuout,' Init. Guess')
+              write(outs,'(1F9.2)')4.
+            ELSEIF(I7.EQ.2)THEN
+              call edisp(iuout,' Init. Guess')
+              write(outs,'(1F9.2)')cm(8)
+            ELSEIF(I7.EQ.3)THEN
+              call edisp(iuout,' B&J Cofts.')
+              write(outs,'(3F9.2)')cm(8),cm(9),cm(10)
+            ENDIF
+          endif
+
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 6 to 8 and depends on the initial guess selected:'
+          H(3)=' If initial guess user-defined  - 6 items required;'
+          H(4)=' If Birtles & John Eqn. estimate - 8 items rqd.' 
+          H(5)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ?',
+     &      6.,'F',8.,'F',6.,'no. of misc data items',IER,5)
+          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
+     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
+          CALL EASKR(cm(3),' ',' Heating set-point [deg.C] ? ',
+     &      -100.,'F',100.,'F',20.,' htg set-point',IER,0)
+          CALL EASKR(cm(4),' ',' Temp differential ? ',
+     &      0.,'F',0.,'-',2.,'temp diffnl',IER,0)
+          CALL EASKR(cm(5),' ',' Desired time of arrival (DTAO) ? ',
+     &      0.,'F',0.,'-',4.,' DTOA',IER,0)
+
+          H(1)=' If the difference between successive estimates is'
+          H(2)=' less then the `Min. Time Diff`, then the earliest'
+          H(3)=' time is accepted as the `Optimum Start Time`.'
+          CALL EASKR(cm(6),' ',' Min time diff. ? ',
+     &      0.,'F',0.,'-',0.1,' Min time diff.',IER,3)
+
+          H(1)=' The initial guess may be one of the following'
+          H(2)=' 3 options:-'
+          H(2)=' 1 = Default of 4.00 a.m.;'
+          H(3)=' 2 = User-Defined time;'
+          H(4)=' 3 = Birtles & John Eqn. estimate.'
+          CALL EASKR(cm(7),' ',' Initial Guess ? ',
+     &      0.,'F',3.,'-',1.,' Initial Guess',IER,4)
+
+          I7=INT(cm(7))
+          IF(I7.EQ.1)THEN
+             cm(8)=4.
+          ELSEIF(I7.EQ.2)THEN
+             CALL EASKR(cm(8),' ',' Initial Guess ? ',
+     &       0.,'F',24.,'F',4.,'Initial Guess',IER,0)
+          ELSEIF(I7.EQ.3)THEN
+             CALL EASKR(cm(8),' ',' B&J Eqn 1st Coeft ? ',
+     &       0.,'-',0.,'-',1.,'B&J Eqn 1st Coeft ',IER,0)
+             CALL EASKR(cm(9),' ',' B&J Eqn 2nd Coeft ? ',
+     &       0.,'-',0.,'-',1.,'B&J Eqn 2nd Coeft ',IER,0)
+             CALL EASKR(cm(10),' ',' B&J Eqn 3rd Coeft ? ',
+     &       0.,'-',0.,'-',1.,'B&J Eqn 3rd Coeft ',IER,0)
+          ENDIF
+        elseif(IBCLAW(II,JJ,KK).eq.16)then
+
+C Logic Optimum Stop Controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current Logic Stop controller data is:')
+            call edisp(iuout,
+     &      ' Htg cpy, Clg cpy, Htg Set pt, Clg Set pt, Dsrd temp')
+            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+            call edisp(iuout,' Throt rng, Occy Dep, Tim Dif, Init Gues')
+            write(outs,'(4F9.2)')cm(7),cm(8),cm(9),cm(10)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+
+          cm(1)=9.0
+          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
+     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
+          CALL EASKR(cm(3),' ',' Maximum cooling capacity (W) ? ',
+     &      0.,'F',0.,'-',1000.,' max clg capacity',IER,0)
+          CALL EASKR(cm(4),' ',' Htg Set pt ? ',
+     &      0.,'F',0.,'-',20.,' Htg Set pt',IER,0)
+          CALL EASKR(cm(5),' ',' Clg Set pt ? ',
+     &      0.,'F',0.,'-',20.,' Clg Set pt',IER,0)
+
+          H(1)=' Desired temp is minimum temp at occupancy dept time'
+          CALL EASKR(cm(6),' ',' Desired temp ? ',
+     &      0.,'F',0.,'-',20.,' Desired temp',IER,1)
+          CALL EASKR(cm(7),' ',' Throtl range ? ',
+     &      0.,'F',0.,'-',2.,' Throtl range',IER,0)
+          CALL EASKR(cm(8),' ',' Occpy dept time ? ',
+     &      0.,'F',0.,'-',17.,' Occpy dept time',IER,0)
+
+          H(1)=' If the difference between successive estimates is'
+          H(2)=' less then the `Min. Time Diff`, then the latest'
+          H(3)=' time is accepted as the `Optimum Stop Time`.'
+          H(4)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(9),' ',' Min time diff ? ',
+     &      0.,'F',0.,'-',0.1,' Min time diff',IER,4)
+          CALL EASKR(cm(10),' ',' Initial Guess ? ',
+     &      0.,'F',24.,'F',0.1,' Initial Guess',IER,0)
+        elseif(IBCLAW(II,JJ,KK).eq.17)then
+
+C Fuzzy Logic PI-PD Controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current Fuzzy Logic controller data is:')
+            call edisp(iuout,
+     &      ' Ref data set, Ctl mode, Set pt, Defuz meth')
+            write(outs,'(4F9.2)')cm(2),cm(3),cm(4),cm(5)
+            call edisp(iuout,outs)
+            call edisp(iuout,' Scale(err), Scale(err rate), Scale(o/p)')
+            write(outs,'(4F9.2)')cm(6),cm(7),cm(8)
+            call edisp(iuout,outs)
+            call edisp(iuout,' ')
+          endif
+
+          cm(1)=7.0
+
+          H(1)=' Reference must be made to a fuzzy data set.'
+          H(2)=' A fuzzy data set holds all the information about'
+          H(3)=' the fuzzy membership functions. At least one such '
+          H(4)=' set MUST exist if this control law is to used.'
+          H(5)=' The data set is currently input by external'
+          H(6)=' editorial facility.'
+          H(7)=' Refer ESP-r Data Model section 9'
+          CALL EASKR(cm(2),' ',' Referenced data set ? ',
+     &      0.,'F',20.,'F',1.,' Ref data set',IER,7)
+
+          H(1)=' The control mode nay be one of the following:'
+          H(2)=' 1:= Fuzzy logic PI control;'
+          H(3)=' 2:= Fuzzy logic PD control.'
+          H(4)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(3),' ',' Control Mode ? ',
+     &      1.,'F',2.,'F',1.,' Ctl mode',IER,4)
+
+          CALL EASKR(cm(4),' ',' Set point ? ',
+     &    -100.,'F',100.,'F',20.,' Set point',IER,0)
+
+          H(1)=' There is a choice of two defuzzification methods:'
+          H(2)=' 1:= Mean-of-Max method;'
+          H(3)=' 2:= Centre-of-Area method.'
+          CALL EASKR(cm(5),' ',' Defuzzification method ? ',
+     &      1.,'F',2.,'F',1.,' Defuz method',IER,3)
+
+          H(1)=' This is used to tune the controller'
+          CALL EASKR(cm(6),' ',' Error scale ? ',
+     &    -100.,'F',100.,'F',1.,' Error Scale',IER,1)
+
+          CALL EASKR(cm(7),' ',' Change of Error scale ? ',
+     &    -100.,'F',100.,'F',1.,' Change of Error Scale',IER,1)
+
+          CALL EASKR(cm(8),' ',' Output scale ? ',
+     &    -100.,'F',100.,'F',1.,' Output Scale',IER,1)
+        elseif(IBCLAW(II,JJ,KK).eq.18)then
+
+C Null controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Null controller has no data.')
+            call edisp(iuout,' ')
+          endif
+          cm(1)=0.0
+        elseif(IBCLAW(II,JJ,KK).eq.19)then
+
+C Ideal multi-sensor heating/cooling controller.
+C First 7 data-items are equal to basic controller above.
+          H(1)=' - Refer ESP-r Data Model section 9 '
+          call edisp(iuout,' Ideal multi-sensor controller:')
+          cm(1)=6.0
+ 243      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+          H(1)='Heat delivery may be less than the max. If minimium'
+          H(2)='heating > 0 then heating will continue at a re- '
+          H(3)='duced level even when the setpoint is reached. '
+          CALL EASKS(HOLD,' Max & Min heat capacity, Max & Min cool ',
+     &      ' capacity for basic control: ',40,' 1000. 0. 1000. 0. ',
+     &      'max min heat cool',IER,3)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Max Cool',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,999999.,'F','Min Cool',IER)
+          if(ier.ne.0)goto 243
+
+ 244      WRITE(HOLD,'(2f8.2)')cm(6),cm(7)
+          H(1)='If you do not wish cooling use a high set point. '
+          H(2)='A 0 deg.C setpoint does NOT turn it off. '
+          CALL EASKS(HOLD,' Heating & cooling setpoints:',
+     &      '  ',40,' 20. 24. ','heat cool setpoints',IER,2)
+          K=0
+          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Heat setp',IER)
+          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool setp',IER)
+          if(ier.ne.0)goto 244
+
+C If no cooling capacity then set cooling set point to 100C.
+          CALL ECLOSE(cm(4),0.0,0.001,close1)
+          CALL ECLOSE(cm(5),0.0,0.001,close2)
+          if(close1.and.close2)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' No cooling capacity defined - setting')
+            call edisp(iuout,' the cooling to (100 deg.C).')
+            cm(7)=100.
+          endif
+
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current `Ideal multi-sensor controller` data:')
+            call edisp(iuout,
+     &     ' No. Aux Sen')
+            write(outs,'(1F9.2)')cm(8)
+            call edisp(iuout,outs)
+            
+            I8=INT(cm(8))
+            DO 140 L=1,I8              
+              ndx=8+6*(L-1)
+              call edisp(iuout,' Auxiliary Sensor Details')
+              write(outs,'(6F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),
+     &                             cm(ndx+3),cm(ndx+4),cm(ndx+5)
+              call edisp(iuout,outs)
+140         continue   
+          endif
+
+          H(1)=' The max number of auxiliary sensors is MSEN'
+          H(2)=' '
+          H(3)=' The number of data items = 7 + 6 * no. of sensors'
+          H(4)=' For each auxiliary sensor, 6 items are needed:'
+          H(5)=' 4 for the sensor location, followed by the'
+          H(6)=' heating set-point and cooling set-point for'
+          H(7)=' that auxiliary sensor'
+          H(8)=' - Refer ESP-r Data Model section 9 '
+
+          I8=int(cm(8))
+          CALL EASKI(I8,' ',' No. of aux sensors ',
+     &      0,'F',MSEN,'F',3,'no. of aux sensors',IER,8)
+          cm(1)=7.+6.*I8
+          cm(8)=float(I8)
+
+C Auxiliary sensor details,
+          H(1)='The sensor details are essentially the same as '
+          H(2)='required in a control point sensor ie. '
+          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(5)='   = -2 measuring mix air:radiant,'
+          H(6)='   = -3 ambient where the 2nd item is:'
+          H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
+          H(8)='        3 = wind dir, 4 = diffuse rad, '
+          H(9)='        5 = direc norm rad, 6 = RH'
+          H(10)=' '
+          H(11)='This data is followed - per sensor - by the'
+          H(12)='heating set-point and cooling set-point for'
+          H(13)='that auxiliary sensor.'
+          H(14)=' '
+          H(15)=' - Refer ESP-r Data Model section 9 '
+          DO 141 L=1,I8
+            ndx=9+6*(L-1)
+            call edisp(iuout,' ')
+            WRITE(outs,'(a,i2,a)')' For aux sensor ',L,' define....'
+            call edisp(iuout,outs)
+            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
+     &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,15)
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,15)
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,15)
+            CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,15)
+
+            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,15)
+
+            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,15)
+141       continue
+ 
+        elseif(IBCLAW(II,JJ,KK).eq.20)then
+
+C Latent/evaporative source, see bcl20 for details.
+          mode=int(cm(2))
+          Abasin=cm(3)
+          alpha= cm(4)
+          alphar= cm(5)    
+          tbas=  cm(6) 
+          tbasex= cm(7) 
+          fsupply= cm(8) 
+          tsupply= cm(9)   
+          abasw= cm(10)  
+          ubasw= cm(11) 
+
+
+C Ask for data.
+          h(1)='A wetted surface can either be a wet opaque surface '
+          h(2)='in the zone or the floor of the zone can' 
+          h(3)='contain a swimming pool, some additional data is '
+          h(4)='required from user for this option.'
+          CALL EASKAB('Wetted surface options:',' ',
+     &    'Wet opaque surface','Swimming pool surface',IW,4)
+          mode = IW-1
+          if(mode.eq.0)then
+C Surface area and HTC picked up from ESP-r
+            cm(1)=1.0
+            cm(2)=0.0
+          elseif(mode.eq.1)then
+            h(1)='You have chosen to incorporate a swimming pool model'
+            h(2)='into this zone. This requires that 1) the floor' 
+            h(3)='internal convective heat transfer coefficient and '  
+            h(4)='emissivity are set to small values (i.e. 0.001) '
+            h(5)='and that 2) the exte27nal boundary condition is set '
+            h(6)='to adiabatic. Please do this after defining the pool' 
+            h(7)='data.'
+            call phelpd('pool control help',7,'-',0,0,IER)       
+            h(1)='Data requirements: '
+            h(2)=' 1) pool surface area m^2'
+            h(3)=' 2) pool surface convective htc W/m^2K'
+            h(4)=' 3) pool surface radiative htc W/m^2K'
+            h(5)=' 4) pool set point temperature degC'
+            h(6)=' 5) surrounding ground temperature degC'
+            h(7)=' 6) pool water supply rate kg/s'
+            h(8)=' 7) pool water supply temperature degC'
+            h(9)= ' 8) submerged wall surface area m^2'
+            h(10)= ' 9) submerged wall surface U-value W/m^2'
+
+            write(hold,'(3(f10.4,2X))') Abasin,alpha,alphar
+            CALL EASKS(HOLD,'Pool surface area(m^2), convective and',
+     &        'radiant heat trans coefts (W/m^2.K)',40,
+     &        '100.0   1.5   5.1',
+     &        ' surf area and coefts',IER,2)
+            K=0
+            CALL EGETWR(HOLD,K,Abasin,0.,9999.,'W','Abasin',IER)
+            CALL EGETWR(HOLD,K,alpha,0.,99.,'W','alpha',IER)
+            CALL EGETWR(HOLD,K,alphar,0.,99.,'W','alphar',IER)
+            cm(1)=10.0
+            cm(2)=1.0
+            cm(3)=Abasin
+            cm(4)=alpha
+            cm(5)=alphar
+            write(hold,'(2(f10.4,2X))') tbas,tbasex
+            CALL EASKS(HOLD,'Pool temperature and ground temperature',
+     &        '(degC)',40,
+     &        '27.0 12.0',
+     &        ' pool and ground temperatures',IER,2)
+            K=0
+            CALL EGETWR(HOLD,K,tbas,0.,99.,'W','tbas',IER)
+            CALL EGETWR(HOLD,K,Tbasex,0.,99.,'W','tbasex',IER)
+            cm(6)=tbas
+            cm(7)=tbasex
+            write(hold,'(2(f10.4,2X))') fsupply,tsupply
+            CALL EASKS(HOLD,'water supply rate (kg/s), water supply ',
+     &        'temp (degC)',40,
+     &        '5.0 25.0',
+     &        ' water data ',IER,2)   
+            k=0
+            CALL EGETWR(HOLD,K,fsupply,0.,9999.,'W','fsupply',IER)
+            CALL EGETWR(HOLD,K,tsupply,0.,9999.,'W','tsupply',IER)
+            cm(8)=fsupply
+            cm(9)=tsupply  
+            write(hold,'(2(f10.4,2X))') abasw,ubasw
+            CALL EASKS(HOLD,'submerged wall surface area (m^2), ',
+     &        'submerged wall U-value (W/m^2K)',40,
+     &        '100.0 0.3',
+     &        ' water data ',IER,2)   
+            k=0
+            CALL EGETWR(HOLD,K,abasw,0.,9999.,'W','abasw',IER)
+            CALL EGETWR(HOLD,K,ubasw,0.,9999.,'W','ubasw',IER)
+            cm(10)=abasw
+            cm(11)=ubasw                     
+          endif
+        
+        elseif(IBCLAW(II,JJ,KK).eq.21)then
+ 
+C Slave Capacity Controller
+          call edisp(iuout,' Slave controller:')
+          cm(1)=3.0
+  101     WRITE(HOLD,'(i5,2f8.0)') int(cm(2)),cm(3),cm(4)
+          H(1) ='Proportional capacity slave controller. Typically a'
+          h(2) ='a slave control is used to represent an environmental'
+          h(3) ='control with a thermostat in one zone and actions in'
+          h(4) ='a number of zones. Example: a residentail AC system'
+          H(5) ='with a central fan delivering to several zones.'
+          H(6) =' '
+          H(7) ='Flux is delivered to slave control when required by'
+          H(8) ='master control, at same % of base (max) capacity.'
+          H(9) =' '
+          H(10)='You are asked for three values:'
+          H(11)='  - index of control loop associated with the'
+          H(12)='    master control (which currently must be a'
+          H(13)='    basic ideal controller or a free float control).'
+          h(14)='  - base (maximum) heating capacity for slave'
+          H(15)='  - base (maximum  cooling capacity for slave.'
+          H(16)=' '
+          h(17)='Procedure - first create the master control loop'
+          h(18)='and then create slave controls. Test the controls'
+          h(19)='to ensure the scheme is balanced.'
+
+          CALL EASKS(HOLD,' Index of master control loop, base heat &',
+     &      ' cooling capacity for slave control (W): ',40,
+     &      ' 1 1000. 1000. ',' mas/slv base heat cool',IER,19)
+          K=0
+          rncf = real(ncf)
+          CALL EGETWR(HOLD,K,cm(2),1.,rncf,'W','master loop indx',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Base Heat',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Base Cool',IER)
+          if(ier.ne.0)goto 101
+        else
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKI(NITEMS,' ',' No of control law data items ?',
+     &      0,'F',MISC,'F',1,'control law data items',IER,1)
+          cm(1)=FLOAT(NITEMS)
+          if(NITEMS.GT.0)then
+            do 33 MM=2,NITEMS+1
+              write(outs,'(A,I3)')' Item ',MM-1
+              CALL EASKR(cm(MM),outs,' value: ',
+     &          0.,'-',0.,'-',1.,'miscel data',IER,1)
+  33        continue
+          endif
+        endif  
+
+C Extract from working array to bmiscd() common structure
+        call extrctl(0,II,JJ,KK)
+        call usrmsg(' ',' ','-')
+      ELSE
+        IVERT=-1
+        GOTO 92
+      ENDIF
+      IVERT=-4
+      call usrmsg(' ',' ','-')
+      GOTO 92
+
+ 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+      return
+      END
+
+C *********** EPCNTRL
+C Edit plant control function II.
+      SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
+#include "building.h"
+#include "plant.h"
+#include "DG_controller_include.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+
+      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
+     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
+     &       pmiscd(mcl,mpcdt,mpcdp,misc)
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+      DIMENSION SALT(41),IVALS(41),PSALT(11),IPVALS(11)
+      CHARACTER*84 VERT(20)
+
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,PSALT*40,KEY*1
+      character outsa*84,outsb*84,outsc*84
+      CHARACTER hold*60
+      logical close1
+
+
+C Number of plant loops and day type must be > 0.
+      IF(II.LE.0.OR.IV.LE.0)RETURN
+
+C Control day types.
+      J=IV
+      JJ=J
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
+      WRITE(vert(2),'(a,i3)')     ' number of periods:',NPCDP(II,JJ)
+      WRITE(vert(3),'(a)') ' ________________________________________'
+      WRITE(vert(4),'(a)')
+     &' per| start|sensed  |actuated | control law     | data'
+      WRITE(vert(5),'(a)')
+     &' no.| time |property|property |                 |     '
+      LL=NPCDP(II,JJ)
+
+C Generate menu entry for each period in day type.
+      m=5
+      DO 90 KP=1,LL
+        KK=KP
+        m=m+1
+        call stfctl(1,II,JJ,KK)
+        CALL EVCNTRL(1,II,JJ,KK,'T',SSTR)
+        CALL EVCNTRL(1,II,JJ,KK,'L',TMP)
+        NITEMS=INT(cm(1))
+        WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
+        outsb=' '
+        outsc=' '
+        if(NITEMS.gt.0)then
+          if(NITEMS.LE.9)then
+            write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
+          else
+            write(outsb,'(9F9.1)')(cm(L),L=2,10)
+          endif
+          call SDELIM(outsb,outsc,'S',IW)
+        endif
+        CALL EMKEY(M-5,KEY,IER)
+        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
+     &    outsa(1:47),outsc(1:34)
+  90  continue
+      m=m+1
+      WRITE(vert(m),'(a)') ' ________________________________________'
+      m=m+1
+      WRITE(vert(m),'(a)') '* add/ delete a period '
+      m=m+1
+      WRITE(vert(m),'(a)') '? help '
+      m=m+1
+      WRITE(vert(m),'(a)') '- exit  '
+      mvert=m
+
+C Help text for this menu.
+      h(1) ='A number of control periods can be defined for each'
+      h(2) ='control day type. Each period has a start time (i.e.'
+      h(3) ='they do not overlap), a sensed property, an actuated'
+      h(4) ='property, a control law and miscel. data which defines'
+      h(5) ='capacity, setpoints, etc.'
+      h(6) ='  '
+      h(7) ='Note: if no change required in an item then accept the'
+      h(8) ='current value.'
+
+C Now display the menu.
+      CALL EMENU('Control periods',VERT,MVERT,IVERT)
+      if(IVERT.EQ.mvert)then
+        return
+      elseif(IVERT.EQ.mvert-1)then
+
+C Explanation
+        CALL PHELPD('control period help',8,'-',0,0,IER)
+      elseif(IVERT.EQ.mvert-2)then
+
+C Add or delete a period.
+        h(1)='Periods are added to the end of the list. '
+        CALL EASKABC('Options:',' ',
+     &    'add period','delete period','continue',iad,1)
+        if(iad.eq.1)then
+          call addctldp(1,II,JJ,'A',iier)
+        elseif(iad.eq.2)then
+          call addctldp(1,II,JJ,'D',iier)
+        endif
+        goto 92
+      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
+
+C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
+C stuff into working common array 'cm' for editing.  At end
+C of if:elseif:else recover.
+        KK=IVERT-5
+        call stfctl(1,II,JJ,KK)
+        NITEMS=INT(cm(1))
+        if(NITEMS.gt.0)then
+          WRITE(outs,'(a,i3,a)')' For period',KK,' current data is...'
+          call edisp(iuout,outs)
+          if(NITEMS.LE.13)then
+            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+          else
+            write(outs,'(13F9.1)')(cm(L),L=2,13)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+            if(NITEMS.LE.26)then
+              write(outs,'(13F9.1)')(cm(L),L=14,NITEMS)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            else
+              write(outs,'(13F9.1)')(cm(L),L=14,26)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            endif
+          endif
+        else
+          WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
+          call edisp(iuout,outs)
+        endif
+
+        SALT(1)= 'senses dry bulb           actuates flux'
+        SALT(2)= 'senses dry bulb           actuates flow'
+        SALT(3)= 'senses enthalpy           actuates flux'
+        SALT(4)= 'senses enthalpy           actuates flow'
+        SALT(5)= 'senses 1st ph mass flow   actuates flux'
+        SALT(6)= 'senses 1st ph mass flow   actuates flow'
+        SALT(7)= 'senses 2nd ph mass flow   actuates flux'
+        SALT(8)= 'senses 2nd ph mass flow   actuates flow'
+        SALT(9)= 'senses adl plant output   actuates flux'
+        SALT(10)='senses adl plant output   actuates flow'
+        SALT(11)='senses RH                 actuates flux'
+        SALT(12)='senses RH                 actuates flow'
+        SALT(13)='senses dry bulb       actuates variable'
+        SALT(14)='senses enthalpy       actuates variable'
+        SALT(15)='senses 1st ph flow    actuates variable'
+        SALT(16)='senses 2nd ph flow    actuates variable'
+        SALT(17)='senses plant output   actuates variable'
+        SALT(18)='senses RH             actuates variable'
+        SALT(19)='senses dry bulb     actuates mass ratio'
+        SALT(20)='senses enthalpy     actuates mass ratio'
+        SALT(21)='senses 1st ph flow  actuates mass ratio'
+        SALT(22)='senses 2nd ph flow  actuates mass ratio'
+        SALT(23)='senses plant o/p    actuates mass ratio'
+        SALT(24)='senses RH           actuates mass ratio'
+        SALT(25)='senses temp diff          actuates flow'
+        SALT(26)='senses abs temp diff      actuates flow'
+        SALT(27)='senses pressure           actuates flow'
+        SALT(28)='senses press diff         actuates flow'
+        SALT(29)='senses abs press diff     actuates flow'
+        SALT(30)='senses abs mass flow      actuates flow'
+        SALT(31)='senses wind speed         actuates flow'
+        SALT(32)='senses wind direction     actuates flow'
+        SALT(33)='senses dir nor sol rad    actuates flow'
+        SALT(34)='senses dif hor sol rad    actuates flow'
+        SALT(35)='senses ext rel hum        actuates flow'
+        SALT(36)='senses wind speed         actuates flux'
+        SALT(37)='senses wind direction     actuates flux'
+        SALT(38)='senses dir nor sol rad    actuates flux'
+        SALT(39)='senses dif hor sol rad    actuates flux'
+        SALT(40)='senses ext rel hum        actuates flux'
+        SALT(41)='senses contaminant conc   actuates flow'
+
+        call edisp(iuout,' Current controller type: ')
+        call edisp(iuout,SALT(IPCTYP(II,JJ,KK)+1))
+        IX=1
+        H(1)='See ESP-r Data Model section 9 for details. '
+        H(2)='Broadly, you want to select based on what is to'
+        H(3)='be actuated and what is being sensed. This information'
+        H(4)='will be used later when setting the control actions.'
+        CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
+     &         40,41,SALT,'controller type',IER,4)
+        if(ix.ne.0)IPCTYP(II,JJ,KK)=IVALS(1)-1
+        ictyp=IPCTYP(II,JJ,KK)
+
+C Plant contol law.
+        PSALT(1)= 'Period switch off control'
+        PSALT(2)= 'P,PI,PID for type 0,2,4,6,8,10 controlr'
+        PSALT(3)= 'P,PI,PID for type 1,3,5,7,9,11 controlr'
+        PSALT(4)= 'Proportional action for type 12-17 cntr'
+        PSALT(5)= 'Optimum start for flux/variable control'
+        PSALT(6)= 'Proportional action for type 18-23 cntr'
+        PSALT(7)= 'Null controller    '
+        PSALT(8)= 'Duty cycle controller'
+        PSALT(9)= 'On-off controller'
+        PSALT(10)='Multi-sensor on-off controller'
+C DG controller
+        PSALT(11)='Cogeneration system controller'
+        write(outs,'(a,a)')' Current control law: ',
+     &                      PSALT(IPCLAW(II,JJ,KK)+1)
+        call edisp(iuout,outs)
+        IX=1
+        H(1)='The `type` numbers relate to the selection you made'
+        H(2)='in the previouos step. Here is a reminder: '
+        H(3)=' '
+        H(4)=' type 0 is senses dry bulb actuates flux'
+        H(5)=' type 1 is senses dry bulb actuates flow'
+        H(6)=' type 2 is senses enthalpy actuates flux'
+        H(7)=' type 3 is senses enthalpy actuates flow'
+        H(8)=' type 4 is senses 1st ph mass flow actuates flux'
+        H(9)=' type 5 is senses 1st ph mass flow actuates flow'
+        H(10)=' type 6 is senses 2nd ph mass flow actuates flux'
+        H(11)=' type 7 is senses 2nd ph mass flow actuates flow'
+        H(12)=' type 8 is senses adl plant output actuates flux'
+        H(13)=' type 9 is senses adl plant output actuates flow'
+        H(14)=' type 10 is senses RH actuates flux'
+        H(15)=' type 11 is senses RH actuates flow'
+        H(16)=' type 12 is senses dry bulb actuates variable'
+        H(17)=' type 13 is senses enthalpy actuates variable'
+        H(18)=' type 14 is senses 1st ph flow actuates variable'
+        H(19)=' type 15 is senses 2nd ph flow actuates variable'
+        H(20)=' type 16 is senses plant output actuates variable'
+        H(21)=' type 17 is senses RH actuates variable'
+        H(22)=' type 18 is senses dry bulb actuates mass ratio'
+        H(23)=' type 19 is senses enthalpy actuates mass ratio'
+        H(24)=' type 20 is senses 1st ph flow actuates mass ratio'
+        H(25)=' type 21 is senses 1st ph flow actuates mass ratio'
+        H(26)=' type 22 is senses plant o/p actuates mass ratio'
+        H(27)=' type 23 is senses RH actuates mass ratio'
+        H(28)=' type 24 is senses temp diff actuates flow'
+        H(29)=' type 25 is senses abs temp diff actuates flow'
+        H(30)=' type 26 is senses pressure actuates flow'
+        H(31)=' type 27 is senses press diff actuates flow'
+        H(32)=' type 28 is senses abs press diff actuates flow'
+        H(33)=' type 29 is senses abs mass flow actuates flow'
+        H(34)=' type 30 is senses wind speed actuates flow'
+        H(35)=' type 31 is senses wind direction actuates flow'
+        H(36)=' type 32 is senses dir nor sol rad actuates flow'
+        H(37)=' type 33 is senses dif hor sol rad actuates flow'
+        H(38)=' type 34 is senses ext rel hum actuates flow'
+        H(39)=' type 35 is senses wind speed actuates flux'
+        H(40)=' type 36 is senses wind direction actuates flux'
+        H(41)=' type 37 is senses dir nor sol rad actuates flux'
+        H(42)=' type 38 is senses dif hor sol rad actuates flux'
+        H(43)=' type 39 is senses ext rel hum actuates flux'
+        H(44)=' type 33 is senses contaminant conc actuates flow'
+        H(45)='See ESP-r Data Model section 9 for details. '
+        CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
+     &         40,11,PSALT,'control law',IER,45)
+        
+        if(ix.ne.0)iclaw=IPVALS(1)-1
+        IPCLAW(II,JJ,KK)=iclaw
+
+  62    H(1)='See ESP-r Data Model section 9 for details. '
+        CALL EASKR(tcps,' ',' Period start time ? ',
+     &    0.,'F',24.,'F',0.,'plant control start',IER,1)
+        if(KK.GT.1)then
+          IF(TPCPS(II,JJ,KK-1).GE.tcps)then
+            call usrmsg(' Periods out of order..',' ','W')
+            GOTO 62
+          endif
+        else
+          CALL ECLOSE(tcps,0.0,0.001,close1)
+          IF(.NOT.close1)then
+            call usrmsg(' ',' First control must begin @ 0','W')
+            GOTO 62
+          endif
+        endif
+
+C Make assumptions about the additional data that will be required.
+        H(1)='See ESP-r Data Model section 9 for details. '
+        if(IPCLAW(II,JJ,KK).eq.0)then
+           
+C Period switch off control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Period switch off control has no data.')
+            call edisp(iuout,' ')
+          endif
+          cm(1)=0.0
+        elseif(IPCLAW(II,JJ,KK).eq.1)then
+
+C PID flux controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' Current PID flux control data is:')
+            call edisp(iuout,' Mode, Max Htg/Clg W, Min Htg/Clg W,  
+     &       Htg/Clg SP, Htg/Clg TR')
+            write(outs,'(5F10.3)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+            
+            I2=INT(cm(2))
+            if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+              I7=INT(cm(7))
+              if(I7.eq.1)then
+                call edisp(iuout,' Integral action time [secs]')
+                write(outs,'(F9.2)')cm(8)
+                call edisp(iuout,outs)
+                I9=INT(cm(9))
+                if(I9.eq.1)then
+                  call edisp(iuout,' Derivative action time [secs]')
+                  write(outs,'(F9.2)')cm(10)
+                  call edisp(iuout,outs)
+                endif
+              else
+                I8=INT(cm(8))
+                if(I8.eq.1)then
+                  call edisp(iuout,' Derivative action time [secs]')
+                  write(outs,'(F9.2)')cm(9)
+                  call edisp(iuout,outs)
+                endif
+              endif              
+            elseif(I2.eq.3.or.I2.eq.-3)then
+                call edisp(iuout,' Integral action time [secs]')
+                write(outs,'(F9.2)')cm(7)
+                call edisp(iuout,outs)                  
+            elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
+               call edisp(iuout,' Int act time [s], Drv act time[s] ')
+               write(outs,'(2F9.2)')cm(7),cm(8)
+               call edisp(iuout,outs)                  
+             endif
+          endif
+
+C Define mode, number of items, std items, then mode specific items.
+          H(1)=' Mode options are:'
+          H(2)=' 1: P, PI, PD, PID non-recursive positional control'
+          H(3)=' 2: P, PI, PD, PID recursive positional control'
+          H(4)=' 3: PI recursive vel`y control (rect. integration)'          
+          H(5)=' 4: PID recursive vel`y control (rect. integration)'
+          H(6)=' 5: PID recursive vel`y control(trapez integration)'
+          H(7)=' Note: negate mode number for cooling'
+          H(8)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(2),' ',' PID mode ? ',
+     &      -5.,'F',5.,'F',1.,' PID mode',IER,8)
+          
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 6 to 9 and depends on the PID mode selected, i.e.,'
+          H(3)=' For modes 1, -1 , 2, -2 :- '
+          H(4)='     Positional P              -   7 items required,'
+          H(5)='     Positional PI             -   8 items required,'
+          H(6)='     Positional PD             -   8 items required,'
+          H(7)='     Positional PID            -   9 items required,'
+          H(8)=' For mode 3, -3:-'
+          H(9)='     Rect. Velocity PID        -   6 items required,'
+          H(10)=' For mode 4, -4, 5, -5:-'
+          H(11)='    Trap. Velocity PID        -   7 items required,'
+          H(12)=' NOTE: if `AHU dynamic set point` option '
+          H(13)=' selected (set point = -1001) then add 7 data'
+          H(14)=' items to above.'
+          H(15)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ?',
+     &      6.,'F',16.,'F',7.,'no. of misc data items',IER,15)
+
+ 11      WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
+          H(1)='Htg/clg delivery may be less than the max. If min'
+          H(2)='htg/clg > 0 then htg/clg will continue at a re- '
+          H(3)='duced level even when the setpoint is reached. '
+          H(4)=' '
+          H(5)='The set point may be specified to be :-' 
+          H(6)='(a) a fixed constant value;'
+          H(7)=' or'
+          H(8)='(b) determined automatically, in a dynamic manner,'
+          H(9)='    at each simulation times-step, by means of a '
+          H(10)='   psychometric-based algorithm within the program.'
+          H(11)='The latter method (denoted by a setpoint of -1001)'
+          H(12)='should be used when simulating air conditioning '
+          H(13)='systems.'
+          H(14)=' Refer ...../esp-r/training/plant/AHU/humidity_ctl'
+          H(15)=' training folder.'
+          CALL EASKS(HOLD,
+     &      ' Max htg/clg cap [W], Min htg/clg cap [W], setpoint,',
+     &      ' throtl range for PID ctl: ',60,' 1000. 0. 20. 2. ',
+     &      'PID max min stpnt throt',IER,15)
+          K=0
+         CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Mx htg/clg',IER)
+         CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Min Ht/clg',IER)
+         CALL EGETWR(HOLD,K,cm(5),-1001.,100.,'F','Set point',IER)
+         CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Throt rnge',IER)
+          if(ier.ne.0)goto 11
+
+          I2=INT(cm(2))
+          if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+          H(1)=' Int. action flag: 1 if required; 0 if not required.'
+            CALL EASKR(cm(7),' ',' Integral action flag?',
+     &        0.,'F',1.,'-',0.,' integral action flag',IER,1)
+            I7=INT(cm(7))
+            if(I7.eq.1)then
+            CALL EASKR(cm(8),' ',' Integral action time [sec]?',
+     &        1.,'F',0.,'-',900.,' integral action time',IER,0)
+            H(1)=' Derv. action flag: 1 if required; 0 if not req`d.'
+            CALL EASKR(cm(9),' ',' derivative action flag?',
+     &        0.,'F',1.,'-',0.,' derivative action flag',IER,1)
+              I9=INT(cm(9))
+              if(I9.eq.1)then
+                CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
+     &            1.,'F',0.,'-',500.,' derivative action time',IER,0)
+              endif
+            else
+              H(1)=' Drv. action flag: 1 if required; 0 if not rqd.'
+              CALL EASKR(cm(8),' ',' derivative action flag?',
+     &          0.,'F',1.,'-',0.,' derivative action flag',IER,1)
+                I8=INT(cm(8))
+                if(I8.eq.1)then
+                  CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
+     &             1.,'F',0.,'-',500.,' derivative action time',IER,0)
+                endif
+            endif
+          elseif(I2.eq.3.or.I2.eq.-3)then
+            CALL EASKR(cm(7),' ',' Integral action time [secs]?',
+     &          1.,'F',0.,'-',900.,' integral action time',IER,0)
+          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then               
+            CALL EASKR(cm(8),' ',' Integral action time [secs]?',
+     &          1.,'F',0.,'-',900.,' integral action time',IER,0)
+            CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
+     &           1.,'F',0.,'-',500.,' derivative action time',IER,0)
+          endif
+        elseif(IPCLAW(II,JJ,KK).eq.2)then
+
+C PID flow controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' Current PID flow control data is:')
+            call edisp(iuout,' Mode, Max flow [kg/s], Min flow [kg/s],
+     &           setpoint, throt rng')
+            write(outs,'(5F10.3)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+            
+            I2=INT(cm(2))
+            if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+              I7=INT(cm(7))
+              if(I7.eq.1)then
+                call edisp(iuout,' Integral action time [secs]')
+                write(outs,'(F9.2)')cm(8)
+                call edisp(iuout,outs)
+                I9=INT(cm(9))
+                if(I9.eq.1)then
+                  call edisp(iuout,' Derivative action time [secs]')
+                  write(outs,'(F9.2)')cm(10)
+                  call edisp(iuout,outs)
+                endif
+              else
+                I8=INT(cm(8))
+                if(I8.eq.1)then
+                  call edisp(iuout,' Derivative action time [secs]')
+                  write(outs,'(F9.2)')cm(9)
+                  call edisp(iuout,outs)
+                endif
+              endif              
+            elseif(I2.eq.3.or.I2.eq.-3)then
+                call edisp(iuout,' Integral action time [secs]')
+                write(outs,'(F9.2)')cm(7)
+                call edisp(iuout,outs)                  
+            elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
+               call edisp(iuout,' Int act time [s], Drv act time[s] ')
+               write(outs,'(2F9.2)')cm(7),cm(8)
+            endif
+          endif
+
+C Define mode, number of items, std items, then mode specific items.
+          H(1)=' Mode options are:'
+          H(2)=' 1: P, PI, PD, PID non-recursive positional control'
+          H(3)=' 2: P, PI, PD, PID recursive positional control'
+          H(4)=' 3: PI recursive vel`y control (rect. integration)'          
+          H(5)=' 4: PID recursive vel`y control (rect. integration)'
+          H(6)=' 5: PID recursive vel`y control(trapez integration)'
+          H(7)=' Note: negate mode number for cooling'
+          H(8)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(2),' ',' PID mode? ',
+     &      -5.,'F',5.,'F',1.,' PID mode',IER,8)
+          
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 6 to 9 and depends on the PID mode selected, i.e.,'
+          H(3)=' For modes 1, -1 , 2, -2 :- '
+          H(4)='     Positional P              -   7 items required,'
+          H(5)='     Positional PI             -   8 items required,'
+          H(6)='     Positional PD             -   8 items required,'
+          H(7)='     Positional PID            -   9 items required,'
+          H(8)=' For mode 3, -3:-'
+          H(9)='     Rect. Velocity PID        -   6 items required,'
+          H(10)=' For mode 4, -4, 5, -5:-'
+          H(11)='    Trap. Velocity PID        -   7 items required,'
+          H(12)=' NOTE: if `AHU dynamic set point` option '
+          H(13)=' selected (set point = -1001) then add 7 data'
+          H(14)=' items to above.'
+          H(15)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ?',
+     &      6.,'F',16.,'F',7.,'no. of misc data items',IER,15)
+
+ 21      WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
+          H(1)='The set point may be specified to be :-' 
+          H(2)='(a) a fixed constant value;'
+          H(3)=' or'
+          H(4)='(b) determined automatically, in a dynamic manner,'
+          H(5)='    at each simulation times-step, by means of a '
+          H(6)='    psychometric-based algorithm within the program.'
+          H(7)='The latter method (indicated by a setpoint of -1001)'
+          H(8)='should be used when simulating air conditioning '
+          H(9)='systems.'
+          H(10)=' Refer ...../esp-r/training/plant/AHU/humidity_ctl'
+          H(11)=' training folder.'
+          CALL EASKS(HOLD,
+     &      ' Max flow [kg/s], Min flow [kg/s], setpoint,',
+     &      ' throtl range for PID ctl: ',60,' 0.01 0.0001 20. 2.',
+     &      'PID max min stpnt throt',IER,11)
+          K=0
+          CALL EGETWR(HOLD,K,cm(3),0.,100.,'F','Max flow',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,100.,'F','Min flow',IER)
+          CALL EGETWR(HOLD,K,cm(5),-1001.,100.,'F','Set pt',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,100.,'F','Throt rnge',IER)
+          if(ier.ne.0)goto 21
+
+          I2=INT(cm(2))
+          if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+          H(1)=' Int. action flag: 1 if required; 0 if not required.'
+            CALL EASKR(cm(7),' ',' Integral action flag?',
+     &        0.,'F',1.,'-',0.,' integral action flag',IER,1)
+            if(INT(cm(7)).eq.1)then
+            CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
+     &        1.,'F',0.,'-',900.,' integral action time',IER,0)
+            H(1)=' Derv. action flag: 1 if required; 0 if not req`d.'
+            CALL EASKR(cm(9),' ',' derivative action flag?',
+     &        0.,'F',1.,'-',0.,' derivative action flag',IER,1)
+              if(INT(cm(9)).eq.1)then
+                CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
+     &            1.,'F',0.,'-',500.,' derivative action time',IER,0)
+              endif
+            else
+              H(1)=' Drv. action flag: 1 if required; 0 if not rqd.'
+              CALL EASKR(cm(8),' ',' derivative action flag?',
+     &          0.,'F',1.,'-',0.,' derivative action flag',IER,1)
+                if(INT(cm(8)).eq.1)then
+                  CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
+     &             1.,'F',0.,'-',500.,' derivative action time',IER,0)
+                endif
+            endif
+          elseif(I2.eq.3.or.I2.eq.-3)then
+              CALL EASKR(cm(7),' ',' Integral action time [seconds]?',
+     &            1.,'F',0.,'-',900.,' integral action time',IER,0)
+            elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then               
+              CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
+     &             1.,'F',0.,'-',900.,' integral action time',IER,0)
+              CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
+     &             1.,'F',0.,'-',500.,' derivative action time',IER,0)
+            endif
+          elseif(IPCLAW(II,JJ,KK).eq.3)then
+
+C Numerical proportional controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current numerical proportional controller data is:')
+            call edisp(iuout,
+     &      ' Max & min o/p, upper & lower setpoints, hysteresis ')
+            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=5.0
+
+  31      WRITE(HOLD,'(5f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    ' Max output, min output, upper setpoint, lower setpoint, ',
+     &    ' output to overcome hysteresis',60,
+     &      ' 2. 1. 2. 1. 0.1 ','num`l prop`l ctlr',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','Max ouput',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','Min output',IER)
+          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Up stpt',IER)
+          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Low stpt',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,100.,'F','Hystersis',IER)
+          if(ier.ne.0)goto 31
+        elseif(IPCLAW(II,JJ,KK).eq.4)then
+
+C Optimum start controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current optimum start controller data is:')
+            call edisp(iuout,
+     &      ' Max o/p, dtoa, desd temp, 1st B&J coft, 2nd B&J, 3rd B&J')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=6.0
+
+  41      WRITE(HOLD,'(6f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    ' Max output, desired time of arrival, desired temp, ',
+     &    ' 1st B&J coeft, 2nd B&J coeft, 3rd B&J coeft ',60,
+     &      ' 1000.0 9.0 20. 1. 1. 1. ','optimum start ctlr',IER,1)
+          K=0
+         CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','Max output',IER)
+         CALL EGETWR(HOLD,K,cm(3),0.,24.,'F','Dsrd tm of Arv',IER)
+         CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Desrd temp',IER)
+         CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','1st B&J cf',IER)
+         CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','2nd B&J cf',IER)
+         CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','3rd B&J cf',IER)
+          if(ier.ne.0)goto 41
+        elseif(IPCLAW(II,JJ,KK).eq.5)then
+
+C Proportional damper controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current proportional damper controller data is:')
+            call edisp(iuout,
+     &      ' Max & min dpr pos, flow at max & min, 1st & 2nd conects ')
+            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=6.0
+
+  51      WRITE(HOLD,'(6f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    ' Max damp pos, Min damp pos, flow at max pos, flow at',
+     &    ' min pos, 1st connection number, 2nd connection number',60,
+     &      ' 1. 0.  ','optimum start ctlr',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,1.,'F','Max dmpr pos',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,0.,'F','Min dmpr pos',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,100.,'F','Flo at max',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,100.,'F','Flo at min',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,75.,'F','1st con',IER)
+          CALL EGETWR(HOLD,K,cm(7),0.,75.,'F','2nd con',IER)
+          if(ier.ne.0)goto 51
+        elseif(IPCLAW(II,JJ,KK).eq.6)then
+           
+C Null controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Null controller has no data.')
+            call edisp(iuout,' ')
+          endif
+          cm(1)=0.0
+        elseif(IPCLAW(II,JJ,KK).eq.7)then
+
+C Duty Cycle controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current duty cycle controller data is:')
+            call edisp(iuout,' Dty cyc prd,  tim stps off, 1st off ts ')
+            write(outs,'(3F9.2)')cm(2),cm(3),cm(4)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=3.0
+ 
+  71      WRITE(HOLD,'(3f7.2)')cm(2),cm(3),cm(4)
+          H(1)='All time-steps are in terms of plant time-steps. '
+          H(2)=' For example, for a cycle period of, say, 5 '
+          H(3)=' time-steps, there could be, say, 2 off, with, e.g'
+          H(4)=' the 1st off at the 3rd time-step, and thus the '
+          H(5)=' 2nd off at the 4th time-step.'
+          H(6)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    ' Duty cycle prd, times steps off, 1st off time-step ',
+     &    'in cycle period',60,' 4. 1. 1. ','Duty cycle ctlr',IER,6)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),1.,1440.,'F','Cycle perd',IER)
+          CALL EGETWR(HOLD,K,cm(3),1.,1440.,'F','off t-stps',IER)
+          CALL EGETWR(HOLD,K,cm(4),1.,1440.,'F','1st off ts',IER)
+          if(ier.ne.0)goto 71
+        elseif(IPCLAW(II,JJ,KK).eq.8)then
+
+C On-off controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current on-off controller data is:')
+            call edisp(iuout,' Mode, on setpt, off setpt, o/p at hi,
+     &                         o/p at lo, sen lag, act lag')
+            write(outs,'(7F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
+     &                           cm(8)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=7.0
+
+  81      WRITE(HOLD,'(7f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
+     &                            cm(8)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,
+     &    'Mode of operation, off set point, on set point, o/p at hi',
+     &    ' o/p at lo, sen lag, act lag ',60,' 1. 2. 1. 1. 1. 1. 1.',
+     &    'on-off ctl',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),-999.,999.,'W','Mode',IER)
+          CALL EGETWR(HOLD,K,cm(3),-100.,100.,'W','on set pnt',IER)
+          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'W','off set pnt',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,999999.,'W','output @ hi',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'W','output @ lo',IER)
+          CALL EGETWR(HOLD,K,cm(7),0.,1440.,'W','sensor lag',IER)
+          CALL EGETWR(HOLD,K,cm(8),0.,1440.,'W','actu lag',IER)
+
+          if(ier.ne.0)goto 81
+        elseif(IPCLAW(II,JJ,KK).eq.9)then
+
+C Multi-sensor on-off controller.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,' Current multi-sen on-off ctlr data is:')
+            call edisp(iuout,'O/p at hi, o/p at lo, Mode, No. axy sens, 
+     &                        Auxy fnc, sen lag, act lag')
+            write(outs,'(7F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
+     &                           cm(8)
+            call edisp(iuout,outs)
+
+            I4=INT(cm(4))
+            DO 91 L=1,I4             
+              ndx=8+4*(L-1)
+              call edisp(iuout,' Auxliary Sensor Details')              
+              write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
+              call edisp(iuout,outs)
+              if(INT(cm(5)).eq.4)then
+                ndx=12+(L-1)+4*(I4-1)         
+                write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
+                call edisp(iuout,outs)
+              endif
+ 91        continue   
+          endif
+
+          H(1)=' The number of data items required is in the range'
+          H(2)=' 10 to 16 and depends on: (1) number of auxiliary '
+          H(3)=' sensors (ns); (2) the auxiliary sensor function '
+          H(4)=' mode selected:- '
+          H(5)=' '
+          H(6)='                                   |no. of| |no. of|'
+          H(7)='          Function                 |aux sn| |items |'
+          H(8)= '---------------------------------------------------'
+          H(9)=' greatest val of aux`y sensors         1       10 '
+          H(10)='   `      `  `    `     `             2       14 '  
+          H(11)=' least val of aux`y sensors           1       10 '
+          H(12)='   `    `  `    `     `               2       14 ' 
+          H(13)=' mean val of aux`y sensors            1       10 '
+          H(14)='   `   `  `    `     `                2       14 '
+          H(15)=' weighting of aux`y sensors           2       16 '
+          H(16)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(1),' ',' No. of misc data items ',
+     &      10.,'F',16.,'F',10.,'no. of misc data items',IER,16)
+
+          CALL EASKR(cm(2),' ',' Output at `hi` status ? ',
+     &      0.,'-',0.,'-',1.,'output at `hi` status',IER,0)
+          CALL EASKR(cm(3),' ',' Output at `lo` status ? ',
+     &      0.,'-',0.,'-',1.,'output at `lo` status',IER,0)
+
+          H(1)= 'Mode = +1 for `ON` if control point is less than ' 
+          H(2)='           specified function of aux`y sensor(s). '
+          H(3)=' Mode = -1 for `ON` if control point is greater than' 
+          H(4)='           specified function of aux`y sensor(s). '
+          CALL EASKR(cm(4),' ',' Output mode ? ',
+     &      -1.,'F',1.,'F',1.,' output mode',IER,4)
+
+          H(1)=' At present, this is limited to 2 auxiliary sensors.'
+          H(2)=' - Refer ESP-r Data Model section 9 '
+          CALL EASKR(cm(5),' ',' No of auxiliary sensors ? ',
+     &      1.,'F',2.,'F',1.,'no. of auxiliary sensors',IER,2)
+
+          H(1)=' The auxiliary sensor function options are:'
+          H(2)=' 1: greatest value of aux sensors ' 
+          H(3)=' 2: least value of aux sensors '
+          H(4)=' 3: mean value of aux sensors '
+          H(5)=' 4: weighting of aux sensors '
+          CALL EASKR(cm(6),' ',' Multi-sensor auxy function ? ',
+     &      1.,'F',4.,'F',1.,' multi-sensor aux func',IER,5)
+
+          H(1)=' Lag is in terms of plant time-steps'
+          CALL EASKR(cm(7),' ',' Sensor lag? ',
+     &      1.,'F',4.,'F',0.,' sensor lag',IER,1)
+
+          CALL EASKR(cm(8),' ',' Actuator lag ? ',
+     &      1.,'F',4.,'F',0.,' actuator lag',IER,1)
+
+C Auxiliary sensor details,
+          I4=INT(cm(4))  
+          H(1)=' - Refer ESP-r Data Model section 9 '
+          H(2)='The items are essentially the same as required in a'
+          H(3)=' control point sensor. '
+          DO 93 L=1,I4
+            ndx=8+4*(L-1)
+            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
+     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,3)
+            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,3)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,3)          
+            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,3)
+ 93       CONTINUE    
+          
+          I5=INT(cm(5))
+          if(I5.eq.4)then
+            DO 95 L=1,I5
+C Weighted auxiliary sensors mode,
+              ndx=12+(L-1)+4*(I4-1)         
+              H(1)=' The sensor weightings must total exactly 100.0'
+              CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
+     &          0.,'F',100.,'F',50.,' Aux sensor weighting',IER,1)
+ 95         continue
+          endif
+        elseif(IPCLAW(II,JJ,KK).eq.10)then
+          CALL DG_controller_menu(cm)
+        endif
+
+C Extract from working array to pmiscd() common structure
+        call extrctl(1,II,JJ,KK)
+        call usrmsg(' ',' ','-')
+      ELSE
+        IVERT=-1
+        GOTO 92
+      ENDIF
+      IVERT=-4
+      call usrmsg(' ',' ','-')
+      GOTO 92
+
+ 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+      RETURN
+      END
+
+C *********** EFCNTRL
+C Edit flow control function II.
+      SUBROUTINE EFCNTRL(II,IV,IER)
+#include "building.h"
+#include "net_flow.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+
+      CHARACTER*84 VERT(20)
+
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
+      character outsa*84,outsb*84,outsc*84,hold*42
+      logical close1
+
+C Number of functions and day type must be > 0.
+      IF(II.LE.0.OR.IV.LE.0)RETURN
+
+C Control day types.
+      J=IV
+      JJ=J
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
+      WRITE(vert(2),'(a,i3)')     ' number of periods:',NFCDP(II,JJ)
+      WRITE(vert(3),'(a)') ' ________________________________________'
+      WRITE(vert(4),'(a)')
+     &' per| start|sensed  |actuated | control law     | data'
+      WRITE(vert(5),'(a)')
+     &' no.| time |property|property |                 |     '
+      LL=NFCDP(II,JJ)
+
+C Generate menu entry for each period in day type.
+      m=5
+      DO 91 KP=1,LL
+        KK=KP
+        m=m+1
+        call stfctl(2,II,JJ,KK)
+        CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
+        CALL EVCNTRL(2,II,JJ,KK,'L',TMP)
+        NITEMS=INT(cm(1))
+        WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
+        outsb=' '
+        outsc=' '
+        if(NITEMS.gt.0)then
+          if(NITEMS.LE.9)then
+            write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
+          else
+            write(outsb,'(9F9.1)')(cm(L),L=2,10)
+          endif
+          call SDELIM(outsb,outsc,'S',IW)
+        endif
+        CALL EMKEY(M-5,KEY,IER)
+        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
+     &    outsa(1:47),outsc(1:34)
+  91  continue
+      m=m+1
+      WRITE(vert(m),'(a)') ' ________________________________________'
+      m=m+1
+      WRITE(vert(m),'(a)') '* add/ delete a period '
+      m=m+1
+      WRITE(vert(m),'(a)') '? help '
+      m=m+1
+      WRITE(vert(m),'(a)') '- exit  '
+      mvert=m
+
+C Help text for this menu.
+      h(1) ='A number of control periods can be defined for each'
+      h(2) ='control day type. Each period has a start time (i.e.'
+      h(3) ='they do not overlap), a sensed property, an actuated'
+      h(4) ='property, a control law and miscel. data which defines'
+      h(5) ='capacity, setpoints, etc.'
+      h(6) ='  '
+      h(7) ='Note: if no change required in an item then accept the'
+      h(8) ='current value.'
+
+C Now display the menu.
+      CALL EMENU('Control periods',VERT,MVERT,IVERT)
+      if(IVERT.EQ.mvert)then
+        return
+      elseif(IVERT.EQ.mvert-1)then
+
+C Explanation
+        CALL PHELPD('control period help',8,'-',0,0,IER)
+      elseif(IVERT.EQ.mvert-2)then
+
+C Add or delete a period.
+        h(1)='Periods are added to the end of the list. '
+        CALL EASKABC('Options:',' ',
+     &    'add period','delete period','continue',iad,1)
+        if(iad.eq.1)then
+          call addctldp(2,II,JJ,'A',iier)
+        elseif(iad.eq.2)then
+          call addctldp(2,II,JJ,'D',iier)
+        endif
+        goto 92
+      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
+
+C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
+C stuff into working common array 'cm' for editing.  At end
+C of if:elseif:else recover.
+        KK=IVERT-5
+        call stfctl(2,II,JJ,KK)
+
+        NITEMS=INT(cm(1))
+        if(NITEMS.gt.0)then
+          WRITE(outs,'(a,i3,a)')' For period',KK,' current data...'
+          call edisp(iuout,outs)
+          if(NITEMS.LE.13)then
+            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+          else
+            write(outs,'(13F9.1)')(cm(L),L=2,13)
+          endif
+          call SDELIM(outs,outsc,'S',IW)
+          call edisp(iuout,outsc)
+        else
+          WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
+          call edisp(iuout,outs)
+        endif
+
+        call edisp(iuout,' ')
+
+C Flow controller.  Set type to same as initial for this flow
+C function (ie. all periods are the same for flow).
+        ictyp=IFCTYP(II,1,1)
+        IFCTYP(II,JJ,KK)=ictyp
+        write(outs,'(a,i3)')' Current controller type: ',ictyp
+        call edisp(iuout,outs)
+        call edisp(iuout,'Note: to change this re-edit the flow sensor')
+
+C What is the equivalent for flow.....
+        H(1)='See ESP-r Data Model section 9 for details. '
+        H(2)='The range controler is for use with component types'
+        H(3)='30 35 40 110 and should sense a node temperature '
+        H(4)='or outside db temperature. It returns a ratio of the'
+        H(5)='nominal rate or area associated with each range. '
+        ino=iclaw+1
+        ilno=ino
+        idno=1
+        write(outs,'(a,i2,a)')'Select a control type (currently: ',
+     &    iclaw+1,')'
+        call MENUATOL(outs,' Available laws','a on/off',
+     &   'b proportional with hysteresis',
+     &   'c range based (for 30 35 40 110)',
+     &   'd multi-sensor on/off',' ',' ',' ',' ',' ',' ',' ',' ',
+     &   ino,idno,5)
+        if(ino.eq.0)then
+          continue
+        elseif(ilno.ne.ino)then
+          iclaw=ino-1
+          IFCLAW(II,JJ,KK)=iclaw
+        endif
+
+  62    H(1)='See ESP-r Data Model section 9 for details. '
+        CALL EASKR(tcps,' ',' Period start time ? ',
+     &    0.,'F',24.,'F',0.,'control start',IER,1)
+        if(KK.GT.1)then
+          IF(TFCPS(II,JJ,KK-1).GE.tcps)then
+            call usrmsg(' Periods out of order..',' ','W')
+            GOTO 62
+          endif
+        else
+          CALL ECLOSE(tcps,0.0,0.001,close1)
+          IF(.NOT.close1)then
+            call usrmsg(' ',' First control must begin @ 0','W')
+            GOTO 62
+          endif
+        endif
+        TFCPS(II,JJ,KK)=tcps
+
+        if(iclaw.eq.0)then
+
+C Miscellaneous data for on / off controller.
+          cm(1)=3.
+  53      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+          H(1)= 'Number of items for on/off controller = 3 '
+          H(2)= ' 1st is setpoint, '
+          H(3)= ' 2nd is action index 1=direct, -1=inverse'
+          H(4)= '   where direct is ON above setpoint.'
+          H(5)= '   and inverse  is ON below setpoint.'
+          H(6)= ' 3rd is fraction of capacity (e.g. if set to 0.5'
+          H(7)= '   of the area, door width or flow rate of the'
+          H(8)= '   component is 0.5 x its stated value) valid  '
+          H(9)= '   fractions are between 0.0 and 1.0 for area based'
+          H(10)='   components and 0.1 to 1.0 for door width. A value'
+          H(11)='   of 1.0 is equivalent to a simple ON:OFF control.'
+          H(12)='   If a door control action would cause it to be less'
+          H(13)='   than 10mm wide it is reset to 10mm.'
+          CALL EASKS(HOLD,
+     &    ' On/Off setpoint, action (1=on above setpoint, -1=on below)',
+     &      ' and fraction ON (see help):',42,' 30. 1. 1. ',
+     &      ' flow on/off controller',IER,13)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','set pt',IER)
+          CALL EGETWR(HOLD,K,cm(3),-1.,1.,'F','action',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,1.,'F','fraction',IER)
+          if(int(cm(3)).eq.0)goto 53
+          if(ier.ne.0)goto 53
+        elseif(iclaw.eq.1)then
+
+C Miscellaneous data for proportional controller.
+          cm(1)=5.
+  54      WRITE(HOLD,'(5f8.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
+          H(1)= 'Number of items for proportional controller = 5 '
+          H(2)= '  1st is signal lower limit,'
+          H(3)= '  2nd is valve position at lower limit (%),'
+          H(4)= '  3rd is signal upper limit, '
+          H(5) ='  4th is valve position at upper limit (%),'
+          H(6) ='  5th dS to overcome hysteresis,'
+          CALL EASKS(HOLD,
+     &   ' Proportional: signal lower lmt, lower valve psn (%), signal',
+     &   ' upper lmt, upper valve psn (%), hysteresis: ',42,
+     &      ' 10.  0.  20. 100.  1.',' flow proportional controller',
+     &      IER,6)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','signl low',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,100.,'F','valv psn l',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','signl high',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,100.,'F','valv psn h',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,9999.,'F','ds for hist',IER)
+          if(ier.ne.0)goto 54
+        elseif(iclaw.eq.2)then
+          cm(1)=6.
+  55      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+          H(1)= 'Number of items for range controller = 6 '
+          H(2)= ' 1st is low setpoint, '
+          H(3)= ' 2nd is mid setpint'
+          H(4)= ' 3nd is high setpint'
+          H(5)= ' which yields 4 ranges as follows:'
+          h(6)= '   low range < low setpoint, '
+          h(7)= '   default range between low and mid setpoints, '
+          h(8)= '   mid range between mid and hi setpoints, '
+          h(9)= '   above high setpoint. '
+          H(10)=' 4th is low range ratio (of rate or area), '
+          H(11)=' 5th is mid range ratio (of rate or area),'
+          H(12)=' 6th is high range ratio (of rate or area)'
+          h(13)=' '
+          h(14)='If within default range then the nominal rate or '
+          h(15)='area is used. '
+          h(16)=' '
+          h(17)='NOTE: this controller works with sensed conditions'
+          h(18)='such as node temperature and can be used with '
+          h(19)='components 30 35 40 and 110. '
+          CALL EASKS(HOLD,
+     &      ' Range setpoints: low, mid, high (see help)',
+     &      ' : ',42,' 0. 10. 20. ',' flow range controller',IER,19)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','low set pt',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','mid set pt',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','high set pt',IER)
+          if(ier.ne.0)goto 55
+ 157      WRITE(HOLD,'(3f8.3)')cm(5),cm(6),cm(7)
+          CALL EASKS(HOLD,
+     &      ' Ratios of rate or area for: low, mid, high (see help)',
+     &      ' : ',42,' 0. 1. 1. ',' flow range controller',IER,16)
+          K=0
+          CALL EGETWR(HOLD,K,cm(5),0.,0.,'-','low ratio',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,0.,'-','mid ratio',IER)
+          CALL EGETWR(HOLD,K,cm(7),0.,0.,'-','high ratio',IER)
+          if(ier.ne.0)goto 157
+        elseif(iclaw.eq.3)then
+
+C Miscellaneous data for multi sensor flow controller.
+          cm(1)=2.
+  56      WRITE(HOLD,'(2f8.2)')cm(2),cm(3)
+          H(1)= 'Number of items for multi sensor flow'
+          H(2)= 'controller = 2 + 6 * no. of sensors'
+          H(3)= '  1st is default position: open or closed,'
+          H(4)= '  2nd is number of auxiliary sensors. Then'
+          H(5)= '  for each auxiliary sensor 6 items are needed:'
+          H(6)= '    4 for the sensor location, followed by the'
+          H(7)= '    set-point, and inverse action flag.'
+          H(8)= '    The connection/component will CHANGE from'
+          H(9)= '    the default position when the sensed value'
+          H(10)='    is above the set-point. In case the inverse'
+          H(11)='    action flag is -1, the CHANGE will take place'
+          H(12)='    when the sensed value is below the set-point.'
+          H(13)='  Note that this multi sensor controller'
+          H(14)='  assumes the default position, and will'
+          H(15)='  change the position of the connection/'
+          H(16)='  component in case ANY of the auxiliary'
+          H(17)='  sensors demands a change.'
+          CALL EASKS(HOLD,
+     &      ' Multi sensor on/off: default position (1=open), ',
+     &      ' number of aux sensors (max MSEN) ',42,
+     &      ' 1.  2. ',' flow multi sensor on/off',
+     &      IER,17)
+          K=0
+          CALL EGETWI(HOLD,K,INPUT,0,1,'F','def position',IER)
+          cm(2)=INPUT
+          CALL EGETWI(HOLD,K,INPUT,0,MSEN,'F','no of sensors',IER)
+          cm(3)=INPUT
+          if(ier.ne.0)goto 56
+ 
+          call edisp(iuout,' Ideal multi-sensor controller:')
+          NSEN=int(cm(3))
+          cm(1)=2.+6.*NSEN
+ 
+C Auxiliary sensor details,
+          H(1)= 'The sensor details are essentially the same as '
+          H(2)= 'required in a control point sensor ie. '
+          H(3)= ' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(4)= '   = -1 measuring a plant component node,'
+          H(5)= '   = -2 measuring mix air:radiant,'
+          H(6)= '   = -3 ambient where the 2nd item is:'
+          H(7)= '        0 = db,              2 = wind velocity, '
+          H(8)= '        3 = wind dir, 4 = diffuse radiation, '
+          H(9)= '        5 = direc norm rad, 6 = RH'
+          H(10)='  = -4 measuring a flow side condition.'
+          H(11)=' '
+          H(12)='This data is followed - per sensor - by the'
+          H(13)='set-point and inverse action flag.'
+          H(14)='The connection/component will change from the'
+          H(15)='the default position when ANY of the aux sensors'
+          H(16)='demands a change; i.e. when for that sensor the'
+          H(17)='sensed value is above the set-point, or - in'
+          H(18)='case the inverse action flag = -1, when the'
+          H(19)='sensed value is below the set-point.'
+ 
+          DO 58 ISEN=1,NSEN
+            ndx=4+6*(ISEN-1)
+            call edisp(iuout,' ')
+            WRITE(outs,'(a,i2,a)')' For aux sensor ',ISEN,' define....'
+            call edisp(iuout,outs)
+            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
+     &        -4.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,19)
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,19)
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,19)
+            CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,19)
+ 
+            CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
+     &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,19)
+ 57         CALL EASKR(cm(ndx+5),' ',' Aux sensor inverse action ? ',
+     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,19)
+            if(int(cm(ndx+5)).eq.0)goto 57
+ 58       continue
+ 
+C Miscellaneous data for additional flow controllers should follow here.
+        endif
+
+C Extract from working array to fmiscd() common structure
+        call extrctl(2,II,JJ,KK)
+        call usrmsg(' ',' ','-')
+      ELSE
+        IVERT=-1
+        GOTO 92
+      ENDIF
+      IVERT=-4
+      call usrmsg(' ',' ','-')
+      GOTO 92
+
+ 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+      return
+      END
+
+C *********** EGCNTRL
+C Edit global control function II.
+      SUBROUTINE EGCNTRL(ITRC,II,IV,IER)
+#include "building.h"
+#include "control.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
+     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
+     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
+     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72
+      character outsa*84,outsb*84,outsc*84,KEY*1
+      character hold*42
+      CHARACTER*84 VERT(20)
+      logical close1
+
+C Number of global functions and day type must be > 0.
+      IF(II.LE.0.OR.IV.LE.0)RETURN
+
+C Control day types.
+      J=IV
+      JJ=J
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
+      WRITE(vert(2),'(a,i3)')     ' number of periods:',NGCDP(II,JJ)
+      WRITE(vert(3),'(a)') ' ________________________________________'
+      WRITE(vert(4),'(a)')
+     &' per| start|sensed  |actuated | control law     | data'
+      WRITE(vert(5),'(a)')
+     &' no.| time |property|property |                 |     '
+      LL=NGCDP(II,JJ)
+
+C Generate menu entry for each period in day type.
+      m=5
+      DO 91 KP=1,LL
+        KK=KP
+        m=m+1
+        call stfctl(3,II,JJ,KK)
+        CALL EVCNTRL(3,II,JJ,KK,'T',SSTR)
+        CALL EVCNTRL(3,II,JJ,KK,'L',TMP)
+        NITEMS=INT(cm(1))
+        WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
+        outsb=' '
+        outsc=' '
+        if(NITEMS.gt.0)then
+          if(NITEMS.LE.9)then
+            write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
+          else
+            write(outsb,'(9F9.1)')(cm(L),L=2,10)
+          endif
+          call SDELIM(outsb,outsc,'S',IW)
+        endif
+        CALL EMKEY(M-5,KEY,IER)
+        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
+     &    outsa(1:47),outsc(1:34)
+  91  continue
+      m=m+1
+      WRITE(vert(m),'(a)') ' ________________________________________'
+      m=m+1
+      WRITE(vert(m),'(a)') '* add/ delete a period '
+      m=m+1
+      WRITE(vert(m),'(a)') '? help '
+      m=m+1
+      WRITE(vert(m),'(a)') '- exit  '
+      mvert=m
+
+C Help text for this menu.
+      h(1) ='A number of control periods can be defined for each'
+      h(2) ='control day type. Each period has a start time (i.e.'
+      h(3) ='they do not overlap), a sensed property, an actuated'
+      h(4) ='property, a control law and miscel. data which defines'
+      h(5) ='capacity, setpoints, etc.'
+      h(6) ='  '
+      h(7) ='Note: if no change required in an item then accept the'
+      h(8) ='current value.'
+
+C Now display the menu.
+      CALL EMENU('Control periods',VERT,MVERT,IVERT)
+      if(IVERT.EQ.mvert)then
+        return
+      elseif(IVERT.EQ.mvert-1)then
+
+C Explanation
+        CALL PHELPD('control period help',8,'-',0,0,IER)
+      elseif(IVERT.EQ.mvert-2)then
+
+
+C Add or delete a period.
+        h(1)='Periods are added to the end of the list. '
+        CALL EASKABC('Options:',' ',
+     &    'add period','delete period','continue',iad,1)
+        if(iad.eq.1)then
+          call addctldp(3,II,JJ,'A',iier)
+        elseif(iad.eq.2)then
+          call addctldp(3,II,JJ,'D',iier)
+        endif
+        goto 92
+      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
+
+C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
+C stuff into working common array 'cm' for editing.  At end
+C of if:elseif:else recover.
+        call stfctl(3,II,JJ,KK)
+
+        NITEMS=INT(cm(1))
+        if(NITEMS.gt.0)then
+          WRITE(outs,'(a,i3,a)')' For period',KK,' current data is...'
+          call edisp(iuout,outs)
+          if(NITEMS.LE.13)then
+            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+          else
+            write(outs,'(13F9.1)')(cm(L),L=2,13)
+            call SDELIM(outs,outsc,'S',IW)
+            call edisp(iuout,outsc)
+            if(NITEMS.LE.26)then
+              write(outs,'(13F9.1)')(cm(L),L=14,NITEMS)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            else
+              write(outs,'(13F9.1)')(cm(L),L=14,26)
+              call SDELIM(outs,outsc,'S',IW)
+              call edisp(iuout,outsc)
+            endif
+          endif
+        else
+          WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
+          call edisp(iuout,outs)
+        endif
+
+        call edisp(iuout,' ')
+        call edisp(iuout,'Standard flux actuation enabled... ')
+        ictyp=0
+
+        H(1)='See ESP-r Data Model section 9 for details. '
+        ino=iclaw
+        ilno=ino
+        idno=1
+        write(outs,'(a,i3,a)')'Select a control law (currently: ',
+     &    iclaw,')'
+        call MENUATOL(outs,' Available laws',
+     &   'a Global on-off controller','b Global capacity controller',
+     &   'c Global schedule on controller',' ',' ',' ',' ',' ',
+     &   ' ',' ',' ',' ',ino,idno,1)
+        if(ino.eq.0)then
+          continue
+        elseif(ilno.ne.ino)then
+          iclaw=ino
+          IGCLAW(II,JJ,KK)=iclaw
+        endif
+
+  62    H(1)='See ESP-r Data Model section 9 for details. '
+        CALL EASKR(tcps,' ',' Period start time ? ',
+     &    0.,'F',24.,'F',0.,'control start',IER,1)
+        if(KK.GT.1)then
+          IF(TGCPS(II,JJ,KK-1).GE.tcps)then
+            call usrmsg(' Periods out of order..',' ','W')
+            GOTO 62
+          endif
+        else
+          CALL ECLOSE(tcps,0.0,0.001,close1)
+          IF(.NOT.close1)then
+            call usrmsg(' ',' First control must begin @ 0','W')
+            GOTO 62
+          endif
+        endif
+        TGCPS(II,JJ,KK)=tcps
+
+        H(1)='See ESP-r Data Model section 9 for details. '
+        if(IGCLAW(II,JJ,KK).eq.1)then
+           
+C Global on/off control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current global on/off controller data is:')
+            call edisp(iuout,
+     &      ' Mode, Minimum loops ON [mode_1], setpoint [mode_2] ')
+            write(outs,'(2F9.2)')cm(2),cm(3)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=2.0
+
+  33      WRITE(HOLD,'(2f7.2)')cm(2),cm(3)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,' Mode; Min ON [mode_1] or stpt [mode_2]',
+     &      '  ',42,' 1. 1. ','global on-off ctlr',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','Mode',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','Min on |setpt',IER)
+          if(ier.ne.0)goto 33
+        elseif(IGCLAW(II,JJ,KK).eq.2)then
+
+C Global capacity management control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current global capacity management controller data is:')
+            call edisp(iuout,
+     &      ' Glb htg capy, Glb clg capy, No shed')
+            write(outs,'(3F9.2)')cm(2),cm(3),cm(4)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=3.0
+
+  35      WRITE(HOLD,'(3f7.2)')cm(2),cm(3),cm(4)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,'Glb htg capy, Glb clg capy, No shed ',
+     &      '  ',36,' 10000. 10000. 1.','global on-off ctlr',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','Htg capy',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','Clg capy',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','No. shed',IER)
+          if(ier.ne.0)goto 35
+        elseif(IGCLAW(II,JJ,KK).eq.3)then
+
+C Global schedule on control.
+          if(itrc.gt.0)then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &      ' Current global schedule on controller data is:')
+            call edisp(iuout,
+     &      ' No. of sched loops')
+            write(outs,'(1F9.2)')cm(2)
+            call edisp(iuout,outs)
+          endif
+          cm(1)=1.0
+
+  37      WRITE(HOLD,'(1f7.2)')cm(2)
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EASKS(HOLD,'No. of scheduled loops',
+     &      '  ',22,' 2.','schedule on controller',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','No. sched lps',IER)
+          if(ier.ne.0)goto 37
+        endif
+
+C Extract from working array to gmiscd() common structure
+        call extrctl(3,II,JJ,KK)
+        call usrmsg(' ',' ','-')
+      ELSE
+        IVERT=-1
+        GOTO 92
+      ENDIF
+      IVERT=-4
+      call usrmsg(' ',' ','-')
+      GOTO 92
+
+ 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+      RETURN
+      END
+
+
+C **************** senloc 
+C senloc presents  a list of applicable sensor locations depending
+C on the control domain and includes explicit zones list.
+C It is passed a prompt, menu title and returns 4 sensor indicators
+C (isn1,isn2,isn3,isn4). isense is the condition sensed in the case of 
+C flow control, nsup is the number of supplemental items for associated
+C flow connections.It is assumed that the user will make one selection only.
+      subroutine senloc(prompt,title,icfoc,II,isn1,isn2,isn3,isn4,
+     &  isense,nsup,errmsg,IER)
+#include "building.h"
+#include "net_flow.h"
+#include "epara.h"
+
+      common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      COMMON/C1/NCOMP,NCON
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      LOGICAL SELECT,OK,dok
+      CHARACTER*(*) prompt,title,errmsg
+
+      DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
+      CHARACTER VERT*40,KEY*1,prompt2*36
+      character h*72,outs*124,SALT*40,contmnam*12
+
+C Initialise zone menu variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+      SELECT=.FALSE.
+      if(icfoc.eq.0)then
+        MHEAD=14
+      elseif(icfoc.eq.1)then
+        MHEAD=13
+      elseif(icfoc.eq.2)then
+        MHEAD=12
+      elseif(icfoc.eq.3)then
+        MHEAD=2
+      elseif(icfoc.eq.4)then
+        MHEAD=2
+      endif
+      MCTL=3
+      ILEN=NCOMP
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+
+C Build up text strings for the menu. 
+    3 M=MHEAD
+      if(icfoc.eq.0)then
+        WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
+        WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
+        WRITE(VERT(3),'(a)') '  senses an ambient condition...      '
+        WRITE(VERT(4),'(a)') 'c   dry bulb temperature              '
+        WRITE(VERT(5),'(a)') 'd   sol-air temperature (not for flow)'
+        WRITE(VERT(6),'(a)') 'e   wind speed                        '
+        WRITE(VERT(7),'(a)') 'f   wind direction                    '
+        WRITE(VERT(8),'(a)') 'g   diffuse horizontal solar radiation'
+        WRITE(VERT(9),'(a)') 'h   direct normal solar radiation     '
+        WRITE(VERT(10),'(a)')'i   external relative humidity        '
+        WRITE(VERT(11),'(a)')'j references temporal file item       '
+        WRITE(VERT(12),'(a)')'k uses value from function generator  '
+        WRITE(VERT(13),'(a)')'l changes thermophysical properties   '
+        WRITE(VERT(14),'(a)') '  ------------------------------------'
+      elseif(icfoc.eq.1)then
+        WRITE(VERT(1),'(a)') 'a senses output of a plant component  '
+        WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
+        WRITE(VERT(3),'(a)') '  senses an ambient condition...      '
+        WRITE(VERT(4),'(a)') 'c   dry bulb temperature              '
+        WRITE(VERT(5),'(a)') 'd   sol-air temperature (not for flow)'
+        WRITE(VERT(6),'(a)') 'e   wind speed                        '
+        WRITE(VERT(7),'(a)') 'f   wind direction                    '
+        WRITE(VERT(8),'(a)') 'g   diffuse horizontal solar radiation'
+        WRITE(VERT(9),'(a)') 'h   direct normal solar radiation     '
+        WRITE(VERT(10),'(a)')'i   external relative humidity        '
+        WRITE(VERT(11),'(a)')'j references temporal file item       '
+        WRITE(VERT(12),'(a)')'k uses value from function generator  '
+        WRITE(VERT(13),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.2)then
+        WRITE(VERT(1),'(a)') 'a senses plant component node T       '
+        WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
+        WRITE(VERT(3),'(a)') '  senses an ambient condition...      '
+        WRITE(VERT(4),'(a)') 'c   dry bulb temperature              '
+        WRITE(VERT(5),'(a)') '    not applicable'
+        WRITE(VERT(6),'(a)') 'e   wind speed                        '
+        WRITE(VERT(7),'(a)') 'f   wind direction                    '
+        WRITE(VERT(8),'(a)') 'g   diffuse horizontal solar radiation'
+        WRITE(VERT(9),'(a)') 'h   direct normal solar radiation     '
+        WRITE(VERT(10),'(a)')'i   external relative humidity        '
+        WRITE(VERT(11),'(a)')'j senses flow node or connection      '
+        WRITE(VERT(12),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.3)then
+        WRITE(VERT(1),'(a)') 'a sensed condition not used           '
+        WRITE(VERT(2),'(a)') '  ------------------------------------'
+      elseif(icfoc.eq.4)then
+        WRITE(VERT(1),'(a)') 'a power control not yet implemented   '
+        WRITE(VERT(2),'(a)') '  ------------------------------------'
+      endif
+      M=M+1
+      CALL EMKEY(M,KEY,IER)
+      WRITE(VERT(M),'(2a)')KEY,' senses temp in a specific zone'
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text and info on portion seen.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)= '  ------------------------------------' 
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT ('0 page part: ',I1,' -- of:',I1)
+      ENDIF
+      VERT(M+2)  ='? help                  '
+      VERT(M+3)  ='- exit this menu        '
+      write(prompt2,'(a)')' '
+
+C Help text for this menu.
+      H(1)='Depending on the control domain a sensor can be located'
+      H(2)='at one of many locations and sense particular aspects of'
+      h(3)='the environment or model.'
+
+C Display the menu.
+      call usrmsg(PROMPT,PROMPT2,'-')
+      CALL EMENU(title,VERT,MVERT,IVERT)
+      IF(IVERT.EQ.MVERT)THEN
+
+C If no selection has been made before exit then display error message.
+        IF(.NOT.SELECT)then
+          call usrmsg(errmsg,' you must select one... ','W')
+          IVERT=-2
+          goto 92
+        endif
+        RETURN
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C Produce help text.
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.EQ.(MVERT-3))THEN
+
+C Ask for the specific zone.
+        CALL EPMENSV
+        idef=0
+        call askzone(isn1,idef,
+     &   'Specific zone associated with this sensor','Select zone','-',
+     &    'Specific zone',ier)
+        CALL EPMENRC
+        SELECT=.TRUE.
+        H(1)='This value specifies sensor location in greater'
+        H(2)='detail. If >0 then refers to a specific surface.'
+        CALL EASKABC('Specific location: ',' ','zone air point',
+     &    'surface','continue',IW,2)
+        if(IW.eq.1)then
+          isn2=0
+          isn3=0
+        elseif(IW.eq.2)then
+          CALL EPMENSV
+          call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
+          CALL EPMENRC
+          H(1)='If = 0 then `inside` face of surface, '
+          H(2)='If > 0 then refers to a node within surface and'
+          H(3)='       this option may not result in a reliable'
+          H(4)='       control so avoid selecting a node.' 
+          CALL EASKABC('Specific location in surface: ',' ',
+     &      'at inside face','node within surface (see help)',
+     &      'continue',IWN,4)
+          if(IWN.eq.1)then
+            isn3=0
+          elseif(IWN.eq.2)then
+            call asksnode(isn1,isn2,ilay,isn3,ier)
+          elseif(IWN.eq.3)then
+            goto 3
+          endif
+        elseif(IW.eq.3)then
+          goto 3
+        endif
+        nsup=0
+
+C In the case of mass flow this choice implies no supplemental
+C items, but return isense as the control law.
+        if(icfoc.eq.2)isense=1
+      elseif(ivert.eq.1.and.(icfoc.eq.0))then
+
+C Senses current zone db temp if ideal.
+        isn1=0
+        isn2=0
+        isn3=0
+        nsup=0
+      elseif(ivert.eq.1.and.(icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses output (plant control) or temperature (flow control) of a plant component.
+        isn1=-1
+        H(1)='This value specifies the plant component index in '
+        H(2)='the plant network definition file. '
+        CALL EASKI(isn2,' ',' Plant component index for sensor ? ',
+     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(1)='This value specifies the plant component node (see '
+        H(2)='the plant component database). '
+        CALL EASKI(isn3,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IER,2)
+        nsup=0
+        if(icfoc.eq.2)nsup=0
+      elseif(ivert.eq.1.and.icfoc.eq.3)then
+
+C Sensed condition does not matter.
+        isn1=0
+        isn2=0
+        isn3=0
+        nsup=0
+      elseif(ivert.eq.1.and.(icfoc.eq.4))then
+
+C Power control sensor not yet implemented, return zeros.
+        isn1=0
+        isn2=0
+        isn3=0
+        nsup=0
+      elseif(ivert.eq.2.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses mix of zone db temp and MRT.
+        isn1=-2
+        CALL EPMENSV
+        idef=0
+        call askzone(isn2,idef,'Zone for sensor','Select zone','-',
+     &    'MRT sensor',ier)
+        CALL EPMENRC
+        H(1)='The convective weighting factor is the percent of'
+        H(2)='overall energy exchange that is convective. '
+        CALL EASKI(isn3,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IER,2)
+        nsup=0
+
+C In the case of mass flow this choice implies no supplemental
+C items, but return isense as the control law.
+        if(icfoc.eq.2)isense=1
+      elseif(ivert.eq.4.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses outside db.
+        nsup=0
+        isn1=-3
+        isn2=0
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.5.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1))then
+
+C Senses sol-air temperature.
+        nsup=0
+        isn1=-3
+        isn2=1
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.6.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses wind speed.
+        nsup=0
+        isn1=-3
+        isn2=2
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.7.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses wind direction.
+        nsup=0
+        isn1=-3
+        isn2=3
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.8.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses diffuse horizontal solar radiation.
+        nsup=0
+        isn1=-3
+        isn2=4
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.9.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses direct normal solar radiation.
+        nsup=0
+        isn1=-3
+        isn2=5
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.10.and.
+     &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
+
+C Senses external relative humidity.
+        nsup=0
+        isn1=-3
+        isn2=6
+        isn3=0
+        if(icfoc.eq.2)isense=0
+      elseif(ivert.eq.11.and.(icfoc.eq.0.or.icfoc.eq.1))then
+
+C Uses information in temporal file.
+C << check whether temporal file associated with model. >>
+        isn1= -5
+        H(1)='A temporal file holds timestep data including setpoints'
+        H(2)='for use with zone or plant controls.   '
+        CALL EASKI(isn2,'Index of the temporal item to associate with',
+     &    ' this sensor:  ',0,'F',0,'-',1,'temporal file item',IER,2)
+        isn3=0
+      elseif(ivert.eq.11.and.(icfoc.eq.2))then
+
+C Senses network flow node or connection. 
+C  isn1= -4  always
+C  isn2  index node/connection
+C  isn3  2nd index node (for differences), or contaminant number
+C  isn4=  0 node, 1=connection (tie in with type later), 2 contaminant control
+        H(1)='A typical flow sensor is at a node in the mass flow '
+        H(2)='network.  Only in the case of sensing mass flow would'
+        H(3)='a specific connection be used as the sensed point. '
+        CALL EASKABC(' ',' Flow sensor at:',' flow node (typical) ',
+     &    ' specific flow connection (see help) ','continue',IW,3)
+        if(IW.eq.1)then
+
+C Flow controller. Note: there is only one `type` per flow function 
+C if actuation is at a component.
+C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
+  93      isn1= -4
+          isn4=0
+          H(1)='See ESP-r Data Model section 9 for details. '
+          ino=IFCTYP(II,1,1)
+          idno=1
+          write(outs,'(2a,i3,a)')'Select a property to sense ',
+     &     '(currently:',IFCTYP(II,1,1),')'
+          call MENUATOL(outs,' Sensed Property:',
+     &     'a dry bulb temperature at node','b enthalpy at node',
+     &     'c additional plant output','d delta T between nodes',
+     &     'e absolute delta T between nodes','f pressure at node',
+     &     'g delta pressure between nodes',
+     &     'h abs delta pressure between nodes',
+     &     'i contaminant concentration at node',' ',' ',' ',
+     &     ino,idno,1)
+          if(ino.eq.0)then
+            call usrmsg('You did not select a valid control law.',
+     &        'Please redefine.','W')
+            goto 93
+          endif
+          nsup=1
+          if(ino.eq.1)isense=1
+          if(ino.eq.2)isense=3
+          if(ino.eq.3)isense=9
+          if(ino.eq.4)then
+            isense=24
+            nsup=2
+          endif
+          if(ino.eq.5)then
+            isense=25
+            nsup=2
+          endif
+          if(ino.eq.6)isense=26
+          if(ino.eq.7)then
+            isense=27
+            nsup=2
+          endif
+          if(ino.eq.8)then
+            isense=28
+            nsup=2
+          endif
+          if(ino.eq.9)then
+            NCPK=1
+            NH=0
+            CALL ASKMFCTM(NCPK,ICPK,'choose','contaminant',NH)
+            H(1)=' You need to set contaminant concentrations in g/kg'
+            H(2)=' in the control law and not kg/kg as elsewhere'
+            CALL PHELPD(' ',2,'-',0,0,IER)
+            isn3=icpk(1)
+            isn4=2
+            isense=41
+          endif
+        elseif(IW.eq.2)then
+          isn1= -4
+          SALT(1)='senses 1st ph mass flow at connection  ' 
+          SALT(2)='senses 2nd ph mass flow at connection  ' 
+          SALT(3)='senses abs mass flow rate at connection' 
+          IX=1
+          H(1)='See ESP-r Data Model section 9 for details. '
+          CALL EPICKS(IX,IVALS,' ',' Controller type: ',
+     &         40,3,SALT,'controller type',IER,1)
+          if(ix.ne.0)then
+            nsup=2
+            if(IVALS(1).eq.1)isense=5
+            if(IVALS(1).eq.2)isense=7
+            if(IVALS(1).eq.3)isense=29
+          endif
+          CALL EPMENSV
+          call ASKCON('  flow connections','-',INS,INE,IC,IER)
+          CALL EPMENRC
+          if(IC.gt.0)then
+            isn2=IC
+            isn3=0
+            isn4=1
+          endif
+        elseif(IW.eq.3)then
+          return
+        endif
+      elseif(ivert.eq.11.and.(icfoc.eq.5))then
+
+C Sense radiation at exterior of surface.
+        isn1= -7
+        isn2=0
+        isn3=0
+        isn4=0
+      elseif(ivert.eq.12.and.(icfoc.eq.0.or.icfoc.eq.1))then
+
+C Uses value from function generator. 
+        isn1= -6
+        H(1)=' The available functions are:'
+        H(2)=' '
+        H(3)='   Function          supp1    supp2    supp3   supp4'
+        H(4)='   ================================================ '
+        H(5)='   1. Step:          start    finish   max     min  '
+        H(6)='   2. Ramp:          start    finish   max     min  '
+        H(7)='   3. Square sine:   max      min      freq    ---  '
+        H(8)='   4. Square cosine: max      min      freq    ---  '
+        H(9)='   5: Triangular:    max      min      freq    ---  '
+        H(10)='  6: Saw-tooth:     max      min      freq    ---  '
+        H(11)='  7: Sine:          max      min      freq    shift'
+        H(12)='  8: Cosine:        max      min      freq    shift'
+        H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
+        H(14)=' - Refer ESP-r Data Model section 9 ' 
+        CALL EASKI(isn2,' ',' Required mathematical function ?',
+     &      1,'F',9,'F',1,'generated function',IER,14)
+      elseif(ivert.eq.12.and.(icfoc.eq.5))then
+
+C Sense lux via daylight coef method. << ? if other info required >>
+        isn1= -8
+        isn2=0
+        isn3=0
+        isn4=0
+      elseif(ivert.eq.13.and.(icfoc.eq.0))then
+
+C Changes thermophysical properties.
+        isn1= -99
+        H(1)='Upper zone air temperature limit (above which sub- '
+        H(2)='stitution occurs. '
+        CALL EASKI(isn2,' Upper zone air temperature limit',
+     &    ' (integer) above which substitution occurs ? ',
+     &    0,'-',0,'-',30,'upper air',IER,2)
+        H(1)='Lower zone air temperature limit (below which sub- '
+        H(2)='stitution occurs. '
+        CALL EASKI(isn3,' Lower zone air temperature limit',
+     &    ' (integer) below which substitution occurs ? ',
+     &    0,'-',0,'-',0,'lower air',IER,2)
+      else
+
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      endif
+
+C Query user for any nested controls (unless thermo substitution).
+      if(icfoc.eq.0.and.isn1.ne.-99)then
+        dok=.false.
+        h(1)='Most users should say no at this point. Nested functions'
+        h(2)='are only used in support of thermophysical property '
+        h(3)='substitution controls (and if you say yes you will be'
+        h(4)='asked for the index of the control loop that defines '
+        h(5)='the substitution). '
+        CALL ASKOK(' Are there any nested control functions ?',
+     &    ' (currently only property substitution allowed) ',OK,
+     &    dok,5)
+        if(OK)then
+          H(1)='Index of the control function to point to.'
+          H(2)='Note that control must be control type -99.'
+          CALL EASKI(isn4,' ',
+     &      ' Control function (index) to be nested: ',
+     &        0,'F',0,'-',1,'nested control',IER,2)
+        else
+          isn4=0
+        endif
+      endif
+      return
+      END
+
+
+C **************** actloc 
+C actloc presents  a list of applicable actuator locations depending
+C on the control domain and includes explicit zones list.
+C It is passed a prompt, menu title and returns 3 actuator indicators
+C (isn1,isn2,isn3,isn4). isense is the condition sensed in the case of 
+C flow control, nsup is the number of supplemental items for associated
+C flow connections.It is assumed that the user will make one selection only.
+      SUBROUTINE actloc(prompt,title,icfoc,II,isn1,ian1,ian2,ian3,
+     &  errmsg,IER)
+#include "building.h"
+#include "net_flow.h"
+#include "epara.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/C1/NCOMP,NCON
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      common/fctl4/iasocc(mcc,MCMP),nfsup(mcc)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      LOGICAL SELECT
+      CHARACTER*(*) prompt,title,errmsg
+
+      DIMENSION VERT(35)
+      CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
+      character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
+
+C Initialise zone menu variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+      SELECT=.FALSE.
+      if(icfoc.eq.0)then
+        MHEAD=3
+      elseif(icfoc.eq.1)then
+        MHEAD=2
+      elseif(icfoc.eq.2)then
+        MHEAD=3
+      elseif(icfoc.eq.3)then
+        MHEAD=2
+      elseif(icfoc.eq.4)then
+        MHEAD=2
+      endif
+      MCTL=3
+      ILEN=NCOMP
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+      if(icfoc.eq.0.and.isn1.eq.-99)then
+
+C If sensor location -99 ask for up to three surfaces where substi-.
+C tutions will occur. << revise to selection list at some point >>.
+        call edisp(IUOUT,' ')
+        call edisp(IUOUT,' Substitutions are allowed on up to three')
+        call edisp(iuout,' surfaces (0 for each not required). ')
+        call edisp(IUOUT,'  ')
+        H(1)='Up to three surfaces may have substitute properties.'
+        H(2)='The number required is the index in the surface.'
+        CALL EASKI(ian1,' ',' First surface index ?',
+     &     0,'F',MS,'F',1,'1st surf for subst',IER,2)
+        CALL EASKI(ian2,' ',' Second surface index ?',
+     &     0,'F',MS,'F',1,'2nd surf for subst',IER,2)
+        CALL EASKI(ian3,' ',' Third surface index ?',
+     &     0,'F',MS,'F',1,'3rd surf for subst',IER,2)
+        return
+      endif
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+
+C Build up text strings for the menu. 
+    3 M=MHEAD
+      if(icfoc.eq.0)then
+        WRITE(VERT(1),'(a)')'a at current zone air point           '
+        WRITE(VERT(2),'(a)')'b mix of convection and radiation     '
+        WRITE(VERT(3),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.1)then
+        WRITE(VERT(1),'(a)')'a node within a plant component       '
+        WRITE(VERT(2),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.2)then
+        WRITE(VERT(1),'(a)')'a single flow connection              '
+        WRITE(VERT(2),'(a)')'b flow component (& assoc connections)'
+        if(IFCTYP(II,1,1).eq.41)vert(2)='b contaminate source      '
+        WRITE(VERT(3),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.3)then
+        WRITE(VERT(1),'(a)')'a actuator not used                   '
+        WRITE(VERT(2),'(a)')'  ------------------------------------'
+      elseif(icfoc.eq.4)then
+        WRITE(VERT(1),'(a)')'a power actuator not yet implemented  '
+        WRITE(VERT(2),'(a)')'  ------------------------------------'
+      endif
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          if(icfoc.eq.0)then
+            M=M+1
+            CALL EMKEY(M,KEY,IER)
+            WRITE(VERT(M),'(3a)')KEY,' air point or surf in ',zname(L)
+          endif
+        ENDIF
+   10 CONTINUE
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text and info on portion seen.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)=  '  ------------------------------------'
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT ('0 page part: ',I1,' -- of:',I1)
+      ENDIF
+      VERT(M+2)  ='? help                  '
+      VERT(M+3)  ='- exit this menu        '
+      write(prompt2,'(a)')' '
+
+C Help text for this menu.
+      H(1)='Depending on the control domain actuation can be located'
+      H(2)='at one of many locations within the model.'
+
+C Display the menu.
+      call usrmsg(PROMPT,PROMPT2,'-')
+      CALL EMENU(title,VERT,MVERT,IVERT)
+      IF(IVERT.EQ.MVERT)THEN
+
+C If no selection has been made before exit then display error message.
+        IF(.NOT.SELECT)then
+          call usrmsg(errmsg,' you must select one... ','W')
+          IVERT=-2
+          goto 92
+        endif
+        RETURN
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C Produce help text.
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Decode from the potentially long list to the zone number via KEYIND.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        SELECT=.TRUE.
+        ian1 = IFOC
+        H(1)='This value specifies sensor location in greater'
+        H(2)='detail. If >0 then refers to a specific surface.'
+        CALL EASKABC('Specific location: ',' ','zone air point',
+     &    'surface','continue',IW,2)
+        if(IW.eq.1)then
+          ian2=0
+          ian3=0
+        elseif(IW.eq.2)then
+          CALL EPMENSV
+          call EASKSUR(ian1,ian2,'-','Available surfaces.',' ',IER)
+          CALL EPMENRC
+          H(1)='If = 0 then `inside` face of surface, '
+          H(2)='If >0 then refers to a node within surface.'
+          CALL EASKABC('Specific location in surface: ',' ',
+     &      'at inside face','node within surface','continue',IWN,2)
+          if(IWN.eq.1)then
+            ian3=0
+          elseif(IWN.eq.2)then
+            call asksnode(ian1,ian2,ilay,ian3,ier)
+          elseif(IWN.eq.3)then
+            goto 3
+          endif
+        elseif(IW.eq.3)then
+          goto 3
+        endif
+      elseif(ivert.eq.1.and.(icfoc.eq.0))then 
+
+C Actuates current zone air point.
+        ian1=0
+        ian2=0
+        ian3=0
+      elseif(ivert.eq.1.and.(icfoc.eq.1))then
+
+C Within a plant component.
+        ian1=-1
+        H(1)='This value specifies the plant component index in '
+        H(2)='the plant network definition file. '
+        CALL EASKI(ian2,' ',' Plant component index ? ',
+     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(1)='This value specifies the plant component node (see '
+        H(2)='the plant component database). '
+        CALL EASKI(ian3,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IER,2)
+      elseif(ivert.eq.1.and.(icfoc.eq.2))then
+
+C At a flow connection.
+        ian1= -3
+        CALL EPMENSV
+        call ASKCON(' Flow connection?','-',INS,INE,IC,IER)
+        CALL EPMENRC
+        write(outs,'(6A)') ' Selected ',NDNAM(NODPS(IC)),
+     &    ' - ',NDNAM(NODNE(IC)),' via ',CMNAM(ITPCON(IC))
+        call edisp(iuout,outs)
+        if(IC.gt.0)then
+          ian2=IC
+          ian3=0
+        endif
+
+C If sensor is a -4 and and connection type ask for specific
+C supplemental nodes.
+        if(ifsn(ii,1).eq.-4.and.ian1.eq.-3)then
+          CALL EPMENSV
+          call ASKRNOD('  sensed flow node','-',INOD,IER)
+          CALL EPMENRC
+          if(INOD.gt.0)then
+            ifsn(ii,2)=INOD
+            if(nfsup(ii).eq.2)then
+              CALL EPMENSV
+              call ASKRNOD(' 2nd sensed flow node','-',INOD,IER)
+              CALL EPMENRC
+              if(INOD.gt.0)then
+C << pev was ifan(ii,3) which was probably a typo >>
+                ifsn(ii,3)=INOD
+                ian3=INOD
+              endif
+            else
+              ian3=0
+            endif
+          endif
+        endif
+      elseif(ivert.eq.1.and.icfoc.eq.3)then
+
+C Sensed condition does not matter.
+        ian1=0
+        ian2=0
+        ian3=0
+      elseif(ivert.eq.1.and.(icfoc.eq.4))then
+
+C Power control sensor not yet implemented, return zeros.
+        ian1=0
+        ian2=0
+        ian3=0
+      elseif(ivert.eq.2.and.(icfoc.eq.0))then
+
+C Actuates radiant convective mix.
+        ian1=-2
+        CALL EPMENSV
+        idef=0
+        call askzone(ian2,idef,'Zone for actuation','Select zone','-',
+     &    'mixed injection',ier)
+        CALL EPMENRC
+        H(1)='The convective weighting factor is the percent of'
+        H(2)='overall energy exchange that is convective. '
+        CALL EASKI(ian3,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IER,2)
+      elseif(ivert.eq.2.and.(icfoc.eq.2))then
+
+C At a flow component.
+ 742    ian1= -4
+        CALL EPMENSV
+        call ASKRCMP(' Flow component?','-',ICMP,IER)
+        CALL EPMENRC
+        if((ITPCMP(ICMP).EQ.220.OR.ITPCMP(ICMP).EQ.230.OR.
+     &    ITPCMP(ICMP).EQ.240.OR.ITPCMP(ICMP).EQ.250))THEN
+          WRITE(outs,'(a,i3,a)') ' Sorry component type ',ITPCMP(ICMP),
+     &                           ' cannot be actuated.'
+          call edisp(itru,outs)
+          goto 742
+        elseif(icmp.eq.0)then
+          goto 742
+        ENDIF
+        ian2=ICMP
+
+        call edisp(iuout,' ')
+        call edisp(iuout,'A mass flow component (such as a orifice)')
+        call edisp(iuout,'may be controlled.  For each instance of a')
+        call edisp(iuout,'component that is controlled on a sensed')
+        call edisp(iuout,'condition at another node you will be asked')
+        call edisp(iuout,'to nominate the node(s). ')
+        call edisp(iuout,'A node must be specified for each instance!')
+        ian3=0
+
+C Loop through each of the connections and test for a matching
+C component type.
+        do 842 icl=1,NCNN
+          if(CMNAM(ICMP)(1:12).eq.CMNAM(ITPCON(ICL))(1:12))then
+            write(outs,'(7A)') 'For connection ',
+     &        NDNAM(NODPS(ICL)),' - ',NDNAM(NODNE(ICL)),' via ',
+     &        CMNAM(ITPCON(ICL)),' ...'
+            call edisp(iuout,outs)
+            ian3=ian3+1
+            iasocc(II,ian3)=icl
+
+C if isn1.eq.-3 then no supplemental.
+            if(nfsup(II).eq.0)then
+              ISDCNN(ICL)=0
+              NDSCNN(ICL,1)=0
+              NDSCNN(ICL,2)=0
+              call edisp(iuout,' No supplemental data is required.')
+            elseif(nfsup(II).eq.1)then
+              ISDCNN(ICL)=1
+              CALL EPMENSV
+              call ASKRNOD('control on node','-',iv,IER)
+              CALL EPMENRC
+              NDSCNN(ICL,1)=iv
+              NDSCNN(ICL,2)=0
+            elseif(nfsup(II).eq.2)then
+              ISDCNN(ICL)=2
+              CALL EPMENSV
+              call ASKRNOD(' 1st sensed node name','-',iv,IER)
+              CALL EPMENRC
+              NDSCNN(ICL,1)=iv
+              CALL EPMENSV
+              call ASKRNOD(' 2nd sensed node name','-',iv,IER)
+              CALL EPMENRC
+              NDSCNN(ICL,2)=iv
+            endif
+          endif
+ 842    continue
+      else
+
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      endif
+
+      return
+      END
+
+C ************************ ASKMFCTM ************************
+C ASKMFCTM: Asks for one or more contaminants
+C PROMPT1 and PROMPT2 are text prompt strings
+C NH is number of help strings.
+
+      SUBROUTINE ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,NH)
+#include "net_flow.h"
+
+      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+
+      DIMENSION ICPK(MCONTM)
+
+      CHARACTER VERTC(MCONTM)*12, CONTMNAM*12
+      CHARACTER*(*) PROMPT1, PROMPT2
+
+C Set up array of menu strings.
+      if(NCONTM.gt.0)then
+        do 10 I=1,NCONTM
+          VERTC(I)=CONTMNAM(I)
+ 10     continue
+        call EPICKS(NCPK,ICPK,PROMPT1,PROMPT2,
+     &    12,NCONTM,VERTC,'Contaminant select',IER,NH)
+      else
+        call usrmsg('There are no contaminates to select.',' ','W')
+      endif
+      return
+      end
+

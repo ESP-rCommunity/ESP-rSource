@@ -1,0 +1,281 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1                                  
+# Project title:
+test for chp unit                                                     
+# Total no. of specified components and simulation type
+   35    3
+#->   1, 3 node small scale CHP engine unit                                      
+  chp_unit          36
+    1        # Component has   1 control variable(s).
+   100.0000
+   23     5
+  50.000       600.00       60.000       2.0000      0.55000E+08   36000.    
+ 0.67400E-03  0.16160E-04  0.28480E-01  0.28440E-03  0.99000           0.    
+      0.           0.       74.396      0.65379     -0.83280E-02  0.52135E-04
+  9959.5       179.04     -0.19504           0.           0.    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->   2, Generic 2-node fluid fluid heat exchanger with multiple flow regimes    
+  heat_exch         52
+    0        # Component has   0 control variable(s).
+    6
+  1.0000       1.0000       6000.0       1.0000      0.10000       3.0000    
+#->   3, variable speed domestic WCH pump; 1 node model                          
+  pump1             15
+    1        # Component has   1 control variable(s).
+    5.14000E-03
+    6     5
+  5.0000       2250.0      0.20000       3500.0      0.70000E-02  0.70000    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->   4, Generic 2-node gas fluid heat exchanger with multiple flow regimes      
+  exh_heat_exch     54
+    0        # Component has   0 control variable(s).
+    6
+  1.0000       1.0000       300.00       1.0000      0.10000       2.0000    
+#->   5, WCH calorifier; 2 node model                                            
+  calorifier        50
+    0        # Component has   0 control variable(s).
+    8
+  3000.0       4180.0      0.10000E-01   5.0000      0.95500       3500.0    
+  10.000       1000.0    
+#->   6, WCH pipe converging 2-leg junction; 1 node model                        
+  converge          14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->   7, variable speed domestic WCH pump; 1 node model                          
+  WCH_pump          15
+    1        # Component has   1 control variable(s).
+    2.39200E-03
+    6     5
+  5.0000       2250.0      0.20000       2000.0      0.30000E-02  0.70000    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->   8, variable speed domestic WCH pump; 1 node model                          
+  DHW_pump          15
+    1        # Component has   1 control variable(s).
+    1.00000E-03
+    6     5
+  5.0000       2250.0      0.20000       1500.0      0.20000E-02  0.70000    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->   9, WCH flow control valve; 1 node model; flow ratio control                
+  3_port_valve      38
+    1        # Component has   1 control variable(s).
+   0.500000
+    3
+  1.0000       500.00       3.5000    
+#->  10, WCH pipe converging 2-leg junction; 1 node model                        
+  converge2         14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->  11, condensing boiler & ON/OFF control; 2 node model                        
+  boiler_1          16
+    1        # Component has   1 control variable(s).
+  0.
+   12
+  50.000       1000.0      0.12000E-02  0.10000E-01  0.35000E+08  0.86000    
+ 0.25000E-02  0.25000E-03  0.80000E-02  0.41000E-03   1.0000       90.000    
+#->  12, condensing boiler & ON/OFF control; 2 node model                        
+  boiler_2          16
+    1        # Component has   1 control variable(s).
+  0.
+   12
+  50.000       1000.0      0.12000E-02  0.10000E-01  0.35000E+08  0.86000    
+ 0.25000E-02  0.25000E-03  0.80000E-02  0.41000E-03   1.0000       90.000    
+#->  13, condensing boiler & ON/OFF control; 2 node model                        
+  boiler_3          16
+    1        # Component has   1 control variable(s).
+  0.
+   12
+  50.000       1000.0      0.12000E-02  0.10000E-01  0.35000E+08  0.86000    
+ 0.25000E-02  0.25000E-03  0.80000E-02  0.41000E-03   1.0000       90.000    
+#->  14, WCH pipe converging 2-leg junction; 1 node model                        
+  cvg_b1            14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->  15, WCH pipe converging 2-leg junction; 1 node model                        
+  cvg_b2            14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->  16, WCH pipe converging 2-leg junction; 1 node model                        
+  cvg_b3            14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->  17, air/air plate heat exchanger; 2 node model                              
+  air_hex           10
+    0        # Component has   0 control variable(s).
+    5
+  10.000       1000.0       7.0000       300.00       1.0000    
+#->  18, air heating coil fed by WCH system; 3 node model                        
+  heat_coil         21
+    0        # Component has   0 control variable(s).
+    9
+  15.000       500.00       1.0000       2.0000       15.000      0.33000    
+  1.0000      0.10000E-02  0.15000E-01
+#->  19, air cooling coil; 1 node model ; water mass flow rate control           
+  cool_coil          8
+    1        # Component has   1 control variable(s).
+  0.
+    9
+  15.000       1000.0       1.0000       15.000      0.33000       1.0000    
+ 0.10000E-02  0.15000E-01   10.000    
+#->  20, centrifugal fan, 1 node model ; flow control                            
+  supply_fan         3
+    1        # Component has   1 control variable(s).
+    7.50000
+    6     5
+  30.000       500.00       7.0000       1500.0       9.0000      0.70000    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->  21, centrifugal fan, 1 node model ; flow control                            
+  extract_fan        3
+    1        # Component has   1 control variable(s).
+    7.50000
+    6     5
+  30.000       500.00       7.0000       5500.0       9.0000      0.70000    
+# Component electrical details.
+  0.800  -1      0.000    220.000   4
+#->  22, air duct; 1 node model                                                  
+  duct_gym           6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  23, air duct; 1 node model                                                  
+  duct_chg           6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  24, air duct; 1 node model                                                  
+  duct_hall          6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  25, air duct; 1 node model                                                  
+  duct_recp          6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  26, air duct; 1 node model                                                  
+  rduct_recp         6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  27, air duct; 1 node model                                                  
+  rduct_hall         6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  28, air duct; 1 node model                                                  
+  rduct_gym          6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  29, air duct; 1 node model                                                  
+  rduct_cgh          6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->  30, air mixing box or converging junction; 1 node model                     
+  cvg_1              1
+    0        # Component has   0 control variable(s).
+    3
+  1.0000       500.00       3.5000    
+#->  31, air mixing box or converging junction; 1 node model                     
+  cvg_2              1
+    0        # Component has   0 control variable(s).
+    3
+  1.0000       500.00       3.5000    
+#->  32, air mixing box or converging junction; 1 node model                     
+  cvg_3              1
+    0        # Component has   0 control variable(s).
+    3
+  1.0000       500.00       3.5000    
+#->  33, WCH flow control valve; 1 node model; flow ratio control                
+  ahu_dv            38
+    1        # Component has   1 control variable(s).
+   0.500000
+    3
+  1.0000       500.00       3.5000    
+#->  34, WCH pipe converging 2-leg junction; 1 node model                        
+  ahu_cvg           14
+    0        # Component has   0 control variable(s).
+    3
+ 0.10000       2250.0      0.20000E-01
+#->  35, variable speed domestic WCH pump; 1 node model                          
+  pump2             15
+    1        # Component has   1 control variable(s).
+    2.90000E-03
+    6     5
+  5.0000       2250.0      0.20000       500.00      0.70000E-02  0.70000    
+# Component electrical details.
+  0.700  -1      0.000    220.000   4
+# The following is a list of component connections.
+ 50          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  chp_unit          1     3     pump2             1    1.000                 #  1
+  pump2             1     3     heat_exch         1    1.000                 #  2
+  chp_unit          2     4     exh_heat_exch     1    1.000     0.00        #  3
+  exh_heat_exch     1     3     chp_unit          2    1.000                 #  4
+  heat_exch         1     3     chp_unit          1    1.000                 #  5
+  heat_exch         2     3     pump1             1    0.160                 #  6
+  exh_heat_exch     2     3     heat_exch         2    1.000                 #  7
+  cvg_b1            1     3     exh_heat_exch     2    1.000                 #  8
+  3_port_valve      1     3     cvg_b3            1    0.699                 #  9
+  cvg_b1            1     3     boiler_1          2    1.000                 # 10
+  cvg_b2            1     3     boiler_2          2    1.000                 # 11
+  cvg_b3            1     3     boiler_3          2    1.000                 # 12
+  cvg_b2            1     3     cvg_b1            1    1.000                 # 13
+  cvg_b3            1     3     cvg_b2            1    1.000                 # 14
+  boiler_1          1     3     pump1             1    0.280                 # 15
+  boiler_2          1     3     pump1             1    0.280                 # 16
+  boiler_3          1     3     pump1             1    0.280                 # 17
+  calorifier        1     2     DHW_pump          1    1.000    10.00   0.00 # 18
+  converge          1     3     calorifier        2    1.000                 # 19
+  converge          1     3     3_port_valve      1    1.000                 # 20
+  DHW_pump          1     3     calorifier        1    1.000                 # 21
+  calorifier        2     3     cvg_b3            1    0.001                 # 22
+  WCH_pump          1     3     cvg_b3            1    0.300                 # 23
+  converge2         1     3     converge          1    1.000                 # 24
+  pump1             1     3     converge2         1    1.000                 # 25
+  heat_coil         2     3     air_hex           1    1.000                 # 26
+  cool_coil         1     3     heat_coil         2    1.000                 # 27
+  supply_fan        1     3     cool_coil         1    1.000                 # 28
+  duct_gym          1     3     supply_fan        1    0.120                 # 29
+  duct_chg          1     3     supply_fan        1    0.120                 # 30
+  duct_hall         1     3     supply_fan        1    0.710                 # 31
+  duct_recp         1     3     supply_fan        1    0.050                 # 32
+  rduct_recp        1     4     duct_recp         1    1.000     1.00        # 33
+  rduct_hall        1     4     duct_hall         1    1.000     2.00        # 34
+  rduct_gym         1     4     duct_gym          1    1.000     3.00        # 35
+  rduct_cgh         1     4     duct_chg          1    1.000     4.00        # 36
+  cvg_1             1     3     rduct_gym         1    1.000                 # 37
+  cvg_1             1     3     rduct_cgh         1    1.000                 # 38
+  cvg_2             1     3     rduct_recp        1    1.000                 # 39
+  cvg_2             1     3     rduct_hall        1    1.000                 # 40
+  cvg_3             1     3     cvg_1             1    1.000                 # 41
+  cvg_3             1     3     cvg_2             1    1.000                 # 42
+  extract_fan       1     3     cvg_3             1    1.000                 # 43
+  air_hex           1     4     air_hex           2    1.000     0.00        # 44
+  air_hex           2     3     extract_fan       1    1.000                 # 45
+  ahu_dv            1     3     WCH_pump          1    0.999                 # 46
+  converge2         1     3     ahu_cvg           1    1.000                 # 47
+  heat_coil         3     3     WCH_pump          1    0.001                 # 48
+  ahu_cvg           1     3     heat_coil         3    1.000                 # 49
+  ahu_cvg           1     3     ahu_dv            1    1.000                 # 50
+# The following is a list of containment temperatures.
+  5          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  heat_coil           3             5.00000   0.00000   0.00000
+  cool_coil           3             5.00000   0.00000   0.00000
+  chp_unit            3             5.00000   0.00000   0.00000
+  exh_heat_exch       3             5.00000   0.00000   0.00000
+  heat_exch           3             5.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

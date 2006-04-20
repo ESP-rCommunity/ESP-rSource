@@ -1,0 +1,38 @@
+* CONFIGURATION3.0
+# ESRU system configuration defined by file 
+# structured.cfg_sd
+*date Wed Mar 23 11:38:47 2005  # latest file modification 
+*root structured
+*zonpth ../zones                  # path to zones
+*netpth ../nets                   # path to networks
+*ctlpth ../ctl                    # path to controls
+*radpth ../rad                    # path to radiance files
+*imgpth ../images                 # path to project images
+*tmppth ./                        # path to project scratch folder
+*docpth ./                        # path to project documents
+*dbspth ./                        # path to local databases
+*indx    1 # Building only
+ 50.000    0.000   # Latitude & Longitude (diff from meridian)
+      1   0.200   # Site exposure & ground reflectivity
+* DATABASES
+*prm  /usr/esru/esp-r/databases/constr.db1
+*mlc  /usr/esru/esp-r/databases/multicon.db1
+*opt  /usr/esru/esp-r/databases/optics.db1
+*prs  /usr/esru/esp-r/databases/pressc.db1
+*evn  /usr/esru/esp-r/databases/profiles.db1
+*clm  /usr/esru/esp-r/climate/clm67
+*pdb  /usr/esru/esp-r/databases/plantc.db1
+*year  1999 # assessment year
+* PROJ LOG
+structured.log
+* Building
+testing structured mesh module
+      1  # no of zones
+*zon   1   # reference for room        
+*opr ../zones/room.opr  # schedules
+*geo ../zones/room.geo  # geometry
+*con ../zones/room.con  # construction
+*csm ../zones/room.csm  # structured mesh
+*zend 
+*cnn  structured.cnn  # connections 
+      0   # no fluid flow network

@@ -1,0 +1,37 @@
+*IDST COMMANDS
+*run_mode,silent
+*keep_results,yes
+*note,test run 22 sept
+#Asolute path of the directory that contain the cfg files
+#*abs_path,C:\IMAGE\tool\buildings\Glenview
+*abs_path,./
+#Winter, transiant and summer period cfg files
+*win_cfg,glen.cfg
+*tra_cfg,glen.cfg
+*sum_cfg,glen.cfg
+#Asolute path of the climate file and the corresponding name
+*climate,/usr/esru/esp-r/climate2/Try/kew.clm
+*name_climate,Kew TRY
+#Asolute path of the external glazing file and the corresponding name
+*ext_window,DSC644213n.wis
+*name_ext_window,Double Solar Control 6 / 12 / 6 +  Selective soft coating (2) )  Argon
+#Asolute path of the internal glazing file and the corresponding name
+*int_window, none
+*name_int_window, none  
+#Asolute path of the atrium glazing file and the corresponding name
+*atr_window,DSC132414b.wis
+*name_atr_window,Double Clear Float 6 / 10 / encaps. blind (45 deg) / 10 / 6 + Selective
+#Winter Simulation Period : day , month
+*win_start,15,1
+*win_stop,21,1
+*win_typ_day,18,1
+#Transiant Simulation Period : day , month
+*tra_start,8,3
+*tra_stop,14,3
+*tra_typ_day,10,3
+#Summer Simulation Period : day , month
+*sum_start,29,5
+*sum_stop,4,6
+*sum_typ_day,2,6
+#Results file name
+*res,test.res

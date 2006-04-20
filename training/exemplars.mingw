@@ -1,0 +1,304 @@
+*EXEMPLARS
+*help	Some typical designs to provide a basic introduction
+*help	to ESP-r problem definition and illustrate realistic
+*help	applications.
+*group	simple models
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	1 zone with convective heating & basic control
+*cfg	C:/user/esru/esp-r/training/simple/cfg/bld_simple.cfg_nt
+*root	C:/user/esru/esp-r/training/simple
+*item
+*name	...with underfloor heating
+*cfg	C:/user/esru/esp-r/training/simple/cfg/bld_simple_ufh.cfg_nt
+*root	C:/user/esru/esp-r/training/simple
+*item
+*name	...with external shading device
+*cfg	C:/user/esru/esp-r/training/simple/cfg/bld_simple_shd.cfg_nt
+*root	C:/user/esru/esp-r/training/simple
+*item
+*name	...with convective heating system & fuzzy control
+*cfg	C:/user/esru/esp-r/training/simple/cfg/bld_simple_fzy.cfg_nt
+*root	C:/user/esru/esp-r/training/simple
+*item
+*name	3 zones with convective heating & basic control
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with window reveal & external shading
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_shd.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with scheduled infiltration
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_af1.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with scheduled infiltration & ventilation
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_af2.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with pre-heat controller.
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_prht.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with zone temperature matching (to ambient)
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_tm1.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with zone temperature matching (avg of sensors)
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_tm2.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*name	...with convective heating & PID control
+*cfg	C:/user/esru/esp-r/training/pid/cfg/pid.cfg_nt
+*root	C:/user/esru/esp-r/training/pid
+*item
+*name	...with load shedding controller.
+*cfg	C:/user/esru/esp-r/training/basic/cfg/bld_basic_prht.cfg_nt
+*root	C:/user/esru/esp-r/training/basic
+*item
+*group	realistic models
+*help	A set of models demonstrating ESP-r's basic modelling features.
+*item
+*name	house with sun space, winter operation
+*cfg	C:/user/esru/esp-r/training/house/sun_space/cfg/house_win.cfg_nt
+*root	C:/user/esru/esp-r/training/house/sun_space
+*item
+*name	...with summer operation
+*cfg	C:/user/esru/esp-r/training/house/sun_space/cfg/house_sum.cfg_nt
+*root	C:/user/esru/esp-r/training/house/sun_space
+*item
+*name	house with solar ventilation pre-heat
+*cfg	C:/user/esru/esp-r/training/house/svph/cfg/linford.cfg_nt
+*root	C:/user/esru/esp-r/training/house/svph
+*item
+*name	office building with natural ventilation
+*cfg	C:/user/esru/esp-r/training/office/cfg/office_sum.cfg_nt
+*root	C:/user/esru/esp-r/training/office
+*item
+*group	real projects
+*help	A set of models of consulting projects.
+*item
+*name	Glenview Residential Home conservatory
+*cfg	C:/user/esru/esp-r/training/glenview/cfg/glenview.cfg_nt
+*root	C:/user/esru/esp-r/training/glenview
+*item
+*name	Queens Building, Leicester, England
+*cfg	C:/user/esru/Projects/Dl-e/Queens/cfg/queens_ab.cfg_nt
+*root	C:/user/esru/Projects/Dl-e/Queens
+*item
+*name	Section of office building (base case), Ottawa Canada 
+*cfg	C:/user/esru/esp-r/training/office_vent/cfg/office_vent.cfg_nt
+*root	C:/user/esru/esp-r/training/office_vent
+*item
+*name	Section of office building (net infiltration), Ottawa 
+*cfg	C:/user/esru/esp-r/training/office_vent/cfg/office_vent_netinf.cfg_nt
+*root	C:/user/esru/esp-r/training/office_vent
+*item
+*name	Section of office building (ctld facade vents), Ottawa 
+*cfg	C:/user/esru/esp-r/training/office_vent/cfg/office_vent_ctl.cfg_nt
+*root	C:/user/esru/esp-r/training/office_vent
+*item
+*label	models with a special focus:
+*item
+*group	network ventilation
+*help	A set of models demonstrating ventilation modelling.
+*item
+*name	a simple passive ventilation network
+*cfg	C:/user/esru/esp-r/training/flow/cfg/bld_flw_simp.cfg_nt
+*root	C:/user/esru/esp-r/training/flow
+*item
+*name	a simple ventilation network with controlled windows
+*cfg    C:/user/esru/esp-r/training/flow/cfg/bld_flw_ctl.cfg_nt
+*root	C:/user/esru/esp-r/training/flow
+*item
+*name	a forced ventilation network with controlled recirc
+*cfg    C:/user/esru/esp-r/training/flow/cfg/bld_mech_ven.cfg_nt
+*root	C:/user/esru/esp-r/training/flow
+*item
+*name	forced ventilation with recirc & thermal mixing
+*cfg    C:/user/esru/esp-r/training/flow/cfg/bld_mech_ven_th.cfg_nt
+*root	C:/user/esru/esp-r/training/flow
+*item
+*name	three facade ventilation schemes (text network)
+*cfg    C:/user/esru/esp-r/training/3_windows/cfg/3_windows_legacy.cfg_nt
+*root	C:/user/esru/esp-r/training/3_windows
+*item
+*name	three facade ventilation schemes (graphic network)
+*cfg    C:/user/esru/esp-r/training/3_windows/cfg/3_windows_do6.cfg_nt
+*root	C:/user/esru/esp-r/training/3_windows
+*item
+*group	HVAC
+*help	A set of models demonstrating ESP-r's plant capabilities.
+*item
+*name	rudimentary mechanical ventilation system
+*cfg	C:/user/esru/esp-r/training/plant/vent_simple/cfg/vent.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/vent_simple
+*item
+*name	detailed mechanical ventilation system
+*cfg	C:/user/esru/esp-r/training/plant/vent_detailed/cfg/vent_det.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/vent_detailed
+*item
+*name   simple building & plant heating system (ON/OFF control)
+*cfg    C:/user/esru/esp-r/training/plant/hvac_bas/cfg/bld_basic.cfg-onoff_nt
+*root	C:/user/esru/esp-r/training/plant/hvac_bas
+*item
+*name   simple building & plant heating system (PID control)
+*cfg    C:/user/esru/esp-r/training/plant/hvac_bas/cfg/bld_basic.cfg-pid_nt
+*root	C:/user/esru/esp-r/training/plant/hvac_bas
+*item
+*name	zone with air handling unit, humidity control
+*cfg	C:/user/esru/esp-r/training/plant/ahu/cfg/ahu_hum.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/ahu
+*item
+*name	zone with wet central heating system
+*cfg	C:/user/esru/esp-r/training/plant/wch/cfg/wch.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/wch
+*item
+*name   air conditioned building with humidity control
+*cfg    C:/user/esru/esp-r/training/plant/ahu/cfg/ahu_hum.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/ahu
+*item
+*name   ventilation heat recovery
+*cfg    C:/user/esru/esp-r/training/plant/ahu/cfg/vent_recovery.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/ahu
+*item
+*name   4 zones serviced with active solar systems
+*cfg    C:/user/esru/esp-r/training/plant/solar/cfg/systems.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/solar
+*item
+*name   fan duct system with zone heater (using "primitive parts")
+*cfg    C:/user/esru/esp-r/training/plant/ac_pp/cfg/ac_pp.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/ac_pp
+*item
+*name   4 row cooling coil (using "primitive parts")
+*cfg    C:/user/esru/esp-r/training/plant/coil_pp/cfg/coil_pp.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/coil_pp
+*item
+*group  HVAC + network ventilation
+*help	a set of models demonstrating the integration of fluid flow and plant.
+*item
+*name   simple plant with damper controlled recirculation
+*cfg    C:/user/esru/esp-r/training/plant/hvac_bas/cfg/bld_recirc.cfg-pid_nt
+*root	C:/user/esru/esp-r/training/plant/hvac_bas
+*item
+*name   multizone VAV system with damper & fan speed control
+*cfg    C:/user/esru/esp-r/training/plant/hvac_vav/cfg/office1VAV.cfg_nt
+*root	C:/user/esru/esp-r/training/plant/hvac_vav
+*item
+*group	construction processes
+*help	A set of models demonstrating ESP-r's moisture flow capabilities.
+*item
+*name	thermophysical property substitution
+*cfg	C:/user/esru/esp-r/training/constr/tp_sub/cfg/tp_sub.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/tp_sub
+*item
+*name   transparent insulation (variable properties)
+*cfg    C:/user/esru/esp-r/training/constr/adapt/cfg/tim.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/adapt
+*item
+*name   adaptive 1-D gridding
+*cfg    C:/user/esru/esp-r/training/constr/adapt/cfg/g1d.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/adapt
+*item
+*name   adaptive 3-D gridding
+*cfg    C:/user/esru/esp-r/training/constr/adapt/cfg/g3d.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/adapt
+*item
+*name   3-D ground conduction
+*cfg    C:/user/esru/esp-r/training/constr/adapt/cfg/grd.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/adapt
+*item
+*name   moisture flow analysis
+*cfg    C:/user/esru/esp-r/training/constr/adapt/cfg/mst.cfg_nt
+*root	C:/user/esru/esp-r/training/constr/adapt
+*item
+*name   mould growth detection
+*cfg    C:/user/esru/esp-r/training/mould/cfg/mould.cfg_nt
+*root	C:/user/esru/esp-r/training/mould
+*item
+*name   mould infested house analysis
+*cfg    C:/user/esru/Projects/Shomes/Burdie/cfg/burdie.cfg_nt
+*root	C:/user/esru/Projects/Shomes/Burdie
+*item
+*group	windows and daylighting
+*help	A set of models focusing on glazing systems and daylighting.
+*item
+*name	office with photocells for luminaire control
+*cfg	C:/user/esru/esp-r/training/cg_ctl/static/cfg/cg_ctl.cfg_nt
+*root	C:/user/esru/esp-r/training/cg_ctl/static
+*item
+*name	...with dynamic luminaires & illuminance prediction
+*cfg	C:/user/esru/esp-r/training/cg_ctl/coupling/cfg/coupling.cfg_nt
+*root	C:/user/esru/esp-r/training/cg_ctl/coupling
+*item
+*name	...with dynamic luminaires & electrochromic glazing
+*cfg	C:/user/esru/esp-r/training/el_chr_ctl/cfg/office.cfg_nt
+*root	C:/user/esru/esp-r/training/el_chr_ctl
+*item
+*name	College La Vanoise, Modane, France
+*cfg	C:/user/esru/Projects/Dl-e/Vanoise/Cfg/mod_as_is.cfg_nt
+*root	C:/user/esru/Projects/Dl-e/Vanoise
+*item
+*group	acoustics
+*help	A set of models focusing on acoustic performance.
+*item
+*name	Acoustic analysis, atrium within Energie Ouest Suisse building.
+*cfg	C:/user/esru/esp-r/training/acoustic/EOS_atrium/cfg/EOS_atrium.cfg_nt
+*root	C:/user/esru/esp-r/training/acoustic/EOS_atrium
+*item
+*group	detailed air flow
+*help	A set of models demonstrating ESP-r's CFD capabilities.
+*item
+*name   Analysis of a radiant heating problem (CFD not active)
+*cfg    C:/user/esru/esp-r/training/cfd/rad_htg/cfg/rad_htg.cfg_nt
+*root	C:/user/esru/esp-r/training/cfd/rad_htg
+*item
+*name   CFD analysis of a displacement ventilation system
+*cfg    C:/user/esru/esp-r/training/cfd/displ_vent/cfg/displ_vent.cfg_nt
+*root	C:/user/esru/esp-r/training/cfd/displ_vent
+*item
+*name   IEA Annex 20 isothermal test case
+*cfg    C:/user/esru/esp-r/training/cfd/IEA_A20/isotherm/cfg/dfs_iso.cfg_nt
+*root	C:/user/esru/esp-r/training/cfd/IEA_A20/isotherm
+*item
+*name   IEA Annex 20 non-isothermal test case
+*cfg    C:/user/esru/esp-r/training/cfd/IEA_A20/nonisotherm/cfg/dfs_niso.cfg_nt
+*root	C:/user/esru/esp-r/training/cfd/IEA_A20/nonisotherm
+*item
+*group	combined thermal and electrical
+*help	A set of models demonstrating CHP modelling
+*item
+*name   passive CHP using photovoltaic facades
+*cfg    C:/user/esru/esp-r/training/pv_facade/cfg/elsa.cfg_nt
+*root	C:/user/esru/esp-r/training/pv_facade
+*item
+*name   engine-based CHP
+*cfg    C:/user/esru/esp-r/training/chp/unit/cfg/unit.cfg_nt
+*root	C:/user/esru/esp-r/training/chp/unit
+*item
+*name   sports centre with CHP
+*cfg    C:/user/esru/esp-r/training/chp/sport_cen/cfg/sport_cen.cfg_nt
+*root	C:/user/esru/esp-r/training/chp/sport_cen
+*item
+*group	miscellaneous
+*help	A collection of 35 projects comprising the EC's Solar
+*help	House Joule II programme (Nov 1992 - December 1996).
+*help	The programme includes 18 low energy building designs,
+*help	11 component developments, 5 dissemination projects
+*help	and 1 urban-scale development.
+*item
+*name	Prototype photovoltaic building facades
+*aide	Prototype photovoltaic building facades.
+*cfg	C:/user/esru/Projects/Solar_h/CT336/cfg/Facade_mfs_c.cfg_nt
+*root	C:/user/esru/Projects/Solar_h/CT336
+*item
+*name	R.E.A.D Regensburg, Germany
+*cfg	C:/user/esru/Projects/Solar_h/CT319/regen-g2g.cfg_nt
+*root	C:/user/esru/Projects/Solar_h/CT319
+*item
+*name	Teaching Hospital Thessaloniki, Greece
+*cfg	C:/user/esru/Projects/Solar_h/CT024/cfg/athens_a.cfg_nt
+*root	C:/user/esru/Projects/Solar_h/CT024
+*item
+*end

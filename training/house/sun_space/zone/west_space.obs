@@ -1,0 +1,9 @@
+# site obstruction file defined in west_space.obs
+# associated with zone geometry filewest_space.geo
+# and referenced by zone utility filewest_space.utl
+  58.200  -6.200    # latitude & longitude
+    1    # no obstruction blocks
+# origin X  Y  Z  width  depth  height  angle  descr
+  0.020  0.020  0.000  0.020  0.020  0.020    0.0  o              # block  1
+# grid opq X  opq Z  win X  win Z
+    10    10     5     5

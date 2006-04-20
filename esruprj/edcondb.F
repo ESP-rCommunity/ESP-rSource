@@ -1,0 +1,1920 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C edcondb.F comprising:
+C  ELISTC: Controls display/edit of materials.
+C  EDPELEM: Controls listing of materials.
+C  EDMLDB: Display/edit a constructions db.
+C  EDWALL: Edit construction common block data.
+C  MKBPRC: Creates a binary materials db based on the
+C          current contents of an ASCII file. 
+C  MKAPRC: Creates an ascii materials db based on the
+C          current contents of binary db.
+C  MLCREFS: returns true/false if mlc referenced within current zone scope.
+
+C ************* ELISTC 
+C ELISTC: Controls display and editing of materials.
+C If ACTION = 'M' then include editing if ACTION = '-' only
+C allow choice.  Chgdb flagged true if an mod made to db during session.
+      SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/exporttg/xfile,tg,delim
+      COMMON/exporttgi/ixopen,ixloc,ixunit
+      LOGICAL     OK,DOK,MODDB,chgdb
+      DIMENSION ICLN(30),CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      DIMENSION EDBCON(19),EDBDEN(19),EDBSHT(19),EE(19),EA(19),EDRV(19)
+      DIMENSION ENAM(19),IDBE(19)
+      character ACTION*1,CLSSEL*36
+      CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
+      CHARACTER OUTSTR*124,LFCON*72,LFMUL*72,KEY*1,PDBM*64,outs*124
+      CHARACTER xfile*72,tg*1,delim*1
+
+C Assume no changes to db amd user has not entered password.
+      MODDB=.FALSE.
+      chgdb=.false.
+
+C Check that the material db is not empty.
+    4 IER=0
+      IREC=601
+      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      IF(NCLASS.LE.0)THEN
+        CALL USRMSG(' Materials db is empty.',' ','W')
+        IER=1
+        RETURN
+      ENDIF
+
+C Setup for menu.
+C Gather the names of the various classes and present this list.
+  40  ICO=-1
+      CLSDES(1)=  '  Description        No. Items'
+      M=1
+      DO 44 I=1,NCLASS
+        IC=ICLN(I)
+        IREC=IC*20-19
+        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        write(CLSSEL(I),'(A)') IDESC(1:36)
+        IF(NE.GT.0)THEN
+          M=M+1
+          CALL EMKEY(M-1,KEY,IER)
+          WRITE(CLSDES(M),'(A1,1X,A,2X,I2)')KEY,IDESC(1:24),NE
+        ENDIF
+   44 CONTINUE
+
+      CLSDES(M+1)=  '  __________________________  '
+      if(ACTION.eq.'M'.or.ACTION.eq.'m')then
+        CLSDES(M+2)='+ add a classification        '
+        CLSDES(M+3)='! list database entries       '
+      elseif(ACTION.eq.'-')then
+        CLSDES(M+2)='                              '
+        CLSDES(M+3)='                              '
+        call edisp(iuout,' ')
+        call edisp(iuout,' Select classification to view items')
+      endif
+      CLSDES(M+4)=  '? help                        '
+      CLSDES(M+5)=  '- exit                        '
+      NCO=M+5
+
+C Help text for this menu.
+      H(1)='The classifications shown in the display include up to'
+      H(2)='18 materials. To get a listing of the items included'
+      H(3)='select one of the classifications.'
+
+C Now display the menu.
+      CALL EMENU('Materials Classes',CLSDES,NCO,ICO)
+      IF(ICO.EQ.NCO)THEN
+        RETURN
+      ELSEIF(ICO.EQ.(NCO-1))THEN
+        CALL PHELPD('materials menu',3,'-',0,0,IER)
+      ELSEIF(ICO.EQ.(NCO-2))THEN
+
+C List one or more classifications.
+        INPIC=NCLASS
+        h(1)='You may select one or more classes to list. '
+        CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
+     &        36,NCLASS,CLSSEL,'Primative classes',IER,1)
+        IF(INPIC.EQ.0)GOTO 40
+        h(1)=' Summary reporting can be shown in the text feedback'
+        h(2)=' or a text file.'
+        CALL EASKABC(' Reporting to:',' ',
+     &      'text feedback','summary file','cancel',irpt,2)
+        if(irpt.eq.1)then
+          itu = iuout
+        elseif(irpt.eq.2)then
+          itu = ixunit
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+        elseif(irpt.eq.3)then
+          goto 40
+        endif
+        call edisp(itu,'In the materials database: ')
+        call edisp(itu, LFCON)
+        call edisp(itu,' ')
+        do 42 list=1,INPIC
+          IC=ICLSSEL(list)
+          IREC=IC*20-19
+          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+          IF(NE.GT.0)THEN
+            WRITE(outs,'(3a,i2,a)')' Classification: ',
+     &        IDESC(1:lnblnk(IDESC)),' (',IC,')'
+            call edisp(itu,outs)
+            call edisp(itu,' ')
+            call edisp(itu,
+     &      'Index|Con-   |Den- |Specif|IR  |Solr|Diffus|Description')
+            call edisp(itu,
+     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+            IDB=IC*20-20
+            DO 47 J=1,NE
+              IDB=IDB+1
+              CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+     &                DRV,TITL,NAM)
+              WRITE(outs,46)IDB,DBCON,DBDEN,DBSHT,E,A,DRV,NAM(1:36)
+   46         FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+              call edisp(itu,outs)
+   47       CONTINUE
+          ELSE
+            call edisp(itu,' No items in this classification.')
+          ENDIF
+   42   continue
+        call edisp(itu,' ')
+        call edisp(itu,' Units: Conduct W/(m deg.C), Density kg/m**3')
+        call edisp(itu,'        Specific Heat J/(kg deg.C) ')
+        if(irpt.eq.2)then
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
+        endif
+      ELSEIF(ICO.EQ.(NCO-3))THEN
+
+C Rewrite the last record so that when file is closed it contains
+C all the information.
+        if(NCLASS.LT.30)then
+          NCLASS=NCLASS+1
+          ICLN(NCLASS)=NCLASS
+          IREC=601
+          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+     &          (ICLN(I),I=1,30)
+          H(1)='This description may be up to 72 char. '
+          CALL EASKS(IDESC,' Classification name ?',' ',
+     &      72,' ','class name',IER,1)
+          ILNE=1
+          IDBE(ILNE)=(NCLASS*20-19)+1
+          ENAM(ILNE)='new_material'
+          EDBCON(ILNE)=1.
+          EDBDEN(ILNE)=1.
+          EDBSHT(ILNE)=1.
+          EE(ILNE)=0.9
+          EA(ILNE)=0.5
+          EDRV(ILNE)=10.
+
+          IREC=NCLASS*20-19
+          NREC=IREC
+          WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
+          DO 41 J=1,ILNE
+            IREC=IREC+1
+            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+     &            EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
+   41     CONTINUE
+          chgdb=.true.
+        endif
+        goto 40
+      ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
+        
+C Loop through and read in data for this classification into local
+C arrays for manipulation.
+        IC=ICO-1
+        IREC=IC*20-19
+        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        IF(NE.GT.0)THEN
+          IDB=IC*20-20
+          DO 20 J=1,NE
+            IDB=IDB+1
+            CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+     &                DRV,TITL,NAM)
+            IDBE(J)=IDB
+            EDBCON(J)=DBCON
+            EDBDEN(J)=DBDEN
+            EDBSHT(J)=DBSHT
+            EE(J)=E
+            EA(J)=A
+            EDRV(J)=DRV
+            ENAM(J)=NAM
+   20     CONTINUE
+        ELSE
+         CALL USRMSG(' No items in this classification.',' ','W')
+         GOTO 40
+        ENDIF
+
+C Display the materials of the classification in a menu.
+    3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
+        PDBM(2)= '         Specific Heat J/(kg deg.C) '
+        WRITE(PDBM(3),33)IDESC(1:lnblnk(IDESC)),IC
+   33   FORMAT    ('a Classification: ',A,' (',I2,')')
+        WRITE(PDBM(4),'(A,I2)')'  Number of materials: ',NE
+        PDBM(5)=   '  ___________________________________'
+        PDBM(6)=
+     &  ' |Prm|Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
+        PDBM(7)=
+     &  ' |db |duct. |sity |heat  |emis|abs |resis|of material  '
+        M=7
+        DO 30 J=1,NE
+          M=M+1
+          CALL EMKEY(M-6,KEY,IER)
+          WRITE(PDBM(M),24)KEY,IDBE(J),EDBCON(J),EDBDEN(J),EDBSHT(J),
+     &                     EE(J),EA(J),EDRV(J),ENAM(J)(1:20)
+   24     FORMAT(A1,1X,I3,F7.2,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+   30   CONTINUE
+        NC=M
+        PDBM(NC+1)=  '  __________________________     '
+        if(ACTION.eq.'M'.or.ACTION.eq.'m')then
+          PDBM(NC+2)='1 add/ delete material            '
+          PDBM(NC+3)='2 copy material                   '
+          PDBM(NC+4)='! save materials database        '
+        elseif(ACTION.eq.'-')then
+          PDBM(NC+2)='                                 '
+          PDBM(NC+3)='                                 '
+          PDBM(NC+4)='                                 '
+        endif
+        PDBM(NC+5)=  '? help                           '
+        PDBM(NC+6)=  '- exit this menu                 '
+        NITMS=NC+6
+        INO=-4
+
+C Help text for this menu.
+    2   continue
+        H(1)='The information in this display is based on data from'
+        H(2)='a materials database.  Databases of this'
+        H(3)='type are used to build a construction database.'
+        H(4)='Data in this db rarely changes. However, users may '
+        H(5)='wish to add additional materials or classifications to'
+        H(6)='conform to materials in their region.  '
+        H(7)='  '
+        H(8)='Adding or Deleting a material is supported. The'
+        H(9)='former creates a material at the end of the current'
+        H(10)='classification which may then be edited. '
+        H(11)=' '
+        H(12)='You may copy an existing material into a new item at'
+        H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+ 
+        CALL EMENU('Materials Database',PDBM,NITMS,INO)
+
+        IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
+          IF(MODDB.and.ACTION.eq.'M')THEN
+            dok=.true.
+            h(1)='Recent changes to the materials database are held'
+            h(2)='in memory and might be lost if not saved to file.'
+            CALL ASKOK('Changes have been made in database. ',
+     &        'Save the database now ? ',OK,dok,2)
+            IF(.NOT.OK)GOTO 4
+            chgdb=.true.
+            IREC=IC*20-19
+            NREC=IREC
+            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            DO 51 J=1,NE
+              IREC=IREC+1
+              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+     &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
+   51       CONTINUE
+
+C Rewrite the last record so that when file is closed it contains
+C all the information.
+            IREC=601
+            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+     &            (ICLN(I),I=1,30)
+            MODDB=.FALSE.
+          ENDIF
+          GOTO 4
+        ELSEIF(INO.EQ.1.OR.INO.EQ.2)THEN
+          GOTO 2
+        ELSEIF(INO.eq.3)THEN
+
+C Edit classification name.
+          H(1)='A classification has a descriptive name (up to '
+          H(2)='72 char).'
+          CALL EASKS(IDESC,' ',' Classification name ? ',
+     &      72,' ','class name',IER,2)
+        ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
+          GOTO 2
+        ELSEIF(INO.EQ.NITMS-1)THEN
+          CALL PHELPD('materials database',13,'-',0,0,IER)
+        ELSEIF(INO.EQ.NITMS-2)THEN
+
+C Save materials db with all materials in this classification and
+C reset flag to show db is current with local arrays.
+          IF(.NOT.MODDB)THEN
+            CALL USRMSG(' ',' No changes in db...','-')
+          ELSE
+            chgdb=.true.
+            IREC=IC*20-19
+            NREC=IREC
+            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            DO 50 J=1,NE
+              IREC=IREC+1
+              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+     &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
+   50       CONTINUE
+
+C Rewrite the last record so that when file is closed it contains
+C all the information.
+            IREC=601
+            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+     &            (ICLN(I),I=1,30)
+            MODDB=.FALSE.
+          ENDIF
+        ELSEIF(INO.EQ.NITMS-3)THEN
+
+C Copy an existing material to a new one at end of classificaton.
+          CALL USRMSG(' ',' Which item of list?','-')
+          CALL EMENU('Copy material',PDBM,NITMS,IW)
+          IWHICH=IW-7
+          IF(NE.LT.18)THEN
+            ILNE=NE+1
+            IDBE(ILNE)=(IC*20-19)+NE
+            EDBCON(ILNE)=EDBCON(IWHICH)
+            EDBDEN(ILNE)=EDBDEN(IWHICH)
+            EDBSHT(ILNE)=EDBSHT(IWHICH)
+            EE(ILNE)=EE(IWHICH)
+            EA(ILNE)=EA(IWHICH)
+            EDRV(ILNE)=EDRV(IWHICH)
+            ENAM(ILNE)=ENAM(IWHICH)
+            NE=NE+1
+            MODDB=.TRUE.
+            chgdb=.true.
+          ELSE
+            CALL USRMSG(' ',' Exceeds classification limit!','W')
+            GOTO 3
+          ENDIF
+        ELSEIF(INO.EQ.NITMS-4)THEN
+
+C Add or delete and material from db.
+          h(1)='You cannot recover a deleted material.  After you '
+          h(2)='copy it, be sure to give it a unique name. '
+          CALL EASKABC(' ','Options: ',' Delete existing material',
+     &      ' Insert material @ next available slot','continue',IW,2)
+          IF(IW.EQ.1)THEN
+
+C Ask the user which one to remove then loop through materials and
+C copy the contents of material > IWHICH into the next lower one.
+            CALL USRMSG(' ',' Which item of list? ','-')
+            CALL EMENU('delete material',PDBM,NITMS,IW)
+            IWHICH=IW-7
+            DO 791 IVV=IWHICH,NE-1
+              IDBE(IVV)=IDBE(IVV+1)-1
+              EDBCON(IVV)=EDBCON(IVV+1)
+              EDBDEN(IVV)=EDBDEN(IVV+1)
+              EDBSHT(IVV)=EDBSHT(IVV+1)
+              EE(IVV)=EE(IVV+1)
+              EA(IVV)=EA(IVV+1)
+              EDRV(IVV)=EDRV(IVV+1)
+              ENAM(IVV)=ENAM(IVV+1)
+  791       CONTINUE
+            NE=NE-1
+            MODDB=.TRUE.
+            chgdb=.true.
+          ELSEIF(IW.EQ.2)THEN
+
+C Add a material, initiate it to the values of last material in class.
+            IF(NE.LT.18)THEN
+              ILNE=NE+1
+              IDBE(ILNE)=(IC*20-19)+NE
+              ENAM(ILNE)='new_material'
+              EDBCON(ILNE)=EDBCON(NE)
+              EDBDEN(ILNE)=EDBDEN(NE)
+              EDBSHT(ILNE)=EDBSHT(NE)
+              EE(ILNE)=EE(NE)
+              EA(ILNE)=EA(NE)
+              EDRV(ILNE)=EDRV(NE)
+              CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+     &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
+              NE=NE+1
+              MODDB=.TRUE.
+              chgdb=.true.
+            ELSE
+              CALL USRMSG(' ','Exceeds classification limit!','W')
+              GOTO 3
+            ENDIF
+          ELSEIF(IW.EQ.3)THEN
+            GOTO 3
+          ENDIF
+        ELSEIF(INO.EQ.NITMS-4)THEN
+            GOTO 2
+        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-4)THEN
+
+C Identified one of the materials to edit or select.
+          IFOC=INO-7
+          if(ACTION.eq.'M')then
+            CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+     &        EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
+            MODDB=.TRUE.
+            chgdb=.true.
+          elseif(ACTION.eq.'-')then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &        ' Units: Conduct W/(m deg.C), Density kg/m**3')
+            call edisp(iuout,
+     &        '        Specific Heat J/(kg deg.C) ')
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Diffus|Description')
+            call edisp(iuout,
+     &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
+            WRITE(outs,244)IDBE(IFOC),EDBCON(IFOC),EDBDEN(IFOC),
+     &        EDBSHT(IFOC),EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC)
+  244       FORMAT(I5,F9.3,F7.1,F7.0,F5.2,F6.2,F7.0,1X,A)
+            CALL EDISP(iuout,outs)
+            CALL EDISP(iuout,' ')
+            iwhich=IDBE(ifoc)
+            lsn=MIN0(lnblnk(ENAM(IFOC)),32)
+            write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
+     &        ENAM(IFOC)(1:lsn)
+            dok=.true.
+            h(1)='Last chance to abort the selection. '
+            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            if(OK)return
+          endif
+        ENDIF
+        GOTO 3
+      else
+        goto 40
+      endif
+      call usrmsg(' ',' ','-')
+      goto 40
+      
+   99 RETURN
+
+C Error messages. If there was a problem scanning the file then
+C it might be because it was created for a different computer.
+C To indicate this, pass back ier as 2.
+ 1000 WRITE(OUTSTR,8)IREC
+    8 FORMAT(' Materials db error NE,IDESC: Record',I6)
+      CALL EDISP(iuout,OUTSTR)
+      IER=2
+      GOTO 99
+
+ 1001 WRITE(OUTSTR,9)IREC
+    9 FORMAT(' Materials db write error NE,IDESC: Record',I6)
+      CALL EDISP(iuout,OUTSTR)
+      GOTO 99
+
+ 1002 WRITE(OUTSTR,10)IREC
+   10 FORMAT(' Materials db data write error: Record',I6)
+      CALL EDISP(iuout,OUTSTR)
+      GOTO 99
+
+      END
+
+
+C ************* EDPELEM 
+C EDPELEM: Edits a material.
+      SUBROUTINE EDPELEM(ITRU,DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      DIMENSION PELM(11)
+      CHARACTER H*72,NAM*72,PELM*34,tnam*72
+
+C Work with local name.
+      tnam = NAM
+
+   3  IW=-4
+      WRITE(PELM(1),'(A,1X,A)')    'a Descr :',tnam(1:24)
+      WRITE(PELM(2),'(A,1X,A)')    '  ...',tnam(25:52)
+      WRITE(PELM(3),'(A,2X,F9.3)') 'b Conductivity :',DBCON
+      WRITE(PELM(4),'(A,2X,F8.2)') 'c Density      :',DBDEN
+      WRITE(PELM(5),'(A,2X,F8.2)') 'd Specific Heat:',DBSHT
+      WRITE(PELM(6),'(A,2X,F8.2)') 'e Emissivity   :',E
+      WRITE(PELM(7),'(A,2X,F8.2)') 'f Absorptivity :',A
+      WRITE(PELM(8),'(A,F10.2)')   'g Diffusion res:',DRV
+      PELM(9) =' _____________________ '
+      PELM(10)='? Help                 '
+      PELM(11)='- Exit                 '
+
+C Help text for this menu.
+   2  continue
+      h(1)='This display shows the attributes of this material. '
+      h(2)='Edit by selecting an item. '
+      CALL EMENU('Material details',PELM,11,IW)
+      IF(IW.EQ.0.OR.IW.EQ.11)THEN
+        RETURN
+      ELSEIF(IW.EQ.9)THEN
+        GOTO 3
+      ELSEIF(IW.EQ.1)THEN
+        H(1)='A descriptive name (up to 72 char) is required.'
+        H(2)='Usually only the first 24 characters are displayed.'
+        CALL EASKS(tnam,' ',' Description of material? ',
+     &    72,' ','material name',IER,2)
+        if(tnam(1:2).ne.'  ')NAM=tnam
+      ELSEIF(IW.EQ.3)THEN
+        H(1)='Conductivity units are W/(m deg.C) '
+        CALL EASKR(DBCON,' ',' Conductivity : ',
+     &            0.001,'W',300.,'W',1.,'conductivity',IER,1)
+      ELSEIF(IW.EQ.4)THEN
+        H(1)='Density units are  kg/m**3 '
+        CALL EASKR(DBDEN,' ',' Density  : ',
+     &             1.0,'W',9000.,'W',100.,'density',IER,1)
+      ELSEIF(IW.EQ.5)THEN
+        H(1)='Specific Heat units are J/(kg deg.C) '
+        CALL EASKR(DBSHT,' ',' Specific heat : ',
+     &             1.0,'W',2000.,'W',100.,'specific heat',IER,1)
+      ELSEIF(IW.EQ.6)THEN
+        H(1)='Surface emissivity is based on infrared band. '
+        H(2)='It is specified as fraction 0.01 < x < 0.99 '
+        CALL EASKR(E,' ',' Surface emissivity : ',
+     &             0.01,'W',0.99,'W',0.9,'emissivity',IER,2)
+      ELSEIF(IW.EQ.7)THEN
+        H(1)='Surface absorptance is based on solar band. '
+        H(2)='It is specified as fraction 0.01 < x < 0.99 '
+            CALL EASKR(A,' ',' Surface absorptance : ',
+     &             0.01,'W',0.99,'W',0.9,'absorptance',IER,2)
+      ELSEIF(IW.EQ.8)THEN
+        H(1)='Diffusion resistance factor for vapour transfer is '
+        H(2)='defined in the ESP-r glossary. It is dimensionless. '
+        CALL EASKR(DRV,' ',' Diffusion resistance : ',
+     &         1.0,'W',20000.,'W',1.,'diffusion resistance',IER,2)
+      ELSEIF(IW.EQ.10)THEN
+        CALL PHELPD('material attributes',2,'-',0,0,IER)
+      ELSE
+        IW=-1
+        GOTO 2
+      ENDIF
+      GOTO 3
+
+      END
+
+C ************* EDMLDB 
+C EDMLDB Display a constructions database.
+C ITRU unit number  for user output, IER=0 OK, IER=1 problem.
+C Information is available via common block MLC. 
+C Overload DESC to include information on whether the construction is
+C opaque or transparent and if the latter include the optical property
+C id string.
+
+      SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
+#include "building.h"
+#include "epara.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      common/pophelp/h(60)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/exporttg/xfile,tg,delim
+      COMMON/exporttgi/ixopen,ixloc,ixunit
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical moddb,chgdb,layermatch
+
+      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12
+      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER*29 MLCITM(35)
+      CHARACTER xfile*72,tg*1,delim*1,outs*124
+
+      IER=0
+      ISEL=0
+      moddb = .false.
+      chgdb=.false.
+
+C If the common block MLC has not yet been filled the read in the
+C construction database.
+      IF(.NOT.MLDBOK)THEN
+        CALL ERMLDB(ITRC,iuout,IER)
+        IF(IER.NE.0)THEN
+          CALL USRMSG(' ',' Unable to display information','-')
+          IER=2
+          RETURN
+        ELSE
+          MLDBOK=.TRUE.
+        ENDIF
+      ENDIF
+
+C Create a menu showing the available database items.  Allow user to
+C select one and then list details of this construction based on info
+C in the materials database.
+C Setup for multi-page menu.
+      MHEAD=0
+      MCTL=6
+      ILEN=NMLC
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   3  IER=0
+      ILEN=NMLC
+      INO=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+      M=0
+      DO 20 IM=1,NMLC
+        IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(M,KEY,IER)
+          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+          WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
+  22      FORMAT(A1,1X,A12,a,a)
+        ENDIF
+  20  CONTINUE
+
+C Number of actual items displayed.
+      NITMS=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN
+        MLCITM(M+1)='  ______________  '
+      ELSE
+        WRITE(MLCITM(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
+      ENDIF
+      MLCITM(M+2)='1 add/delete/copy/invert    '
+      MLCITM(M+3)='! list database contents    '
+      MLCITM(M+4)='> save database             '
+      MLCITM(M+5)='? help                      '
+      MLCITM(M+6)='- exit this menu            '
+      INO=-4
+
+C Help text for this menu.
+    2 continue
+      H(1)='The information in this display is based on data from'
+      H(2)='both a materials database and a construction database.'
+      H(3)='It is used to build zone construction files'
+      H(4)='according to the construction name associated with'
+      H(5)='each surface.'
+      H(6)='  '
+      H(7) ='Note that the reporting level influences the detail '
+      H(8) ='in this display and you may wish to reset the'
+      H(9) ='reporting level to see additional information.'
+      H(10)='  '
+      H(11)='Adding or Deleting constructions is supported. The'
+      H(12)='former creates a single layer construction at the end'
+      H(13)='of the list which may then be edited. '
+      H(14)=' '
+      H(15)='You may copy an existing construction into a new item at'
+      H(16)='the end of the list. Be sure its name is unique! '
+      H(17)=' '
+      H(18)='To cope with non-symmetrical partitions you may wish'
+      H(19)='to use the copy & invert function.'
+
+      CALL EMENU('Constuctions database',MLCITM,NITMS,INO)
+
+      IF(INO.EQ.NITMS)THEN
+
+C Check for changes/ask user to save. << TODO >>
+        if(moddb)then
+          dok=.true.
+          h(1)='Recent changed to constructions are held in memory '
+          h(2)='and might be lost if not save to file. '
+          CALL ASKOK(' ','Save recent changes to constructions db?',
+     &      OK,dok,2)
+          if(OK)then
+            CALL EMKAMLD(iuout,IER)
+            chgdb=.true.
+            moddb=.false.
+          endif
+        endif
+        RETURN
+      ELSEIF(INO.EQ.NITMS-1)THEN
+
+C List help text for the menu.
+        CALL PHELPD('construction db',19,'-',0,0,IER)
+      ELSEIF(INO.EQ.NITMS-2)THEN
+        CALL EMKAMLD(iuout,IER)
+        moddb = .false.
+        chgdb=.true.
+        H(1)='In order to reflect changes you have made in this db'
+        H(2)='in the current model you will have to rebuild the '
+        H(3)='zone construction and tmc files.   '
+        H(4)=' '
+        H(5)='This option will be presented to you when you exit'
+        H(6)='the database management session. '
+        CALL PHELPD('construction db save',6,'-',0,0,IER)
+      ELSEIF(INO.EQ.NITMS-3)THEN
+
+C List database.
+        h(1)='The list of MLC database entries can be sent to a'
+        h(2)='text file or displayed.  Optical properties are'
+        h(3)='included in detailed files or if the reporting level'
+        h(4)='has been set to verbose. '
+        CALL EASKABC(' Reporting to:',' ',
+     &      'text feedback','summary file','detailed file',irpt,4)
+        if(irpt.eq.1)then
+          itu = iuout
+        elseif(irpt.eq.2.or.irpt.eq.3)then
+          itu = ixunit
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','MLC db text',IER)
+        endif
+        call edisp(itu,'In the MLC database: ')
+        call edisp(itu, LFMUL)
+        call edisp(itu,' ')
+        do 45 IM=1,NMLC
+          if(irpt.eq.1)then
+            call etmldb(itrc,itu,IFCON,IM,imerr)
+          elseif(irpt.eq.2)then
+            call etmldb(1,itu,IFCON,IM,imerr)
+          elseif(irpt.eq.3)then
+            call etmldb(2,itu,IFCON,IM,imerr)
+          endif
+   45   continue
+        call edisp(itu,
+     &  ' U value assumes: external wall with Rso = 0.055m**2deg.C/W')
+        call edisp(itu,
+     &  '                  and Rsi = 0.123m**2deg.C/W')
+        if(irpt.eq.2)then
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
+        endif
+      ELSEIF(INO.EQ.NITMS-4)THEN
+
+C Manage the list of constructions.
+        h(1)='Copies of exsiting constructions should have unique '
+        h(2)='names. Before deleting a construction check that no '
+        h(3)='surfaces use this attribute. '
+        h(4)=' '
+        h(5)='The copy and invert function is useful where nonsymmetric'
+        h(6)='constructions are used in partitions. For example, in'
+        h(7)='the case of a raised floor system from the point of view'
+        h(8)='of the room the carpet is on the inside face and from the'
+        h(9)='point of view of the floor void the carpet should be on '
+        h(10)='the outside face. '
+        call easkatog('Constructions options:',' ',
+     &    'add (at end of list)','delete','copy','copy & invert',
+     &    'continue',' ',' ',IW,10)
+        if(IW.EQ.1)then
+
+C Add a construction. Update this to account for OPAQ/TRAN.
+          if(NMLC.ge.MMLC)then
+            CALL USRMSG('Adding not allowed as the new item',
+     &        'would exceed database space! Skipping request...','W')
+            INO=-4
+            GOTO 3
+          endif
+          moddb = .true.
+          chgdb=.true.
+          NMLC=NMLC+1
+          DESC(NMLC)='UNKNOWN'
+          LAYERS(NMLC)=1
+          IPR(NMLC,1)=1
+          DTHK(NMLC,1)=0.10
+
+C Bring up editing menu for new item.
+          CALL EPMENSV
+          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EPMENRC
+          ILEN=NMLC
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+        elseif(IW.EQ.2)then
+
+C Compact the list by moving all the items in common MLC up one.
+          CALL EPMENSV
+          call epkmlc(iwhich,'Delete which construction?',' ',ierr)
+          CALL EPMENRC
+          dok=.false.
+          h(1)='Last chance to abort removal of construction. '
+          CALL ASKOK(' ',' Are you sure? ',OK,dok,1)
+          IF(.NOT.OK)GOTO 2
+          moddb = .true.
+          chgdb=.true.
+          DO 891 IVV=IWHICH,NMLC-1
+            DESC(IVV)=DESC(IVV+1)
+            LAYERS(IVV)=LAYERS(IVV+1)
+            DO 892 ILL=1,LAYERS(IVV)
+              DTHK(IVV,ILL)=DTHK(IVV+1,ILL)
+              IPR(IVV,ILL)=IPR(IVV+1,ILL)
+              DRAIR(IVV,ILL,1)=DRAIR(IVV+1,ILL,1)
+              DRAIR(IVV,ILL,2)=DRAIR(IVV+1,ILL,2)
+              DRAIR(IVV,ILL,3)=DRAIR(IVV+1,ILL,3)
+  892       CONTINUE
+  891     CONTINUE
+          NMLC=NMLC-1
+          ILEN=NMLC
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+        ELSEIF(IW.EQ.3)THEN
+
+C Copy an existing construction to a new one at end of list.
+          if(NMLC.ge.MMLC)then
+            CALL USRMSG('Copy not allowed as the new item',
+     &        'would exceed database space! Skipping request...','W')
+            INO=-4
+            GOTO 3
+          endif
+          CALL EPMENSV
+          call epkmlc(iwhich,'Copy which construction?',' ',ierr)
+          CALL EPMENRC
+          moddb = .true.
+          chgdb=.true.
+          NMLC=NMLC+1
+          DESC(NMLC)=DESC(IWHICH)
+          LAYERS(NMLC)=LAYERS(IWHICH)
+          DO 792 ILL=1,LAYERS(NMLC)
+            DTHK(NMLC,ILL)=DTHK(IWHICH,ILL)
+            IPR(NMLC,ILL)=IPR(IWHICH,ILL)
+            DRAIR(NMLC,ILL,1)=DRAIR(IWHICH,ILL,1)
+            DRAIR(NMLC,ILL,2)=DRAIR(IWHICH,ILL,2)
+            DRAIR(NMLC,ILL,3)=DRAIR(IWHICH,ILL,3)
+  792     CONTINUE
+
+C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
+          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
+          call ismlcsymmetric(nmlc,layermatch)
+          if(layermatch)then
+            MLCSYM='SYMMETRIC   '
+          else
+            MLCSYM='NONSYMMETRIC'
+          endif
+          T12=MLCN
+          h(1)='Each construction in the database should have a unique'
+          h(2)='name. Please change the name.'
+          CALL EASKS(T12,' ',' Name of new construction? ',
+     &      12,' ','New construction name',IER,2)
+          call st2name(T12,MLCN)
+          WRITE(DESC(NMLC),89)MLCN,OTF,OPT,MLCSYM
+
+C Bring up editing menu for new item.
+          CALL EPMENSV
+          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EPMENRC
+          ILEN=NMLC
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+        ELSEIF(IW.EQ.4)THEN
+
+C Invert an existing construction. Ask user to select original and if
+C there is room in the database copy data to a new item.
+          if(NMLC.ge.MMLC)then
+            CALL USRMSG('Copy & invert not allowed as the new item',
+     &        'would xceed database space! Skipping request...','W')
+            INO=-4
+            GOTO 3
+          endif
+          CALL EPMENSV
+          call epkmlc(iwhich,
+     &      'Make inverted version of which construction?',' ',ierr)
+          CALL EPMENRC
+          moddb = .true.
+          chgdb=.true.
+          NMLC=NMLC+1
+          DESC(NMLC)=DESC(IWHICH)
+
+C Extract construction name and check that mlc name has no illegal characters.
+          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM)
+          WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
+
+C If there is space attach an "_i" to the end of the name to save the
+C user this task. Get user to confirm the name and then use st2name to
+C remove any wild card charaters.
+          if(lnblnk(T12).le.8)then
+            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv'
+          elseif(lnblnk(T12).gt.9.and.lnblnk(T12).le.10)then
+            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i'
+          endif
+          write(outs,'(3a)') '(original name ',
+     &      T12OTH(1:lnblnk(T12OTH)),')'
+          h(1)='Typically the original and interted constructions have'
+          h(2)='similar names with one indicating its inverted state. '
+          CALL EASKS(T12,'Name of inverted construction?',outs,
+     &      12,' ','Inverted construction name',IER,2)
+          call st2name(T12,MLCN)
+          if(T12.ne.MLCN)then
+            write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected name ',
+     &        T12,' to ',MLCN,' in the database entry.'
+            call usrmsg(outs,DESC(NMLC),'W')
+          endif
+
+C Update DESC including the name of the original MLC.
+          WRITE(DESC(NMLC),89)MLCN,OTF,OPT,T12OTH
+   89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
+
+C Update the original to point to the inverted item.
+          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+          WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
+
+C Copy other data associated with the MLC.
+          LAYERS(NMLC)=LAYERS(IWHICH)
+          DO 793 ILL=1,LAYERS(NMLC)
+            DTHK(NMLC,ILL)=DTHK(IWHICH,ILL)
+            IPR(NMLC,ILL)=IPR(IWHICH,ILL)
+            DRAIR(NMLC,ILL,1)=DRAIR(IWHICH,ILL,1)
+            DRAIR(NMLC,ILL,2)=DRAIR(IWHICH,ILL,2)
+            DRAIR(NMLC,ILL,3)=DRAIR(IWHICH,ILL,3)
+  793     CONTINUE
+
+C Loop is one less than half the number of layers. Copy each layer
+C into temporary space and then write to opposite side.
+          LOOP=INT(FLOAT(LAYERS(NMLC))/2.)
+          DO 692 ILL=1,LOOP
+            DT=DTHK(NMLC,ILL)
+            IPRT=IPR(NMLC,ILL)
+            DRT1=DRAIR(NMLC,ILL,1)
+            DRT2=DRAIR(NMLC,ILL,2)
+            DRT3=DRAIR(NMLC,ILL,3)
+
+C Opposite layer is IOP. Copy its data into ILL layer.
+            IOP=LAYERS(NMLC)-ILL+1
+            DTHK(NMLC,ILL)=DTHK(NMLC,IOP)
+            IPR(NMLC,ILL)=IPR(NMLC,IOP)
+            DRAIR(NMLC,ILL,1)=DRAIR(NMLC,IOP,1)
+            DRAIR(NMLC,ILL,2)=DRAIR(NMLC,IOP,2)
+            DRAIR(NMLC,ILL,3)=DRAIR(NMLC,IOP,3)
+
+C Finally copy temporary data into opposite layer.
+            DTHK(NMLC,IOP)=DT
+            IPR(NMLC,IOP)=IPRT
+            DRAIR(NMLC,IOP,1)=DRT1
+            DRAIR(NMLC,IOP,2)=DRT2
+            DRAIR(NMLC,IOP,3)=DRT3
+  692     CONTINUE
+
+C Bring up detailed editing menu.
+          CALL EPMENSV
+          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EPMENRC
+          ILEN=NMLC
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(INO.EQ.NITMS-5)THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
+
+C Edit block identified by KEYIND, remind user of details and then
+C bring up an editing facility.
+        CALL KEYIND(NITMS,INO,IFOC,IO)
+        CALL EDISP(iuout,' ')
+        call etmldb(2,iuout,IFCON,IFOC,imerr)
+        CALL EPMENSV
+        CALL EDWALL(ITRC,IFOC,moddb,IER)
+        CALL EPMENRC
+        ISEL=IFOC
+        chgdb=moddb
+      else
+        INO=-1
+        GOTO 2
+      ENDIF
+      INO=-4
+      GOTO 3
+
+      END
+
+C ************* EDWALL 
+C EDWALL Edit a construction common block data.
+C IFCON is the unit for the associated materials db.
+C IER=0 OK, IER=1 problem.
+C Information is available via common block MLC. 
+C Information on opaque/transparent is added to DESC.
+
+      SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
+#include "building.h"
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+
+      common/pophelp/h(60)
+      common/C1/NCOMP,NCON
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON),SSPARENT(MCON)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,QUIET
+      logical moddb,chdb,showother,layermatch,layermatcha,modgeo
+
+      dimension SNA(MS),PAZI(MS),PELV(MS)
+      DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
+      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,SOPT*12
+      character T12OTH*12
+      CHARACTER outs*124,MLED*38,PNAM*72,T12*12,MMLAY*38,MLCSYM*12
+      character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character SSPARENT*12
+      character zname*12,zdesc*64,ZN*12,SNAME*12,SN*12
+
+C Check to see that optical properties are available.
+      IF(.NOT.OPTKOK)THEN
+        SOPT='ALL'
+        CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+        OPTKOK=.TRUE.
+      ENDIF
+
+      IER=0
+      moddb=.false.
+      iuf=IFIL+1
+
+C Extract construction name, opaque/transp, optical and symmetry properties.
+C Check that mlc name has no illegal characters.
+      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+      call st2name(T12,MLCN)
+      if(T12.ne.MLCN)then
+        write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected mlc ',
+     &    T12,' to ',MLCN,' in the db entry '
+        call usrmsg(outs,DESC(IFOC),'W')
+      endif
+
+C If T12 is `UNKNOWN` and MLCSYM is blank then we have a new
+C construction.
+      if(T12(1:4).eq.'UNKN'.and.MLCSYM(1:2).eq.' ')then
+        MLCSYM='SYMMETRIC'
+      endif
+
+C Read tag for name of inverted version or symmetry if the length of the
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. If
+C the tag refers to another MLC then include this in the menu.
+      if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+        showother=.false.
+      elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+        showother=.false.
+      else
+        showother=.true.
+      endif
+
+C Editing menu.
+   2  WRITE(MLED(1),'(A,1X,A12)')'a Construction:',MLCN
+      IF(OTF(1:4).EQ.'TRAN')THEN
+        MLED(2)='b General type: Transparent '
+      ELSE
+        MLED(2)='b General type: Opaque      '
+      ENDIF
+      WRITE(MLED(3),'(A,1X,A12)')'c Optical properties:',OPT
+      WT=0.0
+      DO 22, IL=1,LAYERS(IFOC)
+        WT=WT+DTHK(IFOC,IL)
+  22  continue
+      WRITE(MLED(4),'(A,I2,a,F7.1,a)')  '  No of layers:',LAYERS(IFOC),
+     &  ' (',WT*1000.0,'mm thick)'
+      if(showother)then
+        WRITE(MLED(5),'(2a)')  'd Linked with: ',MLCSYM
+      else
+        WRITE(MLED(5),'(2a)')  'd Layers are: ',MLCSYM
+      endif
+      MLED(6)='  _____________________________  '
+      MLED(7)=' Layer|Prim|Thick| Description   '
+      MLED(8)='      |db  |(mm) | of material   '
+
+C Detail menu.
+      M=8
+      RT=0.
+      DO 23, IL=1,LAYERS(IFOC)
+        CALL ERPCDB(IFCON,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
+     &           DBSHT,E,A,DRV,TITL,NAM)
+        IF(IER.EQ.1)RETURN
+
+C Calculate standard U value and display as well.
+C If an air layer include the R values in the display.
+        IF(IPR(IFOC,IL).EQ.0)THEN
+          WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+          RT=RT+DRAIR(IFOC,IL,1)
+        ELSE
+          PNAM(IL)=NAM
+          RT=RT+DTHK(IFOC,IL)/DBCON
+        ENDIF
+        M=M+1
+        CALL EMKEY(M,KEY,IER)
+        WRITE(MLED(M),29)KEY,IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+     &                   PNAM(IL)(1:19)
+  29    FORMAT(A1,I4,I5,F7.1,2X,A)
+  23  CONTINUE
+
+C Rest of detail menu.
+      M=M+1
+      RT=RT+0.055+0.123
+      UVALUE=1.0/RT
+      write(MLED(M),'(A,F6.2)')'  Standard U value: ',UVALUE
+      M=M+1
+      MLED(M)='  ____________________________   '
+      M=M+1
+      MLED(M)='! add or delete a layer          '
+      M=M+1
+      MLED(M)='? help                           '
+      M=M+1
+      MLED(M)='- exit this menu                 '
+      NLED=M
+      ILED=-4
+
+C Also compose a list of layers for additions/deletions.
+      MMLAY(1)=' Layer|Prim|Thick| Description   '
+      MMLAY(2)='      |db  |(mm) | of material   '
+      DO 11, IL=1,LAYERS(IFOC)
+        WRITE(MMLAY(IL+2),299)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+     &                   PNAM(IL)(1:20)
+ 299    FORMAT(I4,I5,F7.1,2X,A)
+  11  CONTINUE
+
+C Help text for this menu.
+    3 continue
+      H(1)='A construction is composed of between one and eight'
+      H(2)='layers (three of which may be air gaps).'
+      H(3)='The thermophysical properties of each layer are based'
+      H(4)='on those in the materials db.'
+      H(5)='  '
+      H(6)='Instances of this construction will be inserted in the'
+      H(7)='zone construction file where they may be edited.'
+      H(8)='It is recommended that the user include all types '
+      H(9)='in the db so as not to have to edit the zone file.'
+      H(10)='Current options allow one layer at a time to be added'
+      H(11)='to the end of the list or any layer to be removed.'
+      H(12)='  '
+      H(13)='Note: layer 1 is considered the `outside`.  '
+      H(14)='  '
+      H(15)='The terms SYMMETRIC and NONSYMMETRIC have the following'
+      H(16)='meaning: SYMMETRIC constructions can be referenced from'
+      H(17)='either zone associated with a partition; a NONSYMMETRIC'
+      H(18)='construction must have an `inverted` version in the'
+      H(19)='database in the case of surfaces which are partitions.'
+ 
+      CALL EMENU('Construction editing',MLED,NLED,ILED)
+      IF(ILED.EQ.NLED)THEN
+
+C Check to see that mlc of a single air layer is not specified.
+        if(LAYERS(IFOC).eq.1.and.IPR(IFOC,1).EQ.0)then
+          call usrmsg('A construction cannot be a single layer',
+     &      'of air. Please redefine it.','W')
+          goto 3
+        endif
+        if(IPR(IFOC,LAYERS(IFOC)).eq.0.or.IPR(IFOC,1).EQ.0)then
+          call usrmsg('An outer or inner layer of a construction',
+     &      'cannot be composed of air. Please redefine it.','W')
+          goto 3
+        endif
+
+C After editing MLC, re-check to see if construction is symmetric
+C and then if it is linked to another `inverted` MLC save it as well.
+        if(moddb)then
+          call ismlcsymmetric(ifoc,layermatch)
+          if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+            if(layermatch)then
+              continue
+            else
+              MLCSYM='NONSYMMETRIC'
+              call edisp(iuout,
+     &          'Resetting construction to nonsymmetric.')
+            endif
+          elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+            if(layermatch)then
+              MLCSYM='SYMMETRIC   '
+              call edisp(iuout,'Resetting construction to symmetric.')
+            else
+              continue
+            endif
+          else
+
+C Linked to another construction, check if it should be updated to match.
+            write(outs,'(4a)') 'Construction ',MLCN(1:lnblnk(MLCN)),
+     &        ' is linked to ',MLCSYM
+            dok=.true.
+            h(1)='The current construction is linked to a reversed '
+            h(2)='version of itself. You will want to keep these in'
+            h(3)='sync with each other. '
+            CALL ASKOK(outs,'Update the linked construction as well?',
+     &        OK,dok,3)
+            if(OK)then
+
+C Find matching MLC and copy data associated with the current MLC to
+C the linked MLC.
+              do 794 k=1,NMLC
+                if(DESC(k)(1:12).eq.MLCSYM(1:12))then
+                  LAYERS(k)=LAYERS(IFOC)
+                  DO 793 ILL=1,LAYERS(IFOC)
+                    DTHK(k,ILL)=DTHK(IFOC,ILL)
+                    IPR(k,ILL)=IPR(IFOC,ILL)
+                    DRAIR(k,ILL,1)=DRAIR(IFOC,ILL,1)
+                    DRAIR(k,ILL,2)=DRAIR(IFOC,ILL,2)
+                    DRAIR(k,ILL,3)=DRAIR(IFOC,ILL,3)
+  793             CONTINUE
+
+C Loop is one less than half the number of layers. Copy each layer
+C into temporary space and then write to opposite side.
+                  LOOP=INT(FLOAT(LAYERS(k))/2.)
+                  DO 692 ILL=1,LOOP
+                    DT=DTHK(k,ILL)
+                    IPRT=IPR(k,ILL)
+                    DRT1=DRAIR(k,ILL,1)
+                    DRT2=DRAIR(k,ILL,2)
+                    DRT3=DRAIR(k,ILL,3)
+
+C Opposite layer is IOP. Copy its data into ILL layer.
+                    IOP=LAYERS(k)-ILL+1
+                    DTHK(k,ILL)=DTHK(k,IOP)
+                    IPR(k,ILL)=IPR(k,IOP)
+                    DRAIR(k,ILL,1)=DRAIR(k,IOP,1)
+                    DRAIR(k,ILL,2)=DRAIR(k,IOP,2)
+                    DRAIR(k,ILL,3)=DRAIR(k,IOP,3)
+
+C Finally copy temporary data into opposite layer.
+                    DTHK(k,IOP)=DT
+                    IPR(k,IOP)=IPRT
+                    DRAIR(k,IOP,1)=DRT1
+                    DRAIR(k,IOP,2)=DRT2
+                    DRAIR(k,IOP,3)=DRT3
+  692             CONTINUE
+                endif
+  794         continue
+            endif
+          endif
+
+C Update DESC before returning.
+          WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
+   89     FORMAT(A12,2X,A4,2X,A12,2x,A12)
+          call edisp(iuout,'  ')
+          call edisp(iuout,
+     &      'Please ensure that you save the database...')
+        endif
+        RETURN
+      ELSEIF(ILED.EQ.NLED-1)THEN
+
+C List the help.
+       CALL PHELPD('construction editing',19,'-',0,0,IER)
+      ELSEIF(ILED.EQ.NLED-2)THEN
+
+C +- Layer.
+        h(1)='You can delete an existing layer, append a new layer '
+        h(2)='at the `inside face` of the surface (remember the '
+        h(3)='order is other-side to zone-side), or insert a layer'
+        h(4)='(you will be asked to select a point of insertion and'
+        h(5)='existing inner layers will be shifted).'
+        CALL EASKABC(' Layer options: ',' ',' Delete ',
+     &    ' Append @ inside face',' Insert ',IW,5)
+        IF(IW.EQ.1)THEN
+
+C If no of layers is edited then ask the user which one to remove.
+C Now loop through the layers and copy the contents of layers >
+C IWHICH into the next lower one.
+          call edisp(iuout,' Select layer to delete.')
+          H(1)='Any one of the layers may be selected.'
+          IX=1
+          CALL EPMENSV
+          CALL EPICKS(IX,imlay,' ',' Layer to delete: ',
+     &         38,LAYERS(IFOC)+2,MMLAY,'Layer to delete',IER,1)
+          CALL EPMENRC
+          if(IX.eq.1.and.imlay(1).gt.2)then
+            IWHICH=imlay(1)-2
+            write(outs,'(3A)')' Removing ',PNAM(IWHICH)(1:18),'...'
+            DO 791 IVV=IWHICH,LAYERS(IFOC)-1
+              IPR(IFOC,IVV)=IPR(IFOC,IVV+1)
+              DTHK(IFOC,IVV)=DTHK(IFOC,IVV+1)
+              DRAIR(IFOC,IVV,1)=DRAIR(IFOC,IVV+1,1)
+              DRAIR(IFOC,IVV,2)=DRAIR(IFOC,IVV+1,2)
+              DRAIR(IFOC,IVV,3)=DRAIR(IFOC,IVV+1,3)
+  791       CONTINUE
+            LAYERS(IFOC)=LAYERS(IFOC)-1
+          endif
+
+C Check is layers no longer match.
+          call ismlcsymmetric(ifoc,layermatcha)
+          if(.NOT.layermatcha)then
+            call edisp(iuout,'Layers might now be nonsymmetric.')
+            call edisp(iuout,'This will be reconciled when exiting.')
+          endif
+        ELSEIF(IW.EQ.2.or.IW.eq.3)THEN
+          IF(LAYERS(IFOC).LT.ME)THEN
+            if(iw.eq.3)then
+
+C If inserting internal layer, shift inner layers before editing.
+              H(1)='Any one of the layers may be selected.'
+              IX=1
+              CALL EPMENSV
+              CALL EPICKS(IX,imlay,' ',' Point of insertion: ',
+     &          38,LAYERS(IFOC)+2,MMLAY,'Point of insertion',IER,1)
+              CALL EPMENRC
+              if(IX.eq.1.and.imlay(1).gt.2)then
+                IWHICH=imlay(1)-2
+                ILN=IWHICH
+                LAYERS(IFOC)=LAYERS(IFOC)+1
+                IVV=LAYERS(IFOC)+1
+  792           CONTINUE
+                IVV=IVV-1
+                IPR(IFOC,IVV)=IPR(IFOC,IVV-1)
+                DTHK(IFOC,IVV)=DTHK(IFOC,IVV-1)
+                DRAIR(IFOC,IVV,1)=DRAIR(IFOC,IVV-1,1)
+                DRAIR(IFOC,IVV,2)=DRAIR(IFOC,IVV-1,2)
+                DRAIR(IFOC,IVV,3)=DRAIR(IFOC,IVV-1,3)
+                IF(IVV.GT.IWHICH+1) GOTO 792
+              endif
+            else
+              ILN=LAYERS(IFOC)+1
+            endif
+
+C Ask if user wishes to browse through materials to find suitable
+C reference.
+            dok=.true.
+            h(1)='Unless you know the material reference you can'
+            h(2)='find it by browsing the current database. '
+            CALL ASKOK(' To supply the materials db reference',
+     &        ' do you want to browse through the db ? ',OK,dok,2)
+            IF(OK)then
+              iwhich = 0
+              CALL ELISTC(iwhich,chdb,'-',IER)
+              if(iwhich.eq.0)then
+                H(1)='If air is correct then accept, otherwise'
+                H(2)='reselect from the list or abort the task.'
+                CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &            ' ','accept','reselect material','abort',iwair,2)
+                 if(iwair.eq.2)then
+                   CALL ELISTC(iwhich,chdb,'-',IER)
+                 elseif(iwair.eq.3)then
+                   ILED=-1
+                   GOTO 3
+                 endif
+              endif
+            else
+              H(1)='Each item in the materials db has a reference'
+              H(2)='number. '
+              H(3)='Air is reference 0.'
+              CALL EASKI(IWHICH,' ',' Material db reference no: ',
+     &          0,'F',600,'F',0,'material reference',IER,3)
+            endif
+            IPR(IFOC,ILN)=IWHICH
+            if(iw.eq.2)LAYERS(IFOC)=ILN
+
+C If an air layer then ask for gap resistance.
+            IF(IPR(IFOC,ILN).EQ.0)THEN
+              H(1)='A set of default assumptions on the R value of'
+              H(2)='an air gap is requested, in case the construction '
+              H(3)='is used in different orientations.'
+              H(4)='This information will allow for the automatic'
+              H(5)='creation of zone construction files with sub-'
+              H(6)='stantially less user interaction.'
+              WRITE(outs,117)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))
+  117         FORMAT('Default R value for air gap in ',a)
+
+              if(DRAIR(IFOC,ILN,1).lt.0.001)then
+                 VAL=0.17
+              else
+                 VAL=DRAIR(IFOC,ILN,1)
+              endif
+              CALL EASKR(VAL,outs,
+     &          ' if the construction orientation is vertical: ',
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+              DRAIR(IFOC,ILN,1)=VAL
+              if(DRAIR(IFOC,ILN,2).lt.0.001)then
+                 VAL=0.17
+              else
+                 VAL=DRAIR(IFOC,ILN,2)
+              endif
+              CALL EASKR(VAL,outs,
+     &          ' if the construction is a floor or ceiling  : ',
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+              DRAIR(IFOC,ILN,2)=VAL
+              if(DRAIR(IFOC,ILN,3).lt.0.001)then
+                 VAL=0.17
+              else
+                 VAL=DRAIR(IFOC,ILN,3)
+              endif
+              CALL EASKR(VAL,outs,
+     &          ' if the construction is sloped or UNKNOWN   : ',
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+              DRAIR(IFOC,ILN,3)=VAL
+            ELSE
+              DRAIR(IFOC,ILN,1)=0.17
+              DRAIR(IFOC,ILN,2)=0.17
+              DRAIR(IFOC,ILN,3)=0.17
+            ENDIF
+            H(1)='The thickness of the layer is nominally between'
+            H(2)='1 mm and 300 mm. It is stored in the file as m.'
+            VAL=100.0
+            CALL EASKR(VAL,' ',' Layer thickness (mm): ',
+     &        1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,2)
+            DTHK(IFOC,ILN)=VAL*0.001
+          ELSE
+            CALL USRMSG(' ',' Exceeds layer limit!','W')
+            ILED=-1
+            GOTO 3
+          ENDIF
+        ENDIF
+        moddb = .true.
+
+C Check is layers no longer match.
+        call ismlcsymmetric(ifoc,layermatcha)
+        if(.NOT.layermatcha)then
+          call edisp(iuout,'Layers might now be nonsymmetric.')
+          call edisp(iuout,'This will be reconciled when exiting.')
+        endif
+      ELSEIF(ILED.EQ.1)THEN
+
+C Edit construction name, if it is linked to another MLC then the
+C linked MLC should point back to the edited name.
+        H(1)='A descriptive name (up to 12 characters) is required.'
+        T12=MLCN
+
+C If changing the name of construction then find out if
+C any of the surfaces in the model use this construction
+C If they do then warn the user.
+        if(ncon.gt.0)then
+          modgeo=.false.
+          write(outs,'(a)') ' Checking surface attributes...'
+          CALL USRMSG(' ',outs,'-')
+          do 97 icc=1,ncon
+            if(SSMLCN(icc)(1:12).eq.T12(1:12))then
+              WRITE(outs,'(a,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
+     &          1X,A4,1X,A12,1X,A13)')'found: ',icc,
+     &          SSNA(icc),SSPAZI(icc),SSPELV(icc),SSNAME(icc),
+     &          SSOTF(icc),SSVFC(icc),SSMLCN(icc),SSOTHER(icc)
+              call edisp(iuout,outs)
+              modgeo=.true.
+            endif
+   97     continue
+          write(outs,'(a)') ' Checking surface attributes...done.'
+          CALL USRMSG(' ',outs,'P')
+          if(modgeo)then
+            call usrmsg(
+     &      'Surfaces use this construction so the name cannot be',
+     &      'changed. Replace these with another construction first.',
+     &      'W')
+            moddb = .false.
+            goto 3
+          endif
+        endif
+        CALL EASKS(T12,' ',' Name of construction? ',
+     &      12,' ','Construction name',IER,2)
+        call st2name(T12,MLCN)
+        if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+          continue
+        elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+          continue
+        else
+
+C Update current DESC then find matching MLC and copy data associated
+C with the current MLC to the linked MLC. Lastly re-establish tokens
+C for the current item.
+          WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
+          do 795 k=1,NMLC
+            if(DESC(k)(1:12).eq.MLCSYM(1:12))then
+              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM)
+              WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
+              WRITE(DESC(k),89)T12,OTF,OPT,T12OTH
+            endif
+  795     continue
+          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+        endif
+        moddb = .true.
+      ELSEIF(ILED.EQ.2)THEN
+
+C Select Opaque or transparent.
+        H(1)='In order to make cross checking easier the user is'
+        H(2)='asked to define the construction as either'
+        H(3)='OPAQUE or TRANSPARENT'
+        CALL EASKAB(' ','Please choose one type:',
+     &    'Opaque construction','Transparent construction',IW,3)
+        IF(IW.EQ.1)THEN
+          OTF='OPAQ' 
+          OPT='OPAQUE'
+        ELSEIF(IW.EQ.2)THEN
+          OTF='TRAN' 
+        ENDIF
+        moddb = .true.
+
+C At this point need to check to see if this change needs to be
+C applied to surfaces within the model. If there are zones loop
+C through them and see if any surfaces have this construction 
+C attribute. If they do reset SOTF to OTF and update the geometry
+C file.
+        if(ncomp.gt.0)then
+          do 96 iz=1,ncomp
+            write(zn,'(A)') zname(IZ)
+            write(outs,'(3a)') ' Checking: ',zn(1:lnblnk(zn)),
+     &         ' attributes...'
+            CALL USRMSG(' ',outs,'-')
+            LTMP=LGEOM(IZ)
+            CALL EGOMIN(IUF,LTMP,IZ,1,0,iuout,IER)
+            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+   93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
+     &        'geometry| multilayer  |environment')
+            WRITE(outs,93)
+            call edisp(iuout,outs)
+   94       FORMAT('              |  m^2   |deg |deg | name       |',
+     &        'type|loc| constr name |other side ')
+            WRITE(outs,94)
+            call edisp(iuout,outs)
+            modgeo=.false.
+            do 91 i=1,nsur
+              if(SMLCN(i)(1:12).eq.DESC(IFOC)(1:12))then
+                write(sn,'(a)') SNAME(IZ,I)
+                SOTF(i)=OTF
+                ioc=IZSTOCN(IZ,i)
+                SSOTF(ioc)=SOTF(i)
+                WRITE(outs,'(a,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
+     &            1X,A4,1X,A12,1X,A13)')'updated:   ',I,
+     &            SNA(I),PAZI(I),PELV(I),SN,SOTF(I),SVFC(I),
+     &            SMLCN(I),SOTHER(I)
+                call edisp(iuout,outs)
+                modgeo=.true.
+              endif
+   91       continue
+
+C If SOFT has changed update the zone geometry file. Warn user about
+C out of date zone construction files.
+            if(modgeo)then
+              CALL EMKGEO(IUF,LTMP,IZ,ITRU,3,IER)
+              write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),
+     &          ' attributes... done.'
+              CALL USRMSG(' ',outs,'-')
+            endif
+   96     continue
+          call usrmsg(
+     &      'Zone construction files may need to be updated',
+     &      'after the database modifications are completed.','W')
+          call usrmsg(
+     &      'You next task it to select an optical property set for',
+     &      'this construction (option c).','W')
+        endif
+      ELSEIF(ILED.EQ.3)THEN
+
+C Edit optical properties. Also check to see that the number of layers
+C and reference for materials matches.
+        IF(OTF.EQ.'TRAN')THEN
+          H(1)='In order to allow for the optical properties to be'
+          H(2)='used in the model description and to be acted on'
+          H(3)='by control laws the relevant optical property id  '
+          H(4)='(from the optical properties db) is required.'
+          CALL PHELPD('optical selection',4,'-',0,0,IER)
+
+   77     CALL EDWINO(SOPT,IER)
+          CALL EROPTDB(ITRC,iuout,SOPT,GDESCR,IER)
+          IF(IER.EQ.2)THEN
+            dok=.true.
+            h(1)='Could not recover that particular optical property'
+            h(2)='set. You might want to select a different one. '
+            CALL ASKOK(' ',' Not found... try again? ',OK,dok,2)
+            IF(OK)GOTO 77
+          ENDIF
+          OPT=SOPT
+          IF(LAYERS(IFOC).NE.NTL)CALL USRMSG(
+     &      ' The number of layers in the optical and ',
+     &      ' construction databases differ!','W')
+        ENDIF
+        moddb = .true.
+      ELSEIF(ILED.EQ.5)THEN
+
+C Allow linking to inverted construction.
+        if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+          call usrmsg(
+     &      'There is no need to link to an `inverted` version of this',
+     &      'construction. It is symmetric and ok for partitions.','W')
+        elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+          dok=.true.
+          h(1)='This construction is not symmetrical and needs to '
+          h(2)='be linked to a reversed copy of itself if it is going'
+          h(3)='to be used as a partition between two zones. '
+          CALL ASKOK('Would you like to link this construction to',
+     &               'another which has `inverted` layers?',OK,dok,3)
+          if(OK)then
+            call epkmlc(iwhich,
+     &        'Link with which `inverted` construction?',' ',ierr)
+            if(LAYERS(IFOC).eq.LAYERS(iwhich))then
+
+C Update the linked construction to point back to the current item.
+              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+              WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
+              WRITE(DESC(IWHICH),89)T12,OTF,OPT,T12OTH
+
+C Extract strings from focus DESC prior to updating its SYM tag.
+              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+              WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
+              WRITE(MLCSYM,'(A)')DESC(IWHICH)(1:12)
+              WRITE(DESC(IFOC),89)T12,OTF,OPT,T12OTH
+              moddb = .true.
+              showother = .true.
+            else
+              write(outs,'(5a)') 'Constructions ',DESC(IFOC),' and ',
+     &          DESC(iwhich),' have different numbers of layers.'
+              call edisp(iuout,outs)
+            endif
+          else
+
+C User declines link to recast MLCSYM and update DESC for the current
+C construction and reset showother.
+            call ismlcsymmetric(ifoc,layermatch)
+            if(layermatch)then
+              MLCSYM='SYMMETRIC   '
+            else
+              MLCSYM='NONSYMMETRIC'
+            endif
+            WRITE(DESC(ifoc),89)MLCN,OTF,OPT,MLCSYM
+            moddb = .true.
+            showother = .false.
+          endif
+        endif
+      ELSEIF(ILED.GT.8.AND.ILED.LE.NLED-3)THEN
+
+C Ask if user wishes to browse through materials to find suitable
+C reference.
+        dok=.true.
+        h(1)='Unless you know of a specific materials reference '
+        h(2)='you will probably want to scan the database for this.'
+        CALL ASKOK(' To supply the materials db reference',
+     &             ' do you want to browse through the db?',OK,dok,2)
+        IF(OK)then
+          iwhich=0
+          CALL ELISTC(iwhich,chdb,'-',IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTC(iwhich,chdb,'-',IER)
+            elseif(iwair.eq.3)then
+              ILED=-1
+              GOTO 3
+            endif
+          endif
+        else
+          IWHICH=IPR(IFOC,ILED-8)
+          H(1)='Each item in the materials database has a'
+          H(2)='reference number. Future selection via list...'
+          H(3)='Air is reference 0.'
+          CALL EASKI(IWHICH,' ',' Materials db reference: ',
+     &        0,'F',600,'F',0,'materials reference',IER,3)
+        endif
+        IPR(IFOC,ILED-8)=IWHICH
+
+C If an air gap ask for the three R values.
+        IF(IPR(IFOC,ILED-8).EQ.0)THEN
+          H(1)='A set of default assumptions on the R value of'
+          H(2)='an air gap is requested, in case the construction '
+          H(3)='is used in different orientations.'
+          H(4)='This information will allow for the automatic'
+          H(5)='creation of zone construction files with sub-'
+          H(6)='stantially less user interaction.'
+          WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
+  118     FORMAT('Default R value for air gap in ',a)
+          if(DRAIR(IFOC,ILED-8,1).lt.0.001)then
+             VAL=0.17
+          else
+             VAL=DRAIR(IFOC,ILED-8,1)
+          endif
+          CALL EASKR(VAL,outs,
+     &         ' if the orientation is vertical          : ',
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,6)
+          DRAIR(IFOC,ILED-8,1)=VAL
+          if(DRAIR(IFOC,ILED-8,2).lt.0.001)then
+             VAL=0.17
+          else
+             VAL=DRAIR(IFOC,ILED-8,2)
+          endif
+          CALL EASKR(VAL,outs,
+     &         ' if the orientation is horizontal        : ',
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,5)
+          DRAIR(IFOC,ILED-8,2)=VAL
+          if(DRAIR(IFOC,ILED-8,3).lt.0.001)then
+             VAL=0.17
+          else
+             VAL=DRAIR(IFOC,ILED-8,3)
+          endif
+          CALL EASKR(VAL,outs,
+     &         ' if the orientation is sloped or UNKNOWN : ',
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,5)
+          DRAIR(IFOC,ILED-8,3)=VAL
+        ELSE
+          DRAIR(IFOC,ILED-8,1)=0.0
+          DRAIR(IFOC,ILED-8,2)=0.0
+          DRAIR(IFOC,ILED-8,3)=0.0
+        ENDIF
+
+        H(1)='The thickness of the layer is normally between'
+        H(2)='0.001 m and 0.500 mm. It is held in the file as'
+        H(3)='metres.'
+        VAL=DTHK(IFOC,ILED-8)*1000.0
+        CALL EASKR(VAL,' ',' Layer thickness (mm): ',
+     &    1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,3)
+        DTHK(IFOC,ILED-8)=VAL*0.001
+        moddb = .true.
+      else
+        ILED=-1
+        GOTO 3
+      endif
+      call usrmsg(' ',' ','-')
+      ILED=-4
+      GOTO 2
+
+      END
+
+
+C ************* MKBPRC 
+C MKBPRC: Creates a binary materials db based on the
+C current contents of an ASCII file LASCI opened on unit IFA. 
+      SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      DIMENSION ICLN(30),VAL(6)
+      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,OUTSTR*124
+      CHARACTER LASCI*72
+
+C The binary file will be overwritten.
+      call EFOPRAN(IFCON,LFCON,40,4,IER)
+      if(ier.ne.0)return
+
+C Open the ASCII file for reading.
+      CALL EFOPSEQ(IFA,LASCI,1,IER)
+
+C Proceed.
+      CALL STRIPC(IFA,OUTSTR,0,ND,1,'no classes',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETWI(OUTSTR,K,NCLASS,1,1,'-','no classes',IER)
+
+      DO 10 I=1,NCLASS
+        ICLASS=I
+        CALL STRIPC(IFA,OUTSTR,0,ND,1,'IC NE NDESC',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETWI(OUTSTR,K,IC,0,30,'F','class',IER)
+        CALL EGETWI(OUTSTR,K,NE,0,19,'-','no elem',IER)
+        CALL EGETRM(OUTSTR,K,NDESC,'-','description',IER)
+        ICLN(ICLASS)=IC
+        IREC=601
+
+C Write number of classifications and number of items in each.
+        WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)ICLASS,
+     &        (ICLN(K),K=1,30)
+        IREC=ICLASS*20-19
+        NREC=IREC
+
+C Write values for classification.
+        WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,NDESC
+        DO 20 J=1,NE
+          IREC=IREC+1
+          CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCODE,IDESC',IER)
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETWI(OUTSTR,K,NCODE,0,600,'F','class',IER)
+          CALL EGETRM(OUTSTR,K,IDESC,'W','cl description',IER)
+
+          CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCODE,IDESC',IER)
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','VAL 1',IER)
+          CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','VAL 2',IER)
+          CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','VAL 3',IER)
+          CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','VAL 4',IER)
+          CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','VAL 5',IER)
+          CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','VAL 6',IER)
+
+C Write values for layer.
+          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+     &          (VAL(IL),IL=1,6),IDESC
+   20   CONTINUE
+   10 CONTINUE
+      
+  99  CALL ERPFREE(IFA,ISTAT)
+      RETURN
+
+C File errors.
+ 1001 CALL USRMSG(' NE,NDESC write error in ',LFCON,'W')
+      IER=1
+      goto 99
+ 1002 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+      IER=1
+      goto 99
+    
+      END
+
+C ************* MKAPRC 
+C MKAPRC: Creates an ascii materials db based on the
+C current contents of binary file.
+      SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      DIMENSION ICLN(30),VAL(6)
+      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,LASCI*72
+
+C Open the binary materials database (in clase it was closed elsewhere).
+      CALL ERPFREE(IFCON,ISTAT)
+      call EFOPRAN(IFCON,LFCON,40,1,IER)
+      if(ier.ne.0)return
+      CONDBOK=.TRUE.
+
+C The ASCII file will be overwritten if it exists.
+      CALL EFOPSEQ(IFA,LASCI,4,IER)
+      
+C Write out a file header.
+      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
+  30  FORMAT('# materials db defined in ',A)
+
+C Check binary contents.
+      IREC=601
+      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
+      IF(NCLASS.LE.0)THEN
+        CALL USRMSG(' binary materials database empty! ',' ','W')
+        IER=1
+        RETURN
+      ENDIF
+
+C Proceed.
+      WRITE(IFA,'(I5,4X,A)')NCLASS,'#  number of classifications'
+      DO 10 I=1,NCLASS
+        IC=ICLN(I)
+        IREC=IC*20-19
+        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        WRITE(IFA,12)IC,NE,IDESC(1:lnblnk(IDESC))
+   12   FORMAT('# class|no materials|description',/,I5,I5,3X,A)
+        IF(NE.LE.0)goto 10
+        DO 20 J=1,NE
+          IREC=IREC+1
+          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+     &         NDESC
+          NCODE=IREC-1
+          WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
+   13     FORMAT( I5,3X,A,/,F13.3,2(', ',F8.3),2(', ',F6.3),', ',F10.3)
+   20   CONTINUE
+   10 CONTINUE
+
+  99  CALL ERPFREE(IFA,ISTAT)
+      RETURN
+
+C File errors.
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFCON,'W')
+      IER=1
+      goto 99
+ 1001 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+      IER=1
+
+      END
+
+C ******* mlcrefs
+C mlcrefs returns true/false if a construction name is referenced within
+C the current zone scope. areamlc(MCOM) is the area of this construction
+C in each zone, tareamlc is the total area of thie construction (weighted
+C so that partitions are counted as half area).
+      subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON),SSPARENT(MCON)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character mlcname*12,SSPARENT*12
+      logical found
+      dimension areamlc(MCOM)
+
+C For each of the selected zones check each surface mlc attribute
+C for a match against mlcname.
+      found=.false.
+      if(mlcname(1:4).ne.'UNKN'.and.nzg.gt.0)then
+        lm=lnblnk(mlcname)
+        tareamlc=0.0
+        do 42 i=1,nzg
+          iz=nznog(i)
+          areamlc(iz)=0.0
+          do 43 j=1,NZSUR(iz)
+            ic=IZSTOCN(iz,j)
+            if(mlcname(1:lm).eq.SSMLCN(ic)(1:lnblnk(SSMLCN(ic))))then
+              found=.true.
+
+C Depending on the connection type, add the full or half area of surface.
+              if(ICT(ic).eq.0.or.ICT(ic).eq.1.or.ICT(ic).eq.2)then
+                areamlc(iz)=areamlc(iz)+SSNA(ic)
+                tareamlc=tareamlc+SSNA(ic)
+              elseif(ICT(ic).eq.4.or.ICT(ic).eq.5.or.ICT(ic).eq.3)then
+                areamlc(iz)=areamlc(iz)+SSNA(ic)
+                tareamlc=tareamlc+SSNA(ic)
+              else
+                areamlc(iz)=areamlc(iz)+(SSNA(ic)*0.5)
+                tareamlc=tareamlc+(SSNA(ic)*0.5)
+              endif
+            endif
+  43      continue
+  42    continue
+      endif
+
+      return
+      end
+

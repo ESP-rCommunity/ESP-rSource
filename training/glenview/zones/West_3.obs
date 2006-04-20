@@ -1,0 +1,24 @@
+# site obstruction file defined in ../zones/West_3.obs
+# associated with zone geometry file ../zones/West_3.geo
+ 0. 0.   # dummy values for site position
+   17    # no obstruction blocks
+# origin  X   Y   Z   width   depth   height  angle  descr  matr
+   16.000    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n1  Frame-vert   # block  1
+   16.810    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n2  Frame-vert   # block  2
+   17.670    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n3  Frame-vert   # block  3
+   18.530    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n4  Frame-vert   # block  4
+   19.390    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n5  Frame-vert   # block  5
+   20.200    7.550    0.750    0.100    0.050    1.850    0.000  fr-v-n6  Frame-vert   # block  6
+   16.000    6.300    0.750    0.050    0.100    1.850    0.000  fr-v-w1  Frame-vert   # block  7
+   16.000    6.725    0.750    0.050    0.100    1.850    0.000  fr-v-w2  Frame-vert   # block  8
+   16.000    7.500    0.750    0.050    0.100    1.850    0.000  fr-v-w3  Frame-vert   # block  9
+   16.000    7.550    0.750    4.300    0.050    0.100    0.000  fr-h-n1  Frame-vert   # block 10
+   16.000    7.550    2.050    4.300    0.050    0.100    0.000  fr-h-n2  Frame-vert   # block 11
+   16.000    7.550    2.500    4.300    0.050    0.100    0.000  fr-h-n3  Frame-vert   # block 12
+   16.000    6.300    0.750    0.050    1.300    0.100    0.000  fr-h-w1  Frame-vert   # block 13
+   16.000    6.300    2.050    0.050    1.300    0.100    0.000  fr-h-w2  Frame-vert   # block 14
+   16.000    6.300    2.500    0.050    1.300    0.100    0.000  fr-h-w3  Frame-vert   # block 15
+   15.850    6.000    0.000    0.300    1.750    0.750    0.000  parap-w  Parapet      # block 16
+   15.850    7.450    0.000    4.450    0.300    0.750    0.000  parap-n  Parapet      # block 17
+# grid opq X  opq Z  win X  win Z
+    15    15    10    10

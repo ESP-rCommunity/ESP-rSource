@@ -1,0 +1,1067 @@
+*start_set
+*winfnt
+0
+*winfnt
+1
+*winfnt
+1
+*win3d
+36 4 1 1 3 41 589 21 357 548 336
+*axiscale
+548 336 -70.628708 70.929985 -67.387962 65.986313 3.871186 2.519227 2.519227 70.628708 67.387962 
+*linescale
+41 70.628708 2.519227 357 67.387962 2.519227
+*wstxpt
+153 224
+manager_a    
+*eswline
+280 294 178 192
+*eswline
+178 192 178 107
+*eswline
+178 107 281 209
+*eswline
+281 209 280 268
+*eswline
+280 268 280 294
+*winfnt
+0
+*eswline
+239 214 242 211
+*eswline
+239 214 242 217
+*eswline
+239 214 246 214
+*wstxpt
+246 217
+pt_general   
+*winfnt
+1
+*eswline
+178 192 120 220
+*eswline
+120 220 119 138
+*eswline
+119 138 119 136
+*eswline
+119 136 178 107
+*eswline
+178 107 178 192
+*edline
+178 192 175 191 4
+*eswline
+175 191 175 112
+*eswline
+175 112 123 137
+*eswline
+123 137 124 216
+*eswline
+124 216 175 191
+*edline
+175 191 178 192 4
+*winfnt
+0
+*eswline
+151 167 154 164
+*eswline
+151 167 154 170
+*eswline
+151 167 158 167
+*wstxpt
+158 170
+part_frame   
+*winfnt
+1
+*eswline
+120 220 95 233
+*eswline
+95 233 93 151
+*eswline
+93 151 119 138
+*eswline
+119 138 120 220
+*winfnt
+0
+*eswline
+107 186 110 183
+*eswline
+107 186 110 189
+*eswline
+107 186 114 186
+*wstxpt
+114 189
+door         
+*winfnt
+1
+*eswline
+82 239 126 285
+*eswline
+126 285 125 200
+*eswline
+125 200 80 154
+*eswline
+80 154 82 239
+*winfnt
+0
+*eswline
+103 220 106 217
+*eswline
+103 220 106 223
+*eswline
+103 220 110 220
+*wstxpt
+110 223
+pt_other     
+*winfnt
+1
+*eswline
+182 257 281 209
+*eswline
+281 209 178 107
+*eswline
+178 107 119 136
+*eswline
+119 136 93 148
+*eswline
+93 148 80 154
+*eswline
+80 154 125 200
+*eswline
+125 200 128 203
+*eswline
+128 203 182 257
+*winfnt
+0
+*eswline
+148 176 151 173
+*eswline
+148 176 145 173
+*eswline
+148 176 148 171
+*eswline
+148 171 155 171
+*wstxpt
+155 174
+ceiling      
+*winfnt
+1
+*eswline
+183 342 130 288
+*eswline
+130 288 126 285
+*eswline
+126 285 82 239
+*eswline
+82 239 95 233
+*eswline
+95 233 120 220
+*eswline
+120 220 178 192
+*eswline
+178 192 280 294
+*eswline
+280 294 183 342
+*winfnt
+0
+*eswline
+149 261 152 264
+*eswline
+149 261 146 264
+*eswline
+149 261 149 266
+*eswline
+149 266 156 266
+*wstxpt
+156 269
+floor        
+*winfnt
+1
+*eswline
+183 342 280 294
+*eswline
+280 294 280 268
+*eswline
+280 268 248 284
+*eswline
+248 284 215 301
+*eswline
+215 301 182 317
+*eswline
+182 317 183 342
+*winfnt
+0
+*eswline
+231 301 234 298
+*eswline
+231 301 234 304
+*eswline
+231 301 238 301
+*wstxpt
+238 304
+spandral     
+*winfnt
+1
+*eswline
+182 317 215 301
+*eswline
+215 301 248 284
+*eswline
+248 284 280 268
+*eswline
+280 268 281 209
+*eswline
+281 209 182 257
+*eswline
+182 257 182 317
+*edline
+182 317 186 312 4
+*eswline
+186 312 185 258
+*eswline
+185 258 277 213
+*eswline
+277 213 277 267
+*eswline
+277 267 186 312
+*edline
+186 312 182 317 4
+*winfnt
+0
+*eswline
+224 276 227 273
+*eswline
+224 276 227 279
+*eswline
+224 276 231 276
+*wstxpt
+231 279
+frame        
+*winfnt
+1
+*eswline
+186 312 277 267
+*eswline
+277 267 277 213
+*eswline
+277 213 185 258
+*eswline
+185 258 186 312
+*winfnt
+0
+*eswline
+231 263 234 260
+*eswline
+231 263 234 266
+*eswline
+231 263 238 263
+*wstxpt
+238 266
+glazing      
+*winfnt
+1
+*eswline
+175 191 124 216
+*eswline
+124 216 123 137
+*eswline
+123 137 175 112
+*eswline
+175 112 175 191
+*winfnt
+0
+*eswline
+149 164 152 161
+*eswline
+149 164 152 167
+*eswline
+149 164 156 164
+*wstxpt
+156 167
+part_glaz    
+*winfnt
+1
+*eswline
+95 233 82 239
+*eswline
+82 239 80 154
+*eswline
+80 154 93 148
+*eswline
+93 148 119 136
+*eswline
+119 136 119 138
+*eswline
+119 138 93 151
+*eswline
+93 151 95 233
+*winfnt
+0
+*eswline
+97 172 100 169
+*eswline
+97 172 100 175
+*eswline
+97 172 104 172
+*wstxpt
+104 175
+ptn_corid    
+*winfnt
+1
+*eswline
+126 285 130 288
+*eswline
+130 288 128 203
+*eswline
+128 203 125 200
+*eswline
+125 200 126 285
+*winfnt
+0
+*eswline
+127 244 130 241
+*eswline
+127 244 130 247
+*eswline
+127 244 134 244
+*wstxpt
+134 247
+pt_other_a   
+*winfnt
+1
+*eswline
+130 288 183 342
+*eswline
+183 342 182 317
+*eswline
+182 317 182 257
+*eswline
+182 257 128 203
+*eswline
+128 203 130 288
+*winfnt
+0
+*eswline
+161 282 164 279
+*eswline
+161 282 164 285
+*eswline
+161 282 168 282
+*wstxpt
+168 285
+pt_other_b   
+*winfnt
+1
+*wstxpt
+253 175
+manager_b    
+*eswline
+181 191 283 292
+*eswline
+283 292 283 267
+*eswline
+283 267 284 207
+*eswline
+284 207 181 106
+*eswline
+181 106 181 191
+*winfnt
+0
+*eswline
+242 212 245 209
+*eswline
+242 212 245 215
+*eswline
+242 212 249 212
+*wstxpt
+249 215
+pt_general   
+*winfnt
+1
+*eswline
+239 163 181 191
+*edline
+181 191 185 186 4
+*eswline
+185 186 236 162
+*eswline
+236 162 236 82
+*eswline
+236 82 184 107
+*eswline
+184 107 185 186
+*edline
+185 186 181 191 4
+*eswline
+181 191 181 106
+*eswline
+181 106 239 78
+*eswline
+239 78 239 81
+*eswline
+239 81 239 163
+*winfnt
+0
+*eswline
+208 139 211 136
+*eswline
+208 139 211 142
+*eswline
+208 139 215 139
+*wstxpt
+215 142
+part_frame   
+*winfnt
+1
+*eswline
+264 150 239 163
+*eswline
+239 163 239 81
+*eswline
+239 81 264 68
+*eswline
+264 68 264 150
+*winfnt
+0
+*eswline
+252 116 255 113
+*eswline
+252 116 255 119
+*eswline
+252 116 259 116
+*wstxpt
+259 119
+door         
+*winfnt
+1
+*eswline
+322 188 277 144
+*eswline
+277 144 277 59
+*eswline
+277 59 323 103
+*eswline
+323 103 322 188
+*winfnt
+0
+*eswline
+300 124 303 121
+*eswline
+300 124 303 127
+*eswline
+300 124 307 124
+*wstxpt
+307 127
+pt_other     
+*winfnt
+1
+*eswline
+284 207 381 159
+*eswline
+381 159 326 107
+*eswline
+326 107 323 103
+*eswline
+323 103 277 59
+*eswline
+277 59 265 66
+*eswline
+265 66 239 78
+*eswline
+239 78 181 106
+*eswline
+181 106 284 207
+*winfnt
+0
+*eswline
+284 110 287 107
+*eswline
+284 110 281 107
+*eswline
+284 110 284 105
+*eswline
+284 105 291 105
+*wstxpt
+291 108
+ceiling      
+*winfnt
+1
+*eswline
+325 192 379 244
+*eswline
+379 244 283 292
+*eswline
+283 292 181 191
+*eswline
+181 191 239 163
+*eswline
+239 163 264 150
+*eswline
+264 150 277 144
+*eswline
+277 144 322 188
+*eswline
+322 188 325 192
+*winfnt
+0
+*eswline
+284 195 287 198
+*eswline
+284 195 281 198
+*eswline
+284 195 284 200
+*eswline
+284 200 291 200
+*wstxpt
+291 203
+floor        
+*winfnt
+1
+*eswline
+283 292 379 244
+*eswline
+379 244 380 219
+*eswline
+380 219 348 235
+*eswline
+348 235 316 251
+*eswline
+316 251 283 267
+*eswline
+283 267 283 292
+*winfnt
+0
+*eswline
+331 251 334 248
+*eswline
+331 251 334 254
+*eswline
+331 251 338 251
+*wstxpt
+338 254
+spandral     
+*winfnt
+1
+*eswline
+348 235 380 219
+*edline
+380 219 376 218 4
+*eswline
+376 218 287 262
+*eswline
+287 262 287 208
+*eswline
+287 208 378 164
+*eswline
+378 164 376 218
+*edline
+376 218 380 219 4
+*eswline
+380 219 381 159
+*eswline
+381 159 284 207
+*eswline
+284 207 283 267
+*eswline
+283 267 316 251
+*eswline
+316 251 348 235
+*winfnt
+0
+*eswline
+340 219 343 216
+*eswline
+340 219 343 222
+*eswline
+340 219 347 219
+*wstxpt
+347 222
+frame        
+*winfnt
+1
+*eswline
+287 262 376 218
+*eswline
+376 218 378 164
+*eswline
+378 164 287 208
+*eswline
+287 208 287 262
+*winfnt
+0
+*eswline
+332 213 335 210
+*eswline
+332 213 335 216
+*eswline
+332 213 339 213
+*wstxpt
+339 216
+glazing      
+*winfnt
+1
+*eswline
+236 162 185 186
+*eswline
+185 186 184 107
+*eswline
+184 107 236 82
+*eswline
+236 82 236 162
+*winfnt
+0
+*eswline
+210 135 213 132
+*eswline
+210 135 213 138
+*eswline
+210 135 217 135
+*wstxpt
+217 138
+part_glaz    
+*winfnt
+1
+*eswline
+277 144 264 150
+*eswline
+264 150 264 68
+*eswline
+264 68 239 81
+*eswline
+239 81 239 78
+*eswline
+239 78 265 66
+*eswline
+265 66 277 59
+*eswline
+277 59 277 144
+*winfnt
+0
+*eswline
+261 93 264 90
+*eswline
+261 93 264 96
+*eswline
+261 93 268 93
+*wstxpt
+268 96
+ptn_corid    
+*winfnt
+1
+*eswline
+325 192 322 188
+*eswline
+322 188 323 103
+*eswline
+323 103 326 107
+*eswline
+326 107 325 192
+*winfnt
+0
+*eswline
+324 148 327 145
+*eswline
+324 148 327 151
+*eswline
+324 148 331 148
+*wstxpt
+331 151
+pt_other_a   
+*winfnt
+1
+*eswline
+379 244 325 192
+*eswline
+325 192 326 107
+*eswline
+326 107 381 159
+*eswline
+381 159 380 219
+*eswline
+380 219 379 244
+*winfnt
+0
+*eswline
+358 184 361 181
+*eswline
+358 184 361 187
+*eswline
+358 184 365 184
+*wstxpt
+365 187
+pt_other_b   
+*winfnt
+1
+*wstxpt
+146 137
+coridor      
+*eswline
+275 143 253 121
+*eswline
+253 121 254 37
+*eswline
+254 37 276 58
+*eswline
+276 58 275 143
+*winfnt
+0
+*eswline
+265 90 268 87
+*eswline
+265 90 268 93
+*eswline
+265 90 272 90
+*wstxpt
+272 93
+right_fict   
+*winfnt
+1
+*eswline
+253 121 59 216
+*eswline
+59 216 57 131
+*eswline
+57 131 254 37
+*eswline
+254 37 253 121
+*winfnt
+0
+*eswline
+156 126 159 123
+*eswline
+156 126 159 129
+*eswline
+156 126 163 126
+*wstxpt
+163 129
+wall         
+*winfnt
+1
+*eswline
+59 216 81 238
+*eswline
+81 238 79 153
+*eswline
+79 153 57 131
+*eswline
+57 131 59 216
+*winfnt
+0
+*eswline
+69 185 72 182
+*eswline
+69 185 72 188
+*eswline
+69 185 76 185
+*wstxpt
+76 188
+left         
+*winfnt
+1
+*eswline
+79 153 92 147
+*eswline
+92 147 118 134
+*eswline
+118 134 177 106
+*eswline
+177 106 180 105
+*eswline
+180 105 238 77
+*eswline
+238 77 263 65
+*eswline
+263 65 276 58
+*eswline
+276 58 254 37
+*eswline
+254 37 57 131
+*eswline
+57 131 79 153
+*winfnt
+0
+*eswline
+174 101 177 98
+*eswline
+174 101 171 98
+*eswline
+174 101 174 96
+*eswline
+174 96 181 96
+*wstxpt
+181 99
+ceiling      
+*winfnt
+1
+*eswline
+81 238 59 216
+*eswline
+59 216 253 121
+*eswline
+253 121 275 143
+*eswline
+275 143 263 149
+*eswline
+263 149 238 162
+*eswline
+238 162 180 190
+*eswline
+180 190 177 191
+*eswline
+177 191 119 219
+*eswline
+119 219 94 232
+*eswline
+94 232 81 238
+*winfnt
+0
+*eswline
+174 186 177 189
+*eswline
+174 186 171 189
+*eswline
+174 186 174 191
+*eswline
+174 191 181 191
+*wstxpt
+181 194
+floor        
+*winfnt
+1
+*eswline
+94 232 119 219
+*eswline
+119 219 118 137
+*eswline
+118 137 92 150
+*eswline
+92 150 94 232
+*winfnt
+0
+*eswline
+106 185 109 182
+*eswline
+106 185 109 188
+*eswline
+106 185 113 185
+*wstxpt
+113 188
+door         
+*winfnt
+1
+*eswline
+81 238 94 232
+*eswline
+94 232 92 150
+*eswline
+92 150 118 137
+*eswline
+118 137 118 134
+*eswline
+118 134 92 147
+*eswline
+92 147 79 153
+*eswline
+79 153 81 238
+*winfnt
+0
+*eswline
+96 170 99 167
+*eswline
+96 170 99 173
+*eswline
+96 170 103 170
+*wstxpt
+103 173
+ptn_corid    
+*winfnt
+1
+*eswline
+119 219 177 191
+*edline
+177 191 174 190 4
+*eswline
+174 190 123 215
+*eswline
+123 215 121 136
+*eswline
+121 136 173 111
+*eswline
+173 111 174 190
+*edline
+174 190 177 191 4
+*eswline
+177 191 177 106
+*eswline
+177 106 118 134
+*eswline
+118 134 118 137
+*eswline
+118 137 119 219
+*winfnt
+0
+*eswline
+150 166 153 163
+*eswline
+150 166 153 169
+*eswline
+150 166 157 166
+*wstxpt
+157 169
+part_frame   
+*winfnt
+1
+*eswline
+123 215 174 190
+*eswline
+174 190 173 111
+*eswline
+173 111 121 136
+*eswline
+121 136 123 215
+*winfnt
+0
+*eswline
+148 163 151 160
+*eswline
+148 163 151 166
+*eswline
+148 163 155 163
+*wstxpt
+155 166
+part_glaz    
+*winfnt
+1
+*eswline
+180 190 238 162
+*eswline
+238 162 238 80
+*eswline
+238 80 238 77
+*eswline
+238 77 180 105
+*eswline
+180 105 180 190
+*edline
+180 190 183 185 4
+*eswline
+183 185 183 106
+*eswline
+183 106 235 81
+*eswline
+235 81 234 160
+*eswline
+234 160 183 185
+*edline
+183 185 180 190 4
+*winfnt
+0
+*eswline
+207 138 210 135
+*eswline
+207 138 210 141
+*eswline
+207 138 214 138
+*wstxpt
+214 141
+part_frameb  
+*winfnt
+1
+*eswline
+238 162 263 149
+*eswline
+263 149 263 67
+*eswline
+263 67 238 80
+*eswline
+238 80 238 162
+*winfnt
+0
+*eswline
+250 115 253 112
+*eswline
+250 115 253 118
+*eswline
+250 115 257 115
+*wstxpt
+257 118
+door_b       
+*winfnt
+1
+*eswline
+263 149 275 143
+*eswline
+275 143 276 58
+*eswline
+276 58 263 65
+*eswline
+263 65 238 77
+*eswline
+238 77 238 80
+*eswline
+238 80 263 67
+*eswline
+263 67 263 149
+*winfnt
+0
+*eswline
+260 92 263 89
+*eswline
+260 92 263 95
+*eswline
+260 92 267 92
+*wstxpt
+267 95
+ptn_coridb   
+*winfnt
+1
+*eswline
+183 185 234 160
+*eswline
+234 160 235 81
+*eswline
+235 81 183 106
+*eswline
+183 106 183 185
+*winfnt
+0
+*eswline
+209 133 212 130
+*eswline
+209 133 212 136
+*eswline
+209 133 216 133
+*wstxpt
+216 136
+part_glazb   
+*winfnt
+1
+*eswline
+177 191 180 190
+*eswline
+180 190 180 105
+*eswline
+180 105 177 106
+*eswline
+177 106 177 191
+*winfnt
+0
+*eswline
+178 148 181 145
+*eswline
+178 148 181 151
+*eswline
+178 148 185 148
+*wstxpt
+185 151
+filler       
+*winfnt
+1
+*viewtext
+1 1 1
+Project: base case model of two adjacent cellular offices
+*winfnt
+1
+*winfnt
+1
+*end_set
+*end_wwc	cellular_names_wire

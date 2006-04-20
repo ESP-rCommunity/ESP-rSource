@@ -1,0 +1,13 @@
+# ESRU optional files for office          defined by file 
+# office.utl
+   0    # timestep air flow
+   0    # timestep casual gains
+   0    # view factor
+   0    # shading/insolation db
+   0    # convective transfer coef
+   0    # blind/shutter control
+   0    # transparent construction
+   0    # casual gain control
+   0    # obstructions
+   1    # CFD model
+zone/office.dfd

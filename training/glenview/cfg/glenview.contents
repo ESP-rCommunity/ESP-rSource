@@ -1,0 +1,920 @@
+cfg: glenview.cfg
+project: EDAS consultancy for proposed conservatory in Glenview
+print date: Tue Apr  1 16:07:16 2003
+ 
+ID Zone            Volume|          Surface
+   Name            m^3   | No. Opaque  Transp  ~Floor
+ 1 West_1         44.5  23    38.4    37.2    15.3  West_1 describes a...
+ 2 West_2         35.9  23    21.4    49.2    12.1  West_2 describes a...
+ 3 West_3         43.2  24    23.0    51.0    14.2  West_3 describes a...
+ 4 West_4         43.2  24    23.0    51.0    14.2  West_4 describes a...
+ 5 East_1         43.2  24    23.0    51.0    14.2  East_1 describes a...
+ 6 East_2         43.2  24    23.0    51.0    14.2  East_2 describes a...
+ 7 East_3         35.9  23    21.4    49.2    12.1  East_3 describes a...
+ 8 East_4         44.5  23    38.4    37.2    15.3  East_4 describes a...
+ 9 Torvean-war  1531.6  15  1007.6     0.0   334.6  Torvean-war describes a...
+10 Drumoss-war  1531.6  15  1007.6     0.0   334.6  Drumoss-war describes a...
+   all          3397.  218   2227.    377.    781.
+ 
+ ____________________________________________________________
+ Control description: proj cntrl
+ 
+ 
+ Zones control: no descrip : 8 functions.
+ 
+ The sensor for function  1 senses a mix of db T and MRT in West_1.
+ The actuator for function  1 is the air point in West_1.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  2 senses a mix of db T and MRT in West_2.
+ The actuator for function  2 is the air point in West_2.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  3 senses a mix of db T and MRT in West_3.
+ The actuator for function  3 is the air point in West_3.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  4 senses a mix of db T and MRT in West_4.
+ The actuator for function  4 is the air point in West_4.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  5 senses a mix of db T and MRT in East_1.
+ The actuator for function  5 is the air point in East_1.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  6 senses a mix of db T and MRT in East_2.
+ The actuator for function  6 is the air point in East_2.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  7 senses a mix of db T and MRT in East_3.
+ The actuator for function  7 is the air point in East_3.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ The sensor for function  8 senses a mix of db T and MRT in East_4.
+ The actuator for function  8 is the air point in East_4.
+ The function day types are Weekdays, Saturdays & Sundays
+ 
+ Weekday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 17.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Saturday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Sunday control is valid Tue  1 Jan to Wed 31 Dec, 1980 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+   2  9.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 20.0 26.0
+   3 21.00 db temp   > flux      basic control       3200.0 0.0 90000.0 0.0 10.0 35.0
+ 
+ Zone to contol loop linkages:
+ zone ( 1) West_1       << control  1
+ zone ( 2) West_2       << control  2
+ zone ( 3) West_3       << control  3
+ zone ( 4) West_4       << control  4
+ zone ( 5) East_1       << control  5
+ zone ( 6) East_2       << control  6
+ zone ( 7) East_3       << control  7
+ zone ( 8) East_4       << control  8
+ zone ( 9) Torvean-war  << control  0
+ zone (10) Drumoss-war  << control  0
+ 
+ ____________________________________________________________
+ 
+ Zone West_1 ( 1) is composed of 23 surfaces and 65 vertices.
+ It encloses a volume of    44.5m^3 of space, with a total surface
+ area of    75.55m^2 & approx floor area of   15.32m^2
+ West_1 describes a...
+ 
+ A summary of the surfaces in West_1( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1     1.72 227.   0. Frame-v-s    OPAQ VERT Frame-vert   ||< external
+  2    12.67 113.   0. Fictive-w2   TRAN VERT Fict-trans   ||< Fictive-w1:West_2
+  3     1.47  47.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4    11.62 317.   0. Fictive-sim  OPAQ VERT Fict-opaq    ||< Wall-v-s5:Torvean-war
+  5     0.55 227.  73. Frame-r-s1   OPAQ SLOP Frame-roof   ||< external
+  6    15.32   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.55  47.  73. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.64  47.  73. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.75 227.  73. Frame-r-s2   OPAQ SLOP Frame-roof   ||< external
+ 10     3.52 227.   0. Parapet_s    OPAQ VERT Parapet      ||< external
+ 11     2.22  47.   0. Parapet_n    OPAQ VERT Parapet      ||< external
+ 12     1.27 227.  73. Glass-r-s1   TRAN SLOP DSC132414b   ||< external
+ 13     1.27 227.  73. Glass-r-s2   TRAN SLOP DSC132414b   ||< external
+ 14     1.27  47.  73. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 15     1.27  47.  73. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 16     2.09  47.  73. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 17     1.27  47.  73. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 18     1.27 227.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 19     3.80 227.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 20     5.40 227.   0. Glass-v-s1   TRAN VERT DSC644213n   ||< external
+ 21     1.57 227.   0. Glass-v-s2   TRAN VERT DSC644213n   ||< external
+ 22     3.17  47.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 23     0.83  47.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: west-1
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    420.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    150.0    140.0       0.58       0.42
+Sat  1 LightsW   10 - 21    420.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+Sun  1 LightsW   10 - 21    420.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone West_2 ( 2) is composed of 23 surfaces and 61 vertices.
+ It encloses a volume of    35.9m^3 of space, with a total surface
+ area of    70.65m^2 & approx floor area of   12.10m^2
+ West_2 describes a...
+ 
+ A summary of the surfaces in West_2( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1     1.48 180.   0. Frame-v-s    OPAQ VERT Frame-vert   ||< external
+  2    10.40  90.   0. Fict-1-w34   TRAN VERT Fict-trans   ||< identical environment
+  3     0.96   0.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4    12.67 293.   0. Fictive-w1   TRAN VERT Fict-trans   ||< Fictive-w2:West_1
+  5     0.59 180.  73. Frame-r-s1   OPAQ SLOP Frame-roof   ||< external
+  6    12.10   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.72 180.  73. Frame-r-s2   OPAQ SLOP Frame-roof   ||< external
+  8     0.31   0.  73. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  9     0.72 360.  73. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+ 10     3.58  90. -70. Fict-2-w34   TRAN SLOP Fict-trans   ||< identical environment
+ 11     2.92 180.   0. Parapet-s    OPAQ VERT Parapet      ||< external
+ 12     1.62   0.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 13     2.04 180.  73. Glass-r-s1   TRAN SLOP DSC132414b   ||< external
+ 14     1.35 180.  73. Glass-r-s2   TRAN SLOP DSC132414b   ||< external
+ 15     1.35 180.  73. Glass-r-s3   TRAN SLOP DSC132414b   ||< external
+ 16     2.95 180.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 17     1.85   0.  73. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.35   0.  73. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.95   0.  73. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 20     4.43 180.   0. Glass-v-s1   TRAN VERT DSC644213n   ||< external
+ 21     1.29 180.   0. Glass-v-s2   TRAN VERT DSC644213n   ||< external
+ 22     2.35 360.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 23     0.68 360.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: west-2
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    480.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    150.0    140.0       0.58       0.42
+Sat  1 LightsW   10 - 21    480.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+Sun  1 LightsW   10 - 21    480.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone West_3 ( 3) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of    43.2m^3 of space, with a total surface
+ area of    73.98m^2 & approx floor area of   14.19m^2
+ West_3 describes a...
+ 
+ A summary of the surfaces in West_3( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    14.36 180.   0. Fict-1-w4    TRAN VERT Fict-trans   ||< Fict-1-w4:West_4
+  2    10.56  90.   0. Fict-2-e3    TRAN VERT Fict-trans   ||< Fict-2-e3:East_1
+  3     1.60   0.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4     0.70 270.   0. Frame-v-w    OPAQ VERT Frame-vert   ||< external
+  5     1.79 270.  70. Fict-2-w2    TRAN SLOP Fict-trans   ||< identical environment
+  6    14.19   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.67   1.  70. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.87 360.  70. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.27 270.  70. Frame-r-w1   OPAQ SLOP Frame-roof   ||< external
+ 10     0.52 270.  70. Frame-r-w2   OPAQ SLOP Frame-roof   ||< external
+ 11     5.20 270.   0. Fict-1-w2    TRAN VERT Fict-trans   ||< identical environment
+ 12     0.97 270.   0. Parapet-w    OPAQ VERT Parapet      ||< external
+ 13     3.22   0.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 14     1.22 270.  70. Glass-r-w1   TRAN SLOP DSC132414b   ||< external
+ 15     0.95 270.  70. Glass-r-w2   TRAN SLOP DSC132414b   ||< external
+ 16     1.04 270.  70. Glass-r-w3   TRAN SLOP DSC132414b   ||< external
+ 17     1.24 360.  70. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.63 360.  70. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.59   0.  70. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 20     2.30   0.  70. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 21     1.32 270.   0. Glass-v-w1   TRAN VERT DSC644213n   ||< external
+ 22     0.39 270.   0. Glass-v-w2   TRAN VERT DSC644213n   ||< external
+ 23     4.92 360.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 24     1.43   0.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: west-3
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    320.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    300.0    280.0       0.58       0.42
+Sat  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+Sun  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone West_4 ( 4) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of    43.2m^3 of space, with a total surface
+ area of    73.98m^2 & approx floor area of   14.19m^2
+ West_4 describes a...
+ 
+ A summary of the surfaces in West_4( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    14.36   0.   0. Fict-1-w4    TRAN VERT Fict-trans   ||< Fict-1-w4:West_3
+  2    10.56  90.   0. Fict-2-e3    TRAN VERT Fict-trans   ||< Fict-2-e3:East_2
+  3     1.60 180.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4     0.70 270.   0. Frame-v-w    OPAQ VERT Frame-vert   ||< external
+  5     1.79 270.  70. Fict-2-w2    TRAN SLOP Fict-trans   ||< identical environment
+  6    14.19   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.67 179.  70. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.87 180.  70. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.27 270.  70. Frame-r-w1   OPAQ SLOP Frame-roof   ||< external
+ 10     0.52 270.  70. Frame-r-w2   OPAQ SLOP Frame-roof   ||< external
+ 11     5.20 270.   0. Fict-1-w2    TRAN VERT Fict-trans   ||< identical environment
+ 12     0.97 270.   0. Parapet-w    OPAQ VERT Parapet      ||< external
+ 13     3.22 180.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 14     1.22 270.  70. Glass-r-w1   TRAN SLOP DSC132414b   ||< external
+ 15     0.95 270.  70. Glass-r-w2   TRAN SLOP DSC132414b   ||< external
+ 16     1.04 270.  70. Glass-r-w3   TRAN SLOP DSC132414b   ||< external
+ 17     1.24 180.  70. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.63 180.  70. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.59 180.  70. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 20     2.30 180.  70. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 21     1.32 270.   0. Glass-v-w1   TRAN VERT DSC644213n   ||< external
+ 22     0.38 270.   0. Glass-v-w2   TRAN VERT DSC644213n   ||< external
+ 23     4.92 180.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 24     1.43 180.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ NOTE: Some surface boundary attributions did not match the
+ master connections list. A topology update may be required.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: west-4
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    320.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    300.0    280.0       0.58       0.42
+Sat  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+Sun  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone East_1 ( 5) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of    43.2m^3 of space, with a total surface
+ area of    73.98m^2 & approx floor area of   14.19m^2
+ East_1 describes a...
+ 
+ A summary of the surfaces in East_1( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    14.36 180.   0. Fict-1-w4    TRAN VERT Fict-trans   ||< Fict-1-w4:East_2
+  2    10.56 270.   0. Fict-2-e3    TRAN VERT Fict-trans   ||< Fict-2-e3:West_3
+  3     1.60   0.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4     0.70  90.   0. Frame-v-w    OPAQ VERT Frame-vert   ||< external
+  5     1.79  90.  70. Fict-2-w2    TRAN SLOP Fict-trans   ||< Fict-2-w34:East_3
+  6    14.19   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.67 359.  70. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.87   0.  70. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.27  90.  70. Frame-r-w1   OPAQ SLOP Frame-roof   ||< external
+ 10     0.52  90.  70. Frame-r-w2   OPAQ SLOP Frame-roof   ||< external
+ 11     5.20  90.   0. Fict-1-w2    TRAN VERT Fict-trans   ||< identical environment
+ 12     0.97  90.   0. Parapet-w    OPAQ VERT Parapet      ||< external
+ 13     3.23   0.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 14     1.22  90.  70. Glass-r-w1   TRAN SLOP DSC132414b   ||< external
+ 15     0.95  90.  70. Glass-r-w2   TRAN SLOP DSC132414b   ||< external
+ 16     1.04  90.  70. Glass-r-w3   TRAN SLOP DSC132414b   ||< external
+ 17     1.24   0.  70. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.63   0.  70. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.59   0.  70. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 20     2.30 360.  70. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 21     1.32  90.   0. Glass-v-w1   TRAN VERT DSC644213n   ||< external
+ 22     0.39  90.   0. Glass-v-w2   TRAN VERT DSC644213n   ||< external
+ 23     4.92 360.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 24     1.43   0.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: east-1
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    320.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    300.0    280.0       0.58       0.42
+Sat  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+Sun  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone East_2 ( 6) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of    43.2m^3 of space, with a total surface
+ area of    73.98m^2 & approx floor area of   14.19m^2
+ East_2 describes a...
+ 
+ A summary of the surfaces in East_2( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    14.36   0.   0. Fict-1-w4    TRAN VERT Fict-trans   ||< Fict-1-w4:East_1
+  2    10.56 270.   0. Fict-2-e3    TRAN VERT Fict-trans   ||< Fict-2-e3:West_4
+  3     1.60 180.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4     0.70  90.   0. Frame-v-w    OPAQ VERT Frame-vert   ||< external
+  5     1.79  90.  70. Fict-2-w2    TRAN SLOP Fict-trans   ||< external
+  6    14.19   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.67 181.  70. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.87 180.  70. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.27  90.  70. Frame-r-w1   OPAQ SLOP Frame-roof   ||< external
+ 10     0.52  90.  70. Frame-r-w2   OPAQ SLOP Frame-roof   ||< external
+ 11     5.20  90.   0. Fict-1-w2    TRAN VERT Fict-trans   ||< identical environment
+ 12     0.97  90.   0. Parapet-w    OPAQ VERT Parapet      ||< external
+ 13     3.23 180.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 14     1.22  90.  70. Glass-r-w1   TRAN SLOP DSC132414b   ||< external
+ 15     0.95  90.  70. Glass-r-w2   TRAN SLOP DSC132414b   ||< external
+ 16     1.04  90.  70. Glass-r-w3   TRAN SLOP DSC132414b   ||< external
+ 17     1.24 180.  70. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.63 180.  70. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.59 180.  70. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 20     2.30 180.  70. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 21     1.32  90.   0. Glass-v-w1   TRAN VERT DSC644213n   ||< external
+ 22     0.38  90.   0. Glass-v-w2   TRAN VERT DSC644213n   ||< external
+ 23     4.92 180.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 24     1.43 180.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: east-2
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    320.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    300.0    280.0       0.58       0.42
+Sat  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+Sun  1 LightsW   10 - 21    320.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    450.0    420.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    300.0    280.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    450.0    420.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    300.0    280.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone East_3 ( 7) is composed of 23 surfaces and 61 vertices.
+ It encloses a volume of    35.9m^3 of space, with a total surface
+ area of    70.65m^2 & approx floor area of   12.10m^2
+ East_3 describes a...
+ 
+ A summary of the surfaces in East_3( 7) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1     1.48 180.   0. Frame-v-s    OPAQ VERT Frame-vert   ||< external
+  2    10.40 270.   0. Fict-1-w34   TRAN VERT Fict-trans   ||< identical environment
+  3     0.96 360.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4    12.67  67.   0. Fictive-w1   TRAN VERT Fict-trans   ||< Fictive-w2:East_4
+  5     0.59 180.  73. Frame-r-s1   OPAQ SLOP Frame-roof   ||< external
+  6    12.10   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.72 180.  73. Frame-r-s2   OPAQ SLOP Frame-roof   ||< external
+  8     0.31 360.  73. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  9     0.72   0.  73. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+ 10     3.58 270. -70. Fict-2-w34   TRAN SLOP Fict-trans   ||< Fict-2-w2:East_1
+ 11     2.92 180.   0. Parapet-s    OPAQ VERT Parapet      ||< external
+ 12     1.62   0.   0. Parapet-n    OPAQ VERT Parapet      ||< external
+ 13     2.04 180.  73. Glass-r-s1   TRAN SLOP DSC132414b   ||< external
+ 14     1.35 180.  73. Glass-r-s2   TRAN SLOP DSC132414b   ||< external
+ 15     1.35 180.  73. Glass-r-s3   TRAN SLOP DSC132414b   ||< external
+ 16     2.95 180.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 17     1.85 360.  73. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 18     1.35   0.  73. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 19     2.95   0.  73. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 20     4.43 180.   0. Glass-v-s1   TRAN VERT DSC644213n   ||< external
+ 21     1.29 180.   0. Glass-v-s2   TRAN VERT DSC644213n   ||< external
+ 22     2.35 360.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 23     0.68 360.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: east-3
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    480.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    150.0    140.0       0.58       0.42
+Sat  1 LightsW   10 - 21    480.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+Sun  1 LightsW   10 - 21    480.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone East_4 ( 8) is composed of 23 surfaces and 65 vertices.
+ It encloses a volume of    44.5m^3 of space, with a total surface
+ area of    75.55m^2 & approx floor area of   15.32m^2
+ East_4 describes a...
+ 
+ A summary of the surfaces in East_4( 8) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1     1.72 133.   0. Frame-v-s    OPAQ VERT Frame-vert   ||< external
+  2    12.67 247.   0. Fictive-w2   TRAN VERT Fict-trans   ||< Fictive-w1:East_3
+  3     1.47 313.   0. Frame-v-n    OPAQ VERT Frame-vert   ||< external
+  4    11.62  43.   0. Fictive-sim  OPAQ VERT Fict-opaq    ||< Wall-v-s5:Drumoss-war
+  5     0.55 133.  73. Frame-r-s1   OPAQ SLOP Frame-roof   ||< external
+  6    15.32   0. -90. Floor        OPAQ FLOR Floor        ||< user def grnd profile  1
+  7     0.55 313.  73. Frame-r-n1   OPAQ SLOP Frame-roof   ||< external
+  8     0.64 313.  73. Frame-r-n2   OPAQ SLOP Frame-roof   ||< external
+  9     0.75 133.  73. Frame-r-s2   OPAQ SLOP Frame-roof   ||< external
+ 10     3.52 133.   0. Parapet_s    OPAQ VERT Parapet      ||< external
+ 11     2.22 313.   0. Parapet_n    OPAQ VERT Parapet      ||< external
+ 12     1.27 133.  73. Glass-r-s1   TRAN SLOP DSC132414b   ||< external
+ 13     1.27 133.  73. Glass-r-s2   TRAN SLOP DSC132414b   ||< external
+ 14     1.27 313.  73. Glass-r-n2   TRAN SLOP DSC132414b   ||< external
+ 15     1.27 313.  73. Glass-r-n1   TRAN SLOP DSC132414b   ||< external
+ 16     2.09 313.  73. Glass-r-n4   TRAN SLOP DSC132414b   ||< external
+ 17     1.27 313.  73. Glass-r-n3   TRAN SLOP DSC132414b   ||< external
+ 18     1.27 133.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 19     3.80 133.  73. Glass-r-s4   TRAN SLOP DSC132414b   ||< external
+ 20     5.40 133.   0. Glass-v-s1   TRAN VERT DSC644213n   ||< external
+ 21     1.57 133.   0. Glass-v-s2   TRAN VERT DSC644213n   ||< external
+ 22     3.17 313.   0. Glass-v-n1   TRAN VERT DSC644213n   ||< external
+ 23     0.83 313.   0. Glass-v-n2   TRAN VERT DSC644213n   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Shading patterns have been calculated for this zone.
+ 
+ Ventilation and infiltration is assessed via network analysis
+ and the associated network node is: east-4
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  5  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW   10 - 17    420.0      0.0       0.50       0.50
+Wkd  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Wkd  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Wkd  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Wkd  5 OccuptW   16 - 17    150.0    140.0       0.58       0.42
+Sat  1 LightsW   10 - 21    420.0      0.0       0.50       0.50
+Sat  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sat  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sat  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sat  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+Sun  1 LightsW   10 - 21    420.0      0.0       0.50       0.50
+Sun  2 OccuptW   10 - 12    225.0    210.0       0.58       0.42
+Sun  3 OccuptW   12 - 14    150.0    140.0       0.58       0.42
+Sun  4 OccuptW   14 - 16    225.0    210.0       0.58       0.42
+Sun  5 OccuptW   16 - 21    150.0    140.0       0.58       0.42
+ 
+ ____________________________________________________________
+ 
+ Zone Torvean-war ( 9) is composed of 15 surfaces and 20 vertices.
+ It encloses a volume of  1531.6m^3 of space, with a total surface
+ area of  1007.63m^2 & approx floor area of  334.62m^2
+ Torvean-war describes a...
+ 
+ A summary of the surfaces in Torvean-war( 9) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    33.80 227.   0. Wall-v-s2    OPAQ VERT Ward-wall    ||< external
+  2    46.22  90.   0. Wall-v-n3    OPAQ VERT Ward-wall    ||< Wall-v-n3:Drumoss-war
+  3    81.73 317.   0. Wall-v-n4    OPAQ VERT Ward-wall    ||< external
+  4     6.76 137.   0. Wall-v-s3    OPAQ VERT Ward-wall    ||< external
+  5     3.12 227.   0. Wall-v-s4    OPAQ VERT Ward-wall    ||< external
+  6   334.62 115. -90. Floor        OPAQ FLOR Ward-wall    ||< external
+  7    11.62 137.   0. Wall-v-s5    OPAQ VERT Ward-wall    ||< Fictive-sim:West_1
+  8    33.04 137.   0. Wall-v-s6    OPAQ VERT Ward-wall    ||< external
+  9     3.55  47.  73. Roof-n1      OPAQ SLOP Ward-roof    ||< external
+ 10     3.55 227.  73. Roof-s1      OPAQ SLOP Ward-roof    ||< external
+ 11     3.12  47.   0. Wall-v-n1    OPAQ VERT Ward-wall    ||< external
+ 12   168.17 137.  58. Roof-s2      OPAQ SLOP Ward-roof    ||< external
+ 13   216.77 317.  58. Roof-n2      OPAQ SLOP Ward-roof    ||< external
+ 14    26.00 227.   0. Wall-v-s1    OPAQ VERT Ward-wall    ||< external
+ 15    35.55  90.   0. Wall-v-n2    OPAQ VERT Ward-wall    ||< Wall-v-n2:Drumoss-war
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ Description: nil_operations
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+ 
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ 
+ Zone Drumoss-war (10) is composed of 15 surfaces and 20 vertices.
+ It encloses a volume of  1531.6m^3 of space, with a total surface
+ area of  1007.63m^2 & approx floor area of  334.62m^2
+ Drumoss-war describes a...
+ 
+ A summary of the surfaces in Drumoss-war(10) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1    33.80 133.   0. Wall-v-s2    OPAQ VERT Ward-wall    ||< external
+  2    46.22 270.   0. Wall-v-n3    OPAQ VERT Ward-wall    ||< Wall-v-n3:Torvean-war
+  3    81.73  43.   0. Wall-v-n4    OPAQ VERT Ward-wall    ||< external
+  4     6.76 223.   0. Wall-v-s3    OPAQ VERT Ward-wall    ||< external
+  5     3.12 133.   0. Wall-v-s4    OPAQ VERT Ward-wall    ||< external
+  6   334.62 245. -90. Floor        OPAQ FLOR Ward-wall    ||< external
+  7    11.62 223.   0. Wall-v-s5    OPAQ VERT Ward-wall    ||< Fictive-sim:East_4
+  8    33.04 223.   0. Wall-v-s6    OPAQ VERT Ward-wall    ||< external
+  9     3.55 313.  73. Roof-n1      OPAQ SLOP Ward-roof    ||< external
+ 10     3.55 133.  73. Roof-s1      OPAQ SLOP Ward-roof    ||< external
+ 11     3.12 313.   0. Wall-v-n1    OPAQ VERT Ward-wall    ||< external
+ 12   168.17 223.  58. Roof-s2      OPAQ SLOP Ward-roof    ||< external
+ 13   216.77  43.  58. Roof-n2      OPAQ SLOP Ward-roof    ||< external
+ 14    26.00 133.   0. Wall-v-s1    OPAQ VERT Ward-wall    ||< external
+ 15    35.55 270.   0. Wall-v-n2    OPAQ VERT Ward-wall    ||< Wall-v-n2:Torvean-war
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ Description: nil_operations
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.50  0.2127    0.00  0.0000   0     0.00
+ 
+ 
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque composite: Frame-roof
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   207 0.0030     0.160  1379.  1004. 0.90 0.60    70.  0.02 PVC
+    2    0 0.0700     0.000     0.     0. 0.99 0.99     1.  0.10 air  0.10 0.10 0.10
+ Int   207 0.0030     0.160  1379.  1004. 0.90 0.60    70.  0.02 PVC
+ Standardised U value =    3.17
+ 
+ Details of opaque composite: Frame-vert
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   207 0.0030     0.160  1379.  1004. 0.90 0.60    70.  0.02 PVC
+    2    0 0.0700     0.000     0.     0. 0.99 0.99     1.  0.10 air  0.10 0.10 0.10
+ Int   207 0.0030     0.160  1379.  1004. 0.90 0.60    70.  0.02 PVC
+ Standardised U value =    3.17
+ 
+ Details of opaque composite: Parapet
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   127 0.0100     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc)
+    2    4 0.2000     0.960  2000.   650. 0.90 0.93    25.  0.21 Outer leaf brick
+    3    0 0.0500     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4  216 0.0500     0.040   105.  1800. 0.90 0.60     1.  1.25 Mineral fibre
+ Int   107 0.0100     0.190   950.   840. 0.91 0.50    11.  0.05 Gypsum plasterboard
+ Standardised U value =    0.53
+ 
+ Details of opaque composite: Floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   264 0.5000     1.280    50.   879. 0.90 0.85     5.  0.39 Low mass earth
+    2  264 0.5000     1.280    50.   879. 0.90 0.85     5.  0.39 Low mass earth
+    3   32 0.1000     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete
+    4  216 0.0500     0.040   105.  1800. 0.90 0.60     1.  1.25 Mineral fibre
+    5   32 0.1000     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete
+ Int   225 0.0050     0.060   160.  2500. 0.90 0.65    10.  0.08 Synthetic carpet
+ Standardised U value =    0.41
+ 
+ Details of transparent construction: Fict-trans   with SC_fictit    optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  245 0.0010   200.000     1.  1000. 0.99 0.01 19200.  0.00 Fictive-trans
+ Standardised U value =    5.62
+ 
+ Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
+ with 1 layers [including air gaps] and visible trn: 0.99
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.999 0.999 0.999 0.999 0.999
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.001 0.001 0.001 0.001 0.001
+ 
+ Details of opaque composite: Fict-opaq
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  243 0.0040     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float
+ Standardised U value =    5.50
+ 
+ Details of opaque composite: Ward-roof
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1    1 0.2500     0.960  2000.   840. 0.93 0.70    12.  0.26 Paviour brick
+ Standardised U value =    2.28
+ 
+ Details of opaque composite: Ward-wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1    1 0.2500     0.960  2000.   840. 0.93 0.70    12.  0.26 Paviour brick
+ Standardised U value =    2.28
+ 
+ Details of transparent construction: DSC132414b   with DSC132414b_o optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243 0.0060     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float
+    2    0 0.0100     0.000     0.     0. 0.99 0.99     1.  0.45 air  0.45 0.45 0.45
+    3   43 0.0020   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
+    4    0 0.0100     0.000     0.     0. 0.99 0.99     1.  0.05 air  0.05 0.05 0.05
+ Int   243 0.0060     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float
+ Standardised U value =    1.45
+ 
+ SUNCOOL HP Clear    6-20-6  m_b_45: with id of: DSC132414b_o
+ with 5 layers [including air gaps] and visible trn: 0.13
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.079 0.049 0.042 0.034 0.022
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.409 0.428 0.425 0.399 0.330
+    2  0.000 0.000 0.000 0.000 0.000
+    3  0.199 0.192 0.176 0.147 0.090
+    4  0.000 0.000 0.000 0.000 0.000
+    5  0.017 0.011 0.009 0.008 0.005
+ 
+ Details of transparent construction: DSC644213n   with DSC644213n_o optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242 0.0060     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+    2    0 0.0120     0.000     0.     0. 0.99 0.99     1.  0.58 air  0.58 0.58 0.58
+ Int   242 0.0060     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ Standardised U value =    1.29
+ 
+ SR-SKN172 Ar        6-12-6  no blind: with id of: DSC644213n_o
+ with 3 layers [including air gaps] and visible trn: 0.64
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.341 0.325 0.294 0.215 0.103
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.366 0.372 0.374 0.365 0.329
+    2  0.000 0.000 0.000 0.000 0.000
+    3  0.060 0.065 0.066 0.064 0.049

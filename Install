@@ -1,0 +1,1355 @@
+#!/bin/bash
+#
+# For use on sun/linux/cygwin/mingw/OS X/Windows platforms.
+#
+# This script handles installation of ESP-r executables,
+# databases, training and reference materials. 
+
+echo " "
+echo "          ESP-r installation script."
+echo " "
+echo "Please consult the README file before commencing "
+echo "installation.  This script will rebuild the ESP-r"
+echo "modules on your system.  You can abort this process"
+echo "at any time by pressing <control> c."
+echo " "
+echo "Please answer the following questions. Default answers"
+echo "are in []. To accept the default press return. "
+echo " "
+
+# Set default settings.
+SRCdir=`pwd`               # Source Directory
+DESTdir=/usr/esru          # Target Directory
+xml_support=prompt         # support for XML output
+debugging="no"             # include debugging symbols
+EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
+CC=gcc                     # assume GNU C compiler (exceptions handled below)
+CPL=g++                    # assume GNU C++ compiler (exceptions handled below)
+FC=g77                     # assume GNU g77 fortran compiler (exceptions handled below)
+FFLAGS="-I../include "     # initial fortran compiler flags
+CFLAGS="-I../include "     # initial C compiler flags
+LD_FLAGS=" "               # inisial link-loader flags
+MKFILE="MakefileGTK"       # Will be overwritten with MakefileX11 if necessary
+WWLINK=unshared            # Typical setting for non-solaris machines
+LIBXML2_INCLUDE=" "        # Assume no XML library include path
+          
+#-----------------------------------------------------------
+# Detect architecture.
+#-----------------------------------------------------------
+architecture=`uname -s`      # machine type
+
+#-----------------------------------------------------------
+# Is Stat available? assume stat will be in /bin or /usr/bin,
+# since which might also not be available. 
+#-----------------------------------------------------------
+
+if [ -x /usr/bin/stat ]; then
+   stat_avail="yes"
+elif [ -x /bin/stat ]; then
+   stat_avail="yes"
+else
+   stat_avail="no"
+fi
+
+# Command line options.
+help=0
+if [ $# -ne 0 ]; then
+   for i do
+      case "$i" in
+      -h | --help)   help=1; shift;;
+      --debug)  debugging=yes; shift;;
+      -d) shift; DESTdir=$1; shift;;
+       --xml) xml_support=yes; shift;;
+      esac
+   done
+fi
+
+#-----------------------------------------------------------
+# Header.
+#-----------------------------------------------------------
+if [ $help -eq 1 ]; then
+  echo " "
+  echo " USAGE: Install [OPTIONS] [NAME]"
+  echo " "
+  echo " This installation script can be used to install"
+  echo " ESP-r on your system. To install ESP-r using the "
+  echo " standard defaults, run the script without any " 
+  echo " arguements, eg:"
+  echo " "
+  echo "   $ ./Install "
+  echo " "
+  echo " You can also specify alternate configurations "
+  echo " using the script's options. For instance, to "
+  echo " install ESP-r in your home directory, use the"
+  echo " command:"
+  echo " "
+  echo "   $ ./Install -d ~/esru"
+  echo " "
+  echo " It is also possible to build esp-r executables "
+  echo " individually, by specifying the name(s) of the "
+  echo " desired program(s), eg:"
+  echo " "
+  echo "   $ ./Install bps "
+  echo " " 
+  echo " or to install a module in a specific location" 
+  echo " "
+  echo "   $ ./Install -d ~/esru bps "
+  echo " " 
+  echo " Arguments: "
+  echo "    'NAME' to install one or more named modules (e.g."
+  echo "           Install clm for the module clm)"
+  echo " " 
+  echo "    -d <PATH>,  --destination <PATH>: Install "
+  echo "        ESP-r in <PATH>/esp-r directory. The "
+  echo "        default path is ${DESTdir}."
+  echo " " 
+  echo "    --debug: Include debugging symbols in executable"
+  echo "        the default is no debugging symbols. Note that" 
+  echo "        if you include debugging then you should answer" 
+  echo "        no when asked if you want to install the executables." 
+  echo " " 
+  echo "    -h, --help:  Display this help message."
+  echo " "
+  echo "Note: if you are going to use the GNU compilers check to see that"
+  echo "there is a symbolic link from f77 to g77 and from cc to gcc"
+  echo "(otherwise you will need to edit  f77 to g77 in the Makefiles)"
+  echo " "
+  echo "Note: ESP-r does not yet compile with version 4 of the GNU compiler "
+  echo "collection. Until the code is ported, please use version 3.3 or 3.4"
+  echo " "
+  echo " Note: there are two versions of ESP-r - the standard full distribution"
+  echo " based on the X11 graphic libraries and a beta version which uses the"
+  echo " GTK graphic libraries (but which lacks a few facilities)."
+  echo " "
+  exit
+fi
+
+# check that xml support is available
+if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
+   # check for libxml2 library on system
+   if [ ! -d /usr/include/libxml2 ] && [ ! -d/usr/local/include/libxml2 ]; then
+      # Libraries not found. Disable XML support 
+      xml_support="no"
+      xml_libs_found="no"
+      # If runnning silently, warn user.
+      if [ "$mode" = "silent" ]; then
+         echo " "
+         echo " Warning: Library libxml2 could not be found"
+         echo " in /usr/include or /usr/local/include "
+         echo " " 
+         echo " XML support disabled."
+         echo " "
+      fi
+   else
+    # Add XML libraries to include paths
+    xml_libs_found="yes"
+    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2"
+   fi
+fi
+
+#---------------------------------------------------------
+# Assign universal flags and variables.
+#---------------------------------------------------------
+#Enbable debug mode
+if [ $debugging = "yes" ]; then
+    debug_flag="-g"
+else
+    debug_flag=" "
+fi
+  echo $architecture
+
+#-----------------------------------------------------------
+# Prompt user for inclusion of H3Kreports (XML output)
+# on supported platforms (presently linux/cygwin/mingw!).
+#-----------------------------------------------------------
+if [ $architecture = "Linux" ]  ||
+   [ $architecture = "SunOS" ] ||
+   [ $architecture = "CYGWIN_NT-5.0" ] ||
+   [ $architecture = "CYGWIN_NT-5.1" ] ||
+   [ $architecture = "CYGWIN_NT-5.2" ] ||
+   [ $architecture = "MINGW32_NT-5.0" ] ||
+   [ $architecture = "MINGW32_NT-5.1" ] ||
+   [ $architecture = "MINGW32_NT-5.2" ]  ; then
+   # XML available on platform
+   if [ "${xml_libs_found}" = "no" ]; then
+
+      #LIBXML2 libraries not available.
+      echo " " 
+      echo " The libxml2 library does not appear to be installed"
+      echo " on this system. The library could not be found in"
+      echo " /usr/include or /usr/local/include. Support for  "
+      echo " experimental XML output will be disabled, but the "
+      echo " rest of the ESP-r installation will proceed normally. "
+      echo " "
+   else
+      # Libraries were found. Prompt user for inclusion.
+      B="none"
+      while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+      do
+         if [ "$B" != "none" ]; then
+            echo ""
+            echo "Please answer yes or no (y/n)."
+         fi
+         echo " Install with experimental XML output support? (Note that this"
+         echo " may significantly increase simulation run-time.) (y/n) [n]"
+         read B
+         if [ "$B" = "" ]; then
+            B="n"
+         fi
+      done
+      if [ "$B" = "y" ]; then
+         # Enable xml
+         xml_support="yes"
+         echo " XML output enabled for bps"
+      else
+         # Disable XML
+         xml_support="no"            
+         echo " XML output excluded from bps"
+      fi
+   fi 
+else
+   # XML not available on platform.
+   echo " "
+   echo " Experimental XML output support. is presently not  "
+   echo " available on ${platform}. XML support disabled."
+   echo " "
+   xml_support="no"
+fi
+
+# Now ask questions.
+##### Computer Architecture:
+
+# If architecture is known then suggest options:
+if [ $architecture = "SunOS" ]; then
+ echo "Solaris box detected - choose computer type 0 or 1 or 2..."
+fi
+if [ $architecture = "Linux" ]; then
+ echo "Linux box detected - choose computer type 3 or 4..."
+fi
+if [ $architecture = "CYGWIN_NT-5.0" ]; then
+ echo "Cygwin environment detected - choose computer type 5 or 6..."
+fi
+if [ $architecture = "CYGWIN_NT-5.1" ]; then
+ echo "Cygwin environment detected - choose computer type 5 or 6..."
+fi
+if [ $architecture = "CYGWIN_NT-5.2" ]; then
+ echo "Cygwin environment detected - choose computer type 5 or 6..."
+fi
+if [ $architecture = "Darwin" ]; then
+ echo "OS X box detected - choose computer type 7 or 8..."
+fi
+if [ $architecture = "MINGW32_NT-5.0" ]; then
+ echo "Native windows (MINGW) environment detected - choose computer type 9..."
+fi
+if [ $architecture = "MINGW32_NT-5.1" ]; then
+ echo "Native windows (MINGW) environment detected - choose computer type 9..."
+fi
+if [ $architecture = "MINGW32_NT-5.2" ]; then echo
+ echo "Native windows (MINGW) environment detected - choose  computer type9..."
+fi
+
+A=-1
+while [ $A -ne 0 ] &&
+      [ $A -ne 1 ] &&
+      [ $A -ne 2 ] &&
+      [ $A -ne 3 ] &&
+      [ $A -ne 4 ] &&
+      [ $A -ne 5 ] &&
+      [ $A -ne 6 ] &&
+      [ $A -ne 7 ] &&
+      [ $A -ne 8 ] &&
+      [ $A -ne 9 ]
+do
+  echo " "
+  echo "Computer type: "
+  echo " (0) GTK Sun with gnu compilers"
+  echo " (1) X11 Sun with gnu compilers"
+  echo " (2) X11 Sun with solaris F90 compilers"
+  echo " (3) GTK Linux"
+  echo " (4) X11 Linux"
+  echo " (5) GTK Cygwin emulation environment for Windows"
+  echo " (6) X11 Cygwin emulation environment for Windows"
+  echo " (7) GTK MacOS X (10.2 or later)"
+  echo " (8) X11 MacOS X (10.2 or later)"
+  echo " (9) GTK Windows native (via MSYS & MINGW)"
+  read A
+  if [ $A -eq 0 ]; then
+
+# Set machine type to sun and default gcc and g77 compilers
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes GTK version of ESRU library and the XINSTALLDIR
+# takes its directives from an invocation of pkg-config.
+    MCTYPE=sun
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DSUN"
+    XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`"
+    XDEFDIR="/usr/openwin"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DSUN"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DSUN -L${XINSTALLDIR} -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include $debug_flag -I../shocc -DSUN"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DSUN -L${XINSTALLDIR}"
+    fi
+  elif [ $A -eq 1 ]; then
+
+# Set machine type to sun and default gcc and g77 compilers
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes X11 version of ESRU library and the XINSTALLDIR
+# points to /usr/openwin. Set MKFILE for an X11 build.
+    MCTYPE=sun
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DSUN -DX11"
+    if [ "$XINSTALLDIR" = "" ]; then
+      XINSTALLDIR="/usr/openwin"
+    fi
+    XDEFDIR="/usr/openwin"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DSUN -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DSUN -L${XINSTALLDIR}/lib -lX11 -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I../shocc $debug_flag -DSUN -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DSUN -L${XINSTALLDIR}/lib -lX11"
+    fi
+    MKFILE="MakefileX11"
+  elif [ $A -eq 2 ]; then
+
+# Set machine type to sun and the compilers to use Solaris F90 and C compliers
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes X11 version of ESRU library and the XINSTALLDIR
+# points to /usr/openwin. Set MKFILE for an X11 build.
+    MCTYPE=sun
+    WWLINK=shared_solaris
+    FFLAGS="-I../include $debug_flag -C -DSUN -DF90 -DX11"
+    CC=cc
+    CPL=CC
+    FC=f90
+    if [ "$XINSTALLDIR" = "" ]; then
+      XINSTALLDIR="/usr/openwin"
+    fi
+    XDEFDIR="/usr/openwin"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DSUN -DF90 -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DSUN -L${XINSTALLDIR}/lib -lX11 -lexslt -lxslt -lxml2 -lz -lCstd"
+    else
+      CFLAGS="-I../include -I../shocc $debug_flag -DSUN -DF90 -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DSUN -L${XINSTALLDIR}/lib -lX11"
+    fi
+    MKFILE="MakefileX11"
+  elif [ $A -eq 3 ]; then
+
+# Set machine type to linux and default gcc and g77 compilers
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes GTK version of ESRU library and the XINSTALLDIR
+# takes its directives from an invocation of pkg-config.
+    MCTYPE=lin
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DLIN"
+    XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`"
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DLIN"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DLIN ${XINSTALLDIR} -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I../shocc $debug_flag -DLIN"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DLIN ${XINSTALLDIR}"
+    fi
+  elif [ $A -eq 4 ]; then
+
+# Set machine type to linux and default gcc and g77 compilers
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes X11 version of ESRU library and the XINSTALLDIR
+# points to /usr/X11R6. Set MKFILE for an X11 build.
+    MCTYPE=lin
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DLIN -DX11"
+    if [ "$XINSTALLDIR" = "" ]; then
+      XINSTALLDIR="/usr/X11R6"
+    fi
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DLIN -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DLIN -L${XINSTALLDIR}/lib -lX11 -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I../shocc $debug_flag -DLIN -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DLIN -L${XINSTALLDIR}/lib -lX11"
+    fi
+    MKFILE="MakefileX11"
+  elif [ $A -eq 5 ]; then
+
+# Set machine type to cygwin and the default gcc and g77 fompilers
+# which are part of the cygwin environment
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes GTK version of ESRU library and the XINSTALLDIR
+# takes its directives from an invocation of pkg-config.
+# Set EXE extension.
+    MCTYPE=cygw
+    EXE='.exe'
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DCYGW"
+    XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`"
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include $LIBXML2_INCLUDE -I/usr/X11R6/include -I../cetc/h3kreports -I../shocc $debug_flag -DCYGW"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DCYGW ${XINSTALLDIR} -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I/usr/X11R6/include -I../shocc $debug_flag -DCYGW"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DCYGW ${XINSTALLDIR}"
+    fi
+  elif [ $A -eq 6 ]; then
+
+# Set machine type to cygwin and the default gcc and g77 compilers which
+# are part of the cygwin environment
+# as well as setting appropriate fortran and C compiler flags.
+# ULIBS includes X11 version of ESRU library and the XINSTALLDIR
+# to /usr/X11R6. Set MKFILE for a X11 build and also set EXE extension.
+    MCTYPE=cygw
+    EXE='.exe'
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DCYGW -DX11"
+    if [ "$XINSTALLDIR" = "" ]; then
+      XINSTALLDIR="/usr/X11R6"
+    fi
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include -I/usr/X11R6/include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DCYGW -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DCYGW -L${XINSTALLDIR}/lib -lX11 -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I/usr/X11R6/include -I../shocc $debug_flag -DCYGW -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DCYGW -L${XINSTALLDIR}/lib -lX11"
+    fi
+    MKFILE="MakefileX11"
+  elif [ $A -eq 7 ]; then
+
+# Set machine type to osx and the compilers to point to LEGACY gcc and g77
+# compilers (rather than version 4 compilers) as well as set appropriate
+# fortran and C compiler flags.
+# ULIBS includes GTK version of ESRU library and the XINSTALLDIR
+# takes its directives from an invocation of pkg-config.
+    MCTYPE=osx
+    CC=gcc-3.3
+    CPL=g++
+    FC=g77
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DLIN -DOSX"
+    XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`"
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include -I/usr/X11R6/include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DLIN -DOSX"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DLIN -DOSX -L${XINSTALLDIR} -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I/usr/X11R6/include -I../shocc $debug_flag -DLIN -DOSX"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DLIN -DOSX -L${XINSTALLDIR}"
+    fi
+  elif [ $A -eq 8 ]; then
+
+# Set machine type to osx and the compilers to point to LEGACY gcc and g77
+# compilers (rather than version 4 compilers) as well as set appropriate
+# fortran and C compiler flags.
+# ULIBS includes X11 version of ESRU library and the XINSTALLDIR
+# is /usr/X11R6. Set MKFILE for a GTK build.
+    MCTYPE=osx
+    CC=gcc-3.3
+    CPL=g++
+    FC=g77
+    FFLAGS="-finit-local-zero -fno-automatic $debug_flag -I../include -DLIN -DOSX -DX11"
+    if [ "$XINSTALLDIR" = "" ]; then
+      XINSTALLDIR="/usr/X11R6"
+    fi
+    XDEFDIR="/usr/X11R6"
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-I../include -I/usr/X11R6/include $LIBXML2_INCLUDE -I../cetc/h3kreports -I../shocc $debug_flag -DLIN -DOSX -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DLIN -DOSX -L${XINSTALLDIR}/lib -lX11 -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-I../include -I/usr/X11R6/include -I../shocc $debug_flag -DLIN -DOSX -DX11"
+      ULIBS="-L${SRCdir}/lib -lxesru -DLIN -DOSX -L${XINSTALLDIR}/lib -lX11"
+    fi
+    MKFILE="MakefileX11"
+  elif [ $A -eq 9 ]; then
+
+# Set machine type to Native Windows. Compilers assumed to be supplied by MINGW
+# (a variant of GNU compilers for Windows). Set compiler options so that windows
+# DLL are used (to prevent confusion with Cgywin libraries).
+# ULIBS includes GTK version of ESRU library (X11 support is not included)
+# so set XINSTALLDIR to reflect this.
+    MCTYPE=win
+    EXE='.exe'
+    DESTdir="c:/Esru"
+    CC=gcc
+    CPL=g++
+    FC=g77
+    LD_FLAGS="-DMINGW"
+    FFLAGS="-mwindows -mms-bitfields -finit-local-zero -fno-automatic $debug_flag -I../include"
+    XINSTALLDIR="`pkg-config gtk+-2.0 --cflags --libs`"
+    XDEFDIR="."
+    if [ "$xml_support" = "yes" ]; then
+      CFLAGS="-mwindows -mms-bitfields $debug_flag -I../include -I../cetc/h3kreports -I../shocc $LIBXML2_INCLUDE"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DMINGW ${XINSTALLDIR} -lexslt -lxslt -lxml2 -lz -lstdc++"
+    else
+      CFLAGS="-mwindows -mms-bitfields $debug_flag -I../include -I../shocc"
+      ULIBS="-L${SRCdir}/lib -lgtkesru -DMINGW ${XINSTALLDIR}"
+    fi
+  fi
+done
+
+##### End Computer Architecture
+
+# Determine if master path is writable.
+if [ ! -w $DESTdir ]; then
+   # Warn user and quit.
+   echo " "
+   echo " Installation error: Cannot write to installation directory:"
+   echo " $DESTdir"
+   echo " Installation aborted."
+   echo " "
+   exit
+fi
+
+# Set variables dependent on DESTdir.
+ESPdir=${DESTdir}/esp-r
+
+# Check that necessary folders exist.
+if [ ! -d ${DESTdir} ]; then
+   echo " "
+   echo " The esp-r installation directory does not exist. "
+   echo " (${DESTdir})"
+   A=none
+   while [ "$A" != "y" ] && [ "$A" != "n" ]
+   do
+      echo " " 
+      echo " Do you wish to create this directory? (y/n) [y]"
+      echo " "
+      read A
+      if [ "$A" = "" ]; then
+         A="y"
+      fi
+   done
+   if [ "$A" = "y" ]; then
+     echo "${DESTdir} does not exist. Attempting to create..."
+     mkdir ${DESTdir}
+   else
+     echo " "
+     echo " Installation error: Destination directory (${DESTdir})"
+     echo " not accepted. Installation aborted"
+     echo " "
+     exit
+   fi
+fi
+
+# Check that necessary folders exist.
+if [ ! -d ${ESPdir} ]; then
+   echo " "
+   echo "${ESPdir} directory does not exist. Attempting to create..."
+   mkdir ${DESTdir}/esp-r
+   mkdir ${DESTdir}/esp-r/bin
+   mkdir ${DESTdir}/esp-r/climate
+   mkdir ${DESTdir}/esp-r/databases
+   mkdir ${DESTdir}/esp-r/electric_loads
+   mkdir ${DESTdir}/esp-r/manual
+   if [ "$xml_support" = "yes" ]; then
+     mkdir ${DESTdir}/esp-r/xsl
+   fi
+fi
+
+# Check that necessary folders exist.
+if [ ! -d ${DESTdir}/bin ]; then
+   echo " "
+   echo "${DESTdir}/bin directory does not exist. Attempting to create..."
+   mkdir ${DESTdir}/bin
+   mkdir ${DESTdir}/bin/Radiance
+fi
+
+# Check that necessary folders exist.
+if [ ! -d ${DESTdir}/lib ]; then
+   echo " "
+   echo "${DESTdir}/lib directory does not exist. Attempting to create..."
+   mkdir ${DESTdir}/lib
+   mkdir ${DESTdir}/lib/Radiance
+fi
+
+if [ ! -d ${ESPdir}/climate ]; then
+   echo " "
+   echo "${ESPdir}/climate directory does not exist."
+   echo "Perhaps you do not have permission to create ${ESPdir}/climate ?"
+   echo "Have a look at the Readme file."
+   echo " "
+   exit
+fi
+
+if [ ! -d ${ESPdir}/databases ]; then
+   echo " "
+   echo "${ESPdir}/databases directory does not exist."
+   echo "Perhaps you do not have permission to create ${ESPdir}/databases ?"
+   echo "Have a look at the Readme file."
+   echo " "
+   exit
+fi
+
+# Confirm location of X libraries.
+if [ ! -d ${XDEFDIR}/lib/X11 ] && [ ${MCTYPE} != win ]; then
+  
+#  Oops, X libs not in standard place, remove current definition and ask for location.
+  XINSTALLDIR=""
+  echo " "
+  echo "Location of X library directory ["${XDEFDIR}"]:"
+  read A
+  if [ "$A" != "" ]; then
+    XINSTALLDIR=$A
+  else
+    XINSTALLDIR=${XDEFDIR}
+  fi
+fi
+
+if [ ! -d ${XDEFDIR}/lib/X11 ] && [ ${MCTYPE} != win ]; then
+   echo " "
+   echo "${XINSTALLDIR} does not exist.  Please define the location"
+   echo "of the X-Windows libraries.  See step 4 of the Readme file."
+   echo " "
+  exit
+fi
+
+
+####### create an installdir.h file so startup.F knows where to look
+  echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
+  echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
+  echo "       instpath = '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
+
+
+##### Initiate make:
+
+A=x
+while [ $A != "y" ] && [ $A != "n" ] 
+do
+   echo " "
+   echo "Intended shell command:"
+   echo "make MCTYPE=${MCTYPE} MCC=${CC} MC++=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} WWLINK=${WWLINK} XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_support=${xml_support} EXE=${EXE} -f ${MKFILE} $*"
+   echo " "
+   echo "where the X libraries are in ${XINSTALLDIR}"
+   echo " "
+   echo "Proceed with installation of esp-r modules (y/n) [y]?"
+   read A
+   echo " "
+   if [ "$A" = "y" ] || [ "$A" = "" ]; then
+      A=y
+      echo " "
+      echo "Installing ESP-r system.  This may take some time."
+      echo " "
+      make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_support="${xml_support}" -f  ${MKFILE} $*
+   fi
+done
+
+
+##### End Initiate make
+
+##### Install training, manual & support files.
+# Set executables to be the just compiled versions (default to users default
+#  if any not found).
+BPS=bps
+CLM=clm
+ISH=ish
+PRJ=prj
+PRO=pro
+PDB=pdb
+if [ -f esrubps/bps ] ; then
+  BPS=${SRCdir}/esrubps/bps
+fi
+if [ -f esruclm/clm ] ; then
+  CLM=${SRCdir}/esruclm/clm
+fi
+if [ -f esruish/ish ] ; then
+  ISH=${SRCdir}/esruish/ish
+fi
+if [ -f esruprj/prj ] ; then
+  PRJ=${SRCdir}/esruprj/prj
+fi
+if [ -f esrupro/pro ] ; then
+  PRO=${SRCdir}/esrupro/pro
+fi
+if [ -f esrupdb/pdb ] ; then
+  PDB=${SRCdir}/esrupdb/pdb
+fi
+
+echo "  "
+echo "(Re)install training and validation models, manual and tutorial (y/n) [y]?"
+read A
+echo " "
+if [ "$A" = "y" ] || [ "$A" = "" ] ; then
+
+   echo " "
+   echo "Installing esprc and default (environment files) into ${ESPdir}..."
+
+# Create default file for the OS choice.
+if [ ${MCTYPE} = sun ]; then
+  echo "*ESP-r Defaults" > ${ESPdir}/default
+  echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+  echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+  echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+  echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+  echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+  echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+  echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+  echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+  echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+  echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+  echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+  echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+  echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+  echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+  echo "*end" >> ${ESPdir}/default
+elif [ ${MCTYPE} = lin ]; then
+  echo "*ESP-r Defaults" > ${ESPdir}/default
+  echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+  echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+  echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+  echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+  echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+  echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+  echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+  echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+  echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+  echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+  echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+  echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+  echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+  echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+  echo "*end" >> ${ESPdir}/default
+elif [ ${MCTYPE} = cygw ]; then
+  echo "*ESP-r Defaults" > ${ESPdir}/default
+  echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+  echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+  echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+  echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+  echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+  echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+  echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+  echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+  echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+  echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+  echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+  echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+  echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+  echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+  echo "*end" >> ${ESPdir}/default
+elif [ ${MCTYPE} = osx ]; then
+  echo "*ESP-r Defaults" > ${ESPdir}/default
+  echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+  echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+  echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+  echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+  echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+  echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+  echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+  echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+  echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+  echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+  echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+  echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+  echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+  echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+  echo "*end" >> ${ESPdir}/default
+elif [ ${MCTYPE} = win ]; then
+  echo "*ESP-r Defaults" > ${ESPdir}/default
+  echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+  echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+  echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+  echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+  echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+  echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+  echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+  echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+  echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+  echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+  echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+  echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+  echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+  echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+  echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+  echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+  echo "*end" >> ${ESPdir}/default
+fi
+
+# Create esprc file for the OS choice.
+if [ ${MCTYPE} = sun ]; then
+  echo "*ESPRC" > ${ESPdir}/esprc
+  echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+  echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+  echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+  echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+  echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+  echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+  echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
+  echo "*journal,OFF" >> ${ESPdir}/esprc
+  echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+  echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+  echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+  echo "*end" >> ${ESPdir}/esprc
+elif [ ${MCTYPE} = lin ]; then
+  echo "*ESPRC" > ${ESPdir}/esprc
+  echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+  echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+  echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+  echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+  echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+  echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+  echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
+  echo "*journal,OFF" >> ${ESPdir}/esprc
+  echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+  echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+  echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+  echo "*end" >> ${ESPdir}/esprc
+elif [ ${MCTYPE} = cygw ]; then
+  echo "*ESPRC" > ${ESPdir}/esprc
+  echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+  echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+  echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+  echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+  echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+  echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+  echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
+  echo "*journal,OFF" >> ${ESPdir}/esprc
+  echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+  echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+  echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+  echo "*end" >> ${ESPdir}/esprc
+elif [ ${MCTYPE} = osx ]; then
+  echo "*ESPRC" > ${ESPdir}/esprc
+  echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+  echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+  echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+  echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+  echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+  echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+  echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+  echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
+  echo "*journal,OFF" >> ${ESPdir}/esprc
+  echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+  echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+  echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+  echo "*end" >> ${ESPdir}/esprc
+elif [ ${MCTYPE} = win ]; then
+  echo "*ESPRC" > ${ESPdir}/esprc
+  echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+  echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+  echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+  echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+  echo "*image_display,TIF,iexplore.exe" >> ${ESPdir}/esprc
+  echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
+  echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
+  echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
+  echo "*tutorial_app,Tutorial,iexplore.exe http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
+  echo "*journal,OFF" >> ${ESPdir}/esprc
+  echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
+  echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+  echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+  echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+  echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+  echo "*end" >> ${ESPdir}/esprc
+fi
+
+   echo " "
+   echo "Installing standard bitmaps into ${DESTdir}/lib ..."
+   cp ${SRCdir}/bitmaps/*.xbm ${DESTdir}/lib
+   echo " "
+   echo "Installing training models ..."
+   echo " "
+   echo "Removing previous training and validation models ..."
+   rm -rf ${ESPdir}/training ${ESPdir}/validation
+   echo " "
+   echo "Updating materials and climate databases in training models..."
+   echo " "
+   cd ${SRCdir}
+   ./bin/materials_db_conv training/cellular_bc/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_contam/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_furn/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_hires/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_shd/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materials.a cellular_pv.materials
+   ./bin/materials_db_conv training/cellular_hvac/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
+   ./bin/materials_db_conv training/glenview/databases constr.asc constr.db1
+   ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
+   echo " "
+   cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
+   $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt
+   echo " "
+   echo "... done."
+   echo " "
+   cd ${SRCdir}
+   ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db
+   ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material
+   echo "... done."
+   echo " "
+   echo "Updating materials and climate databases in validation models..."
+   echo " "
+   cd ${SRCdir}/validation/standards/CEN/13791/databases
+   $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a
+   $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a
+   $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a
+   cd ${SRCdir}
+   ./bin/materials_db_conv validation/standards/CEN/13791/databases prim.db.a prim.db
+   echo " "
+   echo "... done."
+   echo "Copying training and validation models ..."
+   cp -r ${SRCdir}/training ${ESPdir}/training
+sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
+   cp -r ${SRCdir}/validation ${ESPdir}/validation
+sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/standards/stds_list > ${ESPdir}/validation/standards/stds_list
+   echo "  "
+   echo "Editing training and validation models for current system ..."
+
+# Update directory names in training models to reflect DESTdir
+#
+# Scan training and validation folders for configuration files.
+#
+cfgnames=(`find ./training ./validation -name "*.cfg" -print`)
+#
+# For each cfg file check for shading dbs
+#
+for file in "${cfgnames[@]}"; do
+#  echo FILE: $file
+#
+# Create a list of zone ref numbers and isi files in this cfg file
+# 
+  isi=(`egrep '(\*isi\ |\*zon\ )' $file | cut -d# -f1`)
+  hits=${#isi[@]}
+#  echo HITS: $hits
+  i=0
+#
+# Get the zone number and check if there is a isi file associated 
+# with this zone.  The format of the isi variale is 
+# "*zon  1  *zon  2  *isi  ../zones/xx.shd" and so on where hits 
+# is the number of words in the list isi.
+#
+  while [ $((i)) -lt $((hits-2)) ]; do
+  if [ ${isi[$((i))]} == "*zon" ]; then
+#    echo "Zone" ${isi[$((i+1))]}
+    if [ ${isi[$((i+2))]} == "*isi" ]; then
+      echo "File" $file
+      echo "Zone" ${isi[$((i+1))]} " Shading" ${isi[$((i+3))]}
+      $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent
+      shdfile=${file%/*}/${isi[$((i+3))]}
+      mv -f ${shdfile} ${ESPdir}/${shdfile}
+    fi
+  fi
+  i=2+$(($i))
+  done
+#
+# Now update the paths in models to reflect install dir.
+#
+sed -e 's|/usr/esru|'"${DESTdir}"'|' ${file} > ${ESPdir}/${file:2}
+
+done
+   echo "Editing training and validation models for current system... done."
+
+   echo "Installing manual files ..."
+   rm -rf ${ESPdir}/manual
+   mkdir ${ESPdir}/manual
+   cp -r ${SRCdir}/manual/* ${ESPdir}/manual
+   echo "... done."
+
+   echo "Installing tutorial files ..."
+   rm -rf ${DESTdir}/tutorial
+   mkdir ${DESTdir}/tutorial
+   cp -r ${SRCdir}/tutorial/* ${DESTdir}/tutorial
+   echo "... done."
+
+fi
+
+##### End Install training, manual & tutorial files.
+
+##### Install databases
+
+echo " "
+echo "(Re)install system databases (y/n) [y]?"
+read A
+echo " "
+if [ "$A" = "y" ] || [ "$A" = "" ] ; then
+
+# remove existing binary databases
+rm -f ${DESTdir}/esp-r/databases/*
+rm -f ${DESTdir}/esp-r/climate/clm67
+rm -f ${DESTdir}/esp-r/training/results/test.res
+echo " "
+echo "Creating binary materials databases ..."
+./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1
+./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2
+echo "... done."
+
+   cd ${SRCdir}/databases
+
+   echo "Creating binary event profiles database ..."
+   $PRO -mode text >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/profiles.db1
+y
+~
+b
+profiles.db1.a
+${DESTdir}/esp-r/databases/profiles.db1
+y
+-
+zzz
+
+   $PRO -mode text >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/profiles.db2
+y
+~
+b
+profiles.db2.a
+${DESTdir}/esp-r/databases/profiles.db2
+y
+-
+zzz
+   echo "... done."
+
+   echo "Creating binary plant components databases ..."
+   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.db1
+c
+a
+plantc.db1.a
+e
+-
+zzz
+
+   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.db2
+c
+a
+plantc.db2.a
+e
+-
+zzz
+   echo "... done."
+   echo " "
+   rm -f plantc.tt
+   echo "Creating PP binary plant components databases ..."
+   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.tt
+c
+a
+plantc.tt.a
+e
+-
+zzz
+   echo "... done."
+   echo "  "
+   echo "Creating binary climate databases ..."
+   cd ${SRCdir}/climate
+   cp climatelist ${DESTdir}/esp-r/climate
+sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+
+   cp README ${DESTdir}/esp-r/climate/Readme
+   cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
+   echo "... default ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/clm67 -act asci2bin silent clm67.a
+
+   echo "... Albuquerque ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_NM_Albuquerque_iwec -act asci2bin silent USA_NM_Albuquerque_iwec.a
+
+   echo "... Baltimore ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_MD_Baltimore_iwec -act asci2bin silent USA_MD_Baltimore_iwec.a
+
+   echo "... Belfast ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_belfast -act asci2bin silent uk_belfast_iwec.a
+
+   echo "... Berlin ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_berlin_iwec -act asci2bin silent deu_berlin_iwec.a
+
+   echo "... Birmingham ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_birmingham -act asci2bin silent uk_birmingham_iwec.a
+
+   echo "... Boise ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_ID_Boise_iwec -act asci2bin silent USA_ID_Boise_iwec.a
+
+   echo "... Boulder Colorado ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/boulder_colorado.iwec -act asci2bin silent boulder_colorado.iwec.a
+
+   echo "... Brussles ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/bel_brussels_iwec -act asci2bin silent bel_brussels_iwec.a
+
+   echo "... Burlington ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_VT_Burlington_iwec -act asci2bin silent USA_VT_Burlington_iwec.a
+
+   echo "... Calgary ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_AB_Calgary_CWEC -act asci2bin silent CAN_AB_Calgary_CWEC.a
+
+   echo "... Channel Islands ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_channel_islands -act asci2bin silent uk_channel_islands_iwec.a
+
+   echo "... Chicago ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_IL_Chicago_iwec -act asci2bin silent USA_IL_Chicago_iwec.a
+
+   echo "... Copenhagen ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/dnk_copenhagen_iwec -act asci2bin silent dnk_copenhagen_iwec.a
+
+   echo "... Dublin ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/irl_dublin_iwec -act asci2bin silent irl_dublin_iwec.a
+
+   echo "... Duluth ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_MN_Duluth_iwec -act asci2bin silent USA_MN_Duluth_iwec.a
+
+   echo "... El Paso ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TX_El_Paso_iwec -act asci2bin silent USA_TX_El_Paso_iwec.a
+
+   echo "... Fairbanks ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_AK_Fairbanks_iwec -act asci2bin silent USA_AK_Fairbanks_iwec.a
+
+   echo "... Finningley ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_finningley -act asci2bin silent uk_finningley_iwec.a
+
+   echo "... Geneva ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHE_Geneva_IWEC -act asci2bin silent CHE_Geneva_IWEC.a
+
+   echo "... Houston ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TX_Houston_iwec -act asci2bin silent USA_TX_Houston_iwec.a
+
+   echo "... Inchon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Inchon_IWEC -act asci2bin silent KOR_Inchon_IWEC.a
+
+   echo "... Kangnung ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Kangnung_IWEC -act asci2bin silent KOR_Kangnung_IWEC.a
+
+   echo "... Kwangju ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Kwangju_IWEC -act asci2bin silent KOR_Kwangju_IWEC.a
+
+   echo "... London Gatwick ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_gatwick -act asci2bin silent uk_gatwick_iwec.a
+
+   echo "... Hemsby ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_hemsby -act asci2bin silent uk_hemsby_iwec.a
+
+   echo "... Memphis ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TN_Memphis_iwec -act asci2bin silent USA_TN_Memphis_iwec.a
+
+   echo "... Mexico city ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/mex_mexico.city.iwec -act asci2bin silent mex_mexico.city.iwec.a
+
+   echo "... Miami ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_FL_Miami_iwec -act asci2bin silent USA_FL_Miami_iwec.a
+
+   echo "... Montreal ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/can_montreal -act asci2bin silent can_montreal.a
+
+   echo "... Munich ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_munich_iwec -act asci2bin silent deu_munich_iwec.a
+
+   echo "... Oban ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_oban -act asci2bin silent uk_oban_iwec.a
+
+   echo "... Ottawa ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/can_ottawa -act asci2bin silent can_ottawa.a
+
+   echo "... Palermo ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_palermo_iwec -act asci2bin silent ita_palermo_iwec.a
+
+   echo "... Paris ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/fra_paris_orly_iwec -act asci2bin silent fra_paris_orly_iwec.a
+
+   echo "... Phoenix ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_AZ_Phoenix_iwec -act asci2bin silent USA_AZ_Phoenix_iwec.a
+
+   echo "... Pisa ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_pisa_iwec -act asci2bin silent ita_pisa_iwec.a
+
+   echo "... Porto ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/prt_porto_iwec -act asci2bin silent prt_porto_iwec.a
+
+   echo "... Quebec ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_PQ_Quebec_CWEC -act asci2bin silent CAN_PQ_Quebec_CWEC.a
+
+   echo "... Rome ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_rome_iwec -act asci2bin silent ita_rome_iwec.a
+
+   echo "... Toronto ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_ON_Toronto_CWEC -act asci2bin silent CAN_ON_Toronto_CWEC.a
+
+   echo "... Ulsan ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Ulsan_IWEC -act asci2bin silent KOR_Ulsan_IWEC.a
+
+   echo "... Saskatoon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_SK_Saskatoon_CWEC -act asci2bin silent CAN_SK_Saskatoon_CWEC.a
+
+   echo "... Shearwater ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_NS_Shearwater_CWEC -act asci2bin silent CAN_NS_Shearwater_CWEC.a
+
+   echo "... St.Johns ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_NF_St.Johns_CWEC -act asci2bin silent CAN_NF_St.Johns_CWEC.a
+
+   echo "... Stuttgart ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_stuttgart_iwec -act asci2bin silent deu_stuttgart_iwec.a
+
+   echo "... Sydney ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/aus_sydney_iwec -act asci2bin silent aus_sydney_iwec.a
+
+   echo "... Vancouver ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_BC_Vancouver_CWEC -act asci2bin silent CAN_BC_Vancouver_CWEC.a
+
+   echo "... Wellington ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/nzl_wellington_iwec -act asci2bin silent nzl_wellington_iwec.a
+
+   echo "... Whitehorse ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_YT_Whitehorse_CWEC -act asci2bin silent CAN_YT_Whitehorse_CWEC.a
+
+   echo "... Winnipeg ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_MB_Winnipeg_CWEC -act asci2bin silent CAN_MB_Winnipeg_CWEC.a
+
+   echo "... done."
+
+   cd ${SRCdir}/databases
+   echo "Copying ASCII databases ..."
+   cp multicon.db1 multicon.db2 optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   echo "... done."
+
+   echo "Creating example binary results database ..."
+   echo " "
+   $BPS -mode text >/dev/null 2>/dev/null <<zzz
+a
+d
+y
+${DESTdir}/esp-r/climate/clm67
+c
+${DESTdir}/esp-r/databases/test.res
+11 7
+17 7
+y
+1
+*
+*
+*
+*
+s
+
+example_results
+y
+y
+-
+-
+zzz
+   echo "... done."
+   cd ${SRCdir}
+
+fi
+
+##### End Install databases
+
+##### If xml support requested install the XSLT files.
+if [ "$xml_support" = "yes" ]; then
+echo " "
+echo " Installing xslt files ..."
+cp ${SRCdir}/cetc/h3kreports/xsl/*.xsl ${DESTdir}/esp-r/xsl
+echo " ... done." 
+
+fi
+
+##### Install and  Clean up
+
+echo " "
+echo "Install ESP-r executables (y/n) [y]?"
+read A
+echo " "
+if [ "$A" = "y" ] || [ "$A" = "" ] ; then
+  cd ${SRCdir}
+  echo "Installing executables..."
+  make ESPdir=${ESPdir} EXE=${EXE} -f ${MKFILE} install
+  echo "Installing executables...done."
+
+# Makeup an appropriate esp-r script.
+if [ ${MCTYPE} = sun ]; then
+  echo "#!/bin/sh" > ${ESPdir}/bin/esp-r
+  echo "if [ X$EFONT_0 = X ]; then" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_0=6x12" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_1=6x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_2=8x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_3=9x15" >> ${ESPdir}/bin/esp-r
+  echo "fi" >> ${ESPdir}/bin/esp-r
+  echo "prj \$@ &" >> ${ESPdir}/bin/esp-r
+  chmod a+x ${ESPdir}/bin/esp-r
+elif [ ${MCTYPE} = lin ]; then
+  echo "#!/bin/sh" > ${ESPdir}/bin/esp-r
+  echo "if [ X$EFONT_0 = X ]; then" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_0=6x12" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_1=6x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_2=8x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_3=9x15" >> ${ESPdir}/bin/esp-r
+  echo "fi" >> ${ESPdir}/bin/esp-r
+  echo "prj \$@ &" >> ${ESPdir}/bin/esp-r
+  chmod a+x ${ESPdir}/bin/esp-r
+elif [ ${MCTYPE} = cygw ]; then
+  echo "#!/bin/sh" > ${ESPdir}/bin/esp-r
+  echo "if [ X$EFONT_0 = X ]; then" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_0=6x12" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_1=6x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_2=8x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_3=9x15" >> ${ESPdir}/bin/esp-r
+  echo "fi" >> ${ESPdir}/bin/esp-r
+  echo "prj \$@ &" >> ${ESPdir}/bin/esp-r
+  chmod a+x ${ESPdir}/bin/esp-r
+elif [ ${MCTYPE} = osx ]; then
+  echo "#!/bin/sh" > ${ESPdir}/bin/esp-r
+  echo "if [ X$EFONT_0 = X ]; then" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_0=6x12" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_1=6x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_2=8x13" >> ${ESPdir}/bin/esp-r
+  echo "      EFONT_3=9x15" >> ${ESPdir}/bin/esp-r
+  echo "fi" >> ${ESPdir}/bin/esp-r
+  echo "prj \$@ &" >> ${ESPdir}/bin/esp-r
+  chmod a+x ${ESPdir}/bin/esp-r
+elif [ ${MCTYPE} = win ]; then
+  echo "@rem batch file to start project manager - associate with cfg files" > ${ESPdir}/bin/esp-r.cmd
+  echo "start prj -file %1" >> ${ESPdir}/bin/esp-r.cmd
+fi
+fi
+
+echo " "
+echo "Remove temporary files created during install process (y/n) [y]?"
+read A
+echo " "
+if [ "$A" = "y" ] || [ "$A" = "" ] ; then
+  cd ${SRCdir}
+  make EXE=${EXE} -f ${MKFILE} clean
+fi
+
+echo " "
+echo "Installation complete.  Please consult file ${SRCdir}/env/README."
+echo " "
+echo " "
+echo "NOTE: be sure that you have updated your PATH environment"
+echo "      to include directives for the location of the ESP-r"
+echo "      executables. You should ensure that: "
+echo "      "${ESPdir}"/bin"
+echo "      is included in the definition."
+echo " "
+
+exit
+

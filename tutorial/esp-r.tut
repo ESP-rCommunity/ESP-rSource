@@ -1,0 +1,943 @@
+# general tutorial file for esp-r
+# current version June 1998
+
+*tut_clm_dbitems  climate databases contents
+
+Climate databases are hourly sets of values from 1h00 on 1 Jan to
+24h00 on 31 December.  For each hour the following data is held:
+
+  Diffuse horizontal solar intensity (W/m2)
+  Dry bulb temperature (tenths of degree C ie. 102 = 10.2C)
+  Direct normal or global horizontal solar intensity (W/m2)
+  Wind speed (tenths m/s ie. 15 = 1.5 m/s)
+  Wind direction (degrees from north, clockwise)
+  Relative humidity (percent)
+
+Also included are the site latitude, longitude difference,
+altitude and a site name.
+
+The upper portion of a ASCII version of a climate database is
+shown below:
+
+*CLIMATE
+# ascii climate file from clm67 binary db,
+# defined in: clm67.a
+# col 1: Diffuse solar on the horizontal (W/m**2)
+# col 2: External dry bulb temperature   (Tenths DEG.C)
+# col 3: Direct normal solar intensity   (W/m**2)
+# col 4: Prevailing wind speed           (Tenths m/s)
+# col 5: Wind direction     (clockwise deg from north)
+# col 6: Relative humidity               (Percent)
+ESP test climate                # site name
+  1967   52.00    0.00   0      # year, latitude, long diff, rad flag
+     1   365                   # period (julian days)
+* day  1 month  1
+      0     27      0     51    240     78
+      0     27      0     44    240     76
+      0     27      0     44    240     76
+      0     27      0     46    240     78
+      0     22      0     44    245     78
+      0     16      0     41    250     77
+      0     27      0     39    245     82
+      0     22      0     39    240     81
+     31     27      0     44    245     83
+     67     33    341     44    250     81
+     75     44    513     49    255     79
+     77     50    568     57    265     69
+     83     55    151     59    275     69
+
+
+
+*tut_clm_dblist   climate databases list
+
+The following describes the form of the climate list.  The tags
+in the file have the following meanings:
+
+ *item - the beginning of one climate db data
+ *name - name of climate for menu (<=32 char)
+ *aide - a short description (<=72 char)
+ *dbfl - the absolute path of the db file
+ *avail - ONLINE (available) or OFFLINE
+ *winter - typical winter - day, month, day, month
+ *spring - typical spring - day, month, day, month
+ *summer - typical summer - day, month, day, month
+
+ *help_start  - beginning of text to present
+   ...  text lines (up to 60) ...
+ *help_end - end of text to present
+ *end - end of the file
+
+The following is the initial portion of a climate database list.
+*CLIMATE_LIST
+*group  ESRU standard climates
+# WARNING: Keep this file up to date with current directory structure!
+*item
+*name   Default Climate
+*aide   Climate data as distributed with ESP-r for testing purposes.
+*dbfl   /usr/esru/esp-r/climate/clm67
+*winter 9  1  15  1
+*spring 6  3  12  3
+*summer 11 7  17  7
+*avail  ONLINE
+*help_start
+Location is 52.0N and 0.0E.
+The solar radiation is Direct Normal.
+The db temperature range is from -6.4 to 27.7.
+Month     Minimum      Maximum
+January   -6.4@8  Jan  12.7@29 Jan
+February  -1.9@14 Feb  12.2@2  Feb
+March     -0.8@31 Mar  16.1@21 Mar
+April     -1.9@1  Apr  19.4@17 Apr
+May        0.0@3  May  22.7@11 May
+June       5.0@9  Jun  21.1@6  Jun
+July       9.4@3  Jly  27.7@17 Jly
+August     7.7@5  Aug  24.4@1  Aug
+September  5.0@21 Sep  22.2@26 Sep
+October    2.2@30 Oct  19.4@7  Oct
+November  -0.8@27 Nov  14.4@11 Nov
+December  -4.2@9  Dec  12.7@23 Dec
+*help_end
+*item
+*name   Kew 1967
+*aide   UK Example Year
+*dbfl   /usr/esru/esp-r/climate/kew67
+*avail  OFFLINE
+*winter 9  1  15  1
+*spring 6  3  12  3
+*summer 11 7  17  7
+*help_start
+Kew is located at 52.0N and 0.0E.  The solar
+radiation is Direct Normal.
+The db temperature range is from -4.4 to 28.7.
+Month     Minimum      Maximum
+January  -2.2 @9 Jan   13.2 @29 Jan
+February -0.2 @8 Feb   13.3 @16 Feb
+  . . .
+*help_end
+*item
+*end
+
+
+
+*tut_bld_intro    bld introduction
+
+Bld is a constrained version of the thermal simulation engine of
+the ESP-r suite which supports building thermal, plant and
+network flow problems.  If conflated CFD analysis is required use
+the standard integrated simulator.
+
+The initial choices are:
+
+a) Input descripton
+   This requires the system configuration (this can also be
+   passed via the invocation command as in "bld -file
+   problem.cfg".
+
+b) Assign climate file
+   Allows an alternative climate database from that included in
+   the system configuration to be used.
+
+c) Initiate simulation
+   Takes the current configuration and climate and proceeds to
+   setup assessment parameters (e.g. period of simulation, level
+   of detail to be recorded in the results library, calculation
+   parameters).
+
+c) Trace facilities
+   Allows topical information not contained in the results
+   library to be recovered. One or more zones can be selected and
+   30 different topics (e.g. heat transfer coefficients, solar
+   radiation distributions) can be selected.
+   This is used primarily by experienced users. Further
+   information is available within the trace selection facility.
+
+
+*tut_bps_intro    simulator introduction
+
+Bps is the integrated simulator of the ESP-r suite which supports
+building thermal, plant and network flow and power problems as
+well as CFD.
+
+The initial choices are:
+
+a) Input descripton
+   This requires the system configuration (this can also be
+   passed via the invocation command as in "bps -file
+   problem.cfg".
+
+b) Assign climate file
+   Allows an alternative climate database from that included in
+   the system configuration to be used.
+
+c) Initiate simulation
+   Takes the current configuration and climate and proceeds to
+   setup assessment parameters (e.g. period of simulation, level
+   of detail to be recorded in the results library, calculation
+   parameters).
+
+c) Trace facilities
+   Allows topical information not contained in the results
+   library to be recovered. One or more zones can be selected and
+   30 different topics (e.g. heat transfer coefficients, solar
+   radiation distributions) can be selected.
+   This is used primarily by experienced users. Further
+   information is available within the trace selection facility.
+
+
+*tut_simul_cmds   Simul menu in bld
+
+Additional information on main simulation menu options:
+
+Save options dictate what is saved in the library:
+
+SAVE >>0
+   Summary report is generated.
+
+SAVE >>1
+   Minimum save option (zone dry bulb and control point
+   temperatures and plant injection).
+
+SAVE >>2
+   Moderate save option - same as (1) but adds inside surface
+   temperatures, infiltration, ventilation, solar absorbed at
+   inside faces, casual gains and zone RH.
+
+SAVE >>3
+   Maximum save option - same as (2) but adds temperatures at all
+   nodes within surfaces.
+
+SAVE >>4
+   Surface energy balance option - same as (2) but with all flux
+   paths at inside and outside face of surfaces included.
+
+Both level 3 and 4 result in large libraries.
+
+The monitor option (plotting temperatures and plant injections as
+the simulation progresses) allows an initial impression of
+performance (especially useful to see if sufficient capacity has
+been given to environmental systems or to see when high
+temperatures are predicted.
+
+The timestep control facility allows the simulation timestep to
+vary under certain conditions such as rapidly changing boundary
+conditions.
+
+
+*tut_simul_toggl  Simul menu in bld
+
+Although most simulations can proceed without special settings
+there are a number of simulation toggles available to the expert
+to enable fine tuning of calculations or invoke special
+calculation modes (e.g. switching the sky distribution from Perez
+to, say and isotropic model).
+
+The options are as follows:
+
+Results averaging
+   Information written to the results library is, by default, the
+   average of the present and future time-rows.  This may be
+   turned off so that only the fugure time-row is saved.
+
+Building: Implicit - Explicit
+   The numerical solution normally uses a Crank-Nicholson scheme
+   (implicit 0.5). This can be reset to be fully explicit (0) or
+   fully implicit (1).
+
+Plant: Implicit - Explicit
+   The numerical solution for plant systems is normally time-
+   constant dependent. This can be reset to be fully implicit,
+   mixed or steady state.
+
+Solar ON-OFF
+   To assess the effect of solar radiation on a zone the solar
+   processing algorithms can be disabled.
+
+Sky model
+   A number of sky radiation models ( Klucher, Muneer, Perez,
+   Isotropic) can be enabled.  The default is the Perez model,
+   but for validation purposes or to better fit local sky
+   conditions other models may be more appropriate.
+
+Network flow parameters
+   The solution of network flow is an iterative process and a
+   number of parameters can be adjusted so that complex networks
+   can solve efficiently.  Details are available within this
+   facility.
+
+Climate interpolation
+   For sub-hour building time steps, climate data is usually
+   interpolated.  This interpolation may be disabled.
+
+Power flow
+   Electrical power simulations are included in the integrated
+   assessment if this toggle is turned on.
+
+Convective heat transfer coef.
+   A number of alternatives to the default Alamdari & Hammond
+   treatment of inside face convective heat transfer can be
+   invoked. (Cardiff high correlation, Halcrow time invariant low
+   & high are offered). Because these coefficients influence
+   performance predictions, decisions should be based on either
+   measurements or more detailed studies such as CFD.
+
+Moisture flow
+   The numerical solution of moisture flow is an iterative method
+   and some parameters must be set to undertake moisture flow
+   assessments.
+
+Sepecial materials
+   Constructions which have unusual properties e.g. PV modules
+   are identified as special materials.  This toggle enables the
+   integrated assessment to take account of these properties and,
+   in the case of PV modules, for their performance to be
+   recorded in a file.
+
+Water filled zones
+   Thermal zones are normally assumed to be filled with air.
+   This toggle allows another fluid to be substituted.  Fluid
+   filled zones are used to represent << ... >>
+
+Vertical solar data
+   Where measurements are available, a timestep file of vertical
+   solar radiation data can be associated with particular
+   surfaces.  This is a facility for experts and should be used
+   with care.
+
+
+*tut_cfg_intro    Synopsis of the topology checking program
+
+The topology checker (cfg) provides facilities to assist the user
+in finding common (adjacent) surfaces within a model and
+specifying the topology (boundary conditions) of all other
+surfaces.
+
+It is recommended to use this facility early in the problem
+definition when most of the geometry has been defined, but
+topology attributes have not yet been defined.  Subsequent checks
+should be made as the model matures, especially prior to
+undertaking simulations.  It should also be used when the Project
+Manager detects inconsistencies in the topology of the model.
+
+The method used is to compare the vertices and shapes of surfaces
+within the problem description. The extent of checking can be
+defined.  You may select which zones include (typically all - see
+note below) and set toggles to exclude, for example surfaces
+previously marked as being ground coupled.
+
+Any pair of surfaces which meet user defined tolerances (see note
+below) will be presented for confirmation by the user.  If no
+match is found the user can specify the boundary condition which
+applies to the surface - exterior, a similar condition (e.g. an
+identical zone on the other side), a constant temperature,
+adaibetic (zero flux exchange at the other face), ground (a
+monthly profile) or UNKNOWN.
+
+As matches are found or connections are specified by the user,
+both the surface attributes and problem topology can be updated.
+The revised configuration can then become the current problem
+within the project manager.
+
+Cfg also provides facilities to edit individual connections,
+clear selected types of connections or all connections.  The
+latter is useful if the master connections list has become
+corrupted.
+
+Please note that links to temporal database entities are not
+preserved and such entries in the problem configuration will need
+to be manually re-established.
+
+Setting tolerances:
+   Because vertices may be inexactly specified and surfaces may
+   note be perfectly flat, you can set a radius tolerance for
+   vertex matching (typically 50mm) and allow edges to be
+   considered straight if the angle along the line does not vary
+   (typically 2 degrees).
+
+Setting zones to include:
+   In most cases ALL zones should be selected to ensure that the
+   attributes of each partition detected are updated in the
+   respective zones.
+
+Excluding particular boundary types:
+   The list of toggles for inclusion/exclusion (e.g. ground,
+   adaibetic) can be used to skip over surfaces which have
+   previously attributed. Use these toggles in combination to
+   focus tests.
+
+Corrupted topology:
+   Occasionally, the master topology list (connections &
+   boundary) will become corrupted (i.e. will not match
+   information held in the zone files).  To test this, enter the
+   Topology section (under Zones definition in the Composition
+   section of the Project Manager). If the list is corrupt,
+   warnings will be given and you are advised to clear and re-
+   establish the topology (within the topology checker).
+
+
+*tut_e2r_files    e2r file creation
+
+Additional notes about how ESP-r geometry is transformed into
+Radiance entities.
+
+Because a surface in ESP-r can have different surface properties
+on each face (Radiance surfaces cannot), two Radiance surfaces
+are generated, each transposed a few mm on either side of the
+original plane. Each is given an edge ordering appropriate for
+its orientation (the inner face, faces in and the outside face
+faces outwards.
+
+There are exceptions to the generation of pairs of surfaces.
+Partitions are composed of only the inside face of the relevant
+zone surfaces (see below)
+
+    =============| |===========
+                 | |
+        visible->| |<- visible face
+        face     | |
+      zone a     | |   zone b
+                 | |
+    =============| |===========
+                  |
+                  `--- other sides of surfs
+                       not seen and EXCLUDED
+
+Surfaces composed of fictitious constructions are omitted and
+transparent surfaces include only the outside face.
+
+
+*tut_ish_intro    Synopsis of the shading and insolation program
+
+The shading and insolation program (ish) provides facilities for
+calculating the temporal distribution of shading patterns on
+exterior surfaces and the distribution of insolation within
+zones.  It consults the problem configuration file for the
+relevant zone geometry and shading obstruction files.  It
+generates/ updates shading/insolation databases (one per each
+relevant zone in the simulation).
+
+Shading calculations can be undertaken for a single month,
+several consecutive months or (typically) a year.  '
+
+Prior to undertaking a shading analysis the zone geometry and any
+relevant shading obstructions must have been defined via the
+project manager.  Ish will read and update existing
+shading/insolation databases or create new ones (matching
+database NAME(S) previously specified in the project manager (via
+Descriptive composition selection of the Problem description
+menu).
+
+Before shading calculations begin you will be asked to confirm or
+specify which EXTERIOR surfaces should be included.  It is
+pointless to include surfaces which are internal i.e. face other
+zones or the ground.
+
+The user may also track temporal insolation patterns within
+thermal zones.  This is a separate calculation regime which
+determines where radiation entering the zone from transparent
+surfaces will fall at each hour.  It takes into account any
+reductions in radiation entering the zone from transparent
+surfaces which are shaded (so shading analysis should be done
+first).
+
+Before beginning insolation calculations the user will be asked
+to confirm which transparent surfaces should be included.  This
+refers to transparent surfaces which have an exterior exposure
+and are thus a source of radiation.
+
+Shading is only generated by obstruction blocks or by the surface
+facing away from the sun.  If other zones or surfaces act as
+shadinf obstructions then their massing should be represented by
+obstruction blocks.
+
+Note that obstruction blocks should be slightly offset from
+surfaces rather than touching (10mm offset is adequate).  You can
+use the plan view within the project manager to check this.
+
+Also consider using the viewing control to shift the wire-frame
+display to "views from the sun".  This can give provide useful
+information on the distribution of solar radiation.
+
+
+*tut_db_access    accessing and using databases
+
+To browse databases you must enter the top level command menu of
+the project manager `database management' and then select on of
+the database types.  Where browsing and editing facilities exist
+the appropriate module will be run.  Assuming you have permission
+to update a particular database (see UNIX file permissions) you
+can also edit it's contents.
+
+ESP-r is provided with a number of corporate (standard) databases
+located in the directory /usr/esru/esp- r/databases.  For some
+simulation problems a user may require a bespoke version of a
+database.  In such a case the user may either copy a corporate
+database into a local directory for modification or simply begin
+from scratch.
+
+In most cases a bespoke database may be created by copying a
+corporate database into the project directory (hint: give it a
+name identifiable with the project) and then modifying it to fit
+the needs of the project.
+
+
+*tut_materials_db materials database contents
+
+The definition and description of the thermophysical properties
+within a problem are built up via the use of two databases, the
+first -
+
+materials database
+   which holds the density, specific heat, conductivity,
+   diffusion resistance and surface absorption and emissivity of
+   elements such as earth, stone, steel, oak etc.  This database
+   is normally in a binary format for quick random access
+   although an ASCII form is available for transfer between
+   machine types.
+
+   Although the entries in this database have descriptive text
+   associated with them, they are accessed via their index in the
+   database.  In most cases this database will reside in
+   /usr/esru/esp-r/databases and will function as a corporate
+   database for many simulation projects.
+
+   In the case of a project where measured thermophysical
+   properties are available or bespoke elements are being used,
+   then the user is advised to copy the corporate database into
+   the directory of the project and proceed to modify it as
+   required.  As its name will be included in the problem
+   definition file it will subsequently be associated with a
+   particular project.
+
+A portion of a materials database is listed below:
+
+# primitives construction db defined in constr.db1.a
+   15    #  number of classifications
+# class|no elements|description
+    1    5   Brick
+    1   Paviour brick
+# conductivity, density, spec heat, solar abs, lw emis, diffusion resist.
+        0.960, 2000.000,  840.000,  0.930,  0.700,     12.000
+    2   Breeze block
+        0.440, 1500.000,  650.000,  0.900,  0.650,     15.000
+    3   Inner leaf brick
+        0.620, 1800.000,  840.000,  0.930,  0.700,     29.000
+    4   Outer leaf brick
+        0.960, 2000.000,  650.000,  0.900,  0.930,     25.000
+    5   Vermiculite insulating
+        0.270,  700.000,  840.000,  0.900,  0.650,     12.000
+# class|no elements|description
+    2   12   Concrete
+   21   Light mix
+        0.380, 1200.000,  653.000,  0.900,  0.650,      6.000
+   22   Aerated block
+        0.240,  750.000, 1000.000,  0.900,  0.650,     10.000
+   23   Aerated concrete
+        0.160,  500.000,  840.000,  0.900,  0.650,     13.000
+   24   Refractory insulating
+        0.250,   10.000,  837.000,  0.900,  0.650,     12.000
+   25   Vermiculite aggregate
+        0.170,  450.000,  837.000,  0.900,  0.650,     12.000
+   . . . .
+
+
+
+*tut_mlc_database multilayer constructions database contents
+
+The definition and description of the thermophysical properties
+within a problem are built up via the use of two databases, the
+second -
+
+multilayer constructions database
+   which defines the composition of constructions such as walls
+   and glazing systems in terms of layers of materials of
+   particular thickness in a particular order and, where
+   appropriate, with a named set of optical properties.  Items in
+   this database are given names and are accessed by their name.
+   It is necessary that unique names be used (the first 15
+   characters being used for comparison purposes).
+
+   In the case of an asymmetrical construction - i.e. one which
+   has a different ordering or thickness of layers depending on
+   which side one looks - which will be used as a partition
+   between two thermal zones, it is necessary to provide an
+   inverted version of the construction with a (slightly)
+   different name.
+
+   In the case of a mlc being composed of special materials such
+   as PV panels and photochromic glass please see the tutorial
+   under "product model - special materials".
+
+   This database is currently in ASCII format and is usually
+   associated with a particular project and resides with its
+   descriptive files.  An example of the database is included in
+   the following listing:
+
+
+# composite construction db defined in test.mlc
+# based on primitive constr db /usr/esru/esp-r/databases/constr.db1
+    6     # no of composites
+# layers  description   optics
+    3    d_glz         TRAN  DCF7671_06nb
+# db ref  thick   db name & air gap R
+  242     0.006  Plate
+    0     0.012  air  0.170 0.170 0.170
+  242     0.006  Plate
+# layers  description   optics
+    4    extern_wall   OPAQ  OPAQUE
+# db ref  thick   db name & air gap R
+    4     0.100  Outer leaf
+  211     0.075  Glasswool
+    0     0.050  air  0.170 0.170 0.170
+    2     0.100  Breeze block
+# layers  description   optics
+    4    roof_1        OPAQ  OPAQUE
+# db ref  thick   db name & air gap R
+  162     0.012  Roofing felt
+   21     0.050  Light mix
+    0     0.050  air  0.170 0.170 0.170
+  151     0.008  Ceiling (plaster)
+  . . . .
+
+
+
+*tut_optical_db   optical properties
+
+The optical properties of multilayer constructions are defined in
+an optical database.  The standard version of this database is
+/usr/esru/esp-r/databases/optics.db1, which contains data derived
+from either the LBL window 4.1 utility program or WIS.
+
+     The data include angular (0, 40, 55, 70, 80 degrees from
+     normal) solar transmission and absorption at each layer as
+     well as visible transmission. The database is currently in
+     ASCII format.
+
+     Editing facilities with graphic feedback of angular
+     properties are provided.  Alternately, the user can make use
+     of a text editor to modify or add to the database.
+
+If additional sets of optical properties are required that are
+not included in the standard optical database then it should be
+copied into the project directory and the necessary modifications
+undertaken.  The name of this database is retained within the
+problem description and will be automatically associated with the
+problem during subsequent sessions.
+
+An portion of an optical properties database is listed below:
+
+# optical properties db for default windows and most of the information
+# required to automatically build transparent constructions & tmc files.
+#
+# Single glazed infor follows:
+# NOTE 89/85 translates to 89% light trans and 74% total heat gain
+#
+# 12 char id |  description       | thick | blind
+SC_8985_04nb  :Clear glass 89/85,     4mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1,  1, 0.89,  0.07, 0.11, 5.4
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.819, 0.802, 0.761, 0.621, 0.376, 0.86, 0.85, 0.80, 0.65, 0.42
+# refr index, absorption @ 5 angles for each tmc layer
+  1.52, 0.106, 0.116, 0.124, 0.129, 0.125
+SC_8985_04ib  :Clear glass 89/85,     4mm, int blind
+  1,  1, 0.89,  0.39, 0.52, 5.4
+  0.087, 0.067, 0.053, 0.035, 0.018, 0.348, 0.332, 0.315, 0.272, 0.195
+  1.52, 0.869, 0.883, 0.873, 0.789, 0.590
+  . . . .
+
+
+
+*tut_plant_db_fld plant components database contents
+
+The plant components database is a binary, random access file
+holding plant component descriptions to enable the establishment
+of component state-space representations used by ESP-r.  The data
+categories are included for each component are:
+
+ Generic type    : to classify the component  (< 40 chars)
+ Description     : (< 80 chars)
+ Entry number    : internal database index, also for user
+                   selection in simulator
+ Component type  : 0 for single component
+                   1 for meta component
+ Model type code : pointer to corresponding simulator
+                   coefficient generator
+ Date            : of insertion into database
+
+ For a single component:
+   No. of nodes      : in comp. nodal scheme (< 20)
+   No. coefficients  : only non-zero coeff. (< 40)
+   Coeff. positions  : matrix locations for nodal coefficients
+                       where, for a 6 node scheme,
+                       M(1,1)= 1,  M(1,2)= 2,
+                       M(2,1)= 7,  M(2,2)= 8, etc
+
+   Node connectivity : number of allowed external connections
+   Node type         : defines energy state variable and number of
+                       phases requiring mass balance
+
+ For a meta component:
+   No. of components : in meta component
+   Components codes  : defines code number for each component
+   No. inter-conncns : total number of components inter-connections
+   Conncn definitions: 8 data items define each connection as follows:
+                C1   : Sending component
+                N1   : Sending node
+                CT   : Connection type
+                C2   : Receiving component
+                N2   : Receiving node
+                MDR  : Mass diversion ratio
+                MISC1: First miscellaneous data
+                MISC2: Second miscellaneous data
+ No.misc ADATA, BDATA and CDATA items.
+    For ADATA and BDATA items:
+      item description (<68), numerical value and minimum and maximum
+      values allowed.
+    For CDATA items: item description only.
+
+
+*tut_non-linear   Non-linear thermal properties.
+
+Thermophysical properties can be varied by a user defined
+function of the following form:
+
+                       b        c        d      e
+         P = A  + B * T  + C * T  + D * T+ E * T
+
+  where ;
+          P : value of a thermal property .
+          T : mean temperature of layer
+          A ,B,b,...,e : thermal equation  coefficients
+
+Therefore, to have a linear dependency of a thermal property on
+temperature, C, D, and E values should be zeroes.
+
+
+*tut_photocell    Options for illuminance calculation types
+
+In casual gain control, a number of illuminance calculation types
+are available. Details follow:
+
+Analytical DF
+   Horizontal workplane daylight factors calculated by
+   combination of analytical formula for sky component and split
+   flux method for interreflected component. Direct solar
+   photocell illuminance is being traced. THE METHOD WORKS ONLY
+   FOR VERTICAL 4 VERTEX TMC POLYGONS!
+
+User defined DF
+   Horizontal workplane daylight factors provided by user which
+   could be either measured or calculated values. Direct solar
+   sensor illuminance is not being traced i.e. sensor shaded from
+   direct sunlight.
+
+External sensor
+   External unobstructed horizontal or vertical global
+   illuminance. In the case of vertical global illuminance sensor
+   location on the zone external surface has to be specified.
+
+Direct coupling with Radiance
+   Direct running time coupling between thermal and lighting
+   simulations at the time step level using third party global
+   illumination solvers.  In the current version coupling with
+   Radiance is implemented. THIS IS AN EXPERT LEVEL AND CAN BE
+   COMPUTATIONALY INTENSIVE!
+
+Daylight coefficients
+   A set of precalculated daylight coefficients is being used to
+   calculate sensor illuminance at the time step level. Ones
+   daylight coefficient have been calculated or measured
+   simulation progress fast.  Third party global illumination
+   solvers are being used to calculate set of daylight
+   coefficients.  In the current version Radiance is used to get
+   daylight coeff. THIS IS AN EXPERT LEVEL AND CAN BE
+   COMPUTATIONALY INTENSIVE!
+
+
+*tut_zone_geo_ed  Zone composition
+
+The zone composition facility deals with zone geometry (in terms
+of its enclosure and associated solar obstructions) and
+attribution (zone and surface names, composition, optical
+properties) and topology (boundary conditions, polygon edge
+definitions).
+
+To support editing tasks, feedback is given on surface attributes
+and derived statistics (areas, volumes, orientations) and Image
+Control can be used to enhance understanding (e.g. by displaying
+vertex indices on the wireframe image).
+
+The options are as follows:
+
+NameThe zone name will appear in selection lists and reports and
+   should reflect the use of the zone.
+
+Volume and surface areas
+   Derived values which are often required to support
+   calculations and for inclusion in reports.
+
+Base area
+   upper section relates to overall properties, the middle
+   section to geometry, issues specifies both the geometry and
+   attribution of zones and related
+
+Enclosure and attribution warnings
+   If zone attribution is incomplete or there are problems with
+   polygon edge ordering adivsories are included in the upper
+   section of the menu. Edge ordering warnings can be acted upon
+   in the Surface List & Edges section.
+
+Vertex list
+   Each vertex in the zone is included in an editable list.
+   Vertices can be added, deleted, copied and edited.  There are
+   also a number of geometric transforms which can define points
+   along a line or a point in space relative to an existing
+   vertex.  The graphic feedback is updated to reflect any
+   changes in vertices.
+
+Surface list and edges
+   Surfaces are composed of a list of vertices which form its
+   edges.  The ordering of edged is critical and follows the
+   `right hand rule` convention.  A suggest approach is - when
+   viewing a surface from the outside (in the wireframe) start
+   the vertex list at the lower left hand corner and proceed
+   anti-clockwise. If the inside face of the surface is seen in
+   the wireframe proceed anti-clockwise from the lower right.
+
+Surface attributes
+   For a polygon to have thermophysical meaning a number of
+   attributes must be specified - name, optical properties,
+   composition, boundary condition.  Boundary and composition
+   attributes can be applied to a number of surfaces or edited
+   individually.
+   Care in naming surfaces makes subsequent selection tasks
+   easier and enhances the clarity of reports. It is suggested
+   that surface composition and opacity be defined here rather
+   than in the zone construction section.
+
+
+*tut_surf_topo    Topology: Boundaries and Connections
+
+Topology: Boundaries and Connections
+
+For each zone bounding surface a connection type must be defined
+as follows:
+
+0:   defines the surface as external. No additional information
+     is needed.
+
+1:   the surface is connected to a zone which is not
+     participating in the configuration but which is
+     environmentally identical to the zone to which the surface
+     belongs. No additional information is needed.
+
+2:   the surface is connected to a zone which is not
+     participating in the configuration but whose environmental
+     conditions are known and constant.  The additional
+     information which is requested defines the constant
+     temperature of this zone and provides an estimate of any
+     radiation absorbed by the outermost boundary of the surface
+     in question.
+
+3:   the surface connects to another participating zone.  The
+     additional information which is requested defines the
+     coupled zone and the surface therein which abuts the surface
+     in question (remember at this point only geometric zone
+     skeletons are being interlocked).
+
+4:   the surface is in contact with the ground. In this  case,
+     the user may define one or more monthly profiles (currently
+     this requires manual editing) or choose one of the following
+     pre-installed profiles:
+                                        o
+     Profile  Mean Monthly Temperature ( C)   Description        |
+     ============================================================|
+        1     7.28 6.5 6.56 7.33 9.06 11.39   Typical UK: level  |
+              13.5  14.33 14.11 11.72 10.72   level open terrain |
+              8.67                            at 1.3m depth.     |
+                                                                 |
+        2     6.0 8.0 10.0 12.0  13.0  14.0   Characteristic     |
+              15.0 14.0 13.0 12.0 10.0 8.0    step-wise variation|
+                                                     o           |
+                                              of 6-15 C          |
+                                                 .               |
+        3     4.9 4.4 4.1 6.4 9.0 12.9 15.5   Temperatures set   |
+              15.5 16.4 15.2 9.4 8.7          at previous month  |
+                                              average: data from |
+                                              Kew 1967           |
+                                                                 |
+        4     3.5  3.61  5.22  8.11   11.39   12km from Glasgow  |
+              14.61 16.22 15.78 13.39 10.22   at 32.2m altitude  |
+              6.72 4.78                       0.305m depth under |
+                                              short grass surface|
+                                              measured at 9h00   |
+                                              each day.          |
+                                                                 |
+        5     6.72  6.11  6.28  7.39   9.28   12km from Glasgow  |
+              11.39 13.11 13.72 13.28 11.78   at 32.2m altitude  |
+              9.72 7.89                       1.219m depth under |
+                                              a short grass      |
+                                              surface at 9h00    |
+                                              each day.          |
+
+
+5:   the surface is adiabatic, again no additional information is
+     needed.
+
+
+*tut_gen_esp_intr General introduction to ESP-r
+
+ESP-r is a dynamic thermal simulation environment which may be
+used to explore a range of problem types including building
+fabric, mass flow, ideal and detailed plant systems - separately
+or in combination.  It composed of a number of programs, each
+contributing certain facilities to the simulation process but the
+primary interface is provided by way of this project manager.
+
+In general use you will not need to know the names of the various
+modules as they are run from within the project manager.
+Similarly simulation problem descriptions are maintained in a
+number of different files but casual users are not required to
+know in detail their format or contents.  For those who wish to
+move beyond the novice stage it is recommended that you read the
+synopsis of each of the modules as well as the sections on
+problem description structure and database structure.
+
+Each of the ESP-r modules has a similar look and feel and thus if
+you master one you will find that other facilities are similar.
+
+One of the better ways of learning about ESP-r is to browse
+through one or more of the exemplars.  These simulation problems
+range from the most basic single room problems through houses to
+commercial buildings.  Within each exemplar a number of
+simulation issues will be addressed.  Thus you will find examples
+which introduce you to the various facilities within the system
+as well as examples of how to approach different types of
+simulation questions.
+
+The following types of problems are applicable to simulation.
+
+Fabric only (typically building)
+   The most common problem type involves the prediction of flux
+   movements, comfort and/ or energy demands within the fabric of
+   buildings.  Many such problems are adequately represented via
+   ideal control systems and imposed air movement regimes.
+
+Fabric and air flow
+   In many cases simulation problems involve questions about the
+   time variant interaction of building fabric and air flows.
+   For this type of problem it is necessary to describe the paths
+   through which air might flow and then request the simulator to
+   predict the resulting flows based on current boundary
+   conditions.
+
+Combined fabric, air flow and plant
+   There are simulation problems which involve questions about
+   the time variant interaction of building fabric, air flows and
+   plant systems.  If the plant systems can be assumed to act in
+   an ideal way then the basic simulator is invoked.  When plant
+   systems have inertia and/ or time-dependent performance
+   characteristics then it is necessary to make use of the
+   detailed plant modeling facilities within ESP-r.
+
+*tut_end_point    End of external help file

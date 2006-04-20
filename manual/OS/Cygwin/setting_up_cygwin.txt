@@ -1,0 +1,178 @@
+
+
+Installing cygwin for ESP-r use on a NT/W2K computer.
+
+Using ESP-r on a PC requires a compatible operating environment.
+This document discusses how to set the cygwin environment to 
+provide the necessary display, command shell, and low-level 
+library functions and system calls which ESP-r expects to find. 
+
+Consider this a Beta release - setting up cygwin requires
+several steps and the use of commands which will be familiar
+to those who have used Unix/Linux.
+
+To find out more about cygwin start with their web page
+<http://www.cygwin.com>. It saves quite a bit of time if you review
+their installation documentation in addition to the instructions which
+follow.
+
+Before you download and install cygwin:
+
+Prior to downloading and installing cygwin you need to setup
+administrative and normal users on the PC so that your `login`
+to cygwin is similar to that on a Linux or Unix computer. Typically
+this involves an Administrator (who maintains the cygwin and ESP-r
+applications) and a normal user who runs ESP-r.
+
+Check that you have ~600 MB of free space for cygwin and ~200 MB
+free for ESP-r and/or ~300 MB free for ESP-r and Radiance.
+
+Installing cygwin:
+
+Become administrator to do the cygwin install.
+
+Point a web browser at http://www.cygwin.com and click on the "install
+cygwin" icon. This will download a small setup.exe application (c:\TEMP
+is a good place to put it) which will be used to download and install
+cygwin components. This same tool can also be used to update cygwin.
+
+Once downloaded run the setup.exe and it will ask the following
+questions:
+  a) Where to get cygwin? Choose the option "internet" if this if
+     you have a fast connection and will be installing cygwin on
+     one machine. Choose the "download" option if you want to install
+     cygwin on more than one machine. Choose the "Install from local
+     directory" if you have already downloaded a cygwin distribution.
+
+  b) Where to put it? Take the suggestion c:\cygwin and also
+     the default option "all users" and "Unix file type".
+     When asked about a "local package directory accept
+     "c:\TEMP" if internet or download, or point to a folder
+     with previously downloaded files if that is the approach
+     you are taking.
+ 
+  c) For an internet or download install you may have to set an
+     appropriate proxy (In the University of Strathclyde this is:
+     www-cache.strath.ac.uk port 8080
+
+  d) Select a download site. In the UK ftp.ftp.mirror.ac.uk is quite fast.
+
+Once the ftp site has been reached is to select the packages to
+install. If disk space is not a problem you can select all by
+toggling the "All -> default" to "All -> Install". Note that the
+installer might take several minutes to react to this request.
+
+If you want to be selective (and save download time and disk space
+the following is a useful guide:
+
+ admin:        tick all
+ archive:      tick all
+ base install: tick all but gdbm, libgdbm, libgdbm-devel
+ database:     optional
+ development:  tick ELFIO, astyle, autoconf, automake, binutils,
+               ccache, dpkg, gcc, gcc-mingw, gdb. ioperm, make, 
+               mingw-runtime, mktemp
+ doc:          optional but at least get the man pages
+ editors:      at least vim & midnight commander
+ games:        optional
+ graphics:     tick ghostscript, jpeg, libpng, opengl, tiff,
+                and image libraries
+ intepretors:  tick expect, gawk, m4, perl 
+ libraries:    tick all except guile and tetext
+ mail:         optional
+ math:         optional
+ net:          tick openssh, setup, inetutils.
+ publishing:   optional
+ shells:       pick all
+ system:       pick procps, 
+ text:         pick enscript, groff, less, more, textinfo
+ utils:        pick bzip2, clear, cygutils, file, gnupg, keychain,
+               patch, time, units
+ web:          optional
+ XFree86:      pick at least one window manager (fvfwm is a minimal one) 
+               as well as Xfree86-base, Xfree86-bin, Xfree86-etc, 
+               Xfree86-fenc, Xfree86-fnts, Xfree86-fscl, Xfree86-fsrv,
+               Xfree86-lib, Xfree86-prog, Xfree86-startup-scripts,
+               Xaw3D, Xfree86-xserv, Xfree86-xwinclip, grace, lisstif.
+                .
+After completing the list the installer will download the various
+packages and put an icon on the desktop.
+
+The cygwin site has a related sites link <http://cygwin.com/links.html>
+with ported software. The editor "nedit" is quite useful for use with
+ESP-r.
+
+Post-install patches:
+
+Once cygwin is installed you need to alter several files so that
+cygwin starts with an appropriate PATH environment variable. Those 
+who are comfortable with Unix/Linux can follow the following steps:
+
+Copy the start_cygwin.bat file from the ESRU/cygwin download site
+and place it on your Windows desktop. This has been patched to work with
+ESP-r and Radiance and should be used in preference to the cygwin.bat
+desktop file that is installed by default.
+
+Copy the profile file from the ESRU/cygwin download site and copy it
+to C:\cygwin\etc\profile. This changes the PATH from
+   PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+     to
+   PATH="/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin:/usr/esru/bin:/usr/esru/esp-r/bin:$PATH"
+
+Issue the command "logout" or "exit" and then click on the start_cygwin.bat
+file and to re-establish the PATH environment variable and get an intial
+cygwin command shell window. 
+
+Standard cygwin will install a g77 compiler in /usr/bin/g77
+and you should create a link to f77 as follows
+  cd /usr/bin
+  ln -s /usr/bin/g77 /usr/bin/f77
+
+Typically users will start up an X display desktop and work within
+that. To have a reasonable cygwin desktop you need to have a file
+called .xinitrc in the home folder of each user. Download this file
+from the ESRU/cygwin site or create a file with the following text
+in it and name it .xinitrc
+
+exec >$HOME/.x11startlog 2>$HOME/.x11startlog 
+xsetroot -bitmap .esru.x
+xterm -name Console -fn 6x13 -C -g 85X8+0+0 &
+xterm -name Xterm1 -fn 6x13 -g 85X35+0-0 -sb -sl 400 &
+xterm -name Xterm2 -fn 6x13 -g 80X24+350-50 -sb -sl 400 &
+xclock -g 75X75-60+0 &
+xstdcmap -delete all
+exec twm
+
+The above command will start a clock, three command shells and 
+the "twm" window manager. The xsetroot assumes that you have also
+downloaded a file .esru.x from the ESRU/cygwin site. You can substitute
+a different X bitmap file or remove this line if you want a simple
+background.
+ 
+To invoke the X display desktop there are two approaches.  The first
+opens a window that takes up the whole screen area (except for the
+standard toolbar), the second opens a window of a specified size within
+the screen (recommended as you can still see the Windows desktop).
+
+Command a:
+  startx
+
+Command b:
+  startx -- -screen 0 900 700
+
+The window in command b will be 900 pixels wide by 700 pixels
+high and will have three X terminals running in it along with
+a clock. 
+
+Once cygwin is setup, ESP-r can be installed and it will think
+that it is running on a Linux box, indeed it should work with 
+simulation models created on another PC based Linux. The ESP-r
+install process requires you to select the cygwin option. You
+can invoke ESP-r from an `xterm` window in graphics mode after
+you have started cygwin and started the X server.
+
+It is also possible to compile the current distribution of
+the Radiance package in the cygwin environment. Note that
+the tiff related modules tend not to compile, but none of
+these is essential for use with ESP-r.
+

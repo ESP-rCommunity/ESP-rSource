@@ -1,0 +1,11 @@
+*ESP-r visualisation scene configuration file.
+Sat Aug 20 00:28:35 2005 # latest file modification.
+  1 # No. of scenes
+# Scene number  1
+*snm cellular_bc_Extern                                  # Scene name
+*rnm cellular_bc_Extern.rif                              # Rif name
+*srt cellular_bc_Extern                                  # Scene prefix
+*rde Scene of cellular_offices_bc for External analysis. # Description
+*rpu External                                            # Intended use
+*sceneEND
+*end

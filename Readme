@@ -1,0 +1,119 @@
+General Guidelines for the Installation of the ESP-r System
+-----------------------------------------------------------
+
+1.  Create a directory /usr/esru. If necessary this can
+    be a link to a directory "esru" located anywhere on your
+    system (you will need to ask the superuser to do this). 
+
+    It is suggested that you create a user called esru to own
+    this directory; this will offer more protection by
+    preventing other users from overwriting the ESP-r files.
+
+2.  Become user "esru" and cd to the /usr/esru directory. Make
+    a sub-directory src/esp-r and place the compressed tar files
+    that you downloaded there. These contain the source code and
+    example models and documentation. There is a utility 
+    script "unpacktargz" on the FTP site - run this to unpack 
+    the compressed tar files that you downloaded.
+
+3.  Execute the script /usr/esru/src/esp-r/bin/esp-r-dir
+    to create the esp-r directory structure.  Add
+    /usr/esru/bin and /usr/esru/esp-r/bin to your path.
+    On some operating systems it may be necessary to add
+    /usr/esru/esp-r/lib to your LD_LIBRARY_PATH environment
+    variable (this is not usually required under Linux
+    implementations).
+
+4.  In /usr/esru/src/esp-r there is a script file called
+    Install which will guide you through the installation
+    procedure and allow you to make selections corresponding
+    to the different operating systems and window managers.
+    Answer the questions to suit your system.  (Note that
+    it is possible to make ESP-r modules for operation
+    in text only mode on machines which do not support
+    X-Windows.  To do this you will need to redefine the
+    ULIBS definition to "-L${ESPdir}/lib -lesru_nb".)
+
+5.  Type "./Install" (for a complete installation) or
+    "./Install -h" to see the other options.  Answer the
+    questions as posed. If you are installing ESP-r as 
+    a local copy (e.g. in a non-esru user directory for
+    development work), use the script "Install_local" rather
+    than "Install".
+
+6.  Set up your environment along the lines of the sample
+    .* files of directory /usr/esru/src/esp-r/env.  In particular,
+    set the fonts (setenv EFONTS ...) in your .login file as
+    shown in the sample login file and your PATH as shown in
+    the .cshrc or .bash_profile file.   N.B. if the defined fonts 
+    do not exist ESP-r will probably crash on start-up. In most Linux
+    implementations, acceptable fonts are allocated automatically
+    and you do not need to modify your configuration except
+    to add /usr/esru/bin and /usr/esru/esp-r/bin to your path
+    as specified in step 3 above.
+
+7.  The file /usr/esru/esp-r/default defines the default settings
+    for example problems, climate, control, etc. These can be
+    changed if the default settings offered in the standard
+    distribution are not appropriate for your site.
+
+8.  To run ESP-r on some Sun workstations it may be necessary
+    to firstly define the default colour map.  This can be
+    done by issuing the command "xstdcmap -default" or placing
+    it in your .xinitrc or .openwin-init file.  With Solaris 7
+    you will also need to add "xstdcmap -delete all" to your
+    .xinitrc file.  If you are running OpenWindows and colour
+    problems persist, try commenting out the line
+
+          cmap_alloc -allscreens
+
+    in the file /usr/openwin/lib/openwin-sys.
+
+9.  With versions of Redhat Linux before 6.0, /usr/lib/libf2c.a is used
+    instead of /usr/lib/libg2c.a. For pre-6.0 versions, edit the 
+    Install script: instructions are included in the "For Linux"
+    section. For Suse Linux, it has been reported that this library
+    should not be included: again see the comment in the script.
+    
+10. For Silicon Graphics implementations before Irix 6.5 
+    (Fortran MIPSpro Compilers: Version 7.2.1), /usr/lib
+    is used instead of /usr/lib32. For earlier versions edit the 
+    Install script: instructions are included in the "For SGI" section.
+
+11. It is possible to compile ESP-r under Windows using Cygwin or 
+    under OS X on Mac's. These are beta releases - setting up instructions 
+    are in the "manual" directory.
+
+12. With Linux Redhat Fedora Core 4, using the latest version of gcc,
+    Fortran is not currently supported. To solve this:
+    (i) Download and install (rpm -iv "name".rpm) the following packages:
+       - compat-gcc-32-3.2.3-47.fc4.src.rpm (could be already installed)
+       - compat-libf2c-32-3.2.3-47.fc4.i386.rpm
+       - compat-gcc-32-g77-3.2.3-47.fc4.i386.rpm
+    (ii) Edit the file Install and replace gcc by gcc32 (at least in the
+         Linux part, option 3).
+    (iii) Install as usual.
+    Note that installing the libf2c package is necessary even if you want 
+    to use the pre-compiled binaries that can be downloaded from the 
+    ESRU website.
+
+13. Some of the exemplar problems do not load correctly for Linux or SGI
+    because the supplied binary files are for Sun workstations. This problem
+    is currently being addressed.
+
+14. The manual is set in troff format and can be found in
+    directory ~esru/esp-r/manual.  But note that an on-line help 
+    and Web-based tutorial facility are available. These are improving
+    as time passes. The user guide and data model details can also
+    be obtained from the ESRU Web site in pdf format. (The Web
+    address is http://www.esru.strath.ac.uk).
+
+15. In directory validation/QA, there are models and scripts which
+    can be run to check on your implementation. See the Readme
+    file in that directory for details.
+
+16. If - or should we say when ;-) - problems are encountered
+    please email us at esru@strath.ac.uk.
+
+
+Good Luck

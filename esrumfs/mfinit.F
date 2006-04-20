@@ -1,0 +1,198 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C ************ MFINIT 
+C Fills valid component type arrays
+C Sets default values for iteration parameters, Pstack calculation
+C model, matrix solver type and trace output flag
+C Assigns problem description (IFPRB), wind pressure coefficients
+C distribution (IFPRE), climate (IFCLM) and results (IFRES) files
+
+      SUBROUTINE MFINIT(IFPRB,IFPRE,IFCLM,IFRES)
+
+#include "building.h"
+#include "net_flow.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C22/ICLIM,LCLIM
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/pophelp/h(60)
+
+C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+      COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
+      COMMON/MFCALC/IPSMOD,MSLVTP
+      COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
+
+C Current file (for use by low level I/O calls). Error subroutine
+C and error details for dll mode.
+      common/curfile/currentfile
+
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+
+      CHARACTER*72 LCLIM,H,DFILE,LTMP
+      character*72 LAPROB,LAPRES,LAFRES
+      CHARACTER OUTSTR*124,currentfile*72
+      logical XST,OK,DOK
+
+C Initiates filling of valid fluid flow component type arrays
+      CALL MFCDAT
+
+C Set default values for:
+C iteration parameters, pressure stack difference calculation model,
+C matrix solver type, trace output option.
+      MAXITF=100
+      FERREL=.01
+      FERMFL=.0005
+      PMAX=50.
+      STEFFR=-0.5
+      IPSMOD=1
+      MSLVTP=2
+      MFTRAC=0
+
+C Assign problem description file.  If file not found confirm with
+C user that this is to be a new network description.  
+C Do a simple check on the file to see if it is a network file.
+   20 IF(IFPRB.EQ.10) THEN
+         CALL ERPFREE(IFPRB,ISTAT)
+      ELSE
+         IFPRB=10
+      END IF
+      H(1)='A mass flow problem is defined as a number of nodes,  '
+      H(2)='components and connections which are held in a data file'
+      H(3)='(previously known as a leakage distribution file).'
+      H(4)='To begin a new problem provide a file name that does not'
+      H(5)='exist, otherwise an existing file name.'
+  289 CALL EASKS(LAPROB,' Mass flow network file name ? ',' ',
+     &     72,DAPROB,'mass flow network file',IER,5)
+      IF(LAPROB.EQ.' ')GOTO 289
+      CALL ERPFREE(IFPRB,ISTAT)
+      call FINDFIL(LAPROB,XST)
+      IF(.NOT.XST)THEN
+        CALL EASKAB(' ',' This was not found - ',
+     &  'use this as a new problem','specify another file',IW,0)
+        IF(IW.EQ.2)GOTO 289
+      ENDIF
+      CALL EFOPSEQ(IFPRB,LAPROB,3,IER)
+      IF(IER.NE.0) GOTO 20
+      currentfile=LAPROB
+
+C Test for legal file type
+C For the time being, when the first record does not contain valid data
+C it is an illegal file type, and the file is regarded as being empty;
+C this might cause overwriting of an existing file !!
+      CALL STRIPC(IFPRB,OUTSTR,0,ND,1,'mass file line 1',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','no of nodes',IER)
+      CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','no of component',IER)
+      CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connection',IER)
+      IF(IER.EQ.1)GOTO 20
+
+C Assign wind pressure distribution file and read NPRE
+   30 IFPRE=11
+      H(1)='A wind pressure coefficients distribution file is a'
+      H(2)='database of pressure coefficients for surfaces in'
+      H(3)='typical positions and within several different exposure'
+      H(4)='categories. See the ESP manual for additional info.'
+  288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
+     &     72,DAPRES,'pressure db',IER,4)
+      IF(LAPRES.EQ.' ')GOTO 288
+      CALL EFOPSEQ(IFPRE,LAPRES,1,IER)
+      IF(IER.NE.0) GOTO 30
+      currentfile=LAPRES
+
+C Read in the pressure db to see if it is a proper one.
+      CALL STRIPC(IFPRE,OUTSTR,0,ND,1,'pressure db',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)
+      IF(NPRE.LT.1.OR.NPRE.GT.MPRD)THEN
+        CALL USRMSG(' The specified file appears to not be of',
+     &              ' the correct type, please try again','W')
+        GOTO 288
+      ENDIF
+
+C Assign climate file and read year number.
+   40 IFCLM=12
+      H(1)='A climate file holds hourly values for diffuse solar'
+      H(2)='intensity in W/m2, dry bulb temp in degrees C, direct'
+      H(3)='normal or global horizontal solar intensity in W/m2,'
+      H(4)='wind speed in tenths metre/second, wind direction deg'
+      H(5)='from north (clockwise), and relative humidity in '
+      H(6)='percent.  It also holds latitude, longitude difference'
+      H(7)='from the nearest time zone and the year represented.'
+      LTMP=LCLIM
+      CALL EASKS(LTMP,' Climate file ? ',
+     &     ' ',72,DCLIM,'climate file',IER,7)
+      CALL ERPFREE(IFCLM,ISTAT)
+      call EFOPRAN(IFCLM,LTMP,144,1,IER)
+      IF(ier.eq.0)THEN
+        READ(IFCLM,REC=366,ERR=999) IRY
+        LCLIM=LTMP
+      ELSE
+        CALL USRMSG(' Could not find ',LTMP,'W')
+        goto 40
+      ENDIF
+
+C Assign results file; make sure this is not the problem file
+   50 IFRES=13
+      H(1)='The results file holds the predictions generated by mfs'
+      H(2)='for a particular simulation.  The file is in an ASCII'
+      H(3)='format and the name is required even if you are not'
+      H(4)='planning to do a simulation during this session. '
+      DFILE='new.mfr'
+      CALL EASKS(LAFRES,' Mass flow simulation results file ? ',
+     &     ' ',72,DFILE,'mass flow results',IER,4)
+      IF(LAFRES.EQ.LAPROB)THEN
+        CALL USRMSG(' You have specified the same name as the problem',
+     &  ' description, please use another file name!','W')
+        GOTO 50
+      ENDIF
+      CALL EFOPSEQ(IFRES,LAFRES,3,IER)
+      IF(IER.NE.0) GOTO 50
+      currentfile=LAFRES
+      RETURN
+
+C File error trap
+  999 dok=.false.
+      h(1)='The record holding the year of the climate data could not'
+      h(2)='be read. This probably means the file is corrupt. Check'
+      h(3)='the file - it might be of zero bytes. '
+      h(4)=' '
+      h(5)='A no will close the application and delete the '
+      h(6)='mass flow description file if it is empty.'
+      CALL ASKOK(' ',' Error reading climate...continue?',OK,dok,6)
+      IF(OK)THEN
+        goto 40
+      ELSE 
+
+C Quit, but first remove empty problem file if applicable
+        IF(NNOD.EQ.0.AND.NCMP.EQ.0.AND.NCNN.EQ.0) THEN
+          CALL EFDELET(IFPRB,ISTAT)
+        ENDIF
+        STOP ' MFINIT: exit from ESRUmfs'
+      ENDIF
+
+      END
+

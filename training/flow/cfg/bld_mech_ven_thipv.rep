@@ -1,0 +1,1771 @@
+*IPV_REPORT,2
+bld_flow_mech.ipv
+ 
+*title,Basic 3 zone model with mechanical flow
+*version,Version bld_flw_mech with several metric
+*climate,ESP test climate
+*latitude, 51.70
+*longitude, -0.50
+*synopsis,The bld_flw_mech is a test model used for training purposes. Several metrics are included.
+ 
+*simulations,  3
+# start & finish days for each season
+*period, 6/ 2/1967,12/ 2/1967,Mon  6 Feb,Sun 12 Feb,bld_mech winter run
+*period,17/ 4/1967,23/ 4/1967,Mon 17 Apr,Sun 23 Apr,bld_mech transition run
+*period,11/ 7/1967,17/ 7/1967,Tue 11 Jul,Mon 17 Jul,bld_mech summer run
+# nb days to display and list of days
+*display_days,3
+ 7/ 2/1967,Tue  7 Feb
+18/ 4/1967,Tue 18 Apr
+12/ 7/1967,Wed 12 Jul
+*end_display
+ 
+*assessment, 1,bld_mech winter run
+ 
+*report,70,diversified,zones,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,diffuse,zones,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,zones,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,688.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,minimum,zones,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,zones,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,63.492,0.000,0.000,302.381,0.000
+*end_report
+ 
+*report,70,demand,zones,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,32.000,0.000,0.000,152.400,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,0,NaN,0NaN,336,below
+2,18.0-20.0,0,NaN,0NaN
+3,20.0-22.0,0,NaN,0NaN
+4,22.0-24.0,0,NaN,0NaN
+5,24.0-26.0,0,NaN,0NaN
+6,26.0-28.0,0,NaN,0NaN
+7,28.0-30.0,0,NaN,0NaN,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,20.471,3.801,7.471,20.013,20.471,0.000,9.650
+*end_report
+ 
+*report, 1,distribution,ZndbT
+*title,Zone dry bulb T
+*format,frequency,11,6,10.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,10.0-12.0,10,100.00,10,100.00,326,below
+2,12.0-14.0,0,0.00,10,100.00
+3,14.0-16.0,0,0.00,10,100.00
+4,16.0-18.0,0,0.00,10,100.00
+5,18.0-20.0,0,0.00,10,100.00
+6,20.0-22.0,0,0.00,10,100.00
+7,22.0-24.0,0,0.00,10,100.00
+8,24.0-26.0,0,0.00,10,100.00
+9,26.0-28.0,0,0.00,10,100.00
+10,28.0-30.0,0,0.00,10,100.00
+11,30.0-32.0,0,0.00,10,100.00,0,above
+*end_report
+ 
+*report, 1,stats,ZndbT
+*title,Zone db temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,21.815,1.445,6.786,19.345,21.815,0.000,7.128
+*end_report
+ 
+*report,13,distribution,RH
+*title,Relative humidity
+*format,frequency,21,6,0.0,5.0,100.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-5.0,0,0.00,0,0.00,0,below
+2,5.0-10.0,0,0.00,0,0.00
+3,10.0-15.0,0,0.00,0,0.00
+4,15.0-20.0,0,0.00,0,0.00
+5,20.0-25.0,0,0.00,0,0.00
+6,25.0-30.0,0,0.00,0,0.00
+7,30.0-35.0,0,0.00,0,0.00
+8,35.0-40.0,0,0.00,0,0.00
+9,40.0-45.0,0,0.00,0,0.00
+10,45.0-50.0,0,0.00,0,0.00
+11,50.0-55.0,0,0.00,0,0.00
+12,55.0-60.0,0,0.00,0,0.00
+13,60.0-65.0,3,1.79,3,1.79
+14,65.0-70.0,7,4.17,10,5.95
+15,70.0-75.0,1,0.60,11,6.55
+16,75.0-80.0,11,6.55,22,13.10
+17,80.0-85.0,4,2.38,26,15.48
+18,85.0-90.0,14,8.33,40,23.81
+19,90.0-95.0,7,4.17,47,27.98
+20,95.0-100.0,70,41.67,117,69.64
+21,100.0-105.0,51,30.36,168,100.00,0,above
+*end_report
+ 
+*report,13,stats,RH
+*title,Zone relative humidity (%)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,100.000,61.842,93.805,100.000,100.000,0.000,61.195
+*end_report
+ 
+*report,11,distribution,Inf
+*title,Infiltration load
+*format,frequency,33,6,-3400.0,100.0,-200.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,-3400.0--3300.0,0,0.00,0,0.00,0,below
+2,-3300.0--3200.0,0,0.00,0,0.00
+3,-3200.0--3100.0,1,0.60,1,0.60
+4,-3100.0--3000.0,0,0.00,1,0.60
+5,-3000.0--2900.0,1,0.60,2,1.19
+6,-2900.0--2800.0,0,0.00,2,1.19
+7,-2800.0--2700.0,6,3.57,8,4.76
+8,-2700.0--2600.0,3,1.79,11,6.55
+9,-2600.0--2500.0,6,3.57,17,10.12
+10,-2500.0--2400.0,9,5.36,26,15.48
+11,-2400.0--2300.0,10,5.95,36,21.43
+12,-2300.0--2200.0,10,5.95,46,27.38
+13,-2200.0--2100.0,10,5.95,56,33.33
+14,-2100.0--2000.0,10,5.95,66,39.29
+15,-2000.0--1900.0,6,3.57,72,42.86
+16,-1900.0--1800.0,16,9.52,88,52.38
+17,-1800.0--1700.0,13,7.74,101,60.12
+18,-1700.0--1600.0,10,5.95,111,66.07
+19,-1600.0--1500.0,4,2.38,115,68.45
+20,-1500.0--1400.0,9,5.36,124,73.81
+21,-1400.0--1300.0,7,4.17,131,77.98
+22,-1300.0--1200.0,3,1.79,134,79.76
+23,-1200.0--1100.0,3,1.79,137,81.55
+24,-1100.0--1000.0,3,1.79,140,83.33
+25,-1000.0--900.0,4,2.38,144,85.71
+26,-900.0--800.0,4,2.38,148,88.10
+27,-800.0--700.0,3,1.79,151,89.88
+28,-700.0--600.0,12,7.14,163,97.02
+29,-600.0--500.0,5,2.98,168,100.00
+30,-500.0--400.0,0,0.00,168,100.00
+31,-400.0--300.0,0,0.00,168,100.00
+32,-300.0--200.0,0,0.00,168,100.00
+33,-200.0--100.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,11,stats,Inf
+*title,Infiltration (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-249.251,-3134.736,-1757.869,0.000,-249.251,-3134.736,-3355.039
+*end_report
+ 
+*report,15,distribution,TotCasG
+*title,Total casual gains
+*format,frequency,12,6,800.0,100.0,1900.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,800.0-900.0,128,76.19,128,76.19,0,below
+2,900.0-1000.0,0,0.00,128,76.19
+3,1000.0-1100.0,0,0.00,128,76.19
+4,1100.0-1200.0,0,0.00,128,76.19
+5,1200.0-1300.0,0,0.00,128,76.19
+6,1300.0-1400.0,0,0.00,128,76.19
+7,1400.0-1500.0,0,0.00,128,76.19
+8,1500.0-1600.0,0,0.00,128,76.19
+9,1600.0-1700.0,0,0.00,128,76.19
+10,1700.0-1800.0,0,0.00,128,76.19
+11,1800.0-1900.0,40,23.81,168,100.00
+12,1900.0-2000.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,15,stats,TotCasG
+*title,Total casual gain (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,1874.000,800.000,1055.714,1874.000,1874.000,0.000,800.000
+*end_report
+ 
+*report,38,distribution,SolinEx
+*title,Solar entering from outside
+*format,frequency,36,6,0.0,100.0,3500.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,271,80.65,271,80.65,0,below
+2,100.0-200.0,18,5.36,289,86.01
+3,200.0-300.0,24,7.14,313,93.15
+4,300.0-400.0,7,2.08,320,95.24
+5,400.0-500.0,1,0.30,321,95.54
+6,500.0-600.0,1,0.30,322,95.83
+7,600.0-700.0,1,0.30,323,96.13
+8,700.0-800.0,0,0.00,323,96.13
+9,800.0-900.0,0,0.00,323,96.13
+10,900.0-1000.0,1,0.30,324,96.43
+11,1000.0-1100.0,0,0.00,324,96.43
+12,1100.0-1200.0,1,0.30,325,96.73
+13,1200.0-1300.0,1,0.30,326,97.02
+14,1300.0-1400.0,1,0.30,327,97.32
+15,1400.0-1500.0,0,0.00,327,97.32
+16,1500.0-1600.0,1,0.30,328,97.62
+17,1600.0-1700.0,1,0.30,329,97.92
+18,1700.0-1800.0,1,0.30,330,98.21
+19,1800.0-1900.0,1,0.30,331,98.51
+20,1900.0-2000.0,1,0.30,332,98.81
+21,2000.0-2100.0,0,0.00,332,98.81
+22,2100.0-2200.0,0,0.00,332,98.81
+23,2200.0-2300.0,0,0.00,332,98.81
+24,2300.0-2400.0,0,0.00,332,98.81
+25,2400.0-2500.0,0,0.00,332,98.81
+26,2500.0-2600.0,1,0.30,333,99.11
+27,2600.0-2700.0,2,0.60,335,99.70
+28,2700.0-2800.0,0,0.00,335,99.70
+29,2800.0-2900.0,0,0.00,335,99.70
+30,2900.0-3000.0,0,0.00,335,99.70
+31,3000.0-3100.0,0,0.00,335,99.70
+32,3100.0-3200.0,0,0.00,335,99.70
+33,3200.0-3300.0,0,0.00,335,99.70
+34,3300.0-3400.0,1,0.30,336,100.00
+35,3400.0-3500.0,0,0.00,336,100.00
+36,3500.0-3600.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,38,stats,SolinEx
+*title,Solar entering from outside (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,4141.851,0.000,120.034,3450.113,4141.851,0.000,0.000
+*end_report
+ 
+*report,40,distribution,TSolabs
+*title,Solar absorbed in zone
+*format,frequency,35,6,0.0,100.0,3400.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,271,80.65,271,80.65,0,below
+2,100.0-200.0,20,5.95,291,86.61
+3,200.0-300.0,26,7.74,317,94.35
+4,300.0-400.0,3,0.89,320,95.24
+5,400.0-500.0,1,0.30,321,95.54
+6,500.0-600.0,1,0.30,322,95.83
+7,600.0-700.0,1,0.30,323,96.13
+8,700.0-800.0,0,0.00,323,96.13
+9,800.0-900.0,0,0.00,323,96.13
+10,900.0-1000.0,1,0.30,324,96.43
+11,1000.0-1100.0,1,0.30,325,96.73
+12,1100.0-1200.0,1,0.30,326,97.02
+13,1200.0-1300.0,1,0.30,327,97.32
+14,1300.0-1400.0,0,0.00,327,97.32
+15,1400.0-1500.0,0,0.00,327,97.32
+16,1500.0-1600.0,2,0.60,329,97.92
+17,1600.0-1700.0,1,0.30,330,98.21
+18,1700.0-1800.0,1,0.30,331,98.51
+19,1800.0-1900.0,0,0.00,331,98.51
+20,1900.0-2000.0,1,0.30,332,98.81
+21,2000.0-2100.0,0,0.00,332,98.81
+22,2100.0-2200.0,0,0.00,332,98.81
+23,2200.0-2300.0,0,0.00,332,98.81
+24,2300.0-2400.0,0,0.00,332,98.81
+25,2400.0-2500.0,1,0.30,333,99.11
+26,2500.0-2600.0,2,0.60,335,99.70
+27,2600.0-2700.0,0,0.00,335,99.70
+28,2700.0-2800.0,0,0.00,335,99.70
+29,2800.0-2900.0,0,0.00,335,99.70
+30,2900.0-3000.0,0,0.00,335,99.70
+31,3000.0-3100.0,0,0.00,335,99.70
+32,3100.0-3200.0,1,0.30,336,100.00
+33,3200.0-3300.0,0,0.00,336,100.00
+34,3300.0-3400.0,0,0.00,336,100.00
+35,3400.0-3500.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,40,stats,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,3960.862,0.000,115.534,3293.913,3960.862,0.000,0.000
+*end_report
+ 
+*day_to_display,38
+ 
+*report,70,demand_per_unit_time,zones,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+38.0208,0.0,0.0,0.0,0.0,800.0,0.0
+38.0625,0.0,0.0,0.0,0.0,800.0,0.0
+38.1042,0.0,0.0,0.0,0.0,800.0,0.0
+38.1458,0.0,0.0,0.0,0.0,800.0,0.0
+38.1875,0.0,0.0,0.0,0.0,800.0,0.0
+38.2292,0.0,0.0,0.0,0.0,800.0,0.0
+38.2708,0.0,0.0,0.0,0.0,800.0,0.0
+38.3125,0.0,0.0,0.0,0.0,800.0,0.0
+38.3542,0.0,0.0,33.3,0.0,818.8,0.0
+38.3958,0.0,0.0,766.7,0.0,1231.2,0.0
+38.4375,0.0,0.0,800.0,0.0,1250.0,0.0
+38.4792,0.0,0.0,800.0,0.0,1250.0,0.0
+38.5208,0.0,0.0,800.0,0.0,1250.0,0.0
+38.5625,0.0,0.0,800.0,0.0,1250.0,0.0
+38.6042,0.0,0.0,800.0,0.0,1250.0,0.0
+38.6458,0.0,0.0,800.0,0.0,1250.0,0.0
+38.6875,0.0,0.0,766.7,0.0,1231.2,0.0
+38.7292,0.0,0.0,33.3,0.0,818.8,0.0
+38.7708,0.0,0.0,0.0,0.0,800.0,0.0
+38.8125,0.0,0.0,0.0,0.0,800.0,0.0
+38.8542,0.0,0.0,0.0,0.0,800.0,0.0
+38.8958,0.0,0.0,0.0,0.0,800.0,0.0
+38.9375,0.0,0.0,0.0,0.0,800.0,0.0
+38.9792,0.0,0.0,0.0,0.0,800.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Res
+#    |Res T     | T
+#    | deg C    | deg C
+38.0208,9.14,7.46
+38.0625,9.34,7.49
+38.1042,9.34,7.50
+38.1458,9.14,7.50
+38.1875,9.29,7.48
+38.2292,9.28,7.46
+38.2708,9.30,7.45
+38.3125,9.14,7.44
+38.3542,9.22,7.46
+38.3958,10.23,8.34
+38.4375,10.15,8.88
+38.4792,9.31,9.18
+38.5208,9.01,9.34
+38.5625,9.21,9.48
+38.6042,9.50,9.64
+38.6458,9.19,9.76
+38.6875,8.21,9.72
+38.7292,7.08,8.80
+38.7708,6.39,8.19
+38.8125,5.97,7.88
+38.8542,5.57,7.66
+38.8958,5.30,7.46
+38.9375,5.09,7.28
+38.9792,5.00,7.11
+*end_report
+ 
+*report, 1,zone_dbt,ZndbT
+*title,Zone db temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office db
+#    |db T      |T
+#    | deg C    | deg C
+38.0208,8.83,7.49
+38.0625,9.12,7.52
+38.1042,9.02,7.54
+38.1458,8.62,7.53
+38.1875,8.90,7.51
+38.2292,8.85,7.49
+38.2708,8.87,7.49
+38.3125,8.57,7.48
+38.3542,8.68,7.50
+38.3958,10.30,8.96
+38.4375,9.74,9.60
+38.4792,8.04,9.93
+38.5208,7.52,10.11
+38.5625,7.85,10.25
+38.6042,8.26,10.42
+38.6458,7.65,10.54
+38.6875,6.08,10.50
+38.7292,4.52,9.03
+38.7708,3.73,8.24
+38.8125,3.30,7.91
+38.8542,2.83,7.67
+38.8958,2.61,7.47
+38.9375,2.43,7.28
+38.9792,2.46,7.11
+*end_report
+ 
+*report,13,relative humidity,RH
+*title,Zone relative humidity (%)
+*format,tabular,XYYY,24, 1
+*fields,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|office RH
+#    |
+#    |
+38.0208,98.99
+38.0625,98.67
+38.1042,98.45
+38.1458,98.36
+38.1875,98.38
+38.2292,98.24
+38.2708,98.04
+38.3125,98.00
+38.3542,97.93
+38.3958,99.41
+38.4375,100.00
+38.4792,100.00
+38.5208,100.00
+38.5625,100.00
+38.6042,100.00
+38.6458,100.00
+38.6875,100.00
+38.7292,100.00
+38.7708,100.00
+38.8125,99.93
+38.8542,99.74
+38.8958,99.59
+38.9375,99.58
+38.9792,99.90
+*end_report
+ 
+*report,11,infiltration load,Inf
+*title,Infiltration (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |Inf
+#    |     W
+38.0208,-545.72
+38.0625,-526.14
+38.1042,-574.10
+38.1458,-689.60
+38.1875,-577.64
+38.2292,-610.22
+38.2708,-626.50
+38.3125,-724.71
+38.3542,-698.16
+38.3958,-816.01
+38.4375,-1327.42
+38.4792,-2134.95
+38.5208,-2320.21
+38.5625,-2207.76
+38.6042,-2115.95
+38.6458,-2464.63
+38.6875,-2969.03
+38.7292,-2661.90
+38.7708,-2700.91
+38.8125,-2710.37
+38.8542,-2785.79
+38.8958,-2717.23
+38.9375,-2685.01
+38.9792,-2503.95
+*end_report
+ 
+*report,15,total casual gains,TotCasG
+*title,Total casual gain (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |TotCnv
+#    |     W
+38.0208,800.00
+38.0625,800.00
+38.1042,800.00
+38.1458,800.00
+38.1875,800.00
+38.2292,800.00
+38.2708,800.00
+38.3125,800.00
+38.3542,844.75
+38.3958,1829.25
+38.4375,1874.00
+38.4792,1874.00
+38.5208,1874.00
+38.5625,1874.00
+38.6042,1874.00
+38.6458,1874.00
+38.6875,1829.25
+38.7292,844.75
+38.7708,800.00
+38.8125,800.00
+38.8542,800.00
+38.8958,800.00
+38.9375,800.00
+38.9792,800.00
+*end_report
+ 
+*report,38,solar entering from outside,SolinEx
+*title,Solar entering from outside (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Sol
+#    |SolinEx   |inEx
+#    |     W    |     W
+38.0208,0.00,0.00
+38.0625,0.00,0.00
+38.1042,0.00,0.00
+38.1458,0.00,0.00
+38.1875,0.00,0.00
+38.2292,0.00,0.00
+38.2708,0.00,0.00
+38.3125,3.08,0.86
+38.3542,59.82,15.58
+38.3958,153.11,38.25
+38.4375,237.99,57.94
+38.4792,286.41,68.98
+38.5208,292.81,70.73
+38.5625,307.29,74.45
+38.6042,281.36,69.67
+38.6458,163.15,41.40
+38.6875,41.71,10.45
+38.7292,0.00,0.00
+38.7708,0.00,0.00
+38.8125,0.00,0.00
+38.8542,0.00,0.00
+38.8958,0.00,0.00
+38.9375,0.00,0.00
+38.9792,0.00,0.00
+*end_report
+ 
+*report,40,solar absorbed in zone,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_win.re: Results for bld_mech_ven_th
+# Period: Tue  7 Feb @00h55 to: Tue  7 Feb @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office TSo
+#    |TSolabs   |labs
+#    |     W    |     W
+38.0208,0.00,0.00
+38.0625,0.00,0.00
+38.1042,0.00,0.00
+38.1458,0.00,0.00
+38.1875,0.00,0.00
+38.2292,0.00,0.00
+38.2708,0.00,0.00
+38.3125,3.05,0.86
+38.3542,58.51,15.49
+38.3958,148.75,37.82
+38.4375,231.00,57.24
+38.4792,277.61,68.15
+38.5208,283.82,69.88
+38.5625,297.88,73.51
+38.6042,272.77,68.81
+38.6458,158.56,40.94
+38.6875,40.84,10.42
+38.7292,0.00,0.00
+38.7708,0.00,0.00
+38.8125,0.00,0.00
+38.8542,0.00,0.00
+38.8958,0.00,0.00
+38.9375,0.00,0.00
+38.9792,0.00,0.00
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 2,bld_mech transition run
+ 
+*report,70,diversified,zones,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,diffuse,zones,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,zones,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,688.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,minimum,zones,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,zones,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,63.492,0.000,0.000,302.381,0.000
+*end_report
+ 
+*report,70,demand,zones,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,32.000,0.000,0.000,152.400,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,5,45.45,5,45.45,325,below
+2,18.0-20.0,5,45.45,10,90.91
+3,20.0-22.0,1,9.09,11,100.00
+4,22.0-24.0,0,0.00,11,100.00
+5,24.0-26.0,0,0.00,11,100.00
+6,26.0-28.0,0,0.00,11,100.00
+7,28.0-30.0,0,0.00,11,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,36.422,5.916,10.936,35.960,36.422,0.000,14.054
+*end_report
+ 
+*report, 1,distribution,ZndbT
+*title,Zone dry bulb T
+*format,frequency,11,6,10.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,10.0-12.0,76,47.80,76,47.80,177,below
+2,12.0-14.0,46,28.93,122,76.73
+3,14.0-16.0,25,15.72,147,92.45
+4,16.0-18.0,6,3.77,153,96.23
+5,18.0-20.0,3,1.89,156,98.11
+6,20.0-22.0,3,1.89,159,100.00
+7,22.0-24.0,0,0.00,159,100.00
+8,24.0-26.0,0,0.00,159,100.00
+9,26.0-28.0,0,0.00,159,100.00
+10,28.0-30.0,0,0.00,159,100.00
+11,30.0-32.0,0,0.00,159,100.00,0,above
+*end_report
+ 
+*report, 1,stats,ZndbT
+*title,Zone db temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,38.481,3.362,10.226,37.593,38.481,0.000,11.416
+*end_report
+ 
+*report,13,distribution,RH
+*title,Relative humidity
+*format,frequency,21,6,0.0,5.0,100.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-5.0,0,0.00,0,0.00,0,below
+2,5.0-10.0,0,0.00,0,0.00
+3,10.0-15.0,0,0.00,0,0.00
+4,15.0-20.0,0,0.00,0,0.00
+5,20.0-25.0,0,0.00,0,0.00
+6,25.0-30.0,0,0.00,0,0.00
+7,30.0-35.0,0,0.00,0,0.00
+8,35.0-40.0,0,0.00,0,0.00
+9,40.0-45.0,0,0.00,0,0.00
+10,45.0-50.0,0,0.00,0,0.00
+11,50.0-55.0,0,0.00,0,0.00
+12,55.0-60.0,0,0.00,0,0.00
+13,60.0-65.0,23,13.69,23,13.69
+14,65.0-70.0,13,7.74,36,21.43
+15,70.0-75.0,10,5.95,46,27.38
+16,75.0-80.0,16,9.52,62,36.90
+17,80.0-85.0,8,4.76,70,41.67
+18,85.0-90.0,4,2.38,74,44.05
+19,90.0-95.0,10,5.95,84,50.00
+20,95.0-100.0,42,25.00,126,75.00
+21,100.0-105.0,42,25.00,168,100.00,0,above
+*end_report
+ 
+*report,13,stats,RH
+*title,Zone relative humidity (%)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,100.000,60.385,86.499,100.000,100.000,0.000,60.365
+*end_report
+ 
+*report,11,distribution,Inf
+*title,Infiltration load
+*format,frequency,37,6,-3900.0,100.0,-300.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,-3900.0--3800.0,0,0.00,0,0.00,0,below
+2,-3800.0--3700.0,1,0.60,1,0.60
+3,-3700.0--3600.0,2,1.19,3,1.79
+4,-3600.0--3500.0,1,0.60,4,2.38
+5,-3500.0--3400.0,0,0.00,4,2.38
+6,-3400.0--3300.0,1,0.60,5,2.98
+7,-3300.0--3200.0,0,0.00,5,2.98
+8,-3200.0--3100.0,3,1.79,8,4.76
+9,-3100.0--3000.0,4,2.38,12,7.14
+10,-3000.0--2900.0,5,2.98,17,10.12
+11,-2900.0--2800.0,6,3.57,23,13.69
+12,-2800.0--2700.0,3,1.79,26,15.48
+13,-2700.0--2600.0,7,4.17,33,19.64
+14,-2600.0--2500.0,4,2.38,37,22.02
+15,-2500.0--2400.0,6,3.57,43,25.60
+16,-2400.0--2300.0,2,1.19,45,26.79
+17,-2300.0--2200.0,10,5.95,55,32.74
+18,-2200.0--2100.0,6,3.57,61,36.31
+19,-2100.0--2000.0,4,2.38,65,38.69
+20,-2000.0--1900.0,8,4.76,73,43.45
+21,-1900.0--1800.0,8,4.76,81,48.21
+22,-1800.0--1700.0,14,8.33,95,56.55
+23,-1700.0--1600.0,6,3.57,101,60.12
+24,-1600.0--1500.0,4,2.38,105,62.50
+25,-1500.0--1400.0,13,7.74,118,70.24
+26,-1400.0--1300.0,13,7.74,131,77.98
+27,-1300.0--1200.0,5,2.98,136,80.95
+28,-1200.0--1100.0,6,3.57,142,84.52
+29,-1100.0--1000.0,6,3.57,148,88.10
+30,-1000.0--900.0,6,3.57,154,91.67
+31,-900.0--800.0,4,2.38,158,94.05
+32,-800.0--700.0,4,2.38,162,96.43
+33,-700.0--600.0,4,2.38,166,98.81
+34,-600.0--500.0,2,1.19,168,100.00
+35,-500.0--400.0,0,0.00,168,100.00
+36,-400.0--300.0,0,0.00,168,100.00
+37,-300.0--200.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,11,stats,Inf
+*title,Infiltration (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-252.804,-3710.473,-1871.064,0.000,-252.804,-3710.473,-3885.425
+*end_report
+ 
+*report,15,distribution,TotCasG
+*title,Total casual gains
+*format,frequency,12,6,800.0,100.0,1900.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,800.0-900.0,128,76.19,128,76.19,0,below
+2,900.0-1000.0,0,0.00,128,76.19
+3,1000.0-1100.0,0,0.00,128,76.19
+4,1100.0-1200.0,0,0.00,128,76.19
+5,1200.0-1300.0,0,0.00,128,76.19
+6,1300.0-1400.0,0,0.00,128,76.19
+7,1400.0-1500.0,0,0.00,128,76.19
+8,1500.0-1600.0,0,0.00,128,76.19
+9,1600.0-1700.0,0,0.00,128,76.19
+10,1700.0-1800.0,0,0.00,128,76.19
+11,1800.0-1900.0,40,23.81,168,100.00
+12,1900.0-2000.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,15,stats,TotCasG
+*title,Total casual gain (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,1874.000,800.000,1055.714,1874.000,1874.000,0.000,800.000
+*end_report
+ 
+*report,38,distribution,SolinEx
+*title,Solar entering from outside
+*format,frequency,30,6,0.0,100.0,2900.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,193,57.44,193,57.44,0,below
+2,100.0-200.0,41,12.20,234,69.64
+3,200.0-300.0,26,7.74,260,77.38
+4,300.0-400.0,11,3.27,271,80.65
+5,400.0-500.0,14,4.17,285,84.82
+6,500.0-600.0,8,2.38,293,87.20
+7,600.0-700.0,2,0.60,295,87.80
+8,700.0-800.0,1,0.30,296,88.10
+9,800.0-900.0,4,1.19,300,89.29
+10,900.0-1000.0,1,0.30,301,89.58
+11,1000.0-1100.0,2,0.60,303,90.18
+12,1100.0-1200.0,5,1.49,308,91.67
+13,1200.0-1300.0,0,0.00,308,91.67
+14,1300.0-1400.0,1,0.30,309,91.96
+15,1400.0-1500.0,3,0.89,312,92.86
+16,1500.0-1600.0,2,0.60,314,93.45
+17,1600.0-1700.0,2,0.60,316,94.05
+18,1700.0-1800.0,5,1.49,321,95.54
+19,1800.0-1900.0,0,0.00,321,95.54
+20,1900.0-2000.0,1,0.30,322,95.83
+21,2000.0-2100.0,1,0.30,323,96.13
+22,2100.0-2200.0,3,0.89,326,97.02
+23,2200.0-2300.0,1,0.30,327,97.32
+24,2300.0-2400.0,5,1.49,332,98.81
+25,2400.0-2500.0,0,0.00,332,98.81
+26,2500.0-2600.0,1,0.30,333,99.11
+27,2600.0-2700.0,1,0.30,334,99.40
+28,2700.0-2800.0,1,0.30,335,99.70
+29,2800.0-2900.0,1,0.30,336,100.00
+30,2900.0-3000.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,38,stats,SolinEx
+*title,Solar entering from outside (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,3374.105,0.000,296.376,3089.603,3374.105,0.000,0.000
+*end_report
+ 
+*report,40,distribution,TSolabs
+*title,Solar absorbed in zone
+*format,frequency,29,6,0.0,100.0,2800.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,193,57.44,193,57.44,0,below
+2,100.0-200.0,44,13.10,237,70.54
+3,200.0-300.0,23,6.85,260,77.38
+4,300.0-400.0,15,4.46,275,81.85
+5,400.0-500.0,11,3.27,286,85.12
+6,500.0-600.0,8,2.38,294,87.50
+7,600.0-700.0,2,0.60,296,88.10
+8,700.0-800.0,0,0.00,296,88.10
+9,800.0-900.0,5,1.49,301,89.58
+10,900.0-1000.0,1,0.30,302,89.88
+11,1000.0-1100.0,1,0.30,303,90.18
+12,1100.0-1200.0,5,1.49,308,91.67
+13,1200.0-1300.0,1,0.30,309,91.96
+14,1300.0-1400.0,1,0.30,310,92.26
+15,1400.0-1500.0,4,1.19,314,93.45
+16,1500.0-1600.0,1,0.30,315,93.75
+17,1600.0-1700.0,5,1.49,320,95.24
+18,1700.0-1800.0,1,0.30,321,95.54
+19,1800.0-1900.0,1,0.30,322,95.83
+20,1900.0-2000.0,1,0.30,323,96.13
+21,2000.0-2100.0,2,0.60,325,96.73
+22,2100.0-2200.0,2,0.60,327,97.32
+23,2200.0-2300.0,5,1.49,332,98.81
+24,2300.0-2400.0,0,0.00,332,98.81
+25,2400.0-2500.0,1,0.30,333,99.11
+26,2500.0-2600.0,1,0.30,334,99.40
+27,2600.0-2700.0,1,0.30,335,99.70
+28,2700.0-2800.0,1,0.30,336,100.00
+29,2800.0-2900.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,40,stats,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,3238.323,0.000,285.827,2963.239,3238.323,0.000,0.000
+*end_report
+ 
+*day_to_display,108
+ 
+*report,70,demand_per_unit_time,zones,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+108.0208,0.0,0.0,0.0,0.0,800.0,0.0
+108.0625,0.0,0.0,0.0,0.0,800.0,0.0
+108.1042,0.0,0.0,0.0,0.0,800.0,0.0
+108.1458,0.0,0.0,0.0,0.0,800.0,0.0
+108.1875,0.0,0.0,0.0,0.0,800.0,0.0
+108.2292,0.0,0.0,0.0,0.0,800.0,0.0
+108.2708,0.0,0.0,0.0,0.0,800.0,0.0
+108.3125,0.0,0.0,0.0,0.0,800.0,0.0
+108.3542,0.0,0.0,33.3,0.0,818.8,0.0
+108.3958,0.0,0.0,766.7,0.0,1231.2,0.0
+108.4375,0.0,0.0,800.0,0.0,1250.0,0.0
+108.4792,0.0,0.0,800.0,0.0,1250.0,0.0
+108.5208,0.0,0.0,800.0,0.0,1250.0,0.0
+108.5625,0.0,0.0,800.0,0.0,1250.0,0.0
+108.6042,0.0,0.0,800.0,0.0,1250.0,0.0
+108.6458,0.0,0.0,800.0,0.0,1250.0,0.0
+108.6875,0.0,0.0,766.7,0.0,1231.2,0.0
+108.7292,0.0,0.0,33.3,0.0,818.8,0.0
+108.7708,0.0,0.0,0.0,0.0,800.0,0.0
+108.8125,0.0,0.0,0.0,0.0,800.0,0.0
+108.8542,0.0,0.0,0.0,0.0,800.0,0.0
+108.8958,0.0,0.0,0.0,0.0,800.0,0.0
+108.9375,0.0,0.0,0.0,0.0,800.0,0.0
+108.9792,0.0,0.0,0.0,0.0,800.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Res
+#    |Res T     | T
+#    | deg C    | deg C
+108.0208,12.84,12.76
+108.0625,11.96,12.52
+108.1042,11.04,12.19
+108.1458,10.89,11.92
+108.1875,10.63,11.68
+108.2292,10.59,11.45
+108.2708,10.53,11.31
+108.3125,10.41,11.23
+108.3542,10.58,11.24
+108.3958,11.24,12.17
+108.4375,11.90,12.70
+108.4792,12.20,13.08
+108.5208,12.53,13.41
+108.5625,12.66,13.97
+108.6042,12.23,14.29
+108.6458,11.70,13.99
+108.6875,11.50,13.68
+108.7292,11.03,12.68
+108.7708,10.04,12.02
+108.8125,9.18,11.55
+108.8542,8.84,11.17
+108.8958,8.49,10.87
+108.9375,9.20,10.61
+108.9792,7.92,10.41
+*end_report
+ 
+*report, 1,zone_dbt,ZndbT
+*title,Zone db temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office db
+#    |db T      |T
+#    | deg C    | deg C
+108.0208,10.66,12.89
+108.0625,9.44,12.65
+108.1042,8.21,12.31
+108.1458,8.35,12.05
+108.1875,8.13,11.80
+108.2292,8.30,11.57
+108.2708,8.26,11.41
+108.3125,8.12,11.33
+108.3542,8.35,11.35
+108.3958,9.04,12.89
+108.4375,9.29,13.53
+108.4792,9.04,13.94
+108.5208,9.34,14.27
+108.5625,9.54,14.84
+108.6042,9.31,15.21
+108.6458,8.98,14.92
+108.6875,9.00,14.58
+108.7292,8.51,12.98
+108.7708,7.15,12.15
+108.8125,6.13,11.67
+108.8542,5.94,11.26
+108.8958,5.62,10.96
+108.9375,7.11,10.68
+108.9792,4.94,10.49
+*end_report
+ 
+*report,13,relative humidity,RH
+*title,Zone relative humidity (%)
+*format,tabular,XYYY,24, 1
+*fields,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|office RH
+#    |
+#    |
+108.0208,98.56
+108.0625,98.84
+108.1042,98.16
+108.1458,97.58
+108.1875,97.79
+108.2292,98.31
+108.2708,98.60
+108.3125,98.16
+108.3542,96.82
+108.3958,97.45
+108.4375,100.00
+108.4792,100.00
+108.5208,100.00
+108.5625,100.00
+108.6042,100.00
+108.6458,100.00
+108.6875,100.00
+108.7292,100.00
+108.7708,100.00
+108.8125,100.00
+108.8542,100.00
+108.8958,100.00
+108.9375,99.97
+108.9792,99.65
+*end_report
+ 
+*report,11,infiltration load,Inf
+*title,Infiltration (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |Inf
+#    |     W
+108.0208,-2105.55
+108.0625,-2460.13
+108.1042,-2793.45
+108.1458,-2448.89
+108.1875,-2430.88
+108.2292,-2142.67
+108.2708,-2219.11
+108.3125,-2257.21
+108.3542,-2212.01
+108.3958,-2822.61
+108.4375,-3188.55
+108.4792,-3710.47
+108.5208,-3639.22
+108.5625,-3676.64
+108.6042,-3515.14
+108.6458,-3375.06
+108.6875,-3098.19
+108.7292,-2527.54
+108.7708,-2894.23
+108.8125,-2986.33
+108.8542,-2827.19
+108.8958,-2803.12
+108.9375,-1797.67
+108.9792,-2976.50
+*end_report
+ 
+*report,15,total casual gains,TotCasG
+*title,Total casual gain (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |TotCnv
+#    |     W
+108.0208,800.00
+108.0625,800.00
+108.1042,800.00
+108.1458,800.00
+108.1875,800.00
+108.2292,800.00
+108.2708,800.00
+108.3125,800.00
+108.3542,844.75
+108.3958,1829.25
+108.4375,1874.00
+108.4792,1874.00
+108.5208,1874.00
+108.5625,1874.00
+108.6042,1874.00
+108.6458,1874.00
+108.6875,1829.25
+108.7292,844.75
+108.7708,800.00
+108.8125,800.00
+108.8542,800.00
+108.8958,800.00
+108.9375,800.00
+108.9792,800.00
+*end_report
+ 
+*report,38,solar entering from outside,SolinEx
+*title,Solar entering from outside (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Sol
+#    |SolinEx   |inEx
+#    |     W    |     W
+108.0208,0.00,0.00
+108.0625,0.00,0.00
+108.1042,0.00,0.00
+108.1458,0.00,0.00
+108.1875,0.44,0.11
+108.2292,37.69,9.62
+108.2708,138.75,34.73
+108.3125,276.30,67.47
+108.3542,522.03,116.49
+108.3958,1188.05,144.22
+108.4375,2221.08,166.56
+108.4792,2646.07,184.01
+108.5208,2585.88,237.44
+108.5625,1927.27,371.77
+108.6042,879.87,270.40
+108.6458,383.54,103.70
+108.6875,254.12,66.41
+108.7292,164.94,43.43
+108.7708,59.92,16.22
+108.8125,0.00,0.00
+108.8542,0.00,0.00
+108.8958,0.00,0.00
+108.9375,0.00,0.00
+108.9792,0.00,0.00
+*end_report
+ 
+*report,40,solar absorbed in zone,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_trn.re: Results for bld_mech_ven_th
+# Period: Tue 18 Apr @00h55 to: Tue 18 Apr @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office TSo
+#    |TSolabs   |labs
+#    |     W    |     W
+108.0208,0.00,0.00
+108.0625,0.00,0.00
+108.1042,0.00,0.00
+108.1458,0.00,0.00
+108.1875,0.44,0.11
+108.2292,37.03,9.61
+108.2708,134.86,34.37
+108.3125,267.92,66.63
+108.3542,505.53,114.88
+108.3958,1142.79,142.23
+108.4375,2128.27,164.15
+108.4792,2533.86,181.30
+108.5208,2476.50,233.28
+108.5625,1848.56,363.50
+108.6042,848.02,264.76
+108.6458,371.76,102.26
+108.6875,246.54,65.58
+108.7292,160.22,42.91
+108.7708,58.46,16.10
+108.8125,0.00,0.00
+108.8542,0.00,0.00
+108.8958,0.00,0.00
+108.9375,0.00,0.00
+108.9792,0.00,0.00
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 3,bld_mech summer run
+ 
+*report,70,diversified,zones,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,diffuse,zones,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,800.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,zones,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,688.000,0.000,0.000,1250.000,0.000
+*end_report
+ 
+*report,70,minimum,zones,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,zones,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,63.492,0.000,0.000,302.381,0.000
+*end_report
+ 
+*report,70,demand,zones,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,32.000,0.000,0.000,152.400,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,4,1.19,4,1.19,0,below
+2,18.0-20.0,101,30.06,105,31.25
+3,20.0-22.0,109,32.44,214,63.69
+4,22.0-24.0,60,17.86,274,81.55
+5,24.0-26.0,42,12.50,316,94.05
+6,26.0-28.0,19,5.65,335,99.70
+7,28.0-30.0,1,0.30,336,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,54.936,17.637,21.597,53.459,54.936,0.000,36.243
+*end_report
+ 
+*report, 1,distribution,ZndbT
+*title,Zone dry bulb T
+*format,frequency,11,6,10.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,10.0-12.0,0,0.00,0,0.00,0,below
+2,12.0-14.0,0,0.00,0,0.00
+3,14.0-16.0,7,2.08,7,2.08
+4,16.0-18.0,27,8.04,34,10.12
+5,18.0-20.0,88,26.19,122,36.31
+6,20.0-22.0,97,28.87,219,65.18
+7,22.0-24.0,52,15.48,271,80.65
+8,24.0-26.0,42,12.50,313,93.15
+9,26.0-28.0,19,5.65,332,98.81
+10,28.0-30.0,4,1.19,336,100.00
+11,30.0-32.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report, 1,stats,ZndbT
+*title,Zone db temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,57.295,14.838,21.238,53.868,57.295,0.000,33.539
+*end_report
+ 
+*report,13,distribution,RH
+*title,Relative humidity
+*format,frequency,21,6,0.0,5.0,100.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-5.0,0,0.00,0,0.00,0,below
+2,5.0-10.0,0,0.00,0,0.00
+3,10.0-15.0,0,0.00,0,0.00
+4,15.0-20.0,0,0.00,0,0.00
+5,20.0-25.0,0,0.00,0,0.00
+6,25.0-30.0,0,0.00,0,0.00
+7,30.0-35.0,0,0.00,0,0.00
+8,35.0-40.0,0,0.00,0,0.00
+9,40.0-45.0,0,0.00,0,0.00
+10,45.0-50.0,0,0.00,0,0.00
+11,50.0-55.0,0,0.00,0,0.00
+12,55.0-60.0,0,0.00,0,0.00
+13,60.0-65.0,2,1.19,2,1.19
+14,65.0-70.0,11,6.55,13,7.74
+15,70.0-75.0,18,10.71,31,18.45
+16,75.0-80.0,17,10.12,48,28.57
+17,80.0-85.0,2,1.19,50,29.76
+18,85.0-90.0,6,3.57,56,33.33
+19,90.0-95.0,8,4.76,64,38.10
+20,95.0-100.0,31,18.45,95,56.55
+21,100.0-105.0,73,43.45,168,100.00,0,above
+*end_report
+ 
+*report,13,stats,RH
+*title,Zone relative humidity (%)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,100.000,64.735,90.998,100.000,100.000,0.000,64.553
+*end_report
+ 
+*report,11,distribution,Inf
+*title,Infiltration load
+*format,frequency,28,6,-2900.0,100.0,-200.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,-2900.0--2800.0,3,1.79,3,1.79,0,below
+2,-2800.0--2700.0,2,1.19,5,2.98
+3,-2700.0--2600.0,1,0.60,6,3.57
+4,-2600.0--2500.0,2,1.19,8,4.76
+5,-2500.0--2400.0,3,1.79,11,6.55
+6,-2400.0--2300.0,3,1.79,14,8.33
+7,-2300.0--2200.0,3,1.79,17,10.12
+8,-2200.0--2100.0,4,2.38,21,12.50
+9,-2100.0--2000.0,5,2.98,26,15.48
+10,-2000.0--1900.0,5,2.98,31,18.45
+11,-1900.0--1800.0,8,4.76,39,23.21
+12,-1800.0--1700.0,5,2.98,44,26.19
+13,-1700.0--1600.0,13,7.74,57,33.93
+14,-1600.0--1500.0,19,11.31,76,45.24
+15,-1500.0--1400.0,14,8.33,90,53.57
+16,-1400.0--1300.0,7,4.17,97,57.74
+17,-1300.0--1200.0,13,7.74,110,65.48
+18,-1200.0--1100.0,6,3.57,116,69.05
+19,-1100.0--1000.0,14,8.33,130,77.38
+20,-1000.0--900.0,7,4.17,137,81.55
+21,-900.0--800.0,5,2.98,142,84.52
+22,-800.0--700.0,4,2.38,146,86.90
+23,-700.0--600.0,11,6.55,157,93.45
+24,-600.0--500.0,8,4.76,165,98.21
+25,-500.0--400.0,1,0.60,166,98.81
+26,-400.0--300.0,1,0.60,167,99.40
+27,-300.0--200.0,1,0.60,168,100.00
+28,-200.0--100.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,11,stats,Inf
+*title,Infiltration (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-190.956,-2874.695,-1430.245,0.000,-190.956,-2874.695,-2924.461
+*end_report
+ 
+*report,15,distribution,TotCasG
+*title,Total casual gains
+*format,frequency,12,6,800.0,100.0,1900.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,800.0-900.0,128,76.19,128,76.19,0,below
+2,900.0-1000.0,0,0.00,128,76.19
+3,1000.0-1100.0,0,0.00,128,76.19
+4,1100.0-1200.0,0,0.00,128,76.19
+5,1200.0-1300.0,0,0.00,128,76.19
+6,1300.0-1400.0,0,0.00,128,76.19
+7,1400.0-1500.0,0,0.00,128,76.19
+8,1500.0-1600.0,0,0.00,128,76.19
+9,1600.0-1700.0,0,0.00,128,76.19
+10,1700.0-1800.0,0,0.00,128,76.19
+11,1800.0-1900.0,40,23.81,168,100.00
+12,1900.0-2000.0,0,0.00,168,100.00,0,above
+*end_report
+ 
+*report,15,stats,TotCasG
+*title,Total casual gain (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,1874.000,800.000,1055.714,1874.000,1874.000,0.000,800.000
+*end_report
+ 
+*report,38,distribution,SolinEx
+*title,Solar entering from outside
+*format,frequency,25,6,0.0,100.0,2400.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,154,45.83,154,45.83,0,below
+2,100.0-200.0,43,12.80,197,58.63
+3,200.0-300.0,20,5.95,217,64.58
+4,300.0-400.0,12,3.57,229,68.15
+5,400.0-500.0,13,3.87,242,72.02
+6,500.0-600.0,19,5.65,261,77.68
+7,600.0-700.0,7,2.08,268,79.76
+8,700.0-800.0,12,3.57,280,83.33
+9,800.0-900.0,6,1.79,286,85.12
+10,900.0-1000.0,2,0.60,288,85.71
+11,1000.0-1100.0,1,0.30,289,86.01
+12,1100.0-1200.0,1,0.30,290,86.31
+13,1200.0-1300.0,6,1.79,296,88.10
+14,1300.0-1400.0,3,0.89,299,88.99
+15,1400.0-1500.0,4,1.19,303,90.18
+16,1500.0-1600.0,4,1.19,307,91.37
+17,1600.0-1700.0,7,2.08,314,93.45
+18,1700.0-1800.0,2,0.60,316,94.05
+19,1800.0-1900.0,6,1.79,322,95.83
+20,1900.0-2000.0,4,1.19,326,97.02
+21,2000.0-2100.0,3,0.89,329,97.92
+22,2100.0-2200.0,3,0.89,332,98.81
+23,2200.0-2300.0,3,0.89,335,99.70
+24,2300.0-2400.0,1,0.30,336,100.00
+25,2400.0-2500.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,38,stats,SolinEx
+*title,Solar entering from outside (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,3250.185,0.000,405.110,2555.589,3250.185,0.000,0.000
+*end_report
+ 
+*report,40,distribution,TSolabs
+*title,Solar absorbed in zone
+*format,frequency,24,6,0.0,100.0,2300.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,0.0-100.0,154,45.83,154,45.83,0,below
+2,100.0-200.0,47,13.99,201,59.82
+3,200.0-300.0,16,4.76,217,64.58
+4,300.0-400.0,12,3.57,229,68.15
+5,400.0-500.0,15,4.46,244,72.62
+6,500.0-600.0,20,5.95,264,78.57
+7,600.0-700.0,8,2.38,272,80.95
+8,700.0-800.0,8,2.38,280,83.33
+9,800.0-900.0,6,1.79,286,85.12
+10,900.0-1000.0,2,0.60,288,85.71
+11,1000.0-1100.0,1,0.30,289,86.01
+12,1100.0-1200.0,3,0.89,292,86.90
+13,1200.0-1300.0,5,1.49,297,88.39
+14,1300.0-1400.0,5,1.49,302,89.88
+15,1400.0-1500.0,4,1.19,306,91.07
+16,1500.0-1600.0,8,2.38,314,93.45
+17,1600.0-1700.0,1,0.30,315,93.75
+18,1700.0-1800.0,6,1.79,321,95.54
+19,1800.0-1900.0,4,1.19,325,96.73
+20,1900.0-2000.0,4,1.19,329,97.92
+21,2000.0-2100.0,3,0.89,332,98.81
+22,2100.0-2200.0,2,0.60,334,99.40
+23,2200.0-2300.0,2,0.60,336,100.00
+24,2300.0-2400.0,0,0.00,336,100.00,0,above
+*end_report
+ 
+*report,40,stats,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,3126.077,0.000,391.019,2453.462,3126.077,0.000,0.000
+*end_report
+ 
+*day_to_display,193
+ 
+*report,70,demand_per_unit_time,zones,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+193.0208,0.0,0.0,0.0,0.0,800.0,0.0
+193.0625,0.0,0.0,0.0,0.0,800.0,0.0
+193.1042,0.0,0.0,0.0,0.0,800.0,0.0
+193.1458,0.0,0.0,0.0,0.0,800.0,0.0
+193.1875,0.0,0.0,0.0,0.0,800.0,0.0
+193.2292,0.0,0.0,0.0,0.0,800.0,0.0
+193.2708,0.0,0.0,0.0,0.0,800.0,0.0
+193.3125,0.0,0.0,0.0,0.0,800.0,0.0
+193.3542,0.0,0.0,33.3,0.0,818.8,0.0
+193.3958,0.0,0.0,766.7,0.0,1231.2,0.0
+193.4375,0.0,0.0,800.0,0.0,1250.0,0.0
+193.4792,0.0,0.0,800.0,0.0,1250.0,0.0
+193.5208,0.0,0.0,800.0,0.0,1250.0,0.0
+193.5625,0.0,0.0,800.0,0.0,1250.0,0.0
+193.6042,0.0,0.0,800.0,0.0,1250.0,0.0
+193.6458,0.0,0.0,800.0,0.0,1250.0,0.0
+193.6875,0.0,0.0,766.7,0.0,1231.2,0.0
+193.7292,0.0,0.0,33.3,0.0,818.8,0.0
+193.7708,0.0,0.0,0.0,0.0,800.0,0.0
+193.8125,0.0,0.0,0.0,0.0,800.0,0.0
+193.8542,0.0,0.0,0.0,0.0,800.0,0.0
+193.8958,0.0,0.0,0.0,0.0,800.0,0.0
+193.9375,0.0,0.0,0.0,0.0,800.0,0.0
+193.9792,0.0,0.0,0.0,0.0,800.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Res
+#    |Res T     | T
+#    | deg C    | deg C
+193.0208,19.34,21.44
+193.0625,19.11,21.07
+193.1042,18.73,20.72
+193.1458,18.39,20.36
+193.1875,18.18,20.04
+193.2292,18.54,19.83
+193.2708,19.80,19.79
+193.3125,21.36,19.92
+193.3542,22.64,20.15
+193.3958,23.89,21.23
+193.4375,24.75,21.89
+193.4792,24.88,22.25
+193.5208,24.90,22.53
+193.5625,25.25,23.06
+193.6042,25.35,23.99
+193.6458,24.65,24.39
+193.6875,24.08,24.22
+193.7292,23.50,23.72
+193.7708,22.72,23.11
+193.8125,21.54,22.29
+193.8542,20.07,21.61
+193.8958,19.05,21.07
+193.9375,18.47,20.63
+193.9792,17.96,20.25
+*end_report
+ 
+*report, 1,zone_dbt,ZndbT
+*title,Zone db temperature (degC)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office db
+#    |db T      |T
+#    | deg C    | deg C
+193.0208,16.62,21.67
+193.0625,16.54,21.29
+193.1042,16.17,20.93
+193.1458,15.88,20.57
+193.1875,15.77,20.24
+193.2292,16.45,20.01
+193.2708,18.36,19.96
+193.3125,20.59,20.07
+193.3542,22.31,20.32
+193.3958,23.76,22.03
+193.4375,24.54,22.80
+193.4792,24.48,23.19
+193.5208,24.26,23.47
+193.5625,24.59,24.00
+193.6042,24.52,24.98
+193.6458,23.40,25.44
+193.6875,22.71,25.23
+193.7292,21.98,24.15
+193.7708,20.94,23.42
+193.8125,19.31,22.56
+193.8542,17.30,21.85
+193.8958,16.11,21.29
+193.9375,15.55,20.84
+193.9792,15.04,20.46
+*end_report
+ 
+*report,13,relative humidity,RH
+*title,Zone relative humidity (%)
+*format,tabular,XYYY,24, 1
+*fields,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|office RH
+#    |
+#    |
+193.0208,100.00
+193.0625,100.00
+193.1042,100.00
+193.1458,100.00
+193.1875,100.00
+193.2292,100.00
+193.2708,99.77
+193.3125,98.73
+193.3542,96.97
+193.3958,94.66
+193.4375,99.89
+193.4792,100.00
+193.5208,100.00
+193.5625,100.00
+193.6042,100.00
+193.6458,100.00
+193.6875,100.00
+193.7292,99.96
+193.7708,99.93
+193.8125,100.00
+193.8542,100.00
+193.8958,100.00
+193.9375,100.00
+193.9792,100.00
+*end_report
+ 
+*report,11,infiltration load,Inf
+*title,Infiltration (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |Inf
+#    |     W
+193.0208,-2531.55
+193.0625,-2399.47
+193.1042,-2368.27
+193.1458,-2322.06
+193.1875,-2245.44
+193.2292,-1883.30
+193.2708,-1288.72
+193.3125,-839.14
+193.3542,-672.06
+193.3958,-1364.30
+193.4375,-1501.85
+193.4792,-1621.26
+193.5208,-1658.07
+193.5625,-1640.85
+193.6042,-1812.97
+193.6458,-2129.79
+193.6875,-2102.53
+193.7292,-1574.92
+193.7708,-1765.69
+193.8125,-2236.34
+193.8542,-2748.06
+193.8958,-2866.91
+193.9375,-2861.13
+193.9792,-2874.70
+*end_report
+ 
+*report,15,total casual gains,TotCasG
+*title,Total casual gain (W)
+*format,tabular,XYYY,24, 1
+*fields,reception
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception
+#    |TotCnv
+#    |     W
+193.0208,800.00
+193.0625,800.00
+193.1042,800.00
+193.1458,800.00
+193.1875,800.00
+193.2292,800.00
+193.2708,800.00
+193.3125,800.00
+193.3542,844.75
+193.3958,1829.25
+193.4375,1874.00
+193.4792,1874.00
+193.5208,1874.00
+193.5625,1874.00
+193.6042,1874.00
+193.6458,1874.00
+193.6875,1829.25
+193.7292,844.75
+193.7708,800.00
+193.8125,800.00
+193.8542,800.00
+193.8958,800.00
+193.9375,800.00
+193.9792,800.00
+*end_report
+ 
+*report,38,solar entering from outside,SolinEx
+*title,Solar entering from outside (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office Sol
+#    |SolinEx   |inEx
+#    |     W    |     W
+193.0208,0.00,0.00
+193.0625,0.00,0.00
+193.1042,0.00,0.00
+193.1458,0.88,0.22
+193.1875,77.07,18.28
+193.2292,450.96,61.57
+193.2708,895.65,106.28
+193.3125,1212.11,142.17
+193.3542,1381.06,158.16
+193.3958,1844.08,178.57
+193.4375,1848.94,180.24
+193.4792,1621.57,172.07
+193.5208,1594.76,202.04
+193.5625,1649.76,398.04
+193.6042,1288.47,572.40
+193.6458,757.00,388.56
+193.6875,546.65,395.44
+193.7292,394.50,453.26
+193.7708,248.94,209.74
+193.8125,75.02,20.49
+193.8542,0.00,0.00
+193.8958,0.00,0.00
+193.9375,0.00,0.00
+193.9792,0.00,0.00
+*end_report
+ 
+*report,40,solar absorbed in zone,TSolabs
+*title,Total solar absorbed in zn (W)
+*format,tabular,XYYY,24, 2
+*fields,reception,office
+*data
+# Timestep performance metrics.
+# Lib: bld_mech_ven_th_sum.re: Results for bld_mech_ven_th
+# Period: Wed 12 Jul @00h55 to: Wed 12 Jul @23h54 Year:1967 : sim@ 10m, output@ 60m (averaged)
+#Time|reception |office TSo
+#    |TSolabs   |labs
+#    |     W    |     W
+193.0208,0.00,0.00
+193.0625,0.00,0.00
+193.1042,0.00,0.00
+193.1458,0.87,0.22
+193.1875,75.10,18.16
+193.2292,433.60,60.80
+193.2708,859.58,104.81
+193.3125,1163.48,140.21
+193.3542,1326.13,155.95
+193.3958,1768.50,175.95
+193.4375,1774.09,177.59
+193.4792,1557.89,169.55
+193.5208,1532.35,198.77
+193.5625,1584.77,389.15
+193.6042,1239.54,558.27
+193.6458,731.86,380.11
+193.6875,529.61,386.62
+193.7292,382.34,441.37
+193.7708,241.49,204.59
+193.8125,73.09,20.33
+193.8542,0.00,0.00
+193.8958,0.00,0.00
+193.9375,0.00,0.00
+193.9792,0.00,0.00
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+*end

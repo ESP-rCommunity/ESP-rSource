@@ -1,0 +1,1222 @@
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Sensible heating load (kW)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception         0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+office            0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All            0.00  9 Jul@00h00        0.00  9 Jul@00h00
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Sensible cooling load (kW)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception         0.00  9 Jul@00h30       -1.00 10 Jul@09h30       -0.33      0.46
+office            0.00  9 Jul@00h30       -0.62 11 Jul@16h30       -0.09      0.16
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All            0.00  9 Jul@00h00       -1.62 11 Jul@16h30
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Zone db temperature (degC)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception        32.42 11 Jul@14h30       24.50 10 Jul@08h30       29.32      1.95
+office           26.79 11 Jul@19h30       20.44  9 Jul@05h30       23.93      1.31
+roof_space       55.64 11 Jul@15h30       13.83  9 Jul@05h30       27.87      9.23
+ 
+   All           55.64                    13.83                    27.04
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Resultant temperature (degC)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception        32.40 11 Jul@14h30       24.26  9 Jul@04h30       29.13      1.94
+office           26.11 11 Jul@19h30       20.15  9 Jul@05h30       23.57      1.32
+roof_space       55.55 11 Jul@15h30       13.83  9 Jul@05h30       27.87      9.21
+ 
+   All           55.55                    13.83                    26.86
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Control pt temperature (degC)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception        32.42 11 Jul@14h30       24.50 10 Jul@08h30       29.32      1.95
+office           26.79 11 Jul@19h30       20.44  9 Jul@05h30       23.93      1.31
+roof_space       55.64 11 Jul@15h30       13.83  9 Jul@05h30       27.87      9.23
+ 
+   All           55.64                    13.83                    27.04
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Infiltration (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception       -50.11 10 Jul@17h30     -227.45 12 Jul@02h30     -150.37     44.82
+office            8.55 13 Jul@13h30      -51.68 12 Jul@02h30      -24.49     16.94
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All            8.55                  -227.45                   -58.29
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Ventilation (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      -123.22 11 Jul@08h30     -399.96 11 Jul@14h30     -256.67     57.10
+office          133.32 11 Jul@14h30       40.30 11 Jul@08h30       85.43     19.00
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All          133.32                  -399.96                   -57.08
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ Output (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception         0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+office            0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All            0.00                     0.00                     0.00
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ Misc. output (-)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception         0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+office            0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All            0.00                     0.00                     0.00
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total casual gain convective (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      1432.00 10 Jul@10h30      640.00  9 Jul@00h30      828.57    327.76
+office          144.00 10 Jul@10h30        0.00  9 Jul@00h30       34.29     59.59
+roof_space      280.00 10 Jul@10h30        0.00  9 Jul@00h30       66.67    115.88
+ 
+   All         1432.00                     0.00                   309.84
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total casual gain radiant (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception       442.00 10 Jul@10h30      160.00  9 Jul@00h30      227.14    116.70
+office           64.00 10 Jul@10h30        0.00  9 Jul@00h30       15.24     26.49
+roof_space      408.00 10 Jul@10h30        0.00  9 Jul@00h30       97.14    168.85
+ 
+   All          442.00                     0.00                   113.17
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Solar entering from outside (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      2357.06 11 Jul@10h30        0.00  9 Jul@00h30      654.24    749.47
+office          836.92 10 Jul@15h30        0.00  9 Jul@00h30      186.10    235.64
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All         2357.06                     0.00                   280.11
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total solar absorbed in zn (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      2257.62 11 Jul@10h30        0.00  9 Jul@00h30      628.92    718.82
+office          814.68 10 Jul@15h30        0.00  9 Jul@00h30      181.93    229.51
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All         2257.62                     0.00                   270.28
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Zone relative humidity (%)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception        70.61 13 Jul@17h30       24.37  9 Jul@14h30       41.97     11.41
+office          100.00 13 Jul@15h30       32.16  9 Jul@16h30       58.22     18.29
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All          100.00                     0.00                    33.40
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total casual gain (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      1874.00 10 Jul@10h30      800.00  9 Jul@00h30     1055.71    454.24
+office          208.00 10 Jul@10h30        0.00  9 Jul@00h30       49.52    107.58
+roof_space      688.00 10 Jul@10h30        0.00  9 Jul@00h30      163.81    281.59
+ 
+   All         1874.00                     0.00                   423.02
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total casual gain convective (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      1432.00 10 Jul@10h30      640.00  9 Jul@00h30      828.57    327.76
+office          144.00 10 Jul@10h30        0.00  9 Jul@00h30       34.29     59.59
+roof_space      280.00 10 Jul@10h30        0.00  9 Jul@00h30       66.67    115.88
+ 
+   All         1432.00                     0.00                   309.84
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total casual gain radiant (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception       442.00 10 Jul@10h30      160.00  9 Jul@00h30      227.14    116.70
+office           64.00 10 Jul@10h30        0.00  9 Jul@00h30       15.24     26.49
+roof_space      408.00 10 Jul@10h30        0.00  9 Jul@00h30       97.14    168.85
+ 
+   All          442.00                     0.00                   113.17
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total occupant gain (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception       540.00 10 Jul@10h30        0.00  9 Jul@00h30      128.57    221.02
+office          180.00 10 Jul@10h30        0.00  9 Jul@00h30       42.86     73.67
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All          540.00                     0.00                    57.14
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total lighting gain (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception        84.00 10 Jul@10h30        0.00  9 Jul@00h30       20.00     34.38
+office           28.00 10 Jul@10h30        0.00  9 Jul@00h30        6.67     11.46
+roof_space      688.00 10 Jul@10h30        0.00  9 Jul@00h30      163.81    281.59
+ 
+   All          688.00                     0.00                    63.49
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Total small power gain (W)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+reception      1250.00 10 Jul@10h30      800.00  9 Jul@00h30      907.14    206.76
+office            0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00     75.82
+roof_space        0.00  9 Jul@00h30        0.00  9 Jul@00h30        0.00      0.00
+ 
+   All         1250.00                     0.00                   302.38
+Timestep performance metrics.
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+Time |reception |office Occ|roof_space|reception |office Lit|roof_space|reception |office Eqp|roof_space
+     |OccCasG   |CasG      | OccCasG  |LitCasG   |CasG      | LitCasG  |EqpCasG   |CasG      | EqpCasG
+     |     W    |     W    |     W    |     W    |     W    |     W    |     W    |     W    |     W
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+10h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+11h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+12h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+13h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+14h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+15h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+16h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+17h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+10h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+11h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+12h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+13h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+14h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+15h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+16h30     540.00     180.00       0.00      84.00      28.00     688.00    1250.00       0.00       0.00
+17h30     270.00      90.00       0.00      42.00      14.00     344.00    1025.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+00h30       0.00       0.00       0.00       0.00       0.00       0.00     400.00     400.00       0.00
+01h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+02h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+03h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+04h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+05h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+06h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+07h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+08h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+09h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+10h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+11h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+12h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+13h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+14h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+15h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+16h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+17h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+18h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+19h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+20h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+21h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+22h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+23h30       0.00       0.00       0.00       0.00       0.00       0.00     800.00       0.00       0.00
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ 
+ Zone total sensible and latent plant used (kWhrs)
+    Zone             Sensible heating  Sensible cooling  Humidification   Dehumidification
+ id name             Energy   No. of   Energy   No. of   Energy   No. of  Energy   No. of
+                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd   (kWhrs)  Hr rqd  (kWhrs)  Hr rqd
+  1 reception          0.00    0.0     -54.95   60.0       0.00    0.0       0.00    0.0
+  2 office             0.00    0.0     -14.54   52.0       0.00    0.0       0.00    0.0
+  3 roof_space         0.00    0.0       0.00    0.0       0.00    0.0       0.00    0.0
+ 
+    All                0.00            -69.49              0.00              0.00
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ 
+ Casual gains distribution (kWhrs) for reception   ( 1)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt           21.60       17.28        4.11 @opq        1.09        3.02        0.00
+                                           0.21 @trn        0.21        0.00        0.00
+ Lights            3.36        0.00        3.20 @opq        0.85        2.35        0.00
+                                           0.16 @trn        0.16        0.00        0.00
+ Equipt          152.40      121.92       29.02 @opq        7.69       21.32        0.00
+                                           1.46 @trn        1.46        0.00        0.00
+ Totals          177.36      139.20       38.16           11.47       26.69        0.00
+ Number of hours occupied:     45.00
+ Number of hours with lights:      0.00
+ Number of hours with small power:    168.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for office      ( 2)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt            7.20        5.76        1.40 @opq        0.39        0.72        0.29
+                                           0.04 @trn        0.04        0.00        0.00
+ Lights            1.12        0.00        1.09 @opq        0.30        0.56        0.23
+                                           0.03 @trn        0.03        0.00        0.00
+ Equipt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Totals            8.32        5.76        2.56            0.76        1.28        0.52
+ Number of hours occupied:     45.00
+ Number of hours with lights:      0.00
+ Number of hours with small power:      0.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for roof_space  ( 3)
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |    external    internal     ground
+ Occupt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Lights           27.52       11.20       16.32 @opq        9.64        6.68        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Equipt            0.00        0.00        0.00 @opq        0.00        0.00        0.00
+                                           0.00 @trn        0.00        0.00        0.00
+ Totals           27.52       11.20       16.32            9.64        6.68        0.00
+ Number of hours occupied:      0.00
+ Number of hours with lights:     45.00
+ Number of hours with small power:      0.00
+ Number of hours with ctld gains:      0.00
+ 
+ Casual gains distribution (kWhrs) for ALL SELECTED ZONES
+ Gains     |   Total   | Convective|    Radiative  |        Radiant by connection type
+ type      | (Con+Rad) | part (air)|     on surf   |     external    internal     ground
+ Occupt           28.80       23.04        5.51 @opq        1.48        3.74        0.29
+                                           0.25 @trn        0.25        0.00        0.00
+ Lights           32.00       11.20       20.61 @opq       10.79        9.59        0.23
+                                           0.19 @trn        0.19        0.00        0.00
+ Equipt          152.40      121.92       29.02 @opq        7.69       21.32        0.00
+                                           1.46 @trn        1.46        0.00        0.00
+ Totals          213.20      156.16       57.04            21.87       34.65        0.52
+ 
+ (@opq & @trn = associated with opaque or transparent surfaces)
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 1: reception
+ 
+                                Gain         Loss
+ Infiltration air load           0.000     -25.263
+ Ventilation air load            0.000     -43.121
+ Occupt casual gains            17.280       0.000
+ Lights casual gains             0.000       0.000
+ Equipt casual gains           121.920       0.000
+ Opaque MLC convec: ext          4.023      -3.992
+ Opaque MLC convec: int          3.986     -14.064
+ Transp MLC convec: ext          3.119      -8.752
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         0.000     -54.950
+ Totals                        150.328    -150.141
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 2: office
+ 
+                                Gain         Loss
+ Infiltration air load           0.079      -4.194
+ Ventilation air load           14.353       0.000
+ Occupt casual gains             5.760       0.000
+ Lights casual gains             0.000       0.000
+ Equipt casual gains             0.000       0.000
+ Opaque MLC convec: ext          0.856      -1.706
+ Opaque MLC convec: int          3.106      -3.963
+ Transp MLC convec: ext          1.660      -1.364
+ Transp MLC convec: int          0.000       0.000
+ Convec portion of plant         0.000     -14.544
+ Totals                         25.813     -25.771
+ 
+ Causal energy breakdown (kWhrs) at air point for zone 3: roof_space
+ 
+                                Gain         Loss
+ Infiltration air load           0.000       0.000
+ Ventilation air load            0.000       0.000
+ Occupt casual gains             0.000       0.000
+ Lights casual gains            11.200       0.000
+ Equipt casual gains             0.000       0.000
+ Opaque MLC convec: ext          1.178     -13.740
+ Opaque MLC convec: int          8.824      -7.397
+ Transp MLC convec: ext          0.000       0.000
+ Transp MLC convec: int          0.000       0.000
+ No plant input/extract
+ Totals                         21.202     -21.137
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ 
+ Causal energy breakdown (Whrs) for south ( 1) in reception ( 1)
+ Surface is opaque MLC, area= 16.50m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       3674.28    -9585.77    72426.02   -68825.02
+ Convective flux        862.53    -1272.25        2.27  -138431.11
+ Longwave rad int       839.08    -8252.94         --          --
+ LW rad ext >bldg          --         --        213.87   -10083.72
+ LW rad ext >sky           --         --          0.00  -103910.09
+ LW rad ext >grnd          --         --        713.14   -19712.08
+ Shortwave rad.       10886.06        0.00   268054.66        0.00
+ Occupt casual gn       371.02        0.00         --          --
+ Lights casual gn       288.57        0.00         --          --
+ Equipt casual gn      2617.79        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           2285.80    -2714.19    25282.96   -25730.97
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               21825.13   -21825.14   366692.94  -366693.00
+ 
+ Causal energy breakdown (Whrs) for east ( 2) in reception ( 1)
+ Surface is opaque MLC, area=  8.00m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       1619.41    -4269.44    28950.18   -27661.55
+ Convective flux        393.74     -658.24       12.60   -45437.26
+ Longwave rad int       256.68    -3995.23         --          --
+ LW rad ext >bldg          --         --       2881.51    -3346.17
+ LW rad ext >sky           --         --          0.00   -51792.49
+ LW rad ext >grnd          --         --        461.39   -11014.28
+ Shortwave rad.        5278.09        0.00   107190.75        0.00
+ Occupt casual gn       179.89        0.00         --          --
+ Lights casual gn       139.91        0.00         --          --
+ Equipt casual gn      1269.23        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           1156.18    -1370.24    10896.12   -11140.78
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               10293.14   -10293.14   150392.56  -150392.53
+ 
+ Causal energy breakdown (Whrs) for pasg ( 3) in reception ( 1)
+ Surface is opaque MLC, area= 11.00m^2 & connects to an identical environment
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux       1913.39    -3745.94
+ Convective flux        785.14     -621.89
+ Longwave rad int       492.98    -3456.20
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        2456.34        0.00
+ Occupt casual gn       250.10        0.00
+ Lights casual gn       194.52        0.00
+ Equipt casual gn      1764.58        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            158.26     -191.28
+ Plant                    0.00        0.00
+ Totals                8015.32    -8015.32
+ 
+ Causal energy breakdown (Whrs) for north ( 4) in reception ( 1)
+ Surface is opaque MLC, area= 12.00m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux        850.93    -8324.03    29037.11   -24597.31
+ Convective flux        937.61     -693.23      137.11   -42907.94
+ Longwave rad int       928.92    -3668.01         --          --
+ LW rad ext >bldg          --         --       4641.76     -385.85
+ LW rad ext >sky           --         --          0.00   -57907.77
+ LW rad ext >grnd          --         --       6408.09    -3445.47
+ Shortwave rad.        7917.14        0.00    89656.55        0.00
+ Occupt casual gn       269.84        0.00         --          --
+ Lights casual gn       209.87        0.00         --          --
+ Equipt casual gn      1903.84        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           1624.48    -1957.35     9361.79    -9998.14
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               14642.62   -14642.62   139242.41  -139242.47
+ 
+ Causal energy breakdown (Whrs) for part_a ( 5) in reception ( 1)
+ Surface is opaque MLC, area=  9.50m^2 & connects to surface  2 in zone  2
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux          0.00   -16573.12
+ Convective flux       3431.94      -85.33
+ Longwave rad int      9220.63        0.00
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        2121.39        0.00
+ Occupt casual gn       215.99        0.00
+ Lights casual gn       168.00        0.00
+ Equipt casual gn      1523.95        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            159.38     -182.83
+ Plant                    0.00        0.00
+ Totals               16841.28   -16841.28
+ 
+ Causal energy breakdown (Whrs) for part_b ( 6) in reception ( 1)
+ Surface is opaque MLC, area= 12.00m^2 & connects to surface  1 in zone  2
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux          0.00   -21110.12
+ Convective flux       4354.34     -106.95
+ Longwave rad int     11802.69        0.00
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        2679.65        0.00
+ Occupt casual gn       272.83        0.00
+ Lights casual gn       212.20        0.00
+ Equipt casual gn      1925.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            201.23     -230.86
+ Plant                    0.00        0.00
+ Totals               21447.94   -21447.94
+ 
+ Causal energy breakdown (Whrs) for west ( 7) in reception ( 1)
+ Surface is opaque MLC, area=  9.50m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       2885.60    -5466.03    44576.79   -43552.76
+ Convective flux        497.75     -874.51        0.00   -70896.25
+ Longwave rad int       356.49    -5295.93         --          --
+ LW rad ext >bldg          --         --       2783.03    -6559.15
+ LW rad ext >sky           --         --          0.00   -65201.82
+ LW rad ext >grnd          --         --       2841.63   -18886.50
+ Shortwave rad.        6267.73        0.00   155183.59        0.00
+ Occupt casual gn       213.62        0.00         --          --
+ Lights casual gn       166.15        0.00         --          --
+ Equipt casual gn      1507.21        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           1209.35    -1467.42    16302.07   -16590.64
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               13103.90   -13103.89   221687.12  -221687.14
+ 
+ Causal energy breakdown (Whrs) for ceiling ( 8) in reception ( 1)
+ Surface is opaque MLC, area= 48.00m^2 & connects to surface  1 in zone  3
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux       8454.25   -13866.17
+ Convective flux       2872.68    -1534.59
+ Longwave rad int        31.42   -34643.50
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.       29232.51        0.00
+ Occupt casual gn      1079.34        0.00
+ Lights casual gn       839.49        0.00
+ Equipt casual gn      7615.36        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            621.32     -702.14
+ Plant                    0.00        0.00
+ Totals               50746.39   -50746.39
+ 
+ Causal energy breakdown (Whrs) for floor ( 9) in reception ( 1)
+ Surface is opaque MLC, area= 48.00m^2 & connects to a constant temp=  20.00
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux       4203.62   -65169.82
+ Convective flux       2450.99    -2474.17
+ Longwave rad int     28949.12    -8140.91
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.       31668.54        0.00
+ Occupt casual gn      1091.34        0.00
+ Lights casual gn       848.82        0.00
+ Equipt casual gn      7699.99        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored           2352.13    -3479.97
+ Plant                    0.00        0.00
+ Totals               79264.54   -79264.88
+ 
+ Causal energy breakdown (Whrs) for glz_s (10) in reception ( 1)
+ Surface is trnsp. MLC, area=  7.50m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       5396.82   -24572.21    60934.89        0.00
+ Convective flux       6811.82    -2546.00        0.00   -32250.06
+ Longwave rad int     15604.59    -7480.07         --          --
+ LW rad ext >bldg          --         --        594.54    -1513.65
+ LW rad ext >sky           --         --          0.00   -35641.30
+ LW rad ext >grnd          --         --       1390.91    -1834.01
+ Shortwave rad.        5441.81        0.00     8353.17        0.00
+ Occupt casual gn       155.53        0.00         --          --
+ Lights casual gn       120.97        0.00         --          --
+ Equipt casual gn      1097.35        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored            580.34     -610.94      727.68     -762.17
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               35209.23   -35209.21    72001.20   -72001.20
+ 
+ Causal energy breakdown (Whrs) for door_p (11) in reception ( 1)
+ Surface is opaque MLC, area=  2.50m^2 & connects to an identical environment
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux        138.84     -933.06
+ Convective flux        129.66     -220.68
+ Longwave rad int         2.53    -1232.87
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        1649.40        0.00
+ Occupt casual gn        56.22        0.00
+ Lights casual gn        43.72        0.00
+ Equipt casual gn       396.63        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            197.11     -227.51
+ Plant                    0.00        0.00
+ Totals                2614.12    -2614.12
+ 
+ Causal energy breakdown (Whrs) for door_a (12) in reception ( 1)
+ Surface is opaque MLC, area=  2.50m^2 & connects to surface  7 in zone  2
+ 
+                         Facing reception
+                         Gain       Loss
+ Conductive flux          0.00    -6578.19
+ Convective flux       1118.01      -20.29
+ Longwave rad int      3360.33        0.00
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        1649.40        0.00
+ Occupt casual gn        56.22        0.00
+ Lights casual gn        43.72        0.00
+ Equipt casual gn       396.63        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            187.27     -213.10
+ Plant                    0.00        0.00
+ Totals                6811.59    -6811.59
+ 
+ Causal energy breakdown (Whrs) for door_w (13) in reception ( 1)
+ Surface is opaque MLC, area=  2.50m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       4619.00    -8942.51     9362.93    -5097.95
+ Convective flux       2187.77    -1412.52        0.00   -19265.66
+ Longwave rad int      5668.83    -4237.22         --          --
+ LW rad ext >bldg          --         --        464.93    -1545.71
+ LW rad ext >sky           --         --          0.00   -17376.53
+ LW rad ext >grnd          --         --        137.84    -4567.43
+ Shortwave rad.        1649.40        0.00    37920.81        0.00
+ Occupt casual gn        56.22        0.00         --          --
+ Lights casual gn        43.72        0.00         --          --
+ Equipt casual gn       396.63        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored            785.53     -814.85     1589.24    -1622.45
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               15407.10   -15407.10    49475.75   -49475.73
+ 
+ Causal energy breakdown (Whrs) for east_glz (14) in reception ( 1)
+ Surface is trnsp. MLC, area=  2.50m^2 & connects to the outside
+ 
+                         Facing reception         Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       1361.92    -7620.78    17727.01        0.00
+ Convective flux       2077.70     -711.45        0.00    -8247.98
+ Longwave rad int      4607.73    -1719.16         --          --
+ LW rad ext >bldg          --         --       1259.34     -355.21
+ LW rad ext >sky           --         --          0.00   -12181.28
+ LW rad ext >grnd          --         --        740.03    -1173.54
+ Shortwave rad.        1556.02        0.00     2242.37        0.00
+ Occupt casual gn        51.84        0.00         --          --
+ Lights casual gn        40.32        0.00         --          --
+ Equipt casual gn       365.79        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored            172.30     -182.25      238.67     -249.40
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               10233.63   -10233.63    22207.41   -22207.42
+ 
+ Causal energy breakdown (Whrs) for part_b ( 1) in office ( 2)
+ Surface is opaque MLC, area= 12.00m^2 & connects to surface  6 in zone  1
+ 
+                         Facing office
+                         Gain       Loss
+ Conductive flux      20931.75        0.00
+ Convective flux          8.57    -2813.15
+ Longwave rad int         0.00   -20472.08
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        1979.12        0.00
+ Occupt casual gn       217.79        0.00
+ Lights casual gn       169.40        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            179.99     -201.38
+ Plant                    0.00        0.00
+ Totals               23486.62   -23486.61
+ 
+ Causal energy breakdown (Whrs) for part_a ( 2) in office ( 2)
+ Surface is opaque MLC, area=  9.50m^2 & connects to surface  5 in zone  1
+ 
+                         Facing office
+                         Gain       Loss
+ Conductive flux      16431.11        0.00
+ Convective flux          5.81    -2307.00
+ Longwave rad int         0.00   -15986.25
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        1566.80        0.00
+ Occupt casual gn       172.42        0.00
+ Lights casual gn       134.11        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            142.57     -159.57
+ Plant                    0.00        0.00
+ Totals               18452.82   -18452.82
+ 
+ Causal energy breakdown (Whrs) for North_w ( 3) in office ( 2)
+ Surface is opaque MLC, area= 12.00m^2 & connects to the outside
+ 
+                         Facing office            Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       2298.11    -4718.53    26803.02   -26824.60
+ Convective flux       1188.03     -394.70      232.44   -40390.58
+ Longwave rad int       587.99    -5017.25         --          --
+ LW rad ext >bldg          --         --       4880.41     -313.61
+ LW rad ext >sky           --         --          0.00   -57128.82
+ LW rad ext >grnd          --         --       6773.96    -3071.33
+ Shortwave rad.        5847.41        0.00    89656.55        0.00
+ Occupt casual gn       215.40        0.00         --          --
+ Lights casual gn       167.53        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           1469.67    -1643.67     9374.11    -9991.59
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               11774.14   -11774.14   137720.48  -137720.53
+ 
+ Causal energy breakdown (Whrs) for West_w ( 4) in office ( 2)
+ Surface is opaque MLC, area=  9.50m^2 & connects to the outside
+ 
+                         Facing office            Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       4252.86    -2863.48    42745.59   -45265.63
+ Convective flux        584.57     -528.09        0.00   -69119.82
+ Longwave rad int       288.73    -6533.88         --          --
+ LW rad ext >bldg          --         --       2875.58    -6351.88
+ LW rad ext >sky           --         --          0.00   -64450.60
+ LW rad ext >grnd          --         --       2999.07   -18330.28
+ Shortwave rad.        4629.20        0.00   155183.59        0.00
+ Occupt casual gn       170.53        0.00         --          --
+ Lights casual gn       132.63        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           1127.01    -1260.06    16311.19   -16596.80
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               11185.52   -11185.51   220115.03  -220115.03
+ 
+ Causal energy breakdown (Whrs) for Ceiling ( 5) in office ( 2)
+ Surface is opaque MLC, area= 16.00m^2 & connects to surface  2 in zone  3
+ 
+                         Facing office
+                         Gain       Loss
+ Conductive flux       4798.71    -1349.95
+ Convective flux       1537.89     -455.65
+ Longwave rad int         0.00   -12223.51
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        7196.80        0.00
+ Occupt casual gn       287.20        0.00
+ Lights casual gn       223.38        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            204.78     -219.66
+ Plant                    0.00        0.00
+ Totals               14248.77   -14248.77
+ 
+ Causal energy breakdown (Whrs) for Floor ( 6) in office ( 2)
+ Surface is opaque MLC, area= 16.00m^2 & connects to the ground/month profile
+ 
+                         Facing office
+                         Gain       Loss
+ Conductive flux          0.00   -82188.48
+ Convective flux       6130.36        0.00
+ Longwave rad int     67832.98        0.00
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        7796.54        0.00
+ Occupt casual gn       290.39        0.00
+ Lights casual gn       225.86        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            801.59     -889.22
+ Plant                    0.00        0.00
+ Totals               83077.72   -83077.71
+ 
+ Causal energy breakdown (Whrs) for door_a ( 7) in office ( 2)
+ Surface is opaque MLC, area=  2.50m^2 & connects to surface 12 in zone  1
+ 
+                         Facing office
+                         Gain       Loss
+ Conductive flux       6524.47        0.00
+ Convective flux          0.00    -1249.20
+ Longwave rad int         0.00    -6552.37
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.        1218.21        0.00
+ Occupt casual gn        44.88        0.00
+ Lights casual gn        34.90        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored            191.11     -212.00
+ Plant                    0.00        0.00
+ Totals                8013.57    -8013.57
+ 
+ Causal energy breakdown (Whrs) for west_glz ( 8) in office ( 2)
+ Surface is trnsp. MLC, area=  2.50m^2 & connects to the outside
+ 
+                         Facing office            Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux       4258.78    -3944.45    13308.25        0.00
+ Convective flux       1363.76    -1660.24        0.00    -6397.35
+ Longwave rad int      2357.71    -4282.08         --          --
+ LW rad ext >bldg          --         --       1028.60     -113.01
+ LW rad ext >sky           --         --          0.00   -11087.61
+ LW rad ext >grnd          --         --       1144.67     -539.19
+ Shortwave rad.        1839.99        0.00     2666.14        0.00
+ Occupt casual gn        41.39        0.00         --          --
+ Lights casual gn        32.19        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored            211.50     -218.55      286.39     -296.91
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               10105.31   -10105.32    18434.06   -18434.06
+ 
+ Causal energy breakdown (Whrs) for Ceiling_r ( 1) in roof_space ( 3)
+ Surface is opaque MLC, area= 48.00m^2 & connects to surface  8 in zone  1
+ 
+                         Facing roof_space
+                         Gain       Loss
+ Conductive flux      15583.22   -11032.54
+ Convective flux        736.27    -4122.40
+ Longwave rad int     14696.84   -19927.84
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.           0.00        0.00
+ Occupt casual gn         0.00        0.00
+ Lights casual gn      4344.82        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored          10700.81   -10979.17
+ Plant                    0.00        0.00
+ Totals               46061.96   -46061.95
+ 
+ Causal energy breakdown (Whrs) for Ceiling_o ( 2) in roof_space ( 3)
+ Surface is opaque MLC, area= 16.00m^2 & connects to surface  5 in zone  2
+ 
+                         Facing roof_space
+                         Gain       Loss
+ Conductive flux       2531.16    -6164.04
+ Convective flux        379.62     -882.06
+ Longwave rad int      6904.23    -4126.42
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.           0.00        0.00
+ Occupt casual gn         0.00        0.00
+ Lights casual gn      1448.27        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored           3530.06    -3620.82
+ Plant                    0.00        0.00
+ Totals               14793.34   -14793.35
+ 
+ Causal energy breakdown (Whrs) for s_roof ( 3) in roof_space ( 3)
+ Surface is opaque MLC, area= 23.49m^2 & connects to the outside
+ 
+                         Facing roof_space        Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux      22769.97   -21167.51    91077.46   -94195.34
+ Convective flux       4440.07    -1475.18     9982.81  -461080.66
+ Longwave rad int     15049.48   -21692.73         --          --
+ LW rad ext >bldg          --         --         27.19     -475.21
+ LW rad ext >sky           --         --          0.00  -432096.62
+ LW rad ext >grnd          --         --        267.24    -2759.99
+ Shortwave rad.           0.00        0.00   889334.31        0.00
+ Occupt casual gn         0.00        0.00         --          --
+ Lights casual gn      2126.31        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           2207.01    -2257.43     4706.98    -4788.34
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               46592.83   -46592.86   995396.00  -995396.12
+ 
+ Causal energy breakdown (Whrs) for Fire_wall ( 4) in roof_space ( 3)
+ Surface is opaque MLC, area=  9.75m^2 & connects to a constant temp=  12.00
+ 
+                         Facing roof_space
+                         Gain       Loss
+ Conductive flux      12639.74   -22016.86
+ Convective flux       7045.99    -4584.73
+ Longwave rad int     20267.61   -14000.48
+ LW rad ext >bldg          --         --
+ LW rad ext >sky           --         --
+ LW rad ext >grnd          --         --
+ Shortwave rad.           0.00        0.00
+ Occupt casual gn         0.00        0.00
+ Lights casual gn       882.54        0.00
+ Equipt casual gn         0.00        0.00
+ Controlled Occupt        0.00        0.00
+ Controlled Lights        0.00        0.00
+ Controlled Equipt        0.00        0.00
+ Heat stored           7378.99    -7612.80
+ Plant                    0.00        0.00
+ Totals               48214.88   -48214.88
+ 
+ Causal energy breakdown (Whrs) for North_wall ( 5) in roof_space ( 3)
+ Surface is opaque MLC, area=  6.75m^2 & connects to the outside
+ 
+                         Facing roof_space        Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux      10534.99   -13988.96    16480.11   -14618.86
+ Convective flux       4586.63    -3735.59       82.94   -23758.42
+ Longwave rad int     13238.67   -11076.86         --          --
+ LW rad ext >bldg          --         --       2653.28     -217.58
+ LW rad ext >sky           --         --          0.00   -32468.53
+ LW rad ext >grnd          --         --       3692.32    -1926.47
+ Shortwave rad.           0.00        0.00    50431.84        0.00
+ Occupt casual gn         0.00        0.00         --          --
+ Lights casual gn       610.99        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           5114.22    -5284.09     5197.02    -5547.65
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               34085.50   -34085.50    78537.51   -78537.52
+ 
+ Causal energy breakdown (Whrs) for w_roof ( 6) in roof_space ( 3)
+ Surface is opaque MLC, area= 59.31m^2 & connects to the outside
+ 
+                         Facing roof_space        Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux      39792.17   -49754.80   219287.81  -213149.83
+ Convective flux      10711.05    -2057.12    25810.78 -1098666.12
+ Longwave rad int     35676.67   -39608.91         --          --
+ LW rad ext >bldg          --         --         23.77     -273.01
+ LW rad ext >sky           --         --          0.00 -1058233.12
+ LW rad ext >grnd          --         --        219.86    -1974.92
+ Shortwave rad.           0.00        0.00  2127160.25        0.00
+ Occupt casual gn         0.00        0.00         --          --
+ Lights casual gn      5368.28        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           5522.93    -5650.24    11102.25   -11307.58
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               97071.11   -97071.08  2383604.75 -2383604.50
+ 
+ Causal energy breakdown (Whrs) for soffit ( 7) in roof_space ( 3)
+ Surface is opaque MLC, area= 17.00m^2 & connects to the outside
+ 
+                         Facing roof_space        Facing outside
+                         Gain       Loss          Gain       Loss
+ Conductive flux        133.36    -6265.18    11592.94    -5871.46
+ Convective flux        434.27     -342.04        0.00   -94300.29
+ Longwave rad int      7348.30    -2748.57         --          --
+ LW rad ext >bldg          --         --          0.00        0.00
+ LW rad ext >sky           --         --          0.00        0.00
+ LW rad ext >grnd          --         --      12963.96    -4580.03
+ Shortwave rad.           0.00        0.00    80232.98        0.00
+ Occupt casual gn         0.00        0.00         --          --
+ Lights casual gn      1538.79        0.00         --          --
+ Equipt casual gn         0.00        0.00         --          --
+ Controlled Occupt        0.00        0.00         --          --
+ Controlled Lights        0.00        0.00         --          --
+ Controlled Equipt        0.00        0.00         --          --
+ Heat stored           3889.91    -3988.85      780.21     -818.32
+ Plant                    0.00        0.00        0.00        0.00
+ Totals               13344.63   -13344.64   105570.09  -105570.09
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ 
+ Monthly selection of gains & losses (to nearest 100Wh).
+ 
+ Zone      Period|Transp surfs  |Opaque surfs |Casual Gains |Infil.|Vent. |  Plant      |   Solar     |
+             in  |extern |partns|extern|partns| conv. radnt.|      |      |Heat  |Cool  |absorb|enter-|
+                 |facing |+other|facing|+other|             |      |      |      |      |inside| ing  |
+ reception    Jul    -5.6    0.0    0.0  -10.1  139.2   38.2  -25.3  -43.1    0.0  -55.0  105.7  109.9
+ office       Jul     0.3    0.0   -0.8   -0.9    5.8    2.6   -4.1   14.4    0.0  -14.5   30.6   31.3
+ roof_space   Jul     0.0    0.0  -12.6    1.4   11.2   16.3    0.0    0.0    0.0    0.0    0.0    0.0
+ 
+ All zones    Jul     -5.     0.   -13.   -10.   156.    57.   -29.   -29.     0.   -69.   136.   141.
+ 
+ 
+Lib: bld_basic.cfg.wc42is_r: ESRU Std summer test (4:2:i): bld_basic.
+Period: Sun  9 Jul @00h30 to: Sat 15 Jul @23h30 Year:1967 : sim@ 60m, output@ 60m
+ Zones: reception office roof_space
+ Not filtered by occupancy
+Zone db temperature (degC)
+ Bin   data range       Distri-  freq.   cumulative  cumulative
+                        bution    (%)   distribution  freq (%)
+  0  <13.0     0 0.0 0.0 0.0
+  1  13.00-15.00             4    0.79        4        0.79
+  2  15.00-17.00             7    1.39       11        2.18
+  3  17.00-19.00            16    3.17       27        5.36
+  4  19.00-21.00            29    5.75       56       11.11
+  5  21.00-23.00            35    6.94       91       18.06
+  6  23.00-25.00           129   25.60      220       43.65
+  7  25.00-27.00            64   12.70      284       56.35
+  8  27.00-29.00            44    8.73      328       65.08
+  9  29.00-31.00            81   16.07      409       81.15
+ 10  31.00-33.00            50    9.92      459       91.07
+ 11  33.00-35.00            10    1.98      469       93.06
+ 12  35.00-37.00             9    1.79      478       94.84
+ 13  37.00-39.00             6    1.19      484       96.03
+ 14  39.00-41.00             3    0.60      487       96.63
+ 15  41.00-43.00             6    1.19      493       97.82
+ 16  43.00-45.00             2    0.40      495       98.21
+ 17  45.00-47.00             3    0.60      498       98.81
+ 18  47.00-49.00             1    0.20      499       99.01
+ 19  49.00-51.00             0    0.00      499       99.01
+ 20  51.00-53.00             2    0.40      501       99.40
+ 21  53.00-55.00             1    0.20      502       99.60
+ 22  55.00-57.00             2    0.40      504      100.00
+ 23  >57.0     0 0.0 0.0 0.0
+ 

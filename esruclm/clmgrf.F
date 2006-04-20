@@ -1,0 +1,622 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C 'CLMGRF' ALLOWS THE CONSTRUCTION OF GRAPHS WHICH SHOW THE
+C DISTRIBUTION OF ANY REQUESTED CLIMATIC PARAMETER OVER THE
+C USER-SPECIFIED PERIOD.
+
+      SUBROUTINE CLMGRF
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
+      COMMON/RADTYP/IDNGH
+      COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      CHARACTER*24 ITEM(16)
+      character hold*72,h*72
+      DIMENSION IPICK(6)
+      LOGICAL mxmn
+
+      ITEM(1) =  'a set period            '
+      ITEM(2) =  '  _____________________ '
+      ITEM(3) =  'b dry bulb temperature  '
+      if(IDNGH.eq.0)then
+        ITEM(4) ='c direct normal solar   '
+      else
+        ITEM(4) ='c global horizon. solar '
+      endif
+      ITEM(5) =  'd diffuse solar         '
+      ITEM(6) =  'e wind speed (m/s)      '
+      ITEM(7) =  'f wind direction (deg)  '
+      ITEM(8) =  'g relative humidity (%) '
+      ITEM(9) =  '  _____________________ '
+      ITEM(10)=  '! draw graph            '
+      ITEM(11)=  'j reset axis scale      '
+      ITEM(12)=  'k refresh current graph '
+      ITEM(13)=  'l clear current items   '
+      ITEM(14)=  '  _____________________ '
+      ITEM(15)=  '? help                  '
+      ITEM(16)=  '- exit                  '
+
+      DO 10 I=1,6
+        IPICK(I)=0
+   10 CONTINUE
+      IPP=0
+
+C Display graphing options.
+    7 INO=-2
+      NITMS=16
+
+      call usrmsg('  ','  ','-')
+    6 CALL EMENU(' Graphical analysis',ITEM,NITMS,INO)
+      
+      if(ino.eq.nitms)then
+        return
+      elseif(ino.eq.1)then
+        CALL selper(ier)
+      elseif(ino.eq.3)then
+        IPICK(2)=1
+        IPP=1
+      elseif(ino.eq.4)then
+        IPICK(3)=1
+        IPP=1
+      elseif(ino.eq.5)then
+        IPICK(1)=1
+        IPP=1
+      elseif(ino.eq.6)then
+        IPICK(4)=1
+        IPP=1
+      elseif(ino.eq.7)then
+        IPICK(5)=1
+        IPP=1
+      elseif(ino.eq.8)then
+        IPICK(6)=1
+        IPP=1
+      elseif(ino.eq.10)then
+
+C Draw the selected data.
+        IF(IPP.EQ.1)then
+          mxmn=.TRUE.
+          CALL CLMDRW(IPICK,mxmn)
+          call usrmsg('  ','  ','-')
+          goto 6
+        else
+          call edisp(iuout,' Nothing to draw yet ! ')
+        endif
+      elseif(ino.eq.11)then
+
+C Scale axis (ipick).
+C    1= diff solar, 2= db temperature, 3 = dir solar rad,
+C    4= wind speed, 5= wind direction, 6= rh
+
+C Present vertex coords for editing then parse data from HOLD.
+        WRITE(HOLD,'(1x,4f7.1)')YMAX(1),YMIN(1),YMAX(2),YMIN(2)
+        H(1)='Both direct and diffuse solar share an axis. '
+  42    CALL EASKS(HOLD,' Max & Min for solar radiation & db temp:',
+     &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,1)
+        K=0
+        CALL EGETWR(HOLD,K,YMAX(1),0.,0.,'-','dif sol mx',IER)
+        CALL EGETWR(HOLD,K,YMIN(1),0.,0.,'-','dif sol mn',IER)
+        CALL EGETWR(HOLD,K,YMAX(2),0.,0.,'-','db temp mx',IER)
+        CALL EGETWR(HOLD,K,YMIN(2),0.,0.,'-','db temp mn',IER)
+        if(ier.ne.0)goto 42
+        YMAX(3)=YMAX(1)
+        YMIN(3)=YMIN(1)
+
+C Second set of axis.
+        WRITE(HOLD,'(1x,6f7.1)')YMAX(4),YMIN(4),YMAX(5),YMIN(5),
+     &    YMAX(6),YMIN(6)
+        H(1)='Wind is in m/sec, direction in degrees. '
+  43    CALL EASKS(HOLD,' Max & Min for wind speed, wind dir, rh:',' :',
+     &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,1)
+        K=0
+        CALL EGETWR(HOLD,K,YMAX(4),0.,0.,'-','wind spd mx',IER)
+        CALL EGETWR(HOLD,K,YMIN(4),0.,0.,'-','wind spd mn',IER)
+        CALL EGETWR(HOLD,K,YMAX(5),0.,360.,'-','wind dir mx',IER)
+        CALL EGETWR(HOLD,K,YMIN(5),0.,360.,'-','wind dir mn',IER)
+        CALL EGETWR(HOLD,K,YMAX(6),0.,0.,'-','rh mx',IER)
+        CALL EGETWR(HOLD,K,YMIN(6),0.,0.,'-','rh mn',IER)
+        if(ier.ne.0)goto 43
+        DO 70 I=1,6
+          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
+     &              Xadd,addY)
+          YSC(I)=bysc
+          Yadd(I)=addY
+  70    CONTINUE
+        mxmn=.FALSE.
+        CALL CLMDRW(IPICK,mxmn)
+        goto 6
+      elseif(ino.eq.12)then
+
+C In case the user has resized the display, re-establish the graphic
+C bounds and redraw the image before presenting the command menu.
+#ifdef X11
+        continue
+#else
+C GTK note: the call to win3d is a new requirement (until such time
+C as the C automatically refreshes the coordinates).
+        CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+        call startbuffer()
+#endif
+        DO 60 I=1,6
+          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,
+     &              YSC(I),sca,Xadd,Yadd(I))
+  60    CONTINUE
+        mxmn=.FALSE.
+        CALL CLMDRW(IPICK,mxmn)
+      elseif(ino.eq.13)then
+
+C Clear selections.
+        DO 101 I=1,6
+          IPICK(I)=0
+          YMAX(I)=-10000.
+          YMIN(I)=10000.
+  101   CONTINUE
+        IPP=0
+        INEW=1
+      elseif(ino.eq.15)then
+C Help.
+        H(1)='The graph facilities work by selecting items '
+        H(2)='(from 1-6) to draw and then the `! Draw` command.'
+        H(3)=' '
+        H(4)='You may alter the scaling of the various axis, to '
+        H(5)='clarify or separate lines by choosing the `a Axis` '
+        H(6)='command. '
+        H(7)=' '
+        H(8)='If you have changed the size of the graphic or text '
+        H(9)='feedback areas or the application window then use the'
+        H(10)=' `r Refresh` command '
+        H(11)=' '
+        H(12)='You must `c Clear` the selections to look at another'
+        H(13)='set of lines. '
+        CALL PHELPD('clm graphics',13,'-',0,0,IER)
+      else
+        ino=-1
+        goto 6
+      endif
+      goto 7
+
+      END
+
+
+C ************ CLMDRW
+C 'CLMDRW' INITIATES AXIS DISPLAY AND DRAWS THE CHOSEN CLIMATIC
+C DISTRIBUTIONS OVER THE SPECIFIED PERIOD.
+
+      SUBROUTINE CLMDRW(IPICK,mxmn)
+      PARAMETER (MT=24)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+
+C THE FOLLOWING COMMON BLOCK CONTAINS THE SCALE AND pixel offsets
+C OF THE X-AXIS AND Y-AXIS AS COMPUTED IN 'CLMXMN' - THIS INFORMATION
+C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
+      COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
+      COMMON/DAT24/PT24(6)
+
+      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
+     &              CDIR(MT),CHUM(MT)
+      logical mxmn,colok
+
+C The 6 dimensions are as follows:
+C  1= diff solar, 2= db temperature, 3 = dir solar rad,
+C  4= wind speed, 5= wind direction, 6= rh
+      DIMENSION IPICK(6)
+      DIMENSION IPEN(6),MARK(6)
+#ifdef X11
+      DATA IPEN/-5,1,-5,-105,-105,-205/
+#else
+      DATA IPEN/-5,1,-5,-105,-105,-204/
+#endif
+      DATA MARK/8,6,1,4,5,3/
+
+C Check if can draw in colour.
+      colok=.false.
+      if(nzonec.ge.6)colok=.true.
+
+C HEADER INFORMATION
+      CALL GHEAD(27)
+
+C NOW INITIATE DISPLAY OF AXES (DX IS TICK INTERVAL ON X-AXIS).
+      if(mxmn)CALL CLMXMN
+      CALL DCAXES(IPICK)
+
+C NOW DRAW DISTRIBUTIONS.
+      DO 30 J=IDS,IDF
+
+C READ VALUES OF THE CLIMATIC PARAMETERS FOR THIS DAY.
+        ID=J
+        CALL CLMGET(ID)
+        KS=0
+        KF=24
+        IF(J.EQ.IDS)KS=IT1
+        IF(J.EQ.IDF)KF=IT2
+
+C FOR EACH DISTRIBUTION
+        DO 20 I=1,6
+          IF(IPICK(I).EQ.0)GO TO 20
+          if(colok)then
+            call winscl('z',I-1)
+          endif
+          JPEN=IPEN(I)
+          MMK=MARK(I)
+
+C Reset the scale for each type of line.
+          call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+          
+C DRAW ONE DAY FOR EACH DISTRIBUTION
+          DO 40 K=KS,KF
+
+C GET APPROPRIATE VALUES
+            if(K.eq.0)then
+              Y=PT24(I)
+            else
+              if(I.eq.1)then
+                Y=CDIF(K)
+              elseif(I.eq.2)then
+                Y=CTMP(K)
+              elseif(I.eq.3)then
+                Y=CDNR(K)
+              elseif(I.eq.4)then
+                Y=CVEL(K)
+              elseif(I.eq.5)then
+                Y=CDIR(K)
+              elseif(I.eq.6)then
+                Y=CHUM(K)
+              endif
+            endif
+
+            TIME=real(J-IDS)*24.+ real(K)
+            IM=INT(AMOD(TIME,DT)+0.01)
+
+C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
+            MK=0
+            IF(IM.EQ.0)MK=MMK
+
+C NOW PLOT DISRTIBUTION.
+            IF(K.EQ.KS)then
+              call etplot(TIME,Y,0,0)
+            else
+              call etplot(TIME,Y,JPEN,MK)
+            endif
+            if(K.eq.KF)PT24(I)=Y
+   40     CONTINUE
+   20   CONTINUE
+   30 CONTINUE
+      if(colok)then
+        call winscl('-',0)
+      endif
+      call forceflush()
+
+      RETURN
+      END
+
+C ************ CLMDRWD
+C 'CLMDRWD' Draws one days climate data (complements data editing).
+
+      SUBROUTINE CLMDRWD(IDAY)
+      PARAMETER (MT=24)
+      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+
+C THE FOLLOWING COMMON BLOCK CONTAINS THE SCALE AND pixel offsets
+C OF THE X-AXIS AND Y-AXIS AS COMPUTED IN 'CLMXMN' - THIS INFORMATION
+C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
+      COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
+      COMMON/DAT24/PT24(6)
+
+      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
+     &              CDIR(MT),CHUM(MT)
+      DIMENSION IPICK(6)
+      DIMENSION IPEN(6),MARK(6)
+      logical colok
+      DATA IPEN/-5,1,-5,-105,-105,-205/
+      DATA MARK/8,6,1,4,5,3/
+
+C Check if can draw in colour.
+      colok=.false.
+      if(nzonec.ge.6)colok=.true.
+
+C HEADER INFORMATION
+      INEW=1
+      IDS=IDAY
+      IDF=IDAY
+      CALL EDAYR(IDAY,ID1,IM1)
+      CALL EDAYR(IDAY,ID2,IM2)
+      IT1 = 1
+      IT2 = 24
+      IPICK(1)=1
+      IPICK(2)=1
+      IPICK(3)=1
+      IPICK(4)=1
+      IPICK(5)=1
+      IPICK(6)=1
+
+C The menu character width will have been reset before CLMDRWD
+C was called.
+      imh=menuchw
+      CALL GHEAD(imh)
+
+C NOW INITIATE DISPLAY OF AXES (DX IS TICK INTERVAL ON X-AXIS).
+      CALL CLMXMN
+      CALL DCAXES(IPICK)
+
+C READ VALUES OF THE CLIMATIC PARAMETERS FOR THIS DAY.
+      KS=0
+      KF=24
+      J=IDS
+
+C FOR EACH DISTRIBUTION
+      DO 20 I=1,6
+        IF(IPICK(I).EQ.0)GO TO 20
+        if(colok)then
+          call winscl('z',I-1)
+        endif
+        JPEN=IPEN(I)
+        MMK=MARK(I)
+
+C Reset the scale for each type of line.
+        call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+          
+C DRAW ONE DAY FOR EACH DISTRIBUTION
+        DO 40 K=KS,KF
+
+C GET APPROPRIATE VALUES
+          if(K.eq.0)then
+            Y=PT24(I)
+          else
+            if(I.eq.1)then
+              Y=CDIF(K)
+            elseif(I.eq.2)then
+              Y=CTMP(K)
+            elseif(I.eq.3)then
+              Y=CDNR(K)
+            elseif(I.eq.4)then
+              Y=CVEL(K)
+            elseif(I.eq.5)then
+              Y=CDIR(K)
+            elseif(I.eq.6)then
+              Y=CHUM(K)
+            endif
+          endif
+
+          TIME=real(J-IDS)*24.+ real(K)
+          IM=INT(AMOD(TIME,DT)+0.01)
+
+C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
+          MK=0
+          IF(IM.EQ.0)MK=MMK
+
+C NOW PLOT DISRTIBUTION.
+          IF(K.EQ.KS)then
+            call etplot(TIME,Y,0,0)
+          else
+            call etplot(TIME,Y,JPEN,MK)
+          endif
+          if(K.eq.KF)PT24(I)=Y
+   40   CONTINUE
+   20 CONTINUE
+      if(colok)then
+        call winscl('-',0)
+      endif
+      call forceflush()
+
+      RETURN
+      END
+
+C ************** DCAXES
+C 'DCAXES' DRAWS THE TIME AXIS AND THE RELEVANT Y-AXES DEPENDING ON
+C THE REQUESTED CLIMATIC DISTRIBUTIONS.
+
+      SUBROUTINE DCAXES(IPICK)
+
+      COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
+      COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/GFONT/IFS,ITFS,IMFS
+      DIMENSION IPICK(6),IPAX(6)
+
+C DRAW TIME AXIS
+C Pick up the data increment for the horizontal axis.
+      call dinterval(TMIN,TMAX,DT,NDEC,1)
+      call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')
+      call forceflush()
+
+C DRAW Y AXES
+C SET AXES REQUIRED
+      DO 30 I=2,6
+        IPAX(I)=0
+        IF(IPICK(I).EQ.1)IPAX(I)=1
+  30  CONTINUE
+
+C IF DIFFUSE ASKED FOR,SET DIRECT RAD AXIS
+      IF(IPICK(1).EQ.1)IPAX(3)=1
+      DO 50 I=2,6
+        IF(IPAX(I).EQ.0)GO TO 50
+
+C Above each axis title draw a short section of line to match that
+C of the graph to follow plus a symbol which is equivalent to
+C that which is plotted with the etplot.
+        if(I.eq.2)then
+
+C Temperature axis, include solid line and large dot symbol.
+          call vrtaxis(YMIN(I),YMAX(I),50,igb,igt,Yadd(I),YSC(I),
+     &                 1,0,':')
+          if(IFS.ne.IMFS)call winfnt(IFS)
+          call wstxpt(25,igt-22,'Temp')
+          call wstxpt(25,igt-10,'deg.C')
+          call eswline(25,igt-40,60,igt-40)
+          call esymbol(46,igt-40,8,0)
+          if(IFS.ne.IMFS)call winfnt(IMFS)
+          call forceflush()
+        elseif(I.eq.3)then
+
+C Solar radiation axis, include dashed line and symbol.
+          call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
+     &                 1,1,':')
+          if(IFS.ne.IMFS)call winfnt(IFS)
+          call wstxpt(igr,igt-22,'S.Rad')
+          call wstxpt(igr,igt-10,'W/m^2')
+          call edash(igr,igt-40,igr+35,igt-40,5)
+          call esymbol(igr+22,igt-40,9,0)
+          if(IFS.ne.IMFS)call winfnt(IMFS)
+          call forceflush()
+        elseif(I.eq.4)then
+
+C Wind speed axis, include chained line and symbol.
+          call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
+     &                 1,0,':')
+          if(IFS.ne.IMFS)call winfnt(IFS)
+          call wstxpt(igl,igt-22,'Wnd sp')
+          call wstxpt(igl,igt-10,'m/s')
+          call echain(igl,igt-40,igl+35,igt-40,5)
+          call esymbol(igl+22,igt-40,0,0)
+          if(IFS.ne.IMFS)call winfnt(IMFS)
+          call forceflush()
+        elseif(I.eq.5)then
+
+C Wind direction axis, include chained line and symbol.
+          call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),YSC(I),
+     &                 1,1,':')
+          if(IFS.ne.IMFS)call winfnt(IFS)
+          call wstxpt(igr+50,igt-22,'W dir')
+          call wstxpt(igr+50,igt-10,'deg ')
+          call echain(igr+50,igt-40,igr+85,igt-40,5)
+          call esymbol(igr+72,igt-40,1,0)
+          if(IFS.ne.IMFS)call winfnt(IMFS)
+          call forceflush()
+        elseif(I.eq.6)then
+
+C RH axis, include dotted line and symbol.
+          call vrtaxis(YMIN(I),YMAX(I),igr+100,igb,igt,Yadd(I),YSC(I),
+     &                 1,1,':')
+          if(IFS.ne.IMFS)call winfnt(IFS)
+          call wstxpt(igr+100,igt-10,'RH %')
+          call edline(igr+100,igt-40,igr+135,igt-40,5)
+          call esymbol(igr+120,igt-40,12,0)
+          if(IFS.ne.IMFS)call winfnt(IMFS)
+          call forceflush()
+        endif
+  50  CONTINUE
+      RETURN
+      END
+
+C *********** PCGRF  *************
+C  Subroutine PCGRF  will draw the predicted climatic data (for
+C  data type icv) and optionally for previous data values (icl)
+C  for the time period IDS to IDF as defined in subroutine PSAVE.
+C ICL is zero instructs the graphing to omit the previous
+C   value (7th index of CLMV) of the selected data. If ICL is
+C   positive then draw the current and previous values. If ICL 
+C   is negative draw only the past value.
+
+      SUBROUTINE PCGRF(ICV,ICL,IDS,IDF)
+      PARAMETER (MD=365,MT=24)
+      COMMON/CLIM1/CLMV(7,MD,MT),ICMAX,ICMAX2,ICMIN
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+
+      CHARACTER*10 CLMVAR(4),CVLAB
+      logical close,colok
+      DATA CLMVAR/'S rad W/m2','Temp Deg.C','Rel hum pc',
+     &            'Wind s m/s'/
+
+C Check if can draw in colour.
+      colok=.false.
+      if(nzonec.ge.6)colok=.true.
+
+      ICVS = ICV
+      CVLAB=CLMVAR(ICVS)
+
+C  Draw the time axis. First establish how many hours are to be defined.
+      THOUR=(IDF-IDS+1)*24.0
+      TMIN=0.0
+      TMAX=THOUR
+
+C  Draw the axis for the climatic variable and then draw the graph.
+      A=ICMAX-ICMIN
+      call eclose(A,0.0,0.001,close)
+      IF(close)A=20.0
+      CMAX=ICMAX+A/20.0
+      CMIN=ICMIN-A/20.0
+      IF(ICVS.EQ.1)CMIN=0.0
+
+C Draw axis, begin with scaling factors for the X & Y axis.
+C Stuff this into static memory.
+      call axiscale(igw,igwh,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
+     &              Xaddd,Yaddd)
+      call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
+
+      call dinterval(TMIN,TMAX,DX,NDEC,1)
+      call horaxis(TMIN,TMAX,igl,igr,igb,Xaddd,XSC,0,'Time (hrs)')
+
+
+C Draw the vertical axis.
+      call vrtaxis(CMIN,CMAX,igl,igb,igt,Yaddd,YSC,0,0,CVLAB)
+
+C If the previous data is to be drawn. Loop.
+      if(icl.ne.0)then
+        if(colok)then
+          call winscl('z',2)
+        endif
+        START=TMIN+1.0
+        call etplot(START,CLMV(7,IDS,1),0,0)
+        IHOUR=0
+        DO 100 I=IDS,IDF
+          JJ=IHOUR
+          DO 200 J=1,24
+            IHOUR=JJ+J
+            call etplot(real(IHOUR),CLMV(7,I,J),1,0)
+  200     CONTINUE
+  100   CONTINUE
+        if(colok)then
+          call winscl('-',0)
+        endif
+        call forceflush()
+        if(icl.lt.0)return
+      endif
+
+C  Draw graphs of either solar radiation,temperature,
+C  realtive humidity or wind velocity and direction.
+      START=TMIN+1.0
+    7 call etplot(START,CLMV(ICVS,IDS,1),0,0)
+      IHOUR=0
+      DO 10 I=IDS,IDF
+        JJ=IHOUR
+        DO 20 J=1,24
+          IHOUR=JJ+J
+          call etplot(real(IHOUR),CLMV(ICVS,I,J),1,0)
+   20   CONTINUE
+   10 CONTINUE
+      GOTO (3,1111,1111,1111,5,6),ICVS
+    3 CONTINUE
+      ICVS = 5
+      GOTO 7
+    5 ICVS=1
+      GOTO 1111
+    6 ICVS=4
+ 1111 call forceflush()
+      RETURN
+      END

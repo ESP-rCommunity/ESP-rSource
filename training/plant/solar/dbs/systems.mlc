@@ -1,0 +1,64 @@
+# composite construction db defined in solar_model.mlc
+# based on primitive construction db /usr/esru/esp-r/defaults/defpcdb
+   10     # no of composites 
+# layers  description   optics 
+    1    block_part    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   28     0.100  Block inner (3% mc)
+# layers  description   optics 
+    4    ext_wall      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    4     0.100  Outer leaf brick
+    0     0.025  air  0.170 0.170 0.170
+  201     0.050  Fibreboard
+   29     0.140  Foamed inner block(3%mc)
+# layers  description   optics 
+    1    door          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    3    dbl_glz       TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.170 0.170 0.170
+  242     0.006  Plate glass
+# layers  description   optics 
+    3    roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  141     0.020  Clay tile
+    0     0.025  air  0.170 0.170 0.170
+   70     0.012  Plywood
+# layers  description   optics 
+    2    ceiling       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  211     0.150  Glasswool
+  104     0.012  Gypsum plaster
+# layers  description   optics 
+    2    ceiling_rev   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104     0.012  Gypsum plaster
+  211     0.150  Glasswool
+# layers  description   optics 
+    6    floor         OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.200  Common earch
+  263     0.200  Common earch
+   86     0.100  Gravel
+   32     0.100  Heavy mix concrete
+  124     0.025  Cement screed
+  141     0.005  Clay tile
+# layers  description   optics 
+    6    passg_floor   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.200  Common earch
+  263     0.200  Common earch
+   86     0.100  Gravel
+   32     0.100  Heavy mix concrete
+  124     0.025  Cement screed
+  221     0.006  Wilton
+# layers  description   optics 
+    3    colct_frame   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.003  Steel
+  211     0.075  Glasswool
+   42     0.004  Steel

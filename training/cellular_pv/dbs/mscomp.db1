@@ -1,0 +1,627 @@
+# Special materials database held in ASCII format and containing
+# data for various special components.  Entires are divided into
+# 4 fields: 
+#
+#    1: component type (1-special materials, 2-conductors, 3-power only 
+#       components, 4-building electrical loads, 5-plant motors and generators)
+#    2: material name and id
+#    3: specific data items
+#    4 text field
+# The field entries have the same format.
+***********************************************************************************
+*SPMDB
+*CATEGORY
+# The categories of special components currently supported in the database
+# categories 1-4 are reserved for building integrated renewables all other
+# categories are for active materials
+8
+crystalline PV model
+amorphous PV model
+simple PV model
+solar collector backplate
+ducted wind turbine
+thermocromic glazing
+phase change material
+evaporating surface
+*ENDCATEGORY
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     1            1 
+*DESC
+BP380_poly_36cell    
+*SPECDATA
+13                  
+22.1      Open circuit voltage. (V)
+4.80      Short circuit current. (I)
+17.6      Voltage at maximum power point (V)
+4.55      Current at maximum power point (A)
+1000.     Reference insolation. (W)
+298.      Reference temperature. (K)
+36.       Number of series connected cells (not panels) (-)
+1.        Number of parallel connected branches. (-)
+5.        Number of panels in surface. (-)
+10.       Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+Data from BP solar:
+BP Saturn (BP 585)
+Module type             BP 380 polycrstalline
+Module size             1209 x 537 mm
+Weight                  7.5 kg
+Construction            Low-Iron Glass, EVA (cells 400 microns thick)
+Cells in series         36
+Cells in parallel       1
+Peak power  at STC      80
+Voc at STC              22.1
+Isc at STC              4.8
+Vmax at STC             17.6
+Imax at STC             4.55
+
+Construction:
+                                         k     rho     c
+3mm low-iron glass                      1.05   2500    750
+1mm EVA tedlar (inc. cells)             0.38    920   2100
+3mm low-iron glass                      1.05   2500    750
+
+*ENDTEXT
+*END*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     1            1 
+*DESC
+BP_saturn_36cell    
+*SPECDATA
+13                  
+22.03     Open circuit voltage. (V)
+5.00      Short circuit current. (I)
+18.0      Voltage at maximum power point (V)
+4.72      Current at maximum power point (A)
+1000.     Reference insolation. (W)
+298.      Reference temperature. (K)
+36.       Number of series connected cells (not panels) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of panels in surface. (-)
+10.       Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+Data from BP solar:
+BP Saturn (BP 585)
+Module type             BP Saturn (BP 585)
+Module size             1183 x 525 mm
+Weight                  7.5 kg
+Construction            Low-Iron Glass, EVA (cells 400 microns thick)
+Cells in series         36
+Cells in parallel       1
+Peak power  at STC      85
+Voc at STC              22.03
+Isc at STC              5.00
+Vmax at STC             18.0
+Imax at STC             4.72
+
+Construction:
+                                         k     rho     c
+3mm toughened glass                     1.05   2500    750
+1mm EVA tedlar (inc. cells)             0.38    920   2100
+
+Values apply to both the framed and laminated models
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     1            1 
+*DESC
+Solarex_MSX550    
+*SPECDATA
+13                   
+20.9      Open circuit voltage. (V)
+3.08      Short circuit current. (I)
+16.9      Voltage at maximum power point (V)
+2.91      Current at maximum power point (A)
+1000.     Reference insolation. (W)
+298.      Reference temperature. (K)
+36.       Number of series connected cells (not panels) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of panels in surface. (-)
+10.       Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+
+Information from Solarex data sheet:
+
+Solarex MSX 550 polycrystalline panel
+Module type             SOLAREX MSX 550
+Module size             931 x 492 mm
+Weight                  UNKNOWN
+Construction            Glass,EVA-tedlar
+Cells in series         36
+Cells in parallel       1
+Peak power  at STC      85
+Voc at STC              20.90
+Isc at STC               3.08
+Vmax at STC             16.90
+Imax at STC              2.91
+
+Construction (from existing ESP-r model):
+                                  k     rho     c
+2mm toughened glass             1.05   2500    750
+1mm EVA+tedlar                  0.38    920   2100
+
+Optical properties (estimated):
+MSX 550     :PV-hybrid-cell_3mm
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   2  0.000  0.079  0.850  5.320
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.013 0.015 0.016 0.017 0.017
+  1.520 0.837 0.828 0.791 0.660 0.418
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+   1      1
+*DESC
+RMS100
+*SPECDATA
+13                 
+43.8      Open circuit voltage. (V)
+3.10      Short circuit current. (I)
+34.1      Voltage at maximum power point (V)
+2.85      Current at maximum power point (A)
+1000.     Reference insolation. (W)
+298.      Reference temperature. (K)
+72.       Number of series connected cells (not panels) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of panels in surface. (-)
+10.       Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+PV Model:
+
+Module type             RMS100
+Module size             1327 x 708 mm
+Weight                  11.1 kg
+Construction            Glass, EVA, White Tedlar + AL Backsheet
+Cells in series         72
+Cells in parallel       1
+Voc at STC              43.8
+Isc at STC              3.10
+Vmax at STC             34.1
+Imax at STC             2.85
+
+Construction details:
+                                 k     rho      Cp 
+Glass low iron ESG  4mm     1.05   2500    750
+Resin               1mm     0.40    920   2100
+Silicon (PV)        1mm     0.18    700   1004
+Resin               1mm     0.40    920   2100
+Aluminium backing   2mm    210.0    2700    880
+
+This is the data supplied by Ispra - applicable for 100W modules.
+
+Optical properties (estimated):
+system transmission 0.00
+absorption at the various layers:
+                         0deg      40deg   55deg   70deg   80deg
+Glass low iron ESG  4mm  0.03       0.03    0.03    0.03    0.03
+(typical for glass with 89% transmission, 8% reflection)
+Resin               1mm  0.05       0.05    0.05    0.05    0.05
+Silicon (PV)        1mm  0.84       0.84    0.84    0.84    0.84
+Resin               1mm  0.00       0.00    0.00    0.00    0.00
+Aluminium backing   2mm  0.00       0.00    0.00    0.00    0.00
+
+Assume absorptivity as above - but this information should be obtained
+from the manufacturer if possible, or by measurement by a pyranometer
+facing the PV panel.
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     1            1 
+*DESC
+Eurosolare_poly    
+*SPECDATA
+13                 
+21.67     Open circuit voltage. (V)
+2.98      Short circuit current. (I)
+17.42     Voltage at maximum power point (V)
+2.73      Current at maximum power point (A)
+1000.0    Reference insolation. (W)
+297.90    Reference temperature. (K)
+36.       Number of series connected cells (not panels) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of panels in surface. (-)
+10.       Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+Data from Eurosolare:
+Eurosolare polycrystalline module  (5% uncertainty in module parameters)
+Module type             Eurosolare 36 cell polycrystalline
+Module size             995.5 x 450 mm 
+Cell dims               938.5 x 416 mm (102.5 x 102.5 mm each)
+Cell spacing            2mm             
+Weight                  UNKNOWN
+Construction            Low-Iron Glass, EVA (cells 400 microns thick)
+Cells in series         36
+Cells in parallel       1
+Peak power  at STC      48W
+Voc at STC              21.50 (V)
+Isc at STC               3.00 (A)
+Vmax at STC             17.80 (V)
+Imax at STC              2.98 (A)
+
+Construction:
+                                          k     rho     c
+4.0mm toughened glass                     1.05   2500    750
+1.6mm EVA tedlar (inc. cells)             0.38    920   2100
+
+Optical properties (estimated):
+Eurosolare     :PV-hybrid-cell_3.6mm
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   2  0.000  0.079  0.824  5.320
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.026 0.030 0.032 0.034 0.034
+  1.520 0.824 0.813 0.775 0.643 0.401
+
+*ENDTEXT
+*END
+*SPECMATL
+*ID DATA
+   3     2
+*DESC
+Simple_pv
+*SPECDATA
+1
+15.0      Efficiency of the PV material 
+*TEXT
+Very simple model of a PV material which simply converts a fraction (the 
+efficiecy) of the solar radiation falling on a surface to power output. 
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+    2     1
+*DESC
+TNO_amorphous_pv
+*SPECDATA 
+13
+99.48     Open circuit voltage. (V)
+0.438     Short circuit current. (I)
+77.76     Voltage at maximum power point (V)
+0.378     Current at maximum power point (A)
+1000.     Reference insolation. (W)
+298.      Reference temperature. (K)
+57.       Number of series connected cells (not panels) (-)
+180.      Number of parallel connected branches. (-)
+1.        Number of panels in surface. (-)
+100.      Empirical value used in calculation of Io
+0.        Load type (0-maximum power,1-fixed R,2-fixed V)
+0.        Load value - resistance or voltage (-)
+0.        Shading treatment (0-def,1-prop.,2-total,3-diff.)
+*TEXT
+PV Model:
+
+Module type             Amorphous PV pst-semi
+Module size             0.6m sq (cell area 0.4599m sq)
+Weight                  UNKNOWN
+Construction            Glass,PV+EVA,Glass Backsheet
+Cells in series         72
+Cells in parallel       1
+Voc at STC              43.8
+Isc at STC              3.10
+Vmax at STC             34.1
+Imax at STC             2.85
+
+Construction details:
+                                 k     rho      Cp 
+    Glass low iron ESG   3mm     1.05   2500    750
+    EVA+PV               1mm     0.38    920   2100
+    GLASS backing     5.25mm    210.0    2700    880
+
+This is the data supplied by TNO
+
+
+Optical properties (estimated): 
+
+DTNO_glass    :TNO-pv-testcell
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.816  0.141  0.147  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+# 0deg      40deg   55deg   70deg   80deg
+  0.712 0.686 0.612 0.427 0.204 0.768 0.745 0.673 0.484 0.249
+# refr index, absorption @ 5 angles for each tmc layer
+# 0deg      40deg   55deg   70deg   80deg
+  1.520 0.074 0.081 0.088 0.097 0.100
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.073 0.078 0.078 0.069 0.050
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+    5     3
+*DESC
+ducted_wind_turbine
+*SPECDATA 
+15
+1         Zone containing outlet (-)
+1         Surface containing outlet (-)
+1         Outlet ourface type (-)
+0.        Inlet azimuth angle (deg)
+0.        Outlet azimuth angle (deg)
+10.0      Height of the turbine inlet (m)
+1.0       Turbine cross sectional area (m^2)
+1.0       Duct velocity coefficient (-)
+4.0       Cut-in wind speed (m/s)
+1.0       Number of turbines in the surface (-)
+1.0       Location (1-urban,2-suburban,3-open)
+10.0      Reference height (m)
+0.0       Wind speed statistics (ON/OFF)
+0.0       Wind speed/turbulence profile (ON/OFF)
+0.2       Default turbulence intensity (-)
+*TEXT
+This ducted wind turbine model is developed from that described in
+"Development of building integrated wind turbines" by Grant, Danecker
+and Nicholson.  The generated power (W) is calculated based on the 
+following formula: 
+
+P=(Cv/(3.3^(1/2))).rho.A.d^(2/3).V^(1/3)
+
+Where Cv is the duct velocity coefficient, A is the duct frontal 
+area, d is the differential pressure coefficient (Cp1-Cp2) and
+V is the free stream velocity of the wind. 
+
+The differential pressure coefficient is calculated by ESP-r or
+calculated using a curve fit formula based on the user's own data.
+If using the user's data then curve fit coefficients are required
+to calculate d as a function of the wind incidence angle.
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#          | material model no
+     7            53
+*DESC
+PCM_Cap
+*SPECDATA
+7
+20.0      Melting temperature (degC)
+21.0      Solidification temperature (degC)
+0.40      Conductivity in solid phase (J/kg)
+0.80      Conductivity in liquid phase (J/kg)
+1000.0    Specific heat (J/kg*K)
+5000.0    Latent heat member a - see info (J/kg*K^2)
+100000.0  Latent heat member b - see info (J/kg*K)
+*TEXT
+
+PHASE CHANGE MATERIAL
+Special, phase change material should be defined for middle 
+node of the layer in interest. Calculation being proced for
+all nodes represented this surface.
+
+Following informations are required to define phase change mat.
+- melting temperature,          degC
+- solidification temperature,   degC
+- conductivity in solid phase,  W/m*K
+- conductivity in liquid phase, W/m*K
+- specific heat,                J/kg*K
+- latent heat,                  J/kg*K
+
+Phase change occured between melting Tm (PCM becomes melts) and
+solidification Ts (PCM becomes solidified) temperatures. Below
+Tm PCM is considered as a solid and the conductivity of the layer
+is equal to conductivity in solid phase. Over Tm PCM is considered
+as a liquid and conductivity of the layer is equal to conductivity
+in liquid phase.
+
+Beyond phase change temperature range latent heat of material is
+equal to 0. In phase change temperature range latent heat is:
+1 - constant LHT=b
+2 - linear function of temperature LHT=aT+b
+according to this two cases can be considered:
+1 - latent heat is constant in temperature range (Ts-Tm),
+    y=ax+b (a=0, b=latent heat [J/kg*K])
+2 - latent heat is a linear function of temperature,
+    y=ax+b (a=latent heat [J/kg*K^2], b=latent heat [J/kg*K])
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     7            52
+*DESC
+Evaporative_surf   
+*SPECDATA
+ 1                   
+ 1.0      Calculation mode (1.0 - default).        
+*TEXT
+This material calculated the heat loss and evaporation rate for
+a saturated surface. The evaporation into the adjacent space and 
+evaporative heat loss for the surface are calculated.
+
+The functions used in the calculation are as follows: 
+
+Evaporation (kg) - from the Lewis relationship: 
+
+Ev=hc.Asurf.(w surf - w air)/cp (kg/s).
+
+w surf is the saturated moisture content at t surf (kg/kg da)
+w air is the moisture content of the air in the zone (kg/kg da)
+hc is the surface convective heat transfer coefficient (W/m^2K))
+Asurf is the surface area (m^2)
+cp is the specific heat capacity of the air (J/kgK)
+
+The evaporative loss for the surface is: 
+
+Qev = Ev*(Hvap-Hsl) (W)
+
+Hvap is the enthalpy of the vapour at the surface temperature
+Hsl is the enthalpy of liquid water at the surface temperature
+
+*ENDTEXT
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     4            4 
+*DESC
+Solar collector back plate    
+*SPECDATA
+5                 
+0.002     Water flow rate (l/s)
+12.00     Water inlet temperature (oC)
+50.0      No. of tubes (-)
+0.01      Tube diameter (m)
+1.0       Tube length (m)
+*TEXT
+Basic data for a 1mx1m solar thermal collector backplate with 1cm 
+diamater circular tubes.
+
+*ENDTEXT
+*END
+*ENDSPMDB
+# Additional classes of entity to be added here same format as above.
+*POWRODB
+*CATEGORY
+# The categories of special material currently supported in the database
+1
+Wind Turbines
+*ENDCATEGORY
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     1            1 
+*DESC
+Simple_WTG 
+*SPECDATA
+9  1     
+5000.     Rated power output (W)   
+12.00     Rated wind speed of turbine (m/s)            
+5.00      Wind speed for turbine cut-in (m/s)
+30.0      Cut-out windspeed (m/s)
+4.72      Power output coefficient (a)
+2.17.     Power output coefficient (b)
+220.      Operating L-N voltage (V)
+0.9       Generator power factor (-)
+1.        Generator type (1-2) 1-Asynchronous 2-Syncronous
+UNKNOWN   
+Climate file associated with the wind turbine. 
+*TEXT
+This is a very simple wind turbine mode based on that described by
+"Twiddly and Weir".
+
+*ENDTEXT
+*END
+*ENDPOWERODB
+*ECONDDB 
+*CATEGORY
+# The categories of special material currently supported in the database
+2
+Electrical conductors
+Transformers
+*ENDCATEGORY
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            1 
+*DESC
+dc_cable
+*SPECDATA
+6       
+0.0       Conductor series resistance Rs (ohms/m)   
+1.0       Length (m)
+*TEXT
+None
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            2 
+*DESC
+one_phase_cable
+*SPECDATA
+6       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)            
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            3 
+*DESC
+two_phase_cable
+*SPECDATA
+7       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m)
+0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
+ 
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
+*ENDTEXT
+*END
+*CONCOMP
+*IDDATA
+# Category | Assoc  connector model no. 
+     1            4 
+*DESC
+three_phase_cable
+*SPECDATA
+7       
+0.0       Phase conductor series resistance Rs (ohms/m)   
+0.0       Phase conductor series reactance Xs (=jwLs) (ohms/m) 
+0.0       Phase-Phase mutual inductive reactance Xm (=jwLm) (ohms/m)           
+  
+0.0       Neutral series resistance Rn (ohms/m)
+0.0       Neutral series reactance Xn (=jwLn) (ohms/m)
+0.0       Phase-Neutral mutual inductive reactance Xm (=jwLm) (ohms/m)
+1.0       Length (m)
+*TEXT
+This is a very simple short line model that ignores the capacitive properties 
+of the conductor. 
+*ENDTEXT
+*END
+*ENDCONDDB 
+#*LOADSDB
+#*MOGENDB
+*ENDDB

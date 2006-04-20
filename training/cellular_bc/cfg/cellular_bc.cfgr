@@ -1,0 +1,87 @@
+* CONFIGURATION3.0
+# ESRU system configuration defined by file 
+# cellular_bc.cfgr
+*date Sat Aug 20 00:31:58 2005  # latest file modification 
+*root cellular_offices_bc
+*zonpth ../zones                  # path to zones
+*netpth ../nets                   # path to networks
+*ctlpth ../ctl                    # path to controls
+*radpth ../rad                    # path to radiance files
+*imgpth ../images                 # path to project images
+*tmppth ../temp                   # path to project scratch folder
+*docpth ../doc                    # path to project documents
+*dbspth ../dbs                    # path to local databases
+*indx    1 # Building only
+ 46.000    0.000   # Latitude & Longitude (diff from meridian)
+      1   0.200   # Site exposure & ground reflectivity
+* DATABASES
+*prm  ../dbs/cellular_offices.materials
+*mlc  ../dbs/cellular_offices.constrdb
+*opt  /usr/esru/esp-r/databases/optics.db2
+*prs  /usr/esru/esp-r/databases/pressc.db1
+*evn  /usr/esru/esp-r/databases/profiles.db1
+*clm  /usr/esru/esp-r/climate/clm67
+*pdb  /usr/esru/esp-r/databases/plantc.db1
+*ctl  ../ctl/cellular_bc.ctl
+*vew    -41.4  -161.8    44.3     2.9     2.7     1.5 40.0
+*calename standard weekday Sat & Sun
+*calentag weekdays,weekdays (all year),259
+*calentag saturday,Saturdays (all year), 53
+*calentag sunday,Sundays (all year), 53
+*list
+ 2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1, 
+ 1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1, 
+ 1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3, 
+ 1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1, 
+ 2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1, 
+ 1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1, 
+ 1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2, 
+ 3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3,1,1,1,1,1,2,3
+*end_list
+*year  1967 # assessment year
+*ipv  cellular_bc.ipv
+*rif  cellular_bcr.rcf
+# sim setup: no. sets startup zone_ts plant_ts save_lv
+*sps     5    3    2   10    4
+   6   2  12   2  win1     # period & name
+*sblr /tmp/cellular_offices_bc_win1.res
+*end_set
+  17   4  23   4  spr      # period & name
+*sblr /tmp/cellular_offices_bc_spr.res
+*end_set
+   3   7   9   7  sum      # period & name
+*sblr /tmp/cellular_offices_bc_sum.res
+*end_set
+   2  10   8  10  aut      # period & name
+*sblr /tmp/cellular_offices_bc_aut.res
+*end_set
+  20  11  26  11  win2     # period & name
+*sblr /tmp/cellular_offices_bc_win2.res
+*end_set
+*end_sps
+*intipv cellular_offices_bcipv.rep
+* PROJ LOG
+cellular_offices_bc.log
+* Building
+base case model of two adjacent cellular offices
+      3  # no of zones
+*zon   1   # reference for manager_a   
+*opr ../zones/manager.opr  # schedules
+*geo ../zones/manager_a.geo  # geometry
+*con ../zones/manager_a.con  # construction
+*tmc ../zones/manager_a.tmc  # transparent constr
+*zend 
+*zon   2   # reference for manager_b   
+*opr ../zones/manager_b.opr  # schedules
+*geo ../zones/manager_b.geo  # geometry
+*con ../zones/manager_b.con  # construction
+*tmc ../zones/manager_b.tmc  # transparent constr
+*zend 
+*zon   3   # reference for coridor     
+*opr ../zones/coridor.opr  # schedules
+*geo ../zones/coridor.geo  # geometry
+*con ../zones/coridor.con  # construction
+*tmc ../zones/coridor.tmc  # transparent constr
+*zend 
+*cnn  cellular_offices_bc.cnn  # connections 
+      0   # no fluid flow network

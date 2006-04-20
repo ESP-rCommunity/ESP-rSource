@@ -1,0 +1,28 @@
+# transparent properties of East_3 defined in ../zones/East_3.tmc
+  23   # surfaces
+# tmc index for each surface
+  0  1  0  1  0  0  0  0  0  1  0  0  2  2  2  2  2  2  2  3  3  3  3
+   1  SC_fictit    # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.999   0.999   0.999   0.999   0.999   0.990
+# For each layer absorption @ 5 angles
+   0.001   0.001   0.001   0.001   0.001
+   0  # blind/shutter control flag
+   5  DSC132414b_o # layers in tmc type 2
+# Transmission @ 5 angles & visible tr.
+   0.079   0.049   0.042   0.034   0.022   0.130
+# For each layer absorption @ 5 angles
+   0.409   0.428   0.425   0.399   0.330
+   0.000   0.000   0.000   0.000   0.000
+   0.199   0.192   0.176   0.147   0.090
+   0.000   0.000   0.000   0.000   0.000
+   0.017   0.011   0.009   0.008   0.005
+   0  # blind/shutter control flag
+   3  DSC644213n_o # layers in tmc type 3
+# Transmission @ 5 angles & visible tr.
+   0.341   0.325   0.294   0.215   0.103   0.643
+# For each layer absorption @ 5 angles
+   0.366   0.372   0.374   0.365   0.329
+   0.000   0.000   0.000   0.000   0.000
+   0.060   0.065   0.066   0.064   0.049
+   0  # blind/shutter control flag

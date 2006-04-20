@@ -1,0 +1,71 @@
+#!/bin/csh
+# take an esp-r model in the standard folder layout and go into
+# each of the folders and convert ascii files (not shading files
+# or binary databases) into dos format. Should be run in the project
+# root folder (i.e. above cfg zones etc.)
+
+echo "FIRST: export any local materials db to ascii format"
+echo "SECOND: Make a copy of the model (i.e. cp -r model model_nt)"
+echo "   (substitute your own folder names for model and model_nt)"
+echo "THIRD: cd to model_nt root directory (above cfg zones etc.)" 
+echo "  "
+echo "This procedure assumesyou have used standard folder layout"
+echo " (cfg zones ctl nets) and standard file names"
+echo " (*.geo *.cfg *.con *.tmc etc.). It does NOT" 
+echo "alter (*.shd or databases)"
+echo "  " 
+echo "usage example: M2dos" 
+echo "current model is in $PWD " 
+set x="y"
+echo "Proceed (y/n) ?"
+set x = {$<}
+if ( $x == "n") then
+  echo " "
+  echo "Exiting with no changes."
+  echo " "
+  exit
+endif
+echo "starting conversion..." >mprogress
+
+foreach i ( `ls -d cfg zones nets ctl` )
+  if ( -d $i ) then
+    echo $i
+    cd $i
+    foreach j ( `ls *.cfg *.cnn *.ipv *.log *.ctl *.geo *.con *.tmc *.opr *.obs *.htc` )
+      if ( -f $j ) then
+        /usr/bin/echo "checking for slash in $j" 
+        /usr/bin/rm -f $j-tf1 $j-tf2
+        /usr/bin/echo "******" >>EDITS
+        /usr/bin/echo "*" List of back slash in file $j >>EDITS
+        /usr/bin/sed 's/[/]/\\/g' $j > $j-tf1        
+        /usr/bin/sed 's/\\usr/c:\\user/g' $j-tf1 > $j-tf2       
+        /usr/bin/unix2dos $j-tf2 $j
+        /usr/bin/rm -f $j-tf1 $j-tf2
+        /usr/bin/echo $j  finished
+      endif
+    end
+    cd ..
+  endif
+end
+
+echo converting any local multicon databases
+foreach i ( `ls -d dbs databases` )
+  if ( -d $i ) then
+    echo $i
+    cd $i
+    foreach j ( `ls *.txt *.asc multicon.* optic*` )
+      if ( -f $j ) then
+        /usr/bin/echo "checking for slash in $j" 
+        /usr/bin/rm -f $j-tf1 $j-tf2
+        /usr/bin/echo "******" >>EDITS
+        /usr/bin/echo "*" List of back slash in file $j >>EDITS
+        /usr/bin/sed 's/[/]/\\/g' $j > $j-tf1        
+        /usr/bin/sed 's/\\usr/c:\\user/g' $j-tf1 > $j-tf2       
+        /usr/bin/unix2dos $j-tf2 $j
+        /usr/bin/rm -f $j-tf1 $j-tf2
+        /usr/bin/echo $j  finished
+      endif
+    end
+    cd ..
+  endif
+end

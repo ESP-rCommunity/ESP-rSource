@@ -1,0 +1,65 @@
+*connections  for cellular_hi_res
+*Date Thu Aug 25 15:26:05 2005
+     62   # number of connections
+   1   1   3   3   1  #   1  pt_general in manager_a >|< pt_general in manager_b
+   1   2   3   2   8  #   2  part_frame in manager_a >|< part_frame in coridor
+   1   3   3   2   6  #   3  door in manager_a >|< door in coridor
+   1   4   1   0   0  #   4  pt_other in manager_a >|< Identical environment
+   1   5   1   0   0  #   5  ceiling in manager_a >|< Identical environment
+   1   6   1   0   0  #   6  floor in manager_a >|< Identical environment
+   1   7   0   0   0  #   7  spandral in manager_a is External
+   1   8   0   0   0  #   8  frame in manager_a is External
+   1   9   0   0   0  #   9  glazing in manager_a is External
+   1  10   3   2   9  #  10  part_glaz in manager_a >|< part_glaz in coridor
+   1  11   3   2   7  #  11  ptn_corid in manager_a >|< ptn_corid in coridor
+   1  12   1   0   0  #  12  pt_other_a in manager_a >|< Identical environment
+   1  13   1   0   0  #  13  pt_other_b in manager_a >|< Identical environment
+   1  14   3   3  14  #  14  pt_gen_a in manager_a >|< pt_gen_a in manager_b
+   1  15   3   3  15  #  15  pt_gen_b in manager_a >|< pt_gen_b in manager_b
+   1  16   1   0   0  #  16  pt_other_c in manager_a >|< Identical environment
+   1  17   1   0   0  #  17  floor_b in manager_a >|< Identical environment
+   1  18   1   0   0  #  18  floor_c in manager_a >|< Identical environment
+   1  19   1   0   0  #  19  ceiling_b in manager_a >|< Identical environment
+   1  20   1   0   0  #  20  ceiling_c in manager_a >|< Identical environment
+   1  21   5   0   0  #  21  desk in manager_a is adiabatic
+   1  22   5   0   0  #  22  desk_a in manager_a is adiabatic
+   2   1   1   0   0  #  23  right in coridor >|< Identical environment
+   2   2   1   0   0  #  24  wall in coridor >|< Identical environment
+   2   3   1   0   0  #  25  left in coridor >|< Identical environment
+   2   4   1   0   0  #  26  ceiling in coridor >|< Identical environment
+   2   5   1   0   0  #  27  floor in coridor >|< Identical environment
+   2   6   3   1   3  #  28  door in coridor >|< door in manager_a
+   2   7   3   1  11  #  29  ptn_corid in coridor >|< ptn_corid in manager_a
+   2   8   3   1   2  #  30  part_frame in coridor >|< part_frame in manager_a
+   2   9   3   1  10  #  31  part_glaz in coridor >|< part_glaz in manager_a
+   2  10   3   3   2  #  32  part_frameb in coridor >|< part_frame in manager_b
+   2  11   3   3   3  #  33  door_b in coridor >|< door in manager_b
+   2  12   3   3  11  #  34  ptn_coridb in coridor >|< ptn_corid in manager_b
+   2  13   3   3  10  #  35  part_glazb in coridor >|< part_glaz in manager_b
+   2  14   5   0   0  #  36  filler in coridor is adiabatic
+   3   1   3   1   1  #  37  pt_general in manager_b >|< pt_general in manager_a
+   3   2   3   2  10  #  38  part_frame in manager_b >|< part_frameb in coridor
+   3   3   3   2  11  #  39  door in manager_b >|< door_b in coridor
+   3   4   1   0   0  #  40  pt_other in manager_b >|< Identical environment
+   3   5   1   0   0  #  41  ceiling in manager_b >|< Identical environment
+   3   6   1   0   0  #  42  floor in manager_b >|< Identical environment
+   3   7   0   0   0  #  43  spandral in manager_b is External
+   3   8   0   0   0  #  44  frame in manager_b is External
+   3   9   0   0   0  #  45  glazing in manager_b is External
+   3  10   3   2  13  #  46  part_glaz in manager_b >|< part_glazb in coridor
+   3  11   3   2  12  #  47  ptn_corid in manager_b >|< ptn_coridb in coridor
+   3  12   1   0   0  #  48  pt_other_a in manager_b >|< Identical environment
+   3  13   1   0   0  #  49  pt_other_b in manager_b >|< Identical environment
+   3  14   3   1  14  #  50  pt_gen_a in manager_b >|< pt_gen_a in manager_a
+   3  15   3   1  15  #  51  pt_gen_b in manager_b >|< pt_gen_b in manager_a
+   3  16   1   0   0  #  52  pt_other_c in manager_b >|< Identical environment
+   3  17   1   0   0  #  53  floor_b in manager_b >|< Identical environment
+   3  18   1   0   0  #  54  floor_c in manager_b >|< Identical environment
+   3  19   1   0   0  #  55  ceiling_b in manager_b >|< Identical environment
+   3  20   1   0   0  #  56  ceiling_c in manager_b >|< Identical environment
+   3  21   5   0   0  #  57  desk in manager_b is adiabatic
+   3  22   5   0   0  #  58  desk_a in manager_b is adiabatic
+   3  23   5   0   0  #  59  cabinet_a in manager_b is adiabatic
+   3  24   5   0   0  #  60  cabinet_aa in manager_b is adiabatic
+   3  25   5   0   0  #  61  cabinet_b in manager_b is adiabatic
+   3  26   5   0   0  #  62  cabinet_bb in manager_b is adiabatic

@@ -1,0 +1,623 @@
+*IPV_REPORT,2
+glenview3.ipv
+ 
+*title,EDAS consultancy for proposed conservato
+*version,Version glenview
+*climate,LONDON GATWICK IWEC WMO 037760
+*latitude, 57.48
+*longitude, -4.20
+*synopsis,Large fully glazed conservatory inbetween two hospital wards. The conservatory is intended as increased living space for patients. Convective heating and cooling. Ordinary double glazing units.
+ 
+*simulations,  5
+# start & finish days for each season
+*period,15/ 1/1980,16/ 1/1980,Tue 15 Jan,Wed 16 Jan,glenview 1st winter run
+*period, 8/ 3/1980, 9/ 3/1980,Sat  8 Mar,Sun  9 Mar,glenview spring run
+*period,29/ 5/1980,30/ 5/1980,Thu 29 May,Fri 30 May,glenview summer run
+*period,18/ 9/1980,19/ 9/1980,Thu 18 Sep,Fri 19 Sep,glenview autumn run
+*period,13/11/1980,14/11/1980,Thu 13 Nov,Fri 14 Nov,glenview 2nd winter run
+# nb days to display and list of days
+*display_days,3
+15/ 1/1980,Tue 15 Jan
+ 8/ 3/1980,Sat  8 Mar
+29/ 5/1980,Thu 29 May
+*end_display
+ 
+*assessment, 1,glenview 1st winter run
+ 
+*report,70,diversified,dayroom,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25600.002,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,dayroom,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25600.002,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,dayroom,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,3200.000,0.000,480.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,dayroom,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,dayroom,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1451.508,0.000,112.292,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,dayroom,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,557.379,0.000,43.120,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,10,9.80,10,9.80,10,below
+2,18.0-20.0,17,16.67,27,26.47
+3,20.0-22.0,72,70.59,99,97.06
+4,22.0-24.0,3,2.94,102,100.00
+5,24.0-26.0,0,0.00,102,100.00
+6,26.0-28.0,0,0.00,102,100.00
+7,28.0-30.0,0,0.00,102,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,171.302,13.457,19.546,171.302,171.302,0.000,114.057
+*end_report
+ 
+*day_to_display,15
+ 
+*report,70,demand_per_unit_time,dayroom,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+15.0208,19163.8,0.0,0.0,0.0,0.0,0.0
+15.0625,17596.3,0.0,0.0,0.0,0.0,0.0
+15.1042,17874.6,0.0,0.0,0.0,0.0,0.0
+15.1458,16236.8,0.0,0.0,0.0,0.0,0.0
+15.1875,15550.7,0.0,0.0,0.0,0.0,0.0
+15.2292,17646.1,0.0,0.0,0.0,0.0,0.0
+15.2708,16918.5,0.0,0.0,0.0,0.0,0.0
+15.3125,16822.8,0.0,0.0,0.0,0.0,0.0
+15.3542,17614.3,0.0,0.0,0.0,0.0,0.0
+15.3958,25112.9,0.0,192.5,0.0,0.0,0.0
+15.4375,25600.0,0.0,2887.5,0.0,0.0,0.0
+15.4792,25600.0,0.0,3080.0,0.0,0.0,0.0
+15.5208,17017.8,0.0,3080.0,0.0,0.0,0.0
+15.5625,11817.5,0.0,3080.0,0.0,0.0,0.0
+15.6042,12275.8,0.0,3080.0,0.0,0.0,0.0
+15.6458,16526.3,0.0,3080.0,0.0,0.0,0.0
+15.6875,17705.2,0.0,2887.5,0.0,0.0,0.0
+15.7292,1180.7,0.0,192.5,0.0,0.0,0.0
+15.7708,0.0,0.0,0.0,0.0,0.0,0.0
+15.8125,0.0,0.0,0.0,0.0,0.0,0.0
+15.8542,1522.9,0.0,0.0,0.0,0.0,0.0
+15.8958,6880.1,0.0,0.0,0.0,0.0,0.0
+15.9375,6825.6,0.0,0.0,0.0,0.0,0.0
+15.9792,6333.1,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 8
+*fields,West_1,West_2,West_3,West_4,East_1,East_2,East_3,East_4
+*data
+# Timestep performance metrics.
+# Lib: glenview_win1.res: Results for glenview
+# Period: Tue 15 Jan @00h52 to: Tue 15 Jan @23h52 Year:1980 : sim@ 15m, output@ 60m (averaged)
+#Time|West_1 Res|West_2 Res|West_3 Res|West_4 Res|East_1 Res|East_2 Res|East_3 Res|East_4 Res
+#    | T        | T        | T        | T        | T        | T        | T        | T
+#    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C
+15.0208,10.27,10.31,10.00,10.21,9.96,10.15,10.29,10.15
+15.0625,10.32,10.44,10.22,10.41,10.16,10.20,10.43,10.32
+15.1042,10.23,10.33,10.08,10.31,10.09,10.18,10.44,10.30
+15.1458,10.29,10.41,10.36,10.35,10.38,10.23,10.51,10.32
+15.1875,10.35,10.51,10.50,10.61,10.46,10.39,10.54,10.32
+15.2292,10.35,10.42,10.22,10.37,10.20,10.23,10.48,10.33
+15.2708,10.36,10.44,10.28,10.39,10.26,10.26,10.48,10.35
+15.3125,10.35,10.45,10.33,10.42,10.33,10.31,10.50,10.36
+15.3542,10.34,10.49,10.25,10.51,10.24,10.35,10.52,10.37
+15.3958,11.02,11.39,11.00,11.89,11.10,11.84,11.54,11.33
+15.4375,13.46,14.28,13.65,14.86,13.82,14.77,14.74,14.49
+15.4792,16.95,18.01,16.58,18.37,16.82,18.27,18.54,17.84
+15.5208,19.65,20.40,18.70,20.38,18.76,20.13,20.67,19.95
+15.5625,20.33,20.95,19.52,20.88,19.31,20.53,20.75,20.10
+15.6042,20.26,20.62,20.10,20.97,19.78,20.53,20.61,19.98
+15.6458,19.98,20.36,20.22,20.49,20.09,20.24,20.44,19.89
+15.6875,20.11,20.53,20.26,20.42,20.22,20.17,20.47,20.07
+15.7292,17.81,18.82,18.65,19.29,18.54,18.92,18.55,17.18
+15.7708,14.82,15.98,15.86,16.69,15.83,16.32,15.85,14.68
+15.8125,12.29,13.36,13.58,14.14,13.62,13.91,13.60,12.78
+15.8542,10.87,11.41,11.83,12.20,11.85,12.15,11.87,11.29
+15.8958,10.36,10.70,11.05,11.08,10.95,10.86,10.90,10.42
+15.9375,10.41,10.74,11.16,10.97,11.05,10.75,10.92,10.32
+15.9792,10.36,10.83,11.32,11.17,11.27,11.06,11.11,10.75
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 2,glenview spring run
+ 
+*report,70,diversified,dayroom,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25550.607,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,dayroom,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25550.607,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,dayroom,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,3200.000,0.000,480.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,dayroom,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,dayroom,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,811.673,0.000,176.458,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,dayroom,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,311.682,0.000,67.760,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,8,4.55,8,4.55,0,below
+2,18.0-20.0,5,2.84,13,7.39
+3,20.0-22.0,129,73.30,142,80.68
+4,22.0-24.0,34,19.32,176,100.00
+5,24.0-26.0,0,0.00,176,100.00
+6,26.0-28.0,0,0.00,176,100.00
+7,28.0-30.0,0,0.00,176,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,182.752,16.924,20.989,182.184,182.752,0.000,138.816
+*end_report
+ 
+*day_to_display,67
+ 
+*report,70,demand_per_unit_time,dayroom,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+67.0208,5759.1,0.0,0.0,0.0,0.0,0.0
+67.0625,7084.1,0.0,0.0,0.0,0.0,0.0
+67.1042,6539.9,0.0,0.0,0.0,0.0,0.0
+67.1458,5613.3,0.0,0.0,0.0,0.0,0.0
+67.1875,4977.1,0.0,0.0,0.0,0.0,0.0
+67.2292,3563.7,0.0,0.0,0.0,0.0,0.0
+67.2708,4988.6,0.0,0.0,0.0,0.0,0.0
+67.3125,3954.0,0.0,0.0,0.0,0.0,0.0
+67.3542,4982.5,0.0,0.0,0.0,0.0,0.0
+67.3958,24462.2,0.0,192.5,0.0,0.0,0.0
+67.4375,25550.6,0.0,2887.5,0.0,0.0,0.0
+67.4792,8265.2,0.0,3080.0,0.0,0.0,0.0
+67.5208,0.0,0.0,3080.0,0.0,0.0,0.0
+67.5625,0.0,0.0,3080.0,0.0,0.0,0.0
+67.6042,0.0,0.0,3080.0,0.0,0.0,0.0
+67.6458,1150.8,0.0,3080.0,0.0,0.0,0.0
+67.6875,5433.9,0.0,3080.0,0.0,0.0,0.0
+67.7292,5399.6,0.0,3080.0,0.0,0.0,0.0
+67.7708,6063.4,0.0,3080.0,0.0,0.0,0.0
+67.8125,7140.1,0.0,3080.0,0.0,0.0,0.0
+67.8542,8872.4,0.0,2887.5,0.0,0.0,0.0
+67.8958,967.7,0.0,192.5,0.0,0.0,0.0
+67.9375,0.0,0.0,0.0,0.0,0.0,0.0
+67.9792,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 8
+*fields,West_1,West_2,West_3,West_4,East_1,East_2,East_3,East_4
+*data
+# Timestep performance metrics.
+# Lib: glenview_spr.res: Results for glenview
+# Period: Sat  8 Mar @00h52 to: Sat  8 Mar @23h52 Year:1980 : sim@ 15m, output@ 60m (averaged)
+#Time|West_1 Res|West_2 Res|West_3 Res|West_4 Res|East_1 Res|East_2 Res|East_3 Res|East_4 Res
+#    | T        | T        | T        | T        | T        | T        | T        | T
+#    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C
+67.0208,10.31,10.66,11.00,10.94,11.06,10.90,10.87,10.53
+67.0625,10.34,10.74,11.03,10.98,11.10,10.95,11.01,10.69
+67.1042,10.36,10.76,11.03,11.00,11.09,10.96,10.91,10.59
+67.1458,10.33,10.71,11.05,10.95,11.08,10.84,10.86,10.67
+67.1875,10.35,10.68,11.06,10.89,11.17,10.88,11.01,10.86
+67.2292,10.29,10.53,10.97,10.72,11.15,10.69,10.79,10.62
+67.2708,10.33,10.52,11.01,10.71,11.08,10.65,10.78,10.51
+67.3125,10.43,10.74,11.14,10.88,11.11,10.80,10.87,10.67
+67.3542,10.49,10.78,11.16,11.11,11.24,11.07,10.90,10.57
+67.3958,13.00,12.98,12.74,13.29,12.85,13.24,12.96,12.93
+67.4375,17.13,17.43,16.92,17.76,17.03,17.65,17.46,17.43
+67.4792,20.70,21.52,21.15,21.64,21.26,21.62,21.59,20.85
+67.5208,21.95,23.13,22.24,23.19,22.19,22.97,23.01,21.92
+67.5625,22.18,23.34,22.41,23.44,22.27,23.22,23.27,22.06
+67.6042,21.46,22.61,22.03,22.74,21.88,22.48,22.45,21.18
+67.6458,20.64,21.51,21.35,21.81,21.17,21.58,21.46,20.42
+67.6875,20.21,20.75,20.93,20.95,20.98,20.81,20.80,20.26
+67.7292,20.20,20.61,20.97,20.85,21.09,20.70,20.67,20.20
+67.7708,20.27,20.61,21.11,21.08,21.11,20.84,20.82,20.29
+67.8125,20.33,20.63,21.16,20.89,21.27,20.78,20.79,20.32
+67.8542,20.22,20.55,21.07,20.68,21.30,20.74,20.74,20.26
+67.8958,18.36,19.20,19.90,19.70,19.96,19.56,19.49,18.58
+67.9375,17.03,17.73,18.25,18.17,18.14,17.85,17.73,16.86
+67.9792,15.48,16.23,16.79,16.60,16.73,16.39,16.26,15.39
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 3,glenview summer run
+ 
+*report,70,diversified,dayroom,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,12118.515,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,dayroom,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,12118.515,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,dayroom,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,2800.000,0.000,480.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,dayroom,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-6654.686,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,dayroom,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,42.651,-524.015,112.292,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,dayroom,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,16.378,-201.222,43.120,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,0,0.00,0,0.00,0,below
+2,18.0-20.0,0,0.00,0,0.00
+3,20.0-22.0,1,0.89,1,0.89
+4,22.0-24.0,21,18.75,22,19.64
+5,24.0-26.0,88,78.57,110,98.21
+6,26.0-28.0,2,1.79,112,100.00
+7,28.0-30.0,0,0.00,112,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,204.332,21.735,24.999,203.266,204.332,0.000,190.530
+*end_report
+ 
+*day_to_display,149
+ 
+*report,70,demand_per_unit_time,dayroom,
+*title,Energy Demand per Unit Time
+# nb of rows nb of data columns
+*format,tabular,XYYY,24,6
+*fields,hour,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+149.0208,0.0,0.0,0.0,0.0,0.0,0.0
+149.0625,0.0,0.0,0.0,0.0,0.0,0.0
+149.1042,0.0,0.0,0.0,0.0,0.0,0.0
+149.1458,0.0,0.0,0.0,0.0,0.0,0.0
+149.1875,68.1,0.0,0.0,0.0,0.0,0.0
+149.2292,220.4,0.0,0.0,0.0,0.0,0.0
+149.2708,0.0,0.0,0.0,0.0,0.0,0.0
+149.3125,0.0,0.0,0.0,0.0,0.0,0.0
+149.3542,1600.0,0.0,0.0,0.0,0.0,0.0
+149.3958,12118.5,0.0,192.5,0.0,0.0,0.0
+149.4375,224.1,-3501.6,2887.5,0.0,0.0,0.0
+149.4792,0.0,-14116.5,3080.0,0.0,0.0,0.0
+149.5208,0.0,-17891.4,3080.0,0.0,0.0,0.0
+149.5625,0.0,-17049.7,3080.0,0.0,0.0,0.0
+149.6042,0.0,-16241.1,3080.0,0.0,0.0,0.0
+149.6458,0.0,-10428.7,3080.0,0.0,0.0,0.0
+149.6875,0.0,-6314.5,2887.5,0.0,0.0,0.0
+149.7292,0.0,-265.9,192.5,0.0,0.0,0.0
+149.7708,0.0,0.0,0.0,0.0,0.0,0.0
+149.8125,0.0,0.0,0.0,0.0,0.0,0.0
+149.8542,0.0,0.0,0.0,0.0,0.0,0.0
+149.8958,0.0,0.0,0.0,0.0,0.0,0.0
+149.9375,0.0,0.0,0.0,0.0,0.0,0.0
+149.9792,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,thermal_comfort,comfort
+*title,Resultant temperature (degC)
+*format,tabular,XYYY,24, 8
+*fields,West_1,West_2,West_3,West_4,East_1,East_2,East_3,East_4
+*data
+# Timestep performance metrics.
+# Lib: glenview_sum.res: Results for glenview
+# Period: Thu 29 May @00h52 to: Thu 29 May @23h52 Year:1980 : sim@ 15m, output@ 60m (averaged)
+#Time|West_1 Res|West_2 Res|West_3 Res|West_4 Res|East_1 Res|East_2 Res|East_3 Res|East_4 Res
+#    | T        | T        | T        | T        | T        | T        | T        | T
+#    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C    | deg C
+149.0208,12.58,12.57,12.59,12.96,12.57,12.79,12.56,12.52
+149.0625,11.98,11.94,11.97,12.33,11.94,12.18,11.93,11.85
+149.1042,11.33,11.35,11.38,11.72,11.36,11.58,11.33,11.21
+149.1458,10.81,10.79,10.82,11.13,10.81,10.99,10.77,10.71
+149.1875,10.52,10.48,10.55,10.79,10.57,10.64,10.47,10.40
+149.2292,10.46,10.44,10.50,10.73,10.56,10.64,10.44,10.36
+149.2708,11.07,11.00,10.99,11.14,11.01,11.10,10.97,10.95
+149.3125,13.09,12.87,12.48,12.75,12.98,13.11,12.93,13.08
+149.3542,16.31,16.03,14.73,15.79,15.83,16.60,16.17,16.44
+149.3958,20.09,20.74,18.80,20.71,19.96,21.37,21.01,20.94
+149.4375,23.22,24.48,21.73,24.66,22.68,24.99,24.66,24.51
+149.4792,25.01,25.85,23.02,25.61,23.72,25.82,26.02,25.82
+149.5208,25.66,25.86,23.28,25.70,23.51,25.76,25.99,25.61
+149.5625,26.00,25.90,23.65,25.80,23.43,25.59,25.96,25.55
+149.6042,25.87,25.90,24.05,25.79,23.41,25.35,25.92,25.63
+149.6458,25.88,25.87,24.43,25.71,23.62,25.31,25.87,25.84
+149.6875,25.99,25.84,24.86,25.74,24.04,25.14,25.77,25.88
+149.7292,26.15,25.87,24.84,25.78,24.11,24.81,25.38,26.14
+149.7708,24.91,24.77,24.17,24.85,23.74,24.26,24.58,25.05
+149.8125,23.50,23.46,23.05,23.47,22.77,23.09,23.28,23.50
+149.8542,21.94,21.96,21.61,22.04,21.46,21.81,21.81,21.85
+149.8958,20.39,20.48,20.26,20.71,20.21,20.55,20.45,20.42
+149.9375,19.15,19.16,18.96,19.41,18.91,19.26,19.12,19.08
+149.9792,18.13,18.03,17.90,18.24,17.82,18.07,17.96,17.94
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 4,glenview autumn run
+ 
+*report,70,diversified,dayroom,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,24000.000,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,dayroom,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,24400.000,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,dayroom,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,3200.000,0.000,480.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,dayroom,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,dayroom,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,327.675,0.000,112.292,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,dayroom,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,125.827,0.000,43.120,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,0,0.00,0,0.00,0,below
+2,18.0-20.0,9,8.04,9,8.04
+3,20.0-22.0,64,57.14,73,65.18
+4,22.0-24.0,21,18.75,94,83.93
+5,24.0-26.0,18,16.07,112,100.00
+6,26.0-28.0,0,0.00,112,100.00
+7,28.0-30.0,0,0.00,112,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,194.253,19.538,21.621,193.409,194.253,0.000,159.818
+*end_report
+ 
+*end_assessment
+ 
+ 
+*assessment, 5,glenview 2nd winter run
+ 
+*report,70,diversified,dayroom,
+*title,Diversified capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25600.002,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,dayroom,
+*title,Diffuse capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,25600.002,0.000,3080.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,dayroom,
+*title,Maximum in any one zone capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,3200.000,0.000,480.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,dayroom,
+*title,Minimum capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,dayroom,
+*title,Mean capacity (W)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1504.548,0.000,112.292,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,dayroom,
+*title,Integrated demand (kWhr)
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,577.746,0.000,43.120,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 6,distribution,comfort
+*title,Thermal comfort
+*format,frequency,7,6,16.0,2.0,30.0
+*fields,bin,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+1,16.0-18.0,40,40.40,40,40.40,13,below
+2,18.0-20.0,38,38.38,78,78.79
+3,20.0-22.0,21,21.21,99,100.00
+4,22.0-24.0,0,0.00,99,100.00
+5,24.0-26.0,0,0.00,99,100.00
+6,26.0-28.0,0,0.00,99,100.00
+7,28.0-30.0,0,0.00,99,100.00,0,above
+*end_report
+ 
+*report, 6,stats,comfort
+*title,Resultant temperature (degC)
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,164.814,13.538,18.143,164.599,164.814,0.000,114.284
+*end_report
+ 
+*end_assessment
+*end
+ 
+*Summary
+ 
+*report,98,performance,aggregate
+*title,Energy Performance (kWh/m^2 a)
+*format,table,2,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,14.238,1.803,2.153,0.000,0.000,0.000
+*data,Total,18.19
+*end_report
+ 
+*report,74,power_capacity,aggregate
+*title,Maximum power capacity (W/m^2)
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,229.391,0.000,27.599,0.000,0.000,0.000
+*end_report
+ 
+*report,75,emissions,aggregate
+*title,Pollutant emissions [kg/m^2/yr]
+*format,table,3,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,CO2,2.841,1.415,1.689,0.000,0.000,0.000
+*data,NOx,0.004,0.015,0.018,0.000,0.000,0.000
+*data,SOx,0.003,0.004,0.005,0.000,0.000,0.000
+*end_report
+ 
+*report76,thermal_comfort,aggregate
+*title,Overall Thermal Comfort
+*format,frequency,7,5,16.0,2.0,30.0
+*fields,bin,range,winter,spring,summer,autumn,winter
+*data
+16-18,20,8,0,0,53
+18-20,17,5,0,9,38
+20-22,72,129,1,64,21
+22-24,3,34,21,21,0
+24-26,0,0,88,18,0
+26-28,0,0,2,0,0
+28-30,0,0,0,0,0
+*end_report
+*end

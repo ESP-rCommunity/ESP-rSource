@@ -1,0 +1,1568 @@
+*VALIDATION
+*help	The models contained inthe following sections demonstrate
+*help	ESP-r's performance against accepted international standards.
+*help   
+*help	It is possible to run individual tests or multiple selections.
+*label  -- ASHRAE 140 --
+*item	
+*group	High mass basic sensitivity tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	900-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*stdval ESP_1993
+*metric
+-3837 -3126   Annual_heating Total 1 0 -3126 # min, max, desc, data, zone id, surf id, std_val
+  3833  4624  Annual_cooling Total 1 0 4005 # min, max, desc, data, zone id, surf id, std_val
+-0.587 -0.414 Peak_heating   Max_value 1 0 -0.587 # min, max, desc, data, zone id, surf id, std_val
+ 2.810 3.355  Peak_cooling   Min_value 1 0 3.306 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	910-900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/910/910.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/910
+*act  -p default silent
+*rec /tmp/910.res -act recover silent -actf 910.pif 
+*disp /tmp/910.dat
+*stdval ESP_1993
+*metric
+179 442 Annual_heating Total 1 0 405 # min, max, desc, data, zone id, surf id, std_val
+832 1561 Annual_cooling Total 1 0 1311 # min, max, desc, data, zone id, surf id, std_val
+0.003 0.019 Peak_heating Max_value 1 0 0.008 # min, max, desc, data, zone id, surf id, std_val
+0.310 1.122 Peak_cooling Min_value 1 0 0.992 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	920-900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/920/920.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/920
+*act  -p default silent
+*rec /tmp/920.res -act recover silent -actf 920.pif 
+*disp /tmp/920.dat
+*stdval ESP_1993
+*metric
+2070 2505 Annual_heating Total 1 0 2143 # min, max, desc, data, zone id, surf id, std_val
+-16 323 Annual_cooling Total 1 0 292 # min, max, desc, data, zone id, surf id, std_val
+0.192 0.458 Peak_heating Max_value 1 0 0.458 # min, max, desc, data, zone id, surf id, std_val
+-0.048 0.517 Peak_cooling Min_value 1 0 0.503 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	930-920
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/920/920.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/920
+*act  -p default silent
+*rec /tmp/920.res -act recover silent -actf 920.pif 
+*disp /tmp/920.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/930/930.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/930
+*act  -p default silent
+*rec /tmp/930.res -act recover silent -actf 930.pif 
+*disp /tmp/930.dat
+*stdval ESP_1993
+*metric
+595 1080 Annual_heating Total 1 0 830 # min, max, desc, data, zone id, surf id, std_val
+682 1174 Annual_cooling Total 1 0 801 # min, max, desc, data, zone id, surf id, std_val
+0.027 0.047 Peak_heating Max_value 1 0 0.047 # min, max, desc, data, zone id, surf id, std_val
+0.387 0.721 Peak_cooling Min_value 1 0 0.512 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	940-900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/940/940.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/940
+*act  -p default silent
+*rec /tmp/940.res -act recover silent -actf 940.pif 
+*disp /tmp/940.dat
+*stdval ESP_1993
+*metric
+-718 -377 Annual_heating Total 1 0 -377 # min, max, desc, data, zone id, surf id, std_val
+53 174 Annual_cooling Total 1 0 53 # min, max, desc, data, zone id, surf id, std_val
+1.130 2.631 Peak_heating Max_value 1 0 1.130 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.000 Peak_cooling Min_value 1 0 0.000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	950-900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/950/950.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/950
+*act  -p default silent
+*rec /tmp/950.res -act recover silent -actf 950.pif 
+*disp /tmp/950.dat
+*stdval ESP_1993
+*metric
+000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+1745 2826 Annual_cooling Total 1 0 1745 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+0.534 0.881 Peak_cooling Min_value 1 0 0.855 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	960-900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/960/960.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/960
+*act  -p default silent
+*rec /tmp/960.res -act recover silent -actf 960.pif 
+*disp /tmp/960.dat
+*stdval ESP_1993
+*metric
+775 1718 Annual_heating Total 1 0 1141 # min, max, desc, data, zone id, surf id, std_val
+1644 2697 Annual_cooling Total 1 0 1644 # min, max, desc, data, zone id, surf id, std_val
+-1.018 -0.440 Peak_heating Max_value 1 0 -0.440 # min, max, desc, data, zone id, surf id, std_val
+1.935 2.501 Peak_cooling Min_value 1 0 1.935 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+# CASE 990 WAS NOT INCLUDED IN THE ASHRAE STANDARD (BESTEST THOUGH HAD IT)
+# UNCOMMENT IT (delete the #) IF YOU WANT TO FURTHER STUDY THIS CASE 
+# *item
+# *name	990-900
+# *cfg	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/900/900.cfg
+# *root	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/900
+# *act  -p default silent
+# *rec /tmp/900.res -act recover silent -actf 900.pif 
+# *disp /tmp/900.dat
+# *cfg	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/990/990.cfg
+# *root	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/990
+# *act  -p default silent
+# *rec /tmp/990.res -act recover silent -actf 990.pif 
+# *disp /tmp/990.dat
+# *stdval ESP_1993
+# *metric
+# 000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 000 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 0.000 0.000 Peak_cooling Min_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# *endmetric
+*item
+*group	Low mass basic sensitivity tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	610-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/610/610.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/610
+*act  -p default silent
+*rec /tmp/610.res -act recover silent -actf 610.pif 
+*disp /tmp/610.dat
+*stdval ESP_1993
+*metric
+21 98 Annual_heating Total 1 0 59 # min, max, desc, data, zone id, surf id, std_val
+1272 2227 Annual_cooling Total 1 0 2222 # min, max, desc, data, zone id, surf id, std_val
+-0.011 0.001 Peak_heating Max_value 1 0 0.000 # min, max, desc, data, zone id, surf id, std_val
+0.116 0.811 Peak_cooling Min_value 1 0 0.525 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	620-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/620/620.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/620
+*act  -p default silent
+*rec /tmp/620.res -act recover silent -actf 620.pif 
+*disp /tmp/620.dat
+*stdval ESP_1993
+*metric
+138 682 Annual_heating Total 1 0 317 # min, max, desc, data, zone id, surf id, std_val
+2341 2960 Annual_cooling Total 1 0 2720 # min, max, desc, data, zone id, surf id, std_val
+-0.008 0.240 Peak_heating Max_value 1 0 0.154 # min, max, desc, data, zone id, surf id, std_val
+1.716 2.560 Peak_cooling Min_value 1 0 2.560 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	630-620
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/620/620.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/620
+*act  -p default silent
+*rec /tmp/620.res -act recover silent -actf 620.pif 
+*disp /tmp/620.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/630/630.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/630
+*act  -p default silent
+*rec /tmp/630.res -act recover silent -actf 630.pif 
+*disp /tmp/630.dat
+*stdval ESP_1993
+*metric
+267 551 Annual_heating Total 1 0 437 # min, max, desc, data, zone id, surf id, std_val
+984 1845 Annual_cooling Total 1 0 1288 # min, max, desc, data, zone id, surf id, std_val
+-0.021 0.003 Peak_heating Max_value 1 0 0.001 # min, max, desc, data, zone id, surf id, std_val
+0.381 0.842 Peak_cooling Min_value 1 0 0.562 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	640-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/640/640.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/640
+*act  -p default silent
+*rec /tmp/640.res -act recover silent -actf 640.pif 
+*disp /tmp/640.dat
+*stdval ESP_1993
+*metric
+-2166 -1545 Annual_heating Total 1 0 -1545 # min, max, desc, data, zone id, surf id, std_val
+153 320 Annual_cooling Total 1 0 185 # min, max, desc, data, zone id, surf id, std_val
+1.546 2.600 Peak_heating Max_value 1 0 1.795 # min, max, desc, data, zone id, surf id, std_val
+0.033 0.080 Peak_cooling Min_value 1 0 0.033 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	650-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/650/650.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/650
+*act  -p default silent
+*rec /tmp/650.res -act recover silent -actf 650.pif 
+*disp /tmp/650.dat
+*stdval ESP_1993
+# HEATING LOADS FOR THIS CASE ARE NOT INCLUDED IN THE STANDARD
+# IF YOU WANT TO STUDY THEM YOU HAVE TO MOVE 
+# THE NEXT 2 LINES BELOW THE NEXT LINE THAT SAYS "*metric" AND DELETE THEIR 1ST CHARACTER (#)
+# 000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+*metric
+1284 1419 Annual_cooling Total 1 0 1321 # min, max, desc, data, zone id, surf id, std_val
+0.108 0.163 Peak_cooling Min_value 1 0 0.163 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*group	High mass basic and in-depth sensit. tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	800-430
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/430/430.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/430
+*act  -p default silent
+*rec /tmp/430.res -act recover silent -actf 430.pif 
+*disp /tmp/430.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/800/800.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/800
+*act  -p default silent
+*rec /tmp/800.res -act recover silent -actf 800.pif 
+*disp /tmp/800.dat
+*stdval ESP_1993
+*metric
+-649 -501 Annual_heating Total 1 0 -561 # min, max, desc, data, zone id, surf id, std_val
+367 550 Annual_cooling Total 1 0 429 # min, max, desc, data, zone id, surf id, std_val
+-0.215 -0.141 Peak_heating Max_value 1 0 -0.215 # min, max, desc, data, zone id, surf id, std_val
+0.410 1.220 Peak_cooling Min_value 1 0 0.908 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	900-800
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/800/800.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/800
+*act  -p default silent
+*rec /tmp/800.res -act recover silent -actf 800.pif 
+*disp /tmp/800.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*stdval ESP_1993
+*metric
+-5356 -3698 Annual_heating Total 1 0 -3698 # min, max, desc, data, zone id, surf id, std_val
+-3193 -2019 Annual_cooling Total 1 0 2019 # min, max, desc, data, zone id, surf id, std_val
+-0.378 -0.142 Peak_heating Max_value 1 0 -0.377 # min, max, desc, data, zone id, surf id, std_val
+-2.715 -2.099 Peak_cooling Min_value 1 0 2.303 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	900-810
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/810/810.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/810
+*act  -p default silent
+*rec /tmp/810.res -act recover silent -actf 810.pif 
+*disp /tmp/810.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*stdval ESP_1993
+*metric
+-1107 -669 Annual_heating Total 1 0 -669 # min, max, desc, data, zone id, surf id, std_val
+-1707 -975 Annual_cooling Total 1 0 1080 # min, max, desc, data, zone id, surf id, std_val
+-0.166 -0.089 Peak_heating Max_value 1 0  -0.129 # min, max, desc, data, zone id, surf id, std_val
+-1.223  -0.595 Peak_cooling Min_value 1 0 1.036 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	910-610
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/610/610.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/610
+*act  -p default silent
+*rec /tmp/610.res -act recover silent -actf 610.pif 
+*disp /tmp/610.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/910/910.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/910
+*act  -p default silent
+*rec /tmp/910.res -act recover silent -actf 910.pif 
+*disp /tmp/910.dat
+*stdval ESP_1993
+*metric
+-3532 -2780 Annual_heating Total 1 0 -2780 # min, max, desc, data, zone id, surf id, std_val
+3094 3924 Annual_cooling Total 1 0 3094 # min, max, desc, data, zone id, surf id, std_val
+-0.579 -0.386 Peak_heating Max_value 1 0 -0.579 # min, max, desc, data, zone id, surf id, std_val
+2.883 3.773 Peak_cooling Min_value 1 0 3.773 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	920-620
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/620/620.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/620
+*act  -p default silent
+*rec /tmp/620.res -act recover silent -actf 620.pif 
+*disp /tmp/620.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/920/920.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/920
+*act  -p default silent
+*rec /tmp/920.res -act recover silent -actf 920.pif 
+*disp /tmp/920.dat
+*stdval ESP_1993
+*metric
+-1689 -1297 Annual_heating Total 1 0 -1300 # min, max, desc, data, zone id, surf id, std_val
+1476 1912 Annual_cooling Total 1 0 1577 # min, max, desc, data, zone id, surf id, std_val
+-0.318 -0.214 Peak_heating Max_value 1 0 -0.283 # min, max, desc, data, zone id, surf id, std_val
+1.106 1.591 Peak_cooling Min_value 1 0 1.249 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	930-630
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/630/630.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/630
+*act  -p default silent
+*rec /tmp/630.res -act recover silent -actf 630.pif 
+*disp /tmp/630.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/930/930.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/930
+*act  -p default silent
+*rec /tmp/930.res -act recover silent -actf 930.pif 
+*disp /tmp/930.dat
+*stdval ESP_1993
+*metric
+-1273 -884 Annual_heating Total 1 0 -907 # min, max, desc, data, zone id, surf id, std_val
+1000 1463 Annual_cooling Total 1 0 1090 # min, max, desc, data, zone id, surf id, std_val
+-0.238 -0.178 Peak_heating Max_value 1 0 -0.237 # min, max, desc, data, zone id, surf id, std_val
+1.036 1.200 Peak_cooling Min_value 1 0 1.199 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	940-640
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/640/640.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/640
+*act  -p default silent
+*rec /tmp/640.res -act recover silent -actf 640.pif 
+*disp /tmp/640.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/940/940.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/940
+*act  -p default silent
+*rec /tmp/940.res -act recover silent -actf 940.pif 
+*disp /tmp/940.dat
+*stdval ESP_1993
+*metric
+-2392 -1867 Annual_heating Total 1 0 -1958 # min, max, desc, data, zone id, surf id, std_val
+3647 4570 Annual_cooling Total 1 0 3873 # min, max, desc, data, zone id, surf id, std_val
+-1.252 -0.230 Peak_heating Max_value 1 0 -1.252 # min, max, desc, data, zone id, surf id, std_val
+2.737 3.314 Peak_cooling Min_value 1 0 3.273 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	950-650
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/650/650.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/650
+*act  -p default silent
+*rec /tmp/650.res -act recover silent -actf 650.pif 
+*disp /tmp/650.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/950/950.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/950
+*act  -p default silent
+*rec /tmp/950.res -act recover silent -actf 950.pif 
+*disp /tmp/950.dat
+*stdval ESP_1993
+*metric
+000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+4429 5956 Annual_cooling Total 1 0 4429 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+3.210 3.998 Peak_cooling Min_value 1 0 3.998 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*group	Low mass in-depth sensitivity tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	200-195
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/195/195.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/195
+*act  -p default silent
+*rec /tmp/195.res -act recover silent -actf 195.pif 
+*disp /tmp/195.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/200/200.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/200
+*act  -p default silent
+*rec /tmp/200.res -act recover silent -actf 200.pif 
+*disp /tmp/200.dat
+*stdval ESP_1993
+*metric
+1085 1085 Annual_heating Total 1 0 1085 # min, max, desc, data, zone id, surf id, std_val
+-156 -156 Annual_cooling Total 1 0 -156 # min, max, desc, data, zone id, surf id, std_val
+0.647 0.647 Peak_heating Max_value 1 0 0.647 # min, max, desc, data, zone id, surf id, std_val
+-0.212 -0.212 Peak_cooling Min_value 1 0 -0.212 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	210-200
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/200/200.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/200
+*act  -p default silent
+*rec /tmp/200.res -act recover silent -actf 200.pif 
+*disp /tmp/200.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/210/210.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/210
+*act  -p default silent
+*rec /tmp/210.res -act recover silent -actf 210.pif 
+*disp /tmp/210.dat
+*stdval ESP_1993
+*metric
+1204 1204 Annual_heating Total 1 0 1204 # min, max, desc, data, zone id, surf id, std_val
+408 408 Annual_cooling Total 1 0 408 # min, max, desc, data, zone id, surf id, std_val
+0.050 0.050 Peak_heating Max_value 1 0 0.050 # min, max, desc, data, zone id, surf id, std_val
+0.387 0.387 Peak_cooling Min_value 1 0 0.387 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	220-215
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/215/215.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/215
+*act  -p default silent
+*rec /tmp/215.res -act recover silent -actf 215.pif 
+*disp /tmp/215.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*stdval ESP_1993
+*metric
+1397 1397 Annual_heating Total 1 0 1397 # min, max, desc, data, zone id, surf id, std_val
+453 453 Annual_cooling Total 1 0 453 # min, max, desc, data, zone id, surf id, std_val
+0.080 0.080 Peak_heating Max_value 1 0 0.080 # min, max, desc, data, zone id, surf id, std_val
+0.447 0.447 Peak_cooling Min_value 1 0 0.447 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	215-200
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/200/200.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/200
+*act  -p default silent
+*rec /tmp/200.res -act recover silent -actf 200.pif 
+*disp /tmp/200.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/215/215.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/215
+*act  -p default silent
+*rec /tmp/215.res -act recover silent -actf 215.pif 
+*disp /tmp/215.dat
+*stdval ESP_1993
+*metric
+295 295 Annual_heating Total 1 0 295 # min, max, desc, data, zone id, surf id, std_val
+-69 -69 Annual_cooling Total 1 0 -69 # min, max, desc, data, zone id, surf id, std_val
+0.136 0.136 Peak_heating Max_value 1 0 0.136 # min, max, desc, data, zone id, surf id, std_val
+-0.144 -0.144 Peak_cooling Min_value 1 0 -0.144 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	220-210
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/210/210.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/210
+*act  -p default silent
+*rec /tmp/210.res -act recover silent -actf 210.pif 
+*disp /tmp/210.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*stdval ESP_1993
+*metric
+470 743 Annual_heating Total 1 0 488 # min, max, desc, data, zone id, surf id, std_val
+-88 -24 Annual_cooling Total 1 0 -24 # min, max, desc, data, zone id, surf id, std_val
+0.166 0.356 Peak_heating Max_value 1 0 0.166 # min, max, desc, data, zone id, surf id, std_val
+-0.149 -0.071 Peak_cooling Min_value 1 0 -0.084 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	230-220
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/230/230.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/230
+*act  -p default silent
+*rec /tmp/230.res -act recover silent -actf 230.pif 
+*disp /tmp/230.dat
+*stdval ESP_1993
+*metric
+3432 3615 Annual_heating Total 1 0 3432 # min, max, desc, data, zone id, surf id, std_val
+-304 -268 Annual_cooling Total 1 0 -268 # min, max, desc, data, zone id, surf id, std_val
+1.519 1.811 Peak_heating Max_value 1 0 1.519 # min, max, desc, data, zone id, surf id, std_val
+-0.536 -0.480 Peak_cooling Min_value 1 0 -0.499 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	240-220
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/240/240.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/240
+*act  -p default silent
+*rec /tmp/240.res -act recover silent -actf 240.pif 
+*disp /tmp/240.dat
+*stdval ESP_1993
+*metric
+-1341 -1203 Annual_heating Total 1 0 -1295 # min, max, desc, data, zone id, surf id, std_val
+-412 -229 Annual_cooling Total 1 0 -229 # min, max, desc, data, zone id, surf id, std_val
+-0.200 -0.180 Peak_heating Max_value 1 0 -0.182 # min, max, desc, data, zone id, surf id, std_val
+-0.179 -0.200 Peak_cooling Min_value 1 0 -0.179 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	250-220
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/250/250.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/250
+*act  -p default silent
+*rec /tmp/250.res -act recover silent -actf 250.pif 
+*disp /tmp/250.dat
+*stdval ESP_1993
+*metric
+-2193 -1448 Annual_heating Total 1 0 -2193 # min, max, desc, data, zone id, surf id, std_val
+-3027 -1752 Annual_cooling Total 1 0 -3027 # min, max, desc, data, zone id, surf id, std_val
+-0.007 0.005 Peak_heating Max_value 1 0 -0.001 # min, max, desc, data, zone id, surf id, std_val
+-3.699 -1.043 Peak_cooling Min_value 1 0 -2.800 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	270-220
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*stdval ESP_1993
+*metric
+-2761 -1948 Annual_heating Total 1 0 -2434 # min, max, desc, data, zone id, surf id, std_val
+-9515 -7342 Annual_cooling Total 1 0 -7342 # min, max, desc, data, zone id, surf id, std_val
+-0.034 0.218 Peak_heating Max_value 1 0 -0.004 # min, max, desc, data, zone id, surf id, std_val
+-5.894 -5.475 Peak_cooling Min_value 1 0 -5.796 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	280-270
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/280/280.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/280
+*act  -p default silent
+*rec /tmp/280.res -act recover silent -actf 280.pif 
+*disp /tmp/280.dat
+*stdval ESP_1993
+*metric
+165 596 Annual_heating Total 1 0 165 # min, max, desc, data, zone id, surf id, std_val
+2457 3317 Annual_cooling Total 1 0 2655 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.024 Peak_heating Max_value 1 0 0.001 # min, max, desc, data, zone id, surf id, std_val
+1.631 2.014 Peak_cooling Min_value 1 0 1.912 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	320-270
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/320/320.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/320
+*act  -p default silent
+*rec /tmp/320.res -act recover silent -actf 320.pif 
+*disp /tmp/320.dat
+*stdval ESP_1993
+*metric
+-779 -649 Annual_heating Total 1 0 -651 # min, max, desc, data, zone id, surf id, std_val
+2467 3103 Annual_cooling Total 1 0 2467 # min, max, desc, data, zone id, surf id, std_val
+-0.010 0.000 Peak_heating Max_value 1 0 -0.002 # min, max, desc, data, zone id, surf id, std_val
+0.586 0.726 Peak_cooling Min_value 1 0 0.655 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	290-270
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/290/290.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/290
+*act  -p default silent
+*rec /tmp/290.res -act recover silent -actf 290.pif 
+*disp /tmp/290.dat
+*stdval ESP_1993
+*metric
+20 85 Annual_heating Total 1 0 67 # min, max, desc, data, zone id, surf id, std_val
+1283 2324 Annual_cooling Total 1 0 2324 # min, max, desc, data, zone id, surf id, std_val
+-0.008 0.000 Peak_heating Max_value 1 0 0.000 # min, max, desc, data, zone id, surf id, std_val
+0.086 0.561 Peak_cooling Min_value 1 0 0.087 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	300-270
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/300/300.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/300
+*act  -p default silent
+*rec /tmp/300.res -act recover silent -actf 300.pif 
+*disp /tmp/300.dat
+*stdval ESP_1993
+*metric
+44 297 Annual_heating Total 1 0 251 # min, max, desc, data, zone id, surf id, std_val
+2834 3250 Annual_cooling Total 1 0 3226 # min, max, desc, data, zone id, surf id, std_val
+-0.008 0.151 Peak_heating Max_value 1 0 0.151 # min, max, desc, data, zone id, surf id, std_val
+1.938 2.952 Peak_cooling Min_value 1 0 2.952 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	310-300
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/300/300.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/300
+*act  -p default silent
+*rec /tmp/300.res -act recover silent -actf 300.pif 
+*disp /tmp/300.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/310/310.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/310
+*act  -p default silent
+*rec /tmp/310.res -act recover silent -actf 310.pif 
+*disp /tmp/310.dat
+*stdval ESP_1993
+*metric
+201 486 Annual_heating Total 1 0 460 # min, max, desc, data, zone id, surf id, std_val
+1266 1994 Annual_cooling Total 1 0 1570 # min, max, desc, data, zone id, surf id, std_val
+-0.012 0.001 Peak_heating Max_value 1 0 0.001 # min, max, desc, data, zone id, surf id, std_val
+0.344 0.689 Peak_cooling Min_value 1 0 0.556 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	400-395
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/395/395.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/395
+*act  -p default silent
+*rec /tmp/395.res -act recover silent -actf 395.pif 
+*disp /tmp/395.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/400/400.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/400
+*act  -p default silent
+*rec /tmp/400.res -act recover silent -actf 400.pif 
+*disp /tmp/400.dat
+*stdval ESP_1993
+*metric
+1916 2935 Annual_heating Total 1 0 1916 # min, max, desc, data, zone id, surf id, std_val
+-45 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+0.805 1.310 Peak_heating Max_value 1 0 0.805 # min, max, desc, data, zone id, surf id, std_val
+-0.272 0.000 Peak_cooling Min_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	410-400
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/400/400.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/400
+*act  -p default silent
+*rec /tmp/400.res -act recover silent -actf 400.pif 
+*disp /tmp/400.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/410/410.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/410
+*act  -p default silent
+*rec /tmp/410.res -act recover silent -actf 410.pif 
+*disp /tmp/410.dat
+*stdval ESP_1993
+*metric
+1696 1798 Annual_heating Total 1 0 1696 # min, max, desc, data, zone id, surf id, std_val
+-26 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+0.757 0.885 Peak_heating Max_value 1 0 0.758 # min, max, desc, data, zone id, surf id, std_val
+-0.148 -0.035 Peak_cooling Min_value 1 0 -0.035 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	420-410
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/410/410.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/410
+*act  -p default silent
+*rec /tmp/410.res -act recover silent -actf 410.pif 
+*disp /tmp/410.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/420/420.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/420
+*act  -p default silent
+*rec /tmp/420.res -act recover silent -actf 420.pif 
+*disp /tmp/420.dat
+*stdval ESP_1993
+*metric
+-1361 -1222 Annual_heating Total 1 0 -1298 # min, max, desc, data, zone id, surf id, std_val
+-105 -11 Annual_cooling Total 1 0 -11 # min, max, desc, data, zone id, surf id, std_val
+-0.200 -0.180 Peak_heating Max_value 1 0 -0.182 # min, max, desc, data, zone id, surf id, std_val
+-0.233 -0.195 Peak_cooling Min_value 1 0 -0.223 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	430-420
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/420/420.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/420
+*act  -p default silent
+*rec /tmp/420.res -act recover silent -actf 420.pif 
+*disp /tmp/420.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/430/430.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/430
+*act  -p default silent
+*rec /tmp/430.res -act recover silent -actf 430.pif 
+*disp /tmp/430.dat
+*stdval ESP_1993
+*metric
+-1869 -1112 Annual_heating Total 1 0 -1869 # min, max, desc, data, zone id, surf id, std_val
+ -732  -371 Annual_cooling Total 1 0 -531 # min, max, desc, data, zone id, surf id, std_val
+-0.001  0.011 Peak_heating Max_value 1 0 -0.001 # min, max, desc, data, zone id, surf id, std_val
+-1.657 -0.637 Peak_cooling Min_value 1 0 -1.235 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	600-430
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/430/430.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/430
+*act  -p default silent
+*rec /tmp/430.res -act recover silent -actf 430.pif 
+*disp /tmp/430.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*stdval ESP_1993
+*metric
+-2118 -1133 Annual_heating Total 1 0 -1133 # min, max, desc, data, zone id, surf id, std_val
+-7280 -5595 Annual_cooling Total 1 0 -5595 # min, max, desc, data, zone id, surf id, std_val
+-0.029 0.217 Peak_heating Max_value 1 0 -0.005 # min, max, desc, data, zone id, surf id, std_val
+-5.229 -4.193 Peak_cooling Min_value 1 0 -4.701 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	440-600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/440/440.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/440
+*act  -p default silent
+*rec /tmp/440.res -act recover silent -actf 440.pif 
+*disp /tmp/440.dat
+*stdval ESP_1993
+*metric
+153 426 Annual_heating Total 1 0 153 # min, max, desc, data, zone id, surf id, std_val
+2094 2760 Annual_cooling Total 1 0 2170 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.022 Peak_heating Max_value 1 0 0.002 # min, max, desc, data, zone id, surf id, std_val
+1.534 1.800 Peak_cooling Min_value 1 0 1.648 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*group	Free float tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	600FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600FF/600FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600FF
+*act  -p default silent
+*rec /tmp/600FF.res -act recover silent -actf 600FF.pif 
+*disp /tmp/600FF.dat
+*stdval ESP_1993
+*metric
+64.9 69.5 Maximum_temp Max_value 1 0 64.9 # min, max, desc, data, zone id, surf id, std_val
+-18.8 -15.6 Minimum_temp Min_value 1 0 -15.6 # min, max, desc, data, zone id, surf id, std_val
+24.2 25.9 Average_temp Ave_value 1 0 25.1 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	650FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/650FF/650FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/650FF
+*act  -p default silent
+*rec /tmp/650FF.res -act recover silent -actf 650FF.pif 
+*disp /tmp/650FF.dat
+*stdval ESP_1993
+*metric
+63.2 68.2 Maximum_temp Max_value 1 0 63.2 # min, max, desc, data, zone id, surf id, std_val
+-23.0 -21.6 Minimum_temp Min_value 1 0 -22.6 # min, max, desc, data, zone id, surf id, std_val
+18.0 19.6 Average_temp Ave_value 1 0 18.2 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	900FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900FF/900FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900FF
+*act  -p default silent
+*rec /tmp/900FF.res -act recover silent -actf 900FF.pif 
+*disp /tmp/900FF.dat
+*stdval ESP_1993
+*metric
+41.8 44.8 Maximum_temp Max_value 1 0 41.8 # min, max, desc, data, zone id, surf id, std_val
+-6.4 -1.6 Minimum_temp Min_value 1 0  -1.6 # min, max, desc, data, zone id, surf id, std_val
+24.5 25.9 Average_temp Ave_value 1 0 25.5 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	950FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/950FF/950FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/950FF
+*act  -p default silent
+*rec /tmp/950FF.res -act recover silent -actf 950FF.pif 
+*disp /tmp/950FF.dat
+*stdval ESP_1993
+*metric
+35.5 38.5 Maximum_temp Max_value 1 0 35.5 # min, max, desc, data, zone id, surf id, std_val
+-20.2 -18.6 Minimum_temp Min_value 1 0  -19.5 # min, max, desc, data, zone id, surf id, std_val
+14.0 15.0 Average_temp Ave_value 1 0 14.1 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	960
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/960/960.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/960
+*act  -p default silent
+*rec /tmp/960.res -act recover silent -actf 960.pif 
+*disp /tmp/960.dat
+*stdval ESP_1993
+*metric
+2311 3373 Annual_heating Total 1 0 2311 # min, max, desc, data, zone id, surf id, std_val
+-803 -411 Annual_cooling Total 1 0 -488 # min, max, desc, data, zone id, surf id, std_val
+2.410 2.863 Peak_heating Max_value 1 0 2.410 # min, max, desc, data, zone id, surf id, std_val
+-1.403 -0.953 Peak_cooling Min_value 1 0 -0.953 # min, max, desc, data, zone id, surf id, std_val
+48.9 55.3 Maximum_temp Max_value 2 0 48.9 # min, max, desc, data, zone id, surf id, std_val
+-2.8 3.9 Minimum_temp Min_value 2 0 2.7 # min, max, desc, data, zone id, surf id, std_val
+26.4 29.0 Average_temp Ave_value 2 0 27.5 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*group	Individual tests
+*help	A set of models demonstrating ESP-r's functionality.
+*item
+*name	195
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/195/195.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/195
+*act  -p default silent
+*rec /tmp/195.res -act recover silent -actf 195.pif 
+*disp /tmp/195.dat
+*stdval ESP_1993
+*metric
+4167 4167 Annual_heating Total 1 0 4167 # min, max, desc, data, zone id, surf id, std_val
+-414 -414 Annual_cooling Total 1 0 -414 # min, max, desc, data, zone id, surf id, std_val
+2.004 2.004 Peak_heating Max_value 1 0 2.004 # min, max, desc, data, zone id, surf id, std_val
+-0.651 -0.651 Peak_cooling Min_value 1 0 -0.651 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	200
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/200/200.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/200
+*act  -p default silent
+*rec /tmp/200.res -act recover silent -actf 200.pif 
+*disp /tmp/200.dat
+*stdval ESP_1993
+*metric
+5252 5252 Annual_heating Total 1 0 5252 # min, max, desc, data, zone id, surf id, std_val
+-570 -570 Annual_cooling Total 1 0 -570 # min, max, desc, data, zone id, surf id, std_val
+2.651 2.651 Peak_heating Max_value 1 0 2.651 # min, max, desc, data, zone id, surf id, std_val
+-0.863 -0.863 Peak_cooling Min_value 1 0 -0.863 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	210
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/210/210.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/210
+*act  -p default silent
+*rec /tmp/210.res -act recover silent -actf 210.pif 
+*disp /tmp/210.dat
+*stdval ESP_1993
+*metric
+6456 6967 Annual_heating Total 1 0 6456 # min, max, desc, data, zone id, surf id, std_val
+-668 -162 Annual_cooling Total 1 0 -162 # min, max, desc, data, zone id, surf id, std_val
+2.701 3.325 Peak_heating Max_value 1 0 2.701 # min, max, desc, data, zone id, surf id, std_val
+-1.142 -0.476 Peak_cooling Min_value 1 0 -0.476 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	215
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/215/215.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/215
+*act  -p default silent
+*rec /tmp/215.res -act recover silent -actf 215.pif 
+*disp /tmp/215.dat
+*stdval ESP_1993
+*metric
+5547 5547 Annual_heating Total 1 0 5547 # min, max, desc, data, zone id, surf id, std_val
+-639 -639 Annual_cooling Total 1 0 -639 # min, max, desc, data, zone id, surf id, std_val
+2.787 2.787 Peak_heating Max_value 1 0 2.787 # min, max, desc, data, zone id, surf id, std_val
+-1.007 -1.007 Peak_cooling Min_value 1 0 -1.007 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	220
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/220/220.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/220
+*act  -p default silent
+*rec /tmp/220.res -act recover silent -actf 220.pif 
+*disp /tmp/220.dat
+*stdval ESP_1993
+*metric
+6944 8787 Annual_heating Total 1 0 6944 # min, max, desc, data, zone id, surf id, std_val
+-835 -186 Annual_cooling Total 1 0 -186 # min, max, desc, data, zone id, surf id, std_val
+2.867 3.695 Peak_heating Max_value 1 0 2.867 # min, max, desc, data, zone id, surf id, std_val
+-1.340 -0.560 Peak_cooling Min_value 1 0 -0.560 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	230
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/230/230.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/230
+*act  -p default silent
+*rec /tmp/230.res -act recover silent -actf 230.pif 
+*disp /tmp/230.dat
+*stdval ESP_1993
+*metric
+10376 12243 Annual_heating Total 1 0 10376 # min, max, desc, data, zone id, surf id, std_val
+-1139 -454 Annual_cooling Total 1 0 -454 # min, max, desc, data, zone id, surf id, std_val
+4.386 5.279 Peak_heating Max_value 1 0 4.386 # min, max, desc, data, zone id, surf id, std_val
+-1.875 -1.059 Peak_cooling Min_value 1 0 -1.059 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	240
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/240/240.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/240
+*act  -p default silent
+*rec /tmp/240.res -act recover silent -actf 240.pif 
+*disp /tmp/240.dat
+*stdval ESP_1993
+*metric
+5649 7448 Annual_heating Total 1 0 5649 # min, max, desc, data, zone id, surf id, std_val
+-1246 -415 Annual_cooling Total 1 0 -415 # min, max, desc, data, zone id, surf id, std_val
+2.685 3.495 Peak_heating Max_value 1 0 2.685 # min, max, desc, data, zone id, surf id, std_val
+-1.540 -0.739 Peak_cooling Min_value 1 0 -0.739 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	250
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/250/250.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/250
+*act  -p default silent
+*rec /tmp/250.res -act recover silent -actf 250.pif 
+*disp /tmp/250.dat
+*stdval ESP_1993
+*metric
+4751 7024 Annual_heating Total 1 0 4751 # min, max, desc, data, zone id, surf id, std_val
+-3380 -2177 Annual_cooling Total 1 0 -3213 # min, max, desc, data, zone id, surf id, std_val
+2.866 3.695 Peak_heating Max_value 1 0 2.866 # min, max, desc, data, zone id, surf id, std_val
+-4.912 -2.258 Peak_cooling Min_value 1 0 -3.360 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	270
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/270/270.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/270
+*act  -p default silent
+*rec /tmp/270.res -act recover silent -actf 270.pif 
+*disp /tmp/270.dat
+*stdval ESP_1993
+*metric
+4510 5920 Annual_heating Total 1 0 4510 # min, max, desc, data, zone id, surf id, std_val
+-10350 -7528 Annual_cooling Total 1 0 -7528 # min, max, desc, data, zone id, surf id, std_val
+2.863 3.738 Peak_heating Max_value 1 0 2.863 # min, max, desc, data, zone id, surf id, std_val
+-7.234 -6.356 Peak_cooling Min_value 1 0 -6.356 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	280
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/280/280.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/280
+*act  -p default silent
+*rec /tmp/280.res -act recover silent -actf 280.pif 
+*disp /tmp/280.dat
+*stdval ESP_1993
+*metric
+4675 6148 Annual_heating Total 1 0 4675 # min, max, desc, data, zone id, surf id, std_val
+-7114 -4873 Annual_cooling Total 1 0 -4873 # min, max, desc, data, zone id, surf id, std_val
+2.864 3.759 Peak_heating Max_value 1 0 2.864 # min, max, desc, data, zone id, surf id, std_val
+-5.236 4.444 Peak_cooling Min_value 1 0 -4.444 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	290
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/290/290.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/290
+*act  -p default silent
+*rec /tmp/290.res -act recover silent -actf 290.pif 
+*disp /tmp/290.dat
+*stdval ESP_1993
+*metric
+4577 5942 Annual_heating Total 1 0 4577 # min, max, desc, data, zone id, surf id, std_val
+-8089 -5204 Annual_cooling Total 1 0 -5204 # min, max, desc, data, zone id, surf id, std_val
+2.863 3.738 Peak_heating Max_value 1 0 2.863 # min, max, desc, data, zone id, surf id, std_val
+-6.976 -6.203 Peak_cooling Min_value 1 0 -6.269 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	300
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/300/300.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/300
+*act  -p default silent
+*rec /tmp/300.res -act recover silent -actf 300.pif 
+*disp /tmp/300.dat
+*stdval ESP_1993
+*metric
+4761 5964 Annual_heating Total 1 0 4761 # min, max, desc, data, zone id, surf id, std_val
+-7100 -4302 Annual_cooling Total 1 0 -4302 # min, max, desc, data, zone id, surf id, std_val
+3.014 3.770 Peak_heating Max_value 1 0 3.014 # min, max, desc, data, zone id, surf id, std_val
+-4.929 -3.404 Peak_cooling Min_value 1 0 -3.404 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	310
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/310/310.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/310
+*act  -p default silent
+*rec /tmp/310.res -act recover silent -actf 310.pif 
+*disp /tmp/310.dat
+*stdval ESP_1993
+*metric
+5221 6165 Annual_heating Total 1 0 5221 # min, max, desc, data, zone id, surf id, std_val
+-5471 -2732 Annual_cooling Total 1 0 -2732 # min, max, desc, data, zone id, surf id, std_val
+3.015 3.669 Peak_heating Max_value 1 0 3.015 # min, max, desc, data, zone id, surf id, std_val
+-4.164 -2.848 Peak_cooling Min_value 1 0 -2.848 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	320
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/320/320.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/320
+*act  -p default silent
+*rec /tmp/320.res -act recover silent -actf 320.pif 
+*disp /tmp/320.dat
+*stdval ESP_1993
+*metric
+3859 5141 Annual_heating Total 1 0 3859 # min, max, desc, data, zone id, surf id, std_val
+-7304 -5061 Annual_cooling Total 1 0 -5061 # min, max, desc, data, zone id, surf id, std_val
+2.861 3.735 Peak_heating Max_value 1 0 2.861 # min, max, desc, data, zone id, surf id, std_val
+-6.553 -5.701 Peak_cooling Min_value 1 0 -5.701 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	395
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/395/395.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/395
+*act  -p default silent
+*rec /tmp/395.res -act recover silent -actf 395.pif 
+*disp /tmp/395.dat
+*stdval ESP_1993
+*metric
+4799 5835 Annual_heating Total 1 0 4984 # min, max, desc, data, zone id, surf id, std_val
+-16 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+2.062 2.385 Peak_heating Max_value 1 0 2.062 # min, max, desc, data, zone id, surf id, std_val
+-0.394 0.000 Peak_cooling Min_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	400
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/400/400.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/400
+*act  -p default silent
+*rec /tmp/400.res -act recover silent -actf 400.pif 
+*disp /tmp/400.dat
+*stdval ESP_1993
+*metric
+6900 8770 Annual_heating Total 1 0 6900 # min, max, desc, data, zone id, surf id, std_val
+-61 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+2.867 3.695 Peak_heating Max_value 1 0 2.867 # min, max, desc, data, zone id, surf id, std_val
+-0.666 0.000 Peak_cooling Min_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	410
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/410/410.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/410
+*act  -p default silent
+*rec /tmp/410.res -act recover silent -actf 410.pif 
+*disp /tmp/410.dat
+*stdval ESP_1993
+*metric
+8596 10506 Annual_heating Total 1 0 8596 # min, max, desc, data, zone id, surf id, std_val
+-84 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+3.625 4.487 Peak_heating Max_value 1 0 3.625 # min, max, desc, data, zone id, surf id, std_val
+-0.814 -0.035 Peak_cooling Min_value 1 0 -0.035 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	420
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/420/420.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/420
+*act  -p default silent
+*rec /tmp/420.res -act recover silent -actf 420.pif 
+*disp /tmp/420.dat
+*stdval ESP_1993
+*metric
+7298 9151 Annual_heating Total 1 0 7298 # min, max, desc, data, zone id, surf id, std_val
+-189 -11 Annual_cooling Total 1 0 -11 # min, max, desc, data, zone id, surf id, std_val
+3.443 4.287 Peak_heating Max_value 1 0 3.443 # min, max, desc, data, zone id, surf id, std_val
+-1.047 -0.258 Peak_cooling Min_value 1 0 -0.258 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	430
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/430/430.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/430
+*act  -p default silent
+*rec /tmp/430.res -act recover silent -actf 430.pif 
+*disp /tmp/430.dat
+*stdval ESP_1993
+*metric
+5429 7827 Annual_heating Total 1 0 5429 # min, max, desc, data, zone id, surf id, std_val
+-875 -422 Annual_cooling Total 1 0 -542 # min, max, desc, data, zone id, surf id, std_val
+3.442 4.287 Peak_heating Max_value 1 0 3.442 # min, max, desc, data, zone id, surf id, std_val
+-2.578 -1.427 Peak_cooling Min_value 1 0 -1.493 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	440
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/440/440.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/440
+*act  -p default silent
+*rec /tmp/440.res -act recover silent -actf 440.pif 
+*disp /tmp/440.dat
+*stdval ESP_1993
+*metric
+4449 5811 Annual_heating Total 1 0 4449 # min, max, desc, data, zone id, surf id, std_val
+-5204 -3967 Annual_cooling Total 1 0 -3967 # min, max, desc, data, zone id, surf id, std_val
+3.439 4.376 Peak_heating Max_value 1 0 3.439 # min, max, desc, data, zone id, surf id, std_val
+-5.278 -4.424 Peak_cooling Min_value 1 0 -4.546 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	600
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600/600.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600
+*act  -p default silent
+*rec /tmp/600.res -act recover silent -actf 600.pif 
+*disp /tmp/600.dat
+*stdval ESP_1993
+*metric
+4296 5709 Annual_heating Total 1 0 4296 # min, max, desc, data, zone id, surf id, std_val
+-7964 -6137 Annual_cooling Total 1 0 -6137 # min, max, desc, data, zone id, surf id, std_val
+3.437 4.354 Peak_heating Max_value 1 0 3.437 # min, max, desc, data, zone id, surf id, std_val
+-6.827 -5.965 Peak_cooling Min_value 1 0 -6.194 # min, max, desc, data, zone id, surf id, std_val
+367400 457000 Incident_solar_North Total 1 4 427000 # min, max, desc, data, zone id, surf id, std_val
+959000 1217300 Incident_solar_East Total 1 3 959000 # min, max, desc, data, zone id, surf id, std_val
+856500 1090000 Incident_solar_West Total 1 5 1086000 # min, max, desc, data, zone id, surf id, std_val
+1456000 1566000 Incident_solar_South Total 1 1 1456000 # min, max, desc, data, zone id, surf id, std_val
+1797000 1832000 Incident_solar_Roof Total 1 8 1797000 # min, max, desc, data, zone id, surf id, std_val
+914000 1051000 Transmitted_solar Total 1 0 946000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	610
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/610/610.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/610
+*act  -p default silent
+*rec /tmp/610.res -act recover silent -actf 610.pif 
+*disp /tmp/610.dat
+*stdval ESP_1993
+*metric
+4355 5786 Annual_heating Total 1 0 4355 # min, max, desc, data, zone id, surf id, std_val
+-5778 -3915 Annual_cooling Total 1 0 -3915 # min, max, desc, data, zone id, surf id, std_val
+3.437 4.354 Peak_heating Max_value 1 0 3.437 # min, max, desc, data, zone id, surf id, std_val
+-6.371 -5.669 Peak_cooling Min_value 1 0 -5.669 # min, max, desc, data, zone id, surf id, std_val
+757000 831000 Transmitted_solar Total 1 0 785000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	620
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/620/620.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/620
+*act  -p default silent
+*rec /tmp/620.res -act recover silent -actf 620.pif 
+*disp /tmp/620.dat
+*stdval ESP_1993
+*metric
+4613 5944 Annual_heating Total 1 0 4613 # min, max, desc, data, zone id, surf id, std_val
+-5004 -3417 Annual_cooling Total 1 0 -3417 # min, max, desc, data, zone id, surf id, std_val
+3.591 4.379 Peak_heating Max_value 1 0 3.591 # min, max, desc, data, zone id, surf id, std_val
+-5.096 -3.634 Peak_cooling Min_value 1 0 -3.634 # min, max, desc, data, zone id, surf id, std_val
+562960 735000 Transmitted_solar Total 1 0 732000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	630
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/630/630.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/630
+*act  -p default silent
+*rec /tmp/630.res -act recover silent -actf 630.pif 
+*disp /tmp/630.dat
+*stdval ESP_1993
+*metric
+5050 6469 Annual_heating Total 1 0 5050 # min, max, desc, data, zone id, surf id, std_val
+-3701 -2129 Annual_cooling Total 1 0 -2129 # min, max, desc, data, zone id, surf id, std_val
+3.592 4.280 Peak_heating Max_value 1 0 3.592 # min, max, desc, data, zone id, surf id, std_val
+-4.116 -3.072 Peak_cooling Min_value 1 0 -3.072 # min, max, desc, data, zone id, surf id, std_val
+437500 599000 Transmitted_solar Total 1 0 599000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	640
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/640/640.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/640
+*act  -p default silent
+*rec /tmp/640.res -act recover silent -actf 640.pif 
+*disp /tmp/640.dat
+*stdval ESP_1993
+*metric
+2751 3803 Annual_heating Total 1 0 2751 # min, max, desc, data, zone id, surf id, std_val
+-7811 -5952 Annual_cooling Total 1 0 -5952 # min, max, desc, data, zone id, surf id, std_val
+5.232 6.954 Peak_heating Max_value 1 0 5.232 # min, max, desc, data, zone id, surf id, std_val
+-6.776 -5.892 Peak_cooling Min_value 1 0 -6.161 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	650
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/650/650.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/650
+*act  -p default silent
+*rec /tmp/650.res -act recover silent -actf 650.pif 
+*disp /tmp/650.dat
+*stdval ESP_1993
+*metric
+000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+-6545 -4816 Annual_cooling Total 1 0 -4816 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+-6.679 -5.831 Peak_cooling Min_value 1 0 -6.031 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	800
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/800/800.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/800
+*act  -p default silent
+*rec /tmp/800.res -act recover silent -actf 800.pif 
+*disp /tmp/800.dat
+*stdval ESP_1993
+*metric
+4868 7228 Annual_heating Total 1 0 4868 # min, max, desc, data, zone id, surf id, std_val
+-325 -55 Annual_cooling Total 1 0 -113 # min, max, desc, data, zone id, surf id, std_val
+3.227 4.138 Peak_heating Max_value 1 0 3.227 # min, max, desc, data, zone id, surf id, std_val
+-1.358 -0.585 Peak_cooling Min_value 1 0 -0.585 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	810
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/810/810.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/810
+*act  -p default silent
+*rec /tmp/810.res -act recover silent -actf 810.pif 
+*disp /tmp/810.dat
+*stdval ESP_1993
+*metric
+1839 3004 Annual_heating Total 1 0 1839 # min, max, desc, data, zone id, surf id, std_val
+-1711 -1052 Annual_cooling Total 1 0 -1052 # min, max, desc, data, zone id, surf id, std_val
+2.979 3.963 Peak_heating Max_value 1 0 2.979 # min, max, desc, data, zone id, surf id, std_val
+-2.991 -1.852 Peak_cooling Min_value 1 0 -1.852 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	900
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900/900.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900
+*act  -p default silent
+*rec /tmp/900.res -act recover silent -actf 900.pif 
+*disp /tmp/900.dat
+*stdval ESP_1993
+*metric
+1170 2041 Annual_heating Total 1 0 1170 # min, max, desc, data, zone id, surf id, std_val
+-3415 -2132 Annual_cooling Total 1 0 -2132 # min, max, desc, data, zone id, surf id, std_val
+2.850 3.797 Peak_heating Max_value 1 0 2.850 # min, max, desc, data, zone id, surf id, std_val
+-3.871 -2.888 Peak_cooling Min_value 1 0 -2.888 # min, max, desc, data, zone id, surf id, std_val
+367400 457000 Incident_solar_North Total 1 4 427000 # min, max, desc, data, zone id, surf id, std_val
+959000 1217300 Incident_solar_East Total 1 3 959000 # min, max, desc, data, zone id, surf id, std_val
+856500 1090000 Incident_solar_West Total 1 5 1086000 # min, max, desc, data, zone id, surf id, std_val
+1456000 1566000 Incident_solar_South Total 1 1 1456000 # min, max, desc, data, zone id, surf id, std_val
+1797000 1832000 Incident_solar_Roof Total 1 8 1797000 # min, max, desc, data, zone id, surf id, std_val
+914000 1051000 Transmitted_solar Total 1 0 946000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	910
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/910/910.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/910
+*act  -p default silent
+*rec /tmp/910.res -act recover silent -actf 910.pif 
+*disp /tmp/910.dat
+*stdval ESP_1993
+*metric
+1575 2505 Annual_heating Total 1 0 1575 # min, max, desc, data, zone id, surf id, std_val
+-1872 -821 Annual_cooling Total 1 0 -821 # min, max, desc, data, zone id, surf id, std_val
+2.858 3.801 Peak_heating Max_value 1 0 2.858 # min, max, desc, data, zone id, surf id, std_val
+-3.277 -1.896 Peak_cooling Min_value 1 0 -1.896 # min, max, desc, data, zone id, surf id, std_val
+757000 831000 Transmitted_solar Total 1 0 785000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	920
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/920/920.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/920
+*act  -p default silent
+*rec /tmp/920.res -act recover silent -actf 920.pif 
+*disp /tmp/920.dat
+*stdval ESP_1993
+*metric
+3313 4300 Annual_heating Total 1 0 3313 # min, max, desc, data, zone id, surf id, std_val
+-3092 -1840 Annual_cooling Total 1 0 -1840 # min, max, desc, data, zone id, surf id, std_val
+3.308 4.061 Peak_heating Max_value 1 0 3.308 # min, max, desc, data, zone id, surf id, std_val
+-3.505 -2.385 Peak_cooling Min_value 1 0 -2.385 # min, max, desc, data, zone id, surf id, std_val
+562960 735000 Transmitted_solar Total 1 0 732000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	930
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/930/930.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/930
+*act  -p default silent
+*rec /tmp/930.res -act recover silent -actf 930.pif 
+*disp /tmp/930.dat
+*stdval ESP_1993
+*metric
+4143 5335 Annual_heating Total 1 0 4143 # min, max, desc, data, zone id, surf id, std_val
+-2238 -1039 Annual_cooling Total 1 0 -1039 # min, max, desc, data, zone id, surf id, std_val
+3.355 4.064 Peak_heating Max_value 1 0 3.355 # min, max, desc, data, zone id, surf id, std_val
+-3.080 -1.873 Peak_cooling Min_value 1 0 -1.873 # min, max, desc, data, zone id, surf id, std_val
+437500 599000 Transmitted_solar Total 1 0 599000 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	940
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/940/940.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/940
+*act  -p default silent
+*rec /tmp/940.res -act recover silent -actf 940.pif 
+*disp /tmp/940.dat
+*stdval ESP_1993
+*metric
+793 1411 Annual_heating Total 1 0 793 # min, max, desc, data, zone id, surf id, std_val
+-3241 -2079 Annual_cooling Total 1 0 -2079 # min, max, desc, data, zone id, surf id, std_val
+3.980 6.428 Peak_heating Max_value 1 0 3.980 # min, max, desc, data, zone id, surf id, std_val
+-3.871 -2.888 Peak_cooling Min_value 1 0 -2.888 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	950
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/950/950.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/950
+*act  -p default silent
+*rec /tmp/950.res -act recover silent -actf 950.pif 
+*disp /tmp/950.dat
+*stdval ESP_1993
+*metric
+000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+-921 -387 Annual_cooling Total 1 0 -387 # min, max, desc, data, zone id, surf id, std_val
+0.000 0.000 Peak_heating Max_value 1 0 0.000 # min, max, desc, data, zone id, surf id, std_val
+-3.170 -2.033 Peak_cooling Min_value 1 0 -2.033 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	960
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/960/960.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/960
+*act  -p default silent
+*rec /tmp/960.res -act recover silent -actf 960.pif 
+*disp /tmp/960.dat
+*stdval ESP_1993
+*metric
+2311 3373 Annual_heating Total 1 0 2311 # min, max, desc, data, zone id, surf id, std_val
+-803 -411 Annual_cooling Total 1 0 -488 # min, max, desc, data, zone id, surf id, std_val
+2.410 2.863 Peak_heating Max_value 1 0 2.410 # min, max, desc, data, zone id, surf id, std_val
+-1.403 -0.953 Peak_cooling Min_value 1 0 -0.953 # min, max, desc, data, zone id, surf id, std_val
+48.9 55.3 Maximum_temp Max_value 2 0 48.9 # min, max, desc, data, zone id, surf id, std_val
+-2.8 3.9 Minimum_temp Min_value 2 0 2.7 # min, max, desc, data, zone id, surf id, std_val
+26.4 29.0 Average_temp Ave_value 2 0 27.5 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+# CASE 990 WAS NOT INCLUDED IN THE ASHRAE STANDARD (BESTEST THOUGH HAD IT)
+# UNCOMMENT IT (delete the #) IF YOU WANT TO FURTHER STUDY THIS CASE 
+# *item
+# *name	990
+# *cfg	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/990/990.cfg
+# *root	/home/georgios/esru_Iain/esp-r/validation/standards/BESTEST/990
+# *act  -p default silent
+# *rec /tmp/990.res -act recover silent -actf 990.pif 
+# *disp /tmp/990.dat
+# *stdval ESP_1993
+# *metric
+# 000 000 Annual_heating Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 000 000 Annual_cooling Total 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 0.000 0.000 Peak_heating Max_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# 0.000 0.000 Peak_cooling Min_value 1 0 000 # min, max, desc, data, zone id, surf id, std_val
+# *endmetric
+*item
+*name	600FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/600FF/600FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/600FF
+*act  -p default silent
+*rec /tmp/600FF.res -act recover silent -actf 600FF.pif 
+*disp /tmp/600FF.dat
+*stdval ESP_1993
+*metric
+64.9 69.5 Maximum_temp Max_value 1 0 64.9 # min, max, desc, data, zone id, surf id, std_val
+-18.8 -15.6 Minimum_temp Min_value 1 0 -15.6 # min, max, desc, data, zone id, surf id, std_val
+24.2 25.9 Average_temp Ave_value 1 0 25.1 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	650FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/650FF/650FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/650FF
+*act  -p default silent
+*rec /tmp/650FF.res -act recover silent -actf 650FF.pif 
+*disp /tmp/650FF.dat
+*stdval ESP_1993
+*metric
+63.2 68.2 Maximum_temp Max_value 1 0 63.2 # min, max, desc, data, zone id, surf id, std_val
+-23.0 -21.6 Minimum_temp Min_value 1 0 -22.6 # min, max, desc, data, zone id, surf id, std_val
+18.0 19.6 Average_temp Ave_value 1 0 18.2 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	900FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/900FF/900FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/900FF
+*act  -p default silent
+*rec /tmp/900FF.res -act recover silent -actf 900FF.pif 
+*disp /tmp/900FF.dat
+*stdval ESP_1993
+*metric
+41.8 44.8 Maximum_temp Max_value 1 0 41.8 # min, max, desc, data, zone id, surf id, std_val
+-6.4 -1.6 Minimum_temp Min_value 1 0  -1.6 # min, max, desc, data, zone id, surf id, std_val
+24.5 25.9 Average_temp Ave_value 1 0 25.5 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+*item
+*name	950FF
+*cfg	/usr/esru/esp-r/validation/standards/BESTEST/950FF/950FF.cfg
+*root	/usr/esru/esp-r/validation/standards/BESTEST/950FF
+*act  -p default silent
+*rec /tmp/950FF.res -act recover silent -actf 950FF.pif 
+*disp /tmp/950FF.dat
+*stdval ESP_1993
+*metric
+35.5   38.5 Maximum_temp Max_value 1 0 35.5 # min, max, desc, data, zone id, surf id, std_val
+-20.2 -18.6 Minimum_temp Min_value 1 0 -19.5 # min, max, desc, data, zone id, surf id, std_val
+14.0   15.0 Average_temp Ave_value 1 0 14.1 # min, max, desc, data, zone id, surf id, std_val
+*endmetric
+#
+# CEN models
+#
+*item
+*label  -- CEN/ISO standards --
+*item	
+*group	ENISO13791:2004 Summer room temperatures
+*help	Dynamic simulation tests under summer conditions without control.
+*item
+*name	conduction
+*cfg	/usr/esru/esp-r/validation/standards/CEN/13791/cond/cond.cfg
+*root	/usr/esru/esp-r/validation/standards/CEN/13791/cond
+*act  -p default silent
+*rec cond.res -act recover silent -actf cond.pif 
+*disp cond.dat
+*stdval ESP-r_2005(version?)
+*metric
+# min, max, description, data key word, zone id, surf id, std_val
+19.56 20.56  temperature_002hrs Max_value 1 0  20.04 
+20.76 21.76  temperature_006hrs Max_value 1 0  21.29
+22.98 23.98  temperature_012hrs Max_value 1 0  23.46
+25.87 26.87  temperature_024hrs Max_value 1 0  26.36
+29.50 30.50  temperature_120hrs Max_value 1 0  29.96
+24.59 25.59  temperature_002hrs Max_value 2 0  24.67
+29.13 30.13  temperature_006hrs Max_value 2 0  29.50
+29.50 30.50  temperature_012hrs Max_value 2 0  29.98
+29.50 30.50  temperature_024hrs Max_value 2 0  30.00
+29.50 30.50  temperature_120hrs Max_value 2 0  30.00
+19.50 20.50  temperature_002hrs Max_value 3 0  20.00
+19.76 20.76  temperature_006hrs Max_value 3 0  20.25
+21.17 22.17  temperature_012hrs Max_value 3 0  21.64
+24.40 25.40  temperature_024hrs Max_value 3 0  24.85
+29.45 30.45  temperature_120hrs Max_value 3 0  29.94
+19.50 20.50  temperature_002hrs Max_value 4 0  19.98
+19.56 20.56  temperature_006hrs Max_value 4 0  20.04
+19.75 20.75  temperature_012hrs Max_value 4 0  20.23
+20.13 21.13  temperature_024hrs Max_value 4 0  20.61
+22.67 23.67  temperature_120hrs Max_value 4 0  23.15
+*endmetric
+*item
+*name	LW_radiation
+*cfg	/usr/esru/esp-r/validation/standards/CEN/13791/rad/rad.cfg
+*root	/usr/esru/esp-r/validation/standards/CEN/13791/rad
+*act  -p default silent
+*rec rad.res -act recover silent -actf rad.pif 
+*disp rad.dat
+*stdval ESP-r_2005(version?)
+*metric
+# min, max, description, data key word, zone id, surf id, std_val
+33.9 34.9  temperature Max_value 1 0  34.4
+29.9 30.9  temperature Max_value 2 0  30.4
+38.0 39.0  temperature Max_value 3 0  38.6
+25.0 26.0  temperature Max_value 4 0  25.7
+*endmetric
+*item
+*name	Solar_shading
+*cfg	/usr/esru/esp-r/validation/standards/CEN/13791/shade/ref_noshd.cfg
+*root	/usr/esru/esp-r/validation/standards/CEN/13791/shade
+*act  -p default silent
+*rec ref_noshd.res -act recover silent -actf ref_noshd.pif 
+*disp ref_noshd.dat
+*cfg	/usr/esru/esp-r/validation/standards/CEN/13791/shade/shade.cfg
+*root	/usr/esru/esp-r/validation/standards/CEN/13791/shade
+*act  -p default silent
+*rec shade.res -act recover silent -actf shade.pif 
+*disp shade.dat
+*cfg	/usr/esru/esp-r/validation/standards/CEN/13791/shade/ref_fullshd.cfg
+*root	/usr/esru/esp-r/validation/standards/CEN/13791/shade
+*act  -p default silent
+*rec ref_fullshd.res -act recover silent -actf ref_fullshd.pif 
+*disp ref_fullshd.dat
+*stdval ESP-r_2005(version?)
+*metric
+# min, max, description, data key word, zone id, surf id, std_val
+0.95 1.00 shading_fraction 166.2708 1 7 1.00    
+0.42 0.52 shading_fraction 166.3125 1 7 0.5  
+0.71 0.81 shading_fraction 166.3542 1 7 0.77 
+0.74 0.84 shading_fraction 166.3958 1 7 0.79 
+0.65 0.75 shading_fraction 166.4375 1 7 0.7  
+0.62 0.72 shading_fraction 166.4792 1 7 0.65 
+0.95 1.00 shading_fraction 166.2708 2 7 1.00        
+0.48 0.58 shading_fraction 166.3125 2 7 0.51 
+0.19 0.29 shading_fraction 166.3542 2 7 0.23 
+0.00 0.08 shading_fraction 166.3958 2 7 0.02 
+0.00 0.05 shading_fraction 166.4375 2 7 0.00    
+0.00 0.05 shading_fraction 166.4792 2 7 0.00    
+0.95 1.00 shading_fraction 166.2708 3 7 1.00        
+0.95 1.00 shading_fraction 166.3125 3 7 1.00    
+0.50 1.00 shading_fraction 166.3542 3 7 1.00    
+0.77 0.87 shading_fraction 166.3958 3 7 0.81 
+0.65 0.75 shading_fraction 166.4375 3 7 0.67 
+0.62 0.72 shading_fraction 166.4792 3 7 0.67 
+0.95 1.00 shading_fraction 166.2708 4 1 1.00        
+0.00 0.05 shading_fraction 166.3125 4 1 0.00    
+0.00 0.05 shading_fraction 166.3542 4 1 0.00    
+0.00 0.05 shading_fraction 166.3958 4 1 0.00    
+0.05 0.15 shading_fraction 166.4375 4 1 0.13 
+0.11 0.21 shading_fraction 166.4792 4 1 0.2  
+0.00 0.05 shading_fraction 166.2708 3 8 0.00        
+0.06 0.16 shading_fraction 166.3125 3 8 0.13 
+0.24 0.34 shading_fraction 166.3542 3 8 0.27 
+0.56 0.66 shading_fraction 166.3958 3 8 0.6  
+0.95 1.00 shading_fraction 166.4375 3 8 0.97 
+0.95 1.00 shading_fraction 166.4792 3 8 1.00    
+0.95 1.00 shading_fraction 166.2708 5 2 1.00        
+0.95 1.00 shading_fraction 166.3125 5 2 1.00    
+0.88 0.98 shading_fraction 166.3542 5 2 0.93 
+0.23 0.33 shading_fraction 166.3958 5 2 0.27 
+0.00 0.05 shading_fraction 166.4375 5 2 0.00    
+0.00 0.05 shading_fraction 166.4792 5 2 0.00    
+*endmetric
+*end

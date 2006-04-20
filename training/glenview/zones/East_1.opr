@@ -1,0 +1,51 @@
+*Operations 1.0
+*date Thu Jul 29 14:25:23 2004  # latest file modification 
+# operations of East_1 defined in: 
+# ../zones/East_1.opr
+320W lighting and 3-4 people with 0.5 ach infiltration all hours all days.
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     1   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     9   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  10,      0.0,      0.0, 0.500, 0.500
+    1,  10,  12,    450.0,    420.0, 0.580, 0.420
+    1,  12,  14,    300.0,    280.0, 0.580, 0.420
+    1,  14,  16,    450.0,    420.0, 0.580, 0.420
+    1,  16,  17,    300.0,    280.0, 0.580, 0.420
+    1,  17,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  10,      0.0,      0.0, 0.500, 0.500
+    2,  10,  17,    320.0,      0.0, 0.500, 0.500
+    2,  17,  24,      0.0,      0.0, 0.500, 0.500
+     9   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  10,      0.0,      0.0, 0.500, 0.500
+    1,  10,  12,    450.0,    420.0, 0.580, 0.420
+    1,  12,  14,    300.0,    280.0, 0.580, 0.420
+    1,  14,  16,    450.0,    420.0, 0.580, 0.420
+    1,  16,  21,    300.0,    280.0, 0.580, 0.420
+    1,  21,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  10,      0.0,      0.0, 0.500, 0.500
+    2,  10,  21,    320.0,      0.0, 0.500, 0.500
+    2,  21,  24,      0.0,      0.0, 0.500, 0.500
+     9   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  10,      0.0,      0.0, 0.500, 0.500
+    1,  10,  12,    450.0,    420.0, 0.580, 0.420
+    1,  12,  14,    300.0,    280.0, 0.580, 0.420
+    1,  14,  16,    450.0,    420.0, 0.580, 0.420
+    1,  16,  21,    300.0,    280.0, 0.580, 0.420
+    1,  21,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  10,      0.0,      0.0, 0.500, 0.500
+    2,  10,  21,    320.0,      0.0, 0.500, 0.500
+    2,  21,  24,      0.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

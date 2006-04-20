@@ -1,0 +1,105 @@
+# composite construction db defined in ../databases/multicon.db1
+# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
+   14     # no of composites 
+# layers  description   optics 
+    3    d_glz         TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.170 0.170 0.170
+  242     0.006  Plate glass
+# layers  description   optics 
+    4    extern_wall   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    4     0.100  Outer leaf brick
+  211     0.075  Glasswool
+    0     0.050  air  0.170 0.170 0.170
+    2     0.100  Breeze block
+# layers  description   optics 
+    3    intern_wall   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.012  Perlite plasterboard
+    2     0.150  Breeze block
+  103     0.012  Perlite plasterboard
+# layers  description   optics 
+    1    door          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    7    g_flr_entry   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.050  Common earch
+  262     0.050  Gravel based
+   32     0.075  Heavy mix concrete
+   32     0.075  Heavy mix concrete
+  216     0.100  Mineral fibre
+   67     0.019  Chipboard
+  221     0.006  Wilton
+# layers  description   optics 
+    4    roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   43     0.003  Aluminium
+    0     0.025  air  0.170 0.170 0.170
+  281     0.080  Glass Fibre Quilt
+   43     0.003  Aluminium
+# layers  description   optics 
+    5    entry_floor   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.050  Common earch
+  262     0.050  Gravel based
+   32     0.075  Heavy mix concrete
+   32     0.075  Heavy mix concrete
+   83     0.024  White marble
+# layers  description   optics 
+    1    int_doors     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    5    partition     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104     0.013  Gypsum plaster
+    0     0.050  air  0.170 0.170 0.170
+   28     0.100  Block inner (3% mc)
+    0     0.050  air  0.170 0.170 0.170
+  104     0.013  Gypsum plaster
+# layers  description   optics 
+    5    susp_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  148     0.003  P.V.C./asbestos
+  124     0.019  Cement screed
+   32     0.070  Heavy mix concrete
+   32     0.070  Heavy mix concrete
+   42     0.004  Steel
+# layers  description   optics 
+    5    susp_flr_re   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.004  Steel
+   32     0.070  Heavy mix concrete
+   32     0.070  Heavy mix concrete
+  124     0.019  Cement screed
+  148     0.003  P.V.C./asbestos
+# layers  description   optics 
+    3    int_part      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.012  Perlite plasterboard
+    0     0.025  air  0.170 0.170 0.170
+  103     0.012  Perlite plasterboard
+# layers  description   optics 
+    7    hall_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.050  Common earch
+  262     0.050  Gravel based
+   32     0.075  Heavy mix concrete
+   32     0.075  Heavy mix concrete
+  216     0.100  Mineral fibre
+   67     0.019  Chipboard
+   61     0.030  Block (wood)
+# layers  description   optics 
+    7    oth_ground    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.050  Common earch
+  262     0.050  Gravel based
+   32     0.075  Heavy mix concrete
+   32     0.075  Heavy mix concrete
+  216     0.100  Mineral fibre
+   67     0.019  Chipboard
+  148     0.003  P.V.C./asbestos

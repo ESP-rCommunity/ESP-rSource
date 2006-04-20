@@ -1,0 +1,19 @@
+# Optional zone files for gym             instanced in file 
+# ../zone/gym.utl
+   0    # time-step air flow
+   0    # time-step casual gains
+   0    # view factors
+   0    # shading/ insolation
+   0    # convective heat transfer coefficients
+   0    # blind/ shutter control
+   1    # transparent construction data
+../zone/gym.tmc
+   1    # casual gain control
+../zone/gym.cgc
+   0    # obstructions
+   0    # control volumes
+   0    # connections
+   0    # nodes coordinates
+   0    # nodes temperature
+   0    # domain flow data
+   0    # moisture data

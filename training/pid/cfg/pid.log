@@ -1,0 +1,13 @@
+            Notes on PID control.
+
+*************
+Two of the three zones have control schemes imposed 
+while the third zone is 'free-floating'. The simulation period 
+is 9/7/67 - 10/7/67, with ideal control imposed on the 
+first day; PID control imposed on the second.
+************* 
+There are two PID control loops defined: one for 
+heating, the other for cooling. 
+There are also configuration and control
+files for 'steady-state' conditions.
+*************

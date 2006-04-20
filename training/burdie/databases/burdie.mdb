@@ -1,0 +1,137 @@
+# composite construction db defined in ../databases/burdie.mdb
+# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
+   24     # no of composites 
+# layers  description   optics 
+    1    glazing       TRAN  SC_8985_04nb        
+# db ref  thick   db name & air gap R 
+  242     0.004  Plate glass
+# layers  description   optics 
+    5    ext_wall_low  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  121     0.038  Lightweight concrete
+    0     0.032  air  0.170 0.170 0.170
+  211     0.067  Glasswool
+    0     0.032  air  0.170 0.170 0.170
+  103     0.010  Perlite plasterboard
+# layers  description   optics 
+    4    floor_1       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.100  Common earch
+   82     0.100  Red granite
+   32     0.050  Heavy mix concrete
+  124     0.050  Cement screed
+# layers  description   optics 
+    2    intern_wall   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    2     0.150  Breeze block
+  103     0.012  Perlite plasterboard
+# layers  description   optics 
+    1    door          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   71     0.030  Softwood
+# layers  description   optics 
+    6    grnd_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.250  Common earch
+  262     0.150  Gravel based
+   32     0.150  Heavy mix concrete
+    0     0.050  air  0.170 0.170 0.170
+   67     0.019  Chipboard
+  221     0.006  Wilton
+# layers  description   optics 
+    2    roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.003  Steel
+  207     0.001  PVC
+# layers  description   optics 
+    1    int_doors     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    3    partition     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104     0.013  Gypsum plaster
+    0     0.057  air  0.170 0.170 0.170
+  104     0.013  Gypsum plaster
+# layers  description   optics 
+    3    ceiling_rev   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  150     0.010  Ceiling (mineral)
+    0     0.100  air  0.170 0.170 0.170
+   65     0.015  Flooring
+# layers  description   optics 
+    6    ext_wall_up   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.001  Steel
+  121     0.038  Lightweight concrete
+    0     0.032  air  0.170 0.170 0.170
+  211     0.067  Glasswool
+    0     0.032  air  0.170 0.170 0.170
+  103     0.010  Perlite plasterboard
+# layers  description   optics 
+    2    ceil_loft     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  211     0.015  Glasswool
+  103     0.010  Perlite plasterboard
+# layers  description   optics 
+    6    ext_wall_upr  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.010  Perlite plasterboard
+    0     0.032  air  0.170 0.170 0.170
+  211     0.067  Glasswool
+    0     0.032  air  0.170 0.170 0.170
+  121     0.038  Lightweight concrete
+   42     0.001  Steel
+# layers  description   optics 
+    1    soffit        OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   67     0.015  Chipboard
+# layers  description   optics 
+    2    ceil_loft_r   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.010  Perlite plasterboard
+  211     0.015  Glasswool
+# layers  description   optics 
+    1    steel_sheet   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.001  Steel
+# layers  description   optics 
+    3    ceiling       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   65     0.015  Flooring
+    0     0.100  air  0.170 0.170 0.170
+  150     0.010  Ceiling (mineral)
+# layers  description   optics 
+    2    air_gap_extr  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  121     0.038  Lightweight concrete
+   42     0.001  Steel
+# layers  description   optics 
+    2    air_gap_int   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  211     0.067  Glasswool
+  103     0.010  Perlite plasterboard
+# layers  description   optics 
+    2    air_gap_intr  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.010  Perlite plasterboard
+  211     0.067  Glasswool
+# layers  description   optics 
+    2    air_gap_ext   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.001  Steel
+  121     0.038  Lightweight concrete
+# layers  description   optics 
+    2    t_bridge      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42     0.003  Steel
+  103     0.010  Perlite plasterboard
+# layers  description   optics 
+    2    t_bridge_r    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  103     0.010  Perlite plasterboard
+   42     0.003  Steel
+# layers  description   optics 
+    1    collector     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  203     0.050  UF foam

@@ -1,0 +1,27 @@
+# site obstruction file defined in ../zones/West_1.obs
+# associated with zone geometry file ../zones/West_1.geo
+ 0. 0.   # dummy values for site position
+   20    # no obstruction blocks
+# origin  X   Y   Z   width   depth   height  angle  descr  matr
+    8.900    5.736    0.750    0.100    0.050    1.850  -46.994  fr-s1    Frame-vert   # block  1
+    9.371    5.232    0.750    0.100    0.050    1.850  -46.994  fr-s2    Frame-vert   # block  2
+    9.875    4.691    0.750    0.100    0.050    1.850  -46.994  fr-s3    Frame-vert   # block  3
+   10.380    4.149    0.750    0.100    0.050    1.850  -46.994  fr-s4    Frame-vert   # block  4
+   10.885    3.608    0.750    0.100    0.050    1.850  -46.994  fr-s5    Frame-vert   # block  5
+   11.458    2.994    0.750    0.100    0.050    1.850  -46.994  fr-s6    Frame-vert   # block  6
+   12.037    2.373    0.750    0.100    0.050    1.850  -46.994  fr-s7    Frame-vert   # block  7
+   11.788    8.430    0.750    0.100    0.050    1.850  -46.994  fr-n1    Frame-vert   # block  8
+   12.259    7.926    0.750    0.100    0.050    1.850  -46.994  fr-n2    Frame-vert   # block  9
+   12.764    7.385    0.750    0.100    0.050    1.850  -46.994  fr-n3    Frame-vert   # block 10
+   13.269    6.844    0.750    0.100    0.050    1.850  -46.994  fr-n4    Frame-vert   # block 11
+   13.773    6.302    0.750    0.100    0.050    1.850  -46.994  fr-n5    Frame-vert   # block 12
+    8.900    5.736    0.750    4.699    0.050    0.100  -46.994  fr-h-s1  Frame-vert   # block 13
+    8.900    5.736    2.050    4.699    0.050    0.100  -46.994  fr-h-s2  Frame-vert   # block 14
+    8.900    5.736    2.500    4.699    0.050    0.100  -46.994  fr-h-s3  Frame-vert   # block 15
+   11.788    8.430    0.750    2.960    0.050    0.100  -46.994  fr-h-n1  Frame-vert   # block 16
+   11.788    8.430    2.050    2.960    0.050    0.100  -46.994  fr-h-n2  Frame-vert   # block 17
+   11.788    8.430    2.500    2.960    0.050    0.100  -46.994  fr-h-n3  Frame-vert   # block 18
+    8.790    5.634    0.000    4.699    0.300    0.750  -46.994  parp-s   Parapet      # block 19
+   11.715    8.362    0.000    2.960    0.300    0.750  -46.994  parp-n   Parapet      # block 20
+# grid opq X  opq Z  win X  win Z
+    15    15    10    10

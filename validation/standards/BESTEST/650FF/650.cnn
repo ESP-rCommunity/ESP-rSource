@@ -1,0 +1,12 @@
+*connections  for 650
+*Date Fri Mar 25 12:44:52 2005
+      9   # number of connections
+   1   1   0   0   0  #   1  South Wall in 650 is External
+   1   2   0   0   0  #   2  South Wall in 650 is External
+   1   3   0   0   0  #   3  East Wall in 650 is External
+   1   4   0   0   0  #   4  North Wall in 650 is External
+   1   5   0   0   0  #   5  West Wall in 650 is External
+   1   6   0   0   0  #   6  Window in 650 is External
+   1   7   0   0   0  #   7  Window in 650 is External
+   1   8   0   0   0  #   8  Roof in 650 is External
+   1   9   4   0   1  #   9  Floor in 650 >|< user def ground profile 1

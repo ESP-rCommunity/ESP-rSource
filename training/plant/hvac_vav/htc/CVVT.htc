@@ -1,0 +1,11 @@
+   1 # number control intervals
+   7 # number of constructions
+  0.00    24.00 # start and end time of interval
+   3 # calculation control type
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU

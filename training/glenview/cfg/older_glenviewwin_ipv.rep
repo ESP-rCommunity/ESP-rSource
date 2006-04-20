@@ -1,0 +1,401 @@
+* IPV REPORT
+
+*title,Glenview Conservatory
+*version,Base Case
+*contact,esru@esru.strath.ac.uk
+*date,November 98
+
+*syn1,Large fully glazed conservatory in betwe
+*syn2,two hospital wards. The conservatory is
+*syn3,intended as increased living space for p
+*syn4,Convection heating and cooling.
+*syn5,Ordinary double glazing unit.
+
+*images,   1
+UNKNOWN
+
+
+
+
+# winter|spring|summer start & finish days
+*periods,15,16,67,68,149,150,
+
+*typical_days,16,68,150,
+
+# sim >> season info: (heat|cool|light|fans|smallpower|dhw)
+*win,17.380,17.380,17.380,17.380,17.380,17.280,
+*trn,17.380,17.380,17.380,17.380,17.380,17.380,
+*sum,17.380,17.380,17.380,17.380,17.380,17.380,
+# prim enrg cnv (heat,cool,light,fan,small pwr,hot water)
+*pecnv,1.050,1.090,3.600,3.600,3.600,1.050,
+Emission conversions CO2,NOX,SOX
+*htemis,190.000,0.300,0.200,
+*clemis,720.000,7.600,2.100,
+*ltemis,720.000,7.600,2.100,
+*fnemis,720.000,7.600,2.100,
+*spemis,720.000,7.600,2.100,
+*hwemis,190.000,0.300,0.200,
+
+# 1st energy set: no. of zones, floor area, multiplier
+*energy_1,8,111.6,1.000,
+1,2,3,4,5,6,7,8,
+
+# 2nd energy set: no. of zones, floor area, multiplier
+*energy_2,0,111.6,1.000,
+
+
+
+# thermal comfort data: no. zones, linked gain, floor area
+*therm_comfort,8,1,111.6,
+1,2,3,4,5,6,7,8,
+
+# visual comfort: no. zones, method, floor area
+*visual_comfort,1,0,111.6,
+3,
+
+
+
+Winter season assessment
+
+Maximum Capacity
+Set 1
+
+Heating flux information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,25600.0,25600.0,3200.00,0.00,1515.43,
+
+Cooling flux information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.0,0.0,0.00,0.00,0.00,
+
+Lighting (unctld) gains information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,3080.0,3080.0,480.00,0.00,114.68,
+
+Lighting (ctld) gains information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.0,0.0,0.00,0.00,0.00,
+
+Fans and pumps information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Small Power gains information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.0,0.0,0.00,0.00,0.00,
+
+Domestic how water loads information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+
+
+Integrated Demand
+Set 1
+Heating  Cooling (kWhr)
+569.800,0.000,
+
+Lighting (unctld and ctld)
+43.120,0.000,
+
+Fans and pumps (kWhr)
+0.000,
+
+Small Power (kWhr)
+0.000,
+
+Domestic hot water (kWhr)
+0.000,
+
+
+
+Maximum Capacity
+Set 2
+
+Heating flux information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Cooling flux information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Lighting (unctld) gains information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Lighting (ctld) gains information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Fans and pumps information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Small Power loads information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+Domestic how water loads information (W)
+Zone,Divers_total,Difus_total,Max_1_zone,Minimum,Mean,
+All,0.00,0.00,0.00,0.00,0.00,
+
+
+
+Integrated Demand
+Set 2
+Heating  Cooling (kWhr)
+0.000,0.000,
+
+Lighting (unctld and ctld)
+0.000,0.000,
+
+Fans and pumps (kWhr)
+0.000,
+
+Small Power (kWhr)
+0.000,
+
+Domestic hot water (kWhr)
+0.000,
+
+Maximum Capacity
+Non-specific
+Lighting (unctld) demands (W)
+Non-zone,Difus_total
+All,0.000,0.0,
+
+Fans and pumps and lifts demands (W)
+Non-zone,Difus_total
+All,0.000,0.000,0.000,
+
+Small Power demands (W)
+Non-zone,Difus_total
+All,0.000,
+
+Domestic hot water demands (W)
+Non-zone,Difus_total
+All,0.000,
+
+
+Integrated Demand
+Non-specific
+Lighting (kWhr)
+0.000,0.0,
+
+Fans and pumps and lifts (kWhr)
+0.000,0.000,0.000,
+
+Small Power (kWhr)
+0.000,
+
+Domestic hot water (kWhr)
+0.000,
+
+
+
+Thermal Comfort
+
+Resultant temperature information (degC)
+
+Zone	Maximum	Minimum	Mean	Standard
+All - - - -
+
+ Time steps: sim@ 15m, output@ 60m (averaged) Lib:glenview_win.res
+ Period: Tue 15 Jan @00h52 to: Wed 16 Jan @23h52 YEAR:1980
+ Zones: West_1 West_2 West_3 West_4 East_1 East_2 East_3 East_4
+ Filtered by occupancy
+Resultant temperature information (degC)
+ Bin      range          No. of   freq.   cumul. no  cumulative
+                          hits     (%)     of hits    freq (%)
+1,16.0-18.0,47,47.00,47,47.00,12,below,
+2,18.0-20.0,16,16.00,63,63.00,
+3,20.0-22.0,27,27.00,90,90.00,
+4,22.0-24.0,10,10.00,100,100.00,
+5,24.0-26.0,0,0.00,100,100.00,
+6,26.0-28.0,0,0.00,100,100.00,
+7,28.0-30.0,0,0.00,100,100.00,0,above,
+
+
+
+Visual Comfort
+Visual Discomfort Analysis JPPD (%)
+Luminance scaling factor,Too dark,Poor constrast,Too bright,Overall
+0.1,0.,0.,0.,0.,0.,0.,0.,0.
+0.5,0.,0.,0.,0.,0.,0.,0.,0.
+1.0,0.,0.,0.,0.,0.,0.,0.,0.
+2.0,0.,0.,0.,0.,0.,0.,0.,0.
+5.0,0.,0.,0.,0.,0.,0.,0.,0.
+10.0,0.,0.,0.,0.,0.,0.,0.,0.
+
+
+
+
+
+
+
+
+
+Glare Sources
+
+
+
+
+
+Daylight Availability
+Daylight Factor (%)
+Distance(m),1.,2.,3.,4.,5.,6.,7.
+major,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+minor,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+
+
+
+Period: Wed 16 Jan @00h52 to: Wed 16 Jan @23h52 YEAR:1980
+Set 1
+Energy Demand per Unit Time
+,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+1,11611.9,0.0,0.0,0.0,0.0,0.0,
+2,11414.1,0.0,0.0,0.0,0.0,0.0,
+3,7534.5,0.0,0.0,0.0,0.0,0.0,
+4,4980.3,0.0,0.0,0.0,0.0,0.0,
+5,4346.0,0.0,0.0,0.0,0.0,0.0,
+6,5119.4,0.0,0.0,0.0,0.0,0.0,
+7,5433.3,0.0,0.0,0.0,0.0,0.0,
+8,6118.3,0.0,0.0,0.0,0.0,0.0,
+9,9298.9,0.0,0.0,0.0,0.0,0.0,
+10,24845.0,0.0,192.5,0.0,0.0,0.0,
+11,25600.0,0.0,2887.5,0.0,0.0,0.0,
+12,25600.0,0.0,3080.0,0.0,0.0,0.0,
+13,25600.0,0.0,3080.0,0.0,0.0,0.0,
+14,25600.0,0.0,3080.0,0.0,0.0,0.0,
+15,25600.0,0.0,3080.0,0.0,0.0,0.0,
+16,25600.0,0.0,3080.0,0.0,0.0,0.0,
+17,24000.0,0.0,2887.5,0.0,0.0,0.0,
+18,1600.0,0.0,192.5,0.0,0.0,0.0,
+19,433.7,0.0,0.0,0.0,0.0,0.0,
+20,13235.1,0.0,0.0,0.0,0.0,0.0,
+21,11173.8,0.0,0.0,0.0,0.0,0.0,
+22,6028.6,0.0,0.0,0.0,0.0,0.0,
+23,6388.2,0.0,0.0,0.0,0.0,0.0,
+24,0.0,0.0,0.0,0.0,0.0,0.0,
+,0.0,0.0,0.0,0.0,0.0,0.0
+
+
+
+Set 2
+Energy Demand per Unit Time
+,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+1,0.0,0.0,0.0,0.0,0.0,0.0,
+2,0.0,0.0,0.0,0.0,0.0,0.0,
+3,0.0,0.0,0.0,0.0,0.0,0.0,
+4,0.0,0.0,0.0,0.0,0.0,0.0,
+5,0.0,0.0,0.0,0.0,0.0,0.0,
+6,0.0,0.0,0.0,0.0,0.0,0.0,
+7,0.0,0.0,0.0,0.0,0.0,0.0,
+8,0.0,0.0,0.0,0.0,0.0,0.0,
+9,0.0,0.0,0.0,0.0,0.0,0.0,
+10,0.0,0.0,0.0,0.0,0.0,0.0,
+11,0.0,0.0,0.0,0.0,0.0,0.0,
+12,0.0,0.0,0.0,0.0,0.0,0.0,
+13,0.0,0.0,0.0,0.0,0.0,0.0,
+14,0.0,0.0,0.0,0.0,0.0,0.0,
+15,0.0,0.0,0.0,0.0,0.0,0.0,
+16,0.0,0.0,0.0,0.0,0.0,0.0,
+17,0.0,0.0,0.0,0.0,0.0,0.0,
+18,0.0,0.0,0.0,0.0,0.0,0.0,
+19,0.0,0.0,0.0,0.0,0.0,0.0,
+20,0.0,0.0,0.0,0.0,0.0,0.0,
+21,0.0,0.0,0.0,0.0,0.0,0.0,
+22,0.0,0.0,0.0,0.0,0.0,0.0,
+23,0.0,0.0,0.0,0.0,0.0,0.0,
+24,0.0,0.0,0.0,0.0,0.0,0.0,
+,0.0,0.0,0.0,0.0,0.0,0.0
+
+
+
+
+Non-specific demands
+Energy Demand per Unit Time
+,Occup,Lighting,Small Power,Fans,Pumps,Lifts,Hot water
+1,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+2,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+3,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+4,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+5,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+6,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+7,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+8,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+9,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+10,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+11,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+12,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+13,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+14,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+15,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+16,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+17,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+18,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+19,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+20,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+21,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+22,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+23,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+24,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+
+
+
+Period: Tue 15 Jan @00h52 to: Wed 16 Jan @23h52 YEAR:1980
+Project Aggregate
+Energy Delivered per Unit Time W/m^2
+,Heating,Cooling,Lighting,Fans pumps lifts,Small Power,Hot water
+1,32.705,0.000,0.000,0.000,0.000,0.000,
+2,33.133,0.000,0.000,0.000,0.000,0.000,
+3,34.373,0.000,0.000,0.000,0.000,0.000,
+4,35.651,0.000,0.000,0.000,0.000,0.000,
+5,40.836,0.000,0.000,0.000,0.000,0.000,
+6,39.009,0.000,0.000,0.000,0.000,0.000,
+7,36.017,0.000,0.000,0.000,0.000,0.000,
+8,40.985,0.000,0.000,0.000,0.000,0.000,
+9,63.870,0.000,0.000,0.000,0.000,0.000,
+10,111.887,0.000,0.862,0.000,0.000,0.000,
+11,114.695,0.000,12.937,0.000,0.000,0.000,
+12,114.695,0.000,13.799,0.000,0.000,0.000,
+13,114.695,0.000,13.799,0.000,0.000,0.000,
+14,112.856,0.000,13.799,0.000,0.000,0.000,
+15,80.872,0.000,13.799,0.000,0.000,0.000,
+16,66.893,0.000,13.799,0.000,0.000,0.000,
+17,63.646,0.000,12.937,0.000,0.000,0.000,
+18,4.986,0.000,0.862,0.000,0.000,0.000,
+19,0.000,0.000,0.000,0.000,0.000,0.000,
+20,0.000,0.000,0.000,0.000,0.000,0.000,
+21,0.000,0.000,0.000,0.000,0.000,0.000,
+22,0.000,0.000,0.000,0.000,0.000,0.000,
+23,21.230,0.000,0.000,0.000,0.000,0.000,
+24,46.364,0.000,0.000,0.000,0.000,0.000,
+25,52.025,0.000,0.000,0.000,0.000,0.000,
+26,51.138,0.000,0.000,0.000,0.000,0.000,
+27,33.757,0.000,0.000,0.000,0.000,0.000,
+28,22.313,0.000,0.000,0.000,0.000,0.000,
+29,19.471,0.000,0.000,0.000,0.000,0.000,
+30,22.937,0.000,0.000,0.000,0.000,0.000,
+31,24.343,0.000,0.000,0.000,0.000,0.000,
+32,27.412,0.000,0.000,0.000,0.000,0.000,
+33,41.662,0.000,0.000,0.000,0.000,0.000,
+34,111.313,0.000,0.862,0.000,0.000,0.000,
+35,114.695,0.000,12.937,0.000,0.000,0.000,
+36,114.695,0.000,13.799,0.000,0.000,0.000,
+37,114.695,0.000,13.799,0.000,0.000,0.000,
+38,114.695,0.000,13.799,0.000,0.000,0.000,
+39,114.695,0.000,13.799,0.000,0.000,0.000,
+40,114.695,0.000,13.799,0.000,0.000,0.000,
+41,107.527,0.000,12.937,0.000,0.000,0.000,
+42,7.168,0.000,0.862,0.000,0.000,0.000,
+43,1.943,0.000,0.000,0.000,0.000,0.000,
+44,59.297,0.000,0.000,0.000,0.000,0.000,
+45,50.062,0.000,0.000,0.000,0.000,0.000,
+46,27.010,0.000,0.000,0.000,0.000,0.000,
+47,28.621,0.000,0.000,0.000,0.000,0.000,
+48,0.000,0.000,0.000,0.000,0.000,0.000,
+
+*end

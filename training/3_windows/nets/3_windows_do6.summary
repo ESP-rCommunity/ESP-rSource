@@ -1,0 +1,74 @@
+*Synopsis,for_flow
+*Date,Tue Jun 24 17:07:34 2003
+*cfg,3_windows_do6.cfg
+*Pressures, 29
+1:1 exposed wall                        
+1:1 exposed roof <10deg                 
+1:1 exposed roof 10-30deg               
+1:1 exposed roof >30deg                 
+1:1 semi-exposed wall                   
+1:1 semi-exposed roof <10deg            
+1:1 semi-exposed roof 10-30deg          
+1:1 semi-exposed roof >30deg            
+1:1 sheltered wall                      
+1:1 sheltered roof <10deg               
+1:1 sheltered roof 10-30deg             
+1:1 sheltered roof >30deg               
+2:1 exposed long wall                   
+1:2 exposed short wall                  
+2:1 exposed roof <10deg                 
+2:1 exposed roof 10-30deg               
+2:1 exposed roof >30deg                 
+2:1 semi-exposed long wall              
+2:1 semi-exposed short wall             
+2:1 semi-exposed roof <10deg            
+2:1 semi-exposed roof 10-30deg          
+2:1 semi-exposed roof >30deg            
+2:1 sheltered long wall                 
+2:1 sheltered short wall                
+2:1 sheltered roof <10deg               
+2:1 sheltered roof 10-30deg             
+2:1 sheltered roof >30deg               
+1:1 exposed wall                        
+1:1 exposed roof no pitch               
+*End_Pressures
+*Zones,  3 # name, volume, centre @ XYZ
+manager,40.5,1.500,2.250,1.500
+manager_t_b,40.5,5.500,2.250,1.500
+manager_bi,40.5,9.500,2.250,1.500
+*End_Zones
+*Surfaces, 33 # connection, description, area, azimuth, elevation
+  1 pt_general:manager >|< Identical,13.500,90.000,0.000
+  2 part_frame:manager >|< Identical,0.960,360.000,0.000
+  3 door:manager >|< Identical,3.000,0.000,0.000
+  4 pt_other:manager >|< Identical,13.500,270.000,0.000
+  5 ceiling:manager >|< Identical,13.500,0.000,90.000
+  6 floor:manager >|< Identical,13.500,0.000,-90.000
+  7 spandral:manager >|< External,2.700,180.000,0.000
+  8 frame:manager >|< External,0.980,180.000,0.000
+  9 glazing:manager >|< External,5.320,180.000,0.000
+ 10 part_glaz:manager >|< Identical,5.040,0.000,0.000
+ 11 pt_general:manager_t_ >|< Identical,13.500,90.000,0.000
+ 12 part_frame:manager_t_ >|< Identical,0.960,360.000,0.000
+ 13 door:manager_t_ >|< Identical,3.000,0.000,0.000
+ 14 pt_other:manager_t_ >|< Identical,13.500,270.000,0.000
+ 15 ceiling:manager_t_ >|< Identical,13.500,0.000,90.000
+ 16 floor:manager_t_ >|< Identical,13.500,0.000,-90.000
+ 17 spandral:manager_t_ >|< External,2.700,180.000,0.000
+ 18 frame:manager_t_ >|< External,0.980,180.000,0.000
+ 19 glazing:manager_t_ >|< External,3.640,180.000,0.000
+ 20 part_glaz:manager_t_ >|< Identical,5.040,0.000,0.000
+ 21 low_glz:manager_t_ >|< External,0.840,180.000,0.000
+ 22 high_glz:manager_t_ >|< External,0.840,180.000,0.000
+ 23 pt_general:manager_bi >|< Identical,13.500,90.000,0.000
+ 24 part_frame:manager_bi >|< Identical,0.960,360.000,0.000
+ 25 door:manager_bi >|< Identical,3.000,0.000,0.000
+ 26 pt_other:manager_bi >|< Identical,13.500,270.000,0.000
+ 27 ceiling:manager_bi >|< Identical,13.500,0.000,90.000
+ 28 floor:manager_bi >|< Identical,13.500,0.000,-90.000
+ 29 spandral:manager_bi >|< External,2.700,180.000,0.000
+ 30 frame:manager_bi >|< External,0.980,180.000,0.000
+ 31 glazing:manager_bi >|< External,3.640,180.000,0.000
+ 32 part_glaz:manager_bi >|< Identical,5.040,0.000,0.000
+ 33 bi-glaz:manager_bi >|< External,1.680,180.000,0.000
+*End_Surfaces

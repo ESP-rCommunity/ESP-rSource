@@ -1,0 +1,40 @@
+Notes on basic 3 zone building with zone temperature matching:
+
+This set of files is an example of a basic multi-zone
+building representation with a control which coerces
+the roofs temperature to that of the average of
+the reception (itself ideally controlled) and the
+outside temperature. A more common use of such
+`sensor-matching` is to ensure that an abstract boundary
+zone (often used adjacent to the focus of a study)
+is controlled to match the temperature of an actual
+zone (which is considered typical). For example,
+if an auditorium is bounded by 15 similar offices, only
+one need be represented in any detail.
+
+The problem comprises the following files.
+
+    file                       description
+____________________________________________________________
+cfg/bld_basic_tm2.cfg    problem configuration file defining 
+                         a basic 3 zone model.
+ctl/bld_basic_tm2.ctl    configuration control file defining 
+                         convective heating with roof controlled 
+                         to match average temperature of reception 
+                         and outside.
+
+zones/reception.opr      zone schedules.
+zones/office.opr
+zones/roof_space.opr
+
+zones/reception.geo      zone geometry.
+zones/office.geo
+zones/roof_space.geo
+
+zones/reception.con      zone constructions.
+zones/office.con
+zones/roof_space.con
+
+zones/reception.tmc      zone TMC files.
+zones/office.tmc         
+____________________________________________________________

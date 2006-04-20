@@ -1,0 +1,32 @@
+* IPV
+*title	Glenview Conservatory                   
+*version	Base Case                               
+*contact	esru@esru.strath.ac.uk                  
+*date	November 98                             
+*syn1	Large fully glazed conservatory in betwe
+*syn2	two hospital wards. The conservatory is 
+*syn3	intended as increased living space for p
+*syn4	Convection heating and cooling.         
+*syn5	Ordinary double glazing unit.           
+*images   1
+UNKNOWN                                                                 
+*periods  15  16  67  68 149 150
+*typical_days  16  68 150
+season multipliers: heating|cooling|lights|fans|smallp|DWH
+*win  17.380  17.380  17.380  17.380  17.380  17.280
+*trn  17.380  17.380  17.380  17.380  17.380  17.380
+*sum  17.380  17.380  17.380  17.380  17.380  17.380
+# thermal comfort data: no. zones, linked gain, floor area
+*therm_comfort   8   1   111.6
+  1 2 3 4 5 6 7 8
+# visual comfort: no. zones, method, floor area
+*visual_comfort   1   0   111.6
+  3
+# 1st energy set: no. zones, floor area, multiplier
+*energy_1   8   111.6  1.000
+  1 2 3 4 5 6 7 8
+# 2nd energy set: no. zones, floor area, multiplier
+*energy_2   0   111.6  1.000
+# non-specific demands: occup/light/sm pwr/fans/pumps/lifts/dhw
+*dmds   0   0   0   0   0   0   0
+*end

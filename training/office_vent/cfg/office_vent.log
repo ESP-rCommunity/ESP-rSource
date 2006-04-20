@@ -1,0 +1,39 @@
+Project notes for office_vent.cfg
+Description: Office model for network flow studies
+In folder: /users/jon/models
+By: jon
+Date: Sun Jun  3 13:50:36 2001
+For: 
+Project reference: 
+Notes: 
+_____________________________
+ 
+The Office_vent folder contains a series of models
+of one portion of an office block which explore
+natural ventilation issues. The configuration
+files are as follows:
+
+office_vent.cfg - base case model with scheduled
+infiltration.
+
+office_vent_netinf.cfg - as base case but with 
+infiltration represented as cracks in a flow
+network and with bi-directional flow openings
+between the general office and reception and
+the conference room and reception.
+
+office_vent_netvent.cfg - as the network
+infiltration model with additional facade
+vents added. The facade vents are assumed
+to be open at all hours.
+
+office_vent_netvent_ctl.cfg - as the network
+infiltration and facade vents model with control
+imposed on the facade vents (closed if room
+temperatures are below 21C or above 24C).
+
+The images folder includes images of the expected 
+performance of the model assuming an Ottawa Canada
+climate.
+
+

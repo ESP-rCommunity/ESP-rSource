@@ -1,0 +1,547 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C TFILES.F of ESRUshd which contains the following routines:
+C TFILE1: Write to transitional shading file.
+C TFILE2: Transfers the transformed coordinates of surfaces to the
+C         transitional shading file.
+C TFILE3: Saves the hourly grid shading index values in the 
+C         transitional shading file.
+
+C ************** TFILE1 ***********************
+C Write to transitional shading file.
+      SUBROUTINE TFILE1
+#include "building.h"
+      COMMON/OUTPCH/ICOUT
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/G0/ETYPE
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
+      COMMON/CONTR/MON,ISC(MS),IYD
+      COMMON/FIND/IRECL
+      CHARACTER ETYPE*3,BLKNAME*8,BLKMAT*12,outs*124
+
+C Dummy for default windows.
+      DIMENSION NGLD(MS)
+      logical tok
+
+C If verbose trace requested enable writing of text version of transition
+C file.
+      tok=.false.
+      if(icout.eq.33)tok=.true.
+      do 42 i=1,ms
+        NGLD(i)=0
+  42  continue
+
+      IUNIT=IFIL
+      iut=ifil+12
+      IREC=2
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)MON,(ISC(I),I=1,NSUR),
+     &      IYD
+      if(tok)write(iut,*)irec,MON,(ISC(I),I=1,NSUR),IYD
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE,NSUR,NTV,
+     &     (NVER(I),I=1,NSUR)
+      IREC=IREC+1
+      DO 10 I=1,NSUR
+        NV=NVER(I)
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(JVN(I,J),J=1,NV)
+        IREC=IREC+1
+   10 CONTINUE
+      IF(NTV.GT.20)goto 1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,NTV)
+      IREC=IREC+1
+      goto 2
+    1 IF(NTV.GT.40)goto 3
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,NTV)
+      IREC=IREC+1
+      goto 2
+    3 IF(NTV.GT.60)goto 44
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,NTV)
+      IREC=IREC+1
+      goto 2
+   44 IF(NTV.GT.80)goto 55
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,NTV)
+      IREC=IREC+1
+      goto 2
+  55  IF(NTV.GT.100)goto 56
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=81,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=81,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=81,NTV)
+      IREC=IREC+1
+      goto 2
+  56  IF(NTV.GT.120)goto 57
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=101,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=101,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=101,NTV)
+      IREC=IREC+1
+      goto 2
+
+  57  IF(NTV.GT.140)goto 58
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=121,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=121,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=121,NTV)
+      IREC=IREC+1
+      goto 2
+
+  58  IF(NTV.GT.160)goto 59
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=141,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=141,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=141,NTV)
+      IREC=IREC+1
+      goto 2
+
+  59  continue
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=141,160)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(X(I),I=161,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=141,160)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Y(I),I=161,NTV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=1,20)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=21,40)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=41,60)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=61,80)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=81,100)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=101,120)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=121,140)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=141,160)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Z(I),I=161,NTV)
+      IREC=IREC+1
+
+    2 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NGLD(I),I=1,NSUR)
+      IREC=IREC+1
+
+C No default windows so no need to write out XGL, ZGL.
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NB
+      IREC=IREC+1
+      DO 40 I=1,NB
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XO(I),YO(I),ZO(I),
+     &        DX(I),DY(I),DZ(I),ANG(I)
+        IREC=IREC+1
+   40 CONTINUE
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NOX,NOZ,NGX,NGZ
+      IRECL=IREC+1
+    5 RETURN
+
+ 1000 WRITE(outs,4)IREC,ISTAT
+    4 FORMAT(' Transitional shading file error in TFILE1 - rec:',2I5)
+      call edisp(iuout,outs)
+      goto 5
+      END
+
+C ************** TFILE2 ***********************
+C ' TFILE2' transfers the transformed coordinates of the object
+C  body face under consideration to the transitional shading file.
+      SUBROUTINE TFILE2(IS)
+#include "building.h"
+      COMMON/OUTPCH/ICOUT
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G1T/XFT(MV),ZFT(MV)
+      COMMON/FIND/IRECL
+      DIMENSION IRECS(MS)
+      character outs*124
+      logical tok
+
+C If verbose trace requested enable writing of text version of transition
+C file.
+      tok=.false.
+      if(icout.eq.33)tok=.true.
+
+      IUNIT=IFIL
+      iut=ifil+12
+
+C Recover and update irecs for surface `is`.
+      IREC=1
+      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IRECS(I),I=1,NSUR)
+      IRECS(IS)=IRECL
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IRECS(I),I=1,NSUR)
+      if(tok)write(iut,*)irec,(IRECS(I),I=1,NSUR)
+      IREC=IRECL
+      NV=NVER(IS)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XFT(I),I=1,NV)
+      if(tok)write(iut,*)irec,(XFT(I),I=1,NV)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ZFT(I),I=1,NV)
+      if(tok)write(iut,*)irec,(ZFT(I),I=1,NV)
+      IREC=IREC+1
+      IRECL=IREC
+    2 RETURN
+
+ 1000 WRITE(outs,1)IREC,ISTAT
+    1 FORMAT(' Transitional shading file error in TFILE2 - record',
+     &2I6)
+      call edisp(iuout,outs)
+      goto 2
+      END
+
+C ************** TFILE3 ***********************
+C 'TFILE3' saves the hourly grid shading index values in the transitional
+C shading file.
+      SUBROUTINE TFILE3(ICOMP,IS)
+#include "building.h"
+      COMMON/OUTPCH/ICOUT
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      COMMON/G1T/XFT(MV),ZFT(MV)
+      COMMON/GRID3/OGRIDA(MS)
+      COMMON/SHAD1/ISUNUP
+      COMMON/SHAD3/IOSHD(MOX,MOZ)
+      COMMON/FIND/IRECL
+      COMMON/IHTIME/IHOUR
+      COMMON/DATA1/PSO(MS,MT)
+      CHARACTER BLKNAME*8,BLKMAT*12,outs*124
+      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      logical tok
+
+C If verbose trace requested enable writing of text version of transition
+C file.
+      tok=.false.
+      if(icout.eq.33)tok=.true.
+
+      IUNIT=IFIL
+      iut=ifil+12
+
+C Go to the last record of the file and write sunup value.
+      IREC=IRECL
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ISUNUP
+      if(tok)write(iut,*)irec,ISUNUP
+      IREC=IREC+1
+      IF(ISUNUP.EQ.1)goto 11
+      XVAL=1.0
+   12 PSO(IS,IHOUR)=XVAL
+      goto 1
+
+   11 IS1=-1
+      IS2=-2
+      DO 10 I=1,NOX
+        DO 20 J=1,NOZ
+          IF(IOSHD(I,J).EQ.0)IS1=0
+          IF(IOSHD(I,J).EQ.1)IS2=1
+   20   CONTINUE
+   10 CONTINUE
+      IF(IS1.EQ.0.AND.IS2.EQ.1)goto 2
+      IF(IS1.EQ.0.AND.IS2.EQ.-2)goto 3
+      IF(IS1.EQ.-1.AND.IS2.EQ.1)goto 4
+
+C Surface is not shaded; IS2 = -2, write this to transitional file.
+    3 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS2
+      if(tok)write(iut,*)irec,IS2,' surface ',icomp,is,' not shaded.'
+      IREC=IREC+1
+      XVAL=0.0
+      goto 12
+
+C Surface is totally shaded; IS1= -1, write this to transitional file.
+    4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS1
+      if(tok)write(iut,*)irec,IS1,' surface ',icomp,is,' totally shaded'
+      IREC=IREC+1
+      XVAL=1.0
+      goto 12
+
+    2 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS1
+      if(tok)write(iut,*)irec,IS1,' for surface ',icomp,is,' ioshd...'
+      IREC=IREC+1
+      DO 30 I=1,NOX
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IOSHD(I,J),J=1,NOZ)
+        if(tok)write(iut,*)irec,(IOSHD(I,J),J=1,NOZ)
+        IREC=IREC+1
+   30 CONTINUE
+
+C Calculate percentage shading on opaque and transparent surfaces.
+      KO1=0
+      DO 150 K=1,NOX
+        DO 160 L=1,NOZ
+          IF(IOSHD(K,L).EQ.1)KO1=KO1+1
+  160   CONTINUE
+  150 CONTINUE
+      GSSA=KO1*OGRIDA(IS)
+
+C Compute gross surface area.
+      NV=NVER(IS)
+      CALL AREA(NV,XFT,ZFT,GSA)
+
+      PSO(IS,IHOUR)=GSSA/GSA
+
+    1 IF(PSO(IS,IHOUR).GT.1.0)THEN
+         WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
+     &     SNAME(ICOMP,IS),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
+     &     'hr - saved as 1.00'
+         call edisp(iuout,outs)
+         PSO(IS,IHOUR)=1.0
+      ELSEIF(PSO(IS,IHOUR).LT.0.0)THEN
+         WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
+     &     SNAME(ICOMP,IS),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
+     &     'hr - saved as 1.00'
+         call edisp(iuout,outs)
+         PSO(IS,IHOUR)=0.0
+      ENDIF
+      IRECL=IREC
+
+C Set COMMON 'SHAD3' to zero (no shading case).
+      DO 70 I=1,NOX
+        DO 80 J=1,NOZ
+          IOSHD(I,J)=0
+   80   CONTINUE
+   70 CONTINUE
+
+    6 RETURN
+
+ 1000 WRITE(outs,7)IREC,ISTAT
+    7 FORMAT(' Transitional shading file error in TFILE3 - rec',2I5)
+      call edisp(iuout,outs)
+      goto 6
+      END

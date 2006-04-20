@@ -1,0 +1,186 @@
+# composite construction db defined in ../databases/multicon.db1
+# based on primitive construction db ../databases/constr.db1
+   29     # no of composites 
+# layers  description   optics 
+    3    Frame-roof    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  207    0.0030  PVC
+    0    0.0700  air  0.100 0.100 0.100
+  207    0.0030  PVC
+# layers  description   optics 
+    3    Frame-vert    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  207    0.0030  PVC
+    0    0.0700  air  0.100 0.100 0.100
+  207    0.0030  PVC
+# layers  description   optics 
+    5    Parapet       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  127    0.0100  Rendering (8% mc)
+    4    0.2000  Outer leaf brick
+    0    0.0500  air  0.170 0.170 0.170
+  216    0.0500  Mineral fibre
+  107    0.0100  Gypsum plasterboard
+# layers  description   optics 
+    6    Floor         OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  264    0.5000  Low mass earth
+  264    0.5000  Low mass earth
+   32    0.1000  Heavy mix concrete
+  216    0.0500  Mineral fibre
+   32    0.1000  Heavy mix concrete
+  225    0.0050  Synthetic carpet
+# layers  description   optics 
+    1    Fict-trans    TRAN  SC_fictit           
+# db ref  thick   db name & air gap R 
+  245    0.0010  Fictive-trans
+# layers  description   optics 
+    1    Fict-opaq     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  243    0.0040  4mm clear float
+# layers  description   optics 
+    1    Ward-roof     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    1    0.2500  Paviour brick
+# layers  description   optics 
+    1    Ward-wall     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    1    0.2500  Paviour brick
+# layers  description   optics 
+    3    Glass-v-n     TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.150 0.150 0.150
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    Glass-v-s     TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.150 0.150 0.150
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    Glass-r-n     TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.150 0.150 0.150
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    Glass-r-s     TRAN  DCF7671_06nb        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.150 0.150 0.150
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    DCF767128n    TRAN  DCF767128n_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.150 0.150 0.150
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    DST402818n    TRAN  DST402818n_o       
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.320 0.320 0.320
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    DST222220n    TRAN  DST222220n_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.280 0.280 0.280
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    DST191919n    TRAN  DST191919n_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.300 0.300 0.300
+  243    0.0080  4mm clear float
+# layers  description   optics 
+    3    DHC666419n    TRAN  DHC666419n_o        
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.330 0.330 0.330
+  242     0.006  Plate glass
+# layers  description   optics 
+    3    DSC644116n    TRAN  DSC644116n_o         
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.400 0.400 0.400
+  242     0.008  Plate glass
+# layers  description   optics 
+    3    DSC644216n    TRAN  DSC644216n_o         
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.400 0.400 0.400
+  242     0.006  Plate glass
+# layers  description   optics 
+    5    DHC125318b    TRAN  DHC125318b_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.300 0.300 0.300
+  243    0.0060  4mm clear float
+    0    0.1000  air  0.040 0.040 0.040
+   43    0.0020  Aluminium
+# layers  description   optics 
+    5    DHC162716b    TRAN  DHC162716b_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0100  air  0.150 0.150 0.150
+   43    0.0020  Aluminium
+    0    0.0100  air  0.250 0.250 0.250
+  243    0.0060  4mm clear float
+# layers  description   optics 
+    5    DSC113415b    TRAN  DSC113415b_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.450 0.450 0.450
+  243    0.0060  4mm clear float
+    0    0.1000  air  0.040 0.040 0.040
+   43    0.0020  Aluminium
+# layers  description   optics 
+    7    TSC132611b    TRAN  TSC132611b_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0120  air  0.450 0.450 0.450
+  243    0.0060  4mm clear float
+    0    0.0100  air  0.100 0.100 0.100
+   43    0.0020  Aluminium
+    0    0.0100  air  0.100 0.100 0.100
+  243    0.0060  4mm clear float
+# layers  description   optics 
+    5    DSC132414b    TRAN  DSC132414b_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0100  air  0.450 0.450 0.450
+   43    0.0020  Aluminium
+    0    0.0100  air  0.050 0.050 0.050
+  243    0.0060  4mm clear float
+# layers  description   optics 
+    1    SCF807150n    TRAN  SCF807150n_o        
+# db ref  thick   db name & air gap R 
+  243    0.0150  4mm clear float
+# layers  description   optics 
+    3    DDF524313n    TRAN  DDF524313n_o       
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.580 0.580 0.580
+  242     0.006  Plate glass
+# layers  description   optics 
+    3    DHC726619n    TRAN  DHC726619n_o      
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.340 0.340 0.340
+  242     0.006  Plate glass
+# layers  description   optics 
+    3    DSC644213n    TRAN  DSC644213n_o      
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate glass
+    0     0.012  air  0.580 0.580 0.580
+  242     0.006  Plate glass
+# layers  description   optics 
+    5    THC635510n    TRAN  THC635510n_o        
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0100  air  0.430 0.430 0.430
+  243    0.0020  4mm clear float
+    0    0.0100  air  0.430 0.430 0.430
+  243    0.0060  4mm clear float

@@ -1,0 +1,663 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C Routines which deal with non-specific project demands (fans/lifts/etc.).
+
+C ******************** ERBDMD (same as in prjdmds.F)
+C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
+
+C Common block variables are:
+C dmdsdesc      - dispersed demands notes (248 char)
+
+C NBCAS1,NBCAS2  - number of demand sets during a typical Weekday,
+C & NBCAS3        Saturday and Sunday respectively.
+
+C IBCGT1,IBCGT2 - Demand set type:
+C IBCG3T          1. Occup, 2. Lighting, 3. Small power, 4. Fans, 
+C                 5. Pumps, 6. Lifts, 7. DHW
+C                -1. Occup w/m2, -2. Lighting w/m2, -3. Sml power w/m2,
+C                -4 Fan per w/m2, -5. Pumps per w/m2  -6. Lifts w/m^2,
+C                -7. DHW w/m^2
+
+C IBCGS1,IBCGF1, - start and finish hours of each of the above demands
+C IBCGS2,IBCGF2,   periods
+C IBCGS3 & IBCGF3
+
+C CBMGS1,CBMGL1, - sensible and latent magnitude (in Watts) of
+C CBMGS2,CBMGL2,   each demand
+C CBMGS3 & CBMGL3
+
+C BRADC1,BCONC1, - radiant and convective portions (proportion
+C BRADC2,BCONC2,   of 1) of each demand
+C BRADC3,BCONC3
+
+C Maximum number of demands/day       MC=20
+
+      SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/BL1/dmdsdesc,bdmds
+      COMMON/BL2/dmdfla(7)
+      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
+     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
+     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
+     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
+      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+
+C Descriptive label for a zone load or casual gain types.
+      common/bloadlabel/blodlabel(7)
+
+      CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      CHARACTER*6 blodlabel
+
+      IER=0
+
+C Initialise project data file.
+      CALL EFOPSEQ(IUO,bdmds,1,IER)
+      IF(IER.NE.0)THEN
+        IER=1
+        RETURN
+      ENDIF
+
+C Read lines from file, discarding comments. To allow for operation
+C names with spaces copy directly from OUTSTR rather than parsing
+C it into words.  Use long stip for dmdsdesc line. 
+      CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
+      IF(IER.NE.0)RETURN
+      dmdsdesc=LOUTSTR
+
+C Weekdays.
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday demand periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NBCAS1,0,MC,'W','Week periods',IER)
+      IF(NBCAS1.EQ.0)goto 5
+      DO 40 I=1,NBCAS1
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+        K=0
+        if(ND.eq.7)then
+          CALL EGETWI(OUTSTR,K,IBCGT1(I),-7,7,'W','wkd type',IER)
+        else
+          IBCGT1(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,IBCGS1(I),0,24,'W','wkd gain st',IER)
+        CALL EGETWI(OUTSTR,K,IBCGF1(I),0,24,'W','wkd gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CBMGS1(I),0.,0.,'-','wkd sens',IER)
+        CALL EGETWR(OUTSTR,K,CBMGL1(I),0.,0.,'-','wkd latent',IER)
+        CALL EGETWR(OUTSTR,K,BRADC1(I),0.,1.,'W','wkd rad fr',IER)
+        CALL EGETWR(OUTSTR,K,BCONC1(I),0.,1.,'W','wkd conv fr',IER)
+        IF(IBCGS1(I).GT.IBCGF1(I))goto 1006
+        X=BRADC1(I)+BCONC1(I)
+        IF(X.GT.1.)goto 1015
+        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+     &                            ' Demand rad:con sum < 1.0')
+   40 CONTINUE
+      IF(IER.NE.0)RETURN
+
+C Saturdays.
+   5  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday demand periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NBCAS2,0,MC,'W','Sat periods',IER)
+      IF(NBCAS2.EQ.0)GOTO 6
+      DO 50 I=1,NBCAS2
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
+        K=0
+        if(ND.eq.7)then
+          CALL EGETWI(OUTSTR,K,IBCGT2(I),-7,7,'W','Sat type',IER)
+        else
+          IBCGT2(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,IBCGS2(I),0,24,'W','Sat gain st',IER)
+        CALL EGETWI(OUTSTR,K,IBCGF2(I),0,24,'W','Sat gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CBMGS2(I),0.,0.,'-','Sat sens',IER)
+        CALL EGETWR(OUTSTR,K,CBMGL2(I),0.,0.,'-','Sat latent',IER)
+        CALL EGETWR(OUTSTR,K,BRADC2(I),0.,1.,'W','Sat rad fr',IER)
+        CALL EGETWR(OUTSTR,K,BCONC2(I),0.,1.,'W','Sat conv fr',IER)
+        IF(IBCGS2(I).GT.IBCGF2(I))goto 1006
+        X=BRADC2(I)+BCONC2(I)
+        IF(X.GT.1.)goto 1015
+        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+     &                            ' Demand rad:con sum < 1.0')
+   50 CONTINUE
+
+C Sundays.
+   6  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday demand periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NBCAS3,0,MC,'W','Sun periods',IER)
+      IF(NBCAS3.EQ.0)GOTO 8
+      DO 60 I=1,NBCAS3
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period details',IER)
+        K=0
+        if(ND.eq.7)then
+          CALL EGETWI(OUTSTR,K,IBCGT3(I),-7,7,'W','Sun type',IER)
+        else
+          IBCGT3(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,IBCGS3(I),0,24,'W','Sun gain st',IER)
+        CALL EGETWI(OUTSTR,K,IBCGF3(I),0,24,'W','Sun gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CBMGS3(I),0.,0.,'-','Sun sens',IER)
+        CALL EGETWR(OUTSTR,K,CBMGL3(I),0.,0.,'-','Sun latent',IER)
+        CALL EGETWR(OUTSTR,K,BRADC3(I),0.,1.,'W','Sun rad fr',IER)
+        CALL EGETWR(OUTSTR,K,BCONC3(I),0.,1.,'W','Sun conv fr',IER)
+        IF(IBCGS3(I).GT.IBCGF3(I))goto 1006
+        X=BRADC3(I)+BCONC3(I)
+        IF(X.GT.1.)goto 1015
+        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+     &                            ' Demand rad:con sum < 1.0')
+   60 CONTINUE
+
+C Check to see if demand labels have been added to the end of the file
+    8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
+      IF(ND.NE.7.OR.IERV.ne.0) THEN
+        goto 1001
+      ELSE
+        K=0
+        DO 1234 ITYP=1,7
+          CALL EGETW(OUTSTR,K,blodlabel(ITYP),'W',
+     &         'type label',IER) 
+ 1234   CONTINUE
+      ENDIF      
+
+C Check for areas associated with each demand label.
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type areas',IERV)
+      IF(ND.NE.7.OR.IERV.ne.0) THEN
+        goto 1001
+      ELSE
+        K=0
+        DO 1233 ITYP=1,7
+          CALL EGETWR(OUTSTR,K,dmdfla(ITYP),0.,99999.,'W',
+     &         'type area',IER) 
+ 1233   CONTINUE
+      ENDIF      
+
+ 1235 CONTINUE
+
+C Deman reporting if requested.
+      if(ITRC.GE.1)call BDMDINF(iuout,IER)
+
+C Now free project data file.
+    7 CALL ERPFREE(IUO,ISTAT)
+      RETURN
+
+C Error messages.
+ 1000 IER=1
+      call edisp(iuout,' Project demands file error.')
+      GOTO 7
+
+ 1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
+        blodlabel(1)='Occup'
+        blodlabel(2)='Lights'
+        blodlabel(3)='SmPowr'      
+        blodlabel(4)='Fans'
+        blodlabel(5)='Pumps'
+        blodlabel(6)='Lifts'      
+        blodlabel(7)='DHW'      
+      goto 1235
+ 1006 call edisp(iuout,' Period start - end mismatch in the line ...')
+      call edisp(iuout,outstr)
+      goto 1000
+ 1015 call edisp(iuout,' Radiant & convec fractions > 1.0 in...')
+      call edisp(iuout,outstr)
+      goto 1000
+
+      END
+
+C ****************** BDMDINF (same as in prjdmds.F)
+C BDMDINF provides an English description of non-specific project demands
+C from common block data.
+      SUBROUTINE BDMDINF(ITRU,ier)
+
+#include "building.h"
+      COMMON/BL1/dmdsdesc,bdmds
+      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
+     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
+     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
+     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
+      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+
+C Descriptive label for a zone load or casual gain types.
+      common/bloadlabel/blodlabel(7)
+
+      CHARACTER dmdsdesc*248,outs*124,bdmds*72
+      CHARACTER*6 blodlabel
+
+      call edisp(itru,' ')
+      call edisp(itru,'Notes:')
+      call edisp248(itru,dmdsdesc,72)
+      WRITE(outs,'(A,I3)')' No. of Weekday demands =',NBCAS1
+      call edisp(itru,outs)
+      IF(NBCAS1.GT.0)THEN
+        call edisp(itru,
+     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
+        call edisp(itru,
+     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
+        DO 1270 I=1,NBCAS1
+          if(IBCGT1(i).gt.0)then
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT1(I))),'W  ',
+     &      IBCGS1(I),IBCGF1(I),CBMGS1(I),CBMGL1(I),BRADC1(I),BCONC1(I)
+          else
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT1(I))),'Wm2',
+     &      IBCGS1(I),IBCGF1(I),CBMGS1(I),CBMGL1(I),BRADC1(I),BCONC1(I)
+          endif
+          call edisp(itru,outs)
+1270    CONTINUE
+      ENDIF
+
+      call edisp(itru,' ')
+      WRITE(outs,'(A,I3)')' No. of Saturday demands =',NBCAS2
+      call edisp(itru,outs)
+      IF(NBCAS2.GT.0)THEN
+        call edisp(itru,
+     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
+        call edisp(itru,
+     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
+        DO 1290 I=1,NBCAS2
+          if(IBCGT2(i).gt.0)then
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT2(I))),'W  ',
+     &      IBCGS2(I),IBCGF2(I),CBMGS2(I),CBMGL2(I),BRADC2(I),BCONC2(I)
+          else
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT2(I))),'Wm2',
+     &      IBCGS2(I),IBCGF2(I),CBMGS2(I),CBMGL2(I),BRADC2(I),BCONC2(I)
+          endif
+          call edisp(itru,outs)
+1290    CONTINUE
+      ENDIF
+
+      call edisp(itru,' ')
+      WRITE(outs,'(A,I3)')' No. of Sunday demands =',NBCAS3
+      call edisp(itru,outs)
+      IF(NBCAS3.GT.0)THEN
+        call edisp(itru,
+     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
+        call edisp(itru,
+     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
+        DO 1295 I=1,NBCAS3
+          if(IBCGT3(i).gt.0)then
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT3(I))),'W  ',
+     &      IBCGS3(I),IBCGF3(I),CBMGS3(I), CBMGL3(I),BRADC3(I),BCONC3(I)
+          else
+            WRITE(outs,5360)I,blodlabel(IABS(IBCGT3(I))),'Wm2',
+     &      IBCGS3(I),IBCGF3(I),CBMGS3(I), CBMGL3(I),BRADC3(I),BCONC3(I)
+          endif
+          call edisp(itru,outs)
+1295    CONTINUE
+      ENDIF
+
+5360  FORMAT(I4,1x,A6,A3,I5,I3,F9.1,F9.1,F11.2,F11.2)
+
+      RETURN
+      END
+
+C ******************** DMDSTOT ********************
+C DMDSTOT retrieves max, min and totals (XMXUM & XMINSUM are distributed 
+C totals while DMAX & DMIN are diversified totals) for non-specific 
+C demands. 
+
+      SUBROUTINE DMDSTOT(XMAX,XMIN,XTOT,XAVE)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+
+      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
+
+      dimension XMAX(7),XMIN(7),XTOT(7),XAVE(7),NX(7)
+      character prompts*52,prompte*52
+
+      prompts=' Scanning non-specific demands...'
+      prompte=' Scanning non-specific demands...done.'
+
+C Setup parameters and call DDMDS for each output day to get required data.
+C DDMDS recovers the data in VAL? (and averages output if required.)
+      do 5 I=1,7
+        XMAX(I)=-1.E+10
+        XMIN(I)=1.E+10
+        XTOT(I)=0.0
+        XAVE(I)=0.0
+        NX(I)=0
+ 5    continue
+      call usrmsg(prompts,' ','-')
+      do 10 IDAY=IODS,IODF
+
+C Get days worth of data.
+        call DDMDS(IDAY)
+
+C Add values in VAL2 to the correct bins. IX in range of 15-21 so
+C offset is 14
+        do 400 I=1,7
+          IX=I+14
+          NDTS=24*NTS
+          DO 421 J = 1,NDTS,NOUT
+            ih=J/NTS
+            IF(IDAY.LE.IODS.AND.(FLOAT(J)/NTS).LT.IOH1)goto 421
+
+            IF (VAL3(IX,J).GT.XMAX(i)) XMAX(i)=VAL3(IX,J)
+            IF (VAL3(IX,J).LT.XMIN(i)) XMIN(i)=VAL3(IX,J)
+            XTOT(i)=XTOT(i)+VAL3(IX,J)
+            NX(i)=NX(i)+1
+ 421      CONTINUE
+ 400    CONTINUE
+ 10   continue
+
+C Calculate averages.
+      do 20 I=1,7
+        if (NX(I).eq.0) then
+          XAVE(I)=0.
+        else
+          XAVE(I)=XTOT(I)/float(NX(I))
+        endif
+ 20   continue
+      call usrmsg(prompte,' ','-')
+      return
+
+ 2    CALL USRMSG(' Problem extracting data.',' ','W')
+      return
+
+      END
+
+C ******************** DDMDS ********************
+
+C DDMDS reconstructs one day's values of each of 
+C the project demands.
+C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
+C The method used shifts information from the demands file into the
+C equivalent of bps timestep averaging.
+C VAL3(15,?) holds occupant demands.
+C VAL3(16,?) holds lighting demands.
+C VAL3(17,?) holds small power demands.
+C VAL3(18,?) holds fans demands.
+C VAL3(19,?) holds pump demands.
+C VAL3(20,?) holds lifts demands.
+C VAL3(21,?) holds DHW demands.
+
+      SUBROUTINE DDMDS(IDAY)
+#include "building.h"
+
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
+      COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+      common/demandd/dhddt1,dhddt2,dhddt3,dhddt4,dhddt5,dhddt6,dhddt7
+
+      IEND=24*NTS
+
+C Initialise 'present values'.
+      pddt1=0.0
+      pddt2=0.0
+      pddt3=0.0
+      pddt4=0.0
+      pddt5=0.0
+      pddt6=0.0
+      pddt7=0.0
+
+C Note that the demand at the first timestep of the day is dependent
+C on the demand at the last timestep of the previous day.    
+C If IDAY is equal to the first day of the simulation then there is no
+C previous day so assume DUCCT?= current day.
+      IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
+        CALL DMDTYP(IDAY,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
+     &  hddt6,hddt7)
+        Dhddt1=hddt1
+        Dhddt2=hddt1
+        Dhddt3=hddt1
+        Dhddt4=hddt1
+        Dhddt5=hddt1
+        Dhddt6=hddt1
+        Dhddt7=hddt1
+      ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
+
+C Need to get the last timestep of the previous day to have the last 
+C timestep for interpolation before recovering the demands
+C for the day in question.
+        CALL DMDTYP(IDAY-1,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
+     &  hddt6,hddt7)
+        Dhddt1=hddt1
+        Dhddt2=hddt1
+        Dhddt3=hddt1
+        Dhddt4=hddt1
+        Dhddt5=hddt1
+        Dhddt6=hddt1
+        Dhddt7=hddt1
+      ELSEIF(IDAY.GT.IODS)THEN
+
+C Subsequent recovery day - information on previous day has already
+C been saved so proceed to get demands for IDAY.
+      ENDIF
+
+C For each time step determine each of the demands.
+      DO 50, I=1,IEND
+        CALL DMDTYP(IDAY,I,hddt1,hddt2,hddt3,hddt4,hddt5,hddt6,hddt7)
+
+C Save average fluxs. If first timestep, then average with
+C that of the last of the previous day.
+        IF(I.EQ.1)THEN
+          VAL3(15,I)=(hddt1+Dhddt1)*0.5
+          VAL3(16,I)=(hddt2+Dhddt2)*0.5
+          VAL3(17,I)=(hddt3+Dhddt3)*0.5
+          VAL3(18,I)=(hddt4+Dhddt4)*0.5
+          VAL3(19,I)=(hddt5+Dhddt5)*0.5
+          VAL3(20,I)=(hddt6+Dhddt6)*0.5
+          VAL3(21,I)=(hddt7+Dhddt7)*0.5
+        ELSE
+          VAL3(15,I)=(hddt1+Pddt1)*0.5
+          VAL3(16,I)=(hddt2+Pddt2)*0.5
+          VAL3(17,I)=(hddt3+Pddt3)*0.5
+          VAL3(18,I)=(hddt4+Pddt4)*0.5
+          VAL3(19,I)=(hddt5+Pddt5)*0.5
+          VAL3(20,I)=(hddt6+Pddt6)*0.5
+          VAL3(21,I)=(hddt7+Pddt7)*0.5
+        ENDIF
+
+C Shift future to present.
+        Pddt1=hddt1
+        Pddt2=hddt2
+        Pddt3=hddt3
+        Pddt4=hddt4
+        Pddt5=hddt5
+        Pddt6=hddt6
+        Pddt7=hddt7
+   50 CONTINUE
+
+C Save the last timestep for use the next day.
+      Dhddt1=hddt1
+      Dhddt2=hddt2
+      Dhddt3=hddt3
+      Dhddt4=hddt4
+      Dhddt5=hddt5
+      Dhddt6=hddt6
+      Dhddt7=hddt7
+      RETURN
+      END
+
+C ******************** DMDTYP ********************
+
+C DMDTYP is a generic routine to work out the
+C demand types 1-7 at each time step.
+C Given the information in common block, PC3 and P3TYPE returns:
+C hddt1,hddt2,hddt3,hddt4,hddt5,hddt6,hddt7
+C However, because of the averaging in bps, the beginning and ending
+C of each period will have to be shifted in the calling routine.
+      SUBROUTINE DMDTYP(IDAY,ITSTEP,hddt1,hddt2,hddt3,hddt4,hddt5,
+     &  hddt6,hddt7)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Demands for weekdays/saturdays/sundays.
+      COMMON/BL2/dmdfla(7)
+      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
+     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
+     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
+     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
+
+C Types associated with each period in weekdays/saturdays/sundays.
+      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
+C Assume that IYEAR is available via RESDEF.
+C Determine whether IDAY is a weekday, Saturday or Sunday.
+C Determine the month and day of month via EDAYR.
+      CALL EDAYR(IDAY,IDAYN,IMTHN)
+      CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
+
+C Find the hour of the day and initialise the values to be returned.
+      HOUR=float(ITSTEP)/float(NTS)
+      hddt1=0.0
+      hddt2=0.0
+      hddt3=0.0
+      hddt4=0.0
+      hddt5=0.0
+      hddt6=0.0
+      hddt7=0.0
+
+C Note: Because there can be more than one demand of each
+C type, hddt? etc. need to be summed.
+
+      IF(IDWK.EQ.7)THEN
+
+C If a Sunday then check if there are any demands at this hour.
+        IF(NBCAS3.GE.1)THEN
+          DO 10 ICNN=1,NBCAS3
+            X7=CBMGS3(ICNN)
+            IF(HOUR.GT.float(IBCGS3(ICNN)).AND.
+     &              HOUR.LE.float(IBCGF3(ICNN)))THEN
+              if(IBCGT3(ICNN).EQ.1)THEN
+                hddt1=hddt1+X7
+              ELSEIF(IBCGT3(ICNN).EQ.2)THEN
+                hddt2=hddt2+X7
+              ELSEIF(IBCGT3(ICNN).EQ.3)THEN
+                hddt3=hddt3+X7
+              ELSEIF(IBCGT3(ICNN).EQ.4)THEN
+                hddt4=hddt4+X7
+              ELSEIF(IBCGT3(ICNN).EQ.5)THEN
+                hddt5=hddt5+X7
+              ELSEIF(IBCGT3(ICNN).EQ.6)THEN
+                hddt6=hddt6+X7
+              ELSEIF(IBCGT3(ICNN).EQ.7)THEN
+                hddt7=hddt7+X7
+              ENDIF
+              if(IBCGT3(ICNN).EQ.-1)THEN
+                hddt1=hddt1+(X7*dmdfla(1))
+              ELSEIF(IBCGT3(ICNN).EQ.-2)THEN
+                hddt2=hddt2+(X7*dmdfla(2))
+              ELSEIF(IBCGT3(ICNN).EQ.-3)THEN
+                hddt3=hddt3+(X7*dmdfla(3))
+              ELSEIF(IBCGT3(ICNN).EQ.-4)THEN
+                hddt4=hddt4+(X7*dmdfla(4))
+              ELSEIF(IBCGT3(ICNN).EQ.-5)THEN
+                hddt5=hddt5+(X7*dmdfla(5))
+              ELSEIF(IBCGT3(ICNN).EQ.-6)THEN
+                hddt6=hddt6+(X7*dmdfla(6))
+              ELSEIF(IBCGT3(ICNN).EQ.-7)THEN
+                hddt7=hddt7+(X7*dmdfla(7))
+              ENDIF
+            ENDIF
+   10     CONTINUE
+        ENDIF
+      ELSEIF(IDWK.EQ.6)THEN
+
+C If a Saturday then check if there are any demands at this hour.
+        IF(NBCAS2.GE.1)THEN
+          DO 20 ICNN=1,NBCAS2
+            X6=CBMGS2(ICNN)
+            IF(HOUR.GT.float(IBCGS2(ICNN)).AND.
+     &              HOUR.LE.float(IBCGF2(ICNN)))THEN
+              if(IBCGT2(ICNN).EQ.1)THEN
+                hddt1=hddt1+X6
+              ELSEIF(IBCGT2(ICNN).EQ.2)THEN
+                hddt2=hddt2+X6
+              ELSEIF(IBCGT2(ICNN).EQ.3)THEN
+                hddt3=hddt3+X6
+              ELSEIF(IBCGT2(ICNN).EQ.4)THEN
+                hddt4=hddt4+X6
+              ELSEIF(IBCGT2(ICNN).EQ.5)THEN
+                hddt5=hddt5+X6
+              ELSEIF(IBCGT2(ICNN).EQ.6)THEN
+                hddt6=hddt6+X6
+              ELSEIF(IBCGT2(ICNN).EQ.7)THEN
+                hddt7=hddt7+X6
+              ENDIF
+              if(IBCGT2(ICNN).EQ.-1)THEN
+                hddt1=hddt1+(X6*dmdfla(1))
+              ELSEIF(IBCGT2(ICNN).EQ.-2)THEN
+                hddt2=hddt2+(X6*dmdfla(2))
+              ELSEIF(IBCGT2(ICNN).EQ.-3)THEN
+                hddt3=hddt3+(X6*dmdfla(3))
+              ELSEIF(IBCGT2(ICNN).EQ.-4)THEN
+                hddt4=hddt4+(X6*dmdfla(4))
+              ELSEIF(IBCGT2(ICNN).EQ.-5)THEN
+                hddt5=hddt5+(X6*dmdfla(5))
+              ELSEIF(IBCGT2(ICNN).EQ.-6)THEN
+                hddt6=hddt6+(X6*dmdfla(6))
+              ELSEIF(IBCGT2(ICNN).EQ.-7)THEN
+                hddt7=hddt7+(X6*dmdfla(7))
+              ENDIF
+            ENDIF
+   20     CONTINUE
+        ENDIF
+      ELSE
+
+C If a weekday then check if there are any demands at this hour.
+        IF(NBCAS1.GE.1)THEN
+          DO 30 ICNN=1,NBCAS1
+            X=CBMGS1(ICNN)
+            IF(HOUR.GT.float(IBCGS1(ICNN)).AND.
+     &              HOUR.LE.float(IBCGF1(ICNN)))THEN
+              if(IBCGT1(ICNN).EQ.1)THEN
+                hddt1=hddt1+X
+              ELSEIF(IBCGT1(ICNN).EQ.2)THEN
+                hddt2=hddt2+X
+              ELSEIF(IBCGT1(ICNN).EQ.3)THEN
+                hddt3=hddt3+X
+              ELSEIF(IBCGT1(ICNN).EQ.4)THEN
+                hddt4=hddt4+X
+              ELSEIF(IBCGT1(ICNN).EQ.5)THEN
+                hddt5=hddt5+X
+              ELSEIF(IBCGT1(ICNN).EQ.6)THEN
+                hddt6=hddt6+X
+              ELSEIF(IBCGT1(ICNN).EQ.7)THEN
+                hddt7=hddt7+X
+              ENDIF
+              if(IBCGT1(ICNN).EQ.-1)THEN
+                hddt1=hddt1+(X*dmdfla(1))
+              ELSEIF(IBCGT1(ICNN).EQ.-2)THEN
+                hddt2=hddt2+(X*dmdfla(2))
+              ELSEIF(IBCGT1(ICNN).EQ.-3)THEN
+                hddt3=hddt3+(X*dmdfla(3))
+              ELSEIF(IBCGT1(ICNN).EQ.-4)THEN
+                hddt4=hddt4+(X*dmdfla(4))
+              ELSEIF(IBCGT1(ICNN).EQ.-5)THEN
+                hddt5=hddt5+(X*dmdfla(5))
+              ELSEIF(IBCGT1(ICNN).EQ.-6)THEN
+                hddt6=hddt6+(X*dmdfla(6))
+              ELSEIF(IBCGT1(ICNN).EQ.-7)THEN
+                hddt7=hddt7+(X*dmdfla(7))
+              ENDIF
+            ENDIF
+   30     CONTINUE
+        ENDIF
+      ENDIF
+
+      RETURN
+      END

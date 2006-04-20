@@ -1,0 +1,63 @@
+.AM                     \" use better accent marks
+.ll 17.0c
+.nr LL 17.c
+.po    2.0c
+.nr PO 2.0c
+.HM    3.3c
+.nr HM 3.3c
+.FM    0.01c
+.nr FM 0.01
+.ps    12
+.nr PS 12
+.vs    14
+.nr VS 14
+.bm 0.2c
+.nf		\"one line in -> one line out
+\ 
+.sp |23.5c
+.in |1.0c
+University of Strathclyde
+Energy Systems Research Unit
+75 Montrose Street
+Glasgow G1 1XJ, UK
+.sp |23.5c
+.in |11.0c
+\fIEmail\fP\0\0\0\fResru@strath.ac.uk\fP
+\fIPhone\fP\0\0\0\fR+44 141 548 3986\fP
+\fIFax\0\0\fP\0\0\0\fR+44 141 552 5105\fP
+.\"
+.ps 24		\"point size of .5cm
+.sp |1.0c
+.in 2.0c
+.PSPIC /usr/esru/docs/univ_logo.eps 6c
+.ft 3		\"bold font
+.ps 28
+.sp |8.5c
+.ce
+Energy Systems Research Unit
+.ft 1		\"restore font
+.ps 		\"restore point size
+.\"
+.\"   ---------- please edit for the particular report -----------
+.ps 16
+.vs 18
+.ft 3
+.sp |11.0c
+.ce
+The ESP-r System
+.ce
+for
+.ce
+Building Energy Simulation
+.sp
+.ce
+User Guide Version 10 Series
+.sp 3
+.ft 3
+.sp 1.0c
+.ce
+October 2005
+.ft 3
+.sp 2.0c
+.ce
+ESRU Manual  U05/1

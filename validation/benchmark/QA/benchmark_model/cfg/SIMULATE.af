@@ -1,0 +1,73 @@
+#!/bin/csh -fb
+set CONFIG=$1
+set VERSION=$2
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wc_res
+$CONFIG.flow_res
+9 1
+15 1
+3
+1
+s
+y
+ESRU Standard test: $CONFIG
+y
+y
+-
+-
+XXX
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wc10_res
+$CONFIG.flow10_res
+9 1
+15 1
+3
+10
+n
+s
+y
+ESRU Standard test (10ts/hr): $CONFIG
+y
+y
+-
+-
+XXX
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wcs_res
+$CONFIG.flows_res
+9 7
+15 7
+3
+1
+s
+y
+ESRU Standard summer test: $CONFIG
+y
+y
+-
+-
+XXX
+$VERSION/bps -file $CONFIG -mode text <<XXX
+
+c
+$CONFIG.wc10s_res
+$CONFIG.flow10s_res
+9 7
+15 7
+3
+10
+n
+s
+y
+ESRU Standard sum test (10ts/hr): $CONFIG
+y
+y
+-
+-
+XXX

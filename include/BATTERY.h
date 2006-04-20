@@ -1,0 +1,66 @@
+C This file is part of the ESP-r system.
+C Copyright Natural Resources Canada, Government
+C of Canada 2004/2005. Please Contact Ian
+C Beausoliel-Morrison for details concerning licensing.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C******************************************************************************
+C******************************* BATTERY_COMMON *******************************
+C Created by: Patrice Pinel
+C Initial Creation Date: MARCH, 2005
+C Modified by: Maria Mottillo
+
+
+C This common declares all the general variables required for the battery model
+C These variables describe the state of the battery at the end of a time step
+C which corresponds to the state of the battery at the begining of the next step
+C 
+C---------------------------------------------------------------------------------
+C Declaration of variables as common
+C---------------------------------------------------------------------------------
+      common/BATTERY_STATE/
+     & batTFin,
+     & batDODFin,
+     & nPreviousTS,
+     & batCurrent,
+     & batDemandP
+
+C---------------------------------------------------------------------------------
+C Declaration of variable type and definition
+C---------------------------------------------------------------------------------
+C Battery temperature (°C)
+      REAL batTFin
+
+C Battery Depth Of Discharge (%)
+      REAL batDODFin
+
+C--------------------------------------------------------------------------------
+C Number of the time step the last time the routine was called
+C If the time step value is not equal to the previous value -> time step changed
+      INTEGER nPreviousTS
+
+C--------------------------------------------------------------------------------
+C Battery Current(Amp) -> want the battery current to be initialised to its value at the last time step
+C chances are the current wont change very suddendly -> faster convergence most of the time
+      REAL batCurrent  
+
+C--------------------------------------------------------------------------------
+C Battery demand 
+C + Discharge -> energy demanded by system to the battery
+C - Charge -> energy provided by system to the batter
+      REAL batDemandP

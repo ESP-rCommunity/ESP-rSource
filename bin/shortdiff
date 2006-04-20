@@ -1,0 +1,46 @@
+#!/bin/csh
+# take esp-r source code directories and compare them with an
+# achive in another location. Assumes location above the
+# individual esrubld esrubps etc. directories (i.e. esp-r).
+
+echo "usage example: first cd to esp-r directory level, then" >mydiff
+echo "usage example: shortdiff /usr4/esp-r" >>mydiff
+echo "where /usr4/esp-r is the location of an archive to check against" >>mydiff
+echo "currently comparing $PWD and $1" >>mydiff
+
+echo "usage example: first cd to esp-r directory level, then"
+echo "usage example: shortdiff /usr4/esp-r"
+echo "where /usr4/esp-r is the location of an archive to check against"
+echo currently working on $PWD and $1
+
+foreach i ( `ls -d esru* include lib` )
+ echo $i >>mydiff
+ if ( -d $i ) then
+   /usr/bin/echo looking at $i $1/$i
+   /usr/bin/echo looking at $i $1/$i >>mydiff
+   /usr/bin/diff $i $1/$i | egrep '(diff|Only)' >>mydiff
+ endif
+end
+foreach i ( `ls -d bin env databases climate cetc defaults` )
+ echo $i >>mydiff
+ if ( -d $i ) then
+   /usr/bin/echo looking at $i $1/$i
+   /usr/bin/echo looking at $i $1/$i >>mydiff
+   /usr/bin/diff $i $1/$i | egrep '(diff|Only)' >>mydiff
+ endif
+end
+foreach i ( Install Makefile Readme common_list Version )
+ echo $i >>mydiff
+ if ( -f $i ) then
+   /usr/bin/echo looking at $i $1/$i
+   /usr/bin/echo looking at $i $1/$i >>mydiff
+   /usr/bin/diff $i $1/$i | egrep '(diff|Only)' >>mydiff
+ endif
+end
+echo "validation"
+/usr/bin/echo looking at validation $1/validation
+/usr/bin/diff -r validation $1/validation | egrep '(diff|Only)' >>mydiff
+echo "traininig"
+/usr/bin/echo looking at training $1/training
+/usr/bin/diff -r training $1/training | egrep '(diff|Only)' >>mydiff
+

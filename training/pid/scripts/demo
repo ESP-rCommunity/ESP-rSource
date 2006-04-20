@@ -1,0 +1,228 @@
+#! /bin/sh
+clear
+echo ' ********************************'
+echo -n ' '
+echo `date | awk ' { print $1, $2, $3, $4, $6 } '`
+echo ' PID control example now running'
+echo ' ********************************'
+echo
+sleep 2
+echo ' View files used in the simulation (y/n)?'
+echo -n '> '
+read reply1
+                    until test $reply1 = y || test $reply1 = n
+                    do
+                      echo ' Please enter y or n.'
+                      echo -n '> '
+                      read reply1
+                    done
+if test $reply1 = y
+then
+  reply4b=y
+  k=1 
+  while test $reply4b = y
+  do
+  echo
+  echo ' File to view? (enter 9 for listing).'
+  echo -n '> '
+  read reply2
+                    until test -f $reply2 || test $reply2 = 9
+                    do
+                      echo 'Please enter again.'
+                      echo -n '> '
+                      read reply2
+                    done
+  if test $reply2 = 9
+  then
+    clear; ls
+    echo
+    echo ' View a file - y/n ? '
+    echo -n '> '
+    read reply3
+                    until test $reply3 = y || test $reply3 = n
+                    do
+                      echo ' Please enter y or n.'
+                      echo -n '> '
+                      read reply3
+                    done
+    if test $reply3 = y
+    then
+      echo
+      echo ' Which one ? '
+      read reply4
+                    until test -f $reply4
+                    do
+                      echo ' File does not exist - try again.'
+                      echo -n '>'
+                      read reply4
+                    done
+      clear
+      echo ' Please wait. '
+      echo
+      case $k
+      in
+        1)
+          xterm -g 80X22+10-8 -e more $reply4 &
+          ;;
+        2)
+          xterm -g 80X22+60-20 -e more $reply4 &
+          ;;
+        3)
+          xterm -g 80X22+130-32 -e more $reply4 &
+          ;;
+        *)
+          xterm -g 80X22+180-44 -e more $reply4 &
+          ;;
+      esac
+      sleep 3
+    else
+      clear  
+    fi  
+  else   
+    clear
+    echo ' Please wait.'
+    echo
+    case $k
+    in
+      1)
+        xterm -g 80X22+10-8 -e more $reply2 &
+        ;;
+      2)
+        xterm -g 80X22+60-20 -e more $reply2 &
+        ;;
+      3)
+        xterm -g 80X22+110-32 -e more $reply2 &
+        ;;
+      *)
+        xterm -g 80X22+160-44 -e more $reply2 &
+        ;;
+    esac
+    sleep 3
+ fi
+ sleep 4
+ echo ' View another file (y/n)?'
+ echo -n '> '
+ read reply4b
+                until test $reply4b = y || test $reply4b = n
+                do
+                  echo ' Please enter y or n.'
+                  echo -n '> '
+                  read reply4b                     
+                done
+ if test $reply4b = y
+ then
+   k=`expr ${k} + 1`
+ fi
+ done
+fi
+clear
+echo
+echo ' View a schematic diagram (y/n)? '
+echo -n '> '
+read reply5
+                    until test $reply5 = y || test $reply5 = n
+                    do
+                      echo ' Please enter y or n.'
+                      echo -n '> '
+                      read reply5
+                    done
+if test $reply5 = y
+then
+  xv ../images/pid.gif &
+  sleep 5
+fi
+clear
+echo
+echo ' Do you want to:'
+echo
+echo ' 1. Invoke a simulation and analyse results.'
+echo '    (simulation takes a few minutes)'
+echo
+echo ' 2. Stop demo.'
+echo
+echo -n '> '
+read reply6
+                 until test $reply6 = 1 || test $reply6 = 2
+                 do
+                   echo ' Please enter 1 or 2.'
+                   echo -n '> '
+                   read reply6
+                 done
+     case $reply6
+     in
+       1)
+        clear
+        echo ' Simulation underway.' 
+        sleep 2 
+        simulate pid_res
+        echo ' Simulation complete.'
+        echo ' Results analysis commencing.'
+        sleep 3
+        xterm -g 80X22+600-20  -e res -file pid_res &
+        ;;
+       2)
+        clear
+        echo
+        echo ' Stopping demo.'
+        kill -9 `ps -ax  | awk ' $5 == "vf" || $5 == "res" || $9 == "more" || $12 == "pid.ctl.demo" { print $1 } '`
+        clear
+        echo
+        echo 'End of PID control demo.'
+        echo    
+        exit
+        ;;  
+     esac
+i=1
+until echo "$reply8" | grep -i n
+do
+  if test $i = 1 
+  then
+    reply8=skip
+  fi
+  if test $reply8 = y
+  then
+  echo ' Setting up editor - please wait.'
+    kill -9 `ps -ax  | awk ' $12 == "../ctl/pid.ctl.demo" { print $1 } '`
+    xten -lib -fb 200 50 650 850 ../ctl/pid.ctl.demo ../ctl/pid_ss.ctl
+    clear
+    sleep 4
+    echo ' After altered the control file, enter c.'
+    echo -n '> '
+    read reply9
+                    until test $reply9 = c
+                    do
+                      echo ' Please enter c to continue.'
+                      echo -n '> '
+                      read reply9
+                    done   
+    clear
+    echo ' Simulation underway.'
+    sleep 3
+    simulate pid_res
+    echo ' Simulation complete.'
+    echo ' Results analysis commencing.'
+     kill -9 `ps -ax  | awk ' $5 == "res" { print $1 } '`  
+    sleep 2
+    xterm -g 80X22+600-20  -e res -file pid_res &
+  fi
+  sleep 7   
+  clear
+  echo
+  echo ' Alter control parameters and re-run simulation (y/n)?'
+  echo -n '> '
+  read reply8
+                    until test $reply8 = y || test $reply8 = n
+                    do
+                      echo ' Please enter y or n.'
+                      echo -n '> '
+                      read reply8
+                    done     
+  i=`expr ${i} + 1` 
+done
+clear
+echo ' Stopping PID control demo and clearing the screen - please wait.'
+kill -9 `ps -ax  | awk ' $5 == "vf" || $5 == "res" || $9 == "more" || $12 == "../ctl/pid.ctl.demo" { print $1 } '`
+clear
+echo
+echo 'PID control demo finished.'
+echo

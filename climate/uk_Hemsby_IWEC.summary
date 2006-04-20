@@ -1,0 +1,93 @@
+ -Input File Type=IWC, with FileName=c:\iwec\034960.iwc
+ -WMO Station 034960
+
+ Statistics for GBR_Hemsby_IWEC
+ Location -- HEMSBY GBR  
+      {N 52 40'} {E   1 40'} {GMT +0.0 Hours}
+ Elevation --    14m above sea level
+ Data Source -- IWEC Data
+
+ - Using Design Conditions from "World Climate Design Data 2001 ASHRAE Handbook"
+ - Climate type "Cfb" (Koppen classification)
+ - Marine west coastal (warm summer, mild winter, rain all year, lat. 35-60N)
+
+ - Typical/Extreme Period Determination
+ - Summer is Jun:Aug
+     Extreme Summer Week (nearest maximum temperature for summer)
+     Extreme Hot Week Period selected: Aug  3:Aug  9, Maximum Temp=  26.50C, Deviation=| 7.963|C
+
+     Typical Summer Week (nearest average temperature for summer)
+     Typical Week Period selected: Aug 10:Aug 16, Average Temp=  15.37C, Deviation=| 0.008|C
+
+ - Winter is Dec:Feb
+     Extreme Winter Week (nearest minimum temperature for winter)
+     Extreme Cold Week Period selected: Feb 17:Feb 23, Minimum Temp=  -2.20C, Deviation=| 4.329|C
+
+     Typical Winter Week (nearest average temperature for winter)
+     Typical Week Period selected: Jan 20:Jan 26, Average Temp=   4.97C, Deviation=| 0.225|C
+
+ - Autumn is Sep:Nov
+     Typical Autumn Week (nearest average temperature for autumn)
+     Typical Week Period selected: Oct  6:Oct 12, Average Temp=  10.74C, Deviation=| 0.021|C
+
+ - Spring is Mar:May
+     Typical Spring Week (nearest average temperature for spring)
+     Typical Week Period selected: Apr  5:Apr 11, Average Temp=   8.31C, Deviation=| 0.231|C
+
+
+ -   33 cooling degree-days (18C baseline)
+ - 3003 heating degree-days (18C baseline)
+
+ -  760 cooling degree-days (10C baseline)
+ -  808 heating degree-days (10C baseline)
+
+ - Monthly Statistics for Dry Bulb temperatures C
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	Daily Avg	  4.8	  4.6	  5.7	  8.2	 11.1	 13.7	 15.9	 16.4	 14.0	 11.1	  7.1	  5.5	
+ 	 Maximum 	 11.5	 13.3	 13.5	 17.8	 18.3	 22.7	 25.9	 26.5	 20.3	 16.9	 12.4	 15.3	
+ 	 Minimum 	 -1.0	 -2.2	 -2.0	 -1.7	  2.5	  6.9	  8.3	  7.6	  5.0	 -0.4	 -1.6	 -0.7	
+   - Maximum Dry Bulb temperature of  26.5C on Aug  4
+   - Minimum Dry Bulb temperature of  -2.2C on Feb 24
+
+ - Monthly Statistics for Dew Point temperatures C
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	Daily Avg	  2.4	  2.5	  3.2	  3.3	  7.5	 10.7	 12.7	 12.7	 10.9	  8.6	  5.0	  3.0	
+ 	 Maximum 	  8.7	 10.5	 10.2	 11.1	 14.1	 16.8	 20.0	 20.5	 17.5	 15.4	 11.0	 11.2	
+ 	 Minimum 	 -4.1	 -4.7	 -5.0	 -6.2	 -0.5	  5.6	  6.3	  3.1	  0.9	 -0.7	 -2.2	 -3.7	
+   - Maximum Dew Point temperature of  20.5C on Aug  4
+   - Minimum Dew Point temperature of  -6.2C on Apr  8
+
+ - Monthly Calculated "undisturbed" Ground Temperatures C
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	   .5 m  	  5.1	  4.7	  5.6	  7.8	 10.6	 13.3	 15.1	 15.6	 14.7	 12.5	  9.7	  7.0	
+ 	  2.0 m  	  6.9	  6.1	  6.3	  7.5	  9.5	 11.6	 13.3	 14.2	 14.0	 12.7	 10.8	  8.7	
+ 	  4.0 m  	  8.4	  7.6	  7.4	  7.9	  9.0	 10.5	 11.8	 12.7	 12.9	 12.4	 11.2	  9.8	
+
+ - Monthly Statistics for Solar Wh/m2
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	Direct Avg 	  784	 1075	 1231	 2258	 3605	 2789	 3206	 2822	 2279	 1547	  775	  422	
+ 	Direct Max 	 3043	 4909	 4226	 7114	 7949	 8695	 8172	 6650	 5575	 4280	 2957	 1931	
+ 	Diffuse Avg	  493	  875	 1642	 2386	 2697	 3147	 3036	 2620	 1890	 1179	  604	  415	
+   - Maximum Direct Solar of  8695 Wh/m2 on Jun  1
+
+ - Monthly Average Daily Relative Humidity %
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	      4am	   84	   88	   88	   82	   88	   90	   93	   89	   90	   88	   87	   86	
+ 	     10am	   84	   85	   85	   66	   73	   74	   73	   73	   79	   81	   85	   83	
+ 	      3pm	   80	   82	   77	   61	   70	   77	   72	   68	   71	   77	   83	   80	
+ 	     10pm	   86	   88	   84	   80	   85	   87	   88	   85	   86	   88	   86	   85	
+
+ - Monthly Indicators for Precipitation/Moisture (kPa)
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	         	  0.8	  0.8	  0.8	  0.8	  1.0	  1.3	  1.5	  1.5	  1.3	  1.1	  0.9	  0.8	
+
+ - Monthly Average Daily Wind Direction 
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	         	  232	  156	  238	  186	  135	  159	  203	  187	  192	  175	  184	  238	
+
+ - Monthly Statistics for Wind Speed m/s
+ 	           	Jan	Feb	Mar	Apr	May	Jun	Jul	Aug	Sep	Oct	Nov	Dec	
+ 	Daily Avg	  7.1	  4.9	  6.1	  5.1	  5.6	  5.0	  4.2	  4.5	  4.6	  5.5	  4.9	  7.0	
+ 	 Maximum 	 18.5	 10.0	 18.0	 15.4	 11.3	 11.8	 13.4	 11.3	 16.4	 23.1	 13.4	 21.6	
+   - Maximum Wind Speed of  23.1 m/s on Oct 16
+

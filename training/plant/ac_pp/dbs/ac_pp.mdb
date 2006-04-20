@@ -1,0 +1,61 @@
+# composite construction db defined in ../dbs/ac_pp.mdb
+# based on materials db /usr/esru/esp-r/databases/constr.db2
+   10     # no of composites 
+# layers  description   optics name   symmetry tag
+    3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
+# mat ref thickness mat descr & air gap R
+  242    0.0060  Plate glass
+    0    0.0120  air  0.170 0.170 0.170
+  242    0.0060  Plate glass
+# layers  description   optics name   symmetry tag
+    4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness mat descr & air gap R
+    4    0.1000  Outer leaf brk
+  211    0.0750  Glasswool
+    0    0.0500  air  0.170 0.170 0.170
+    2    0.1000  Breeze block
+# layers  description   optics name   symmetry tag
+    4    roof_1        OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness mat descr & air gap R
+  162    0.0120  Roofing felt
+   21    0.0500  Light mix conc
+    0    0.0500  air  0.170 0.170 0.170
+  151    0.0080  Ceiling (plaster)
+# layers  description   optics name   symmetry tag
+    4    floor_1       OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness mat descr & air gap R
+  263    0.1000  Common_earth
+   82    0.1000  Red granite
+   32    0.0500  Heavy mix concrete
+  124    0.0500  Cement screed
+# layers  description   optics name   symmetry tag
+    2    intern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness mat descr & air gap R
+    2    0.1500  Breeze block
+  103    0.0120  Perlite plasterboard
+# layers  description   optics name   symmetry tag
+    1    door          OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness mat descr & air gap R
+   69    0.0250  Oak (radial)
+# layers  description   optics name   symmetry tag
+    3    int_part      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness mat descr & air gap R
+  103    0.0120  Perlite plasterboard
+    0    0.0250  air  0.170 0.170 0.170
+  103    0.0120  Perlite plasterboard
+# layers  description   optics name   symmetry tag
+    2    ceiling       OPAQ  OPAQUE        ceiling_rev   
+# mat ref thickness mat descr & air gap R
+  211    0.1000  Glasswool
+  150    0.0100  Ceiling (mineral)
+# layers  description   optics name   symmetry tag
+    2    ceiling_rev   OPAQ  OPAQUE        ceiling       
+# mat ref thickness mat descr & air gap R
+  150    0.0100  Ceiling (mineral)
+  211    0.1000  Glasswool
+# layers  description   optics name   symmetry tag
+    3    roof_2        OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness mat descr & air gap R
+  141    0.0150  Clay tile
+  162    0.0050  Roofing felt
+   72    0.0120  Plywood

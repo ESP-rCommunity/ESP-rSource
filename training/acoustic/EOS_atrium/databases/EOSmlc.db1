@@ -1,0 +1,99 @@
+# composite construction db defined in ../databases/multicon.db1
+# based on materials db ../databases/constr.db1
+   15     # no of composites 
+# layers  description   optics 
+    3    dbl_glz_int   TRAN  eos_int_win         
+# db ref  thick   db name & air gap R 
+  243    0.0060  4mm clear float
+    0    0.0610  air  0.168 0.168 0.168
+  243    0.0060  4mm clear float
+# layers  description   optics 
+    7    roof_abs      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   86    0.0600  Gravel
+  161    0.0100  Bitumen felt
+  212    0.1600  Roof insulation board
+   32    0.2200  Heavy mix concrete
+    0    0.1500  air  0.170 0.170 0.170
+  216    0.0200  Mineral fibre
+   62    0.0100  Hardboard(medium)
+# layers  description   optics 
+    5    roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   86    0.0600  Gravel
+  161    0.0100  Bitumen felt
+  212    0.1600  Roof insulation board
+   32    0.2200  Heavy mix concrete
+  127    0.0100  Rendering (8% mc)
+# layers  description   optics 
+    5    Int_wall      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   42    0.0060  Steel
+  107    0.0120  Gypsum plasterboard
+  216    0.0470  Mineral fibre
+  107    0.0120  Gypsum plasterboard
+   42    0.0060  Steel
+# layers  description   optics 
+    1    fictious      TRAN  SC_8985_04nb        
+# db ref  thick   db name & air gap R 
+  245    0.0010  ficious
+# layers  description   optics 
+    3    Superglass    TRAN  Superglass          
+# db ref  thick   db name & air gap R 
+  243    0.0040  4mm clear float
+    0    0.0230  air  1.250 1.250 1.250
+  243    0.0040  4mm clear float
+# layers  description   optics 
+    4    Facade        OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  127    0.0200  Rendering (8% mc)
+  216    0.1200  Mineral fibre
+   32    0.1500  Heavy mix concrete
+  127    0.0100  Rendering (8% mc)
+# layers  description   optics 
+    2    F-P_up        OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  225    0.0100  Synthetic carpet
+   72    0.0300  Plywood
+# layers  description   optics 
+    2    F-P_down      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   72    0.0300  Plywood
+  225    0.0100  Synthetic carpet
+# layers  description   optics 
+    4    Base_up       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2200  Heavy mix concrete
+    0    0.1500  air  0.170 0.170 0.170
+  216    0.0200  Mineral fibre
+   62    0.0100  Hardboard(medium)
+# layers  description   optics 
+    4    Base_down     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   62    0.0100  Hardboard(medium)
+  216    0.0200  Mineral fibre
+    0    0.1500  air  0.170 0.170 0.170
+   32    0.2200  Heavy mix concrete
+# layers  description   optics 
+    5    Facade_vent   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   83    0.0300  White marble
+    0    0.0400  air  0.170 0.170 0.170
+  216    0.1200  Mineral fibre
+   32    0.1500  Heavy mix concrete
+  127    0.0100  Rendering (8% mc)
+# layers  description   optics 
+    1    concrete      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2500  Heavy mix concrete
+# layers  description   optics 
+    3    Int_wall_2    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  107    0.0120  Gypsum plasterboard
+  216    0.0470  Mineral fibre
+  107    0.0120  Gypsum plasterboard
+# layers  description   optics 
+    2    cor_ceil      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2200  Heavy mix concrete
+  127    0.0100  Rendering (8% mc)

@@ -1,0 +1,44 @@
+DEMONSTRATION OF THE COMBINED CFD APPROACH
+
+1 - PROBLEM DEFINITION
+    - Start esp-r specifying a standard ESP-r problem (rad_htg.cfg)
+
+2 - RUN SIMULATION OF THE DEFINED PROBLEM
+    - Run simulation over a period of one day.
+    - Monitor air "room" temperature and heat injection.
+    - Specify control file (rad_htg.ctl)
+
+3 - ANALYSE RESULTS
+    - read library (std.res)
+    - show inside zone temperatures.
+    - run script "show1" to see images related to:
+          Comfort Conditions
+          Surface Temperatures
+          Zone Air Temperature
+
+4 - INVOKE dfs TO SIMULATE ONE ZONE OF THE PROBLEM ABOVE
+    - Specify file room.dfd
+    - Invoke cgd (grid visualization)
+    - End cgd section and return to dfs
+    - Specify file room.dfd-
+    - run simulation and monitor simulation.
+
+5 - ANALYSE RESULTS USING PHOTON
+    - run PHOTON
+    - specify results file (phi.dfs)
+    - show velocity vector at the first Z plane.
+    - run script "show2" to see images related to:
+          Temperature distribution
+          Velocity fields
+
+6 - DEFINE PROBLEM TO RUN COMBINED APPROACH
+    - define a combined problem (rad_htg_cfd.cfg)
+
+7 - RUN COMBINED SIMULATION
+
+8 - ANALYSE RESULTS USING PHOTON
+    - run script "show3" to see images related to:
+          Zone Air Temperature
+          Comfort Conditions
+          Temperature Distribution
+          Velocity Fields
