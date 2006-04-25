@@ -191,7 +191,7 @@ aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
 DG_controller_menu.F:
-	rm -f DG_controller_menu.
+	rm -f DG_controller_menu.F
 	ln -s $(CETCdir)/DG_controller_menu.F .
 DHW_module.F:
 	rm -f DHW_module.F
