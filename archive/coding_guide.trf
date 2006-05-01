@@ -1,11 +1,12 @@
 .\" *************************** ESP-r Coding Guide ****************************
+.so ./macros.trf
 .EQ
 delim $$
 .EN
 .TL
 ESP-r Coding Guide
 .br
-Version of 7 February 2006
+Version of 9 February 2006
 .sp 2
 .LP
 This coding guide has been developed to promote consistent coding style
@@ -49,10 +50,15 @@ generator.
 .SH
 Documentation
 .LP
-The source code should be well commented, with a comment commencing with
-a blank line and preceding the code fragment to which it relates. Such
+The source code should be well commented and these comments
+should precede the code fragments to which they relate. Such
 comments should be used judiciously and grouped in a manner that illuminates
-rather than obscures the code. An example follows.
+rather than obscures the code.
+Spacing should also be used judiciously to logically group
+blocks of code.
+Comments may be indented when this clarifies the interpretation of the code.
+Two examples that illustrate acceptable commenting styles follow.
+.ML
 .TS
 center box;
 l .
@@ -69,11 +75,36 @@ C Increment pointer to the current zone.
 \ \ \ \ \ \ \ \ nodeforcurrent=nodeforcurrent+1
 .sp 0.3
 .TE
+.ES
+.ML
+.TS
+center box;
+l .
+.sp 0.3
+        <preceeding code fragment>
+
+C---------------------------------------------------------------------------------
+C Calculate the molar flow rate of each gas constituent.
+C---------------------------------------------------------------------------------
+C-------N2 in air and fuel flowing into FCPM does not react.
+        Ndot_FCPMexh_N2  = chi_air_N2*Ndot_FCPM_air
+     &                   + chi_fuel_N2*Ndot_FCPM_fuel
+C-------Ar in air flowing into FCPM does not react.
+        Ndot_FCPMexh_Ar  = chi_air_Ar*Ndot_FCPM_air
+C-------O2 in exhaust comes from fuel and excess air.
+        Ndot_FCPMexh_O2  = chi_fuel_O2*Ndot_FCPM_fuel
+     &                   + lambda_FCPM*Ndot_FCPM_O2_stoich
+
+        <next code fragment>
+.sp 0.3
+.TE
+.ES
 .LP
 \fISubroutine descriptions\fR
 .LP
 Each subroutine should start with a high-level explanation of its purpose
 and how this is achieved. An example follows.
+.ML
 .TS
 center box;
 l.
@@ -84,6 +115,7 @@ C the `corner-correction method' are used. The factors are placed into
 C Common Block BSHLF for use in later heat loss calculations.
 .sp 0.3
 .TE
+.ES
 .LP
 \fICiting papers and references\fR
 .LP
@@ -93,6 +125,7 @@ to locate the paper or report in the future. Refer to proprietary reports
 (internal reports, drafts reports, private sources) only when the information
 is not available in the public domain (conference proceedings, journals, theses).
 An example follows.
+.ML
 .TS
 center box ;
 l.
@@ -101,12 +134,14 @@ C Smith A and Jones B (1999), `Heat Transfer Coefficient Correlations for
 C Building Energy Modelling', Int. J. Heat and Mass Transfer, 38(8), pp856-884.
 .sp 0.3
 .TE
+.ES
 .PP
 Then, further down in the source code immediately preceding the algorithm
 cite the appropriate reference from those specified at the beginning of
 the subroutine and  include the specific page numbers, table numbers,
 equation numbers \fIetc\fR, as applicable. This can be helpful to your
 colleagues (and to yourself) in tracing bugs. An example follows.
+.ML
 .TS
 center box;
 l.
@@ -118,6 +153,7 @@ C a window (Smith and Jones publication, Table 2, Equation 6).
 \ \ \ \ \ \ \ \ hc = 2.30*(dt**0.24)
 .sp 0.3
 .TE
+.ES
 .LP
 \fIDescribing assumptions\fR
 .LP
@@ -130,6 +166,7 @@ should be. If it came from a discussion, explain why the assumption was made.
 Use comments to mark ends of blocks. This is useful in identifying blocks when 
 IF, DO or WHILE constructs extend over many lines of code or where there are multiple 
 embedded loops or conditional code blocks. An example follows.
+.ML
 .TS
 center box;
 l.
@@ -145,31 +182,34 @@ C Has iteration for this plant additional output been requested?
 \ \ \ \ \ \ enddo\ \ \ ! <- matches do jj = 1, ...
 .sp 0.3
 .TE
+.ES
 .LP
 \fIGrouping lines of code\fR
 .LP
 Code annotations should be succinct but sufficiently detailed so that
 the purpose of every line of the code is obvious. If in doubt, say more.
 Annotate code by grouping lines logically. An example follows.
+.ML
 .TS
 center box ;
 l .
 .sp 0.3
-\ \ \ \ \ \ <preceding code fragment>
+        <preceding code fragment>
 
-C Override the calculated values if user has specified a file
-C with fixed convection coefficients (i.e. `type 1' control
-C over convection calculations).
-C
-C Does a convection file exist?
-\ \ \ \ \ \ if( ihc(icomp) .eq. 1 ) then
+C Override the calculated values if user has specified a convection file
+C with fixed coefficients (ie. `type 1' control over convection calculations).
+C-------Does a convection file exist?
+        IF( IHC(ICOMP).EQ.1 ) THEN
+C---------Has the user specified fixed coefficients in the convection file?
+          Ltype1 = 0
+          DO 22 k=1,NHCFP(ICOMP)
+            if( iCTLTP(ICOMP,k).eq.1 ) Ltype1=1
+   22     CONTINUE
 
-C Has the user specified fixed convection coefficients in the file?
-\ \ \ \ \ \ \ \ Ltype1 = 0
-\ \ \ \ \ \ \ \ do k=1,nhcfp(icomp)
-\ \ \ \ \ \ \ \ \ \ if( ictltp(icomp,k) .eq. 1 ) Ltype1=1
+        <following code fragment>
 .sp 0.3
 .TE
+.ES
 .LP
 \fIIn-line comments\fR
 .LP
@@ -248,6 +288,7 @@ possible level and floating point comparisons avoided because variation in
 compilers and machine architectures can produce unexpected behaviour
 when the differences in values approach machine precision.
 For instance, the following example may produce inconsistent results:
+.ML
 .TS
 center box;
 l.
@@ -260,11 +301,13 @@ l.
 \ \ \ \ \ \ endif
 .sp 0.3
 .TE
+.ES
 .LP
 By comparing the difference between the floating numbers with a
 tolerance (presumably one several orders of magnitude less than the
 variation between the variables), these inconsistencies can be
 eliminated: 
+.ML
 .TS
 center box;
 l.
@@ -278,6 +321,7 @@ l.
 \ \ \ \ \ \ endif
 .sp 0.3
 .TE
+.ES
 .LP
 ESP-r contains a subroutine named ECLOSE that can be used to
 facilitate such comparisons:
@@ -287,28 +331,65 @@ center box;
 l.
 .sp 0.3
 C Check if airflow rate is zero
-\ \ \ \ \ \  call eclose(convar(icon1,2),0.0,0.001,CloseD)
+            call eclose(convar(icon1,2),0.0,0.001,CloseD)
 
 C If air flow rate is not zero, perform dew point temperature check;
 C otherwise do not.
-\ \ \ \ \ \ if (.not. CloseD) then
+            if (.not. CloseD) then
 .sp 0.3
 .TE
+.ES
 .LP
 \fIVariable and subroutine names\fR
 .LP 
 Variable and subroutine names should be descriptive and clearly
 delineated from other names. Most modern FORTRAN compilers can support long names.
-COMMON block variables should be documented in the subroutine where they are first
-introduced. When variables are defined in the code, the comment should include
-the units of the variable (e.g., $J$, $kW$, \(deC, $K$ \fIetc\fR).
-.LP 
+.LP
 Generic variable names (e.g. INTEGER i, j, k; LOGICAL Done) for loop controls are
 discouraged. Instead, use descriptive names (e.g. INTEGER iZone, iSurface,
 iLayer; LOGICAL Loop_Unconverged).
 .LP
 When working with numerical constants or integer flags, define meaningful
-symbolic parameters to represent the constant or flag. 
+symbolic parameters to represent the constant or flag.
+.LP
+\fIDocumenting local and common block variables\fR
+.LP
+COMMON block variables should be documented in the subroutine where they are first
+introduced. When variables are defined in the code, the comment should include
+the units of the variable (e.g., $J$, $kW$, \(deC, $K$ \fIetc\fR).
+.LP
+Local variables should be documented in the subroutines in which they are used.
+.LP
+Two examples that reveal acceptable styles for documenting variables follow.
+.ML
+.TS
+center box;
+l.
+.sp 0.3
+C Maximum infiltration ('finfmax') and ventilation ('fvntmax') flow
+C rates (m^3/sec) for each zone. Variable 'icompforinf' is the component
+C number associated with unique infiltration flow paths while 'isrczforvent'
+C is the source zone associated with the largest ventilation rate.
+\ \ \ \ \ \ dimension finfmax(mcom), fvntmax(mcom), icompforinf(mcom)
+\ \ \ \ \ \ dimension icompforvent(mcom),isrczforvent(mcom)
+\ \ \ \ \ \ integer icompforinf,icompforvent,isrczforvent
+\ \ \ \ \ \ real finfmax,fvntmax
+.sp 0.3
+.TE
+.ES
+.ML
+.TS
+center box;
+l.
+.sp 0.3
+      real fCyl_Volume       ! Cylinder gas volume (m3)
+      real fCyl_solid_mass   ! Mass of cylinder wall (kg)
+      real fCyl_solid_Cp     ! Specific heat of cylinder wall (J/kg oC)
+      real fCyl_UA_ambient   ! Heat transfer coeff. between cylinder
+                             !   & ambient (W/oC)
+.sp 0.3
+.TE
+.ES
 .LP
 \fIFORTRAN version\fR
 .LP
@@ -336,39 +417,24 @@ should be explicitly declared.
 Data must often be converted between real and integer formats during
 execution. Rather than rely on the compiler's native type casting
 behaviour, such conversions must always be done explicitly:
+.ML
 .TS
 center box;
 l.
 .sp 0.3
-\ \ \ \ \ \ real x, y
-\ \ \ \ \ \ integer i 
+            real x, y
+            integer i 
 
-\ \ \ \ \ \ x = 1\ \ \ \ \ \ \ \ \ ! <- Implicit casts 
-\ \ \ \ \ \ i = x\ \ \ \ \ \ \ \ \ \ !    (bad practice)
-\ \ \ \ \ \ y = i
+            x = 1                    ! <- Implicit casts 
+            i = x                    !    (bad practice)
+            y = i
 
-\ \ \ \ \ \ x = 1.0\ \ \ \ \ \ \ ! <- Explicit casts 
-\ \ \ \ \ \ i = int(x)\ \ \ \ !    (good practice) 
-\ \ \ \ \ \ y = float(i)   
+            x = 1.0                  ! <- Explicit casts 
+            i = int(x)               !    (good practice) 
+            y = float(i)   
 .sp 0.3
 .TE
-.LP
-\fIDocumenting local variables\fR
-.LP
-.TS
-center box;
-l.
-.sp 0.3
-C Maximum infiltration ('finfmax') and ventilation ('fvntmax') flow
-C rates (m^3/sec) for each zone. Variable 'icompforinf' is the component
-C number associated with unique infiltration flow paths while 'isrczforvent'
-C is the source zone associated with the largest ventilation rate.
-\ \ \ \ \ \ dimension finfmax(mcom), fvntmax(mcom), icompforinf(mcom)
-\ \ \ \ \ \ dimension icompforvent(mcom),isrczforvent(mcom)
-\ \ \ \ \ \ integer icompforinf,icompforvent,isrczforvent
-\ \ \ \ \ \ real finfmax,fvntmax
-.sp 0.3
-.TE
+.ES
 .LP
 \fIFORTRAN/C parameter passing conventions\fR
 .LP
