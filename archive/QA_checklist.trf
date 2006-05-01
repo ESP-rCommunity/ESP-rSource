@@ -1,0 +1,302 @@
+.\" ******************** ESP-r Quality Assurance Procedure ********************
+.EQ
+delim ##
+.EN
+.\" ----------- Page formatting -----------
+.nr PS 12p
+.nr VS 14p
+.\" ---------------------------------------
+.TL
+ESP-r Developers' Quality Assurance Checklist 
+.br
+Last updated: February 27, 2006
+.sp 2
+.\"---------------------------------------
+.NH 1
+Synopsis
+.LP
+This document outlines the quality assurance testing procedures that you must be 
+complete before contributing your work to the ESP-r archive.
+.LP
+The objectives of these procedures are to:
+.RS
+.IP a) 3 
+demonstrate to other ESP-r developers and users that your source
+code additions and modifications function as you expect them to,
+.IP b) 3 
+ensure that the changes you've made behave consistently on all
+supported platforms, and
+.IP c) 3 
+ensure that your changes do not interrupt the work of other ESP-r
+users and developers around the world.
+.RE
+.PP
+The Section 2 of this protocol describes procedures for testing all 
+of ESP-r's binaries, while Section 3 describes procedures specific to the 
+\fIbps\fR simulation binary. Finally, Section 4 describes the steps necessary to 
+contribute your code to the common ESP-r development branch.
+.LP
+.\"---------------------------------------
+.NH 1
+General changes to ESP-r
+
+.\"---------------------------------------
+.I "Placing your code under versioning control"
+.LP
+In this section, you'll commit your code to your sub-branch, and update your 
+branch to reflect recent changes in the repository.  
+.RS
+.IP 1. 4
+If you have not already done so, commit your code to your sub-branch following the 
+directions in the document \fIVersioning Control for ESP-r Users and 
+Developers\fR. 
+.IP 2. 4 
+Move to a new directory, and checkout a fresh copy of your sub-branch. Compile ESP-r and 
+be sure to include support for XML output. Ensure that no compilation errors are 
+reported. If compilation errors are reported, check to see that all of your modified 
+files have been correctly committed to your sub-branch.
+.IP 3. 4
+Perform an update to 0 your sub-branch with recent changes in the development 
+branch. Follow the directions in the document \fIVersioning Control for ESP-r Users and
+Developers\fR, and \fBpay particular attention to the pre-update and post-update 
+tags\fR.
+.IP 4. 4 
+Resolve any conflicts reported during the merge, and compile your updated branch with 
+support for XML output enabled. Ensure that no compilation errors are reported.
+.RE
+.\"---------------------------------------
+.SH
+Code standards
+.LP
+These steps will help ensure your code meets standards for inclusion
+in the ESP-r Archive, and that your modifications don't conflict with 
+recent contributions made by other contributors.
+.RS
+.IP 3. 4
+Inspect your code for consistency with the \fIESP-r Coding Guidelines\fP.
+.IP 4. 4 
+If you have access to a Fortran analysis tool such as Forcheck \s-2\u1\d\s0, analyze the 
+source code associated with the ESP-r 0 you've modified. Instructions for 
+running Forcheck on ESP-r 0 can be found in Appendix \fBA\fR.
+.RE
+.FS \s-2\u1\d\s0
+http://www.forcheck.nl/
+.FE
+.LP
+.\"---------------------------------------
+.I "New features and modifications"
+.LP
+These steps will ensure your code behaves as you intended, and that
+other ESP-r users can use your code with confidence.
+.RS
+.IP 5. 4
+Select a test case from the test-suite \fB[path to test suite to go 
+here]\fR that exercises the source code you've modified, or if you've 
+added new features to ESP-r, create a new test-case exercising your modifications. Be 
+sure to create a simulation preset within the test case named \fItest\fR.
+.IP 6. 4
+Exercise the ESP-r binaries you've modified using this test case on your platform 
+of choice. Ensure your modifications behave as you expect.
+.IP 7. 4 
+If your modifications include significant new features (such as a new model), 
+document these results in a written report. Conference papers, theses, reports, and 
+ascii files are all acceptable forms of documentation provided they show your model 
+performs as expected.
+.IP 8. 4
+If your modifications include additions or changes to ESP-r's
+interface, throughly exercise the menus you've created. Attempt
+to test every possible combination of inputs and, if possible,
+ask a colleague unfamiliar with your changes to test the menus.
+.RE
+.LP
+.\"---------------------------------------
+.NH 1
+bps Development QA Checklist
+.LP
+To verify your source code modifications will not introduce new errors into the bps 
+source, you'll compare the predictions of your modified \fIbps\fR to those obtained 
+using the standard version of \fIbps\fR. These two versions of \fIbps\fR are called the 
+\fItest\fR and \fIreference\fR versions, respectively:
+.RS
+.IP \(bu 3
+The \fIreference bps\fR is the current version of bps available on the development
+branch. To build a \fIreference bps\fR, obtain a copy of the development branch 
+and compile the \fIbps\fR binary.
+.IP \(bu 3
+The \fItest bps\fR is the current version of bps 0 on the development
+branch, modified with your source code changes. To build a \fItest bps\fR, first
+ensure that your source code has been committed to your sub-branch. Then 
+0
+your sub-branch with the development branch using the directions contained in the
+document \fIVersioning Control for ESP-r Users and Developers\fR. Finally, compile
+the \fIbps\fR binary.
+.RE
+.LP
+.\"---------------------------------------
+.I "Portability testing"
+.LP
+These steps will help ensure your code behaves consistently across all platforms on 
+which ESP-r is supported (currently SUN Unix, SGI, Linux, CYGWIN, MINGW and Mac 
+4). During portability testing, the predictions of a \fItest bps\fR binary are 
+compared with \fItest bps\fR binaries compiled on other platforms.  You need only 
+undertake these steps if you have access to multiple supported platforms.
+.RS
+.IP 9. 4
+If you created a test case to exercise your model in step 5, add your test case to the 
+test suite folder \fB[test suite path to go here]\fR, and commit these changes to your 
+sub-branch.
+.IP 10. 4
+Create a results set archive using your \fItest bps\fR and test case. 
+The tester.pl script will generate a results set archive for you using the 
+following command:
+.nr PS 8
+.LD
+.fam C
+$ ./tester.pl /path/to/test/bps --case /path/to/test/case/cfg/file
+            --create_historical_archive result_set.tar.gz -v
+.nr PS 12
+.DE
+.IP 11. 4
+If you have access to other supported platforms, check-out a copy of your 
+sub-branch on each of these platforms and compile a \fItest bps\fR binary. Ensure 
+that you enable XML output and that no compilation errors are reported.
+.IP 12. 4
+Copy your test case results set archive onto each of the the alternate platforms 
+you used in step 7. On each platform, invoke the tester.pl script to exercise your 
+\fItest bps\fR code with the test case and compare its output to the result set 
+archive using the following command:
+.nr PS 8
+.LD
+.fam C
+$ ./tester.pl /path/to/new/bps --case /path/to/test/case/cfg/file
+     --historical_archive result_set.tar.gz -v
+.nr PS 12     
+.DE
+.IP 13. 4
+Review the test report produced by tester.pl (bps_test_report.txt) and ensure that 
+no differences are reported.
+.RE
+.LP
+.\"---------------------------------------
+.I "Regression testing"
+.LP 
+These steps help ensure that your modifications will not unexpectedly
+affect other portions of the simulator and interrupt the work of
+other ESP-r users. 
+.RS
+.IP 14. 4
+Check out a fresh copy of ESP-r from the ESP-r a developer's branch, and compile a 
+\fIreference bps\fR on your platform of choice. Ensure that you enable XML
+output.
+.IP 15. 4  
+Use the tester.pl to perform a complete regression test over the
+entire test suite using the following command:
+.nr PS 8
+.LD
+.fam C
+$ ./tester.pl /path/to/reference/bps /path/to/test/bps -v
+.nr PS 12
+.DE
+Be patient\(emthe regression test may take several hours, depending on your hardware!
+.IP 16. 4  
+Review the tester report (bps_test_report.txt) and ensure that
+there are no differences reported in the test results, or if
+differences are exhibited, they can be attributed to your source
+code modifications.
+.IP 17. 4 
+If any differences are reported, document them. Your
+documentation should include:
+.RS
+.IP a) 4
+a brief description of the modifications undertaken,
+including a reference to more detailed documentation (if
+any exists,)
+.IP b) 4
+a list of the files you've changed,
+.IP c) 4
+a list of the test cases exhibiting differences, and
+.IP d) 4
+a description of the differences, including their
+magnitude.
+.RE
+.RE
+.LP
+.NH 1
+Submitting your code
+.LP
+These next steps describe how to submit your code for inclusion into
+the ESP-r archive.
+.RS
+.IP 18. 4
+Prepare an annotated list of the files you've modified and the
+reasons for your changes.
+.IP 19. 4
+Email the ESP-r archivist (Ian Beausoleil-Morrison,
+ibeausol@nrcan.gc.ca), and notify him of your developer's
+branch name and your intent to submit your code to the ESP-r
+archive. Also include the following supporting documentation:
+.RS 
+.IP a) 4
+a brief description of the nature of your changes, and any 
+available supporting documentation,
+.IP b) 4
+a list of the platforms on which you have compiled and tested your code,
+.IP c) 4 
+the sample simulation results you created (if any) in Step 6,
+.IP d) 4
+the documentation describing differences introduced to
+simulation output, if any (created in Step 17), and 
+.IP e) 4
+the annotated list of source files you created in Step 18.
+.RE
+.RE
+.NH 1
+Additional notes
+.LP
+.RS
+.IP \(bu 2
+The tester.pl script supports many options that are not described
+here. Invoking the script with the `--help' option will provide a
+concise description of the script's features.
+.RE
+.LP
+.\"---------------------------------------
+.SH
+Appendix A: Invoking Forcheck
+.LP
+The Forcheck static analyzer inspects your code for inconsistencies and errors that 
+might otherwise be missed by compilers.  To invoke Forcheck, you'll first need to compile 
+bps with the \fIdebug\fR option:
+.nr PS 8
+.LD
+.fam C
+$ ./Install --debug
+.nr PS 12
+.DE
+.LP
+The ``--debug'' option tells the install script not to delete the symbolic links to 
+files in other folders after compilation.
+.PP
+Next, move to the esru folder corresponding to the ESP-r binary you wish to test. For 
+instance, to test \fIprj\fR, move to the folder ``esruprj''. From here, invoke forcheck 
+using the following command:
+.nr PS 8
+.LD
+.fam C
+$ forchk *.F -I ../include
+.nr PS 12
+.DE
+.PP
+Forcheck will produce a report identifying 0 and errors in your source. 
+You may expect this report to warn of inconsistencies in other portions of ESP-r, but 
+pay particular attention to portions of the report 0 to files you've changed.
+
+
+
+
+
+
+
+
+
+
