@@ -1,9 +1,9 @@
 %!PS-Adobe-2.0 EPSF-2.0
-%%Title: repository-schematic.eps
-%%Creator: fig2dev Version 3.2 Patchlevel 3d
-%%CreationDate: Tue Jan 31 16:41:26 2006
-%%For: paul@ptah.esru.strath.ac.uk (paul strachan)
-%%BoundingBox: 0 0 650 417
+%%Title: rep_fig.fig
+%%Creator: fig2dev Version 3.2 Patchlevel 4
+%%CreationDate: Mon May  1 13:17:11 2006
+%%For: ibeausol@bert (Ian Beausoleil-Morrison)
+%%BoundingBox: 0 0 665 417
 %%Magnification: 1.0000
 %%EndComments
 /$F2psDict 200 dict def
@@ -45,7 +45,7 @@ $F2psDict /mtrx matrix put
 
 end
 save
-newpath 0 417 moveto 0 0 lineto 650 0 lineto 650 417 lineto closepath clip newpath
+newpath 0 417 moveto 0 0 lineto 665 0 lineto 665 417 lineto closepath clip newpath
 -40.5 449.0 translate
 1 -1 scale
 
@@ -137,10 +137,13 @@ newfontname newfont definefont pop end } def
 
 $F2psBegin
 10 setmiterlimit
+0 slj 0 slc
  0.06000 0.06000 sc
 %
 % Fig objects follow
 %
+% 
+% here starts figure with depth 50
 % Polyline
 7.500 slw
  [60] 0 sd
@@ -202,12 +205,6 @@ n 8700 4125 m
  [] 0 sd
 % arrowhead
 n 8660 6199 m 8700 6359 l 8740 6199 l 8660 6199 l  cp gs 0.00 setgray ef gr  col0 s
-/Times-Roman-iso ff 210.00 scf sf
-9750 5475 m
-gs 1 -1 sc (Trusted developer's) col0 sh gr
-/Times-Roman-iso ff 210.00 scf sf
-9750 5700 m
-gs 1 -1 sc (branch \(TD-1\)) col0 sh gr
 % Ellipse
 n 5557 4725 150 150 0 360 DrawEllipse gs col0 s gr
 
@@ -312,6 +309,12 @@ n 9787 2887 150 150 0 360 DrawEllipse gs col0 s gr
 /Times-Roman-iso ff 180.00 scf sf
 9742 2955 m
 gs 1 -1 sc (7) col0 sh gr
+/Times-Roman-iso ff 210.00 scf sf
+9750 5475 m
+gs 1 -1 sc (Trusted developer's) col0 sh gr
+/Times-Roman-iso ff 210.00 scf sf
+9750 5700 m
+gs 1 -1 sc (sub-branch \(TD-1\)) col0 sh gr
 % Polyline
 90.000 slw
 n 750 1725 m
@@ -416,7 +419,7 @@ gs 1 -1 sc (Development branch) col0 sh gr
 gs 1 -1 sc (Release branch \(MAIN\)) col0 sh gr
 /Times-Roman-iso ff 210.00 scf sf
 9750 6900 m
-gs 1 -1 sc (Archivist's branch) col0 sh gr
+gs 1 -1 sc (Archivist's sub-branch) col0 sh gr
 /Times-Roman-iso ff 210.00 scf sf
 9750 6000 m
 gs 1 -1 sc (TD-2) col0 sh gr
@@ -428,9 +431,11 @@ gs 1 -1 sc (TD-3) col0 sh gr
 gs 1 -1 sc (Novice developer's) col0 sh gr
 /Times-Roman-iso ff 210.00 scf sf
 9750 7425 m
-gs 1 -1 sc (branch \(ND-1\)) col0 sh gr
+gs 1 -1 sc (sub-branch \(ND-1\)) col0 sh gr
 /Times-Roman-iso ff 180.00 scf sf
 900 675 m
 gs 1 -1 sc (time) col0 sh gr
+% here ends figure;
 $F2psEnd
 rs
+showpage
