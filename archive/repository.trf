@@ -5,7 +5,7 @@ delim $$
 .TL
 Structure of the ESP-r Source Code Archive
 .br
-Version of 7 February 2006
+Version of May 1, 2006
 .sp 2
 .LP
 A version control system will be used to facilitate the management
@@ -34,24 +34,24 @@ accompanied by a brief summary of the inherent changes.
 All ESP-r users will have access to the release branch through
 anonymous login, while developers who wish to contribute source code
 will be provided with an account that gains them access to the
-development branch. Furthermore, developer-specific branches will
+development branch. Furthermore, developer-specific sub-branches will
 be created for each developer (e.g. ND-1 and TD-1 in Figure 1).
 These branches essentially represent a copy of the development
 branch, which is managed by the version control system. An
 automatic log of all downloads (and uploads) will be maintained.
 .PP
 The operation of the system is illustrated with the example of
-the novice developer who 'owns' branch ND-1. Developer ND-1
+the novice developer who 'owns' sub-branch ND-1. Developer ND-1
 will perform their development work on their local machine,
 periodically committing their new and/or modified source code
-to branch ND-1 in the version control system. These periodic
+to sub-branch ND-1 in the version control system. These periodic
 code commitments have no impact upon other users/developers
-as they are strictly available only on the ND-1 branch.
+as they are strictly available only on the ND-1 sub-branch.
 Once developer ND-1 feels confident that their code is ready
 for sharing with the entire ESP-r community, they will
 perform a number of steps prior to contacting the Archivist.
 .PP
-Firstly, developer ND-1 will synchronise branch ND-1 with the
+Firstly, developer ND-1 will synchronise sub-branch ND-1 with the
 development branch. This is represented by '6a' in Figure 1.
 The version control system will facilitate this operation
 although some human intervention on the part of
@@ -67,7 +67,7 @@ or alterations is drafted and sent to the Archivist.
 Following a dialogue between the Archivist (assisted by
 a technical support team) and developer ND-1,
 the Archivist will merge developer ND-1's code into the
-Archivist's branch. This is represented by '6b' in Figure 1.
+Archivist's sub-branch. This is represented by '6b' in Figure 1.
 Following an appropriate degree of scrutiny, verification
 and testing, the Archivist will transfer developer ND-1's
 code to the development branch and thus make the code
@@ -78,18 +78,18 @@ will be documented within the version control system.
 A more streamlined procedure will be applied for developers who
 have a demonstrated history of safe code contributions and adherence
 to the coding guide. This is illustrated with the example of the
-trusted developer who owns branch TD-1. The process outlined above
+trusted developer who owns sub-branch TD-1. The process outlined above
 for developer ND-1 is followed up to the point at which the
-Archivist merges the developer's code into the Archivist's branch.
+Archivist merges the developer's code into the Archivist's sub-branch.
 Rather than performing this operation, the Archivist will engage
 in a dialogue with the developer and will scrutinise and verify
-(but not test) the code that resides on branch TD-1.
+(but not test) the code that resides on sub-branch TD-1.
 .PP
 Once the Archivist is satisfied with the coding contribution,
 the developer will be authorised to transfer the code to the
 development branch, accompanied by a brief summary of the alterations.
 Figure 1. illustrates two instances, '1a' and '1b' in which
-developer TD-1 first synchronises branch TD-1 and then transfers
+developer TD-1 first synchronises sub-branch TD-1 and then transfers
 their code contribution to the development branch.
 .PP
 An identical procedure is applied for other trusted developers,
