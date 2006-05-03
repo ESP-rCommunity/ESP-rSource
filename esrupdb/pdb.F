@@ -202,8 +202,8 @@ C Initialize plant component database file.
       h(5)='listing and editing. If there is no such file then'
       h(6)='a new one will be created to hold data for new'
       h(7)='components.'
-      CALL EASKS(LCMDFL,'Plant component database file name? ',' ',
-     &   72,DPCDB,' Database name ',IER,7)
+      CALL EASKF(LCMDFL,'Plant component database file name? ',' ',
+     &  72,DPCDB,' Database name ',IER,7)
 
 C Find the path and local file name, if exists open otherwise fill.
       call fdroot(LCMDFL,path,LTMP)

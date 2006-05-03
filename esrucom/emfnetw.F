@@ -885,7 +885,7 @@ C Number of nodes, components and interconnections.
 
 C Node data.
       IF(NNOD.EQ.0) GOTO 999
-      WRITE(outs,'(A,A)')'    Node      Fluid   Node Type',
+      WRITE(outs,'(A,A)')'   # Node      Fluid   Node Type',
      &  '           Height Temperature    Data_1       Data_2'
       CALL EDISP(itru,outs)
 
@@ -914,17 +914,17 @@ C Node data.
         endif
         IF(ITND(INOD).EQ.0) THEN
           WRITE(outs,1030)
-     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
+     &         INOD,NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
      &         TNOD(INOD),dat1,SUPNOD(INOD,1),dat2,SUPNOD(INOD,2)
         ELSE
           WRITE(outs,10301)
-     &         NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
+     &         INOD,NDNAM(INOD),fldtyp,nodtyp,HNOD(INOD),
      &         NDNAM(ITND(INOD)),dat1,SUPNOD(INOD,1),dat2,SUPNOD(INOD,2)
         END IF
         call edisp(itru,outs)
    30 CONTINUE
- 1030   FORMAT(1X,A12,1x,2a,F8.4,1X,G12.5,1X,a,F9.3,2X,a,F8.3)
-10301   FORMAT(1X,A12,1x,2a,F8.4,1X,A12,1X,a,F9.3,2X,a,F8.3)
+ 1030   FORMAT(1X,I3,1X,A12,1x,2a,F8.4,1X,G12.5,1X,a,F9.3,2X,a,F8.3)
+10301   FORMAT(1X,I3,1X,A12,1x,2a,F8.4,1X,A12,1X,a,F9.3,2X,a,F8.3)
 
 C Component data.
       IF(NCMP.EQ.0) GOTO 999
@@ -1059,7 +1059,8 @@ C If not already written out.
 C Connections data
       IF(NCNN.EQ.0) GOTO 999
       CALL EDISP(itru,' ')
-      WRITE(outs,'(2a)') ' +Node         dHght   -Node         dHght',
+      WRITE(outs,'(2a)') 
+     &  '    # +Node         dHght   -Node         dHght',
      &  '   Component       Z @+    Z @-'
       CALL EDISP(itru,outs)
 
@@ -1067,9 +1068,9 @@ C Connections data
         zplus=HNOD(NODPS(ICNN))+HGTPS(ICNN)
         zminus=HNOD(NODNE(ICNN))+HGTNE(ICNN)
         WRITE(outs,1070)
-     &    NDNAM(NODPS(ICNN)),HGTPS(ICNN),NDNAM(NODNE(ICNN)),
+     &    ICNN,NDNAM(NODPS(ICNN)),HGTPS(ICNN),NDNAM(NODNE(ICNN)),
      &    HGTNE(ICNN),CMNAM(ITPCON(ICNN)),zplus,zminus
- 1070   FORMAT(1X,A12,F7.3,3X,A12,F7.3,3X,A12,1X,2F8.3)
+ 1070   FORMAT(1X,I4,1X,A12,F7.3,3X,A12,F7.3,3X,A12,1X,2F8.3)
         CALL EDISP(itru,outs)
    70 CONTINUE
 

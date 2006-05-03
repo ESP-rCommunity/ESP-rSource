@@ -558,8 +558,8 @@ C Request definition of model.
         H(4)='given matches an existing file it will be read and '
         H(5)='the data will be available for editing.'
         LTMP=LCMDFL
-  289   CALL EASKS(LTMP,' Model configuration file ? ',' ',72,DFCFG,
-     &        'config file name',IER,5)
+  289   CALL EASKF(LTMP,' Model configuration file ? ',' ',72,DFCFG,
+     &    'config file name',IER,5)
         IF(LTMP(1:2).EQ.'  '.or.LTMP(1:4).eq.'UNKN')GOTO 289
         call st2file(LTMP,LCMDFL)
         INQUIRE (FILE=LCMDFL,EXIST=XST)

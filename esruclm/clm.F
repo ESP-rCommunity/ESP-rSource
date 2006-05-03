@@ -612,30 +612,40 @@ C Edit site attributes.
       ELSEIF(INO.EQ.12)THEN
 
 C Creation of climate file from manual editing.
-        H(1) ='The climate edit facility uses three modes of prediction'
-        H(2) =' '
-        H(3) ='KEYBOARD ENTRY asks for one day and allows hourly data '
-        H(4) ='to be edited individually. This can be cumbersome if a '
-        H(5) ='large number of days are to be edited'
-        H(6) =' '
-        H(7) ='TRANSFORMS can generte regular patterns of data and can'
-        H(8) ='be used in changes e.g. increasing temperature by 2degC'
-        H(9) ='or making RH 1.2 times etc.'
-        H(10)='Polynomial prediction of order higher than 1 is also '
-        H(11)='possible'
-        H(12)=' '
-        H(13)='CURVE FITTING fits a sinusoidal diurnal pattern to data'
-        CALL EASKABCD(' Creation of data via: (see help)',' ',
-     &    'keyboard entry','transforms','curve fitting','continue',
-     &    IC,13)
+        H(1)='Keyboard entry allows data for each hour to be '
+        H(2)=' typed in for a given day.'
+        H(3) =' '
+        H(4)='Curve fitting can generate regular patterns of'
+        H(5)=' data (e.g. provide a maximum, minimum and a sinusodial'
+        H(6)=' pattern is generated.'
+        H(7) =' '
+        H(8)='Transforms can change climate data by a fixed increment,'
+        H(9)=' make a fractional change or a polynomial based change'
+        H(10)=' or adjust wind speeds from particular directions.'
+        H(11)=' '
+        H(12)='Prediction is used for predicting radiation from site '
+        H(13)=' position '
+        CALL EASKATOG(' Creation of data via: ',' ',
+     &    'keyboard entry','prediction','transforms','curve fitting',
+     &    'continue',' ',' ',IC,13)
+
         if(ic.eq.1)then
           call tstamp('>','CLM: manual editing')
           CALL RRITE
+        elseif(ic.eq.2)then
+          call tstamp('>','CLM: predictive editing')
+          ist=1
+          CALL CLPRED(ist)
+        elseif(ic.eq.3)then
+          call tstamp('>','CLM: transform editing')
+          ist=2
+          CALL CLPRED(ist)
+        elseif(ic.eq.3)then
+          call tstamp('>','CLM: transform editing')
+          ist=3
+          CALL CLPRED(ist)
         elseif(ic.eq.4)then
           goto 3
-        else
-          call tstamp('>','CLM: predictive editing')
-          CALL CLPRED(ic)
         endif
       ELSEIF(INO.EQ.13)THEN
 

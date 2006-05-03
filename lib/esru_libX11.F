@@ -2817,10 +2817,9 @@ C      END
 C ************* EASKPER
 C EASKPER: Provides legacy interface to the more general eAskPerYear below.
       SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
-C << initial values of iBYr iEYr? >>
       CHARACTER*(*) PROMP1
       integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
-      call eAskPerYear(PROMP1,IBDOY,IEDOY,IFDAY,iBYr,iEYr,IER)
+      call eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
 
       return
       end

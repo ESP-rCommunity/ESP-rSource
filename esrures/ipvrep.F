@@ -3524,8 +3524,8 @@ C Each call is a toggle.
           call easks(xfile,' export file name: ',' ',72,
      &               ' ','export file name',IER,2)
         endif
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                    ' for export.'
         call usrmsg(outs,' ','-')
         if(iw.eq.1)then
           if(tg.eq.'X'.or.tg.eq.'T')then

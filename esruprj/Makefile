@@ -209,8 +209,7 @@ clean:
 	mfelst.F mfnmsc.F mfrlst.F mvalid.F net2pdf.F newnet.F nwkrewr.F plelev.F \
 	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
 	stndrds.F startup.F tdfile.F \
-	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
-	MultiYear_climate.F
+	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F MultiYear_climate.F
 
 
 
