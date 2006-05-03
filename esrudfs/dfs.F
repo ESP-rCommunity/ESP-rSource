@@ -319,9 +319,9 @@ C Show version.
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFL,0,IIER)
 
@@ -602,7 +602,7 @@ C to include the path and create a string to drive xten.
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
             call addpath(RESFL,tfile,concat)
-            write(doit,'(a,a,a)') 'xten ',tfile(:lnblnk(tfile)),' & '
+            write(doit,'(3a)') 'xten ',tfile(:lnblnk(tfile)),' & '
             call runit(doit,tmode)
             GOTO 10
           ENDIF
@@ -624,8 +624,8 @@ C to include the path and create a string to drive PHOTON.
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
           call addpath(RESFL,tfile,concat)
-          write(doit,'(a,a,a)') 'runpho ',
-     &                      tfile(:lnblnk(tfile)),' & '
+          write(doit,'(3a)') 'runpho ',
+     &      tfile(:lnblnk(tfile)),' & '
           INQUIRE (FILE='runpho',EXIST=XST)
           IF(XST)THEN
             call runit(doit,tmode)
@@ -704,8 +704,8 @@ C         IF(RESFL.EQ.'  ')GOTO 80
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
           call addpath(RESFL,tfile,concat)
-          write(doit,'(a,a,a)') '/usr/esru/bin/matlab ',
-     &                                    tfile(:lnblnk(tfile)),' & '
+          write(doit,'(3a)') '/usr/esru/bin/matlab ',
+     &      tfile(:lnblnk(tfile)),' & '
           INQUIRE (FILE='/usr/esru/bin/matlab',EXIST=XST)
           IF(XST)THEN
 

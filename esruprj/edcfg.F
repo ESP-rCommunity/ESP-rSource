@@ -3206,7 +3206,7 @@ C Also scan utility files if they exist.
         else
           LTMP=LCMDFL
         endif
-        CALL EASKS(LTMP,' Model configuration file?',' ',72,DFCFG,
+        CALL EASKF(LTMP,' Model configuration file?',' ',72,DFCFG,
      &    'config file name',IER,17)
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '

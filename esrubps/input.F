@@ -306,7 +306,7 @@ C Initialize the system variables.
 
 C If an input file has been specified then load it after confirmation
 C and return to the main menu.
-      H(1)='A system configuration file defines the model for'
+      H(1)='A model configuration file defines the model for'
       H(2)='simulation. This can be a building only (in whole or '
       H(3)='part), a plant network, or a combined building and '
       H(4)='plant system. It is also possible to specify building'
@@ -316,8 +316,8 @@ C and return to the main menu.
       H(8)='sections 3.8 and 7 of the user manual.'
  42   if (.NOT.(ISIM.gt.1.or.autook)) then
         ltmp=LCMDFL
-        CALL EASKS(ltmp,' System configuration file name ?',
-     &                        '  ',72,DFCFG,'config file name',IER,8)
+        CALL EASKF(ltmp,' Model configuration file name ?',
+     &    '  ',72,DFCFG,'config file name',IER,8)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCMDFL=ltmp
         else
@@ -858,17 +858,6 @@ C translate the casual gains.
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)
           call PROCESSOLDCAS(IZ,itrc,itu,IER)
-C          if(dll)then
-C            dllsubr='MZPREC'
-C            dllmesg=outs
-C            ier=2
-C            return
-C          else
-C            call edisp(iuout,outs)
-C            call epwait
-C            CALL EPAGEND
-C            STOP
-C          endif
         endif
 
         CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)

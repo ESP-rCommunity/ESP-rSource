@@ -1573,8 +1573,8 @@ C Each call is a toggle.
           call easks(xfile,' export file name: ',' ',72,
      &               ' ','export file name',IER,2)
         endif
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                    ' for export.'
         call usrmsg(outs,' ','-')
         if(iw.eq.1)then
           if(tg.eq.'X')then
@@ -1582,7 +1582,7 @@ C Each call is a toggle.
             if(ier.ne.0)return
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
      &                       ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
@@ -1606,7 +1606,7 @@ C passing request to wwlib.c
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             CALL ERPFREE(ixpunit,ISTAT)
             call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
      &                       ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
@@ -1618,7 +1618,7 @@ C passing request to wwlib.c
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &    ' reporting >> to ',xfile(1:lnblnk(xfile))
         call usrmsg(outs,' ','-')
 

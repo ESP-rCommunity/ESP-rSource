@@ -223,8 +223,8 @@ C and return to the main menu.
       H(8)='sections 3.8 and 7 of the user manual.'
  42   if (.NOT.(ISIM.gt.1.or.autook)) then
         ltmp=LCMDFL
-        CALL EASKS(ltmp,' System configuration file name ?',
-     &                        '  ',72,DFCFG,'config file name',IER,8)
+        CALL EASKF(ltmp,' Model configuration file name ?',
+     &     '  ',72,DFCFG,'config file name',IER,8)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCMDFL=ltmp
         else

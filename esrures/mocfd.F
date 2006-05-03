@@ -43,7 +43,7 @@ C Ask for CFD results library.
       H(4)='A file called UNKNOWN will allow return to main menu.'
       LTMP='UNKNOWN'
       ltmpc='UNKNOWN'
-      CALL EASKS(ltmpc,'CFD library name?',' ',72,LTMP,'CFDresfl',IER,4)
+      CALL EASKF(ltmpc,'CFD library name?',' ',72,LTMP,'CFDresfl',IER,4)
       if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
         LCMDFL=ltmpc
       else

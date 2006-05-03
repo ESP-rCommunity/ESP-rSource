@@ -737,8 +737,12 @@ C Defaults.
         else
           ltmp=' '
         endif
-        CALL EASKS(LTMP,' Library name ? ',
-     &    ' ',72,DFILE,'library file',IER,7)
+        h(1)='The predictions from solution of a plant/system '
+        h(2)='network are held in a binary results file which'
+        h(3)='is separate from zone and flow results. Please '
+        h(4)='supply the name (if the field is blank). '
+        CALL EASKF(LTMP,' Plant results library name ? ',
+     &    ' ',72,DFILE,'library file',IER,4)
         if(LTMP(1:2).eq.'  '.or.LTMP(1:4).eq.'UNKN')goto 6
       else
         ltmp=LCMDFL

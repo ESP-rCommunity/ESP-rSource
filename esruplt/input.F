@@ -82,8 +82,8 @@ C Initialise system configuration file (read only mode)
 C Ask for plant file name.
 C << Is this network file or a system config (which includes plant) ? >>
  44   H(1)='This is the plant network definition.'
-      CALL EASKS(LCMDFL,' Plant network file name ?',
-     &   '  ',72,DPNF,'plant file name',IER,1)
+      CALL EASKF(LCMDFL,' Plant network file name ?',
+     &  '  ',72,DPNF,'plant file name',IER,1)
       IF(LCMDFL.eq.' ')goto 44
 
 C Find the path and local file name.

@@ -185,8 +185,8 @@ C Each call is a toggle. If open then close file.
         call easks(xfile,' export file name: ',' ',72,
      &    ' ','export file name',IER,2)
 
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                    ' for export.'
         call usrmsg(outs,' ','p')
         if(ixloc.eq.1)then
           if(tg.eq.'G')then
@@ -205,7 +205,7 @@ C passing request to wwlib.c
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &    ' >> to ',xfile(1:lnblnk(xfile))
         call usrmsg(outs,' ','p')
       endif

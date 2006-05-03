@@ -256,9 +256,9 @@ C Defaults.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       logical XST,OK,dok
 
- 155  h(1)='An event profiles database holds named sets of profiles'
-      h(2)='in a binary representation. '
-      CALL EASKS(LCMDFL,' Event profile db? ',
+ 155  h(1)='An event profiles database holds named sets of hourly'
+      h(2)='profiles in a binary representation. '
+      CALL EASKF(LCMDFL,' Event profile db? ',
      &  ' ',72,DPRFDB,'binary events db',IER,2)
 
       IER=0

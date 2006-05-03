@@ -655,10 +655,10 @@ C Incllude break and loss in results
       elseif (INO.eq.1) then 
 
 C Select/change ESP-r configuration file.
-        H(1)='The problem configuration file holds the definition '
+  289   H(1)='The problem configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
-  289   CALL EASKS(LCMDFL,' Problem name? ',' ',72,DFCFG,
+        CALL EASKF(LCMDFL,' Problem name? ',' ',72,DFCFG,
      &    'config file name',IER,3)
         IF(LCMDFL.EQ.' ')GOTO 289
         goto 42

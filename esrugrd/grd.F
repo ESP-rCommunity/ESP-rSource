@@ -330,8 +330,8 @@ C Define the problem.
         H(3)='names of all of the files required. If the name given'
         H(4)='matches an existing file it will be read in.'
         H(5)=' '
-        CALL EASKS(LCMDFL,' Problem name ? ',' ',72,' ',
-     &        'config file name',IER,5)
+        CALL EASKF(LCMDFL,' Model configuration file?',' ',72,' ',
+     &    'config file name',IER,5)
         IF(LCFGF.EQ.' ')GOTO 10
 
 C Find the path and local file name.

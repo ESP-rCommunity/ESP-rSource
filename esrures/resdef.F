@@ -86,7 +86,7 @@ C assigned database.
         H(7)='library set up when ESP was first installed.'
         LTMP=' '
         ltmpc=LCMDFL
-        CALL EASKS(ltmpc,' Library name ? ',
+        CALL EASKF(ltmpc,' Results library name ? ',
      &    ' ',72,DEFRLB,'library file',IER,7)
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
           LCMDFL=ltmpc
@@ -1048,7 +1048,7 @@ C each is one)
         H(3)='include this. If you cannot find this file then you'
         H(4)='cannot proceed.'
         LTMP=' '
-        CALL EASKS(LTMP,' ',
+        CALL EASKF(LTMP,' ',
      &   ' Corresponding system configuration file name ? ',
      &   72,' ','configuration file',IER,7)
         if (LTMP.eq.' ') goto 45
@@ -1086,7 +1086,7 @@ C Not found, might be in a remote folder.  Warn user first.
         H(2)='of the building/ plant to be simulated.  It should'
         H(3)='match the contents held within the results library.'
         LTMP=LCFGF
-        CALL EASKS(LTMP,' Model configuration file ? ',' ',72,DFCFG,
+        CALL EASKF(LTMP,' Model configuration file ? ',' ',72,DFCFG,
      &    'config file name',IER,3)
         if (ltmp(1:2).ne.'  ') GOTO 289
       ENDIF

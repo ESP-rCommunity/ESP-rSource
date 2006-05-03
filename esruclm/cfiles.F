@@ -468,7 +468,7 @@ C climate file.
           endif
           if(clmdb(1:12).eq.'USER_DEFINED')then
             LCMDFL='newclim'
- 291        CALL EASKS(LCMDFL,' New climate file (esp-r binary) ?',
+ 291        CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
      &       ' ',72,DCLIM,'new climate file',IER,15)
             IF(LCMDFL.EQ.' ')GOTO 291
             IER=0
@@ -488,7 +488,7 @@ C climate file.
           call edisp(iuout,
      &    ' (Check with your administrator about `climatelist` file)')
           LCMDFL=DCLIM
- 289      CALL EASKS(LCMDFL,' Climate file (esp-r binary format) ? ',
+ 289      CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
      &     ' ',72,DCLIM,'climate file',IER,15)
           IF(LCMDFL.EQ.' ')GOTO 289
           IER=0
@@ -499,7 +499,7 @@ C climate file.
           IER=0
           rescan=.true.
         else
- 290      CALL EASKS(LCMDFL,' Climate file (esp-r binary format) ?',
+ 290      CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ?',
      &      ' ',72,DCLIM,'climate file',IER,15)
           IF(LCMDFL.EQ.' ')GOTO 290
           IER=0
@@ -681,12 +681,12 @@ C Write one day's climate data to the current climate file.
 
       NDAY=IDAY
       DO 40 J=1,24
-      ICLM(J,1)=NINT(CDIF(J))
-      ICLM(J,2)=NINT(10.*CTMP(J))
-      ICLM(J,3)=NINT(CDNR(J))
-      ICLM(J,4)=NINT(10.*CVEL(J))
-      ICLM(J,5)=NINT(CDIR(J))
-      ICLM(J,6)=NINT(CHUM(J))
+        ICLM(J,1)=NINT(CDIF(J))
+        ICLM(J,2)=NINT(10.*CTMP(J))
+        ICLM(J,3)=NINT(CDNR(J))
+        ICLM(J,4)=NINT(10.*CVEL(J))
+        ICLM(J,5)=NINT(CDIR(J))
+        ICLM(J,6)=NINT(CHUM(J))
    40 CONTINUE
       IREC=NDAY
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)
