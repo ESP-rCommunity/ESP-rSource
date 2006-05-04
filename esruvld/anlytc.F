@@ -825,7 +825,8 @@ C *********************************************************************
       COMMON/Vld10/VlDirR,VlDirL
 
       character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF,LCMDFL
+      CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
+      character LCMDFL*144
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 

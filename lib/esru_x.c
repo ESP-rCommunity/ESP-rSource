@@ -3376,7 +3376,8 @@ void openaskbox_(msg1,msg2,asklen,len1,len2)
   msgbx.b_top =  xrt_height - ((f_height+4) * 2) - 3;
   msgbx.b_bottom=  xrt_height - 3;
   msgbx.b_left  = 2;
-  msgbx.b_right = xrt_width - (f_width * 11);
+/*  msgbx.b_right = xrt_width - (f_width * 11); */
+  msgbx.b_right = xrt_width - 2;
 
   xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
   XDrawString(theDisp,win,theGC,lprompt,msgbx.b_bottom - (f_height+8),msg1,lm1);
@@ -3449,7 +3450,8 @@ void openaskaltbox_(msg1,msg2,alt,asklen,len1,len2,len3)
   msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3;
   msgbx.b_bottom= xrt_height - 3;
   msgbx.b_left  = 2;
-  msgbx.b_right = xrt_width - (f_width * 11);
+/*  msgbx.b_right = xrt_width - (f_width * 11); */
+  msgbx.b_right = xrt_width - 2;
 
   xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
   XDrawString(theDisp,win,theGC,lprompt,msgbx.b_bottom - (f_height+8),msg1,lm1);
@@ -3526,7 +3528,8 @@ void openask2altbox_(msg1,msg2,alt,alt2,asklen,len1,len2,len3,len4)
   msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3;
   msgbx.b_bottom= xrt_height - 3;
   msgbx.b_left  = 2;
-  msgbx.b_right = xrt_width - (f_width * 11);
+/*  msgbx.b_right = xrt_width - (f_width * 11); */
+  msgbx.b_right = xrt_width - 2;
 
   xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
   XDrawString(theDisp,win,theGC,lprompt,msgbx.b_bottom - (f_height+8),msg1,lm1);
@@ -4075,7 +4078,7 @@ void askdialog_(sstr,id,iq,f_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,x2,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4543,7 +4546,9 @@ void msgbox_(msg1,msg2,len1,len2)
 /* Set number of dialogue line =2 to signal that the dialogue box exists */
   dialogue_lines = 2;  
   msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3; msgbx.b_bottom= xrt_height - 3; 
-  msgbx.b_left  = 2; msgbx.b_right = xrt_width - (f_width * 11);
+  msgbx.b_left  = 2;
+/*  msgbx.b_right = xrt_width - (f_width * 11); */
+  msgbx.b_right = xrt_width - 2;
   xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
   XDrawString(theDisp,win,theGC,msgbx.b_left+2+f_lbearing,msgbx.b_bottom-(f_height+8),msg1,lm1);
   XDrawString(theDisp,win,theGC,msgbx.b_left+2+f_lbearing,msgbx.b_bottom-3,msg2,lm2);
@@ -7988,11 +7993,14 @@ void opencpw_()
 {
  long int saved_font;
  int bottom, left;	/* pixel at lower left of box */
-
+ int label_ht;		/* for height of the dialog box */
  saved_font = current_font;
+ if (saved_font != small_fnt) winfnt_(&small_fnt);
+ label_ht = f_height+4;
  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
  cpw_avail = 1;             /* tell the world that copyright is available */
- b_cpw= xrt_height -3; l_cpw= xrt_width - ((f_width * 10) + 3);
+ b_cpw= xrt_height - ((f_height+4) * 2) - (label_ht + 7);
+ l_cpw= xrt_width - ((f_width * 10) + 3);
  bottom = b_cpw; left = l_cpw;
  doitbox(cpw,"copyright",9,10,&saved_font,&butn_fnt,&bottom,&left,"copyright",'-');
  return;

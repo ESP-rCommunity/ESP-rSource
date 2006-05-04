@@ -124,8 +124,8 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character items*26
-      CHARACTER MTHNAM*3,outs*124,ETEXT*60,LTMP*72
-      CHARACTER DESCRH*5,DESCRD*5,zname*12,zdesc*64,inf*72,LCMDFL*72
+      CHARACTER MTHNAM*3,outs*124,outs248*248,ETEXT*60,LTMP*144
+      CHARACTER DESCRH*5,DESCRD*5,zname*12,zdesc*64,inf*144,LCMDFL*144
       character path*72,upath*72,esprc*72,cfgroot*24
       character dfdblbl*20,defdbfl*72
       character inz*16,inzone*16,ZN*12,pact*16,paction*16,OUTSTR*124
@@ -323,9 +323,9 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
         if(pact(1:13).ne.'update_silent')then
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,80)
         endif
       else
         LCMDFL='  '
@@ -558,8 +558,27 @@ C Request definition of model.
         H(4)='given matches an existing file it will be read and '
         H(5)='the data will be available for editing.'
         LTMP=LCMDFL
-  289   CALL EASKF(LTMP,' Model configuration file ? ',' ',72,DFCFG,
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  289   llt=lnblnk(ltmp)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,5)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
+     &      'config file name',IER,5)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &      'config file name',IER,5)
+        endif
+#else
+        CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
      &    'config file name',IER,5)
+#endif
         IF(LTMP(1:2).EQ.'  '.or.LTMP(1:4).eq.'UNKN')GOTO 289
         call st2file(LTMP,LCMDFL)
         INQUIRE (FILE=LCMDFL,EXIST=XST)

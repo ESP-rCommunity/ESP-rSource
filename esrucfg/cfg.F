@@ -90,9 +90,9 @@ C Significant figure reporting limit (NSIGFIG).
       logical unixok,there,prob,longpause
 
       DIMENSION ITEMS1(21)
-      CHARACTER*72 LCFGF,H,CFGFN,LTMP
+      CHARACTER LCFGF*72,H*72,CFGFN*72,LTMP*144
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
-      CHARACTER ITEMS1*30,inf*72,CXSTR*78,outs*124
+      CHARACTER ITEMS1*30,inf*144,CXSTR*78,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character DCNN*72,LLCNN*72,LCNN*72
       character path*72,upath*72,esprc*72
@@ -314,8 +314,8 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LTMP=inf
-        write(outs,'(a,a)')' the input file is: ',LTMP
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LTMP
+        call edisp248(iuout,outs248,80)
       else
         LTMP=' '
       endif
@@ -469,37 +469,54 @@ C List connections.
           CALL EDISP(iuout,CXSTR)
    21   CONTINUE
       ELSEIF(INO.EQ.1)THEN
-        if(.NOT.CFGOK)then
-          H(1)='The system configuration file holds the definition of'
-          H(2)='the building/plant to be simulated, including the'
-          H(3)='names of all of the files required. If the name given'
-          H(4)='matches an existing file it will be read in and the'
-          H(5)='data will be available for editing.'
-  289     CALL EASKF(ltmp,' Model configuration file ?',' ',72,
+        H(1)='The system configuration file holds the definition of'
+        H(2)='the building/plant to be simulated, including the'
+        H(3)='names of all of the files required. If the name given'
+        H(4)='matches an existing file it will be read in and the'
+        H(5)='data will be available for editing.'
+  289   llt=lnblnk(ltmp)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(ltmp,' Model configuration file ?',' ',96,
      &      DFCFG,'config file name',IER,5)
-          call usrmsg('File selected is',ltmp,'-')
-          IF(LTMP.EQ.' ')GOTO 289
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(ltmp,' Model configuration file ?',' ',124,
+     &      DFCFG,'config file name',IER,5)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(ltmp,' Model configuration file ?',' ',144,
+     &      DFCFG,'config file name',IER,5)
+        endif
+#else
+        CALL EASKF(ltmp,' Model configuration file ?',' ',144,
+     &    DFCFG,'config file name',IER,5)
+#endif
+
+        call usrmsg('File selected is',ltmp,'-')
+        IF(LTMP.EQ.' ')GOTO 289
 
 C Find the path and local file name, if ersys sucessful report to
 C user on any mis-matches discovered.
-          call fdroot(LTMP,path,LCFGF)
-          call edisp(iuout,' ')
-          call edisp(iuout,' Scanning the model description')
-          MODE='NONE'
-          IAPROB=IPRODB
-          call ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
-          if(IER.eq.0)then
-            call ckcurmatch(prob,iprob,ier)
-            if(prob)then
-              call usrmsg('Problems detected, probably best to `clear`',
-     &          'the current topology. ','W')
-              call tstamp('>','CFG: found problem in contiguity')
-            endif
-            CFGOK=.TRUE.
-            if(MMOD.eq.8)call updwire(ncomp)
-          else
-            goto 289
+        call fdroot(LTMP,path,LCFGF)
+        call edisp(iuout,' ')
+        call edisp(iuout,' Scanning the model description')
+        MODE='NONE'
+        IAPROB=IPRODB
+        call ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+        if(IER.eq.0)then
+          call ckcurmatch(prob,iprob,ier)
+          if(prob)then
+            call usrmsg('Problems detected, probably best to `clear`',
+     &        'the current topology. ','W')
+            call tstamp('>','CFG: found problem in contiguity')
           endif
+          CFGOK=.TRUE.
+          if(MMOD.eq.8)call updwire(ncomp)
+        else
+          goto 289
         endif
 
 C Read all of the vertex information.

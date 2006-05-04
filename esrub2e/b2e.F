@@ -51,8 +51,8 @@ C Path to problem and command line file (if any).
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      CHARACTER INTER*72,INF*72
-      character path*72,upath*72,esprc*72,outs*124
+      CHARACTER INTER*144,INF*144
+      character path*72,upath*72,esprc*72,outs*124,outs248*248
       character dfdblbl*20,defdbfl*72,fs*1
       LOGICAL unixok
 
@@ -189,8 +189,8 @@ C Take command line file name to LCMDF and use as initial climate file.
         STOP
       else
         INTER=inf
-        write(OUTS,'(A,A)')' the input file is: ',INTER
-        CALL EDISP(IUOUT,OUTS)
+        write(OUTS248,'(A,A)')' the input file is: ',INTER
+        CALL EDISP248(IUOUT,OUTS248,80)
       endif
 
 C Call the B2E engine, the main controlling routine with the filename argument .
@@ -207,7 +207,7 @@ C B2ECON
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      character*72 INTER
+      character INTER*144
  
       INTEGER IERROR
       LOGICAL CFGSCN

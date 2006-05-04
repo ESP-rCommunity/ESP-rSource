@@ -90,10 +90,10 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       CHARACTER*24 ITEM(10)
-      CHARACTER*72 H,inf,LCFD,tfile,DFCFD,Lflpar
-      character path*72,upath*72,esprc*72
+      CHARACTER H*72,inf*144,LCFD*72,tfile*72,DFCFD*72,Lflpar*72
+      character path*72,upath*72,esprc*72,longtfile*144
       character dfdblbl*20,defdbfl*72
-      CHARACTER doit*124,tmode*8,outs*124,fs*1,outstr*124
+      CHARACTER doit*248,tmode*8,outs*124,fs*1,outstr*124
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
       CHARACTER*72 LVEC,LBIT,t72,vecfil
@@ -319,9 +319,9 @@ C Show version.
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFL,0,IIER)
 
@@ -331,8 +331,14 @@ C Make temporary use of file unit IFL.
 
 C Take `c' command line file name, convert to fortran string LCFD
 C and place as initial configuration file.
+C << decide whether LCFD needs to be > 72 char >>
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
-        LCFD(1)=inf
+        llt=lnblnk(inf)
+        if(llt.le.72)then
+          write(LCFD(1),'(a)') inf(1:lnblnk(inf))
+        else
+          write(LCFD(1),'(a)') inf(1:72)
+        endif
         write(outs,'(a,a)')' the input file is: ',LCFD(1)
         call edisp(iuout,outs)
       else
@@ -601,8 +607,9 @@ C to include the path and create a string to drive xten.
             doit = '  '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(RESFL,tfile,concat)
-            write(doit,'(3a)') 'xten ',tfile(:lnblnk(tfile)),' & '
+            call addpath(RESFL,longtfile,concat)
+            write(doit,'(3a)') 'xten ',longtfile(:lnblnk(longtfile)),
+     &        ' & '
             call runit(doit,tmode)
             GOTO 10
           ENDIF
@@ -623,9 +630,9 @@ C to include the path and create a string to drive PHOTON.
           doit = '  '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(RESFL,tfile,concat)
+          call addpath(RESFL,longtfile,concat)
           write(doit,'(3a)') 'runpho ',
-     &      tfile(:lnblnk(tfile)),' & '
+     &      longtfile(:lnblnk(longtfile)),' & '
           INQUIRE (FILE='runpho',EXIST=XST)
           IF(XST)THEN
             call runit(doit,tmode)
@@ -703,9 +710,9 @@ C         IF(RESFL.EQ.'  ')GOTO 80
           doit = '  '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(RESFL,tfile,concat)
+          call addpath(RESFL,longtfile,concat)
           write(doit,'(3a)') '/usr/esru/bin/matlab ',
-     &      tfile(:lnblnk(tfile)),' & '
+     &      longtfile(:lnblnk(longtfile)),' & '
           INQUIRE (FILE='/usr/esru/bin/matlab',EXIST=XST)
           IF(XST)THEN
 

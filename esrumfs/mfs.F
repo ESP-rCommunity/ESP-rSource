@@ -95,7 +95,7 @@ C Once per hour storage of results, averaged over that hour.
 
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
-      CHARACTER H*72,OUTSTR*124,inf*72,outs*124
+      CHARACTER H*72,OUTSTR*124,inf*144,outs*124
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72
@@ -791,9 +791,9 @@ C info being saved.
       common/rcmd/LCMDFL
       common/rpath/path
 
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*72
+      character*(*) msg,xfile
+      character H*72,path*72,outs*124,tg*1,tfile*72
+      character ixpfile*72,ttext*42,LCMDFL*144,longtfile*144
       logical concat
 
 C Initial name for export parameter file is ixfile+par.
@@ -859,9 +859,9 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             tfile=xfile
-            xfile=' '
-            call addpath(tfile,xfile,concat)
-            call wwcopen(xfile)
+            longtfile=' '
+            call addpath(tfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else

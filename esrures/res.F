@@ -127,7 +127,8 @@ C Significant figure reporting limit (NSIGFIG).
       logical     unixok,there,OK
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,xfile,LCMDFL,inf,LTMP,LCFGF,actf,Lflpar
+      CHARACTER*72 H,xfile,LTMP,LCFGF,actf,Lflpar
+      character inf*144,LCMDFL*144,outs248*248
       character outs*124,LFMUL*72,LFCON*72,MODE*4,tg*1,delim*1
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
@@ -352,8 +353,8 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs,80)
         call tstamp('>',outs)
       else
         LCMDFL='UNKNOWN'
@@ -667,7 +668,7 @@ C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character fmttag*4,fmtexe*20,tfile*72,longtfile*144,focus*4
       logical concat,show
 
 C Loop through the images and for those which match the "focus"
@@ -694,12 +695,12 @@ C begins with and `S`, otherwise attempt to match the focus and the image.
      &           imgfoc(img)(1:1).eq.'S')show=.true.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
-                tfile=' '
-                call addpath(limgfil(img),tfile,concat)
-                ixl=lnblnk(tfile)
+                longtfile=' '
+                call addpath(limgfil(img),longtfile,concat)
+                ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then
-                  WRITE(ilist(ix:ixe),'(a,2x)')tfile(1:ixl)
+                  WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
                 endif
                 ix=ixe+1
               endif

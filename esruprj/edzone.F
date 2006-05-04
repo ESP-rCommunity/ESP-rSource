@@ -1475,8 +1475,8 @@ C IER=0 OK.
       common/appw/iappw,iappx,iappy
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER H*72,zname*12,zdesc*64,act*1,ZN*12
-      character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      CHARACTER H*72,zname*12,zdesc*64,act*1,ZN*12,longtfile*144
+      character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET,XST
 
       nh = 0
@@ -1539,13 +1539,13 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,tfile,concat)
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
           if(IRT.eq.1)then
             write(doit,'(5a)') 'ish -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -zone ',
+     &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnblnk(ZN)),' -act update_silent'
             call usrmsg('starting shading analysis via',doit,'-')
             call runit(doit,'text')
@@ -1554,11 +1554,11 @@ C an offset from prj start position.
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,5a)') 'ish -mode ',tmode,
      &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &          tfile(:lnblnk(tfile)),' -zone ',ZN(1:lnblnk(ZN)),
-     &          ' -act update_silent'
+     &          longtfile(:lnblnk(longtfile)),' -zone ',
+     &          ZN(1:lnblnk(ZN)),' -act update_silent'
             else
               write(doit,'(7a)') 'ish -mode ',tmode,
-     &          ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &          ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &          ' -zone ',ZN(1:lnblnk(ZN)),' -act update_silent'
             endif
             call usrmsg('starting shading analysis via',doit,'-')

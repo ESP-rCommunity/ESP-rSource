@@ -68,7 +68,7 @@ C Pre calculated data (filtered).
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
-      character doit*124,tmode*8,tfile*72
+      character doit*248,tmode*8,tfile*72,longtfile*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
@@ -328,11 +328,11 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,tfile,concat)
+          call addpath(LCFGF,longtfile,concat)
 
           write(doit,'(7a)') 'mrt -mode ',tmode,
-     &               ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
-     &               ' -zone ',ZN(1:lnblnk(ZN)),' &'
+     &       ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &       ' -zone ',ZN(1:lnblnk(ZN)),' &'
           call usrmsg(doit,'starting mrt analysis.','-')
           call runit(doit,tmode)
         endif

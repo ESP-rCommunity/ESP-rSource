@@ -213,7 +213,7 @@ C Significant figure reporting limit (NSIGFIG).
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER INF*72,H*72,PATH*72,UPATH*72,ESPRC*72
+      CHARACTER INF*144,H*72,PATH*72,UPATH*72,ESPRC*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
       dimension IVAL(MNWKTYP)
@@ -240,6 +240,7 @@ C model external data summary.
 
 C Scan the command line and copy the name of the argument into the network 
 C filename string. 
+C << this only takes first 72 char of a potentially longer inf >>
       CALL PARPSF(MODL,IAPPW,IAPPX,IAPPY,INF)
       IF(LNBLNK(INF).GT.1)THEN
         WRITE(NWKFLNAM,'(A72)')INF(1:72)

@@ -125,7 +125,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER BCFName*72,DBCFNam*72,LFCON*72,LFMUL*72
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*210,ITEM*35
-      CHARACTER*72 inf,LCMDFL,LOPTDB
+      CHARACTER inf*144,LCMDFL*144,LOPTDB*72
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path,upath,esprc
       CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
@@ -723,7 +723,7 @@ C Select/change ESP-r configuration file.
      &    'config file name',IER,3)
         LCFGF=TTmp
         IF(LCFGF(1:2).EQ.'  ')GOTO 289
-        LCMDFL=TTmp
+        write(LCMDFL,'(a)') TTmp(1:lnblnk(TTMP))
         goto 42
       elseif (INO.eq.3) then 
 

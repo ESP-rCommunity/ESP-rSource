@@ -25,7 +25,7 @@ C	Subroutine:
 C		SetDllParms
 C
 C	Parameters:
-C		inf - character*72 -  input cfg file name
+C		inf - character*144 -  input cfg file name
 C
 C	Comments:
 C
@@ -74,7 +74,7 @@ C----------------------------------------------------
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
             
       character*72 upath
-      character LCLIM*72,LCMDFL*72,inf*72,sps*8,aut*12,fs*1,actf*72
+      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
  
       integer termtype,iappw,iappx,iappy
       logical unixok
@@ -88,7 +88,7 @@ C NT version.
 C Unix version.
 C      integer iargc,m
       character argument*72,mode*8,appn*24
-      character outs*124
+      character outs*124,outs248*248
 
 C==============================
 C bps Dll variable assignments
@@ -128,18 +128,18 @@ C==============================
       OPEN(UNIT=iLogFile,FILE=cLogFile, ACCESS='APPEND' )
 #endif
        	
-      write(outs,'(a,a)')' the input file is: ',LCMDFL
-      call edisp(iuout,outs)
+      write(outs248,'(a,a)')' the input file is: ',LCMDFL
+      call edisp(iuout,outs248)
  
  
-      write(outs,'(a,a,a,a,a)') 'Starting bpsDll',
+      write(outs248,'(5a)') 'Starting bpsDll',
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
 
-      call edisp(iuout,outs)
+      call edisp(iuout,outs248)
       outs	=' '
       
-      write(outs,'(a,a,a,a,a)') 'and parameters ',sps(1:lnblnk(sps)),
+      write(outs,'(5a)') 'and parameters ',sps(1:lnblnk(sps)),
      &    ' in ',aut,' mode.'
       call edisp(iuout,outs)
 

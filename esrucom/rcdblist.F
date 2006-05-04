@@ -185,6 +185,8 @@ C New db.
       ELSEIF(ICO.EQ.(NCO-3))THEN
 
 C User supplied (which assumes default periods).
+C << this code should be using easkf, but there is an issue >>
+C << that clmdb is still 72 characters. >>
         clmdb=' '
         h(1)='This climate db is assumed to be in ESP-r format. '
  289    CALL EASKS(clmdb,' Climate file (esp-r binary format) ?',
@@ -371,9 +373,10 @@ C the climate file was not selected via scan of climatelist.
       COMMON/OUTIN/IUOUT,IUIN
       common/curfile/currentfile
 
+      character*(*) clmdb
       character OUTSTR*124,WORD*20
       character cdblfil*72,tlook*72
-      character clmdb*72,actreturn*1,currentfile*72
+      character actreturn*1,currentfile*72
       logical ok
 
 C Open the list of climate databases.
@@ -441,6 +444,7 @@ C  if 'f' then stop the application
 C  if 'u' then jump to 'useit' part of calling subroutine
 C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
+C << clmdb might need to be a longer name >>
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 

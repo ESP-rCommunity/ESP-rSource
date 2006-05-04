@@ -270,7 +270,7 @@ C Timeout information
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
       character h*72,LFCON*72,LFMUL*72,LTMP*72,OUTS*124,spsname*8
-      character LCLIM*72,LCMDFL*72,inf*72,sps*8,aut*12,fs*1,actf*72
+      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
@@ -280,7 +280,7 @@ C Timeout information
       character LAPROB*72,LAPRES*72,LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
-      character t16*16
+      character t16*16,outs248*248
       
 C Flags for multi-year simulation menus
       logical bOptOut, bDone, bMY_clm_err, bExists, bCreate
@@ -462,14 +462,14 @@ C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
 C Initialise output device: -10 forces user selection.
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=550
+        iappw=560
         iappx=75
         iappy=170
       else
         if(iappx.le.0)iappx=75
         if(iappy.le.0)iappy=170
         if(iappw.le.200)then
-          iappwi=int(550*iappw*0.01)
+          iappwi=int(560*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -591,9 +591,9 @@ C      dfdblbl='NT default'
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
-        call tstamp('>',outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,outs248)
+        call tstamp('>',outs248)
       else
         LCMDFL='UNKNOWN'
       endif

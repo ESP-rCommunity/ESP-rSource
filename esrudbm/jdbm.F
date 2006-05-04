@@ -88,12 +88,12 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
       CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character item*54,db*12,fs*1,inf*72,LCMDFL*72,dfile*72,tfile*72
-
-      character gendbfn*72,dgendbfn*72
+      character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72,tfile*72
+      character longtfile*144
+      character gendbfn*72,dgendbfn*72,outs248*248,LTMP*144
       character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
       character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
-      character curfile*72,dba*12,act*1,action*12,outs248*248
+      character curfile*72,dba*12,act*1,action*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,currentfile*72
 
@@ -233,8 +233,8 @@ C        call charsusingfnt(ifs,icw,nlines)
 
 C Display copywrite based on current text display width.
       write(outs248,'(3a)')
-     &  'ESP-r Database Manager: Version 2.2a of April 2006. ',
-     &  'Copyright 2001-6 Energy Systems Research Unit, University ',
+     &  'ESP-r - database manager: Version 2.1g of October 2005. ',
+     &  'Copyright 2001-4 Energy Systems Research Unit, University ',
      &  'of Strathclyde, Glasgow Scotland.'
       call edisp248(IUOUT,outs248,icw)
       call edisp(IUOUT,' ')
@@ -244,9 +244,9 @@ C Make temporary use of file unit IAF=IFIL+1.
       IAF=IFIL+1
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IAF,0,IIER)
 
@@ -259,9 +259,8 @@ C Take command line file name to LCMDF and use as initial climate file.
         LCMDFL=' '
       else
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
-        call tstamp('>',outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
       endif
 
 C Confirm problem name.
@@ -271,9 +270,30 @@ C Confirm problem name.
       H(4)='matches an existing file it will be read in and the'
       H(5)='data will be available for editing.'
       DFILE='/usr/esru/esp-r/defaults/defcfg' 
-  29  CALL EASKS(LCMDFL,' Problem name ? ',' ',72,DFILE,
-     &        'config file name',IER,5)
-      IF(LCMDFL.EQ.' ')GOTO 29
+      LTMP=LCMDFL
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  29  llt=lnblnk(ltmp)
+#ifdef X11
+      if(llt.lt.96)then
+        CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &    'config file name',IER,5)
+      elseif(llt.ge.96.and.llt.lt.124)then
+        CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+     &    'config file name',IER,5)
+      elseif(llt.ge.124.and.llt.le.144)then
+        CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &    'config file name',IER,5)
+      endif
+#else
+      CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &  'config file name',IER,5)
+#endif
+      IF(LTMP.EQ.' ')GOTO 29
+      LCMDFL=LTMP
 
 C Find the path and local file name. Reset all gendbfn to defaults.
       call fdroot(LCMDFL,path,LCFGF)
@@ -605,9 +625,27 @@ C Change problem name.
         H(4)='matches an existing file it will be read in and the'
         H(5)='data will be available for editing.'
         DFILE='/usr/esru/esp-r/defaults/defcfg' 
-  289   CALL EASKS(LCMDFL,' Problem name ? ',' ',72,DFILE,
-     &        'config file name',IER,5)
-        IF(LCMDFL.EQ.' ')GOTO 289
+        LTMP=LCMDFL
+
+C Call EASKF depending on the current file name length.
+  289   llt=lnblnk(ltmp)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &      'config file name',IER,5)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+     &      'config file name',IER,5)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &      'config file name',IER,5)
+        endif
+#else
+        CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &    'config file name',IER,5)
+#endif
+        IF(LTMP.EQ.' ')GOTO 289
+        LCMDFL=LTMP
 
 C Find the path and local file name, reet all gendbfn to defaults.
         call fdroot(LCMDFL,path,LCFGF)
@@ -780,6 +818,7 @@ C info being saved.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close text or graphics command
@@ -793,13 +832,13 @@ C file. For the graphics ask if file should be further converted.
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
-            call addpath(xfile,tfile,concat)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
           else
-            tfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
-          call wwcclose(tfile)
+          call wwcclose(longtfile)
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
@@ -830,9 +869,9 @@ C file. For the graphics ask if file should be further converted.
 
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
-            tfile=' '
-            call addpath(xfile,tfile,concat)
-            call wwcopen(tfile)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -841,8 +880,8 @@ C passing request to wwlib.c
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
           elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         endif
@@ -1503,7 +1542,7 @@ C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character fmttag*4,fmtexe*20,tfile*72,longtfile*144,focus*4
       logical concat,show
 
 C Loop through the images and for those which match the "focus"
@@ -1530,12 +1569,12 @@ C begins with and `S`, otherwise attempt to match the focus and the image.
      &           imgfoc(img)(1:1).eq.'S')show=.true.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
-                tfile=' '
-                call addpath(limgfil(img),tfile,concat)
-                ixl=lnblnk(tfile)
+                longtfile=' '
+                call addpath(limgfil(img),longtfile,concat)
+                ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then
-                  WRITE(ilist(ix:ixe),'(a,2x)')tfile(1:ixl)
+                  WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
                 endif
                 ix=ixe+1
               endif
@@ -1589,8 +1628,8 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
-      character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*124
-      character LAGENDB*72,LGENDB*72,path*72
+      character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
+      character LAGENDB*72,LGENDB*72,path*72,longtfile*144
       character LFCON*72,LFMUL*72,LPRFDB*72
       logical unixok,gendbok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound

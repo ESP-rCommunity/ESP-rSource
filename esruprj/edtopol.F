@@ -54,8 +54,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       DIMENSION VERT(6)
       CHARACTER VERT*34,CXSTR*78,H*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF,LPRFDB
-      character DFILE*72,ltmp*72
-      character doit*124,tmode*8,tfile*72,MODE*4,cfgroot*24
+      character DFILE*72,ltmp*72,longtfile*144
+      character doit*248,tmode*8,tfile*72,MODE*4,cfgroot*24
 
 C On first entry, see if the list is consistent with geometry.
   90  call usrmsg(
@@ -199,16 +199,17 @@ C the path and create a string to drive the remote application.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'cfg -mode ',tmode,' -s ',
-     &  iappw,iappx-20,iappy+50,' -file ', tfile(1:lnblnk(tfile)),' &'
+     &    iappw,iappx-20,iappy+50,' -file ',
+     &    longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'cfg -mode ',tmode,
-     &               ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' &'
+     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
         endif
         call usrmsg('starting topology module via',doit,'-')
         call runit(doit,tmode)
@@ -1126,9 +1127,9 @@ C IDST tool commands.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,clmdb
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SSPARENT*12
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character doit*124,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
+      character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,alias*32,donegdst*72
+      character selres*72,alias*32,donegdst*72,longtfile*144
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical updatecon,QUIET,concat
 
@@ -1274,17 +1275,17 @@ C Run the appropriate simulations.
         aut=' silent '
         tmode='text'
       endif
-      call addpath(LCFGF,tfile,concat)
+      call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
       if(iappw.gt.0.and.iappw.le.200)then
         write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
      &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &    tfile(:lnblnk(tfile)),' -p win',aut
+     &    longtfile(:lnblnk(longtfile)),' -p win',aut
       else
-        write(doit,'(8a)') 'bps -mode ',tmode,
-     &   ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' -p win',aut
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &   longtfile(1:lnblnk(longtfile)),' -p win',aut
       endif
       call usrmsg('starting winter assessment via',doit,'-')
       call runit(doit,tmode)
@@ -1310,10 +1311,10 @@ C an offset from prj start position.
       if(iappw.gt.0.and.iappw.le.200)then
         write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
      &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &     tfile(1:lnblnk(tfile)),' -p trn',aut
+     &    longtfile(1:lnblnk(longtfile)),' -p trn',aut
       else
-        write(doit,'(8a)') 'bps -mode ',tmode,
-     &    ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' -p trn',aut
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -p trn',aut
       endif
       call usrmsg('starting transition assessment via',doit,'-')
       call runit(doit,tmode)
@@ -1338,10 +1339,10 @@ C an offset from prj start position.
       if(iappw.gt.0.and.iappw.le.200)then
         write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
      &    ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &    tfile(1:lnblnk(tfile)),' -p sum',aut
+     &    longtfile(1:lnblnk(longtfile)),' -p sum',aut
       else
-        write(doit,'(8a)') 'bps -mode ',tmode,
-     &   ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' -p sum',aut
+        write(doit,'(8a)') 'bps -mode ',tmode,' -s 0 0 0 -file ',
+     &   longtfile(1:lnblnk(longtfile)),' -p sum',aut
       endif
       call usrmsg('starting summer assessment via',doit,'-')
       call runit(doit,tmode)

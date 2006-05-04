@@ -59,7 +59,7 @@ C Simulator parameters.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
       character LTMP*72,RFILE*72,H*72,outs*124
-      character path*72,lcmdfl*72,ltmpc*72,lpath*72
+      character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
@@ -86,8 +86,27 @@ C assigned database.
         H(7)='library set up when ESP was first installed.'
         LTMP=' '
         ltmpc=LCMDFL
-        CALL EASKF(ltmpc,' Results library name ? ',
-     &    ' ',72,DEFRLB,'library file',IER,7)
+        llt=lnblnk(ltmpc)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
+     &    'library file',IER,7)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
+     &    'library file',IER,7)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &    'library file',IER,7)
+        endif
+#else
+        CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &    'library file',IER,7)
+#endif
+
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
           LCMDFL=ltmpc
         else
@@ -104,8 +123,8 @@ C Temporarily find the path and local file name for the results
 C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
-C      write(6,*) 'MORFIL: current path is ',path
-C      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
+      write(6,*) 'MORFIL: current path is ',path
+      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
 C      write(6,*) 'MORFIL: local file is now ',ltmp
@@ -804,8 +823,10 @@ C Defaults.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LCLIM,LCFGF,CHDUM
-      CHARACTER zname*12,zdesc*64,NAME*6,LTMP*72,H*72,cfgroot*24
-      character outs*124,znpad*15,path*72,MODE*4
+
+C longtmp is the model configuration file with full path.
+      CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
+      character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
       logical XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
@@ -1037,25 +1058,37 @@ C each is one)
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IHCT,ICOREXHCT
       IREC=IREC+1
 
+C Read the full path of the configuration file associated with
+C this model.
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NAME
       IF(NAME.EQ.'CONFIG')THEN
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1006)ltmp
+        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1006)longtmp
+C        write(6,*) longtmp
         IREC=IREC+1
       ELSE
  45     H(1)='The system configuration file name is being requested'
         H(2)='because this is an old library format which does not '
         H(3)='include this. If you cannot find this file then you'
         H(4)='cannot proceed.'
-        LTMP=' '
-        CALL EASKF(LTMP,' ',
-     &   ' Corresponding system configuration file name ? ',
-     &   72,' ','configuration file',IER,7)
-        if (LTMP.eq.' ') goto 45
+        longtmp=' '
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+#ifdef X11
+        CALL EASKF(longtmp,' ',
+     &    ' Corresponding system configuration file name ? ',
+     &    96,' ','configuration file',IER,4)
+#else
+        CALL EASKF(longtmp,' ',
+     &    ' Corresponding system configuration file name ? ',
+     &    144,' ','configuration file',IER,4)
+#endif
+        if (longtmp.eq.' ') goto 45
       ENDIF
       
 C Extract path from cfg file name and check that we can find it.
- 289  call fdroot(ltmp,path,LCFGF)
+ 289  call fdroot(longtmp,path,LCFGF)
       IFCFG=IFIL+1
       IAPROB=IFIL+2
       CALL ERPFREE(IFCFG,ISTAT)
@@ -1074,6 +1107,8 @@ C Extract path from cfg file name and check that we can find it.
 C Not found, might be in a remote folder.  Warn user first.
         WRITE(OUTS,'(A,A)')' Could not find ',LCFGF
         call edisp(iuout,outs)
+        WRITE(OUTS,'(A,A)')' in the folder ',path
+        call edisp(iuout,outs)
         H(1)='The model configuration file holds the definition of'
         H(2)='the building/plant which was simulated.'
         H(3)='This file was not found.  Please supply the model '
@@ -1085,10 +1120,18 @@ C Not found, might be in a remote folder.  Warn user first.
         H(1)='The model configuration file holds the definition '
         H(2)='of the building/ plant to be simulated.  It should'
         H(3)='match the contents held within the results library.'
-        LTMP=LCFGF
-        CALL EASKF(LTMP,' Model configuration file ? ',' ',72,DFCFG,
+        write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+#ifdef X11
+        CALL EASKF(longtmp,' Model configuration file ?',' ',96,DFCFG,
      &    'config file name',IER,3)
-        if (ltmp(1:2).ne.'  ') GOTO 289
+#else
+        CALL EASKF(longtmp,' Model configuration file ?',' ',144,DFCFG,
+     &    'config file name',IER,3)
+#endif
+        if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 
       DO 140 I=1,NCOMP

@@ -573,7 +573,7 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24,outs*124
+      character argument*72,mode*8,inf*144,appn*24,outs*248
 
 C NT or Unix version.
 #ifdef X11
@@ -613,7 +613,7 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -659,7 +659,7 @@ C        call edisp(iuout,outs)
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -974,8 +974,8 @@ C Timeout information
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,sps*8,aut*12,actf*72,browse*4
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,sps*8,aut*12,actf*72,browse*4
 
 C NT or Unix version.
 #ifdef X11
@@ -1107,8 +1107,8 @@ C  to be passed to res from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,actf*72,act*16,aut*12
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,actf*72,act*16,aut*12
 
 C NT or Unix version.
 #ifdef X11
@@ -1151,7 +1151,7 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1203,14 +1203,11 @@ C        call edisp(iuout,outs)
 
   42    continue
         outs=' '
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        outs=' '
-        write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
+     &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-C        call edisp(iuout,outs)
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1230,8 +1227,8 @@ C  and output (converted) file to be passed to clm from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,ascif*72,act*16,aut*12
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,ascif*72,act*16,aut*12
 
 C NT or Unix version.
 #ifdef X11
@@ -1274,7 +1271,7 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1355,8 +1352,8 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,zone*16,act*16
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,zone*16,act*16
 
 C NT or Unix version.
 #ifdef X11
@@ -1398,11 +1395,11 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1451,14 +1448,11 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act))
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1478,7 +1472,7 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24,outs*124,zone*16
+      character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
 
 C NT or Unix version.
 #ifdef X11
@@ -1516,12 +1510,10 @@ C NT or Unix version.
 C Get arguments from command line:
 C If one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1567,12 +1559,10 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1593,7 +1583,7 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24,outs*124
+      character argument*72,mode*8,inf*144,appn*24,outs*248
 
 C NT or Unix version.
 #ifdef X11
@@ -1666,7 +1656,7 @@ C        call edisp(iuout,outs)
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       endif
       end
@@ -1682,8 +1672,8 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,aim*12,act*72,zone*16
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,aim*12,act*72,zone*16
 
 C NT or Unix version.
 #ifdef X11
@@ -1784,16 +1774,12 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with scene purpose ',aim(1:lnblnk(aim))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
+     &    ' with scene purpose ',aim(1:lnblnk(aim)),
+     &    ' with action ',act(1:lnblnk(act))
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1813,8 +1799,8 @@ C  to be passed to the program from the invocation line.
       logical unixok
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,actf*72,appn*24
-      character outs*124,act*16
+      character argument*72,mode*8,inf*144,actf*72,appn*24
+      character outs*248,act*16
 
 C NT or Unix version.
 #ifdef X11
@@ -1853,14 +1839,11 @@ C NT or Unix version.
 C Get arguments from command line:
 C If one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'applied to ',actf(1:lnblnk(actf))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
+     &    ' applied to ',actf(1:lnblnk(actf))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1908,14 +1891,11 @@ C        call edisp(iuout,outs)
         endif
         goto 41
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'applied to ',actf(1:lnblnk(actf))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
+     &    ' applied to ',actf(1:lnblnk(actf))
+C        call edisp248(iuout,outs,90)
         return
       endif
 

@@ -100,7 +100,7 @@ C Common for the building plant link
       dimension ival(mpcom)
       CHARACTER*44 ITEM(26)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
-      CHARACTER ICDIR*72, DOIT*124,mode*1,pcdesc*80
+      CHARACTER ICDIR*72, DOIT*248,mode*1,pcdesc*80
       character*68 mscdsc, cvrdsc,hfpdsc
       LOGICAL OK,dok,XST
 

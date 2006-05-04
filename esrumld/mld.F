@@ -59,7 +59,7 @@ C Defaults.
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
-      character LCMDFL*72,inf*72,H*72,mldnam*48
+      character LCMDFL*144,inf*144,H*72,mldnam*48
       character path*72,upath*72,esprc*72
       character dfdblbl*20,defdbfl*72
       character species*64, grow*1, head*29,fs*1,outs*124

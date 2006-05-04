@@ -93,7 +93,8 @@ C and control of project images.
       character*33 ITEMS(27),ITEMIMG(20)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
-      character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character longtfile*144
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
       character iformat*4,ifocus*4,hold24*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -282,9 +283,9 @@ C as the command line. For silent do the runit via
 C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
-                  call addpath(LCFGF,tfile,concat)
+                  call addpath(LCFGF,longtfile,concat)
                   write(doit,'(5a)') 'ish -mode text -file ',
-     &              tfile(1:lnblnk(tfile)),' -zone ',
+     &              longtfile(1:lnblnk(longtfile)),' -zone ',
      &              ZN(1:lnz),' -act update_silent'
                   call usrmsg('starting shading analysis via',doit,'-')
                   call runit(doit,'-')
@@ -302,18 +303,18 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                     doit = ' '
                     call tchild(ICPMOD)
                     call termode(ICPMOD,tmode)
-                    call addpath(LCFGF,tfile,concat)
+                    call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
                     if(iappw.gt.0.and.iappw.le.200)then
                       write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &                  tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                  tfile(1:lnblnk(tfile)),' -zone ',
+     &                  longtfile(1:lnblnk(longtfile)),' -zone ',
      &                  ZN(1:lnz),' -act recalculate &'
                     else
                       write(doit,'(7a)') 'ish -mode ',tmode,
-     &                 ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &                 ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &                 ' -zone ',ZN(1:lnz),' -act recalculate &'
                     endif
                     call usrmsg('starting shading analysis via',doit,
@@ -1047,7 +1048,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       logical MODSIT,browse,OK,concat,unixok
       logical FOUND,XST
 
-      character H*72,outs*124,ltmp*72,hold*40
+      character H*72,outs*124,ltmp*72,hold*40,longtfile*144
       character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
@@ -1234,9 +1235,9 @@ C name to include the path and create a string to drive tdf.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LTDFA,tfile,concat)
+        call addpath(LTDFA,longtfile,concat)
         write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
-     &    tfile(:lnblnk(tfile)),' &'
+     &    longtfile(:lnblnk(longtfile)),' &'
         call usrmsg('starting temporal module via',doit,'-')
         call runit(doit,tmode)
         goto 42
@@ -2882,8 +2883,8 @@ C EDDGTP Sets up shading and insolation files
       common/appw/iappw,iappx,iappy
 
       character*72 TFILE,LTHRM,H,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
-      CHARACTER ZNAME*12,ZN*12
-      character TMODE*8,zdesc*64,outs*124,DOIT*124,CFGROOT*24
+      CHARACTER ZNAME*12,ZN*12,longtfile*144
+      character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
       logical XST,OK,DOK,concat
 
       if(ncomp.eq.0)then
@@ -2924,9 +2925,9 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
           if(IRT.eq.1)then
-            call addpath(LCFGF,tfile,concat)
+            call addpath(LCFGF,longtfile,concat)
             write(doit,'(5a)') 'ish -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -zone ',
+     &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act update_silent'
             call usrmsg('starting shading analysis via',doit,'-')
 
@@ -2947,18 +2948,18 @@ C rather than starting up a new xterm.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,tfile,concat)
+              call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
               if(iappw.gt.0.and.iappw.le.200)then
                 write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &                tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                tfile(1:lnblnk(tfile)),' -zone ',
+     &                longtfile(1:lnblnk(longtfile)),' -zone ',
      &                ZN(1:lnz),' -act recalculate &'
               else
                 write(doit,'(7a)') 'ish -mode ',tmode,
-     &               ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &               ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &               ' -zone ',ZN(1:lnz),' -act recalculate &'
               endif
               call usrmsg('starting shading analysis via',doit,'-')

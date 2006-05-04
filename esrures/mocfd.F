@@ -33,7 +33,7 @@ C MOCFD
      &      JHUMINDX
 
       character LTMP*72,H*72, POLNAM*12
-      character path*72,LCMDFL*72,ltmpc*72
+      character path*72,LCMDFL*144,ltmpc*144
       logical XST,CALPOL,CALLMA
 
 C Ask for CFD results library.
@@ -43,7 +43,26 @@ C Ask for CFD results library.
       H(4)='A file called UNKNOWN will allow return to main menu.'
       LTMP='UNKNOWN'
       ltmpc='UNKNOWN'
-      CALL EASKF(ltmpc,'CFD library name?',' ',72,LTMP,'CFDresfl',IER,4)
+      llt=lnblnk(ltmpc)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+      if(llt.lt.96)then
+        CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
+     &    'CFDresfl name',IER,4)
+      elseif(llt.ge.96.and.llt.lt.124)then
+        CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
+     &    'CFDresfl name',IER,4)
+      elseif(llt.ge.124.and.llt.le.144)then
+        CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
+     &    'CFDresfl name',IER,4)
+      endif
+#else
+      CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
+     &  'CFDresfl name',IER,4)
+#endif
       if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
         LCMDFL=ltmpc
       else

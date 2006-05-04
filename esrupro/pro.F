@@ -52,7 +52,7 @@ C Defaults.
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      character LPRFDB*72,LCMDFL*72,inf*72,H*72
+      character LPRFDB*72,LCMDFL*144,inf*144,H*72,outs248*248
       character outs*124,path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
@@ -203,8 +203,8 @@ C Make temporary use of file unit IFIL+1.
 C Take command line file name as initial input file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
         call tstamp('>',outs)
       else
         LCMDFL=' '
@@ -251,20 +251,45 @@ C Defaults.
 
       DIMENSION ITEM(35)
       CHARACTER LPRFDB*72,LASCI*72,DFILE*72,DESC*40,outs*124,KEY*1
-      character H*72,ITEM*38,LCMDFL*72,LTMP*72,path*72
+      character H*72,ITEM*38,LCMDFL*144,LTMP*72,path*72,L144*144
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       logical XST,OK,dok
 
- 155  h(1)='An event profiles database holds named sets of hourly'
-      h(2)='profiles in a binary representation. '
-      CALL EASKF(LCMDFL,' Event profile db? ',
-     &  ' ',72,DPRFDB,'binary events db',IER,2)
+ 155  h(1)='An event profiles database holds named sets of profiles'
+      h(2)='in a binary representation. '
+      L144=LCMDFL
+      llt=lnblnk(L144)
 
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+      if(llt.lt.96)then
+        CALL EASKF(L144,' Event profile db? ',
+     &    ' ',96,DPRFDB,'binary events db',IER,2)
+      elseif(llt.ge.96.and.llt.lt.124)then
+        CALL EASKF(L144,' Event profile db? ',
+     &    ' ',124,DPRFDB,'binary events db',IER,2)
+      elseif(llt.ge.124.and.llt.le.144)then
+        CALL EASKF(L144,' Event profile db? ',
+     &    ' ',144,DPRFDB,'binary events db',IER,2)
+      endif
+#else
+      CALL EASKF(L144,' Event profile db? ',
+     &  ' ',144,DPRFDB,'binary events db',IER,2)
+#endif
+      IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 155
+      LCMDFL=L144
       IER=0
       call EFOPRAN(IPRODB,LCMDFL,10,1,IER)
       IF(ier.eq.0)THEN
-        LPRFDB=LCMDFL
+        llt=lnblnk(LCMDFL)
+        if(llt.le.72)then 
+          write(LPRFDB,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        else
+          write(LPRFDB,'(a)') LCMDFL(1:72)
+        endif
         CALL USRMSG(' opened profiles db',' ','-')
         IREC=1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
@@ -288,7 +313,12 @@ C Defaults.
         if(.NOT.OK)goto 155
         call EFOPRAN(IPRODB,LCMDFL,10,3,IER)
         if(ier.ne.0)goto 155
-        LPRFDB=LCMDFL
+        llt=lnblnk(LCMDFL)
+        if(llt.le.72)then 
+          write(LPRFDB,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        else
+          write(LPRFDB,'(a)') LCMDFL(1:72)
+        endif
         CALL USRMSG(' opened new profiles db',' ','P')
         call tstamp('>','PRO: opened new profiles db')
         call tstamp('>',LPRFDB)

@@ -63,8 +63,8 @@ C Mass flow components data
 
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(9)*26 
-      CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*72
-      character lcmdfl*72,outs*124
+      CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
+      character lcmdfl*144,outs*124,outs248*248
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72,fs*1
@@ -188,8 +188,8 @@ C after scan of .esprc file.
 C Take command line file name as initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
       else
         LCMDFL='UNKNOWN'
       endif
@@ -202,8 +202,29 @@ C Initialize plant component database file.
       h(5)='listing and editing. If there is no such file then'
       h(6)='a new one will be created to hold data for new'
       h(7)='components.'
-      CALL EASKF(LCMDFL,'Plant component database file name? ',' ',
-     &  72,DPCDB,' Database name ',IER,7)
+      L144=LCMDFL
+      llt=lnblnk(L144)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+      if(llt.lt.96)then
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    96,DPCDB,' Database name ',IER,7)
+      elseif(llt.ge.96.and.llt.lt.124)then
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    124,DPCDB,' Database name ',IER,7)
+      elseif(llt.ge.124.and.llt.le.144)then
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    144,DPCDB,' Database name ',IER,7)
+      endif
+#else
+      CALL EASKF(L144,'Plant component database file name? ',' ',
+     &  144,DPCDB,' Database name ',IER,7)
+#endif
+
+      if(L144(1:2).ne.'  ')LCMDFL=L144
 
 C Find the path and local file name, if exists open otherwise fill.
       call fdroot(LCMDFL,path,LTMP)

@@ -23,10 +23,10 @@ C----------------------------------------------------
       common/rcmd/LCMDFL
 
       DIMENSION MNP(MELT),MNS(MELT),MNPP(MELT),MNPPP(MELT),XP(4),YP(4)
-      CHARACTER*72 Filnam(MNF), LINE,path,LCMDFL
-      CHARACTER NAMDS0*30,NAMDS*30,NAMPIC*40
-      CHARACTER*25  TEXT
-      CHARACTER*3 TTT, MC, BLAB
+      CHARACTER Filnam(MNF)*72, LINE*72,path*72,LCMDFL*144
+      CHARACTER NAMDS0*30,NAMDS*30,NAMPIC*40,L144*144
+      CHARACTER TEXT*25
+      CHARACTER TTT*3, MC*3, BLAB*3
       CHARACTER*10 SN(MELT,6)
       character FNAME*72,outs*124,H*72
 
@@ -113,12 +113,33 @@ C If the file exists then go ahead and load it.
       INQUIRE (FILE=LCMDFL,EXIST=XST)
       if(.NOT.XST)then 
  11     H(1)=' This is a viewer (not esp-r geo) file.'
-        CALL EASKF(LCMDFL,' Viewer input file name?',' ',
-     &    72,'test.vew','initial input file',IER,1)
+        L144=LCMDFL
+        llt=lnblnk(L144)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      96,'test.vew','initial input file',IER,1)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      124,'test.vew','initial input file',IER,1)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      144,'test.vew','initial input file',IER,1)
+        endif
+#else
+        CALL EASKF(L144,' Viewer input file name?',' ',
+     &    144,'test.vew','initial input file',IER,1)
+#endif
+
         call usrmsg('File selected is',LCMDFL,'-')
-        if(ier.ne.0.or.LCMDFL(1:2).eq.'  ')then
+        if(ier.ne.0.or.L144(1:2).eq.'  ')then
           goto 11
         endif
+        LCMDFL=L144
       endif
       call usrmsg(' ',' ','-')
       call fdroot(LCMDFL,path,FILNAM(NFILE))

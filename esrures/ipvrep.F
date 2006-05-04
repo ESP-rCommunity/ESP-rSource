@@ -3476,7 +3476,7 @@ C Simulator parameters.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72,act*1
-      character LCMDFL*72
+      character LCMDFL*144,longtfile*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
 
@@ -3522,7 +3522,7 @@ C Each call is a toggle.
         h(2)='reports or for third party tools. '
         if (.NOT.autook) then
           call easks(xfile,' export file name: ',' ',72,
-     &               ' ','export file name',IER,2)
+     &      ' ','export file name',IER,2)
         endif
         write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                    ' for export.'
@@ -3535,20 +3535,20 @@ C Each call is a toggle.
 
 C If appending check and see if it exists. If so close it and then
 C open it with APPEND option. Use ifdef for F77 or F90.
-              call addpath(xfile,tfile,concat)
-              ltf=max(1,LNBLNK(tfile))
+              call addpath(xfile,longtfile,concat)
+              ltf=max(1,LNBLNK(longtfile))
               there=.false.
-              INQUIRE(FILE=tfile(1:ltf),EXIST=there)
+              INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
               if(there)then
                 close(ixunit)
 #ifdef F90
-               open(ixunit,file=tfile(1:ltf),position='APPEND',
+               open(ixunit,file=longtfile(1:ltf),position='APPEND',
      &           status='UNKNOWN',err=1)
 #else
-                open(ixunit,file=tfile(1:ltf),ACCESS='APPEND',
-     &            status='UNKNOWN',err=1)
+               open(ixunit,file=longtfile(1:ltf),ACCESS='APPEND',
+     &           status='UNKNOWN',err=1)
 #endif
-             else
+              else
                 call efopseq(ixunit,xfile,4,IER)
               endif
               if(ier.ne.0)return
@@ -3585,7 +3585,7 @@ C open it with APPEND option. Ifedf for F77 or F90.
         endif
         if(iw.eq.1)then
           write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
-     &      ' reporting >> to ',tfile(1:lnblnk(tfile))
+     &      ' reporting >> to ',longtfile(1:lnblnk(longtfile))
         else
           write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',xfile(1:lnblnk(xfile))

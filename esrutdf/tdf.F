@@ -93,10 +93,10 @@ C Logical flags for file openings.
       CHARACTER LTDF*72,LTDFA*72,LIMP*72,LEXP*72,H*72,tdaide*72
       character afil*72,tfile*72,TTAG*12
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,LTMPFL*72
-      CHARACTER ITEM*50,itemsel*50,inf*72,KEY*1,FOCUS*8,DFILE*72
+      CHARACTER ITEM*50,itemsel*50,inf*144,KEY*1,FOCUS*8,DFILE*72
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character path*72,upath*72,esprc*72,outs*124,fs*1
-      character act*16,actf*72,action*16,msgl2*124
+      character act*16,actf*72,action*16,msgl2*124,outs248*248
 
 C Assume defaults: trace off (ITRC=0), date format is DOY,
 C time format is 10h00.
@@ -224,7 +224,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 
       CALL EDISP(iuout,' ')
       write(outs,'(2a)')
-     &  ' ESP-r Temporal data: Version 1.16a of January 2006.',
+     &  ' ESP-r Temporal data: Version 1.16b of March 2006.',
      &  ' Copyright 2001-6 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')
@@ -236,18 +236,26 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
 C Take command line file name and save this to LTDF and LTDFA.
+C << note inf is 144 char but none of the other code in tdf
+C << has been converted to work with longer file names
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
-        LTDF=inf
-        LTDFA=inf
-        write(outs,'(a,a)')' the input file is: ',inf
-        call edisp(iuout,outs)
+        linf=lnblnk(inf)
+        if(linf.le.72)then
+          write(LTDF,'(a)') inf(1:linf)
+          write(LTDFA,'(a)') inf(1:linf)
+          write(outs248,'(a,a)')' the input file is: ',inf
+          call edisp(iuout,outs248)
+        else
+          LTDF=inf(1:72)
+          LTDFA=inf(1:72)
+        endif
       endif
 
 C Take command line action parameter. If paction = 'update' then

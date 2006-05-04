@@ -48,8 +48,9 @@ C Commom for the optimim start/stop simulation.
       common/curfile/currentfile
 
       CHARACTER*20 WORD
-      character*72 MODELCFG,BFILE,TDFUD,INTER,RSFIL,BREPT
-      CHARACTER*124 OUTSTR,OUTS
+      character*72 MODELCFG*72,BFILE*72,TDFUD*72,RSFIL*72,BREPT*72
+      character INTER*144
+      CHARACTER OUTSTR*124,OUTS*124,OUTS248*248
       CHARACTER*72 TMPSTR
 
       CHARACTER MSIM*4,currentfile*72
@@ -60,18 +61,18 @@ C Open the named file using a temporary file unit
       IIUNIT=IFIL+1
       CALL EFOPSEQ(IIUNIT,INTER,1,IER)
       IF(IER.LT.0) THEN
-        WRITE(OUTS,'(A,A,A)')
+        WRITE(OUTS248,'(3A)')
      &  'ERROR: Problem opening ',INTER(1:LNBLNK(INTER)),'.'
-        call edisp(iuout,OUTS)
+        call edisp248(iuout,OUTS248,80)
         call epwait
         call epagend
         STOP
       ENDIF
-      currentfile=INTER
+      currentfile=INTER(1:72)
 
-      WRITE(OUTS,'(A,A)') 'Opened b2e transfer file ',
+      WRITE(OUTS248,'(A,A)') 'Opened b2e transfer file ',
      &INTER(1:LNBLNK(INTER))
-      call edisp(iuout,OUTS)
+      call edisp248(iuout,OUTS248,80)
 
 C Read the interaction file
 C Read the type of the file to obtain the reading mode.
@@ -232,28 +233,28 @@ C Report
           call edisp(iuout,' ')
           WRITE(OUTS,'(A)') OUTSTR
           call edisp(iuout,OUTS)
-          WRITE(OUTS,'(A,A,A)') 'ERROR: Problem with ',
+          WRITE(OUTS248,'(3A)') 'ERROR: Problem with ',
      &      INTER(1:LNBLNK(INTER)),', not a known data tag.'
-          call edisp(iuout,OUTS)
+          call edisp248(iuout,OUTS248,80)
           call epwait
           call epagend
           STOP 
         ENDIF
       ELSE
 
-        WRITE(OUTS,'(A,A,A)') 'ERROR: Problem with ',
+        WRITE(OUTS,'(3A)') 'ERROR: Problem with ',
      &    INTER(1:LNBLNK(INTER)),
      &    ', this is not a bems -> esp-r interaction file.'
-          call edisp(iuout,OUTS)
+          call edisp248(iuout,OUTS248,80)
         call epwait
         call epagend
         STOP 
 
       ENDIF
 
-      WRITE(OUTS,'(A,A)')
+      WRITE(OUTS248,'(A,A)')
      &  'ERROR: Problem with ',INTER(1:LNBLNK(INTER))
-      call edisp(iuout,OUTS)
+      call edisp248(iuout,OUTS248,80)
       call epwait
       call epagend
       STOP 
