@@ -1,0 +1,69 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1                         
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+    2    3
+#->   1, Water flow source for plant networks                                    
+  Flow_source       76
+    2        # Component has   2 control variable(s).
+  26.  0.208379184
+    4
+ -99.000      -99.000      -99.000      -99.000    
+#->   2, Dynamic model of a Stirling CHP system                                  
+  SE_CHP_Unit       68
+   2
+   0.000 1.000
+# number of ADATA inputs, electrical data inputs
+  64 5
+# Component ADATA inputs:
+  750.0                    # nominal system size
+  1.59E-04  1.60E-04       # minumum and maximum fuel flow rates
+  85.0                      # maximum CW outlet temperature (oC)
+  0.0                       # molar fraction H2    in fuel
+  0.9476                    # molar fraction CH4   in fuel
+  0.0270                    # molar fraction C2H6  in fuel
+  0.0023                    # molar fraction C3H8  in fuel
+  0.0                       # molar fraction C4H10 in fuel
+  0.0                       # molar fraction C5H12 in fuel
+  0.0                       # molar fraction C6H14 in fuel
+  0.0                       # molar fraction CO    in fuel
+  0.0055                    # molar fraction CO2   in fuel
+  0.0176                    # molar fraction N2    in fuel
+  0.0                       # molar fraction O2    in fuel
+ -1.0 -1.0                  # Max rate of change in fuel flow and net power
+ 2.0                        # flag for thermal mass model (1: heat lag, 2: thermal mass)
+ 0.0                        # Thermal lag time constnat (1/s),           heat lag model only!
+ 19925.0                    # power system effective thermal mass (J/K), thermal mass model only!
+ 44.15625                   # Effective HX heat transfer coeff. (W/K),   thermal mass model only!
+ 0.0                      # Effective UA loss coefficient (W/K),       thermal mass model only!
+ 21537.5                     # Heat exchanger thermal mass (J/K)
+ 690.0  1.70E-04  -17.0  6488.0   # Start-up period duration (seconds), power & heat output (W)
+ 1500.0    0.0    -50.0  0.0     # Shutdown period duration (seconds), power & heat output (W)
+    0.0       -20.0       0.0        # Stand by fuel flow (kg/s), power & heat output (W)
+    65.        0.000         0.0     # Reference temperature, cooling water flow rate, and ambient temperature
+    0.0        0.0           0.0     # Skin losses - f(N-fuel)
+    0.0        0.0                   #             - f(T_room)
+    0.8003125 0.0 0.0 #0.856875    0.0           0.0     # Thermal efficiency - f(CW flow)
+    0.0 0.0                          #                    - f(CW temp)
+    0.0 0.0                          #                    - f(Q_avail)
+    9.75E-02  0.0           0.0     # Electrical efficiency - f(CW flow)
+    0.0E-04      0.0E-05             #                       - f(CW temp)
+    0.0E-05      0.0E-09             #                       - f(Q transfer)
+  0.0    1.0E06                  # Correlation Min & Max gross heat input bounds (W)
+  0.00      100.00                    # Correlation Min & Max CW temperature bounds (oC)
+  0.000     100.00                   # Correlation Min & Max CW temperature bounds (kg/s)
+  0.000     100.00                   # Correlation Min & Max Ambient temperature bounds (oC)
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+    1.000  -1   0.000   120.00  4
+# The following is a list of component connections.
+  1          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  SE_CHP_Unit       2     3     Flow_source       1    1.000                 #  1
+# containment temperatures defined
+   1          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  SE_CHP_Unit        4             12.00000    1.00000   0.00000
+# No mass flow network defined.
+    0

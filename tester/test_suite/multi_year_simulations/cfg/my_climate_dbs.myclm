@@ -1,0 +1,43 @@
+* MY_climate_db
+#-------------------------------------------
+# Multi-year climate database file 
+#-------------------------------------------
+# Versioning control:
+* VERSION 0.10
+#-------------------------------------------
+# Flag for starting climate records
+#-------------------------------------------
+*my_climate_records begin
+#-------------------------------------------
+# Climate file database:
+# Each record contains the year for which
+# the file should be used, and the path
+# to the corresponding climate file.
+#
+# flag| year | Path to clm database file
+#-------------------------------------------
+*rec     1990   /usr/esru/esp-r/climate/clm67
+*rec     1991   /usr/esru/esp-r/climate/can_ottawa
+*rec     1992   /usr/esru/esp-r/climate/can_montreal
+*rec     1993   /usr/esru/esp-r/climate/clm67
+*rec     1994   /usr/esru/esp-r/climate/clm67
+*rec     1995   /usr/esru/esp-r/climate/can_ottawa
+*rec     1996   /usr/esru/esp-r/climate/can_montreal
+*rec     1997   /usr/esru/esp-r/climate/clm67
+*rec     1998   /usr/esru/esp-r/climate/clm67
+*rec     1999   /usr/esru/esp-r/climate/can_ottawa
+*rec     2000   /usr/esru/esp-r/climate/can_montreal
+*rec     2001   /usr/esru/esp-r/climate/clm67
+*rec     2002   /usr/esru/esp-r/climate/clm67
+*rec     2003   /usr/esru/esp-r/climate/can_ottawa
+*rec     2004   /usr/esru/esp-r/climate/can_montreal
+*rec     2005   /usr/esru/esp-r/climate/clm67
+*rec     2006   /usr/esru/esp-r/climate/clm67
+*rec     2007   /usr/esru/esp-r/climate/can_ottawa
+*rec     2008   /usr/esru/esp-r/climate/can_montreal
+*rec     2009   /usr/esru/esp-r/climate/clm67
+*rec     2010   /usr/esru/esp-r/climate/clm67
+#-------------------------------------------
+# End of climate file records
+#-------------------------------------------
+*my_climate_records end
