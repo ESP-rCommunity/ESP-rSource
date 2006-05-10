@@ -1,0 +1,40 @@
+# thermophysical properties of basement defined in ../zones/basement.con
+# no of |air |surface(from geo)| multilayer construction
+# layers|gaps|  no.  name      | database name 
+     2,     0  #  1 Surf-1       foundation_ 
+     2,     0  #  2 Surf-2       foundation_ 
+     2,     0  #  3 Surf-5       foundation_ 
+     2,     0  #  4 Surf-6       foundation_ 
+     4,     1  #  5 to_upstairs  floors_r    
+     1,     0  #  6 floor_slab   slab_floor  
+     2,     0  #  7 Surf-7       foundation_ 
+     2,     0  #  8 Surf-8       foundation_ 
+# air gap position & resistance for surface  5
+  2,   0.170,
+# conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
+# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  1  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  2  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  3  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  4  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+     0.1500,     560.0,    2500.0,  0.0170,   0,   0.00, 0.00000, 0.00000  #  5  1
+     0.0000,       0.0,       0.0,  0.1000,   0,   0.00, 0.00000, 0.00000  #     2
+     0.1400,     600.0,    1210.0,  0.0250,   0,   0.00, 0.00000, 0.00000  #     3
+     0.0600,     160.0,    2500.0,  0.0150,   0,   0.00, 0.00000, 0.00000  #     4
+     0.3800,    1200.0,     653.0,  0.2500,   0,   0.00, 0.00000, 0.00000  #  6  1
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  7  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+     0.3800,    1200.0,     653.0,  0.2000,   0,   0.00, 0.00000, 0.00000  #  8  1
+     0.1900,     950.0,     840.0,  0.0135,   0,   0.00, 0.00000, 0.00000  #     2
+# for each surface: inside face emissivity
+  0.91 0.91 0.91 0.91 0.90 0.90 0.91 0.91
+# for each surface: outside face emissivity
+  0.90 0.90 0.90 0.90 0.90 0.90 0.90 0.90
+# for each surface: inside face solar absorptivity
+  0.50 0.50 0.50 0.50 0.65 0.65 0.50 0.50
+# for each surface: outside face solar absorptivity
+  0.65 0.65 0.65 0.65 0.65 0.65 0.65 0.65

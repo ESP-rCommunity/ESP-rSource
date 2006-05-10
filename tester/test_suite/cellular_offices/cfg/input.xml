@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <dump_all_data>true</dump_all_data>
+  <enable_xml_wildcards>false</enable_xml_wildcards>
+  <hierarchy>tree</hierarchy>
+  <report_startup_period_data>false</report_startup_period_data>
+  <time_step_averaging>false</time_step_averaging>
+
+</configuration>
