@@ -59,8 +59,7 @@ branch to reflect recent changes in the repository.
 .RS
 .IP 1. 4
 If you have not already done so, commit your code to your sub-branch following the 
-directions in the document \fIVersioning Control for ESP-r Users and 
-Developers\fR. 
+directions in the document \fIAn Overview of Subversion for ESP-r Central Users\fR. 
 .IP 2. 4 
 Move to a new directory, and checkout a fresh copy of your sub-branch. Compile ESP-r and 
 be sure to include support for XML output. Ensure that no compilation errors are 
@@ -68,8 +67,7 @@ reported. If compilation errors are reported, check to see that all of your modi
 files have been correctly committed to your sub-branch.
 .IP 3. 4
 Perform an update to your sub-branch with recent changes in the development 
-branch. Follow the directions in the document \fIVersioning Control for ESP-r Users and
-Developers\fR.
+branch. Follow the directions in the document \fIAn Overview of Subversion for ESP-r Central Users\fR.
 .IP 4. 4 
 Resolve any conflicts reported during the merge, and compile your updated branch with 
 support for XML output enabled. Ensure that no compilation errors are reported.
@@ -136,7 +134,7 @@ The \fItest bps\fR is the current version of bps available on the development
 branch, modified with your source code changes. To build a \fItest bps\fR, first
 ensure that your source code has been committed to your sub-branch. Then synchronize
 your sub-branch with the development branch using the directions contained in the
-document \fIVersioning Control for ESP-r Users and Developers\fR. Finally, compile
+document \fIAn Overview of Subversion for ESP-r Central Users\fR. Finally, compile
 the \fIbps\fR binary.
 .RE
 .LP
