@@ -1,0 +1,637 @@
+%!PS-Adobe-3.0
+%%Creator: groff version 1.16.1
+%%CreationDate: Wed May 10 15:24:48 2006
+%%DocumentNeededResources: font Times-Bold
+%%+ font Times-Roman
+%%+ font Courier
+%%+ font Times-Italic
+%%+ font Symbol
+%%DocumentSuppliedResources: procset grops 1.16 1
+%%Pages: 6
+%%PageOrder: Ascend
+%%Orientation: Portrait
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset grops 1.16 1
+/setpacking where{
+pop
+currentpacking
+true setpacking
+}if
+/grops 120 dict dup begin
+/SC 32 def
+/A/show load def
+/B{0 SC 3 -1 roll widthshow}bind def
+/C{0 exch ashow}bind def
+/D{0 exch 0 SC 5 2 roll awidthshow}bind def
+/E{0 rmoveto show}bind def
+/F{0 rmoveto 0 SC 3 -1 roll widthshow}bind def
+/G{0 rmoveto 0 exch ashow}bind def
+/H{0 rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/I{0 exch rmoveto show}bind def
+/J{0 exch rmoveto 0 SC 3 -1 roll widthshow}bind def
+/K{0 exch rmoveto 0 exch ashow}bind def
+/L{0 exch rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/M{rmoveto show}bind def
+/N{rmoveto 0 SC 3 -1 roll widthshow}bind def
+/O{rmoveto 0 exch ashow}bind def
+/P{rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/Q{moveto show}bind def
+/R{moveto 0 SC 3 -1 roll widthshow}bind def
+/S{moveto 0 exch ashow}bind def
+/T{moveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/SF{
+findfont exch
+[exch dup 0 exch 0 exch neg 0 0]makefont
+dup setfont
+[exch/setfont cvx]cvx bind def
+}bind def
+/MF{
+findfont
+[5 2 roll
+0 3 1 roll
+neg 0 0]makefont
+dup setfont
+[exch/setfont cvx]cvx bind def
+}bind def
+/level0 0 def
+/RES 0 def
+/PL 0 def
+/LS 0 def
+/MANUAL{
+statusdict begin/manualfeed true store end
+}bind def
+/PLG{
+gsave newpath clippath pathbbox grestore
+exch pop add exch pop
+}bind def
+/BP{
+/level0 save def
+1 setlinecap
+1 setlinejoin
+72 RES div dup scale
+LS{
+90 rotate
+}{
+0 PL translate
+}ifelse
+1 -1 scale
+}bind def
+/EP{
+level0 restore
+showpage
+}bind def
+/DA{
+newpath arcn stroke
+}bind def
+/SN{
+transform
+.25 sub exch .25 sub exch
+round .25 add exch round .25 add exch
+itransform
+}bind def
+/DL{
+SN
+moveto
+SN
+lineto stroke
+}bind def
+/DC{
+newpath 0 360 arc closepath
+}bind def
+/TM matrix def
+/DE{
+TM currentmatrix pop
+translate scale newpath 0 0 .5 0 360 arc closepath
+TM setmatrix
+}bind def
+/RC/rcurveto load def
+/RL/rlineto load def
+/ST/stroke load def
+/MT/moveto load def
+/CL/closepath load def
+/FL{
+currentgray exch setgray fill setgray
+}bind def
+/BL/fill load def
+/LW/setlinewidth load def
+/RE{
+findfont
+dup maxlength 1 index/FontName known not{1 add}if dict begin
+{
+1 index/FID ne{def}{pop pop}ifelse
+}forall
+/Encoding exch def
+dup/FontName exch def
+currentdict end definefont pop
+}bind def
+/DEFS 0 def
+/EBEGIN{
+moveto
+DEFS begin
+}bind def
+/EEND/end load def
+/CNT 0 def
+/level1 0 def
+/PBEGIN{
+/level1 save def
+translate
+div 3 1 roll div exch scale
+neg exch neg exch translate
+0 setgray
+0 setlinecap
+1 setlinewidth
+0 setlinejoin
+10 setmiterlimit
+[]0 setdash
+/setstrokeadjust where{
+pop
+false setstrokeadjust
+}if
+/setoverprint where{
+pop
+false setoverprint
+}if
+newpath
+/CNT countdictstack def
+userdict begin
+/showpage{}def
+}bind def
+/PEND{
+clear
+countdictstack CNT sub{end}repeat
+level1 restore
+}bind def
+end def
+/setpacking where{
+pop
+setpacking
+}if
+%%EndResource
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Courier
+%%IncludeResource: font Times-Italic
+%%IncludeResource: font Symbol
+grops begin/DEFS 1 dict def DEFS begin/u{.001 mul}bind def end/RES 72
+def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
+/scaron/zcaron/Ydieresis/trademark/quotesingle/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent
+/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/hyphen
+/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon
+/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O
+/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/circumflex
+/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y
+/z/braceleft/bar/braceright/tilde/.notdef/quotesinglbase/guillemotleft
+/guillemotright/bullet/florin/fraction/perthousand/dagger/daggerdbl
+/endash/emdash/ff/fi/fl/ffi/ffl/dotlessi/dotlessj/grave/hungarumlaut
+/dotaccent/breve/caron/ring/ogonek/quotedblleft/quotedblright/oe/lslash
+/quotedblbase/OE/Lslash/.notdef/exclamdown/cent/sterling/currency/yen
+/brokenbar/section/dieresis/copyright/ordfeminine/guilsinglleft
+/logicalnot/minus/registered/macron/degree/plusminus/twosuperior
+/threesuperior/acute/mu/paragraph/periodcentered/cedilla/onesuperior
+/ordmasculine/guilsinglright/onequarter/onehalf/threequarters
+/questiondown/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE
+/Ccedilla/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex
+/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis
+/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute/Thorn
+/germandbls/agrave/aacute/acircumflex/atilde/adieresis/aring/ae/ccedilla
+/egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis
+/eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash
+/ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis]def
+/Times-Italic@0 ENC0/Times-Italic RE/Courier@0 ENC0/Courier RE
+/Times-Roman@0 ENC0/Times-Roman RE/Times-Bold@0 ENC0/Times-Bold RE
+%%EndProlog
+%%Page: 1 1
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Bold@0 SF(ESP-r Coding Guide)234.99 123 Q -1.2(Ve)218.424
+138 S(rsion of 9 F)1.2 E(ebruary 2006)-.3 E/F1 10/Times-Roman@0 SF .264
+(This coding guide has been de)72 195.6 R -.15(ve)-.25 G .263
+(loped to promote consistent coding style for ESP-r de).15 F -.15(ve)
+-.25 G .263(lopments, with the).15 F(objecti)72 207.6 Q .767 -.15(ve o)
+-.25 H 2.967(fe).15 G .467
+(nsuring readable code that is accessible to the ESP-r de)-2.967 F -.15
+(ve)-.25 G .467(lopment community).15 F 5.468(.W)-.65 G .468(hat follo)
+-5.468 F(ws)-.25 E .086(is a set of general principles and prescripti)72
+219.6 R .386 -.15(ve r)-.25 H .086(equirements that should be follo).15
+F .086(wed by all de)-.25 F -.15(ve)-.25 G .085(lopers. It may).15 F
+.446(be e)72 231.6 R .446(xpected that this document will e)-.15 F -.2
+(vo)-.25 G(lv).2 E 2.946(eo)-.15 G -.15(ve)-3.096 G 2.946(rt).15 G .446
+(ime in response to the e)-2.946 F -.2(vo)-.25 G .446(lution of FOR).2 F
+.447(TRAN an C cod-)-.6 F(ing con)72 243.6 Q -.15(ve)-.4 G
+(ntions and trends within the ESP-r de).15 E -.15(ve)-.25 G
+(lopment community).15 E(.)-.65 E/F2 10/Times-Bold@0 SF
+(General Principles)72 267.6 Q F1 21.5<8343>72 283.2 S
+(lear and concise documentation has the same importance as b)-21.5 E
+(ug-free code.)-.2 E 21.5<8354>72 298.8 S 1.199(he source code should b\
+e well documented through the use of appropriately chosen v)-21.5 F
+1.198(ariable and)-.25 F
+(subroutine names and a transparent code structure.)97 310.8 Q 21.5
+<8344>72 326.4 S .594
+(etails about the operation of code sections should be pro)-21.5 F .595
+(vided within related code annotations and)-.15 F(not in e)97 338.4 Q
+(xternal documentation.)-.15 E 21.5<8349>72 354 S -1.85 -.4(nv e)-21.5 H
+.351(st the necessary time to ensure that your code is understandable t\
+o your colleagues \(and to your).4 F(-)-.2 E(self in a fe)97 366 Q 2.5
+(wy)-.25 G(ears time!\).)-2.5 E 21.5<8355>72 381.6 S .374(se proper Eng\
+lish sentences to document code\212this includes capitalisation and pun\
+ctuation. Stri)-21.5 F -.15(ve)-.25 G
+(for clarity as incoherent language leads to confusion and ambiguity)97
+393.6 Q(.)-.65 E 21.5<8357>72 409.2 S .074(hen adding ne)-21.5 F 2.573
+(wf)-.25 G .073(unctionality maintain consistenc)-2.573 F 2.573(yi)-.15
+G 2.573(ns)-2.573 G .073(tyle with e)-2.573 F .073
+(xisting source code. F)-.15 F .073(or e)-.15 F(xample,)-.15 E(coef)97
+421.2 Q 1.007(\214cient generator subroutines for dif)-.25 F 1.007
+(ferent plant component types will usually dif)-.25 F 1.007
+(fer only in the)-.25 F .742
+(equations used to calculate matrix equation coef)97 433.2 R .741
+(\214cients. T)-.25 F 3.241(oi)-.8 G .741(nstall a ne)-3.241 F 3.241(wp)
+-.25 G .741(lant component it is usu-)-3.241 F
+(ally possible to adopt the pattern of an e)97 445.2 Q
+(xisting component.)-.15 E 21.5<8342>72 460.8 S 3.654(ec)-21.5 G 1.154
+(onsistent in the use of v)-3.654 F 1.155
+(ariable names throughout the code. F)-.25 F 1.155(or e)-.15 F 1.155
+(xample, all plant component)-.15 F(coef)97 472.8 Q 1.342
+(\214cient generators produce coef)-.25 F 1.342
+(\214cients for the plant matrix solv)-.25 F(er)-.15 E 3.841(.T)-.55 G
+1.341(hese are local v)-3.841 F 1.341(ariables to)-.25 F .527
+(each subroutine and are passed in the calling statement. These local v)
+97 484.8 R .527(ariables are named 'COUT' in)-.25 F .098
+(each plant coef)97 496.8 R .098(\214cient generator)-.25 F 2.598(.T)
+-.55 G .098(herefore, for consistenc)-2.598 F(y')-.15 E 2.598(ss)-.55 G
+(ak)-2.598 E 2.598(ei)-.1 G 2.598(ti)-2.598 G 2.598(sp)-2.598 G .098
+(referred to use this same v)-2.598 F(ari-)-.25 E(able name in a ne)97
+508.8 Q 2.5(wp)-.25 G(lant coef)-2.5 E(\214cient generator)-.25 E(.)-.55
+E F2(Documentation)72 532.8 Q F1 1.417(The source code should be well c\
+ommented and these comments should precede the code fragments to)72
+548.4 R 1.294(which the)72 560.4 R 3.794(yr)-.15 G 1.294(elate. Such co\
+mments should be used judiciously and grouped in a manner that illumina\
+tes)-3.794 F .701(rather than obscures the code.)72 572.4 R .701(Spacin\
+g should also be used judiciously to logically group blocks of code.)
+5.701 F .447(Comments may be indented when this clari\214es the interpr\
+etation of the code.)72 584.4 R -1 -.8(Tw o)5.447 H -.15(ex)3.747 G .447
+(amples that illustrate).15 F(acceptable commenting styles follo)72
+596.4 Q -.65(w.)-.25 G .32 LW 460 612.4 116 612.4 DL/F3 8/Courier@0 SF
+(<preceding code fragment>)148.8 622.1 Q 4.8(CL)120 640.1 S
+(oop through each of the selected zones and scan the Operations file)
+-4.8 E 4.8(Ci)120 649.1 S 4.8(fi)-4.8 G 4.8(te)-4.8 G
+(xists. If not, insert default crack connection.)-4.8 E(do 38 izt=1,izn)
+148.8 658.1 Q(iz=ivals\(izt\))158.4 667.1 Q(<following lines of code>)
+158.4 676.1 Q 4.8(CI)120 694.1 S(ncrement pointer to the current zone.)
+-4.8 E(nodeforcurrent=nodeforcurrent+1)158.4 703.1 Q 460 709.8 116 709.8
+DL 460 612.4 460 709.8 DL 116 612.4 116 709.8 DL EP
+%%Page: 2 2
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF(-2-)282.17 48 Q .32 LW 488.8 76 87.2 76 DL/F1 8
+/Courier@0 SF(<preceeding code fragment>)129.6 85.7 Q(C----------------\
+-----------------------------------------------------------------)91.2
+103.7 Q 4.8(CC)91.2 112.7 S
+(alculate the molar flow rate of each gas constituent.)-4.8 E(C--------\
+-----------------------------------------------------------------------\
+--)91.2 121.7 Q
+(C-------N2 in air and fuel flowing into FCPM does not react.)91.2 130.7
+Q 4.8(Ndot_FCPMexh_N2 =)129.6 139.7 R(chi_air_N2*Ndot_FCPM_air)4.8 E
+91.2(&+)115.2 148.7 S(chi_fuel_N2*Ndot_FCPM_fuel)-86.4 E
+(C-------Ar in air flowing into FCPM does not react.)91.2 157.7 Q 4.8
+(Ndot_FCPMexh_Ar =)129.6 166.7 R(chi_air_Ar*Ndot_FCPM_air)4.8 E
+(C-------O2 in exhaust comes from fuel and excess air.)91.2 175.7 Q 4.8
+(Ndot_FCPMexh_O2 =)129.6 184.7 R(chi_fuel_O2*Ndot_FCPM_fuel)4.8 E 91.2
+(&+)115.2 193.7 S(lambda_FCPM*Ndot_FCPM_O2_stoich)-86.4 E
+(<next code fragment>)129.6 211.7 Q 488.8 218.4 87.2 218.4 DL 488.8 76
+488.8 218.4 DL 87.2 76 87.2 218.4 DL/F2 10/Times-Italic@0 SF(Subr)72 242
+Q(outine descriptions)-.45 E F0 1.574
+(Each subroutine should start with a high-le)72 257.6 R -.15(ve)-.25 G
+4.074(le).15 G 1.574(xplanation of its purpose and ho)-4.224 F 4.075(wt)
+-.25 G 1.575(his is achie)-4.075 F -.15(ve)-.25 G 1.575(d. An).15 F -.15
+(ex)72 269.6 S(ample follo).15 E(ws.)-.25 E 467.2 285.6 108.8 285.6 DL
+F1 4.8(CS)112.8 295.3 S
+(ubroutine XYZ calculates the four heat loss factors for the foundation)
+-4.8 E 4.8(Ci)112.8 304.3 S 4.8(nt)-4.8 G
+(he zone under consideration. Correlation coefficients for)-4.8 E 4.8
+(Ct)112.8 313.3 S
+(he `corner-correction method' are used. The factors are placed into)
+-4.8 E 4.8(CC)112.8 322.3 S
+(ommon Block BSHLF for use in later heat loss calculations.)-4.8 E 467.2
+329 108.8 329 DL 467.2 285.6 467.2 329 DL 108.8 285.6 108.8 329 DL F2
+(Citing paper)72 352.6 Q 2.5(sa)-.1 G(nd r)-2.5 E(efer)-.37 E(ences)-.37
+E F0 .735(Citations to algorithms and data sources should be gi)72 368.2
+R -.15(ve)-.25 G 3.234(na).15 G 3.234(tt)-3.234 G .734(he be)-3.234 F
+.734(ginning of a subroutine. These citations)-.15 F .286(should be com\
+plete as a colleague may need to locate the paper or report in the futu\
+re. Refer to proprietary)72 380.2 R .998
+(reports \(internal reports, drafts reports, pri)72 392.2 R -.25(va)-.25
+G .998(te sources\) only when the information is not a).25 F -.25(va)-.2
+G .998(ilable in the).25 F
+(public domain \(conference proceedings, journals, theses\).)72 404.2 Q
+(An e)5 E(xample follo)-.15 E(ws.)-.25 E 481.6 420.2 94.4 420.2 DL F1
+4.8(CS)98.4 429.9 S(mith A and Jones B \(1999\), `Heat Transfer Coeffic\
+ient Correlations for)-4.8 E 4.8(CB)98.4 438.9 S(uilding Energy Modelli\
+ng', Int. J. Heat and Mass Transfer, 38\(8\), pp856-884.)-4.8 E 481.6
+445.6 94.4 445.6 DL 481.6 420.2 481.6 445.6 DL 94.4 420.2 94.4 445.6 DL
+F0 .003(Then, further do)97 469.2 R .004(wn in the source code immediat\
+ely preceding the algorithm cite the appropriate refer)-.25 F(-)-.2 E
+.695(ence from those speci\214ed at the be)72 481.2 R .694
+(ginning of the subroutine and)-.15 F .694
+(include the speci\214c page numbers, table)5.694 F .806
+(numbers, equation numbers)72 493.2 R F2(etc)3.307 E F0 3.307(,a)C 3.307
+(sa)-3.307 G .807(pplicable. This can be helpful to your colleagues \(a\
+nd to yourself\) in)-3.307 F(tracing b)72 505.2 Q(ugs. An e)-.2 E
+(xample follo)-.15 E(ws.)-.25 E 450.4 521.2 125.6 521.2 DL F1
+(elseif\( icor .EQ. 5 \)then)158.4 530.9 Q 4.8(CC)129.6 548.9 S
+(oefficient correlation for a wall with a radiator located under)-4.8 E
+4.8(Caw)129.6 557.9 S
+(indow \(Smith and Jones publication, Table 2, Equation 6\).)-4.8 E
+(hc = 2.30*\(dt**0.24\))168 566.9 Q 450.4 573.6 125.6 573.6 DL 450.4
+521.2 450.4 573.6 DL 125.6 521.2 125.6 573.6 DL F2
+(Describing assumptions)72 597.2 Q F0(Whene)72 612.8 Q -.15(ve)-.25 G
+4.24(ra).15 G 4.24(na)-4.24 G 1.739(ssumption is made, add a comment sp\
+ecifying where the assumption came from. If the)-4.24 F .519
+(assumption can be referenced to a paper)72 624.8 R 3.019(,r)-.4 G .519
+(eport or book it should be. If it came from a discussion, e)-3.019 F
+(xplain)-.15 E(wh)72 636.8 Q 2.5(yt)-.05 G(he assumption w)-2.5 E
+(as made.)-.1 E F2(Annotating bloc)72 652.4 Q(ks of code)-.2 E F0 .837(\
+Use comments to mark ends of blocks. This is useful in identifying bloc\
+ks when IF)72 668 R 3.337(,D)-.8 G 3.337(Oo)-3.337 G 3.337(rW)-3.337 G
+.837(HILE con-)-3.337 F 1.278(structs e)72 680 R 1.278(xtend o)-.15 F
+-.15(ve)-.15 G 3.778(rm).15 G(an)-3.778 E 3.778(yl)-.15 G 1.279(ines of\
+ code or where there are multiple embedded loops or conditional code)
+-3.778 F(blocks. An e)72 692 Q(xample follo)-.15 E(ws.)-.25 E EP
+%%Page: 3 3
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF(-3-)282.17 48 Q .32 LW 450.4 76 125.6 76 DL/F1 8
+/Courier@0 SF(do jj=1,mpcdat)158.4 85.7 Q 4.8(CH)129.6 103.7 S
+(as iteration for this plant additional output been requested?)-4.8 E
+(if \( iPlt_Output_Iter_Flag\(ii,jj\) .ne. 1 \) then)168 112.7 Q 4.8(<l)
+177.6 121.7 S(ine of code >)-4.8 E 4.8(<l)177.6 130.7 S(ine of code >)
+-4.8 E 4.8(<l)177.6 139.7 S(ine of code >)-4.8 E 9.6(endif !)168 148.7 R
+(<- matches)4.8 E(if \( iPlt_Output_Iter_Flag\(ii,jj\)...)9.6 E 9.6
+(enddo !)158.4 157.7 R(<- matches do jj = 1, ...)4.8 E 450.4 164.4 125.6
+164.4 DL 450.4 76 450.4 164.4 DL 125.6 76 125.6 164.4 DL/F2 10
+/Times-Italic@0 SF(Gr)72 188 Q(ouping lines of code)-.45 E F0 .161
+(Code annotations should be succinct b)72 203.6 R .161(ut suf)-.2 F .161
+(\214ciently detailed so that the purpose of e)-.25 F -.15(ve)-.25 G
+.161(ry line of the code is).15 F(ob)72 215.6 Q
+(vious. If in doubt, say more.)-.15 E
+(Annotate code by grouping lines logically)5 E 2.5(.A)-.65 G 2.5(ne)-2.5
+G(xample follo)-2.65 E(ws.)-.25 E 479.2 231.6 96.8 231.6 DL F1
+(<preceding code fragment>)139.2 241.3 Q 4.8(CO)100.8 259.3 S
+(verride the calculated values if user has specified a convection file)
+-4.8 E 4.8(Cw)100.8 268.3 S(ith fixed coefficients \(ie. `type 1' contr\
+ol over convection calculations\).)-4.8 E
+(C-------Does a convection file exist?)100.8 277.3 Q
+(IF\( IHC\(ICOMP\).EQ.1 \) THEN)139.2 286.3 Q(C---------Has the user sp\
+ecified fixed coefficients in the convection file?)100.8 295.3 Q
+(Ltype1 = 0)148.8 304.3 Q(DO 22 k=1,NHCFP\(ICOMP\))148.8 313.3 Q
+(if\( iCTLTP\(ICOMP,k\).eq.1 \) Ltype1=1)158.4 322.3 Q 19.2(22 CONTINUE)
+115.2 331.3 R(<following code fragment>)139.2 349.3 Q 479.2 356 96.8 356
+DL 479.2 231.6 479.2 356 DL 96.8 231.6 96.8 356 DL F2(In-line comments)
+72 379.6 Q F0 .067(Comments can be added to the end of an)72 395.2 R
+2.567(yc)-.15 G .067(ode line using the '!' character)-2.567 F 5.068(.T)
+-.55 G .068(his mak)-5.068 F .068(es commenting blocks)-.1 F .437(of v)
+72 407.2 R .436
+(ariable de\214nitions and short code lines easier to read.)-.25 F(Ho)
+5.436 E(we)-.25 E -.15(ve)-.25 G 1.236 -.4(r, i).15 H .436
+(n-line comments must not be embed-).4 F 1.001
+(ded within statements spanning multiple lines as some compilers will e)
+72 419.2 R 1.002(xperience problems when parsing)-.15 F(such comments.)
+72 431.2 Q/F3 10/Times-Bold@0 SF(Coding Style and use of FOR)72 467.2 Q
+(TRAN/C)-.4 E F2(Sour)72 494.8 Q(ce code \214les and subr)-.37 E
+(outines)-.45 E F0 .754
+(Long subroutines can be cumbersome to read, understand and test.)72
+510.4 R .754(It is good practice to k)5.754 F .753(eep the size of)-.1 F
+1.554(subroutines small and use calls to other subroutines when a disti\
+nct set of calculations need to be per)72 522.4 R(-)-.2 E 3.677
+(formed. If)72 534.4 R 1.177
+(there is no distinct grouping of calculations, it is preferable to k)
+3.677 F 1.176(eep all calculations together)-.1 F(.)-.55 E(Further)72
+546.4 Q 2.827(,i)-.4 G 2.827(fas)-2.827 G .328(et of equations is used \
+in more than one area, the set should be relocated into its o)-2.827 F
+.328(wn subrou-)-.25 F(tine.)72 558.4 Q .428
+(When adding signi\214cant ne)97 574 R 2.928(wf)-.25 G(unctionality)
+-2.928 E 2.928(,r)-.65 G .428
+(elated subroutines should be grouped into a \214le and this)-2.928 F
+.001(\214le located within an appropriate directory)72 586 R 5.002(.T)
+-.65 G .002(here is no practical limit to \214le size, ho)-5.002 F(we)
+-.25 E -.15(ve)-.25 G 2.502<728c>.15 G .002(les should con-)-2.502 F
+.617(tain subroutines that perform related functions or relate to a com\
+mon theme or purpose.)72 598 R -.15(Fo)5.617 G 3.116(re).15 G .616
+(xample, the)-3.266 F 1.435(static template, coef)72 610 R 1.435
+(\214cient generator and related subroutines for a ne)-.25 F 3.935(wp)
+-.25 G 1.435(lant component should each be)-3.935 F
+(grouped into a single \214le and this \214le added to the)72 622 Q F2
+(plt)2.5 E F0(directory)2.5 E(.)-.65 E F2
+(Saved variables, global variables and common bloc)72 637.6 Q(ks)-.2 E
+F0(An)72 653.2 Q 2.5(yc)-.15 G(ode that depends on static v)-2.5 E
+(ariables should e)-.25 E(xplicitly declare these v)-.15 E
+(ariables with a SA)-.25 E(VE statement.)-1.35 E .872
+(When multiple routines reference a lar)72 668.8 R .871
+(ge set of global v)-.18 F .871
+(ariables held in a COMMON statement, consider)-.25 F .494(placing the \
+COMMON declarations in a header \214le. This reduces the risk of mismat\
+ches between the type)72 680.8 R(and dimension of declared global v)72
+692.8 Q(ariables, which in)-.25 E -.25(va)-.4 G(riably lead to se).25 E
+(gmentation f)-.15 E(aults.)-.1 E F2(Equations)72 708.4 Q EP
+%%Page: 4 4
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF(-4-)282.17 48 Q 1.06(Equations should be e)72 84
+R -.25(va)-.25 G 1.06(luated in the same manner that the).25 F 3.56(yw)
+-.15 G 1.06(ould be written in a scienti\214c publication.)-3.66 F -1.22
+-.74(Av o)72 96 T .485(id combining terms \(and hence distorting clearn\
+ess\) in an attempt to produce computationally ef).74 F(\214cient)-.25 E
+(code.)72 108 Q/F1 10/Times-Italic@0 SF -.92(Wo)72 123.6 S(rking with e)
+.92 E(xisting \214les)-.2 E F0(When w)72 139.2 Q(orking with e)-.1 E
+(xisting source code \214les maintain compatibility with the style.)-.15
+E F1 -1.05(Fo)72 154.8 S(rmatting sour)1.05 E(ce code)-.37 E F0 21.5
+<8343>72 170.4 S(ode line length should be con\214ned to 72 characters.)
+-21.5 E 21.5<8355>72 186 S
+(se the '&' character for line continuations \(6th column\).)-21.5 E
+21.5<8344>72 201.6 S 3.931(on)-21.5 G 1.431
+(ot use tab characters within the source code, including comment lines.)
+-3.931 F 1.43(If using a \214le editor)6.43 F .165(which allo)97 213.6 R
+.165(ws tab characters, be certain to con\214gure it such that tab char\
+acters are con)-.25 F -.15(ve)-.4 G .165(rted to spaces).15 F(upon sa)97
+225.6 Q(ving the \214le.)-.2 E 21.5<8341>72 241.2 S(ll loop statements \
+\(IF-THEN, DO, WHILE\) should be indented by 2 characters.)-21.5 E F1
+(GO)72 256.8 Q .36 -.18(TO s)-.4 H(tatements).18 E F0(GO)72 272.4 Q
+2.415 -.18(TO s)-.4 H 2.055(tatements should be a).18 F -.2(vo)-.2 G
+2.055(ided. There are plenty of alternati).2 F -.15(ve)-.25 G 4.555(si)
+.15 G 4.555(nm)-4.555 G 2.055(odern FOR)-4.555 F 2.055(TRAN \(e.g. the)
+-.6 F .122(WHILE statement\). A possible e)72 284.4 R .122
+(xception is when w)-.15 F .122(orking with an e)-.1 F .122
+(xisting subroutine that mak)-.15 F .123(es e)-.1 F(xtensi)-.15 E -.15
+(ve)-.25 G(use of GO)72 296.4 Q .36 -.18(TO s)-.4 H
+(tatements in which case it may be clearer to maintain the style.).18 E
+F1(Floating point comparisons)72 312 Q F0 .022(All possibilities for di)
+72 327.6 R .022
+(vision by zero must be trapped at the highest possible le)-.25 F -.15
+(ve)-.25 G 2.521(la).15 G .021(nd \215oating point compar)-2.521 F(-)-.2
+E .444(isons a)72 339.6 R -.2(vo)-.2 G .444(ided because v).2 F .444
+(ariation in compilers and machine architectures can produce une)-.25 F
+.445(xpected beha)-.15 F(viour)-.2 E .443(when the dif)72 351.6 R .443
+(ferences in v)-.25 F .443(alues approach machine precision.)-.25 F -.15
+(Fo)5.443 G 2.943(ri).15 G .443(nstance, the follo)-2.943 F .443(wing e)
+-.25 F .442(xample may pro-)-.15 F(duce inconsistent results:)72 363.6 Q
+.32 LW 452.8 379.6 123.2 379.6 DL/F2 8/Courier@0 SF(real x, y, z)156
+389.3 Q(if \( y .eq. 0.0 \) then)156 398.3 Q 9.6(stop "Divide)165.6
+407.3 R(by zero error in Subroutine ABC: y is zero!")4.8 E(else)156
+416.3 Q 4.8(z=x/y)165.6 425.3 S(endif)156 434.3 Q 452.8 441 123.2 441 DL
+452.8 379.6 452.8 441 DL 123.2 379.6 123.2 441 DL F0 .236
+(By comparing the dif)72 464.6 R .236(ference between the \215oating nu\
+mbers with a tolerance \(presumably one se)-.25 F -.15(ve)-.25 G .237
+(ral orders).15 F(of magnitude less than the v)72 476.6 Q
+(ariation between the v)-.25 E
+(ariables\), these inconsistencies can be eliminated:)-.25 E 404.8 492.6
+171.2 492.6 DL F2(real x, y, z)204 502.3 Q
+(parameter \( small = 1.0E-06 \))204 511.3 Q
+(if \( abs\(x-y\) .lt. small \) then)204 520.3 Q
+(stop "Divide by zero error: y is zero!")213.6 529.3 Q(else)204 538.3 Q
+4.8(z=x/y)213.6 547.3 S(endif)204 556.3 Q 404.8 563 171.2 563 DL 404.8
+492.6 404.8 563 DL 171.2 492.6 171.2 563 DL F0
+(ESP-r contains a subroutine named ECLOSE that can be used to f)72 586.6
+Q(acilitate such comparisons:)-.1 E 455.2 602.6 120.8 602.6 DL F2 4.8
+(CC)124.8 612.3 S(heck if airflow rate is zero)-4.8 E
+(call eclose\(convar\(icon1,2\),0.0,0.001,CloseD\))182.4 621.3 Q 4.8(CI)
+124.8 639.3 S 4.8(fa)-4.8 G
+(ir flow rate is not zero, perform dew point temperature check;)-4.8 E
+4.8(Co)124.8 648.3 S(therwise do not.)-4.8 E(if \(.not. CloseD\) then)
+182.4 657.3 Q 455.2 664 120.8 664 DL 455.2 602.6 455.2 664 DL 120.8
+602.6 120.8 664 DL F1 -1.11(Va)72 687.6 S(riable and subr)1.11 E
+(outine names)-.45 E F0 -1.11(Va)72 703.2 S .673
+(riable and subroutine names should be descripti)1.11 F .973 -.15(ve a)
+-.25 H .673(nd clearly delineated from other names. Most mod-).15 F
+(ern FOR)72 715.2 Q(TRAN compilers can support long names.)-.6 E EP
+%%Page: 5 5
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF(-5-)282.17 48 Q .101(Generic v)72 84 R .101(ari\
+able names \(e.g. INTEGER i, j, k; LOGICAL Done\) for loop controls are\
+ discouraged. Instead,)-.25 F(use descripti)72 96 Q .3 -.15(ve n)-.25 H
+(ames \(e.g. INTEGER iZone, iSurf).15 E(ace, iLayer; LOGICAL Loop_Uncon)
+-.1 E -.15(ve)-.4 G -.18(rg).15 G(ed\).).18 E .607(When w)72 111.6 R
+.606(orking with numerical constants or inte)-.1 F .606
+(ger \215ags, de\214ne meaningful symbolic parameters to repre-)-.15 F
+(sent the constant or \215ag.)72 123.6 Q/F1 10/Times-Italic@0 SF
+(Documenting local and common bloc)72 139.2 Q 2.5(kv)-.2 G(ariables)-2.5
+E F0 .513(COMMON block v)72 154.8 R .513
+(ariables should be documented in the subroutine where the)-.25 F 3.014
+(ya)-.15 G .514(re \214rst introduced. When)-3.014 F -.25(va)72 166.8 S
+.472(riables are de\214ned in the code, the comment should include the \
+units of the v).25 F .472(ariable \(e.g.,)-.25 F F1(J)3.532 E F0(,).97 E
+F1(kW)3.332 E F0(,)1.23 E/F2 10/Symbol SF<b0>2.972 E F0(C,)A F1(K)3.402
+E(etc)72 178.8 Q F0(\).)A(Local v)72 194.4 Q
+(ariables should be documented in the subroutines in which the)-.25 E
+2.5(ya)-.15 G(re used.)-2.5 E -1 -.8(Tw o)72 210 T -.15(ex)3.3 G
+(amples that re).15 E -.15(ve)-.25 G
+(al acceptable styles for documenting v).15 E(ariables follo)-.25 E -.65
+(w.)-.25 G .32 LW 474.4 226 101.6 226 DL/F3 8/Courier@0 SF 4.8(CM)105.6
+235.7 S
+(aximum infiltration \('finfmax'\) and ventilation \('fvntmax'\) flow)
+-4.8 E 4.8(Cr)105.6 244.7 S(ates \(m^3/sec\) for each zone. Variable 'i\
+compforinf' is the component)-4.8 E 4.8(Cn)105.6 253.7 S(umber associat\
+ed with unique infiltration flow paths while 'isrczforvent')-4.8 E 4.8
+(Ci)105.6 262.7 S 4.8(st)-4.8 G
+(he source zone associated with the largest ventilation rate.)-4.8 E
+(dimension finfmax\(mcom\), fvntmax\(mcom\), icompforinf\(mcom\))134.4
+271.7 Q(dimension icompforvent\(mcom\),isrczforvent\(mcom\))134.4 280.7
+Q(integer icompforinf,icompforvent,isrczforvent)134.4 289.7 Q
+(real finfmax,fvntmax)134.4 298.7 Q 474.4 305.4 101.6 305.4 DL 474.4 226
+474.4 305.4 DL 101.6 226 101.6 305.4 DL 462.4 329.4 113.6 329.4 DL
+(real fCyl_Volume)146.4 339.1 Q 4.8(!C)33.6 G(ylinder gas volume \(m3\))
+-4.8 E(real fCyl_solid_mass)146.4 348.1 Q 4.8(!M)14.4 G
+(ass of cylinder wall \(kg\))-4.8 E(real fCyl_solid_Cp)146.4 357.1 Q 4.8
+(!S)24 G(pecific heat of cylinder wall \(J/kg oC\))-4.8 E
+(real fCyl_UA_ambient)146.4 366.1 Q 4.8(!H)14.4 G
+(eat transfer coeff. between cylinder)-4.8 E 14.4(!&)256.8 375.1 S
+(ambient \(W/oC\))-9.6 E 462.4 381.8 113.6 381.8 DL 462.4 329.4 462.4
+381.8 DL 113.6 329.4 113.6 381.8 DL F1(FORTRAN ver)72 405.4 Q(sion)-.1 E
+F0(All code must be compilable by the GNU f77 FOR)72 421 Q
+(TRAN compiler)-.6 E(.)-.55 E F1(Explicit declar)72 436.6 Q(ations)-.15
+E F0 .35(Implicit type casting must be a)72 452.2 R -.2(vo)-.2 G .351
+(ided. All ne).2 F 2.851(ws)-.25 G .351
+(ubroutines must include an 'IMPLICIT NONE' statement.)-2.851 F .443
+(This requires that all v)72 464.2 R .443
+(ariables be de\214ned before use and)-.25 F .442
+(forces programmers to gi)5.443 F .742 -.15(ve p)-.25 H .442
+(roper consideration).15 F 2.971(to their name, use, type and documenta\
+tion. Explicit declarations also reduce deb)72 476.2 R 2.972(ugging ef)
+-.2 F 2.972(fort and)-.25 F 1.44
+(strengthen con\214dence in the program')72 488.2 R 3.94(sv)-.55 G
+(alidity)-4.19 E 3.94(,a)-.65 G 3.94(sm)-3.94 G 1.44(ismatches in v)
+-3.94 F 1.44(ariable names will produce errors at)-.25 F(compile time.)
+72 500.2 Q(Man)72 515.8 Q 2.69(ye)-.15 G .191(xisting ESP-r subroutines\
+ use the IMPLICIT rule to automatically de\214ne all v)-2.84 F .191
+(ariables that start with)-.25 F 1.083
+(the letters 'I' through 'N' as INTEGER and all other v)72 527.8 R 1.082
+(ariables as double precision REAL.)-.25 F 1.082(This naming)6.082 F
+(con)72 539.8 Q -.15(ve)-.4 G .276(ntion should be follo).15 F .276
+(wed when altering e)-.25 F .277
+(xisting subroutines that use the IMPLICIT rule, b)-.15 F .277(ut an)-.2
+F 2.777(yn)-.15 G -.25(ew)-2.777 G -.25(va)72 551.8 S
+(riables added to the routine should be e).25 E(xplicitly declared.)-.15
+E F1 -.74(Ty)72 567.4 S(pe casting).74 E F0 .94(Data must often be con)
+72 583 R -.15(ve)-.4 G .94(rted between real and inte).15 F .94
+(ger formats during e)-.15 F -.15(xe)-.15 G .94
+(cution. Rather than rely on the).15 F(compiler')72 595 Q 2.5(sn)-.55 G
+(ati)-2.5 E .3 -.15(ve t)-.25 H(ype casting beha).15 E(viour)-.2 E 2.5
+(,s)-.4 G(uch con)-2.5 E -.15(ve)-.4 G(rsions must al).15 E -.1(wa)-.1 G
+(ys be done e).1 E(xplicitly:)-.15 E 431.2 611 144.8 611 DL F3
+(real x, y)206.4 620.7 Q(integer i)206.4 629.7 Q 81.6 4.8(x=1 !<)206.4
+647.7 T 4.8(-I)-4.8 G(mplicit casts)-4.8 E 81.6 4.8(i=x !)206.4 656.7 T
+(\(bad practice\))14.4 E 4.8(y=i)206.4 665.7 S 4.8(x=1)206.4 683.7 S
+81.6(.0 !)-4.8 F(<- Explicit casts)4.8 E 4.8(i=i)206.4 692.7 S 67.2
+(nt\(x\) !)-4.8 F(\(good practice\))19.2 E 4.8(y=f)206.4 701.7 S
+(loat\(i\))-4.8 E 431.2 708.4 144.8 708.4 DL 431.2 611 431.2 708.4 DL
+144.8 611 144.8 708.4 DL EP
+%%Page: 6 6
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10/Times-Roman@0 SF(-6-)282.17 48 Q/F1 10/Times-Italic@0 SF
+(FORTRAN/C par)72 84 Q(ameter passing con)-.15 E(ventions)-.4 E F0 .49
+(ESP-r technical modules are primarily written in FOR)72 99.6 R .491
+(TRAN with graphics implemented in C \(e.g. X11 or)-.6 F .268
+(GTK library calls\). An intermediate layer of C code e)72 111.6 R .267
+(xists to mediates between the lo)-.15 F 2.767(wl)-.25 G -2.15 -.25
+(ev e)-2.767 H 2.767(lg).25 G .267(raphics calls)-2.767 F .28
+(and the primary FOR)72 123.6 R .28(TRAN code.)-.6 F -.8(Ty)5.28 G .281
+(pically FOR).8 F .281
+(TRAN calls C although there are cases where the re)-.6 F -.15(ve)-.25 G
+(rse).15 E(is true.)72 135.6 Q .52
+(There are a number of established patterns for passing inte)97 151.2 R
+.52(gers, reals, characters and arrays between)-.15 F .019(the tw)72
+163.2 R 2.519(ol)-.1 G .019(anguages, which w)-2.519 F .02(ork with a n\
+umber of compilers and across platforms. Examples can be found in)-.1 F
+(esru_lib)72 175.2 Q .362(.F and esru_x.c both located in the ')-.4 F
+.362(lib' directory)-.1 F 2.862(.\()-.65 G -.15(Fo)-2.862 G 2.862(re).15
+G .362(xample, for e)-3.012 F -.15(ve)-.25 G .361
+(ry string array passed to C,).15 F(the C parameter list includes an ad\
+ditional 'int' that holds the array length.\))72 187.2 Q .005
+(As a rule, FOR)97 202.8 R .005(TRAN ne)-.6 F -.15(ve)-.25 G 2.505(rc)
+.15 G .006(alls directly to the lo)-2.505 F 2.506(wl)-.25 G -2.15 -.25
+(ev e)-2.506 H 2.506(lg).25 G .006
+(raphic functions although C will occasion-)-2.506 F(ally call FOR)72
+214.8 Q(TRAN to request information.)-.6 E 3.042(Al)97 230.4 S .542
+(imited number of C++ source \214les are associated with ESP-r)-3.042 F
+3.042(.P)-.55 G .542(assing con)-3.192 F -.15(ve)-.4 G .542
+(ntions are less estab-).15 F(lished for this.)72 242.4 Q 1.027
+(In some cases '#ifdef)97 258 R 3.527('s).55 G 1.027
+(tatements are used to signal dif)-3.527 F 1.028
+(ferences between the X11 and GTK imple-)-.25 F .908
+(mentations or to dif)72 270 R .907
+(ferentiate between F90 and F77 code. Ifdefs are not needed for W)-.25 F
+(indo)-.4 E(ws/Linux/Unix)-.25 E(dif)72 282 Q(ferences as an)-.25 E F1
+(isunix)2.5 E F0(function is pro)2.5 E(vided.)-.15 E EP
+%%Trailer
+end
+%%EOF
