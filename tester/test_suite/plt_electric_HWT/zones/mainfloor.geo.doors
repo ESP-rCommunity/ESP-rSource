@@ -1,0 +1,112 @@
+# geometry of mainfloor defined in: ../zones/mainfloor.geo.doors
+GEN  mainfloor  mainfloor describes the main floor of the house as 1 zone, not i  # type, name, descr
+      54      21   0.000    # vertices, surfaces, rotation angle
+#  X co-ord, Y co-ord, Z co-ord
+      0.00000     0.00000     2.60000  # vert   1
+     12.00000     0.00000     2.60000  # vert   2
+     12.00000     6.79000     2.60000  # vert   3
+      4.97000     6.79000     2.60000  # vert   4
+      4.97000    12.20000     2.60000  # vert   5
+      0.00000    12.20000     2.60000  # vert   6
+      0.00000     7.00000     2.60000  # vert   7
+      0.00000     0.00000     5.62000  # vert   8
+     12.00000     0.00000     5.62000  # vert   9
+     12.00000     6.79000     5.62000  # vert  10
+      4.97000     6.79000     5.62000  # vert  11
+      4.97000    12.20000     5.62000  # vert  12
+      0.00000    12.20000     5.62000  # vert  13
+      0.00000     7.00000     5.62000  # vert  14
+      0.00000     2.70000     3.35000  # vert  15
+      0.00000     1.07000     3.35000  # vert  16
+      0.00000     1.07000     5.19000  # vert  17
+      0.00000     2.70000     5.19000  # vert  18
+      0.00000     5.93000     2.60000  # vert  19
+      0.00000     4.13000     2.60000  # vert  20
+      0.00000     4.13000     5.02000  # vert  21
+      0.00000     5.93000     5.02000  # vert  22
+      0.00000    11.20000     3.20000  # vert  23
+      0.00000    10.17000     3.20000  # vert  24
+      0.00000    10.17000     5.03000  # vert  25
+      0.00000    11.20000     5.03000  # vert  26
+      0.00000     8.67000     3.20000  # vert  27
+      0.00000     7.64000     3.20000  # vert  28
+      0.00000     7.64000     5.03000  # vert  29
+      0.00000     8.67000     5.03000  # vert  30
+     12.00000     4.25000     2.60000  # vert  31
+     12.00000     5.35000     2.60000  # vert  32
+     12.00000     5.35000     4.70000  # vert  33
+     12.00000     4.25000     4.70000  # vert  34
+     12.00000     1.00000     3.20000  # vert  35
+     12.00000     3.43000     3.20000  # vert  36
+     12.00000     3.43000     5.04000  # vert  37
+     12.00000     1.00000     5.04000  # vert  38
+      3.97000    12.20000     3.20000  # vert  39
+      3.34000    12.20000     3.20000  # vert  40
+      3.34000    12.20000     5.04000  # vert  41
+      3.97000    12.20000     5.04000  # vert  42
+      1.63000    12.20000     3.20000  # vert  43
+      1.00000    12.20000     3.20000  # vert  44
+      1.00000    12.20000     5.04000  # vert  45
+      1.63000    12.20000     5.04000  # vert  46
+      4.83000     2.27000     2.60000  # vert  47
+      4.83000     0.00000     2.60000  # vert  48
+      4.83000     0.00000     5.62000  # vert  49
+      4.83000     2.27000     5.62000  # vert  50
+      7.25000     2.27000     2.60000  # vert  51
+      7.25000     2.27000     5.62000  # vert  52
+      7.25000     0.00000     5.62000  # vert  53
+      7.25000     0.00000     2.60000  # vert  54
+# no of vertices followed by list of associated vert
+   4,  1, 48, 49,  8,
+  14,  2, 31, 34, 33, 32,  3, 10,  9,  2, 35, 38, 37, 36, 35,
+   4,  3,  4, 11, 10,
+   4,  4,  5, 12, 11,
+  16,  5,  6, 44, 43, 46, 45, 44,  6, 13, 12,  5, 39, 42, 41, 40, 39,
+  16,  6,  7, 28, 27, 30, 29, 28,  7, 14, 13,  6, 23, 26, 25, 24, 23,
+  14,  7, 19, 22, 21, 20, 15, 18, 17, 16, 15, 20,  1,  8, 14,
+  11,  8, 49, 50, 52, 53,  9, 10, 11, 12, 13, 14,
+   4, 15, 16, 17, 18,
+   4, 23, 24, 25, 26,
+   4, 27, 28, 29, 30,
+   4, 35, 36, 37, 38,
+   4, 39, 40, 41, 42,
+   4, 43, 44, 45, 46,
+   4, 48, 47, 50, 49,
+   4, 47, 51, 52, 50,
+   4, 53, 52, 51, 54,
+   4,  9, 53, 54,  2,
+  15, 48,  1, 20, 19,  7,  6,  5,  4,  3, 32, 31,  2, 54, 51, 47,
+   4, 19, 20, 21, 22,
+   4, 31, 32, 33, 34,
+# unused index
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+# surfaces indentation (m)
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+ 0.000 0.000 0.000 0.000 0.000
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  mlc db       environment
+# no  name         type  posn  name         other side
+  1, sidewall_1    OPAQ  VERT  ccht_wall    EXTERIOR       
+  2, front         OPAQ  VERT  ccht_wall    EXTERIOR       
+  3, garage_share  OPAQ  VERT  ccht_wall    garage         
+  4, garage_back   OPAQ  VERT  ccht_wall    garage         
+  5, sidewall_2    OPAQ  VERT  ccht_wall    EXTERIOR       
+  6, back_2        OPAQ  VERT  ccht_wall    EXTERIOR       
+  7, back_1        OPAQ  VERT  ccht_wall    EXTERIOR       
+  8, main_ceiling  OPAQ  CEIL  floors_r     secondfloor    
+  9, w_dining      TRAN  VERT  ccht_window  EXTERIOR       
+ 10, w_family1     TRAN  VERT  ccht_window  EXTERIOR       
+ 11, w_family2     TRAN  VERT  ccht_window  EXTERIOR       
+ 12, w_living      TRAN  VERT  ccht_window  EXTERIOR       
+ 13, w_side1       TRAN  VERT  ccht_window  EXTERIOR       
+ 14, w_side2       TRAN  VERT  ccht_window  EXTERIOR       
+ 15, stair_north   OPAQ  VERT  int_partitn  stairwell      
+ 16, stair_east    TRAN  VERT  fictitious   stairwell      
+ 17, stair_south   OPAQ  VERT  int_partitn  stairwell      
+ 18, sidewallfron  OPAQ  VERT  ccht_wall    EXTERIOR       
+ 19, main_floor    OPAQ  FLOR  floors       basement       
+ 20, patio         TRAN  VERT  ccht_window  EXTERIOR       
+ 21, door          OPAQ  VERT  ext_doors    EXTERIOR       
+# base
+  19   0   0   0   0   0   102.87

@@ -1,0 +1,35 @@
+#
+# Sample ventilation system input file
+#
+2 # Central Ventilation System (CVS) type (1=None, 2=HRV, 3=Fans with no heat recovery)
+#---HRV test data (temperature C, effectiveness %, fan + preheater power watts)----------
+0.  85  117.  # high temperature
+-25.  81.8125   123.  # low  temperature
+# ---CVS supply air flow rates (L/s)
+55.
+25.   # HRV efficiency in cooling mode (used by A/C model)
+0.    # Pre-heater capacity (watts)
+# CVS temperature control data (flag,low temperature trip, high temperature trip)
+7   0.    0.  # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
+# (Other values were used in AUDIT2000 for various scheduling options)
+#--- HRV duct data
+# Vent. Duct Location: # of zone in which duct is located
+# Duct Type: # 1=Flexible, 2=Sheet metal with liner, 3=Ext. insulated Sheet metal
+# Sealing Characteristic: # 1=Very Tight, 2=Sealed, 3=Unsealed
+#
+# Location,Type,Sealing, Length(m), Diameter(mm),Insul.RSI
+1       2     3        1.5       152.4        0.1   # Supply duct
+1       1     2        2.5       152.4        0.1   # Exhaust duct
+#------ End of Part 1: Central ventilation system inputs
+#
+#------ Part 2 (replaces part 1 if Fans, No Heat recovery)
+#---CVS supply, exhaust air flow rates (L/s), total fan power(watts)
+# 15.    45.   37.5
+# CVS temperature control data (flag,low temperature trip, high temperature trip)
+#7   0.    0.  # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
+#------ End of Part 2
+#
+#--- Part 3 : Other fans (point exhaust and supply fans)
+2   # Type (1=None, 2=Other)
+# Supply, Exhaust flow(L/s), Total fan power(watts)
+0.           12.             27.7
