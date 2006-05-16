@@ -191,7 +191,7 @@ aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
 DG_controller_menu.F:
-	rm -f DG_controller_menu.
+	rm -f DG_controller_menu.F
 	ln -s $(CETCdir)/DG_controller_menu.F .
 DHW_module.F:
 	rm -f DHW_module.F
@@ -209,7 +209,8 @@ clean:
 	mfelst.F mfnmsc.F mfrlst.F mvalid.F net2pdf.F newnet.F nwkrewr.F plelev.F \
 	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
 	stndrds.F startup.F tdfile.F \
-	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F MultiYear_climate.F
+	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
+	MultiYear_climate.F
 
 
 
