@@ -13,7 +13,7 @@ development of this procedure, existing practices at ESRU and CETC were
 surveyed, and accepted industry test practices were reviewed. The Appendices
 summarise these existing practices and the testing principles underpinning
 the procedures that follow.
-.SH
+.NH
 Proposed testing protocol
 .LP
 The proposed quality assurance procedure prescribes the following:
@@ -29,7 +29,7 @@ procedures for assuring the results obtained with new releases of ESP-r are
 accurate and consistent across all platforms; and
 .IP \(bu
 an automation tool to assist with quality assurance tasks.
-.SH
+.NH
 Test suite
 .LP
 The test suite is designed to exercise as many aspects of ESP-r as possible
@@ -66,7 +66,7 @@ with past and standard results.
 Since results from the air flow, moisture flow and conflated CFD modules are
 not well suited for testing, some modification to the \fIres\fR and/or \fIH3K\fR
 report facilities will be implemented.
-.SH
+.NH
 Development testing
 .LP
 When modifying the archive, a developer will incorporate changes into a private
@@ -115,12 +115,22 @@ and native Windows programs. As a result, running extended simulations can
 render the workstation unusable for other tasks for several hours.
 .FE
 .SH
+Regression
+.LP
+Before modifications are incorporated in the archive, a developer must run a complete
+regression test on their platform of choice. This test will use incremental
+versions of ESP-r to demonstrate the modifications do not unexpectedly affect
+simulation results.
+.LP
+Any differences between the output of the incremental versions of ESP-r must
+be documented.
+.NH
 Beta testing
 .LP
 All developers are encouraged to use the latest version of ESP-r for internal
 research and consulting work. Any projects using newly developed source code
 should include independent verification of the simulation results.
-.SH
+.NH
 Pre-release testing
 .LP
 Prior to migrating code from the common development branch to the release
@@ -135,6 +145,14 @@ quantifies the total change in simulation results between releases; and
 .IP \(bu
 ensures that simulator resource requirements do not change significantly
 between releases.
+.SH
+Portability
+.LP
+Prior to a release, the simulator will be compiled on all supported 
+platforms (currently Linux, Sun, Mac OS, and CYGWIN/MinGW) and exercised 
+using the testsuite described in Section . The results form each platform 
+will be compared to those of a reference platform (Linux). Any 
+significant differences will be investigated.
 .SH
 Regression testing
 .LP
@@ -184,7 +202,7 @@ software. Instead, it is intended to highlight significant differences in resour
 usage and inform developers of opportunities to improve their code. When code
 modifications are found to significantly reduce efficiency, further investigations
 using comprehensive profiling tools should be undertaken.
-.SH
+.NH
 Tools and automation
 .LP
 Given the wide range of configurations available in ESP-r, a testing tool with the
@@ -219,7 +237,7 @@ The tool must support varying levels of interaction. At a minimum, it must be ab
 to exercise a single test case or the entire test suite without user interaction.
 .IP \(bu
 The tool must be compatible with profiling tools such as \fItime\fR and \fIvalgrind\fR.
-.SH
+.NH
 Documentation
 .LP
 Care must be taken to document testing in the following circumstances:

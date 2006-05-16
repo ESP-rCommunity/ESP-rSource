@@ -1,0 +1,925 @@
+%!PS-Adobe-3.0
+%%Creator: groff version 1.16.1
+%%CreationDate: Mon May 15 12:14:59 2006
+%%DocumentNeededResources: font Times-Bold
+%%+ font Times-Roman
+%%+ font Times-Italic
+%%+ font Courier
+%%DocumentSuppliedResources: procset grops 1.16 1
+%%Pages: 39
+%%PageOrder: Ascend
+%%Orientation: Portrait
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset grops 1.16 1
+/setpacking where{
+pop
+currentpacking
+true setpacking
+}if
+/grops 120 dict dup begin
+/SC 32 def
+/A/show load def
+/B{0 SC 3 -1 roll widthshow}bind def
+/C{0 exch ashow}bind def
+/D{0 exch 0 SC 5 2 roll awidthshow}bind def
+/E{0 rmoveto show}bind def
+/F{0 rmoveto 0 SC 3 -1 roll widthshow}bind def
+/G{0 rmoveto 0 exch ashow}bind def
+/H{0 rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/I{0 exch rmoveto show}bind def
+/J{0 exch rmoveto 0 SC 3 -1 roll widthshow}bind def
+/K{0 exch rmoveto 0 exch ashow}bind def
+/L{0 exch rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/M{rmoveto show}bind def
+/N{rmoveto 0 SC 3 -1 roll widthshow}bind def
+/O{rmoveto 0 exch ashow}bind def
+/P{rmoveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/Q{moveto show}bind def
+/R{moveto 0 SC 3 -1 roll widthshow}bind def
+/S{moveto 0 exch ashow}bind def
+/T{moveto 0 exch 0 SC 5 2 roll awidthshow}bind def
+/SF{
+findfont exch
+[exch dup 0 exch 0 exch neg 0 0]makefont
+dup setfont
+[exch/setfont cvx]cvx bind def
+}bind def
+/MF{
+findfont
+[5 2 roll
+0 3 1 roll
+neg 0 0]makefont
+dup setfont
+[exch/setfont cvx]cvx bind def
+}bind def
+/level0 0 def
+/RES 0 def
+/PL 0 def
+/LS 0 def
+/MANUAL{
+statusdict begin/manualfeed true store end
+}bind def
+/PLG{
+gsave newpath clippath pathbbox grestore
+exch pop add exch pop
+}bind def
+/BP{
+/level0 save def
+1 setlinecap
+1 setlinejoin
+72 RES div dup scale
+LS{
+90 rotate
+}{
+0 PL translate
+}ifelse
+1 -1 scale
+}bind def
+/EP{
+level0 restore
+showpage
+}bind def
+/DA{
+newpath arcn stroke
+}bind def
+/SN{
+transform
+.25 sub exch .25 sub exch
+round .25 add exch round .25 add exch
+itransform
+}bind def
+/DL{
+SN
+moveto
+SN
+lineto stroke
+}bind def
+/DC{
+newpath 0 360 arc closepath
+}bind def
+/TM matrix def
+/DE{
+TM currentmatrix pop
+translate scale newpath 0 0 .5 0 360 arc closepath
+TM setmatrix
+}bind def
+/RC/rcurveto load def
+/RL/rlineto load def
+/ST/stroke load def
+/MT/moveto load def
+/CL/closepath load def
+/FL{
+currentgray exch setgray fill setgray
+}bind def
+/BL/fill load def
+/LW/setlinewidth load def
+/RE{
+findfont
+dup maxlength 1 index/FontName known not{1 add}if dict begin
+{
+1 index/FID ne{def}{pop pop}ifelse
+}forall
+/Encoding exch def
+dup/FontName exch def
+currentdict end definefont pop
+}bind def
+/DEFS 0 def
+/EBEGIN{
+moveto
+DEFS begin
+}bind def
+/EEND/end load def
+/CNT 0 def
+/level1 0 def
+/PBEGIN{
+/level1 save def
+translate
+div 3 1 roll div exch scale
+neg exch neg exch translate
+0 setgray
+0 setlinecap
+1 setlinewidth
+0 setlinejoin
+10 setmiterlimit
+[]0 setdash
+/setstrokeadjust where{
+pop
+false setstrokeadjust
+}if
+/setoverprint where{
+pop
+false setoverprint
+}if
+newpath
+/CNT countdictstack def
+userdict begin
+/showpage{}def
+}bind def
+/PEND{
+clear
+countdictstack CNT sub{end}repeat
+level1 restore
+}bind def
+end def
+/setpacking where{
+pop
+setpacking
+}if
+%%EndResource
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Times-Italic
+%%IncludeResource: font Courier
+grops begin/DEFS 1 dict def DEFS begin/u{.001 mul}bind def end/RES 72
+def/PL 792 def/LS false def/ENC0[/asciicircum/asciitilde/Scaron/Zcaron
+/scaron/zcaron/Ydieresis/trademark/quotesingle/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef
+/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent
+/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/hyphen
+/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon
+/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O
+/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/circumflex
+/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y
+/z/braceleft/bar/braceright/tilde/.notdef/quotesinglbase/guillemotleft
+/guillemotright/bullet/florin/fraction/perthousand/dagger/daggerdbl
+/endash/emdash/ff/fi/fl/ffi/ffl/dotlessi/dotlessj/grave/hungarumlaut
+/dotaccent/breve/caron/ring/ogonek/quotedblleft/quotedblright/oe/lslash
+/quotedblbase/OE/Lslash/.notdef/exclamdown/cent/sterling/currency/yen
+/brokenbar/section/dieresis/copyright/ordfeminine/guilsinglleft
+/logicalnot/minus/registered/macron/degree/plusminus/twosuperior
+/threesuperior/acute/mu/paragraph/periodcentered/cedilla/onesuperior
+/ordmasculine/guilsinglright/onequarter/onehalf/threequarters
+/questiondown/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE
+/Ccedilla/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex
+/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis
+/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute/Thorn
+/germandbls/agrave/aacute/acircumflex/atilde/adieresis/aring/ae/ccedilla
+/egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis
+/eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash
+/ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis]def
+/Courier@0 ENC0/Courier RE/Times-Italic@0 ENC0/Times-Italic RE
+/Times-Roman@0 ENC0/Times-Roman RE/Times-Bold@0 ENC0/Times-Bold RE
+%%EndProlog
+%%Page: 1 1
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Bold@0 SF(ESP-)72 131 Q(r)72 148 Q(De)72 165 Q -100(ve)
+-150 G(l-)100 E(op-)72 182 Q(ers')72 199 Q(Qual-)72 216 Q(ity)72 233 Q
+(Assur)72 250 Q(-)-370 E(ance)72 267 Q(Check-)72 284 Q(list)72 301 Q
+(Last)72 318 Q(updated:)72 335 Q(May)72 352 Q(1,)72 369 Q(2006)72 386 Q
+(1.)72 462 Q(Syn-)72 476 Q(op-)72 490 Q(sis)72 504 Q/F1 10000
+/Times-Roman@0 SF(This)72 522.2 Q(doc-)72 536.2 Q(u-)72 550.2 Q(ment)72
+564.2 Q(out-)72 578.2 Q(lines)72 592.2 Q(the)72 606.2 Q(qual-)72 620.2 Q
+(ity)72 634.2 Q(assur)72 648.2 Q(-)-200 E(ance)72 662.2 Q(test-)72 676.2
+Q(ing)72 690.2 Q(pro-)72 704.2 Q(ce-)72 718.2 Q(dures)72 732.2 Q EP
+%%Page: 2 2
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-2-)-5542 50 Q(that)72 86 Q(you)72 100 Q
+(must)72 114 Q(be)72 128 Q(com-)72 142 Q(plete)72 156 Q(before)72 170 Q
+(con-)72 184 Q(trib)72 198 Q(ut-)-200 E(ing)72 212 Q(your)72 226 Q -100
+(wo)72 240 S(rk)100 E(to)72 254 Q(the)72 268 Q(ESP-)72 282 Q(r)72 296 Q
+(archi)72 310 Q -150(ve)-250 G(.)150 E(The)72 328.2 Q(objec-)72 342.2 Q
+(ti)72 356.2 Q -150(ve)-250 G(s)150 E(of)72 370.2 Q(these)72 384.2 Q
+(pro-)72 398.2 Q(ce-)72 412.2 Q(dures)72 426.2 Q(are)72 440.2 Q(to:)72
+454.2 Q 4730(a\) demon-)25072 472.4 R(strate)40072 486.4 Q(to)40072
+500.4 Q(other)40072 514.4 Q(ESP-)40072 528.4 Q(r)40072 542.4 Q(de)40072
+556.4 Q -150(ve)-250 G(l-)150 E(op-)40072 570.4 Q(ers)40072 584.4 Q(and)
+40072 598.4 Q(users)40072 612.4 Q(that)40072 626.4 Q(your)40072 640.4 Q
+(source)40072 654.4 Q(code)40072 668.4 Q(addi-)40072 682.4 Q(tions)40072
+696.4 Q(and)40072 710.4 Q(modi\214cations)40072 724.4 Q EP
+%%Page: 3 3
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-3-)-5542 50 Q(func-)40072 86 Q(tion)40072
+100 Q(as)40072 114 Q(you)40072 128 Q -150(ex)40072 142 S(pect)150 E
+(them)40072 156 Q(to,)40072 170 Q 4170(b\) ensure)25072 188.2 R(that)
+40072 202.2 Q(the)40072 216.2 Q(changes)40072 230.2 Q(you')40072 244.2 Q
+-150(ve)-500 G(made)40072 258.2 Q(beha)40072 272.2 Q -150(ve)-200 G
+(con-)40072 286.2 Q(sis-)40072 300.2 Q(tently)40072 314.2 Q(on)40072
+328.2 Q(all)40072 342.2 Q(sup-)40072 356.2 Q(ported)40072 370.2 Q(plat-)
+40072 384.2 Q(forms,)40072 398.2 Q(and)40072 412.2 Q 4730(c\) ensure)
+25072 430.4 R(that)40072 444.4 Q(your)40072 458.4 Q(changes)40072 472.4
+Q(do)40072 486.4 Q(not)40072 500.4 Q(inter)40072 514.4 Q(-)-200 E(rupt)
+40072 528.4 Q(the)40072 542.4 Q -100(wo)40072 556.4 S(rk)100 E(of)40072
+570.4 Q(other)40072 584.4 Q(ESP-)40072 598.4 Q(r)40072 612.4 Q(users)
+40072 626.4 Q(and)40072 640.4 Q(de)40072 654.4 Q -150(ve)-250 G(l-)150 E
+(op-)40072 668.4 Q(ers)40072 682.4 Q(around)40072 696.4 Q(the)40072
+710.4 Q -100(wo)40072 724.4 S(rld.)100 E EP
+%%Page: 4 4
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-4-)-5542 50 Q(The)25072 86 Q(Sec-)72 100 Q
+(tion)72 114 Q(2)72 128 Q(of)72 142 Q(this)72 156 Q(pro-)72 170 Q(to-)72
+184 Q(col)72 198 Q(describes)72 212 Q(pro-)72 226 Q(ce-)72 240 Q(dures)
+72 254 Q(for)72 268 Q(test-)72 282 Q(ing)72 296 Q(all)72 310 Q(of)72 324
+Q(ESP-)72 338 Q(r')72 352 Q(s)-550 E(bina-)72 366 Q(ries,)72 380 Q
+(while)72 394 Q(Sec-)72 408 Q(tion)72 422 Q(3)72 436 Q(describes)72 450
+Q(pro-)72 464 Q(ce-)72 478 Q(dures)72 492 Q(spe-)72 506 Q(ci\214c)72 520
+Q(to)72 534 Q(the)72 548 Q/F1 10000/Times-Italic@0 SF(bps)72 562 Q F0
+(sim-)72 576 Q(u-)72 590 Q(la-)72 604 Q(tion)72 618 Q(binary)72 632 Q(.)
+-650 E(Finally)72 646 Q(,)-650 E(Sec-)72 660 Q(tion)72 674 Q(4)72 688 Q
+(describes)72 702 Q(the)72 716 Q(steps)72 730 Q EP
+%%Page: 5 5
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-5-)-5542 50 Q(nec-)72 86 Q(es-)72 100 Q
+(sary)72 114 Q(to)72 128 Q(con-)72 142 Q(trib-)72 156 Q(ute)72 170 Q
+(your)72 184 Q(code)72 198 Q(to)72 212 Q(the)72 226 Q(com-)72 240 Q(mon)
+72 254 Q(ESP-)72 268 Q(r)72 282 Q(de)72 296 Q -150(ve)-250 G(l-)150 E
+(op-)72 310 Q(ment)72 324 Q(branch.)72 338 Q/F1 10000/Times-Bold@0 SF
+(2.)72 370.2 Q(Gen-)72 384.2 Q(eral)72 398.2 Q(changes)72 412.2 Q(to)72
+426.2 Q(ESP-)72 440.2 Q(r)72 454.2 Q/F2 10000/Times-Italic@0 SF(Plac-)72
+482.2 Q(ing)72 496.2 Q(your)72 510.2 Q(code)72 524.2 Q(under)72 538.2 Q
+(ver)72 552.2 Q(-)-200 E(sion-)72 566.2 Q(ing)72 580.2 Q(con-)72 594.2 Q
+(tr)72 608.2 Q(ol)-450 E F0(In)72 626.4 Q(this)72 640.4 Q(sec-)72 654.4
+Q(tion,)72 668.4 Q(you')72 682.4 Q(ll)-100 E(com-)72 696.4 Q(mit)72
+710.4 Q(your)72 724.4 Q EP
+%%Page: 6 6
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-6-)-5542 50 Q(code)72 86 Q(to)72 100 Q(your)
+72 114 Q(sub-)72 128 Q(branch,)72 142 Q(and)72 156 Q(update)72 170 Q
+(your)72 184 Q(branch)72 198 Q(to)72 212 Q(re\215ect)72 226 Q(recent)72
+240 Q(changes)72 254 Q(in)72 268 Q(the)72 282 Q(repos-)72 296 Q(i-)72
+310 Q(tory)72 324 Q(.)-650 E 10000(1. If)25072 342.2 R(you)45072 356.2 Q
+(ha)45072 370.2 Q -150(ve)-200 G(not)45072 384.2 Q(already)45072 398.2 Q
+(done)45072 412.2 Q(so,)45072 426.2 Q(com-)45072 440.2 Q(mit)45072 454.2
+Q(your)45072 468.2 Q(code)45072 482.2 Q(to)45072 496.2 Q(your)45072
+510.2 Q(sub-)45072 524.2 Q(branch)45072 538.2 Q(fol-)45072 552.2 Q(lo)
+45072 566.2 Q(w-)-250 E(ing)45072 580.2 Q(the)45072 594.2 Q(direc-)45072
+608.2 Q(tions)45072 622.2 Q(in)45072 636.2 Q(the)45072 650.2 Q(doc-)
+45072 664.2 Q(u-)45072 678.2 Q(ment)45072 692.2 Q/F1 10000
+/Times-Italic@0 SF -1110(Ve)45072 706.2 S -200(r-)1110 G(sion-)45072
+720.2 Q EP
+%%Page: 7 7
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-7-)-5542 50 Q/F1 10000/Times-Italic@0 SF
+(ing)45072 86 Q(Con-)45072 100 Q(tr)45072 114 Q(ol)-450 E(for)45072 128
+Q(ESP-)45072 142 Q(r)45072 156 Q(User)45072 170 Q(s)-100 E(and)45072 184
+Q(De)45072 198 Q(vel-)-150 E(op-)45072 212 Q(er)45072 226 Q(s)-100 E F0
+(.)A 10000(2. Mo)25072 244.2 R -150(ve)-150 G(to)45072 258.2 Q(a)45072
+272.2 Q(ne)45072 286.2 Q(w)-250 E(direc-)45072 300.2 Q(tory)45072 314.2
+Q(,)-650 E(and)45072 328.2 Q(check-)45072 342.2 Q(out)45072 356.2 Q(a)
+45072 370.2 Q(fresh)45072 384.2 Q(cop)45072 398.2 Q(y)-100 E(of)45072
+412.2 Q(your)45072 426.2 Q(sub-)45072 440.2 Q(branch.)45072 454.2 Q
+(Com-)45072 468.2 Q(pile)45072 482.2 Q(ESP-)45072 496.2 Q(r)45072 510.2
+Q(and)45072 524.2 Q(be)45072 538.2 Q(sure)45072 552.2 Q(to)45072 566.2 Q
+(include)45072 580.2 Q(sup-)45072 594.2 Q(port)45072 608.2 Q(for)45072
+622.2 Q(XML)45072 636.2 Q(out-)45072 650.2 Q(put.)45072 664.2 Q(Ensure)
+45072 678.2 Q(that)45072 692.2 Q(no)45072 706.2 Q(compilation)45072
+720.2 Q EP
+%%Page: 8 8
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-8-)-5542 50 Q(errors)45072 86 Q(are)45072
+100 Q(reported.)45072 114 Q(If)45072 128 Q(com-)45072 142 Q(pi-)45072
+156 Q(la-)45072 170 Q(tion)45072 184 Q(errors)45072 198 Q(are)45072 212
+Q(reported,)45072 226 Q(check)45072 240 Q(to)45072 254 Q(see)45072 268 Q
+(that)45072 282 Q(all)45072 296 Q(of)45072 310 Q(your)45072 324 Q(mod-)
+45072 338 Q(i-)45072 352 Q(\214ed)45072 366 Q(\214les)45072 380 Q(ha)
+45072 394 Q -150(ve)-200 G(been)45072 408 Q(cor)45072 422 Q(-)-200 E
+(rectly)45072 436 Q(com-)45072 450 Q(mit-)45072 464 Q(ted)45072 478 Q
+(to)45072 492 Q(your)45072 506 Q(sub-)45072 520 Q(branch.)45072 534 Q
+10000(3. Per)25072 552.2 R(-)-200 E(form)45072 566.2 Q(an)45072 580.2 Q
+(update)45072 594.2 Q(to)45072 608.2 Q(your)45072 622.2 Q(sub-)45072
+636.2 Q(branch)45072 650.2 Q(with)45072 664.2 Q(recent)45072 678.2 Q
+(changes)45072 692.2 Q(in)45072 706.2 Q(the)45072 720.2 Q EP
+%%Page: 9 9
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-9-)-5542 50 Q(de)45072 86 Q -150(ve)-250 G
+(l-)150 E(op-)45072 100 Q(ment)45072 114 Q(branch.)45072 128 Q -150(Fo)
+45072 142 S(l-)150 E(lo)45072 156 Q(w)-250 E(the)45072 170 Q(direc-)
+45072 184 Q(tions)45072 198 Q(in)45072 212 Q(the)45072 226 Q(doc-)45072
+240 Q(u-)45072 254 Q(ment)45072 268 Q/F1 10000/Times-Italic@0 SF -1110
+(Ve)45072 282 S -200(r-)1110 G(sion-)45072 296 Q(ing)45072 310 Q(Con-)
+45072 324 Q(tr)45072 338 Q(ol)-450 E(for)45072 352 Q(ESP-)45072 366 Q(r)
+45072 380 Q(User)45072 394 Q(s)-100 E(and)45072 408 Q(De)45072 422 Q
+(vel-)-150 E(op-)45072 436 Q(er)45072 450 Q(s)-100 E F0(.)A 10000
+(4. Resolv)25072 468.2 R(e)-150 E(an)45072 482.2 Q(y)-150 E(con-)45072
+496.2 Q(\215icts)45072 510.2 Q(reported)45072 524.2 Q(dur)45072 538.2 Q
+(-)-200 E(ing)45072 552.2 Q(the)45072 566.2 Q(mer)45072 580.2 Q(ge,)-180
+E(and)45072 594.2 Q(com-)45072 608.2 Q(pile)45072 622.2 Q(your)45072
+636.2 Q(updated)45072 650.2 Q(branch)45072 664.2 Q(with)45072 678.2 Q
+(sup-)45072 692.2 Q(port)45072 706.2 Q(for)45072 720.2 Q EP
+%%Page: 10 10
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-10-)-8042 50 Q(XML)45072 86 Q(out-)45072 100
+Q(put)45072 114 Q(enabled.)45072 128 Q(Ensure)45072 142 Q(that)45072 156
+Q(no)45072 170 Q(com-)45072 184 Q(pi-)45072 198 Q(la-)45072 212 Q(tion)
+45072 226 Q(errors)45072 240 Q(are)45072 254 Q(reported.)45072 268 Q/F1
+10000/Times-Bold@0 SF(Code)72 296 Q(stan-)72 310 Q(dards)72 324 Q F0
+(These)72 342.2 Q(steps)72 356.2 Q(will)72 370.2 Q(help)72 384.2 Q
+(ensure)72 398.2 Q(your)72 412.2 Q(code)72 426.2 Q(meets)72 440.2 Q
+(stan-)72 454.2 Q(dards)72 468.2 Q(for)72 482.2 Q(inclu-)72 496.2 Q
+(sion)72 510.2 Q(in)72 524.2 Q(the)72 538.2 Q(ESP-)72 552.2 Q(r)72 566.2
+Q(Archi)72 580.2 Q -150(ve)-250 G(,)150 E(and)72 594.2 Q(that)72 608.2 Q
+(your)72 622.2 Q(mod-)72 636.2 Q(i-)72 650.2 Q<8c2d>72 664.2 Q(ca-)72
+678.2 Q(tions)72 692.2 Q(don')72 706.2 Q(t)-180 E(con\215ict)72 720.2 Q
+EP
+%%Page: 11 11
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-11-)-8042 50 Q(with)72 86 Q(recent)72 100 Q
+(con-)72 114 Q(tri-)72 128 Q -200(bu)72 142 S(-)200 E(tions)72 156 Q
+(made)72 170 Q(by)72 184 Q(other)72 198 Q(con-)72 212 Q(trib-)72 226 Q
+(u-)72 240 Q(tors.)72 254 Q 10000(5. Inspect)25072 272.2 R(your)45072
+286.2 Q(code)45072 300.2 Q(for)45072 314.2 Q(con-)45072 328.2 Q(sis-)
+45072 342.2 Q(tenc)45072 356.2 Q(y)-150 E(with)45072 370.2 Q(the)45072
+384.2 Q/F1 10000/Times-Italic@0 SF(ESP-)45072 398.2 Q(r)45072 412.2 Q
+(Cod-)45072 426.2 Q(ing)45072 440.2 Q(Guide-)45072 454.2 Q(lines)45072
+468.2 Q F0(.)A 10000(6. If)25072 486.4 R(you)45072 500.4 Q(ha)45072
+514.4 Q -150(ve)-200 G(access)45072 528.4 Q(to)45072 542.4 Q(a)45072
+556.4 Q -150(Fo)45072 570.4 S -200(r-)150 G(tran)45072 584.4 Q(anal-)
+45072 598.4 Q(y-)45072 612.4 Q(sis)45072 626.4 Q(tool)45072 640.4 Q
+(such)45072 654.4 Q(as)45072 668.4 Q -150(Fo)45072 682.4 S(rcheck)150 E
+(1)45072 -4303.6 Q(,)50072 696.4 Q(ana-)45072 710.4 Q(lyze)45072 724.4 Q
+EP
+%%Page: 12 12
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-12-)-8042 50 Q(the)45072 86 Q(source)45072
+100 Q(code)45072 114 Q(asso-)45072 128 Q(ci-)45072 142 Q(ated)45072 156
+Q(with)45072 170 Q(the)45072 184 Q(ESP-)45072 198 Q(r)45072 212 Q(bina-)
+45072 226 Q(ries)45072 240 Q(you')45072 254 Q -150(ve)-500 G(mod-)45072
+268 Q(i-)45072 282 Q(\214ed.)45072 296 Q(Instruc-)45072 310 Q(tions)
+45072 324 Q(for)45072 338 Q(run-)45072 352 Q(ning)45072 366 Q -150(Fo)
+45072 380 S(rcheck)150 E(on)45072 394 Q(ESP-)45072 408 Q(r)45072 422 Q
+(bina-)45072 436 Q(ries)45072 450 Q(can)45072 464 Q(be)45072 478 Q
+(found)45072 492 Q(in)45072 506 Q(Appendix)45072 520 Q/F1 10000
+/Times-Bold@0 SF(A)45072 534 Q F0(.)A/F2 10000/Times-Italic@0 SF(Ne)72
+552.2 Q(w)-150 E(fea-)72 566.2 Q(tur)72 580.2 Q(es)-370 E(and)72 594.2 Q
+(mod-)72 608.2 Q(i-)72 622.2 Q<8c2d>72 636.2 Q(ca-)72 650.2 Q(tions)72
+664.2 Q F0(These)72 682.4 Q(steps)72 696.4 Q(will)72 710.4 Q 400 LW 144
+718.4 72 718.4 DL(1)10072 -4267.5 Q(http://www)17572 732.5 Q
+(.forcheck.nl/)-650 E EP
+%%Page: 13 13
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-13-)-8042 50 Q(ensure)72 86 Q(your)72 100 Q
+(code)72 114 Q(beha)72 128 Q -150(ve)-200 G(s)150 E(as)72 142 Q(you)72
+156 Q(intended,)72 170 Q(and)72 184 Q(that)72 198 Q(other)72 212 Q(ESP-)
+72 226 Q(r)72 240 Q(users)72 254 Q(can)72 268 Q(use)72 282 Q(your)72 296
+Q(code)72 310 Q(with)72 324 Q(con-)72 338 Q<8c2d>72 352 Q(dence.)72 366
+Q 10000(7. Select)25072 384.2 R(a)45072 398.2 Q(test)45072 412.2 Q(case)
+45072 426.2 Q(from)45072 440.2 Q(the)45072 454.2 Q(test-)45072 468.2 Q
+(suite)45072 482.2 Q/F1 10000/Times-Bold@0 SF([path)45072 496.2 Q(to)
+45072 510.2 Q(test)45072 524.2 Q(suite)45072 538.2 Q(to)45072 552.2 Q
+(go)45072 566.2 Q(her)45072 580.2 Q(e])-180 E F0(that)45072 594.2 Q -150
+(exe)45072 608.2 S -200(r-)150 G(cises)45072 622.2 Q(the)45072 636.2 Q
+(source)45072 650.2 Q(code)45072 664.2 Q(you')45072 678.2 Q -150(ve)-500
+G(mod-)45072 692.2 Q(i-)45072 706.2 Q(\214ed,)45072 720.2 Q EP
+%%Page: 14 14
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-14-)-8042 50 Q(or)45072 86 Q(if)45072 100 Q
+(you')45072 114 Q -150(ve)-500 G(added)45072 128 Q(ne)45072 142 Q(w)-250
+E(fea-)45072 156 Q(tures)45072 170 Q(to)45072 184 Q(ESP-)45072 198 Q
+-400(r,)45072 212 S(cre-)45072 226 Q(ate)45072 240 Q(a)45072 254 Q(ne)
+45072 268 Q(w)-250 E(test-)45072 282 Q(case)45072 296 Q -150(exe)45072
+310 S -200(r-)150 G(cis-)45072 324 Q(ing)45072 338 Q(your)45072 352 Q
+(mod-)45072 366 Q(i-)45072 380 Q<8c2d>45072 394 Q(ca-)45072 408 Q
+(tions.)45072 422 Q(Be)45072 436 Q(sure)45072 450 Q(to)45072 464 Q(cre-)
+45072 478 Q(ate)45072 492 Q(a)45072 506 Q(sim-)45072 520 Q(u-)45072 534
+Q(la-)45072 548 Q(tion)45072 562 Q(pre-)45072 576 Q(set)45072 590 Q
+(within)45072 604 Q(the)45072 618 Q(test)45072 632 Q(case)45072 646 Q
+(named)45072 660 Q/F1 10000/Times-Italic@0 SF(test)45072 674 Q F0(.)A
+10000(8. Ex)25072 692.2 R(er)-150 E(-)-200 E(cise)45072 706.2 Q(the)
+45072 720.2 Q EP
+%%Page: 15 15
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-15-)-8042 50 Q(ESP-)45072 86 Q(r)45072 100 Q
+(bina-)45072 114 Q(ries)45072 128 Q(you')45072 142 Q -150(ve)-500 G
+(mod-)45072 156 Q(i-)45072 170 Q(\214ed)45072 184 Q(using)45072 198 Q
+(this)45072 212 Q(test)45072 226 Q(case)45072 240 Q(on)45072 254 Q(your)
+45072 268 Q(plat-)45072 282 Q(form)45072 296 Q(of)45072 310 Q(choice.)
+45072 324 Q(Ensure)45072 338 Q(your)45072 352 Q(mod-)45072 366 Q(i-)
+45072 380 Q<8c2d>45072 394 Q(ca-)45072 408 Q(tions)45072 422 Q(beha)
+45072 436 Q -150(ve)-200 G(as)45072 450 Q(you)45072 464 Q -150(ex)45072
+478 S(pect.)150 E 10000(9. If)25072 496.2 R(your)45072 510.2 Q(mod-)
+45072 524.2 Q(i-)45072 538.2 Q<8c2d>45072 552.2 Q(ca-)45072 566.2 Q
+(tions)45072 580.2 Q(include)45072 594.2 Q(sig-)45072 608.2 Q(nif-)45072
+622.2 Q(i-)45072 636.2 Q(cant)45072 650.2 Q(ne)45072 664.2 Q(w)-250 E
+(fea-)45072 678.2 Q(tures)45072 692.2 Q(\(such)45072 706.2 Q(as)45072
+720.2 Q EP
+%%Page: 16 16
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-16-)-8042 50 Q(a)45072 86 Q(ne)45072 100 Q
+(w)-250 E(model\),)45072 114 Q(doc-)45072 128 Q(u-)45072 142 Q(ment)
+45072 156 Q(these)45072 170 Q(results)45072 184 Q(in)45072 198 Q(a)45072
+212 Q(writ-)45072 226 Q(ten)45072 240 Q(report.)45072 254 Q(Con-)45072
+268 Q(fer)45072 282 Q(-)-200 E(ence)45072 296 Q(papers,)45072 310 Q
+(the-)45072 324 Q(ses,)45072 338 Q(reports,)45072 352 Q(and)45072 366 Q
+(ascii)45072 380 Q(\214les)45072 394 Q(are)45072 408 Q(all)45072 422 Q
+(accept-)45072 436 Q(able)45072 450 Q(forms)45072 464 Q(of)45072 478 Q
+(doc-)45072 492 Q(u-)45072 506 Q(men-)45072 520 Q(ta-)45072 534 Q(tion)
+45072 548 Q(pro-)45072 562 Q(vided)45072 576 Q(the)45072 590 Q(y)-150 E
+(sho)45072 604 Q(w)-250 E(your)45072 618 Q(model)45072 632 Q(per)45072
+646 Q(-)-200 E(forms)45072 660 Q(as)45072 674 Q -150(ex)45072 688 S
+(pected.)150 E 5000(10. If)25072 706.2 R(your)45072 720.2 Q EP
+%%Page: 17 17
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-17-)-8042 50 Q(mod-)45072 86 Q(i-)45072 100
+Q<8c2d>45072 114 Q(ca-)45072 128 Q(tions)45072 142 Q(include)45072 156 Q
+(addi-)45072 170 Q(tions)45072 184 Q(or)45072 198 Q(changes)45072 212 Q
+(to)45072 226 Q(ESP-)45072 240 Q(r')45072 254 Q(s)-550 E(inter)45072 268
+Q(-)-200 E -100(fa)45072 282 S(ce,)100 E(throughly)45072 296 Q -150(exe)
+45072 310 S -200(r-)150 G(cise)45072 324 Q(the)45072 338 Q(menus)45072
+352 Q(you')45072 366 Q -150(ve)-500 G(cre-)45072 380 Q(ated.)45072 394 Q
+(Attempt)45072 408 Q(to)45072 422 Q(test)45072 436 Q -2150 -250(ev e)
+45072 450 T(ry)250 E(pos-)45072 464 Q(si-)45072 478 Q(ble)45072 492 Q
+(com-)45072 506 Q(bi-)45072 520 Q(na-)45072 534 Q(tion)45072 548 Q(of)
+45072 562 Q(inputs)45072 576 Q(and,)45072 590 Q(if)45072 604 Q(pos-)
+45072 618 Q(si-)45072 632 Q(ble,)45072 646 Q(ask)45072 660 Q(a)45072 674
+Q(col-)45072 688 Q(league)45072 702 Q(unf)45072 716 Q(a-)-100 E(mil-)
+45072 730 Q EP
+%%Page: 18 18
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-18-)-8042 50 Q(iar)45072 86 Q(with)45072 100
+Q(your)45072 114 Q(changes)45072 128 Q(to)45072 142 Q(test)45072 156 Q
+(the)45072 170 Q(menus.)45072 184 Q/F1 10000/Times-Bold@0 SF(3.)72 216.2
+Q(bps)72 230.2 Q(De)72 244.2 Q -100(ve)-150 G(l-)100 E(op-)72 258.2 Q
+(ment)72 272.2 Q(QA)72 286.2 Q(Check-)72 300.2 Q(list)72 314.2 Q F0 -800
+(To)72 332.4 S -150(ve)72 346.4 S -200(r-)150 G(ify)72 360.4 Q(your)72
+374.4 Q(source)72 388.4 Q(code)72 402.4 Q(mod-)72 416.4 Q(i-)72 430.4 Q
+<8c2d>72 444.4 Q(ca-)72 458.4 Q(tions)72 472.4 Q(will)72 486.4 Q(not)72
+500.4 Q(intro-)72 514.4 Q(duce)72 528.4 Q(ne)72 542.4 Q(w)-250 E(errors)
+72 556.4 Q(into)72 570.4 Q(the)72 584.4 Q(bps)72 598.4 Q(source,)72
+612.4 Q(you')72 626.4 Q(ll)-100 E(com-)72 640.4 Q(pare)72 654.4 Q(the)72
+668.4 Q(pre-)72 682.4 Q(dic-)72 696.4 Q(tions)72 710.4 Q(of)72 724.4 Q
+EP
+%%Page: 19 19
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-19-)-8042 50 Q(your)72 86 Q(mod-)72 100 Q
+(i-)72 114 Q(\214ed)72 128 Q/F1 10000/Times-Italic@0 SF(bps)72 142 Q F0
+(to)72 156 Q(those)72 170 Q(obtained)72 184 Q(using)72 198 Q(the)72 212
+Q(stan-)72 226 Q(dard)72 240 Q -150(ve)72 254 S -200(r-)150 G(sion)72
+268 Q(of)72 282 Q F1(bps)72 296 Q F0(.)A(These)72 310 Q(tw)72 324 Q(o)
+-100 E -150(ve)72 338 S -200(r-)150 G(sions)72 352 Q(of)72 366 Q F1(bps)
+72 380 Q F0(are)72 394 Q(called)72 408 Q(the)72 422 Q F1(test)72 436 Q
+F0(and)72 450 Q F1 -370(re)72 464 S(f-)370 E(er)72 478 Q(-)-200 E(ence)
+72 492 Q F0 -150(ve)72 506 S -200(r-)150 G(sions,)72 520 Q(respec-)72
+534 Q(ti)72 548 Q -150(ve)-250 G(ly:)150 E 11500<8354>25072 566.2 S(he)
+-11500 E F1 -370(re)40072 580.2 S(f-)370 E(er)40072 594.2 Q(-)-200 E
+(ence)40072 608.2 Q(bps)40072 622.2 Q F0(is)40072 636.2 Q(the)40072
+650.2 Q(cur)40072 664.2 Q(-)-200 E(rent)40072 678.2 Q -150(ve)40072
+692.2 S -200(r-)150 G(sion)40072 706.2 Q(of)40072 720.2 Q EP
+%%Page: 20 20
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-20-)-8042 50 Q(bps)40072 86 Q -200(av)40072
+100 S(ail-)-50 E(able)40072 114 Q(on)40072 128 Q(the)40072 142 Q(de)
+40072 156 Q -150(ve)-250 G(l-)150 E(op-)40072 170 Q(ment)40072 184 Q
+(branch.)40072 198 Q -800(To)40072 212 S -200(bu)40072 226 S(ild)200 E
+(a)40072 240 Q/F1 10000/Times-Italic@0 SF -370(re)40072 254 S(f-)370 E
+(er)40072 268 Q(-)-200 E(ence)40072 282 Q(bps)40072 296 Q F0(,)A(obtain)
+40072 310 Q(a)40072 324 Q(cop)40072 338 Q(y)-100 E(of)40072 352 Q(the)
+40072 366 Q(de)40072 380 Q -150(ve)-250 G(l-)150 E(op-)40072 394 Q(ment)
+40072 408 Q(branch)40072 422 Q(and)40072 436 Q(com-)40072 450 Q(pile)
+40072 464 Q(the)40072 478 Q F1(bps)40072 492 Q F0(binary)40072 506 Q(.)
+-650 E 11500<8354>25072 524.2 S(he)-11500 E F1(test)40072 538.2 Q(bps)
+40072 552.2 Q F0(is)40072 566.2 Q(the)40072 580.2 Q(cur)40072 594.2 Q(-)
+-200 E(rent)40072 608.2 Q -150(ve)40072 622.2 S -200(r-)150 G(sion)40072
+636.2 Q(of)40072 650.2 Q(bps)40072 664.2 Q -200(av)40072 678.2 S(ail-)
+-50 E(able)40072 692.2 Q(on)40072 706.2 Q(the)40072 720.2 Q EP
+%%Page: 21 21
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-21-)-8042 50 Q(de)40072 86 Q -150(ve)-250 G
+(l-)150 E(op-)40072 100 Q(ment)40072 114 Q(branch,)40072 128 Q(mod-)
+40072 142 Q(i-)40072 156 Q(\214ed)40072 170 Q(with)40072 184 Q(your)
+40072 198 Q(source)40072 212 Q(code)40072 226 Q(changes.)40072 240 Q
+-800(To)40072 254 S -200(bu)40072 268 S(ild)200 E(a)40072 282 Q/F1 10000
+/Times-Italic@0 SF(test)40072 296 Q(bps)40072 310 Q F0(,)A(\214rst)40072
+324 Q(ensure)40072 338 Q(that)40072 352 Q(your)40072 366 Q(source)40072
+380 Q(code)40072 394 Q(has)40072 408 Q(been)40072 422 Q(com-)40072 436 Q
+(mit-)40072 450 Q(ted)40072 464 Q(to)40072 478 Q(your)40072 492 Q(sub-)
+40072 506 Q(branch.)40072 520 Q(Then)40072 534 Q(syn-)40072 548 Q(chro-)
+40072 562 Q(nize)40072 576 Q(your)40072 590 Q(sub-)40072 604 Q(branch)
+40072 618 Q(with)40072 632 Q(the)40072 646 Q(de)40072 660 Q -150(ve)-250
+G(l-)150 E(op-)40072 674 Q(ment)40072 688 Q(branch)40072 702 Q(using)
+40072 716 Q(the)40072 730 Q EP
+%%Page: 22 22
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-22-)-8042 50 Q(direc-)40072 86 Q(tions)40072
+100 Q(con-)40072 114 Q(tained)40072 128 Q(in)40072 142 Q(the)40072 156 Q
+(doc-)40072 170 Q(u-)40072 184 Q(ment)40072 198 Q/F1 10000
+/Times-Italic@0 SF -1110(Ve)40072 212 S -200(r-)1110 G(sion-)40072 226 Q
+(ing)40072 240 Q(Con-)40072 254 Q(tr)40072 268 Q(ol)-450 E(for)40072 282
+Q(ESP-)40072 296 Q(r)40072 310 Q(User)40072 324 Q(s)-100 E(and)40072 338
+Q(De)40072 352 Q(vel-)-150 E(op-)40072 366 Q(er)40072 380 Q(s)-100 E F0
+(.)A(Finally)40072 394 Q(,)-650 E(com-)40072 408 Q(pile)40072 422 Q(the)
+40072 436 Q F1(bps)40072 450 Q F0(binary)40072 464 Q(.)-650 E F1 -800
+(Po)72 482.2 S(rta-)800 E(bil-)72 496.2 Q(ity)72 510.2 Q(test-)72 524.2
+Q(ing)72 538.2 Q F0(These)72 556.4 Q(steps)72 570.4 Q(will)72 584.4 Q
+(help)72 598.4 Q(ensure)72 612.4 Q(your)72 626.4 Q(code)72 640.4 Q(beha)
+72 654.4 Q -150(ve)-200 G(s)150 E(con-)72 668.4 Q(sis-)72 682.4 Q
+(tently)72 696.4 Q(across)72 710.4 Q(all)72 724.4 Q EP
+%%Page: 23 23
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-23-)-8042 50 Q(plat-)72 86 Q(forms)72 100 Q
+(on)72 114 Q(which)72 128 Q(ESP-)72 142 Q(r)72 156 Q(is)72 170 Q(sup-)72
+184 Q(ported)72 198 Q(\(cur)72 212 Q(-)-200 E(rently)72 226 Q(SUN)72 240
+Q(Unix,)72 254 Q(SGI,)72 268 Q(Linux,)72 282 Q(CYG-)72 296 Q(WIN,)72 310
+Q(MINGW)72 324 Q(and)72 338 Q(Mac)72 352 Q(4\).)72 366 Q(Dur)72 380 Q(-)
+-200 E(ing)72 394 Q(porta-)72 408 Q(bil-)72 422 Q(ity)72 436 Q(test-)72
+450 Q(ing,)72 464 Q(the)72 478 Q(pre-)72 492 Q(dic-)72 506 Q(tions)72
+520 Q(of)72 534 Q(a)72 548 Q/F1 10000/Times-Italic@0 SF(test)72 562 Q
+(bps)72 576 Q F0(binary)72 590 Q(are)72 604 Q(com-)72 618 Q(pared)72 632
+Q(with)72 646 Q F1(test)72 660 Q(bps)72 674 Q F0(bina-)72 688 Q(ries)72
+702 Q(com-)72 716 Q(piled)72 730 Q EP
+%%Page: 24 24
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-24-)-8042 50 Q(on)72 86 Q(other)72 100 Q
+(plat-)72 114 Q(forms.)72 128 Q -1100(Yo)72 142 S(u)1100 E(need)72 156 Q
+(only)72 170 Q(under)72 184 Q(-)-200 E(tak)72 198 Q(e)-100 E(these)72
+212 Q(steps)72 226 Q(if)72 240 Q(you)72 254 Q(ha)72 268 Q -150(ve)-200 G
+(access)72 282 Q(to)72 296 Q(mul-)72 310 Q(ti-)72 324 Q(ple)72 338 Q
+(sup-)72 352 Q(ported)72 366 Q(plat-)72 380 Q(forms.)72 394 Q 5000
+(11. If)25072 412.2 R(you)45072 426.2 Q(cre-)45072 440.2 Q(ated)45072
+454.2 Q(a)45072 468.2 Q(test)45072 482.2 Q(case)45072 496.2 Q(to)45072
+510.2 Q -150(exe)45072 524.2 S -200(r-)150 G(cise)45072 538.2 Q(your)
+45072 552.2 Q(model)45072 566.2 Q(in)45072 580.2 Q(step)45072 594.2 Q
+(5,)45072 608.2 Q(add)45072 622.2 Q(your)45072 636.2 Q(test)45072 650.2
+Q(case)45072 664.2 Q(to)45072 678.2 Q(the)45072 692.2 Q(test)45072 706.2
+Q(suite)45072 720.2 Q EP
+%%Page: 25 25
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-25-)-8042 50 Q(folder)45072 86 Q/F1 10000
+/Times-Bold@0 SF([test)45072 100 Q(suite)45072 114 Q(path)45072 128 Q
+(to)45072 142 Q(go)45072 156 Q(her)45072 170 Q(e])-180 E F0(,)A(and)
+45072 184 Q(com-)45072 198 Q(mit)45072 212 Q(these)45072 226 Q(changes)
+45072 240 Q(to)45072 254 Q(your)45072 268 Q(sub-)45072 282 Q(branch.)
+45072 296 Q 5000(12. Cre-)25072 314.2 R(ate)45072 328.2 Q(a)45072 342.2
+Q(results)45072 356.2 Q(set)45072 370.2 Q(archi)45072 384.2 Q -150(ve)
+-250 G(using)45072 398.2 Q(your)45072 412.2 Q/F2 10000/Times-Italic@0 SF
+(test)45072 426.2 Q(bps)45072 440.2 Q F0(and)45072 454.2 Q(test)45072
+468.2 Q(case.)45072 482.2 Q(The)45072 496.2 Q(tester)45072 510.2 Q(.pl)
+-550 E(script)45072 524.2 Q(will)45072 538.2 Q(gen-)45072 552.2 Q(er)
+45072 566.2 Q(-)-200 E(ate)45072 580.2 Q(a)45072 594.2 Q(results)45072
+608.2 Q(set)45072 622.2 Q(archi)45072 636.2 Q -150(ve)-250 G(for)45072
+650.2 Q(you)45072 664.2 Q(using)45072 678.2 Q(the)45072 692.2 Q(fol-)
+45072 706.2 Q(lo)45072 720.2 Q(w-)-250 E EP
+%%Page: 26 26
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 10000/Times-Roman@0 SF(-26-)-8042 50 Q(ing)45072 86 Q(com-)45072 100
+Q(mand:)45072 114 Q/F1 8/Courier@0 SF 4.8($.)45072 135 S
+(/tester.pl /path/to/test/bps --case /path/to/test/case/cfg/file)-4.8 E
+(--create_historical_archive result_set.tar.gz -v)45129.6 149 Q/F2 12
+/Times-Roman@0 SF 6(13. If)25072 174.2 R(you)25096 188.2 Q(ha)25096
+202.2 Q -.18(ve)-.24 G(access)25096 216.2 Q(to)25096 230.2 Q(other)25096
+244.2 Q(sup-)25096 258.2 Q(ported)25096 272.2 Q(plat-)25096 286.2 Q
+(forms,)25096 300.2 Q(check-)25096 314.2 Q(out)25096 328.2 Q(a)25096
+342.2 Q(cop)25096 356.2 Q(y)-.12 E(of)25096 370.2 Q(your)25096 384.2 Q
+(sub-)25096 398.2 Q(branch)25096 412.2 Q(on)25096 426.2 Q(each)25096
+440.2 Q(of)25096 454.2 Q(these)25096 468.2 Q(plat-)25096 482.2 Q(forms)
+25096 496.2 Q(and)25096 510.2 Q(com-)25096 524.2 Q(pile)25096 538.2 Q(a)
+25096 552.2 Q/F3 12/Times-Italic@0 SF(test)25096 566.2 Q(bps)25096 580.2
+Q F2(binary)25096 594.2 Q(.)-.78 E(Ensure)25096 608.2 Q(that)25096 622.2
+Q(you)25096 636.2 Q(enable)25096 650.2 Q(XML)25096 664.2 Q(out-)25096
+678.2 Q(put)25096 692.2 Q(and)25096 706.2 Q(that)25096 720.2 Q EP
+%%Page: 27 27
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-27-)278.004 50 Q(no)25096 86 Q(com-)25096 100 Q
+(pi-)25096 114 Q(la-)25096 128 Q(tion)25096 142 Q(errors)25096 156 Q
+(are)25096 170 Q(reported.)25096 184 Q 6(14. Cop)25072 202.2 R(y)-.12 E
+(your)25096 216.2 Q(test)25096 230.2 Q(case)25096 244.2 Q(results)25096
+258.2 Q(set)25096 272.2 Q(archi)25096 286.2 Q -.18(ve)-.3 G(onto)25096
+300.2 Q(each)25096 314.2 Q(of)25096 328.2 Q(the)25096 342.2 Q(the)25096
+356.2 Q(alter)25096 370.2 Q(-)-.24 E(nate)25096 384.2 Q(plat-)25096
+398.2 Q(forms)25096 412.2 Q(you)25096 426.2 Q(used)25096 440.2 Q(in)
+25096 454.2 Q(step)25096 468.2 Q(7.)25096 482.2 Q(On)25096 496.2 Q(each)
+25096 510.2 Q(plat-)25096 524.2 Q(form,)25096 538.2 Q(in)25096 552.2 Q
+-.24(vo)-.48 G -.12(ke).24 G(the)25096 566.2 Q(tester)25096 580.2 Q(.pl)
+-.66 E(script)25096 594.2 Q(to)25096 608.2 Q -.18(exe)25096 622.2 S -.24
+(r-).18 G(cise)25096 636.2 Q(your)25096 650.2 Q/F1 12/Times-Italic@0 SF
+(test)25096 664.2 Q(bps)25096 678.2 Q F0(code)25096 692.2 Q(with)25096
+706.2 Q(the)25096 720.2 Q EP
+%%Page: 28 28
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-28-)278.004 50 Q(test)25096 86 Q(case)25096 100
+Q(and)25096 114 Q(com-)25096 128 Q(pare)25096 142 Q(its)25096 156 Q
+(out-)25096 170 Q(put)25096 184 Q(to)25096 198 Q(the)25096 212 Q(result)
+25096 226 Q(set)25096 240 Q(archi)25096 254 Q -.18(ve)-.3 G(using)25096
+268 Q(the)25096 282 Q(fol-)25096 296 Q(lo)25096 310 Q(w-)-.3 E(ing)25096
+324 Q(com-)25096 338 Q(mand:)25096 352 Q/F1 8/Courier@0 SF 4.8($.)25096
+373 S(/tester.pl /path/to/new/bps --case /path/to/test/case/cfg/file)
+-4.8 E(--historical_archive result_set.tar.gz -v)25120 387 Q F0 6
+(15. Re)25072 412.2 R(vie)-.3 E(w)-.3 E(the)25096 426.2 Q(test)25096
+440.2 Q(report)25096 454.2 Q(pro-)25096 468.2 Q(duced)25096 482.2 Q(by)
+25096 496.2 Q(tester)25096 510.2 Q(.pl)-.66 E(\(bps_test_report.txt\))
+25096 524.2 Q(and)25096 538.2 Q(ensure)25096 552.2 Q(that)25096 566.2 Q
+(no)25096 580.2 Q(dif-)25096 594.2 Q(fer)25096 608.2 Q(-)-.24 E(ences)
+25096 622.2 Q(are)25096 636.2 Q(reported.)25096 650.2 Q/F2 12
+/Times-Italic@0 SF(Re)72 668.4 Q(gr)-.48 E(ession testing)-.444 E F0
+1.399(These steps help ensure that your modi\214cations will not une)72
+686.6 R 1.399(xpectedly af)-.18 F 1.399(fect other por)-.3 F(-)-.24 E
+(tions of the simulator and interrupt the w)72 700.6 Q
+(ork of other ESP-r users.)-.12 E 6(16. Check)25072 718.8 R(out)25096
+732.8 Q EP
+%%Page: 29 29
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-29-)278.004 50 Q(a)25096 86 Q(fresh)25096 100 Q
+(cop)25096 114 Q(y)-.12 E(of)25096 128 Q(ESP-)25096 142 Q(r)25096 156 Q
+(from)25096 170 Q(the)25096 184 Q(ESP-)25096 198 Q(r)25096 212 Q(a)25096
+226 Q(de)25096 240 Q -.18(ve)-.3 G(l-).18 E(oper')25096 254 Q(s)-.66 E
+(branch,)25096 268 Q(and)25096 282 Q(com-)25096 296 Q(pile)25096 310 Q
+(a)25096 324 Q/F1 12/Times-Italic@0 SF -.444(re)25096 338 S(f-).444 E
+(er)25096 352 Q(-)-.24 E(ence)25096 366 Q(bps)25096 380 Q F0(on)25096
+394 Q(your)25096 408 Q(plat-)25096 422 Q(form)25096 436 Q(of)25096 450 Q
+(choice.)25096 464 Q(Ensure)25096 478 Q(that)25096 492 Q(you)25096 506 Q
+(enable)25096 520 Q(XML)25096 534 Q(out-)25096 548 Q(put.)25096 562 Q 6
+(17. Use)25072 580.2 R(the)25096 594.2 Q(tester)25096 608.2 Q(.pl)-.66 E
+(to)25096 622.2 Q(per)25096 636.2 Q(-)-.24 E(form)25096 650.2 Q(a)25096
+664.2 Q(com-)25096 678.2 Q(plete)25096 692.2 Q(re)25096 706.2 Q(gres-)
+-.18 E(sion)25096 720.2 Q EP
+%%Page: 30 30
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-30-)278.004 50 Q(test)25096 86 Q -.18(ove)25096
+100 S(r).18 E(the)25096 114 Q(entire)25096 128 Q(test)25096 142 Q(suite)
+25096 156 Q(using)25096 170 Q(the)25096 184 Q(fol-)25096 198 Q(lo)25096
+212 Q(w-)-.3 E(ing)25096 226 Q(com-)25096 240 Q(mand:)25096 254 Q/F1 8
+/Courier@0 SF 4.8($.)25096 275 S
+(/tester.pl /path/to/reference/bps /path/to/test/bps -v)-4.8 E F0(Be)
+25096 296 Q(patient\212)25096 310 Q(the)25096 324 Q(re)25096 338 Q
+(gres-)-.18 E(sion)25096 352 Q(test)25096 366 Q(may)25096 380 Q(tak)
+25096 394 Q(e)-.12 E(se)25096 408 Q(v-)-.3 E(eral)25096 422 Q(hours,)
+25096 436 Q(depend-)25096 450 Q(ing)25096 464 Q(on)25096 478 Q(your)
+25096 492 Q(hard-)25096 506 Q -.12(wa)25096 520 S(re!).12 E 6(18. Re)
+25072 538.2 R(vie)-.3 E(w)-.3 E(the)25096 552.2 Q(tester)25096 566.2 Q
+(report)25096 580.2 Q(\(bps_test_report.txt\))25096 594.2 Q(and)25096
+608.2 Q(ensure)25096 622.2 Q(that)25096 636.2 Q(there)25096 650.2 Q(are)
+25096 664.2 Q(no)25096 678.2 Q(dif-)25096 692.2 Q(fer)25096 706.2 Q(-)
+-.24 E(ences)25096 720.2 Q EP
+%%Page: 31 31
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-31-)278.004 50 Q(reported)25096 86 Q(in)25096
+100 Q(the)25096 114 Q(test)25096 128 Q(results,)25096 142 Q(or)25096 156
+Q(if)25096 170 Q(dif-)25096 184 Q(fer)25096 198 Q(-)-.24 E(ences)25096
+212 Q(are)25096 226 Q -.18(ex)25096 240 S(hib-).18 E(ited,)25096 254 Q
+(the)25096 268 Q(y)-.18 E(can)25096 282 Q(be)25096 296 Q(attrib)25096
+310 Q(uted)-.24 E(to)25096 324 Q(your)25096 338 Q(source)25096 352 Q
+(code)25096 366 Q(mod-)25096 380 Q(i-)25096 394 Q<8c2d>25096 408 Q(ca-)
+25096 422 Q(tions.)25096 436 Q 6(19. If)25072 454.2 R(an)25096 468.2 Q
+(y)-.18 E(dif-)25096 482.2 Q(fer)25096 496.2 Q(-)-.24 E(ences)25096
+510.2 Q(are)25096 524.2 Q(reported,)25096 538.2 Q(doc-)25096 552.2 Q(u-)
+25096 566.2 Q(ment)25096 580.2 Q(them.)25096 594.2 Q -1.32(Yo)25096
+608.2 S(ur)1.32 E(doc-)25096 622.2 Q(u-)25096 636.2 Q(men-)25096 650.2 Q
+(ta-)25096 664.2 Q(tion)25096 678.2 Q(should)25096 692.2 Q(include:)
+25096 706.2 Q EP
+%%Page: 32 32
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-32-)278.004 50 Q 11.676(a\) a)25096 86 R(brief)
+25120 100 Q(descrip-)25120 114 Q(tion)25120 128 Q(of)25120 142 Q(the)
+25120 156 Q(mod-)25120 170 Q(i-)25120 184 Q<8c2d>25120 198 Q(ca-)25120
+212 Q(tions)25120 226 Q(under)25120 240 Q(-)-.24 E(tak)25120 254 Q(en,)
+-.12 E(includ-)25120 268 Q(ing)25120 282 Q(a)25120 296 Q(ref-)25120 310
+Q(er)25120 324 Q(-)-.24 E(ence)25120 338 Q(to)25120 352 Q(more)25120 366
+Q(detailed)25120 380 Q(doc-)25120 394 Q(u-)25120 408 Q(men-)25120 422 Q
+(ta-)25120 436 Q(tion)25120 450 Q(\(if)25120 464 Q(an)25120 478 Q(y)-.18
+E -.18(ex)25120 492 S(ists,\)).18 E 11.004(b\) a)25096 510.2 R(list)
+25120 524.2 Q(of)25120 538.2 Q(the)25120 552.2 Q(\214les)25120 566.2 Q
+(you')25120 580.2 Q -.18(ve)-.6 G(changed,)25120 594.2 Q 11.676(c\) a)
+25096 612.4 R(list)25120 626.4 Q(of)25120 640.4 Q(the)25120 654.4 Q
+(test)25120 668.4 Q(cases)25120 682.4 Q -.18(ex)25120 696.4 S(hibit-).18
+E(ing)25120 710.4 Q(dif)25120 724.4 Q(ferences,)-.3 E EP
+%%Page: 33 33
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-33-)278.004 50 Q(and)25120 86 Q 11.004(d\) a)
+25096 104.2 R(descrip-)25120 118.2 Q(tion)25120 132.2 Q(of)25120 146.2 Q
+(the)25120 160.2 Q(dif-)25120 174.2 Q(fer)25120 188.2 Q(-)-.24 E(ences,)
+25120 202.2 Q(includ-)25120 216.2 Q(ing)25120 230.2 Q(their)25120 244.2
+Q(mag-)25120 258.2 Q(ni-)25120 272.2 Q(tude.)25120 286.2 Q/F1 12
+/Times-Bold@0 SF 3(4. Submitting)72 318.4 R -.3(yo)3 G(ur code).3 E F0
+1.538(These ne)72 336.6 R 1.538(xt steps describe ho)-.18 F 4.539(wt)-.3
+G 4.539(os)-4.539 G 1.539(ubmit your code for inclusion into the de)
+-4.539 F -.18(ve)-.3 G(lopment).18 E(branch.)72 350.6 Q 6(20. Pre-)25072
+368.8 R(pare)25096 382.8 Q(an)25096 396.8 Q(anno-)25096 410.8 Q(tated)
+25096 424.8 Q(list)25096 438.8 Q(of)25096 452.8 Q(the)25096 466.8 Q
+(\214les)25096 480.8 Q(you')25096 494.8 Q -.18(ve)-.6 G(mod-)25096 508.8
+Q(i-)25096 522.8 Q(\214ed)25096 536.8 Q(and)25096 550.8 Q(the)25096
+564.8 Q(rea-)25096 578.8 Q(sons)25096 592.8 Q(for)25096 606.8 Q(your)
+25096 620.8 Q(changes.)25096 634.8 Q 6(21. Pre-)25072 653 R(pare)25096
+667 Q(a)25096 681 Q(list)25096 695 Q(of)25096 709 Q(the)25096 723 Q EP
+%%Page: 34 34
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-34-)278.004 50 Q(re)25096 86 Q(vi-)-.3 E(sions)
+25096 100 Q(on)25096 114 Q(your)25096 128 Q(sub-)25096 142 Q(branch)
+25096 156 Q(that)25096 170 Q(com-)25096 184 Q(prise)25096 198 Q(the)
+25096 212 Q(changes)25096 226 Q(you)25096 240 Q(wish)25096 254 Q(to)
+25096 268 Q(include)25096 282 Q(in)25096 296 Q(the)25096 310 Q(de)25096
+324 Q -.18(ve)-.3 G(l-).18 E(op-)25096 338 Q(ment)25096 352 Q(branch.)
+25096 366 Q -1.32(Yo)25096 380 S(u)1.32 E(can)25096 394 Q(re)25096 408 Q
+(vie)-.3 E(w)-.3 E(the)25096 422 Q(com-)25096 436 Q(plete)25096 450 Q
+(set)25096 464 Q(of)25096 478 Q(re)25096 492 Q(vi-)-.3 E(sions)25096 506
+Q(made)25096 520 Q(on)25096 534 Q(your)25096 548 Q(sub-)25096 562 Q
+(branch)25096 576 Q(using)25096 590 Q(the)25096 604 Q(sub-)25096 618 Q
+-.18(ve)25096 632 S -.24(r-).18 G(sion)25096 646 Q(com-)25096 660 Q
+(mand:)25096 674 Q/F1 8/Courier@0 SF 4.8($s)25096 695 S
+(vn log --stop-on-copy)-4.8 E EP
+%%Page: 35 35
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-35-)278.004 50 Q 6(22. Email)25072 86 R(the)
+25096 100 Q(ESP-)25096 114 Q(r)25096 128 Q(archi)25096 142 Q(vist)-.3 E
+(\(Ian)25096 156 Q(Beau-)25096 170 Q(soleil-)25096 184 Q(Mor)25096 198 Q
+(-)-.24 E(ri-)25096 212 Q(son,)25096 226 Q(ibeau-)25096 240 Q
+(sol@nrcan.gc.ca\),)25096 254 Q(and)25096 268 Q(notify)25096 282 Q(him)
+25096 296 Q(of)25096 310 Q(your)25096 324 Q(de)25096 338 Q -.18(ve)-.3 G
+(l-).18 E(oper')25096 352 Q(s)-.66 E(branch)25096 366 Q(name)25096 380 Q
+(and)25096 394 Q(your)25096 408 Q(intent)25096 422 Q(to)25096 436 Q
+(sub-)25096 450 Q(mit)25096 464 Q(your)25096 478 Q(code)25096 492 Q(to)
+25096 506 Q(the)25096 520 Q(de)25096 534 Q -.18(ve)-.3 G(l-).18 E(op-)
+25096 548 Q(ment)25096 562 Q(branch.)25096 576 Q(Also)25096 590 Q
+(include)25096 604 Q(the)25096 618 Q(fol-)25096 632 Q(lo)25096 646 Q(w-)
+-.3 E(ing)25096 660 Q(sup-)25096 674 Q(port-)25096 688 Q(ing)25096 702 Q
+(doc-)25096 716 Q(u-)25096 730 Q EP
+%%Page: 36 36
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-36-)278.004 50 Q(men-)25096 86 Q(ta-)25096 100
+Q(tion:)25096 114 Q 11.676(a\) a)25096 132.2 R(brief)25120 146.2 Q
+(descrip-)25120 160.2 Q(tion)25120 174.2 Q(of)25120 188.2 Q(the)25120
+202.2 Q(nature)25120 216.2 Q(of)25120 230.2 Q(your)25120 244.2 Q
+(changes,)25120 258.2 Q(and)25120 272.2 Q(an)25120 286.2 Q(y)-.18 E -.24
+(av)25120 300.2 S(ail-)-.06 E(able)25120 314.2 Q(sup-)25120 328.2 Q
+(port-)25120 342.2 Q(ing)25120 356.2 Q(doc-)25120 370.2 Q(u-)25120 384.2
+Q(men-)25120 398.2 Q(ta-)25120 412.2 Q(tion,)25120 426.2 Q 11.004(b\) a)
+25096 444.4 R(list)25120 458.4 Q(of)25120 472.4 Q(the)25120 486.4 Q
+(plat-)25120 500.4 Q(forms)25120 514.4 Q(on)25120 528.4 Q(which)25120
+542.4 Q(you)25120 556.4 Q(ha)25120 570.4 Q -.18(ve)-.24 G(com-)25120
+584.4 Q(piled)25120 598.4 Q(and)25120 612.4 Q(tested)25120 626.4 Q(your)
+25120 640.4 Q(code,)25120 654.4 Q 11.676(c\) the)25096 672.6 R(sam-)
+25120 686.6 Q(ple)25120 700.6 Q(sim-)25120 714.6 Q(u-)25120 728.6 Q EP
+%%Page: 37 37
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-37-)278.004 50 Q(la-)25120 86 Q(tion)25120 100
+Q(results)25120 114 Q(you)25120 128 Q(cre-)25120 142 Q(ated)25120 156 Q
+(\(if)25120 170 Q(an)25120 184 Q(y\))-.18 E(in)25120 198 Q(Step)25120
+212 Q(8,)25120 226 Q 11.004(d\) the)25096 244.2 R(doc-)25120 258.2 Q(u-)
+25120 272.2 Q(men-)25120 286.2 Q(ta-)25120 300.2 Q(tion)25120 314.2 Q
+(describ-)25120 328.2 Q(ing)25120 342.2 Q(dif-)25120 356.2 Q(fer)25120
+370.2 Q(-)-.24 E(ences)25120 384.2 Q(intro-)25120 398.2 Q(duced)25120
+412.2 Q(to)25120 426.2 Q(sim-)25120 440.2 Q(u-)25120 454.2 Q(la-)25120
+468.2 Q(tion)25120 482.2 Q(out-)25120 496.2 Q(put,)25120 510.2 Q(if)
+25120 524.2 Q(an)25120 538.2 Q(y)-.18 E(\(cre-)25120 552.2 Q(ated)25120
+566.2 Q(in)25120 580.2 Q(Step)25120 594.2 Q(19\),)25120 608.2 Q 11.676
+(e\) the)25096 626.4 R(anno-)25120 640.4 Q(tated)25120 654.4 Q(list)
+25120 668.4 Q(of)25120 682.4 Q(source)25120 696.4 Q(\214les)25120 710.4
+Q(you)25120 724.4 Q EP
+%%Page: 38 38
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-38-)278.004 50 Q(cre-)25120 86 Q(ated)25120 100
+Q(in)25120 114 Q(Step)25120 128 Q(20,)25120 142 Q(and)25120 156 Q 13.008
+(f\) the)25096 174.2 R(list)25120 188.2 Q(of)25120 202.2 Q(rel-)25120
+216.2 Q(e-)25120 230.2 Q -.3(va)25120 244.2 S(nt).3 E(re)25120 258.2 Q
+(vi-)-.3 E(sions)25120 272.2 Q(cre-)25120 286.2 Q(ated)25120 300.2 Q(in)
+25120 314.2 Q(Step)25120 328.2 Q(21.)25120 342.2 Q/F1 12/Times-Bold@0 SF
+3(5. Additional)72 370.2 R(notes)3 E F0 7.8<8354>25072 392.6 S(he)-7.8 E
+(tester)25084 406.6 Q(.pl)-.66 E(script)25084 420.6 Q(sup-)25084 434.6 Q
+(ports)25084 448.6 Q(man)25084 462.6 Q(y)-.18 E(options)25084 476.6 Q
+(that)25084 490.6 Q(are)25084 504.6 Q(not)25084 518.6 Q(described)25084
+532.6 Q(here.)25084 546.6 Q(In)25084 560.6 Q -.24(vo)-.48 G(k-).24 E
+(ing)25084 574.6 Q(the)25084 588.6 Q(script)25084 602.6 Q(with)25084
+616.6 Q(the)25084 630.6 Q(`--help')25084 644.6 Q(option)25084 658.6 Q
+(will)25084 672.6 Q(pro-)25084 686.6 Q(vide)25084 700.6 Q(a)25084 714.6
+Q(concise)25084 728.6 Q EP
+%%Page: 39 39
+%%BeginPageSetup
+BP
+%%EndPageSetup
+/F0 12/Times-Roman@0 SF(-39-)278.004 50 Q(descrip-)25084 86 Q(tion)25084
+100 Q(of)25084 114 Q(the)25084 128 Q(script')25084 142 Q(s)-.66 E(fea-)
+25084 156 Q(tures.)25084 170 Q/F1 12/Times-Bold@0 SF -.3(Ap)72 202.2 S
+(pendix A: In).3 E -.12(vo)-.48 G(king F).12 E(or)-.3 E(check)-.216 E F0
+.467(The F)72 220.4 R .467(orcheck static analyzer inspects your code f\
+or inconsistencies and errors that might)-.18 F .78
+(otherwise be missed by compilers.)72 234.4 R 2.7 -.96(To i)6.78 H -2.28
+-.48(nv o).96 H 1.02 -.12(ke F).48 H .78(orcheck, you')-.06 F .78
+(ll \214rst need to compile bps)-.12 F(with the)72 248.4 Q/F2 12
+/Times-Italic@0 SF(deb)3 E(ug)-.24 E F0(option:)3 E/F3 8/Courier@0 SF
+4.8($.)72 269.4 S(/Install --debug)-4.8 E F0 1.446(The `)72 294.6 R
+(`--deb)-.888 E(ug')-.24 E 4.446('o)-.888 G 1.446(ption tells the insta\
+ll script not to delete the symbolic links to \214les in)-4.446 F
+(other folders after compilation.)72 308.6 Q(Ne)25072 326.8 Q(xt,)-.18 E
+(mo)72 340.8 Q .865 -.18(ve t)-.18 H 3.505(ot).18 G .506
+(he esru folder corresponding to the ESP-r binary you wish to test. F)
+-3.505 F .506(or instance,)-.18 F .501(to test)72 354.8 R F2(prj)3.501 E
+F0 3.501(,m)C .861 -.18(ove t)-3.501 H 3.501(ot).18 G .501(he folder `)
+-3.501 F(`esruprj')-.888 E .5('. From here, in)-.888 F -.24(vo)-.48 G
+.74 -.12(ke f).24 H .5(orcheck using the follo).12 F(wing)-.3 E
+(command:)72 368.8 Q F3 4.8($f)72 389.8 S(orchk *.F -I ../include)-4.8 E
+F0 -.18(Fo)25072 415 S(rcheck).18 E 1.637
+(will produce a report identifying errors in your source.)72 429 R -1.32
+(Yo)7.636 G 4.636(um)1.32 G 1.636(ay e)-4.636 F 1.636
+(xpect this report to)-.18 F -.12(wa)72 443 S .221
+(rn of inconsistencies in other portions of ESP-r).12 F 3.222(,b)-.48 G
+.222(ut pay particular attention to portions)-3.462 F
+(of the report pertaining to \214les you')72 457 Q .36 -.18(ve c)-.6 H
+(hanged.).18 E EP
+%%Trailer
+end
+%%EOF
