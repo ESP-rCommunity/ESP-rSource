@@ -721,7 +721,7 @@ C number of plant components used in the network.
 C Defaults.
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
-      character DFILE*72,LTMP*72,outs*124, LCMDFL*72
+      character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
       character lpcdb*72,lclim*72,lctlf*72,ctldoc*248,scname*12,h*72
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       logical XST,ok,dok
@@ -737,8 +737,31 @@ C Defaults.
         else
           ltmp=' '
         endif
-        CALL EASKS(LTMP,' Library name ? ',
-     &    ' ',72,DFILE,'library file',IER,7)
+        llt=lnblnk(ltmp)
+        h(1)='The predictions from solution of a plant/system '
+        h(2)='network are held in a binary results file which'
+        h(3)='is separate from zone and flow results. Please '
+        h(4)='supply the name (if the field is blank). '
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
+     &      'library file',IER,4)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(ltmp,' Library name ? ',' ',124,DFILE,
+     &      'library file',IER,4)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
+     &      'library file',IER,4)
+        endif
+#else
+        CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
+     &    'library file',IER,4)
+#endif
+
         if(LTMP(1:2).eq.'  '.or.LTMP(1:4).eq.'UNKN')goto 6
       else
         ltmp=LCMDFL
@@ -842,11 +865,11 @@ C Climate file not found - ask user for name.
         H(1)=' A climate file defines the problem boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        ltmp=LCLIM
-        CALL EASKS(ltmp,'  Climate file name ?',
+        t72=LCLIM
+        CALL EASKS(t72,'  Climate file name ?',
      &     '  ',72,DCLIM,'climate file name',IER,3)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LCLIM=ltmp
+        if(t72(1:2).ne.'  '.and.t72(1:4).ne.'UNKN')then
+          LCLIM=t72
         endif
         goto 44
       endif

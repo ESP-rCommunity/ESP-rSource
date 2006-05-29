@@ -417,8 +417,8 @@ C pick up typical periods (i.e. if climate file name typed in
 C or passed into clm module).
       logical rescan
 
-      CHARACTER CLMLOC*30,LCLIM*72,H*72,outs*124,tab*1
-      character LCMDFL*72,cdblbl*20,cdblfil*72,clmdb*72
+      CHARACTER CLMLOC*30,LCLIM*72,H*72,outs*124,tab*1,outs248*248
+      character LCMDFL*144,cdblbl*20,cdblfil*72,clmdb*72,L144*144
       tab = CHAR(9)
 
 C Get help message set.
@@ -447,9 +447,9 @@ C running in silent mode the user is not expected to select
 C from a list so might as well exit the program.
       if(LCMDFL(1:7).eq.'UNKNOWN'.or.LCMDFL(1:2).eq.'  ')then
         if(silent)then
-          write(outs,'(a,a,a)')'Climate exited because input file was',
+          write(outs248,'(3a)')'Climate exited because input file was',
      &    tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs(1:lnblnk(outs))
+          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         endif
@@ -463,23 +463,34 @@ C climate file.
      &                'list provided... ','-')
           call rdblist(IUF,cdblfil,clmdb,ier)
           if(ier.ne.0)then
-            LCMDFL=DCLIM
+            write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
             rescan=.true.
           endif
           if(clmdb(1:12).eq.'USER_DEFINED')then
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
             LCMDFL='newclim'
- 291        CALL EASKS(LCMDFL,' New climate file (esp-r binary) ?',
-     &       ' ',72,DCLIM,'new climate file',IER,15)
+ 291        continue
+#ifdef X11
+            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
+     &       ' ',96,DCLIM,'new climate file',IER,15)
+#else
+            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
+     &       ' ',144,DCLIM,'new climate file',IER,15)
+#endif
+
             IF(LCMDFL.EQ.' ')GOTO 291
             IER=0
             rescan=.false.
           elseif(clmdb.eq.'UNKNOWN'.or.clmdb(1:2).eq.'  ')then
             call usrmsg(' Nothing selected from the list ',
      &                  ' using default...','W')
-            LCMDFL=DCLIM
+            write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
             rescan=.true.
           else
-            LCMDFL=clmdb
+            write(LCMDFL,'(a)') clmdb(1:lnblnk(clmdb))
             rescan=.false.
           endif
         else
@@ -487,9 +498,15 @@ C climate file.
      &    ' No `climate db` list available so using default... ')
           call edisp(iuout,
      &    ' (Check with your administrator about `climatelist` file)')
-          LCMDFL=DCLIM
- 289      CALL EASKS(LCMDFL,' Climate file (esp-r binary format) ? ',
-     &     ' ',72,DCLIM,'climate file',IER,15)
+          write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
+ 289      continue
+#ifdef X11
+          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
+     &     ' ',96,DCLIM,'climate file',IER,15)
+#else
+          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
+     &     ' ',144,DCLIM,'climate file',IER,15)
+#endif
           IF(LCMDFL.EQ.' ')GOTO 289
           IER=0
           rescan=.true.
@@ -499,9 +516,30 @@ C climate file.
           IER=0
           rescan=.true.
         else
- 290      CALL EASKS(LCMDFL,' Climate file (esp-r binary format) ?',
-     &      ' ',72,DCLIM,'climate file',IER,15)
-          IF(LCMDFL.EQ.' ')GOTO 290
+          L144=LCMDFL
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  290     llt=lnblnk(L144)
+#ifdef X11
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
+     &        96,DCLIM,'climate file name',IER,15)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
+     &        124,DCLIM,'climate file name',IER,15)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
+     &        144,DCLIM,'climate file name',IER,15)
+          endif
+#else
+          CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
+     &      144,DCLIM,'climate file name',IER,15)
+#endif
+          IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 290
+          call st2file(L144,LCMDFL)
           IER=0
           rescan=.true.
         endif
@@ -509,19 +547,30 @@ C climate file.
 
 C Create file explicitly (not relative to problem configuration path).
 C First check if it exists: if so open, otherwise create with 0 length.
+C << consider if LCLIM needs to be > 72 char >>
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCMDFL)
       if(ISTAT.eq.-301)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,3,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened new climate file')
-        LCLIM=LCMDFL
+        llf=lnblnk(LCMDFL)
+        if(llf.le.72)then
+          write(LCLIM,'(a)') LCMDFL(1:llf)
+        else
+          write(LCLIM,'(a)') LCMDFL(1:72)
+          call edisp(iuout,'Had to truncate climate file name.')
+        endif
         RETURN
       elseif(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened climate file')
-        LCLIM=LCMDFL
+        if(lnblnk(LCMDFL).le.72)then
+          write(LCLIM,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        else
+          write(LCLIM,'(a)') LCMDFL(1:72)
+        endif
         if(LCLIM.eq.DCLIM)call edisp(iuout,' Default climate assigned.')
       endif
 
@@ -681,12 +730,12 @@ C Write one day's climate data to the current climate file.
 
       NDAY=IDAY
       DO 40 J=1,24
-      ICLM(J,1)=NINT(CDIF(J))
-      ICLM(J,2)=NINT(10.*CTMP(J))
-      ICLM(J,3)=NINT(CDNR(J))
-      ICLM(J,4)=NINT(10.*CVEL(J))
-      ICLM(J,5)=NINT(CDIR(J))
-      ICLM(J,6)=NINT(CHUM(J))
+        ICLM(J,1)=NINT(CDIF(J))
+        ICLM(J,2)=NINT(10.*CTMP(J))
+        ICLM(J,3)=NINT(CDNR(J))
+        ICLM(J,4)=NINT(10.*CVEL(J))
+        ICLM(J,5)=NINT(CDIR(J))
+        ICLM(J,6)=NINT(CHUM(J))
    40 CONTINUE
       IREC=NDAY
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)

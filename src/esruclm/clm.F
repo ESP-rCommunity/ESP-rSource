@@ -81,16 +81,16 @@ C Climate list common.
       common/clmlnum/nbclmlhelp
 
       dimension ITEM(22)
-      character ITEM*26,LCLIM*72,H*72,LASCI*72,outs*124
-      character PERST1*14,PERST2*40,PERST3*40,LCMDFL*72
-      character inf*72,ascif*72,pascif*72,pact*16,aut*12,paction*16
+      character ITEM*26,LCLIM*72,H*72,LASCI*72,outs*124,outs248*248
+      character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
+      character inf*144,ascif*72,pascif*72,pact*16,aut*12,paction*16
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
       character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1
       character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,STR*124
+      character clmlhelp*72
       LOGICAL OK,DOK,unixok,there,silent
 
 C Initial assumptions. Pass module name to C code structure.
@@ -215,7 +215,6 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
       ENDIF
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
      &  'ESP-r Climate Analysis: enquiries to esru@strath.ac.uk')
-
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -306,8 +305,8 @@ C Take command line file name to LCMDF and use as initial climate file.
         LCMDFL=' '
       else
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        if(itrc.gt.1)call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        if(itrc.gt.1)call edisp248(iuout,outs248,80)
         call tstamp('>',outs)
       endif
 
@@ -338,9 +337,9 @@ C Import climate data from ASCII file.
           IUNIT=IFIL+1
           CALL MKBCLM(iuout,1,pascif,IUNIT,IDS,IDF,silent,IER)
           call tstamp('>','Finished climate module conversion ASCI2BIN')
-          write(outs,'(5a)')'Climate_conversion',tab,
+          write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs(1:lnblnk(outs))
+          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         elseif(paction(1:8).eq.'bin2asci')then
@@ -357,9 +356,9 @@ C Write out this data to an asci file.
           IAF=IFIL+1
           CALL MKACLM('E',pascif,IAF,IDS,IDF,IER)
           call tstamp('>','Finished climate module conversion BIN2ASCI')
-          write(outs,'(5a)')'Climate_conversion',tab,
+          write(outs248,'(5a)')'Climate_conversion',tab,
      &      LCMDFL(1:lnblnk(LCMDFL)),tab,pascif(1:lnblnk(pascif))
-          write(6,*)outs(1:lnblnk(outs))
+          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         elseif(paction(1:7).eq.'epw2bin')then
@@ -375,9 +374,9 @@ C Import climate data from EPW file.
           IUNIT=IFIL+1
           CALL EPWTOBCLM(pascif,IUNIT,IER)
           call tstamp('>','Finished climate module conversion EPW2BIN')
-          write(outs,'(5a)')'Climate_conversion',tab,
+          write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs(1:lnblnk(outs))
+          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         else
@@ -458,9 +457,9 @@ C Present the opening display and control menu.
       CALL EMENU('Climate Analysis',ITEM,NITEM,INO)
       IF(INO.EQ.NITEM)THEN
         call usrmsg(' Closing clmate module...',' ','P')
-        write(outs,'(a,a,a)')'Climate_selected',tab,
+        write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
-        write(6,*)outs(1:lnblnk(outs))
+        write(6,*)outs248(1:lnblnk(outs248))
         call tstamp('>',outs)
         call tstamp('>','Finished climate module')
         CALL EPAGEND
@@ -487,7 +486,7 @@ C Confirm that this is a new file and clear memory if necessary.
           CALL CFILIN(silent)
         elseif(ICT.eq.2)then
           call tstamp('>','CLM: use current climate data')
-          LCMDFL=LCLIM
+          write(LCMDFL,'(a)') LCLIM(1:lnblnk(lclim))
           silent=.false.
           CALL CFILIN(silent)
         elseif(ICT.eq.3)then
@@ -612,30 +611,40 @@ C Edit site attributes.
       ELSEIF(INO.EQ.12)THEN
 
 C Creation of climate file from manual editing.
-        H(1) ='The climate edit facility uses three modes of prediction'
-        H(2) =' '
-        H(3) ='KEYBOARD ENTRY asks for one day and allows hourly data '
-        H(4) ='to be edited individually. This can be cumbersome if a '
-        H(5) ='large number of days are to be edited'
-        H(6) =' '
-        H(7) ='TRANSFORMS can generte regular patterns of data and can'
-        H(8) ='be used in changes e.g. increasing temperature by 2degC'
-        H(9) ='or making RH 1.2 times etc.'
-        H(10)='Polynomial prediction of order higher than 1 is also '
-        H(11)='possible'
-        H(12)=' '
-        H(13)='CURVE FITTING fits a sinusoidal diurnal pattern to data'
-        CALL EASKABCD(' Creation of data via: (see help)',' ',
-     &    'keyboard entry','transforms','curve fitting','continue',
-     &    IC,13)
+        H(1)='Keyboard entry allows data for each hour to be '
+        H(2)=' typed in for a given day.'
+        H(3) =' '
+        H(4)='Curve fitting can generate regular patterns of'
+        H(5)=' data (e.g. provide a maximum, minimum and a sinusodial'
+        H(6)=' pattern is generated.'
+        H(7) =' '
+        H(8)='Transforms can change climate data by a fixed increment,'
+        H(9)=' make a fractional change or a polynomial based change'
+        H(10)=' or adjust wind speeds from particular directions.'
+        H(11)=' '
+        H(12)='Prediction is used for predicting radiation from site '
+        H(13)=' position '
+        CALL EASKATOG(' Creation of data via: ',' ',
+     &    'keyboard entry','prediction','transforms','curve fitting',
+     &    'continue',' ',' ',IC,13)
+
         if(ic.eq.1)then
           call tstamp('>','CLM: manual editing')
           CALL RRITE
+        elseif(ic.eq.2)then
+          call tstamp('>','CLM: predictive editing')
+          ist=1
+          CALL CLPRED(ist)
+        elseif(ic.eq.3)then
+          call tstamp('>','CLM: transform editing')
+          ist=2
+          CALL CLPRED(ist)
+        elseif(ic.eq.3)then
+          call tstamp('>','CLM: transform editing')
+          ist=3
+          CALL CLPRED(ist)
         elseif(ic.eq.4)then
           goto 3
-        else
-          call tstamp('>','CLM: predictive editing')
-          CALL CLPRED(ic)
         endif
       ELSEIF(INO.EQ.13)THEN
 
@@ -797,12 +806,14 @@ C hour in any specified day.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
-      character outs*124,h*72
+      character outs*124,xfile*72,tg*1,delim*1,h*72
       logical ok,dok
 
 C If in type 8 terminal make the text display area larger before
@@ -901,6 +912,7 @@ C ********************* SETUP
 C SETUP provides the menus and control logic for the preferences menu.
       SUBROUTINE SETUP(ITRU,IER)
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/pophelp/h(60)
 
@@ -1012,6 +1024,7 @@ C info being saved.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close text or graphics command
@@ -1025,13 +1038,13 @@ C file. For the graphics ask if file should be further converted.
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
-            call addpath(xfile,tfile,concat)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
           else
-            tfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
-          call wwcclose(tfile)
+          call wwcclose(longtfile)
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
@@ -1062,9 +1075,9 @@ C file. For the graphics ask if file should be further converted.
 
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
-            tfile=' '
-            call addpath(xfile,tfile,concat)
-            call wwcopen(tfile)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -1073,8 +1086,8 @@ C passing request to wwlib.c
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
           elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         endif

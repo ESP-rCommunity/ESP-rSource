@@ -48,8 +48,8 @@ C Model export facility.
 
       DIMENSION ITEMS1(11)
 
-      character*72 LFIL,H,path,LCFGF,tfile
-      character ITEMS1*34,doit*124,outs*124,cfgroot*24,tmode*12
+      character LFIL*72,H*72,path*72,LCFGF*72,tfile*72,longtfile*144
+      character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
       character xfile*72,tg*1,delim*1,ffile*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
@@ -119,14 +119,14 @@ C Construct a 'VIEWER' format file.  First get file name.
         CALL EASKS(LFIL,' File name for image data ? ',
      &    ' ',72,' ','VIEWER input file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of viewer -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of viewer -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting conversion via',doit,'-')
@@ -146,14 +146,14 @@ C DXF creation.  Process similar to ecnv filter for VIEWER.
         CALL EASKS(LFIL,' DXF file name ? ',
      &    ' ',72,' ','dxf export file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting conversion via',doit,'-')
@@ -174,14 +174,14 @@ C XZIP creation.  Process similar to ecnv filter for VIEWER.
         call edisp(iuout,' Performing model conversion.')
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting conversion via',doit,'-')
@@ -204,14 +204,14 @@ C RADIANCE creation.  Starts e2r with configuration file.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,tfile,concat)
+          call addpath(LCFGF,longtfile,concat)
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(a,3i4,3a)') 'e2r -s ',
      &        iappw,iappx+35,iappy+40,' -file ',
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
           else
             write(doit,'(3a)') 'e2r -s 0 0 0 -file ',
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
           endif
           call usrmsg('Starting Radiance conversion via',doit,'-')
           call runit(doit,'-')
@@ -286,14 +286,14 @@ C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
         call edisp(iuout,' Performing model conversion.')
 
 C Why is the addpath not used?
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of thf -out ',LFIL(:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
-     &       tfile(1:lnblnk(tfile)),
+     &       longtfile(1:lnblnk(longtfile)),
      &      ' -of thf -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting THF conversion via',doit,'-')
@@ -315,14 +315,14 @@ C Export to TSBI3 (Danish simulation tool) file.
         CALL EASKS(LFIL,' File name for TSBI3 file ? ',
      &    ' ',72,' ','TSBI3 file',IER,4)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting TSBI3 conversion via',doit,'-')
@@ -360,14 +360,14 @@ C Export to VRML (2.0) file.
         CALL EASKS(LFIL,' File name for VRML file ? ',
      &    ' ',72,' ','vrml file',IER,4)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of vrml -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of vrml -out ',LFIL(1:lnblnk(LFIL))
         endif
         call usrmsg('Starting VRML conversion via',doit,'-')
@@ -412,8 +412,8 @@ C External cad package.
       common/pophelp/h(60)
       LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath
 
-      character*72 LCFGF,H,LFIL,LCMDFL
-      character outs*124,OUTSTR*124,cfgroot*24,doit*124,tfile*72
+      character LCFGF*72,H*72,LFIL*72,LCMDFL*144,longtfile*144
+      character outs*124,OUTSTR*124,cfgroot*24,doit*248,tfile*72
       character cadlbl*20,cadexe*20,cadfmt*4
 
       ifun=ifil+1
@@ -454,14 +454,14 @@ C If there is a currently loaded model then convert it.
         CALL EASKS(LFIL,' Put current model into DXF file named: ',
      &    ' ',72,' ','dxf export file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
         endif
       elseif(NCOMP.gt.0.and.cadfmt(1:3).eq.'ZIP')then
@@ -470,14 +470,14 @@ C If there is a currently loaded model then convert it.
         CALL EASKS(LFIL,' Put current model into ZIP file named: ',
      &    ' ',72,' ','zip export file',IER,1)
         call edisp(iuout,' Performing model conversion.')
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      tfile(1:lnblnk(tfile)),
+     &      longtfile(1:lnblnk(longtfile)),
      &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
         endif
       endif
@@ -557,28 +557,28 @@ C is a ZIP or DXF file.
         endif
         CALL ERPFREE(ifun,ISTAT)
 
-        call addpath(LCFGF,tfile,concat)
+        call addpath(LCFGF,longtfile,concat)
         call edisp(iuout,' Performing model conversion.')
         call tstamp('>','PRJ: import from CAD')
         if(typez)then
           if(itrc.le.1)then
             write(doit,'(4a)') 'ecnv -if zip -in ',
-     &        LFIL(1:lnblnk(LFIL)),
-     &        ' -of esp -u upgrade -out ',tfile(1:lnblnk(tfile))
+     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &        longtfile(1:lnblnk(longtfile))
           elseif(itrc.gt.1)then
             write(doit,'(4a)')'ecnv -v -if zip -in ',
-     &        LFIL(1:lnblnk(LFIL)),
-     &        ' -of esp -u upgrade -out ',tfile(1:lnblnk(tfile))
+     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &        longtfile(1:lnblnk(longtfile))
           endif
         else
           if(itrc.le.1)then
             write(doit,'(4a)') 'ecnv -obs -mm -if dxf -in ',
-     &        LFIL(1:lnblnk(LFIL)),
-     &        ' -of esp -u upgrade -out ',tfile(1:lnblnk(tfile))
+     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &        longtfile(1:lnblnk(longtfile))
           elseif(itrc.gt.1)then
             write(doit,'(4a)')'ecnv -v -obs -mm -if dxf -in ',
-     &        LFIL(1:lnblnk(LFIL)),
-     &        ' -of esp -u upgrade -out ',tfile(1:lnblnk(tfile))
+     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &        longtfile(1:lnblnk(longtfile))
           endif
         endif
         call usrmsg('doing conversion via',doit,'-')
@@ -588,7 +588,7 @@ C Re-read the upgraded configuration file. Reconstruct the path.
         browse=.false.
         confirm=.true.
         ckpath=.false.
-        LCMDFL=tfile
+        LCMDFL=longtfile
         call NEWPRB(ITRC,confirm,ckpath,IER)
       endif
       return
@@ -613,10 +613,10 @@ C to quit the image browser.
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character exfil*72,group*42,tgroup*42,key*1,look*70,tlook*70
-      character exemplar*72,line*72,H*72,outs*124,rootp*72,separ*42
-      character imgfmt*4,imgfoc*4,limgfil*72,doit*124,upath*72
-      character gh*72,cfgitem*72,exdescr*81,doc*72,head*42
-      character cfg*72,cfg_path*72,cfg_root*72,doc_file*72
+      character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
+      character imgfmt*4,imgfoc*4,limgfil*72,doit*248,upath*72
+      character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
+      character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
       logical XST,unixok
 
 C Open the exemplar file.
@@ -899,8 +899,8 @@ C Present information on an exemplar.
               goto 92
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
-              write(outs,'(a,a)') ' Configuration: ',exemplar
-              call edisp(iuout,outs)
+              call edisp(iuout,' Configuration is: ')
+              call edisp(iuout,exemplar)
 
 C Check to see if the configuration file exists. If it does not then
 C warn the user that the model is off-line.
@@ -964,7 +964,7 @@ C See if can derive the local configuration name.
                     write(doit,'(4a)') 'xcopy /e /i /y /c ',
      &                rootp(1:lnblnk(rootp)),' ',upath(1:lnblnk(upath))
                   endif
-                  call usrmsg('Copying exemplar to your home folder.',
+                  call lusrmsg('Copying exemplar to your home folder.',
      &               doit,'-')
                   call runit(doit,'-')
                   write(exemplar,'(3a)')upath(1:lnblnk(upath)),'/',
@@ -1123,7 +1123,7 @@ C and if the user is browsing the model.
       character*72 LFMUL,LFCON,LPRJLG,LPNF,LMOIST
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
-      character LCMDFL*72,LFIL*72,doit*124
+      character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
       character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

@@ -17,7 +17,8 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
       logical     unixok
 
-      character outs*124,inf*72,path*72,LCMDFL*72,H*72,fs*1
+      character outs*124,inf*144,path*72,LCMDFL*144,H*72,fs*1
+      character outs248*248
 
 C Viewer works as follows:
 C call input which initialises everything and reads in
@@ -120,8 +121,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 C Take command line file name as initail viewer file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
       else
         LCMDFL=' '
       endif
@@ -149,6 +150,7 @@ C info being saved.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close file. 
@@ -159,13 +161,13 @@ C Each call is a toggle. If open then close file.
         call usrmsg(outs,' ','-')
         if(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
-            call addpath(xfile,tfile,concat)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
           else
-            tfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
-          call wwcclose(tfile)
+          call wwcclose(longtfile)
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
@@ -185,27 +187,27 @@ C Each call is a toggle. If open then close file.
         call easks(xfile,' export file name: ',' ',72,
      &    ' ','export file name',IER,2)
 
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                    ' for export.'
         call usrmsg(outs,' ','p')
         if(ixloc.eq.1)then
           if(tg.eq.'G')then
 
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
-            tfile=' '
-            call addpath(xfile,tfile,concat)
-            call wwcopen(tfile)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
           if(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+        write(outs,'(1x,3A)') msg(1:lnblnk(msg)),
      &    ' >> to ',xfile(1:lnblnk(xfile))
         call usrmsg(outs,' ','p')
       endif

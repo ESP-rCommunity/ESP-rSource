@@ -96,11 +96,12 @@ C Significant figure reporting limit (NSIGFIG).
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
-      CHARACTER H*72,outs*124,OUTSTR*124,zname*12,CUBN*6,ITEM*29
-      CHARACTER*72 DFILE,inf,LCMDFL,LCFGF
+      character outs*124,outs248*248
+      CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
+      CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER VFILE*72,ZN*12,LTMP*72,LTMPFL*72,LTMPPOL*72
+      CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72,LTMPPOL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72,cfgroot*24,zdesc*64
       character dfdblbl*20,defdbfl*72,journcmd*20,jfile*72,uname*24
@@ -326,8 +327,8 @@ C Scan the defaults file for default configuration.
 C Take command line file name as configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
       else
         LCMDFL='  '
       endif
@@ -464,10 +465,30 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
         H(1)='The model configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
-  289   CALL EASKF(LCMDFL,' Model configuration file ?',' ',72,
-     &    DFCFG,'config file name',IER,3)
-        call usrmsg('File selected is',LCMDFL,'-')
-        IF(LCMDFL.EQ.' ')GOTO 289
+        L144=LCMDFL
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  289   llt=lnblnk(L144)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &    'config file name',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+     &    'config file name',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,3)
+        endif
+#else
+        CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,3)
+#endif
+        IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
+        call st2file(L144,LCMDFL)
 
 C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)

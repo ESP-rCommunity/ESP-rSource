@@ -868,12 +868,12 @@ C Return to calling module
 
       END
 
-C ************* EASKF 
+C ************* EASKF
 C EASKF is a facility for asking the user for a file name which
 C incorporates the prompt, error messages and help facilities
 C as follows:
 
-C FILEN is the string returned, ISTRW is its length (should be <= 96 char).
+C FILEN is the string returned, ISTRW is its length.
 C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
 C If a space is typed then FILEN is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
@@ -892,19 +892,19 @@ C DSTR is a string to use as a default.
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
+      CHARACTER WORD144*144,H*72,A*1,LASTS*144,OUTSTR*124,dh*72
       character prompt*144
       LOGICAL OK,DOK
     
    20 IER=0
 
 C Remember the file name in case user wants to abort.
-      WORD=' '
+      WORD144=' '
       last=max(1,lnblnk(FILEN))
-      if(last.lt.96) then
+      if(last.lt.144) then
         LASTS=FILEN(1:last)
       else
-        LASTS=FILEN(1:96)
+        LASTS=FILEN(1:144)
       endif 
       if (last.gt.6) then
         if(FILEN(1:7).eq.'UNKNOWN'.or.FILEN(1:7).eq.'unknown'.or.
@@ -927,7 +927,7 @@ C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
         idef=0
         iquery=0
-        WORD=' '
+        WORD144=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
           call dupphelp(NHELP)
@@ -950,7 +950,7 @@ C PATCH to restore mmod (occassioanlly gets corrupted in linux)
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
-        call c2fstr(FILEN,WORD)
+        call c2fstr(FILEN,WORD144)
 
         IF(IFLG.EQ.-2)THEN
           LN=max(1,LNBLNK(DSTR))
@@ -965,16 +965,16 @@ C leading blanks from string returned.
             GOTO 20
           ENDIF
         ENDIF
-        IF(WORD.EQ.' '.or.IFLG.eq.-1)THEN
+        IF(WORD144.EQ.' '.or.IFLG.eq.-1)THEN
 
 C A blank, carriage return or line feed encountered, assume user 
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
             WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
-            if(last.lt.96)then
-              FILEN=LASTS(1:last) 
+            if(last.lt.144)then
+              write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last) 
             else
-              FILEN=LASTS(1:96) 
+              write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:144) 
             endif
             RETURN
           ELSE
@@ -985,7 +985,7 @@ C wishes to use prior/existing string.
         ENDIF
 
 C Must have input a character string.
-        FILEN=WORD(1:ISTRW)
+        write(FILEN,'(a)',iostat=ios,err=3) WORD144(1:ISTRW)
         call usrmsg('  ','  ','-')
         RETURN
       ELSE
@@ -999,9 +999,9 @@ C In text mode, remind user of current string.
           call edisp(iuout,OUTSTR)
         endif
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A72)')WORD
-        A=WORD(1:1)
-        IF(lnblnk(WORD).EQ.1)THEN
+        READ(IUIN,'(A144)')WORD144
+        A=WORD144(1:1)
+        IF(lnblnk(WORD144).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
 
 C A 'D' or 'd' detected, set to default.
@@ -1014,7 +1014,7 @@ C A 'D' or 'd' detected, set to default.
               FILEN=DSTR(1:LN)
               RETURN
             ELSE
-              FILEN=LASTS(1:last) 
+              write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last) 
               GOTO 20
             ENDIF
           ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
@@ -1027,17 +1027,17 @@ C of help supplied and then provide the prompt again.
 
 C Neither help no default, could be a single character string was
 C requested.
-            FILEN=WORD(1:ISTRW)
+            write(FILEN,'(a)',iostat=ios,err=3) WORD144(1:ISTRW)
             RETURN
           ENDIF
-        ELSEIF(WORD(1:2).EQ.'  ')THEN
+        ELSEIF(WORD144(1:2).EQ.'  ')THEN
 
 C A blank, carriage return or line feed encountered, assume user 
 C wishes to use prior/existing file name.
           IF(LASTS(1:2).NE.'  '.or.last.ge.1)then
             WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
    55       FORMAT(' The name (',a,') will be used.')
-            FILEN=LASTS(1:last) 
+            write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last) 
             RETURN
           ELSE
             CALL USRMSG(' The current file name is blank!',
@@ -1047,7 +1047,7 @@ C wishes to use prior/existing file name.
         ELSE
 
 C Must have input a character string.
-          FILEN=WORD(1:ISTRW)
+          write(FILEN,'(a)',iostat=ios,err=3) WORD144(1:ISTRW)
           RETURN
         ENDIF
       ENDIF
@@ -1056,6 +1056,8 @@ C Must have input a character string.
    1  write(6,*) 'EASKF: error composing message or prompt.'
       return
    2  write(6,*) 'EASKF: error composing prompt.'
+      return
+   3  write(6,*) 'EASKF: error writing file name.'
       return
       END
 
@@ -3121,10 +3123,11 @@ C      END
 C ************* EASKPER
 C EASKPER: Provides legacy interface to the more general eAskPerYear below.
       SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
-C << initial values of iBYr iEYr? >>
+
+C Set initial values of iBYr iEYr (only used if IFDAY is 2).
       CHARACTER*(*) PROMP1
       integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
-      call eAskPerYear(PROMP1,IBDOY,IEDOY,IFDAY,iBYr,iEYr,IER)
+      call eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
 
       return
       end
@@ -3355,8 +3358,8 @@ C Given a file name (fstring) see if it contains a (path) and a (filen).
 C Note: mingw compilers require fstring to be declaired length (not *(*).
       SUBROUTINE fdroot(fstring,path,filen)
 C      COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER*(*) path,filen
-      character fstring*72
+      CHARACTER*(*) path,filen,fstring
+C      character fstring*72
       character fs*1,fs1*1,lpath*72
       logical unixok
 
@@ -3452,11 +3455,12 @@ C concatenate path with sfile.
 
       LOGICAL XST,OK,concat,DOK
       logical unixok
-      CHARACTER SFILE*72,outs*124,LFIL*72,h*72
-      character tfile*124,ltfile*124
+      CHARACTER*(*) SFILE
+      CHARACTER outs*144,LFIL*72,h*72
+      character tfile*144,longtfile*144
       
       LFIL=' '
-      ltfile=' '
+      longtfile=' '
 
 C Debug.
 C      WRITE(outs,'(2A)')' EFOPSEQ: ',SFILE(1:lnblnk(SFILE))
@@ -3468,24 +3472,24 @@ C Add path to file if required then get length of file name.
       if(SFILE(1:2).eq.'  ')return
       if(SFILE(1:4).eq.'UNKN')return 
       if(SFILE(1:4).eq.'unkn')return
-      call addpath(SFILE,tfile,concat)
+      call addpath(SFILE,longtfile,concat)
       IER=0
 
- 10   ltf=max(1,LNBLNK(tfile))
+ 10   ltf=max(1,LNBLNK(longtfile))
       IF(IUN.NE.0)CALL ERPFREE(IUN,ISTAT)
-      INQUIRE (FILE=tfile(1:ltf),EXIST=XST)
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=XST)
 
 C Depending on whether the file exists or not process according
 C to the value of IEXIST:
       IF(IEXIST.EQ.0.OR.IEXIST.EQ.1)THEN 
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
         ELSE
 
 C File should exist, print message if IEXIST=1 and not found.
           IF(IEXIST.EQ.1)THEN
-            CALL LUSRMSG('Could not find',tfile,'W')
+            CALL LUSRMSG('Could not find',longtfile,'W')
             IER=-301
             RETURN
           elseif(IEXIST.EQ.0)THEN
@@ -3497,21 +3501,22 @@ C File should exist, print message if IEXIST=1 and not found.
 
 C File should not exist, error=-300 if found.
         IF(XST)THEN
-          CALL LUSRMSG(tfile,'already exists (and it should not)!','W')
+          CALL LUSRMSG(longtfile,
+     &      'already exists (and it should not)!','W')
           IER=-300
           RETURN
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSEIF(IEXIST.EQ.3)THEN
 
 C Use existing file or create a new one.
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSEIF(IEXIST.EQ.4)THEN
@@ -3519,7 +3524,7 @@ C Use existing file or create a new one.
 C IEXIST=4 if file exists, ask user if it should be deleted and
 C overwritten with a file by the same name. 
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
           DOK=.true.
           H(1)='The displayed file exists. Please confirm if you '
@@ -3528,10 +3533,10 @@ C overwritten with a file by the same name.
           H(4)='for example you made a mistake and want to '
           H(5)='create a temporary file name.'
           NHELP=5
-          CALL ASKOK(tfile,'Overwrite this file?',OK,DOK,NHELP)
+          CALL ASKOK(longtfile,'Overwrite this file?',OK,DOK,NHELP)
           IF(OK)THEN
             CALL EFDELET(IUN,ISTAT)
-            OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+            OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &           STATUS='NEW',IOSTAT=ISTAT)
           ELSE
 
@@ -3547,7 +3552,7 @@ C Close the initial file before asking the user for new file.
             CALL EASKS(LFIL,'Revised file name?',' ',72,' ',
      &        'revised file name',IER,6)
             IF(LFIL(1:2).eq.'  ')goto 83
-            call addpath(LFIL,tfile,concat)
+            call addpath(LFIL,longtfile,concat)
             DOK=.true.
             NHELP=6
             CALL ASKOK(' ',' Remember the new file name?',
@@ -3556,7 +3561,7 @@ C Close the initial file before asking the user for new file.
             goto 10
           ENDIF
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='SEQUENTIAL',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSE
@@ -3567,7 +3572,7 @@ C Close the initial file before asking the user for new file.
 
 C If problem in opening then report difficulty.
       IF(ISTAT.LT.0)THEN
-        CALL LUSRMSG('Error opening ',tfile,'W')
+        CALL LUSRMSG('Error opening ',longtfile,'W')
         IER=ISTAT
       ENDIF
 
@@ -3593,39 +3598,40 @@ C concatenate path with sfile.
       common/pophelp/h(60)
 
       LOGICAL XST,OK,concat,DOK
-      CHARACTER SFILE*72,outs*124,LFIL*72,h*72
-      character tfile*124,ltfile*124
+      CHARACTER*(*) SFILE
+      CHARACTER outs*144,LFIL*72,h*72
+      character tfile*144,longtfile*144
 
 C Debug.
 C      WRITE(outs,'(A,A)')' EFOPRAN: ',SFILE(1:lnblnk(SFILE))
 C      call edisp(iuout,outs)
       
       LFIL=' '
-      ltfile=' '
+      longtfile=' '
       XST=.false.
       IER=-301
       if(SFILE(1:2).eq.'  ')return
       if(SFILE(1:4).eq.'UNKN')return 
       if(SFILE(1:4).eq.'unkn')return
-      call addpath(SFILE,tfile,concat)
+      call addpath(SFILE,longtfile,concat)
       IER=0
 
 C Length of file.
-  10  ltf=max(1,LNBLNK(tfile))
+  10  ltf=max(1,LNBLNK(longtfile))
       IF(IUN.NE.0)CALL ERPFREE(IUN,ISTAT)
-      INQUIRE (FILE=tfile(1:ltf),EXIST=XST)
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=XST)
 
 C Depending on whether the file exists or not process according
 C to the value of IEXIST:
       IF(IEXIST.EQ.0.OR.IEXIST.EQ.1)THEN 
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
         ELSE
 
 C File should exist, print message if IEXIST=1 and not found.
           IF(IEXIST.EQ.1)THEN
-            CALL LUSRMSG('Could not find',tfile,'W')
+            CALL LUSRMSG('Could not find',longtfile,'W')
             IER=-301
             RETURN
           elseif(IEXIST.EQ.0)THEN
@@ -3637,21 +3643,22 @@ C File should exist, print message if IEXIST=1 and not found.
 
 C File should not exist, error=-300 if found.
         IF(XST)THEN
-          CALL LUSRMSG(tfile,'already exists (and it should not)!','W')
+          CALL LUSRMSG(longtfile,'already exists (and it should not)!',
+     &      'W')
           IER=-300
           RETURN
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSEIF(IEXIST.EQ.3)THEN
 
 C Use existing file or create a new one.
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSEIF(IEXIST.EQ.4)THEN
@@ -3659,7 +3666,7 @@ C Use existing file or create a new one.
 C IEXIST=4 if file exists, ask user if it should be deleted and
 C overwritten with a file by the same name. 
         IF(XST)THEN
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
           DOK=.true.
           H(1)='The displayed file exists. Please confirm if you '
@@ -3668,10 +3675,10 @@ C overwritten with a file by the same name.
           H(4)='for example you made a mistake and want to '
           H(5)='create a temporary file name.'
           NHELP=5
-          CALL ASKOK(tfile,'Overwrite this file? ',OK,DOK,NHELP)
+          CALL ASKOK(longtfile,'Overwrite this file? ',OK,DOK,NHELP)
           IF(OK)THEN
             CALL EFDELET(IUN,ISTAT)
-            OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+            OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='NEW',IOSTAT=ISTAT)
           ELSE
 
@@ -3687,11 +3694,11 @@ C Pass back through with alternative file name.
             write(LFIL,'(a)')SFILE(1:lnblnk(SFILE))
             CALL EASKS(LFIL,' File name?',' ',72,' ','file name',IER,6)
             if(LFIL(1:2).eq.'  ')goto 83
-            call addpath(LFIL,tfile,concat)
+            call addpath(LFIL,longtfile,concat)
             goto 10
           ENDIF
         ELSE
-          OPEN(IUN,FILE=tfile(1:ltf),ACCESS='DIRECT',
+          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='DIRECT',
      &        RECL=IRW*4,FORM='UNFORMATTED',STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSE
@@ -3702,7 +3709,7 @@ C Pass back through with alternative file name.
 
 C If problem in opening then report difficulty.
       IF(ISTAT.LT.0)THEN
-        CALL LUSRMSG('Error opening file ',tfile,'W')
+        CALL LUSRMSG('Error opening file ',longtfile,'W')
         IER=ISTAT
       ENDIF
 
@@ -3715,19 +3722,19 @@ C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile before looking.  If file name is
 C blank or UNKNOWN then return XST=.FALSE.
 
-      SUBROUTINE FINDFIL(SFILE,xst)
+      SUBROUTINE FINDFIL(SFILE,XST)
 
       LOGICAL xst,concat
-      CHARACTER SFILE*72,tfile*124
+      CHARACTER SFILE*72,longtfile*144
       
       xst=.false.
       if(SFILE(1:2).eq.'  ')return
       if(SFILE(1:4).eq.'UNKN')return 
       if(SFILE(1:4).eq.'unkn')return
-      call addpath(SFILE,tfile,concat)
+      call addpath(SFILE,longtfile,concat)
 
 C Does the file exist?
-      INQUIRE (FILE=tfile,EXIST=xst)
+      INQUIRE (FILE=longtfile,EXIST=xst)
 
       RETURN
       END
@@ -5819,7 +5826,7 @@ C [Unix or Linux or Cygwin gets true].
 C ************* usrhome
 C Find users home directory.
       subroutine usrhome(upath)
-      common/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       character*(*) upath
       character homedrive*24,homepath*48,outs*124
       logical unixok
@@ -8999,7 +9006,7 @@ C ITVNO vertex toggle: display = 0, hidden = 1
       CHARACTER H*72,zname*12,zdesc*64,LFIL*72,outs*124
       CHARACTER MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
-      character doit*124,tmode*8,tfile*72, hold*24,act*1
+      character doit*124,tmode*8,longtfile*72, hold*24,act*1
       CHARACTER head*19,currentfile*72
       character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
       character gopt*32,hopt*32
@@ -9205,17 +9212,17 @@ C drive viewer.
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
           if(iw.eq.1)then
-            call addpath(LFIL,tfile,concat)
+            call addpath(LFIL,longtfile,concat)
           else
-            tfile=LFIL
+            write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
           endif
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
      &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
-     &        tfile(:lnblnk(tfile)),' &'
+     &        longtfile(:lnblnk(longtfile)),' &'
           else
             write(doit,'(5a)') 'viewer -mode ',tmode,
-     &        ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),' &'
+     &        ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),' &'
           endif
           call usrmsg(' ','starting hidden line viewer.','-')
           call runit(doit,tmode)

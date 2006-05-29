@@ -537,12 +537,13 @@ c later within the simulation time-stepping.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD
-      CHARACTER*72 LTHRM,LUTIL,LS
-      character outs*124,h*72
+      CHARACTER LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72
+      CHARACTER LTHRM*72,LUTIL*72,LS*72
+      character outs*124,h*72,zname*12,zdesc*64
 
       DIMENSION ISUM1(12),ISUM2(12),PS(24),
      &          IGC(MS),ISADD(12),ISHD(12)
@@ -585,15 +586,16 @@ c Trace output ?
       goto 2
 
  1000 IER=1
-      write(outs,'(A,I3,A)')' Zone',ICOMP,' shading file error. '
+      write(outs,'(2A)') zname(ICOMP),' shading file error in '
       call edisp(iuout,outs)
+      call edisp(iuout,LS)
       CALL edisp(iuout,' Run being terminated.')
       goto 3
- 1001 CALL edisp(iuout,' Read error in shading database.')
+ 1001 CALL edisp(iuout,' Read error in shading file.')
       goto 1000
  1003 write(outs,'(a,i2,a,i2,a,i2)') 'Model nsur =',NSUR,' db ns =',
      &  ns,' inext=',INEXT
-      call edisp(iuout,' Mismatch between model and database.')
+      call edisp(iuout,' Mismatch between model and shading file.')
       call edisp(iuout,outs)
       goto 1000
 

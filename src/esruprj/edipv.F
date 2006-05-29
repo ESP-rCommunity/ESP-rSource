@@ -71,8 +71,9 @@ C Control commons (for command file updating)
 C Current file (for use by low level I/O calls)
       common/curfile/currentfile
 
+      character*(*) inf
       character LCFGF*72
-      character inf*72,LCMDFL*72,outs*124,outstr*124,cfgroot*24
+      character LCMDFL*144,outs*124,outstr*124,cfgroot*24
       character lipvdatf*72
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80

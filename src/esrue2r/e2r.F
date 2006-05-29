@@ -100,7 +100,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LDFGRID
-      CHARACTER*72 inf,LCMDFL,LCFGF,LBSRIF
+      CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72
@@ -428,13 +428,32 @@ C therfore get one.
         H(1)='The model configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
-        ltmp72=LCMDFL
+        l144=LCMDFL
         dtmp72=DFCFG
- 1289   CALL EASKF(ltmp72,' Model configuration file? ',' ',72,
-     &    dtmp72,'config file name',IER,3)
-        call usrmsg('File selected is',ltmp72,'-')
-        IF(ltmp72(1:2).EQ.'  '.or.ltmp72(1:4).eq.'UNKN')GOTO 1289
-        LCMDFL=ltmp72
+ 1289   llt=lnblnk(L144)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &    'config file name',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
+     &    'config file name',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+     &    'config file name',IER,3)
+        endif
+#else
+        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+     &    'config file name',IER,3)
+#endif
+
+        IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
+        call st2file(L144,LCMDFL)
+        call usrmsg('File selected is',l144,'-')
         XST=.false.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if (XST) call MODLSU
@@ -600,13 +619,27 @@ C ESP-r configuration file.
   289   H(1)='The model configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
-        ltmp72=LCMDFL
+        l144=LCMDFL
         dtmp72=DFCFG
-        CALL EASKF(ltmp72,' Model configuration file? ',' ',72,
-     &    dtmp72,'config file name',IER,3)
-        call usrmsg('File selected is',ltmp72,'-')
-        IF(ltmp72(1:2).EQ.'  '.or.ltmp72(1:4).eq.'UNKN')GOTO 289
-        LCMDFL=ltmp72
+        llt=lnblnk(L144)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &    'config file name',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
+     &    'config file name',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+     &    'config file name',IER,3)
+        endif
+#else
+        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+     &    'config file name',IER,3)
+#endif
+        IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
+        call st2file(L144,LCMDFL)
+        call usrmsg('File selected is',l144,'-')
         XST=.false.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST) call MODLSU
@@ -698,7 +731,7 @@ C Path to model.
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
-      CHARACTER*72 LCMDFL,LCFGF
+      CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok

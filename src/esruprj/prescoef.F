@@ -806,7 +806,7 @@ C and calculate the pressure coeffcients
       CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
       CHARACTER*72 LAPROB,LAPRES,LAFRES
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character doit*124
+      character doit*248
 
       dimension Xdom(10),Ydom(10),Zdom(10),azdom(4)
       dimension XX(MV),YY(MV),ZZ(MV),VP(3),EQN(4)

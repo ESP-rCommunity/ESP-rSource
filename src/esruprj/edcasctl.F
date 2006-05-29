@@ -79,7 +79,7 @@ C TMC common block:
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character KEY*1,hold*40,hold2*72,doitl*136,cfgroot*24
+      character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character*48 ITEM(30)

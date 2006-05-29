@@ -1264,7 +1264,7 @@ C Grid commons
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE,LFIL
       CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40
       CHARACTER TFILE*72,OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
-      character NWICNLBL*4,NWICNTXT*72
+      character NWICNLBL*4,NWICNTXT*72,longtfile*144
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
@@ -1287,9 +1287,10 @@ C        LFIL=DFILE(1:LNBLNK(DFILE))
       ENDIF
 
 C Add the networks path to the filename if required.
-      TFILE=' '
-      CALL ADDPATH(LFIL,TFILE,CONCAT)
-      IF(CONCAT) LFIL=TFILE
+C << Why call addpath at this point? >>
+      LONGTFILE=' '
+      CALL ADDPATH(LFIL,LONGTFILE,CONCAT)
+      IF(CONCAT) LFIL=LONGTFILE(1:72)
 
 
 C Open the file 

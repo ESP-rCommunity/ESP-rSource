@@ -23,7 +23,7 @@ C  EDSITE: edits site/general information for system configuration file.
 C  Setuptemporal: coordinates access to and initial creation of
 C                 temporal data to be associated with a model.
 C  PECONV: conversion factors for primary energy units.
-C  Calenmanage: sets up and manages a calendar for ESP-r. Currently
+C  Calenmanage: sets up and manages a calendar for ESP-r.
 C  Calenprint:  displays a calendar for year iyear (or a few months)
 
 C ************* EDSITE 
@@ -93,7 +93,8 @@ C and control of project images.
       character*33 ITEMS(27),ITEMIMG(20)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
-      character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character longtfile*144
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
       character iformat*4,ifocus*4,hold24*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -282,9 +283,9 @@ C as the command line. For silent do the runit via
 C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
-                  call addpath(LCFGF,tfile,concat)
+                  call addpath(LCFGF,longtfile,concat)
                   write(doit,'(5a)') 'ish -mode text -file ',
-     &              tfile(1:lnblnk(tfile)),' -zone ',
+     &              longtfile(1:lnblnk(longtfile)),' -zone ',
      &              ZN(1:lnz),' -act update_silent'
                   call usrmsg('starting shading analysis via',doit,'-')
                   call runit(doit,'-')
@@ -302,18 +303,18 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                     doit = ' '
                     call tchild(ICPMOD)
                     call termode(ICPMOD,tmode)
-                    call addpath(LCFGF,tfile,concat)
+                    call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
                     if(iappw.gt.0.and.iappw.le.200)then
                       write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &                  tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                  tfile(1:lnblnk(tfile)),' -zone ',
+     &                  longtfile(1:lnblnk(longtfile)),' -zone ',
      &                  ZN(1:lnz),' -act recalculate &'
                     else
                       write(doit,'(7a)') 'ish -mode ',tmode,
-     &                 ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &                 ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &                 ' -zone ',ZN(1:lnz),' -act recalculate &'
                     endif
                     call usrmsg('starting shading analysis via',doit,
@@ -1047,7 +1048,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       logical MODSIT,browse,OK,concat,unixok
       logical FOUND,XST
 
-      character H*72,outs*124,ltmp*72,hold*40
+      character H*72,outs*124,ltmp*72,hold*40,longtfile*144
       character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
@@ -1234,9 +1235,9 @@ C name to include the path and create a string to drive tdf.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LTDFA,tfile,concat)
+        call addpath(LTDFA,longtfile,concat)
         write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
-     &    tfile(:lnblnk(tfile)),' &'
+     &    longtfile(:lnblnk(longtfile)),' &'
         call usrmsg('starting temporal module via',doit,'-')
         call runit(doit,tmode)
         goto 42
@@ -2004,11 +2005,12 @@ C 10 11 12 13 14 15 16    14 15 16 17 18 19 20
 C 17 18 19 20 21 22 23    21 22 23 24 25 26 27    
 C 24 25 26 27 28 29 30    28 29                   
 C 31                    
-      DIMENSION VERT(35),citem(17),IDVALS(10)
+      DIMENSION VERT(35),citem(17),IDVALS(10),clist(365)
+      dimension ixdvals(365)
 
       character calename*32,calentag*12,calendayname*32
       character h*72,vert*33,DS*7,DS1*10,act*1,key*1
-      character outs*124,head*18,tcalename*32,citem*52
+      character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       logical modify,browse
 
@@ -2099,7 +2101,7 @@ C If a long list include page facility text.
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT   ('0 page: ',I2,' of ',I2,' --------')
       ENDIF
-      VERT(M+2)  ='+ apply day types (typical)      '
+      VERT(M+2)  ='+ apply day type to many days    '
       VERT(M+3)  ='! list the calendar              '
       VERT(M+4)  ='? help                           '
       VERT(M+5)  ='- exit                           '
@@ -2109,12 +2111,13 @@ C Help text for this menu.
       H(2)='types which (can eventually) be associated with zone'
       H(3)='casual gains, infiltration schedues, zone controls.'
       H(4)=' '
-      H(5)='This facility is work-in-progress and no data is saved'
-      H(6)='within the configuration file. '
-      H(7)='To-be-done:'
-      H(8)='hold standard calendars for use by projects'
-      H(9)='save day types to the configuration file '
-      H(10)='use the day type information. '
+      H(5)='This facility is work-in-progress and the data saved'
+      H(6)='within the configuration file.is not yet used by zone '
+      H(7)='operations'
+      H(8)=' '
+      H(9)='Does not yet hold standard calendars for use by projects'
+      H(10)='nor does it access typical patterns for differenct '
+      H(11)='countries. '
 
       write(head,'(a,i4)') ' Calendar for ',iyear
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -2213,10 +2216,11 @@ C Edit calendar day tag and name.
 C Edit calendar day tag and name.
           ifoc=icvert-2
           h(1)='The tag is one word (<12 char) e.g. holiday'
-          h(2)='Description is phrase for use in selection lists.'
+          h(2)='Description is phrase for use in selection lists'
+          h(3)='e.g. Holidays in Wales'
           tcalentag=calentag(ifoc)
           CALL EASKS(tcalentag,' Calendar day type tag: ',
-     &      '  ',12,'holiday','day tag',IER,2)
+     &      '  ',12,'holiday','day tag',IER,3)
           if(tcalentag(1:2).ne.'  ')then
             if(tcalentag(1:lnblnk(tcalentag)).ne.
      &         calentag(ifoc)(1:lnblnk(calentag(ifoc))))then
@@ -2240,6 +2244,8 @@ C Edit calendar day tag and name.
         endif
       ELSEIF(IVERT.EQ.MVERT)THEN
         if(modify.and.(.NOT.browse))then
+
+C << update the model if not browsing >>
           call edisp(iuout,' ')
           call edisp(iuout,'Be sure to save model!')
         endif
@@ -2247,7 +2253,7 @@ C Edit calendar day tag and name.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text for the vertex menu.
-        CALL PHELPD('calendar section',10,'-',0,0,IER)
+        CALL PHELPD('calendar section',11,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List current calendar.
@@ -2288,8 +2294,44 @@ C Print the calendar.
         call edisp(iuout,' ')
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
-C Apply typical day types. E.g. weekday sat sun all year.
-C << not yet implemented >>
+C Apply day type to several days of the year. First ask for the
+C day type and then present a list of all of the days so that the
+C user can select one or more.
+        CALL EPMENSV
+        h(1)='Select one of the existing day types. This day type'
+        h(2)='will be applied to each of the julian days selected.'
+        do 67 ij=1,nbdaytype
+          write(citem(ij),'(3a)') calentag(ij),' ',calendayname(ij)
+  67    continue
+        IX=1
+        CALL EPICKS(IX,IDVALS,' ',' Available day types:',
+     &    52,nbdaytype,citem,'avail day types',IER,2)
+        if(ix.ne.0)then
+          idt=idvals(1)
+          do 78 ld=1,365
+            call stdate(iyear,ld,DS,DS1)
+            WRITE(clist(ld),'(3a)') DS1,'  ',
+     &        calentag(icalender(ld))
+  78      continue
+          CALL EPMENSV
+          ixd=365
+          CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
+     &      52,365,clist,'available days',IER,2)
+          CALL EPMENRC
+          if(ixd.ne.0)then
+            do 79 idayloop=1,ixd
+              ifoc=ixdvals(idayloop)
+              call stdate(iyear,ifoc,DS,DS1)
+              icalender(ifoc)=idt
+              nbcaldays(idt)=nbcaldays(idt) + 1
+              write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
+     &          icalender(ifoc),' ',calendayname(icalender(ifoc))
+              call edisp(iuout,outs)
+  79        continue
+            modify=.true.
+          endif
+        endif
+        CALL EPMENRC
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -2306,7 +2348,8 @@ C Edit day identified by KEYIND.
      &    icalender(ifoc),' ',calendayname(icalender(ifoc))
         call edisp(iuout,outs)
 
-C Select from current range of day types.
+C Select from current range of day types. Assign icalendar value
+C for the focus day to the selected day type and increment nbcaldays.
         CALL EPMENSV
         h(1)='Select one of the existing day types. '
         h(2)='Note: this applies only to the current day of the year.'
@@ -2319,6 +2362,7 @@ C Select from current range of day types.
         if(ix.ne.0)then
           idt=idvals(1)
           icalender(ifoc)=idt
+          nbcaldays(idt)=nbcaldays(idt) + 1
           write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
      &      icalender(ifoc),' ',calendayname(icalender(ifoc))
           call edisp(iuout,outs)
@@ -2839,8 +2883,8 @@ C EDDGTP Sets up shading and insolation files
       common/appw/iappw,iappx,iappy
 
       character*72 TFILE,LTHRM,H,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
-      CHARACTER ZNAME*12,ZN*12
-      character TMODE*8,zdesc*64,outs*124,DOIT*124,CFGROOT*24
+      CHARACTER ZNAME*12,ZN*12,longtfile*144
+      character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
       logical XST,OK,DOK,concat
 
       if(ncomp.eq.0)then
@@ -2881,9 +2925,9 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
           if(IRT.eq.1)then
-            call addpath(LCFGF,tfile,concat)
+            call addpath(LCFGF,longtfile,concat)
             write(doit,'(5a)') 'ish -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -zone ',
+     &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act update_silent'
             call usrmsg('starting shading analysis via',doit,'-')
 
@@ -2904,18 +2948,18 @@ C rather than starting up a new xterm.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,tfile,concat)
+              call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
               if(iappw.gt.0.and.iappw.le.200)then
                 write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &                tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                tfile(1:lnblnk(tfile)),' -zone ',
+     &                longtfile(1:lnblnk(longtfile)),' -zone ',
      &                ZN(1:lnz),' -act recalculate &'
               else
                 write(doit,'(7a)') 'ish -mode ',tmode,
-     &               ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &               ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &               ' -zone ',ZN(1:lnz),' -act recalculate &'
               endif
               call usrmsg('starting shading analysis via',doit,'-')

@@ -73,10 +73,10 @@ C Calendar.
 
       character dstmp*24,LCFTMP*24
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
-      character*72 path,LCMDFL,LPRJLG,LPNF,odir
+      character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
       character LCFGF*72,H*72,cfgroot*24
       character*72 DFCFG
-      character doit*124,tfile*72
+      character doit*248,tfile*72,longtfile*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*1
@@ -338,11 +338,11 @@ C necessary.  If vi then spawn a new window to do the editing.
       h(6)='is to provide documentation on the model. '
       CALL ASKOK(' ',' Edit the log file?',OK,dok,6)
       IF(OK)then
-        call addpath(LPRJLG,tfile,concat)
+        call addpath(LPRJLG,longtfile,concat)
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &    tfile(1:lnblnk(tfile)),' &'
+     &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
       endif
 
@@ -458,7 +458,7 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character doit*124,tfile*72,sfile*72,snpfile*72
+      character doit*248,tfile*72,sfile*72,snpfile*72,longtfile*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
       character*33 ITEMS(19)
@@ -783,11 +783,11 @@ C If vi then spawn a new window to do the editing in.
         H(2)='defined text editor.'
         CALL EASKS(LFIL,' ASCII file to edit ? ',
      &    ' ',72,' ','ASCII file',IER,2)
-        call addpath(LFIL,tfile,concat)
+        call addpath(LFIL,longtfile,concat)
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &    tfile(1:lnblnk(tfile)),' &'
+     &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
       elseif(ino.eq.17)then
 

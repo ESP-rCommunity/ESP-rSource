@@ -1510,9 +1510,9 @@ C info being saved.
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*72
+      character*(*) msg,xfile
+      character H*72,path*72,outs*124,tg*1,tfile*72
+      character ixpfile*72,ttext*42,LCMDFL*144,longtfile*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
 
@@ -1573,8 +1573,8 @@ C Each call is a toggle.
           call easks(xfile,' export file name: ',' ',72,
      &               ' ','export file name',IER,2)
         endif
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                    ' for export.'
         call usrmsg(outs,' ','-')
         if(iw.eq.1)then
           if(tg.eq.'X')then
@@ -1593,9 +1593,9 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             tfile=xfile
-            xfile=' '
-            call addpath(tfile,xfile,concat)
-            call wwcopen(xfile)
+            longtfile=' '
+            call addpath(tfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -1606,8 +1606,8 @@ C passing request to wwlib.c
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             CALL ERPFREE(ixpunit,ISTAT)
             call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                       ' for export parameters.'
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                        ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
             CALL ERPFREE(ixunit,ISTAT)
@@ -1618,7 +1618,7 @@ C passing request to wwlib.c
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &    ' reporting >> to ',xfile(1:lnblnk(xfile))
         call usrmsg(outs,' ','-')
 

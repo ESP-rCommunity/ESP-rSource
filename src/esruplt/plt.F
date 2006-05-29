@@ -104,8 +104,8 @@ C Defaults.
       LOGICAL     OK,dok,unixok
 
       CHARACTER*27 ITEM(9)
-      character H*72,ltmp*72,lclim*72,outs*144, inf*72, LCMDFL*72
-      character path*72,upath*72,esprc*72,cupath*72
+      character H*72,ltmp*72,lclim*72,outs*144,inf*144,LCMDFL*144
+      character path*72,upath*72,esprc*72,cupath*72,outs248*248
       character dfdblbl*20,defdbfl*72,fs*1
 
 c Record length of binary results file
@@ -254,8 +254,8 @@ C after scan of .esprc file.
 C Take command line file name as  initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs,80)
       else
         LCMDFL='UNKNOWN'
       endif

@@ -83,6 +83,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
        Terminate this string properly for return to fortran 
        */
          reply_local = g_strstrip(gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1));
+         *reply = ' ';     /* clear response before overwriting with reply_local */
          g_stpcpy (reply,reply_local);
          no_valid_event = FALSE;
          break;

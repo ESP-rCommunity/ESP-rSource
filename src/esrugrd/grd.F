@@ -75,8 +75,8 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(12)
       CHARACTER*72 H,LFILE,LCFGF,LFCON,LFMUL
-      CHARACTER OUTSTR*124,ITEM*24,path*72,inf*72,LCMDFL*72
-      character upath*72,esprc*72,cfgroot*24
+      CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
+      character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
       character dfdblbl*20,defdbfl*72
       character inz*16,inzone*16,outs*124
 
@@ -229,8 +229,8 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outstr,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outstr)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
       else
         LCMDFL='  '
       endif
@@ -330,9 +330,31 @@ C Define the problem.
         H(3)='names of all of the files required. If the name given'
         H(4)='matches an existing file it will be read in.'
         H(5)=' '
-        CALL EASKS(LCMDFL,' Problem name ? ',' ',72,' ',
-     &        'config file name',IER,5)
-        IF(LCFGF.EQ.' ')GOTO 10
+        L144=LCMDFL
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  289   llt=lnblnk(L144)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Model configuration file?',' ',96,' ',
+     &      'config file name',IER,5)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Model configuration file?',' ',124,' ',
+     &      'config file name',IER,5)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Model configuration file?',' ',144,' ',
+     &      'config file name',IER,5)
+        endif
+#else
+        CALL EASKF(L144,' Model configuration file?',' ',144,' ',
+     &    'config file name',IER,5)
+#endif
+
+        IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
+        call st2file(L144,LCMDFL)
 
 C Find the path and local file name.
         CALL FDROOT(LCMDFL,PATH,LCFGF)
@@ -550,6 +572,7 @@ C info being saved.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close text or graphics command
@@ -563,13 +586,13 @@ C file. For the graphics ask if file should be further converted.
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
-            call addpath(xfile,tfile,concat)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
           else
-            tfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
-          call wwcclose(tfile)
+          call wwcclose(longtfile)
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
@@ -600,9 +623,9 @@ C file. For the graphics ask if file should be further converted.
 
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
-            tfile=' '
-            call addpath(xfile,tfile,concat)
-            call wwcopen(tfile)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -611,8 +634,8 @@ C passing request to wwlib.c
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
           elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         endif

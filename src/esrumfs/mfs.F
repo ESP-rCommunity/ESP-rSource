@@ -95,7 +95,7 @@ C Once per hour storage of results, averaged over that hour.
 
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
-      CHARACTER H*72,OUTSTR*124,inf*72,outs*124
+      CHARACTER H*72,OUTSTR*124,inf*144,outs*124
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72
@@ -255,9 +255,9 @@ C Show version
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IUA,0,IIER)
 
@@ -268,7 +268,7 @@ C All subsequent tstamp messages will be appended to root journal.
         uname=' '
         call usrname(uname)
         cjfile=' '
-        write(cjfile,'(a,a1,a,a,a)')upath(1:lnblnk(upath)),fs,'.',
+        write(cjfile,'(a,a1,3a)')upath(1:lnblnk(upath)),fs,'.',
      &    uname(1:lnblnk(uname)),'cur_j'
         there=.false.
         INQUIRE(FILE=cjfile,EXIST=there)
@@ -791,9 +791,9 @@ C info being saved.
       common/rcmd/LCMDFL
       common/rpath/path
 
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*72
+      character*(*) msg,xfile
+      character H*72,path*72,outs*124,tg*1,tfile*72
+      character ixpfile*72,ttext*42,LCMDFL*144,longtfile*144
       logical concat
 
 C Initial name for export parameter file is ixfile+par.
@@ -839,7 +839,7 @@ C Each call is a toggle.
         call easks(xfile,' export file name: ',' ',72,
      &    ' ','export file name',IER,2)
 
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
+        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                       ' for export.'
         call usrmsg(outs,' ','-')
         if(iw.eq.1)then
@@ -848,7 +848,7 @@ C Each call is a toggle.
             if(ier.ne.0)return
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
      &                       ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
@@ -859,9 +859,9 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             tfile=xfile
-            xfile=' '
-            call addpath(tfile,xfile,concat)
-            call wwcopen(xfile)
+            longtfile=' '
+            call addpath(tfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -872,7 +872,7 @@ C passing request to wwlib.c
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             CALL ERPFREE(ixpunit,ISTAT)
             call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
      &                       ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
@@ -884,7 +884,7 @@ C passing request to wwlib.c
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &    ' reporting >> to ',xfile(1:lnblnk(xfile))
         call usrmsg(outs,' ','-')
 
@@ -915,13 +915,13 @@ C If tabular info then create the headder to the xvgr parameter file.
           ttext = 'Simulation Results'
           call easks(ttext,'Title for 3rd party graph: ',' ',42,
      &      'Simulation Results ','3rd party title',IER,1)
-          write(ixpunit,'(a,a,a)') 'title "',
+          write(ixpunit,'(3a)') 'title "',
      &      ttext(1:lnblnk(ttext)),'"'
           write(ixpunit,'(a)') 'title font 4'
           write(ixpunit,'(a)') 'title size 1.25'
 
 C Include the name of the results library as a subtitle.
-          write(ixpunit,'(a,a,a)') 'subtitle "',
+          write(ixpunit,'(3a)') 'subtitle "',
      &       LCMDFL(1:lnblnk(LCMDFL)),'"'
           write(ixpunit,'(a)') 'subtitle font 4'
           write(ixpunit,'(a)') 'subtitle size 1.00'

@@ -29,8 +29,8 @@ C file setup.F includes facilities for display of dates, time and files.
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,concat
       dimension ITEMS1(18)
-      character*72 LFIL,SFILE,H,tfile
-      character OUTSTR*124,ITEMS1*47,doit*124,tedlbl*20,teditor*20
+      character LFIL*72,SFILE*72,H*72,tfile*72,longtfile*144
+      character OUTSTR*124,ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character PERST1*14,PERST2*44,PERST3*44,tmode*8
 
    33 INO1=-4
@@ -118,11 +118,11 @@ C If vi then spawn a new window to do the editing in.
         H(2)='defined text editor.'
         CALL EASKS(LFIL,' ASCII file to edit ? ',
      &    ' ',72,' ','ASCII file',IER,2)
-        call addpath(LFIL,tfile,concat)
+        call addpath(LFIL,longtfile,concat)
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(:lnblnk(teditor)),
-     &    tfile(:lnblnk(tfile)),' &'
+     &    longtfile(:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
       ELSEIF(INO1.EQ.8)THEN
 

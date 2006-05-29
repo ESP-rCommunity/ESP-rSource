@@ -147,12 +147,12 @@ C Dispersed demands notes and file name.
       character*72 LFMUL,LFCON,LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character inf*72,inz*16,inzone*16,LCMDFL*72,outs*124,outstr*124
-      character path*72,upath*72,esprc*72,cfgroot*24,exemplar*72
+      character inf*144,inz*16,inzone*16,LCMDFL*144,outs*124,outstr*124
+      character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
       character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
       character ITEMS(27)*33
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*72
+      character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
@@ -504,7 +504,7 @@ C              write(6,*)'idst naloc =',nidst,naloc
               else
                 write(CMDCFG,'(a)') cmdn(1:lnblnk(cmdn))
               endif
-              LCMDFL=CMDCFG
+              write(LCMDFL,'(a)') CMDCFG(1:lnblnk(CMDCFG))
               goto 23
             endif
             goto 22
@@ -601,8 +601,8 @@ C has been specified update view info to this.
               endif
 
 C Re-read the command line file as an IDST command file and extract data.
-C << Package code within isdok block into a separate subroutine >>
-C << to clarify code and allow for future evolution             >>
+C Package code within isdok block into a separate subroutine
+C to clarify code and allow for future evolution.
               if(isdok)then
                  call IPVCMD('-',inf)
               endif
@@ -853,9 +853,10 @@ C the standard file dinstpath'/training/exemplars'.
               if(ier.ne.0)goto 3
               if(exemplar.ne.'UNKNOWN'.and.exemplar.ne.' ')then
                 browse=.false.
-                LCMDFL=exemplar
+
+C Copy the exemplar configuration file (with full path) to LCMDFL.
+                write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
                 ltcmdfl=exemplar
-C                call fdroot(LCMDFL,path,LCFGF)
                 call fdroot(ltcmdfl,path,LCFGF)
                 call isunix(unixok)
                 write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
@@ -892,7 +893,7 @@ C Something was passed in via the command line so offer choice.
             H(4)='passed to the Project Manager as a command line'
             H(5)='argument.'
             write(outs,'(a,a)') ' The command line included: ',
-     &      LCMDFL(:lnblnk(LCMDFL))
+     &      LCMDFL(1:lnblnk(LCMDFL))
             CALL EASKAB(outs,' ','use it as the model',
      &        'specify another',IW,5)
 
@@ -1149,7 +1150,6 @@ C to include the path and create a string to drive the modules.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/IPVF/lipvdatf
-      common/uhome/upath
 
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
@@ -1172,7 +1172,7 @@ C level).
 
       dimension ITEMS(25)
 
-      character doit*124,tmode*8,tfile*72,ITEMS*33,H*72,key*1
+      character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*124
       CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,ENTFLNAM,lipvdatf
@@ -1182,13 +1182,11 @@ C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
       character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      dimension assmttag(MSPS),runtag(MSPS)
-      character assmttag*8,runtag*16,brw*8
+      character brw*8
       character descra*7,descrb*7,descrst*10,descrfn*10
-      character ltpath*72,filen*72,ltmp*72,upath*72
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,remote,concat,unixok
+      logical browse,concat
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
 
       modparms=.false.
@@ -1484,262 +1482,7 @@ C Visual simulation.  Starts e2r with configuration file.
       elseif(INO.EQ.MITEM-3)then
 
 C IPV for the actual number of simulations required.
-        H(1)='An Integrated Performance View is a collection of '
-        H(2)='performance indicators which have been formally defined'
-        H(3)='(see Context menu).  Please see your system '
-        H(4)='administrator for details of its implementation. '
-        if(lnblnk(lipvdatf).eq.0)then
-          CALL PHELPD('IPV message',4,'-',0,0,IER)
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          CALL PHELPD('IPV message',4,'-',0,0,IER)
-        else
-          call FINDFIL(lipvdatf,XST)
-          IF(XST)then
-            call ripvdat(ifil+1,lipvdatf,ier)
-            if(ier.ne.0)then
-              CALL PHELPD('IPV message',4,'-',0,0,IER)
-              INO=-4
-              GOTO 3
-            endif
-          else
-            CALL PHELPD('IPV message',4,'-',0,0,IER)
-            INO=-4
-            GOTO 3
-          endif
-
-          h(1)='Sufficient information seems available to undertake '
-          h(2)='the assessments needed for an IPV. '
-          CALL EASKABC('IPV options: (see help)',' ',
-     &      'run required simulations','extract reports','continue',
-     &      irs,2)
-          if(irs.eq.1)then
-            h(1)='Interactive mode uses simulation parameters as '
-            h(2)='defaults. The silent running mode uses the'
-            h(3)='parameters to run in automatic mode. '
-            CALL EASKAB('Simulation interaction options: (see help)',
-     &        ' ','run interactively','silent running mode',isauto,3)
-            call tstamp('>','PRJ: beginning IPV simulations.')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            if(isauto.eq.1)aut=' default'
-            if(isauto.eq.2)then
-              aut=' silent '
-              tmode='text'
-            endif
-
-C Temporarily assume no browsing if in ipv mode.
-            if(browse)then
-              brw = ' -b yes'
-            else
-              brw = ' -b no '
-            endif
-
-            call addpath(LCFGF,longtfile,concat)
-
-C Run only the number of assessments required.
-            if(nipvassmt.eq.1)then
-              assmttag(1)=' -p ann'
-            elseif(nipvassmt.eq.3)then
-              assmttag(1)=' -p win'
-              assmttag(2)=' -p trn'
-              assmttag(3)=' -p sum'
-            elseif(nipvassmt.eq.5)then
-              assmttag(1)=' -p win1'
-              assmttag(2)=' -p spr'
-              assmttag(3)=' -p sum'
-              assmttag(4)=' -p aut'
-              assmttag(5)=' -p win2'
-            endif
-            do 667 ij=1,nipvassmt
-              
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
-     &            ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &            longtfile(1:lnblnk(longtfile)),brw,assmttag(ij),aut
-              else
-                write(doit,'(7a)') 'bps -mode ',tmode,
-     &           ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &           brw,assmttag(ij),aut
-              endif
-              call usrmsg('beginning assessment via',doit,'-')
-              if(isauto.eq.2)then
-                call runit(doit,'-')
-              else
-                call runit(doit,tmode)
-              endif
-              call edisp(iuout,'IPV run complete.')
-  667       continue
-          elseif(irs.eq.2)then
-            h(1)='Interactive mode uses simulation parameters as '
-            h(2)='defaults. The silent running mode uses the'
-            h(3)='parameters to run in automatic mode. '
-            CALL EASKAB('IPV extraction options: (see help)',
-     &        ' ','run interactively','silent running mode',isauto,3)
-            call tstamp('>','PRJ: beginning IPV recovery.')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            if(isauto.eq.1)aut=' default'
-            if(isauto.eq.2)then
-              aut=' silent '
-              tmode='text'
-            endif
-            h(1)='IPV recovery assumes that the relevant results '
-            h(2)='libraries for each simulation are available. '
-            h(3)='The all option does each in sequence. '
-            call easkabcd('IPV recovery options:',' ','intermediate',
-     &        'scan intermediate ->annual','all','continue',IRT,3)
-
-C Extract only for the number of assessments required. Note: the strings
-C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
-C should not be altered in the simulation parameter sets.
-C << add code to disable editing if an IPV has been defined >>
-            if(nipvassmt.eq.1)then
-              runtag(1)=' -act ipv_ann '
-            elseif(nipvassmt.eq.3)then
-              runtag(1)=' -act ipv_win '
-              runtag(2)=' -act ipv_trn '
-              runtag(3)=' -act ipv_sum '
-            elseif(nipvassmt.eq.5)then
-              runtag(1)=' -act ipv_win1 '
-              runtag(2)=' -act ipv_spr '
-              runtag(3)=' -act ipv_sum '
-              runtag(4)=' -act ipv_aut '
-              runtag(5)=' -act ipv_win2 '
-            endif
-
-C Logic to react when browsing a model.
-            remote=.false.
-            if(browse)then
-              remote=.true.
-            else
-              ltmp = LCFGF
-              call addpath(ltmp,longtfile,concat)
-              if(concat)then
-                remote=.true.
-              endif
-            endif
-C Debug.
-C            write(6,*) 'status of browse and remote ',browse,remote
-
-            if(IRT.eq.1.or.IRT.eq.3)then
-              do 668 ij=1,nipvassmt
-                tfile=sblres(ij)
-                if(remote)then
-                  call fdroot(tfile,ltpath,filen)
-                  call isunix(unixok)
-                  if(unixok)then
-                    if (ICHAR(ltpath(1:1)).ne.47) then
-                      write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                  filen(1:lnblnk(filen))
-                    endif
-                  else
-                    if (ltpath(2:2).ne.':') then
-                      write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                  filen(1:lnblnk(filen))
-                    endif
-                  endif
-C Debug.
-C                  write(6,*) 'reset tfile to ',tfile
-                endif
-
-                h(1)='IPV recovery assumes that the relevant results '
-                h(2)='libraries for each simulation are available. '
-                h(3)='The all option does each in sequence. '
-                if(iappw.gt.0.and.iappw.le.200)then
-                  write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &            ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &            tfile(1:lnblnk(tfile)),runtag(ij),aut
-                else
-                  write(doit,'(6a)') 'res -mode ',tmode,
-     &             ' -file ',tfile(1:lnblnk(tfile)),
-     &             runtag(ij),aut
-                endif
-                call usrmsg('beginning performance recovery via',doit,
-     &            '-')
-                if(isauto.eq.2)then
-                  call runit(doit,'-')
-                else
-                  call runit(doit,tmode)
-                endif
-                call edisp(iuout,'This extract complete.')
- 668          continue
-              if(IRT.eq.3)then
-                tfile=sblres(nipvassmt)
-                if(remote)then
-                  call fdroot(tfile,ltpath,filen)
-                  call isunix(unixok)
-                  if(unixok)then
-                    if (ICHAR(ltpath(1:1)).ne.47) then
-                      write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                  filen(1:lnblnk(filen))
-                    endif
-                  else
-                    if (ltpath(2:2).ne.':') then
-                      write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                  filen(1:lnblnk(filen))
-                    endif
-                  endif
-C Debug.
-C                  write(6,*) 'itr3 reset tfile to ',tfile
-                endif
-                if(iappw.gt.0.and.iappw.le.200)then
-                  write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &              ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &              tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-                else
-                  write(doit,'(6a)') 'res -mode ',tmode,' -file ',
-     &              tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-                endif
-                call usrmsg('beginning performance recovery via',doit,
-     &            '-')
-                if(isauto.eq.2)then
-                  call runit(doit,'-')
-                else
-                  call runit(doit,tmode)
-                endif
-                call edisp(iuout,'IPV report complete.')
-              endif
-            elseif(IRT.eq.2)then
-              tfile=sblres(nipvassmt)
-              if(remote)then
-                call fdroot(tfile,ltpath,filen)
-                call isunix(unixok)
-                if(unixok)then
-                  if (ICHAR(ltpath(1:1)).ne.47) then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                filen(1:lnblnk(filen))
-                  endif
-                else
-                  if (ltpath(2:2).ne.':') then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
-     &                filen(1:lnblnk(filen))
-                  endif
-                endif
-C Debug.
-C                write(6,*) ' irt2 reset tfile to ',tfile
-              endif
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &            ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &            tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-              else
-                write(doit,'(6a)') 'res -mode ',tmode,' -file ',
-     &            tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-              endif
-              call usrmsg('beginning performance recovery via',doit,
-     &          '-')
-              if(isauto.eq.2)then
-                call runit(doit,'-')
-              else
-                call runit(doit,tmode)
-              endif
-            endif
-          endif
-        endif    
+        call ipvactions(ier)
       elseif(MITEM.eq.9.and.INO.EQ.1)then
 
 C Case of no initial sets, offer default or user defined sets.
@@ -2092,7 +1835,679 @@ C do not allow this set name to be changed.
       GOTO 3
 
       END
-     
+
+C ********** ipvactions
+C ipvactions commissions ipv assessments and recovery and comparisons.
+      subroutine ipvactions(ier)
+#include "building.h"
+
+C Get logical name of terminal type, expand model name
+C to include the path and create a string to drive the modules.
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
+      common/appw/iappw,iappx,iappy
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/IPVF/lipvdatf
+      common/uhome/upath
+      
+C Significant figure reporting limit (NSIGFIG).
+      common/SFIG/NSIGFIG
+
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+
+C Typical seasons and default simulation periods. Isset is the
+C current seasons set, nsset number of sets, Isauto (0=use info as
+C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
+C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
+C level).
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),sipvres
+      common/user/browse
+
+      character doit*248,tmode*8,tfile*72,H*72
+      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
+      character selres*72,longtfile*124
+      CHARACTER LCFGF*72,lipvdatf*72
+      character cfgroot*24,aut*12
+
+      dimension assmttag(MSPS),runtag(MSPS)
+      character assmttag*8,runtag*16,brw*8
+      character ltpath*72,filen*72,ltmp*72,upath*72
+      character basefile*144,variantfile*144,outs*124
+      character word1*20,word2*40,word3*20,outstr*124
+
+      logical XST,browse,remote,concat,unixok
+      logical atreports,im2
+
+C   anu_ht_m2 - annual heat kWh/m2/a
+C   anu_ht_bld - annual heat for building kWh/a
+C   anu_ht_thrm_m2 - annual heating therms/m2/a
+C   anu_ht_thrm_bld - annual heating therms/a
+C   anu_cl_m2 - annual cooling kWh/m2/a
+C   anu_cl_bld - annual heat for buidling kWh/a
+C   anu_tot_m2 - annual total heating/cooling/lights etc.
+C   anu_ht_cap_m2 - annual heating capacity kW/m2/a
+C   anu_ht_cap_bld - annual buidling heating capacity kW/a
+C   anu_cl_cap_m2 - annual cooling capacity kW/m2/a
+C   anu_cl_cap_bld - annual buidling cooling capacity kW/a
+C the first array index is base and 2nd is variant, 3rd diff
+      dimension anu_ht_m2(3),anu_ht_bld(3)
+      dimension anu_ht_thrm_m2(3),anu_ht_thrm_bld(3)
+      dimension anu_cl_m2(3),anu_cl_bld(3)
+      dimension anu_tot_m2(3),anu_tot_bld(3)
+      dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
+      dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
+
+      ibasefile=11
+      ivarfile=12
+      NSIGFIG=3
+
+      if(nsset.gt.0)isset=1
+      write(basefile,'(a)') sipvres(1:lnblnk(sipvres))
+      write(variantfile,'(a)') sipvres(1:lnblnk(sipvres))
+
+C Clear values.
+      anu_ht_m2(1)=0.; anu_ht_m2(2)=0.; anu_ht_m2(3)=0.
+      anu_ht_bld(1)=0.; anu_ht_bld(2)=0.; anu_ht_bld(3)=0.
+      anu_ht_thrm_m2(1)=0.; anu_ht_thrm_m2(2)=0.; anu_ht_thrm_m2(3)=0.
+      anu_ht_thrm_bld(1)=0.;anu_ht_thrm_bld(2)=0.;anu_ht_thrm_bld(3)=0.
+      anu_cl_m2(1)=0.; anu_cl_m2(2)=0.; anu_cl_m2(3)=0.;  
+      anu_cl_bld(1)=0.; anu_cl_bld(2)=0.; anu_cl_bld(3)=0.;
+      anu_tot_m2(1)=0.; anu_tot_m2(2)=0.; anu_tot_m2(3)=0.;   
+      anu_tot_bld(1)=0.; anu_tot_bld(2)=0.; anu_tot_bld(3)=0.;   
+      anu_ht_cap_m2(1)=0.; anu_ht_cap_m2(2)=0.; anu_ht_cap_m2(3)=0.
+      anu_ht_cap_bld(1)=0.; anu_ht_cap_bld(2)=0.; anu_ht_cap_bld(3)=0.
+      anu_cl_cap_m2(1)=0.; anu_cl_cap_m2(2)=0.; anu_cl_cap_m2(3)=0. 
+      anu_cl_cap_bld(1)=0.; anu_cl_cap_bld(2)=0.; anu_cl_cap_bld(3)=0. 
+ 
+C IPV for the actual number of simulations required.
+      H(1)='An Integrated Performance View is a collection of '
+      H(2)='performance indicators which have been formally defined'
+      H(3)='(see Context menu).  Please see your system '
+      H(4)='administrator for details of its implementation. '
+      if(lnblnk(lipvdatf).eq.0)then
+        CALL PHELPD('IPV message',4,'-',0,0,IER)
+        return
+      elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+        CALL PHELPD('IPV message',4,'-',0,0,IER)
+        return
+      else
+        call FINDFIL(lipvdatf,XST)
+        IF(XST)then
+          call ripvdat(ifil+1,lipvdatf,ier)
+          if(ier.ne.0)then
+            CALL PHELPD('IPV message',4,'-',0,0,IER)
+            return
+          endif
+        else
+          CALL PHELPD('IPV message',4,'-',0,0,IER)
+          return
+        endif
+      endif
+
+  39  h(1)='Sufficient information seems available to undertake '
+      h(2)='the assessments needed for an IPV. '
+      h(3)=' '
+      h(4)='The option to run required simulations will invoke '
+      h(5)='as many simulations as required, saving the results '
+      h(6)='to the files specified in the simulation parameter '
+      h(7)='sets. The assessments can be run silently or in an '
+      h(8)='interactive mode. '
+      h(9)=' '
+      h(10)='Extracting IPV reports is done by invoking the res '
+      h(11)='module with specific command line parameters. Results'
+      h(12)='recovery is usually done in a silent mode as there is'
+      h(13)='minimal user interaction required. '
+      h(14)=' '
+      h(15)='You can compare two IPV reports, extracting and '
+      h(16)='reporting on the differences found. The report'
+      h(17)='includes both nominal and whole building values '
+      h(18)='for the following performance metrics: '
+      h(19)=' '
+      h(20)=' *for each variant it reports heating demand kWh/m2/a'
+      h(21)='  and for the whole model (kWh/a), heating capacity kW/m2'
+      h(22)='  and for the whole model (kW/a diversified).'
+      h(23)=' *for each variant it reports heating therms (converted'
+      h(24)='  as kWh * 0.0341296)'
+      h(25)=' *for each variant it reports cooling demand kWh/m2/a'
+      h(26)='  and for the whole model (kWh/a), cooling capacity kW/m2'
+      h(27)='  and for the whole model (kW/a)'
+      h(28)=' *difference in heating, therms and cooling by area and'
+      h(29)='  for the whole building.'
+      CALL EASKABCD('IPV options: (see help)',' ',
+     &  'run required simulations','extract reports',
+     &  'compare reports','continue',irs,29)
+      if(irs.eq.1)then
+        h(1)='Interactive mode uses simulation parameters as '
+        h(2)='defaults. The silent running mode uses the'
+        h(3)='parameters to run in automatic mode. '
+        CALL EASKAB('Simulation interaction options: (see help)',
+     &    ' ','run interactively','silent running mode',isauto,3)
+        call tstamp('>','PRJ: beginning IPV simulations.')
+        doit = ' '
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
+        if(isauto.eq.1)aut=' default'
+        if(isauto.eq.2)then
+          aut=' silent '
+          tmode='text'
+        endif
+
+C Temporarily assume no browsing if in ipv mode.
+        if(browse)then
+          brw = ' -b yes'
+        else
+          brw = ' -b no '
+        endif
+
+        call addpath(LCFGF,longtfile,concat)
+
+C Run only the number of assessments required.
+        if(nipvassmt.eq.1)then
+          assmttag(1)=' -p ann'
+        elseif(nipvassmt.eq.3)then
+          assmttag(1)=' -p win'
+          assmttag(2)=' -p trn'
+          assmttag(3)=' -p sum'
+        elseif(nipvassmt.eq.5)then
+          assmttag(1)=' -p win1'
+          assmttag(2)=' -p spr'
+          assmttag(3)=' -p sum'
+          assmttag(4)=' -p aut'
+          assmttag(5)=' -p win2'
+        endif
+        do 667 ij=1,nipvassmt
+              
+C If prj initial size is a % of default pass this on to child with
+C an offset from prj start position.
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,5a)') 'bps -mode ',tmode,
+     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        longtfile(1:lnblnk(longtfile)),brw,assmttag(ij),aut
+          else
+            write(doit,'(7a)') 'bps -mode ',tmode,
+     &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &        brw,assmttag(ij),aut
+          endif
+          call usrmsg('beginning assessment via',doit,'-')
+          if(isauto.eq.2)then
+            call runit(doit,'-')
+          else
+            call runit(doit,tmode)
+          endif
+          call edisp(iuout,'IPV run complete.')
+  667   continue
+      elseif(irs.eq.2)then
+        h(1)='Interactive mode uses simulation parameters as '
+        h(2)='defaults. The silent running mode uses the'
+        h(3)='parameters to run in automatic mode. '
+        CALL EASKAB('IPV extraction options: (see help)',
+     &    ' ','run interactively','silent running mode',isauto,3)
+        call tstamp('>','PRJ: beginning IPV recovery.')
+        doit = ' '
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
+        if(isauto.eq.1)aut=' default'
+        if(isauto.eq.2)then
+          aut=' silent '
+          tmode='text'
+        endif
+        h(1)='IPV recovery assumes that the relevant results '
+        h(2)='libraries for each simulation are available. '
+        h(3)='The all option does each in sequence. '
+        call easkabcd('IPV recovery options:',' ','intermediate',
+     &    'scan intermediate ->annual','all','continue',IRT,3)
+
+C Extract only for the number of assessments required. Note: the strings
+C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
+C should not be altered in the simulation parameter sets.
+C << add code to disable editing if an IPV has been defined >>
+        if(nipvassmt.eq.1)then
+          runtag(1)=' -act ipv_ann '
+        elseif(nipvassmt.eq.3)then
+          runtag(1)=' -act ipv_win '
+          runtag(2)=' -act ipv_trn '
+          runtag(3)=' -act ipv_sum '
+        elseif(nipvassmt.eq.5)then
+          runtag(1)=' -act ipv_win1 '
+          runtag(2)=' -act ipv_spr '
+          runtag(3)=' -act ipv_sum '
+          runtag(4)=' -act ipv_aut '
+          runtag(5)=' -act ipv_win2 '
+        endif
+
+C Logic to react when browsing a model.
+        remote=.false.
+        if(browse)then
+          remote=.true.
+        else
+          ltmp = LCFGF
+          call addpath(ltmp,longtfile,concat)
+          if(concat)then
+            remote=.true.
+          endif
+        endif
+C Debug.
+C        write(6,*) 'status of browse and remote ',browse,remote
+
+        if(IRT.eq.1.or.IRT.eq.3)then
+          do 668 ij=1,nipvassmt
+            tfile=sblres(ij)
+            if(remote)then
+              call fdroot(tfile,ltpath,filen)
+              call isunix(unixok)
+              if(unixok)then
+                if (ICHAR(ltpath(1:1)).ne.47) then
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &              filen(1:lnblnk(filen))
+                endif
+              else
+                if (ltpath(2:2).ne.':') then
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &              filen(1:lnblnk(filen))
+                endif
+              endif
+C Debug.
+C              write(6,*) 'reset tfile to ',tfile
+            endif
+
+            h(1)='IPV recovery assumes that the relevant results '
+            h(2)='libraries for each simulation are available. '
+            h(3)='The all option does each in sequence. '
+            if(iappw.gt.0.and.iappw.le.200)then
+              write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &          tfile(1:lnblnk(tfile)),runtag(ij),aut
+            else
+              write(doit,'(6a)') 'res -mode ',tmode,
+     &           ' -file ',tfile(1:lnblnk(tfile)),runtag(ij),aut
+            endif
+            call usrmsg('beginning performance recovery via',doit,'-')
+            if(isauto.eq.2)then
+              call runit(doit,'-')
+            else
+              call runit(doit,tmode)
+            endif
+            call edisp(iuout,'This extract complete.')
+ 668      continue
+          if(IRT.eq.3)then
+            tfile=sblres(nipvassmt)
+            if(remote)then
+              call fdroot(tfile,ltpath,filen)
+              call isunix(unixok)
+              if(unixok)then
+                if (ICHAR(ltpath(1:1)).ne.47) then
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &              filen(1:lnblnk(filen))
+                endif
+              else
+                if (ltpath(2:2).ne.':') then
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &              filen(1:lnblnk(filen))
+                endif
+              endif
+C Debug.
+C              write(6,*) 'itr3 reset tfile to ',tfile
+            endif
+            if(iappw.gt.0.and.iappw.le.200)then
+              write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
+            else
+              write(doit,'(6a)') 'res -mode ',tmode,' -file ',
+     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
+            endif
+            call usrmsg('beginning performance recovery via',doit,'-')
+            if(isauto.eq.2)then
+              call runit(doit,'-')
+            else
+              call runit(doit,tmode)
+            endif
+            call edisp(iuout,'IPV report complete.')
+          endif
+        elseif(IRT.eq.2)then
+          tfile=sblres(nipvassmt)
+          if(remote)then
+            call fdroot(tfile,ltpath,filen)
+            call isunix(unixok)
+            if(unixok)then
+              if (ICHAR(ltpath(1:1)).ne.47) then
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &            filen(1:lnblnk(filen))
+              endif
+            else
+              if (ltpath(2:2).ne.':') then
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+     &            filen(1:lnblnk(filen))
+              endif
+            endif
+C Debug.
+C            write(6,*) ' irt2 reset tfile to ',tfile
+          endif
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
+     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
+     &        tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
+          else
+            write(doit,'(6a)') 'res -mode ',tmode,' -file ',
+     &        tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
+          endif
+          call usrmsg('beginning performance recovery via',doit,'-')
+          if(isauto.eq.2)then
+            call runit(doit,'-')
+          else
+            call runit(doit,tmode)
+          endif
+        endif
+      elseif(irs.eq.3)then
+
+C Compare two IPV reports.
+ 41     llt=lnblnk(basefile)
+        h(1)='This is the name of the IPV report for the base case'
+        h(2)='model (or the model you want to reference against).'
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(basefile,'IPV base case report file ?',
+     &      ' ',96,'xxx.rep','IPV base report',IER,2)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(basefile,'IPV base case report file ?',
+     &      ' ',124,'xxx.rep','IPV base report',IER,2)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(basefile,'IPV base case report file ?',
+     &      ' ',144,'xxx.rep','IPV base report',IER,2)
+        endif
+#else
+        CALL EASKF(basefile,'IPV base case report file ?',
+     &    ' ',144,'xxx.rep','IPV base report',IER,2)
+#endif
+        lnf=lnblnk(basefile)
+        inquire (file=basefile(1:lnf),exist=xst)
+        if(xst)then
+          call erpfree(ibasefile,istat)
+          OPEN (ibasefile,FILE=basefile(1:lnf),ACCESS='SEQUENTIAL',
+     &      STATUS='OLD',IOSTAT=ISTAT)
+          if(istat.eq.0)then
+            call edisp(iuout,'base model is')
+            call edisp(iuout,basefile)
+          else
+            call edisp(iuout,'problem with base case file...')
+            goto 41
+          endif
+        endif
+
+C Ask the name of the design variant file.
+ 40     llt=lnblnk(variantfile)
+        h(1)='This is the name of the IPV report for the other'
+        h(2)='model.'
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(variantfile,'IPV variant report file ?',
+     &      ' ',96,'xxx.rep','IPV variant report',IER,2)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(variantfile,'IPV variant report file ?',
+     &      ' ',124,'xxx.rep','IPV variant report',IER,2)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(variantfile,'IPV variant report file ?',
+     &      ' ',144,'xxx.rep','IPV variant report',IER,2)
+        endif
+#else
+        CALL EASKF(variantfile,'IPV variant report file ?',
+     &    ' ',144,'xxx.rep','IPV variant report',IER,2)
+#endif
+        lnf=lnblnk(variantfile)
+        inquire (file=variantfile(1:lnf),exist=xst)
+        if(xst)then
+          call erpfree(ivarfile,istat)
+          OPEN (ivarfile,FILE=variantfile(1:lnf),ACCESS='SEQUENTIAL',
+     &      STATUS='OLD',IOSTAT=ISTAT)
+          if(istat.eq.0)then
+            call edisp(iuout,'variant model is')
+            call edisp(iuout,variantfile)
+          else
+            call edisp(iuout,'problem with variant file...')
+            goto 40
+          endif
+        endif
+
+C Recover data from the base case file.
+C Set test logic to false.
+        ipass=1
+  42    if(ipass.eq.1)ifu=ibasefile
+        if(ipass.eq.2)ifu=ivarfile
+        if(ipass.eq.3)then
+
+C We have done both passes, report differences and exit.
+          call edisp(iuout,' ')
+          call edisp(iuout,'For the base case model:')
+          call edisp(iuout,
+     &            '       Demand              Capacity')
+          call edisp(iuout,
+     &            '        m2     building     m2     building')
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+     &      anu_ht_m2(1),
+     &      anu_ht_bld(1),anu_ht_cap_m2(1),anu_ht_cap_bld(1)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(1),
+     &      anu_ht_thrm_bld(1)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+     &      anu_cl_m2(1),
+     &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
+     &      anu_tot_bld(1)
+          call edisp(iuout,outs)
+          call edisp(iuout,'For the variant model:')
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+     &      anu_ht_m2(2),
+     &      anu_ht_bld(2),anu_ht_cap_m2(2),anu_ht_cap_bld(2)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(2),
+     &      anu_ht_thrm_bld(2)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+     &      anu_cl_m2(2),
+     &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
+     &      anu_tot_bld(2)
+          call edisp(iuout,outs)
+          call edisp(iuout,' ')
+          write(outs,'(4a)')'Diff between ',
+     &      basefile(1:lnblnk(basefile)),
+     &      ' & ',variantfile(1:lnblnk(variantfile))
+          call edisp(iuout,outs)
+          call edisp(iuout,
+     &            '        Demand                 Capacity')
+          call edisp(iuout,
+     &            '          m2     building     m2     building')
+          anu_ht_m2(3)=anu_ht_m2(1)-anu_ht_m2(2)
+          anu_ht_bld(3)=anu_ht_bld(1)-anu_ht_bld(2)
+          anu_ht_thrm_m2(3)=anu_ht_thrm_m2(1)-anu_ht_thrm_m2(2)
+          anu_ht_thrm_bld(3)=anu_ht_thrm_bld(1)-anu_ht_thrm_bld(2)
+          anu_cl_m2(3)=anu_cl_m2(1)-anu_cl_m2(2)
+          anu_cl_bld(3)=anu_cl_bld(1)-anu_cl_bld(2)
+          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
+          anu_tot_bld(3)=anu_tot_bld(1)-anu_tot_bld(2)
+          anu_ht_cap_m2(3)=anu_ht_cap_m2(1)-anu_ht_cap_m2(2)
+          anu_ht_cap_bld(3)=anu_ht_cap_bld(1)-anu_ht_cap_bld(2)
+          anu_cl_cap_m2(3)=anu_cl_cap_m2(1)-anu_cl_cap_m2(2)
+          anu_cl_cap_bld(3)=anu_cl_cap_bld(1)-anu_cl_cap_bld(2)
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+     &      anu_ht_m2(3),
+     &      anu_ht_bld(3),anu_ht_cap_m2(3),anu_ht_cap_bld(3)
+          call edisp(iuout,outs)
+          write(outs,'(a,F8.2,F10.2)') 'Therm ',anu_ht_thrm_m2(3),
+     &      anu_ht_thrm_bld(3)
+          call edisp(iuout,outs)
+          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+     &      anu_cl_m2(3),
+     &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
+          call edisp(iuout,outs)
+          write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
+     &      anu_tot_bld(3)
+          call edisp(iuout,outs)
+
+          CALL EASKAB('comparison options:',' ','exit',
+     &      'do another report',IW,1)
+          if(iw.eq.1)then
+            return
+          else
+            call erpfree(ibasefile,istat)
+            call erpfree(ivarfile,istat)
+            goto 41
+          endif
+        endif
+        atreports=.false.
+ 142    CALL STRIPC(ifu,OUTSTR,0,ND,1,'*Summary',IER)
+        IF(IER.NE.0)goto 2
+        if(OUTSTR(1:8).eq.'*Summary')then
+          write(outs,'(a,i1,a)') 'pass ',ipass,' found summary'
+          call edisp(iuout,outs)
+ 143      CALL STRIPC(ifu,OUTSTR,0,ND,1,'*report',IER)
+          IF(IER.NE.0)goto 1
+          if(OUTSTR(1:7).eq.'*report')then
+C            write(6,*) outstr(1:lnblnk(outstr))
+            K=7
+            CALL EGETWI(OUTSTR,K,id1,1,98,'W','iget',IIER)
+            if(id1.eq.98)then
+
+C We have the performance aggregate
+              CALL EGETW(OUTSTR,K,WORD1,'W','third',IFLAG)
+              CALL EGETW(OUTSTR,K,WORD2,'W','metric clarification',
+     &          IFLAG)
+              if(word2(1:11).eq.'performance')then
+                atreports=.true.
+                im2=.true.
+C                call edisp(iuout,' found performance m^2')
+              elseif(word2(1:20).eq.'building_performance')then
+                atreports=.true.
+                im2=.false.
+C                call edisp(iuout,' found performance building')
+              else
+                atreports=.false.
+                goto 143
+              endif
+              if(atreports)then
+
+C found the correct report, skip title, format, fields lines
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*title',IER)
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*format',IER)
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*fields',IER)
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
+                k=5
+C                write(6,*) outstr(1:lnblnk(outstr))
+                if(im2)then
+                  CALL EGETWR(OUTSTR,K,anu_ht_m2(ipass),0.,0.,'-',
+     &              'heat dmd',IER)
+                  anu_ht_thrm_m2(ipass)=anu_ht_m2(ipass)*0.0341296
+                  CALL EGETWR(OUTSTR,K,anu_cl_m2(ipass),0.,0.,'-',
+     &              'cool dmd',IER)
+                else
+                  CALL EGETWR(OUTSTR,K,anu_ht_bld(ipass),0.,0.,'-',
+     &              'heat dmd',IER)
+                  anu_ht_thrm_bld(ipass)=anu_ht_bld(ipass)*0.0341296
+                  CALL EGETWR(OUTSTR,K,anu_cl_bld(ipass),0.,0.,'-',
+     &              'cool dmd',IER)
+                endif
+
+C Get the total data line, 2nd is the value.
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
+                k=5
+                CALL EGETW(OUTSTR,K,WORD1,'W','total',IFLAG)
+C                write(6,*) outstr(1:lnblnk(outstr))
+                if(im2)then
+                  CALL EGETWR(OUTSTR,K,anu_tot_m2(ipass),0.,0.,'-',
+     &              'total m2',IER)
+                else
+                  CALL EGETWR(OUTSTR,K,anu_tot_bld(ipass),0.,0.,'-',
+     &              'total bld',IER)
+                endif
+                goto 143
+              endif
+            elseif(id1.eq.74)then
+
+C We have capacity aggregate
+              CALL EGETW(OUTSTR,K,WORD1,'W','third',IFLAG)
+              CALL EGETW(OUTSTR,K,WORD2,'W','metric clarification',
+     &          IFLAG)
+              if(word2(1:8).eq.'capacity')then
+                atreports=.true.
+                im2=.true.
+C                call edisp(iuout,' found capacity')
+              elseif(word2(1:17).eq.'building_capacity')then
+                atreports=.true.
+                im2=.false.
+C                call edisp(iuout,' found building capacity')
+              else
+                atreports=.false.
+                goto 143
+              endif
+              if(atreports)then
+
+C Found the correct report, skip title, format, fields lines
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*title',IER)
+                k=0
+                CALL EGETW(OUTSTR,K,WORD1,'W','first',IFLAG)
+                CALL EGETP(OUTSTR,K,WORD2,'W','title',IFLAG)
+                CALL EGETW(OUTSTR,K,WORD3,'W','unit',IFLAG)
+                if(word3(1:5).eq.'W/m^2')then
+                  im2=.true.
+C                  call edisp(iuout,' confirm m^2 capacity')
+                elseif(word3(1:2).eq.'kW')then
+                  im2=.false.
+C                  call edisp(iuout,' confirm building capacity')
+                endif
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*format',IER)
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*fields',IER)
+                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
+                k=5
+C                write(6,*) outstr(1:lnblnk(outstr))
+                if(im2)then
+                  CALL EGETWR(OUTSTR,K,anu_ht_cap_m2(ipass),0.,0.,'-',
+     &              'heat cap',IER)
+                  CALL EGETWR(OUTSTR,K,anu_cl_cap_m2(ipass),0.,0.,'-',
+     &              'cool cap',IER)
+
+C Still need to find building capacity report so look further.
+                  goto 143
+                else
+                  CALL EGETWR(OUTSTR,K,anu_ht_cap_bld(ipass),0.,0.,
+     &              '-','heat cap',IER)
+                  CALL EGETWR(OUTSTR,K,anu_cl_cap_bld(ipass),0.,0.,
+     &              '-','cool cap',IER)
+
+C We now have both demand and capacity, increment ipass.
+                  ipass=ipass+1
+                  goto 42
+                endif
+              endif
+            else
+
+C Not one we are intrested in at the moment.
+              goto 143
+            endif
+          else
+            goto 143
+          endif
+        else
+          goto 142
+        endif
+      elseif(irs.eq.4)then
+        return
+      endif 
+
+C error state.
+  1   call edisp(iuout,'reached end of file looking for report')
+      goto 39
+  2   call edisp(iuout,'reached end of file looking for summary')
+      goto 39
+   
+      end
+        
 C ********** checkmodel
 C checkmodel check model prior to commissioning a simulation. Return logical
 C variables for various topics for possible use by calling routines.
@@ -2579,9 +2994,9 @@ C info being saved.
       common/pophelp/h(60)
       common/rpath/path
 
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*124
+      character*(*) msg,xfile
+      character H*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close text or graphics command
@@ -2595,10 +3010,10 @@ C file. For the graphics ask if file should be further converted.
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
+            longtfile=' '
             call addpath(xfile,longtfile,concat)
           else
-            longtfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
           call wwcclose(longtfile)
@@ -2634,7 +3049,7 @@ C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             longtfile=' '
             call addpath(xfile,longtfile,concat)
-C            write(6,*)'tfile ',tfile
+C            write(6,*)'longtfile ',longtfile
 C            write(6,*)'xfile ',xfile
             call wwcopen(longtfile)
             call wwcsetstart
@@ -3068,7 +3483,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
       CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,CTLDOC*248,OUTSTR*124
-      CHARACTER APE*4,EXT*4,OUTS*124,doit*124,zname*12,zdesc*64,tmode*8
+      CHARACTER APE*4,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok

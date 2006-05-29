@@ -69,9 +69,7 @@ C  AutoOK: logical flag indicating that the the simulator is
 C    running in silent running mode
 C
 C Outputs:
-C
-C  iParseError: flag indicating an error was encountered (ier=0:
-C    no error, ier=1: error)
+C    bCriticalErr     ! flag incidating a critical error has been encountered
 C
 C----------------------------------------------------------------------
       subroutine Parse_MY_clm_db( iFile_num,
@@ -88,7 +86,8 @@ C External functions.
 C Passed arguements
       integer iFile_num        ! climate file number used by bps
       logical bAutoOK          ! flag for silent-running mode
-      integer iParseError      ! flag for error
+      logical bCriticalErr     ! flag incidating a critical
+                               ! error has been encountered
 
 C----------------------------------------------------------------------
 C     ESP-r variables 
@@ -102,14 +101,11 @@ C----------------------------------------------------------------------
       integer iFile_read_err   ! flag indicating that error was
                                ! encountered
 
-      logical bCriticalErr     ! flag incidating a critical
-                               ! error has been encountered
                                
       character*248 cLnBuffer     ! Line buffer
       character*248 cLnWords(124) ! words on the line
       integer iWordCount          ! # of words in a string
       integer iDummy
-      integer iCount,iNext        ! Counters
       
       integer iMiscError          ! Miscellaneous error
 
@@ -130,10 +126,8 @@ C.....Flags for file status
 
       character*124 cMsg          ! message to be displayed to buffer
       character*124 cContext      ! contextual message
-      character*72 cHelp(60)      ! help message array
 
       !logical bDone               ! Loop control
-      logical bOK                 ! Misc flag
       
 C----------------------------------------------------------------------      
 C     References
@@ -146,7 +140,6 @@ C     Initialize
 C--------------------------------------------------------------------
       bParsingClmRecords = .false.
       bCriticalErr       = .false.
-      iParseError        = 0 
       iFile_read_err     = 0
       iMY_clm_file_count = 0
 
@@ -485,13 +478,8 @@ C.....Flags for file status
       logical bNonContigious, bDuplicates, bOrderChanged
 
       integer iYr_buf             ! year buffer
-      character*248 cFile_buf     ! file name buffer
       character*124 cMsg          ! message to be displayed to buffer
       character*124 cContext      ! contextual message
-      character*72 cHelp(60)      ! help message array
-
-      logical bDone               ! Loop control
-      logical bOK                 ! Misc flag
 
 C----------------------------------------------------------------------
 C     Initialze context buffer
@@ -661,6 +649,7 @@ C----------------------------------------------------------------------
 
 C External functions.     
       integer lnblnk
+      character achar
 
 C ESP-r variables
       common/outin/iuout,iuin

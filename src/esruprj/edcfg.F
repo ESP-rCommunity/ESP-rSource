@@ -133,12 +133,12 @@ C Controls.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,LAPRES,LAFRES,DFILE,LPNF,tfile
-      character longtfile*124
+      character longtfile*144
       character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72,LPRFDB*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*124
+      character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,remainder*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
@@ -1181,9 +1181,9 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER jsmlcn*12,jsvfc*4,jsotf*4,jsother*15,jsname*12
       character jsparent*12
-      character doit*124,tmode*8,zname*12,DSFIL*72,ZN*12
+      character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
       character outs*124,SNAME*12,cfgroot*24
-      character ctldoc*248,LCTLF*72,lctmp*72,longtfile*124
+      character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character HOLD*32,zdesc*64,zd*64
@@ -3159,12 +3159,12 @@ C Defaults.
       character*70 listfc70(50)
       character*32 WORDS(12)
 
-      character*72 LPRFDB,path,LCMDFL,LTMP,GTGEOM
+      character LPRFDB*72,path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,ETEXT*82
+      character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character sfile*72,odir*72,subpath*72,action*3,GTNAME*15
+      character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
 C Set folder separator (fs) to \ or / as required.
@@ -3175,6 +3175,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       t72='  '
+      t144='  '
 
 C Ask for source file name and if the file exists then read it;
 C otherwise make general defaults and allow input from scratch.
@@ -3206,8 +3207,28 @@ C Also scan utility files if they exist.
         else
           LTMP=LCMDFL
         endif
-        CALL EASKS(LTMP,' Model configuration file?',' ',72,DFCFG,
+
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+        llt=lnblnk(ltmp)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
      &    'config file name',IER,17)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
+     &    'config file name',IER,17)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,17)
+        endif
+#else
+        CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,17)
+#endif
+
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '
         call st2file(LTMP,LCMDFL)
@@ -3270,15 +3291,15 @@ C The supplied name is a folder name so check and see if there
 C is a cfg folder within it and if so if there is one or more
 C configuration files.
         XST=.FALSE.
-        write(t72,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
+        write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
         ifold=-1
-        call ckaccess(ifold,iaccess,icerr,t72)
+        call ckaccess(ifold,iaccess,icerr,t144)
         if(ifold.eq.1.and.icerr.eq.0)then
           write(cfgroot,'(a)') LCMDFL(1:lnblnk(LCMDFL))
           subpath=' '
           call usrdir(odir)
           write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
-     &      t72(1:lnblnk(t72))
+     &      t144(1:lnblnk(t144))
 #ifdef OSX
 C In OSX slightly different logic. If path ls ./ then standard logic
 C works. If path begins with /usr/esru then no need to prepend odir.
@@ -3329,10 +3350,10 @@ C Try to use information gathered from file scan.
             CALL EPICKS(IX,ivlist,outs,' ',
      &        maxw,nlistf,listfc70,'Available files',IER,3)
             if(ix.eq.1)then
-              write(t72,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
-              write(sfile,'(3a)') t72(1:lnblnk(t72)),fs,
+              write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
+              write(sfile,'(3a)') t144(1:lnblnk(t144)),fs,
      &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-C              write(6,*) sfile
+              write(6,*) 'sfile is ',sfile
               call fdroot(sfile,path,LCFGF)
               CALL ERPFREE(IFCFG,ISTAT)
               call FINDFIL(LCFGF,XST)
@@ -3340,7 +3361,11 @@ C              write(6,*) sfile
           endif
         endif
       else
-        LCFGF=LCMDFL
+        if(lnblnk(LCMDFL).le.72)then
+          write(LCFGF,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+        else
+          write(LCFGF,'(a)') LCMDFL(1:72)
+        endif
       endif
 
 C If not initially found check for if root name only given. Parse

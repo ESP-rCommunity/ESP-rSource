@@ -187,6 +187,7 @@ C Remember if each zone is fully attributed.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72,tfile*72
+      character longtfile*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -198,7 +199,7 @@ C Remember if each zone is fully attributed.
       character glctldoc*248
       character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
       CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LOPTDB,LPCDB,LPRFDB
-      CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*124
+      CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24
       CHARACTER dmdsdesc*248,bdmds*72
@@ -477,7 +478,7 @@ C necessary.  If vi then spawn a new window to do the editing.
           h(2)='use it to edit this file.  '
           CALL ASKOK(' ',' Edit this file?',OK,dok,2)
           IF(OK)then
-            call addpath(LPRJLG,tfile,concat)
+            call addpath(LPRJLG,longtfile,concat)
             tmode='graph'
             if(teditor(1:2).eq.'  ')then
               call usrmsg(
@@ -487,7 +488,7 @@ C necessary.  If vi then spawn a new window to do the editing.
               tmode='text'
             endif
             write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
             call usrmsg('Begining edit via',doit,'-')
             call runit(doit,tmode)
           endif
@@ -1781,7 +1782,8 @@ C not browsing.
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
-      character zname*12,zdesc*64,ZN*12,doit*124,tmode*8,tfile*72
+      character zname*12,zdesc*64,ZN*12,doit*248,tmode*8,tfile*72
+      character longtfile*144
       logical ok,dok,ddok,found,XST,concat,anyish
 
 C Check to see if version of configuration file requires updating.
@@ -1908,9 +1910,9 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
-              call addpath(LCFGF,tfile,concat)
+              call addpath(LCFGF,longtfile,concat)
               write(doit,'(5a)') 'ish -mode text -file ',
-     &          tfile(1:lnblnk(tfile)),' -zone ',
+     &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act update_silent'
               call usrmsg('starting shading analysis via',doit,'-')
               call runit(doit,'text')
@@ -1922,18 +1924,18 @@ C as the command line.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,tfile,concat)
+              call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
               if(iappw.gt.0.and.iappw.le.200)then
                 write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &          tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &          tfile(:lnblnk(tfile)),' -zone ',
+     &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnblnk(ZN)),' -act recalculate'
               else
                 write(doit,'(7a)') 'ish -mode ',tmode,
-     &           ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &           ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &           ' -zone ',ZN(1:lnblnk(ZN)),' -act recalculate'
               endif
               call usrmsg('starting shading analysis via',doit,'-')
