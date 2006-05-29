@@ -67,9 +67,9 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       dimension izdum(MZS)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LCLIM,LCFGF,LUTIL
-      CHARACTER ZNAME*12,zdesc*64,ZNPAD*15
+      CHARACTER ZNAME*12,zdesc*64,ZNPAD*15,doit*248,outs248*248
       CHARACTER*6 NAME
-      character outs*124,tfile*72,cfgroot*24
+      character outs*124,tfile*72,cfgroot*24,longtfile*144
       logical concat
 
 C << following block of code is for testing >>
@@ -284,14 +284,16 @@ C Save surface area of each surface in each zone.
 
 C If the path is other then ./ add in the path to the configuration
 C file name.
-      call addpath(LCFGF,tfile,concat)
+      call addpath(LCFGF,longtfile,concat)
       if(concat)then
         call edisp(iuout,' ')
-        write(outs,'(a,a)')' Configuration file recorded as: ',tfile
-        call edisp(iuout,outs)
+        call edisp(iuout,'Simulation run with configuration file: ')
+        call edisp(iuout,longtfile)
         call edisp(iuout,' ')
       endif
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)tfile
+
+C << NOTE: this needs 36 words wide to be the minimal record width >>
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)longtfile
       IREC=IREC+1
 C     \
 C      \

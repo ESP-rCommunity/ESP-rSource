@@ -171,8 +171,8 @@ C Significant figure reporting limit (NSIGFIG).
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(11)
       character h*72,LFCON*72,LFMUL*72,LTMP*72,OUTS*124,spsname*8
-      character LCLIM*72,LCMDFL*72,inf*72,sps*8,aut*12,fs*1,actf*72
-      character browsing*4
+      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character browsing*4,outs248*248
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
@@ -410,8 +410,8 @@ C      dfdblbl='NT default'
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs)
+        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp248(iuout,outs248,80)
         call tstamp('>',outs)
       else
         LCMDFL='UNKNOWN'

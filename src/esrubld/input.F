@@ -184,8 +184,8 @@ C For reading in of bi-directional data.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8
-      CHARACTER*72 LTDF,LTDFA,LFMUL,LFCON,LCMDFL
+      CHARACTER outs*124,h*72,spsname*8,L144*144
+      CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
       character*72 laprob,lapres,lafres,path,ENTFLNAM
       character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -213,7 +213,7 @@ C Initialize the system variables.
 
 C If an input file has been specified then load it after confirmation
 C and return to the main menu.
-      H(1)='A system configuration file defines the model for'
+      H(1)='A model configuration file defines the model for'
       H(2)='simulation. This can be a building only (in whole or '
       H(3)='part), a plant network, or a combined building and '
       H(4)='plant system. It is also possible to specify building'
@@ -222,11 +222,29 @@ C and return to the main menu.
       H(7)='Examples of system configuration files are given in '
       H(8)='sections 3.8 and 7 of the user manual.'
  42   if (.NOT.(ISIM.gt.1.or.autook)) then
-        ltmp=LCMDFL
-        CALL EASKS(ltmp,' System configuration file name ?',
-     &                        '  ',72,DFCFG,'config file name',IER,8)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LCMDFL=ltmp
+        L144=LCMDFL
+        llt=lnblnk(L144)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &    'config file name',IER,8)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+     &    'config file name',IER,8)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,8)
+        endif
+#else
+        CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &    'config file name',IER,8)
+#endif
+        if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
+          LCMDFL=L144
         else
           goto 42
         endif

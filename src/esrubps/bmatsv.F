@@ -196,7 +196,7 @@ C Active domain common.
 C Common for electrical file.
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       COMMON/rcmd/LCMDFL
-      CHARACTER*72 LCMDFL
+      CHARACTER LCMDFL*144
       
 C Additional commons for SHOCC.
       common/c20/nzsur(mcom),nztv(mcom)

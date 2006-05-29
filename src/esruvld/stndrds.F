@@ -250,7 +250,7 @@ C irecdata - zone and surface number for results recovery (=0 if all)
 
       character outstr*124,word*20,t24*24,t72*72
       character LVFILE*72,LGROUP*42,tgroup*42
-      character H*72,outs*256,doit*124
+      character H*72,outs*256,doit*248
       character xfile*72,tg*1,delim*1,t12*12
       character chkresult*8
       

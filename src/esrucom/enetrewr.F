@@ -1102,10 +1102,10 @@ C Type casting (all varaiables and arrays cast explicitly)
 C Characters
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*24 CFGROOT
+      CHARACTER CFGROOT*24
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &ENTFLNAM,LFIL,DEFLNAM,H,LCFGF,TFILE
-      CHARACTER*124 OUTS
+      CHARACTER OUTS*124,longtfile*144
       LOGICAL CONCAT
 
 
@@ -1125,10 +1125,12 @@ C unit ifil=iunit+1
       ELSE
         LFIL=DEFLNAM(1:LNBLNK(DEFLNAM))
       ENDIF
-      TFILE=' '
+      longtfile=' '
+
 C Add the networks path to the filename if required.
-      CALL ADDPATH(LFIL,TFILE,CONCAT)
-      IF(CONCAT) LFIL=TFILE
+C Why is there an addpath call at this point? >>
+      CALL ADDPATH(LFIL,longtfile,CONCAT)
+      IF(CONCAT) LFIL=longtfile(1:72)
 
 C Ask the user for the file name and open the temporary file with
       H(1)='This file will contain all the information relating to the'

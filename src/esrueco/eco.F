@@ -145,10 +145,10 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
-      CHARACTER*72 LFCON,LFMUL,inf,LCMDFL,LOPTDB
+      CHARACTER LFCON*72,LFMUL*72,inf*144,LCMDFL*144,LOPTDB*72
       CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER path*72,upath*72,esprc*72
+      CHARACTER path*72,upath*72,esprc*72,L144*144
       CHARACTER dfdblbl*20,defdbfl*72
       CHARACTER NAM*72,TITL*72
 C      CHARACTER tab*1
@@ -655,12 +655,31 @@ C Incllude break and loss in results
       elseif (INO.eq.1) then 
 
 C Select/change ESP-r configuration file.
-        H(1)='The problem configuration file holds the definition '
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+  289   H(1)='The problem configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
-  289   CALL EASKS(LCMDFL,' Problem name? ',' ',72,DFCFG,
+        L144=LCMDFL
+        llt=lnblnk(L144)
+#ifdef X11
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
+     &      'config file name',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
+     &      'config file name',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
+     &      'config file name',IER,3)
+        endif
+#else
+        CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
      &    'config file name',IER,3)
-        IF(LCMDFL.EQ.' ')GOTO 289
+#endif
+        IF(L144.EQ.' ')GOTO 289
+        LCMDFL=L144
         goto 42
       elseif (INO.eq.3) then 
 
@@ -1018,6 +1037,7 @@ C info being saved.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
       logical concat
 
 C Each call is a toggle. If open then close text or graphics command
@@ -1034,13 +1054,13 @@ C file. For the graphics ask if file should be further converted.
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
-            tfile=' '
-            call addpath(xfile,tfile,concat)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
           else
-            tfile=xfile
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
           call wwcsetend
-          call wwcclose(tfile)
+          call wwcclose(longtfile)
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
@@ -1071,9 +1091,9 @@ C file. For the graphics ask if file should be further converted.
 
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
-            tfile=' '
-            call addpath(xfile,tfile,concat)
-            call wwcopen(tfile)
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         else
@@ -1082,8 +1102,8 @@ C passing request to wwlib.c
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
           elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         endif

@@ -87,7 +87,7 @@ C Active domain common.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character outs*124,ltmp*72,h*72,path*72,upath*72,tfile*144
+      character outs*124,ltmp*72,h*72,path*72,upath*72,longtfile*144
       character cfgroot*24,LCFGF*72
       character*72 LAPROB,LAPRES,LAFRES,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72
@@ -115,7 +115,7 @@ C Check the configuration file name and if concat is true then
 C bps was started up somewhere other than the cfg folder so
 C results files should be saved to the users home folder.
         ltmp = LCFGF
-        call addpath(ltmp,tfile,concat)
+        call addpath(ltmp,longtfile,concat)
         if(concat)then
           remote=.true.
         endif

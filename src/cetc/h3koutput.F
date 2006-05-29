@@ -822,7 +822,7 @@ C     tzph,tzpc are zone heating/cooling use over time.
       COMMON/C22/ICLIM,LCLIM
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE
       COMMON/rcmd/LCMDFL
-      character*72 LCMDFL
+      character LCMDFL*144
       character LTMP*72,h*72,zname*12,zdesc*64,outs*124
       character PFILE*72,MSTRFILE*72
       character cfgroot*24,tab*1
@@ -1290,7 +1290,7 @@ C     OUTPUT MONTHLY ENERGY VALUES of FC TO FILE (iFC_TimeStep_File_Number)
       COMMON/rcmd/LCMDFL
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       character outs*512
-      character*72 LCMDFL
+      character LCMDFL*144
       logical bInStartup        ! test for start-up period (function)
 C if FC timestep output is set to true then open output file for FC data (cfg file/path name)+(.fcts)
 C These if statements checks which month it is in and if the file is already open for that quarter.

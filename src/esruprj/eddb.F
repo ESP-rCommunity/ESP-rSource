@@ -83,10 +83,10 @@ C Climate related.
       character H*72,LTMP*72,LOPTDB*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,linstd*32
+      character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,DESCP*40
       character*72 ITEMS(15)
-      character doit*124,tmode*8,tfile*72
+      character doit*248,tmode*8,tfile*72,longtfile*144
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character DEPRE*40,OUTSTR*124,LCOPY*72,LTMPFL*72,LASCI*72
       character DFILE*72
@@ -1391,14 +1391,15 @@ C name to include the path and create a string to drive pdb.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LPCDB,tfile,concat)
+              call addpath(LPCDB,longtfile,concat)
               if(iappw.gt.0.and.iappw.le.200)then
                 write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &            tfile(1:lnblnk(tfile)),' &'
+     &            longtfile(1:lnblnk(longtfile)),' &'
               else
                 write(doit,'(5a)') 'pdb -mode ',tmode,
-     &            ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' &'
+     &            ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &            ' &'
               endif
               call usrmsg(' ','staring plant db module.','-')
               call runit(doit,tmode)
@@ -1461,14 +1462,14 @@ C name to include the path and create a string to drive pdb.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPCDB,tfile,concat)
+            call addpath(LPCDB,longtfile,concat)
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          tfile(1:lnblnk(tfile)),' &'
+     &          longtfile(1:lnblnk(longtfile)),' &'
             else
               write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' &'
+     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
             endif
             call usrmsg(' ','staring plant db module.','-')
             call runit(doit,tmode)
@@ -1533,14 +1534,14 @@ C name to include the path and create a string to drive pdb.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPCDB,tfile,concat)
+            call addpath(LPCDB,longtfile,concat)
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          tfile(1:lnblnk(tfile)),' &'
+     &          longtfile(1:lnblnk(longtfile)),' &'
             else
               write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' &'
+     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
             endif
             call usrmsg(' ','staring plant db module.','-')
             call runit(doit,tmode)
@@ -1606,14 +1607,14 @@ C the file name as known to esp-r and LCOPY for the system cp call.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPCDB,tfile,concat)
+            call addpath(LPCDB,longtfile,concat)
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          tfile(1:lnblnk(tfile)),' &'
+     &          longtfile(1:lnblnk(longtfile)),' &'
             else
               write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',tfile(1:lnblnk(tfile)),' &'
+     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
             endif
             call usrmsg(' ','staring plant db module.','-')
             call runit(doit,tmode)
@@ -1720,9 +1721,9 @@ C name to include the path and create a string to drive viewer.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LPRFDB,tfile,concat)
+              call addpath(LPRFDB,longtfile,concat)
               write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                    tfile(1:lnblnk(tfile)),' &'
+     &                    longtfile(1:lnblnk(longtfile)),' &'
               call runit(doit,tmode)
               moddb=.true.
             else
@@ -1762,9 +1763,9 @@ C name to include the path and create a string to drive viewer.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,tfile,concat)
+            call addpath(LPRFDB,longtfile,concat)
             write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
             call runit(doit,tmode)
             moddb=.true.
           else
@@ -1839,9 +1840,9 @@ C name to include the path and create a string to drive viewer.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,tfile,concat)
+            call addpath(LPRFDB,longtfile,concat)
             write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                  tfile(1:lnblnk(tfile)),' &'
+     &                  longtfile(1:lnblnk(longtfile)),' &'
             call runit(doit,tmode)
           endif
         elseif(isw.eq.4)then
@@ -1909,9 +1910,9 @@ C name to include the path and create a string to drive viewer.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,tfile,concat)
+            call addpath(LPRFDB,longtfile,concat)
             write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
             call runit(doit,tmode)
           else
             goto 244
@@ -2496,13 +2497,14 @@ C from version manager
       common/deflt4/dinstpath
 
       CHARACTER*72 H,LCLIM,CDBLFIL,DFILE,LASCI,LTMP,TAFILE,TFILE
-      CHARACTER CDBLBL*20,DOIT*124,FS*1,TMODE*8,CLMLOC*30,LCOPY*72
+      character longtfile*144,longtafile*144
+      CHARACTER CDBLBL*20,DOIT*248,FS*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,PATH
       LOGICAL CLKOK,OK,CONCAT,COPYDEF,MODDB,XST,DOK,UNIXOK
-      character cfgroot*24,LCFGF*72,linstd*32
+      character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,NNAME
       dimension ICLM(24,6)
@@ -2624,14 +2626,14 @@ C name to include the path and create a string to drive clm.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCLIM,tfile,concat)
+        call addpath(LCLIM,longtfile,concat)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
      &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &        tfile(1:lnblnk(tfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),' &'
         else
           write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &        tfile(1:lnblnk(tfile)),' & '
+     &        longtfile(1:lnblnk(longtfile)),' & '
         endif
         call edisp(iuout,' Invoking climate analysis facility.')
         call edisp(iuout,doit)
@@ -2682,14 +2684,14 @@ C use the editing facility.
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LCLIM,tfile,concat)
+            call addpath(LCLIM,longtfile,concat)
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            tfile(1:lnblnk(tfile)),' &'
+     &            longtfile(1:lnblnk(longtfile)),' &'
             else
               write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &            tfile(1:lnblnk(tfile)),' & '
+     &            longtfile(1:lnblnk(longtfile)),' & '
             endif
             CALL ASKOK(' ','Browse/edit selected climate data?',
      &                  OK,dok,3)
@@ -2790,14 +2792,14 @@ C name to include the path and create a string to drive clm.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCLIM,tfile,concat)
+          call addpath(LCLIM,longtfile,concat)
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          tfile(1:lnblnk(tfile)),' &'
+     &          longtfile(1:lnblnk(longtfile)),' &'
           else
             write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &          tfile(1:lnblnk(tfile)),' & '
+     &          longtfile(1:lnblnk(longtfile)),' & '
           endif
           CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
           if(ok)then
@@ -2868,14 +2870,14 @@ C the file name as known to esp-r and LCOPY for the system cp call.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCLIM,tfile,concat)
+          call addpath(LCLIM,longtfile,concat)
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          tfile(1:lnblnk(tfile)),' &'
+     &          longtfile(1:lnblnk(longtfile)),' &'
           else
             write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &          tfile(1:lnblnk(tfile)),' & '
+     &          longtfile(1:lnblnk(longtfile)),' & '
           endif
           CALL ASKOK(' ','Browse/edit copied climate data?',OK,dok,3)
           if(ok)then
@@ -2907,16 +2909,16 @@ C Confirm suggested name and then write out asci file.
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-          call addpath(LCLIM,tfile,concat)
-          call addpath(LASCI,tafile,concat)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
           write(outs,'(2a)') 'Converting climate data: ',
      &        LCLIM(1:lnblnk(LCLIM))
           call edisp(iuout,outs)
           call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -act bin2asci silent ',
-     &        tafile(1:lnblnk(tafile))
+     &        longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
+     &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
             call runit(doit,tmode)
@@ -2952,16 +2954,16 @@ C Confirm suggested name and then write out binary file.
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-          call addpath(LCLIM,tfile,concat)
-          call addpath(LASCI,tafile,concat)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
           write(outs,'(2a)') 'Converting climate data: ',
      &        LCLIM(1:lnblnk(LCLIM))
           call edisp(iuout,outs)
           call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -act asci2bin silent ',
-     &        tafile(1:lnblnk(tafile))
+     &        longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
+     &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
             call runit(doit,tmode)
@@ -2998,13 +3000,13 @@ C Confirm suggested name and then write out binary file.
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-          call addpath(LCLIM,tfile,concat)
-          call addpath(LASCI,tafile,concat)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
           call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
-     &        tfile(1:lnblnk(tfile)),' -act epw2bin silent ',
-     &        tafile(1:lnblnk(tafile))
+     &        longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
+     &        longtafile(1:lnblnk(longtafile))
           h(1)='Use the browse function to clarify whether the climate'
           h(2)='data you have selected is appropriate for the current '
           h(3)='model. '

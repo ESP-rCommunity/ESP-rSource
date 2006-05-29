@@ -1004,6 +1004,9 @@ C Read in volume name, type and geometry.
  60     continue
       endif
 
+C Check if all boundary cells have been defined as boundary conditions
+      CALL BCEKCK(ITRC)
+
 C Now read solid boundary conditions.
       CALL STRIPC(IFL,OUTSTR,0,ND,1,'solid volumes',IER)
       K=0
@@ -2372,3 +2375,235 @@ C contaminant is zero it is set to the default value unity
       RETURN
       END
 
+C ************************ BCEKCK ************************
+C This subroutine checks the boundary conditions of all boundary cells  
+C (blockages are yet not considered) to be defined
+
+      SUBROUTINE BCEKCK(ITRC)
+#include "cfd.h"
+
+      COMMON/ICFNOD/ICFD,ICP
+      COMMON/OUTIN/IUOUT,IUIN
+      common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
+     &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
+      common/KEYVOLN/VOLNAME(MNVLS,MNZ),VCsurf(MNVLS,MNZ)
+      common/grdmax/NTCX,NTCY,NTCZ
+
+      character VOLNAME*12, VCsurf*12,OUTSTR*72,FACE*7,STARST*72
+      INTEGER IXZST(NTCELX,NTCELZ),IXYHH(NTCELX,NTCELY)
+      INTEGER IYZET(NTCELY,NTCELZ),IXZNT(NTCELX,NTCELZ)
+      INTEGER IXYLL(NTCELX,NTCELY),IYZWT(NTCELY,NTCELZ)
+      LOGICAL WARN
+
+       DO 45 II=1,NTCX
+         DO 46 KK=1,NTCZ
+           IXZST(II,KK)=0
+           IXZNT(II,KK)=0         
+ 46      CONTINUE
+         DO 47 JJ=1,NTCY
+           IXYHH(II,JJ)=0
+           IXYLL(II,JJ)=0
+ 47      CONTINUE
+ 45    CONTINUE
+       DO 48 JJ=1,NTCY
+         DO 49 KK=1,NTCZ
+           IYZET(JJ,KK)=0
+           IYZWT(JJ,KK)=0         
+ 49      CONTINUE
+ 48    CONTINUE
+*      do 901 iz=1,ntcz
+*      write(6,*)(ixzst(ix,iz),ix=1,ntcx)
+* 901  continue
+*       write(6,*)'ntcx,ntcy,ntcz',ntcx,ntcy,ntcz
+
+      WARN=.FALSE.
+      NBC=NVOL(ICFD)      
+      DO 1 IBC=1,NBC
+        IF(IVOLF(IBC,ICFD).EQ.1)THEN      
+
+C West facing boundary conditions
+          FACE='West'
+          IF(IVCELLS(IBC,ICFD,2).EQ.2)THEN
+            DO 101 IY=JVCELLS(IBC,ICFD,1)-1,JVCELLS(IBC,ICFD,2)-1
+              DO 102 IZ=KVCELLS(IBC,ICFD,1)-1,KVCELLS(IBC,ICFD,2)-1
+                IYZWT(IY,IZ)=IYZWT(IY,IZ)+1
+ 102          CONTINUE
+ 101        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            STARST='It should start at cell # 1 in x direction'
+          ENDIF
+        ELSEIF(IVOLF(IBC,ICFD).EQ.2)THEN      
+
+C East facing boundary conditions
+          FACE='East'
+          IF(IVCELLS(IBC,ICFD,1).EQ.NTCX+1)THEN
+            DO 201 IY=JVCELLS(IBC,ICFD,1)-1,JVCELLS(IBC,ICFD,2)-1
+              DO 202 IZ=KVCELLS(IBC,ICFD,1)-1,KVCELLS(IBC,ICFD,2)-1
+                IYZET(IY,IZ)=IYZET(IY,IZ)+1
+ 202          CONTINUE
+ 201        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            WRITE(STARST,'(A,I3,A)')'It should stop at cell #'
+     &      ,NTCX,' in x direction'
+          ENDIF
+        ELSEIF(IVOLF(IBC,ICFD).EQ.3)THEN      
+
+C South facing boundary conditions
+          FACE='South'
+          IF(JVCELLS(IBC,ICFD,1).EQ.2)THEN
+            DO 301 IX=IVCELLS(IBC,ICFD,1)-1,IVCELLS(IBC,ICFD,2)-1
+              DO 302 IZ=KVCELLS(IBC,ICFD,1)-1,KVCELLS(IBC,ICFD,2)-1
+                IXZST(IX,IZ)=IXZST(IX,IZ)+1
+ 302          CONTINUE
+ 301        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            STARST='It should start at cell # 1 in y direction'
+          ENDIF
+        ELSEIF(IVOLF(IBC,ICFD).EQ.4)THEN      
+
+C North facing boundary conditions
+          FACE='North'
+          IF(JVCELLS(IBC,ICFD,2).EQ.NTCY+1)THEN
+            DO 401 IX=IVCELLS(IBC,ICFD,1)-1,IVCELLS(IBC,ICFD,2)-1
+              DO 402 IZ=KVCELLS(IBC,ICFD,1)-1,KVCELLS(IBC,ICFD,2)-1
+                IXZNT(IX,IZ)=IXZNT(IX,IZ)+1
+ 402          CONTINUE
+ 401        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            WRITE(STARST,'(A,I3,A)')'It should stop at cell #'
+     &      ,NTCY,' in y direction'
+          ENDIF
+        ELSEIF(IVOLF(IBC,ICFD).EQ.5)THEN      
+
+C Low facing boundary conditions
+          FACE='Low'
+          IF(KVCELLS(IBC,ICFD,1).EQ.2)THEN
+            DO 501 IX=IVCELLS(IBC,ICFD,1)-1,IVCELLS(IBC,ICFD,2)-1
+              DO 502 IY=JVCELLS(IBC,ICFD,1)-1,JVCELLS(IBC,ICFD,2)-1
+                IXYLL(IX,IY)=IXYLL(IX,IY)+1
+ 502          CONTINUE
+ 501        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            STARST='It should start at cell # 1 in z direction'
+          ENDIF
+        ELSEIF(IVOLF(IBC,ICFD).EQ.6)THEN      
+
+C High facing boundary conditions
+          FACE='High'
+          IF(KVCELLS(IBC,ICFD,2).EQ.NTCZ+1)THEN
+            DO 601 IX=IVCELLS(IBC,ICFD,1)-1,IVCELLS(IBC,ICFD,2)-1
+              DO 602 IY=JVCELLS(IBC,ICFD,1)-1,JVCELLS(IBC,ICFD,2)-1
+                IXYHH(IX,IY)=IXYHH(IX,IY)+1
+ 602          CONTINUE
+ 601        CONTINUE
+          ELSE
+            WARN=.TRUE.
+            WRITE(STARST,'(A,I3,A)')'It should stop at cell #'
+     &      ,NTCZ,' in z direction'
+          ENDIF
+        ENDIF
+
+C Warn user if cell number starts/stops wrongly
+        IF(WARN)THEN
+          WRITE(OUTSTR,'(4A)')'Boundary condition ',
+     &      VOLNAME(IBC,ICFD)(1:LNBLNK(VOLNAME(IBC,ICFD))),' faces '
+     &      ,FACE(1:LNBLNK(FACE))
+          CALL USRMSG(OUTSTR,STARST,'W')
+          WARN=.FALSE.
+        ENDIF
+ 1    CONTINUE
+
+*      IF(ITRC.GT.0)THEN
+*        do 900 iz=1,ntcz
+*          write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
+* 900    continue
+*
+*        do 901 iz=1,ntcz
+*          write(6,*)'ixznt ',(ixznt(ix,iz),ix=1,ntcx)
+* 901    continue
+*
+*        do 902 iz=1,ntcz
+*          write(6,*)'iyzet ',(iyzet(iy,iz),iy=1,ntcy)
+* 902    continue
+*
+*        do 903 iz=1,ntcz
+*          write(6,*)'iyzwt ',(iyzwt(iy,iz),iy=1,ntcy)
+* 903    continue
+* 
+*        do 904 ix=1,ntcx
+*          write(6,*)'ixyhh ',(ixyhh(ix,iy),iy=1,ntcy)
+* 904   continue
+*
+*        do 905 ix=1,ntcx
+*          write(6,*)'ixyll ',(ixyll(ix,iy),iy=1,ntcy)
+* 905    continue
+*      ENDIF
+
+C Do checks and issue warning messages if any
+C North and South facing boundary conditions
+      DO 311 IX=1,NTCX
+        DO 312 IZ=1,NTCZ
+          IF(IXZST(IX,IZ).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # x=',IX,
+     &      ' and cell # z=',IZ,' are not defined as boundary '
+            STARST='conditions facing South or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+          IF(IXZNT(IX,IZ).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # x=',IX,
+     &      ' and cell # z=',IZ,' are not defined as boundary'
+            STARST='conditions facing North or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+ 312    CONTINUE
+ 311  CONTINUE
+
+C East and West facing boundary conditions
+      DO 411 IY=1,NTCY
+        DO 412 IZ=1,NTCZ
+          IF(IYZWT(IY,IZ).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # y=',IY,
+     &      ' and cell # z=',IZ,' are not defined as boundary'
+            STARST='conditions facing West or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+          IF(IYZET(IY,IZ).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # y=',IY,
+     &      ' and cell # z=',IZ,' are not defined as boundary'
+            STARST='conditions facing East or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+ 412    CONTINUE
+ 411  CONTINUE
+
+C High and Low facing boundary conditions
+      DO 511 IX=1,NTCX
+        DO 512 IY=1,NTCY
+          IF(IXYLL(IX,IY).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # x=',IX,
+     &      ' and cell # y=',IY,' are not defined as boundary'
+            STARST='conditions facing Low or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+          IF(IXYHH(IX,IY).NE.1)THEN
+            WRITE(OUTSTR,'(A,I3,A,I3,A)')'Boundary cell # x=',IX,
+     &      ' and cell # y=',IY,' are not defined as boundary'
+            STARST='conditions facing High or defined more than once'
+            CALL EDISP(IUOUT,OUTSTR)
+            CALL EDISP(IUOUT,STARST)
+          ENDIF
+ 512    CONTINUE
+ 511  CONTINUE
+      RETURN
+      END
+      

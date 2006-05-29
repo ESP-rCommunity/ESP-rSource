@@ -66,9 +66,9 @@ C will have been defined prior to calling edmrt.
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
-      character doit*124,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
+      character doit*248,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1
+      character docpth*24,tmppth*24,dbspth*24,act*1,longtfile*144
 
       cfgmod=.false.
 
@@ -157,17 +157,17 @@ C to include the path and create a string to drive mrt.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,tfile,concat)
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,4a)') 'mrt -mode ',tmode,
      &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
-     &        tfile(:lnblnk(tfile)),' -zone ',ZN(1:lnblnk(ZN))
+     &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN))
           else
             write(doit,'(6a)') 'mrt -mode ',tmode,
-     &        ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN))
           endif
           call usrmsg('starting mrt module via',doit,'-')
@@ -505,17 +505,18 @@ C to include the path and create a string to drive mrt.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,tfile,concat)
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,5a)') 'mrt -mode ',tmode,
      &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
-     &        tfile(:lnblnk(tfile)),' -zone ',ZN(1:lnblnk(ZN)),' &'
+     &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN)),
+     &        ' &'
           else
             write(doit,'(7a)') 'mrt -mode ',tmode,
-     &        ' -s 0 0 0 -file ',tfile(:lnblnk(tfile)),
+     &        ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN)),' &'
           endif
           call usrmsg('starting mrt module via',doit,'-')

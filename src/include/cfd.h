@@ -20,7 +20,10 @@ C  Maximum number of gridding regions per axis (usual setting MNREG=20)
       PARAMETER (MNREG=20)
 C  Maximum number of heat source (usual setting MNHS=3)
       PARAMETER (MNHS=3)
-C  Maximum number of solid boundaries per zone (set equal to MS in building.h)
+C  Maximum number of solid boundaries per zone 
+C (set equal to or greater than MS in building.h, because of current
+C method of specification of solid boundary conditions from building
+C surfaces)
       PARAMETER (MNSBZ=32)
 C  Maximum number of zones with CFD (usual setting MNZ=1)
       PARAMETER (MNZ=1)

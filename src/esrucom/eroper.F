@@ -1200,7 +1200,7 @@ C Zero the loadcount array for the current zone.
  40   continue
 
 C Debug..
-      write(6,*) 'Nb of weekday/sat/sun periods for occ/lt/equip'
+C      write(6,*) 'Nb of weekday/sat/sun periods for occ/lt/equip'
       if(ncas1.gt.0)then
         do 41 ij=1,ncas1
           if(icgt1(ij).eq.1)then
@@ -1282,13 +1282,13 @@ C Determine if any of the casual gain types were mixed.
       endif
 
 C Debug..
-      write(6,*) ' weekday loadcount loadm2count loadmixed'
-      write(6,*)loadcount(ic,1,1),loadcount(ic,2,1),loadcount(ic,3,1),
-     & loadcount(ic,4,1),loadcount(ic,5,1)
-      write(6,*)loadm2count(ic,1,1),loadm2count(ic,2,1),
-     &  loadm2count(ic,3,1)
-      write(6,*)loadmixed(ic,1,1),loadmixed(ic,2,1),loadmixed(ic,3,1),
-     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
+C      write(6,*) ' weekday loadcount loadm2count loadmixed'
+C      write(6,*)loadcount(ic,1,1),loadcount(ic,2,1),loadcount(ic,3,1),
+C     & loadcount(ic,4,1),loadcount(ic,5,1)
+C      write(6,*)loadm2count(ic,1,1),loadm2count(ic,2,1),
+C     &  loadm2count(ic,3,1)
+C      write(6,*)loadmixed(ic,1,1),loadmixed(ic,2,1),loadmixed(ic,3,1),
+C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
 
       if(ncas2.gt.0)then
         do 42 ij=1,ncas2
@@ -1371,13 +1371,13 @@ C Determine if any of the casual gain types were mixed.
       endif
 
 C Debug..
-      write(6,*) ' saturday loadcount loadm2count loadmixed'
-      write(6,*)loadcount(ic,1,2),loadcount(ic,2,2),loadcount(ic,3,2),
-     & loadcount(ic,4,1),loadcount(ic,5,1)
-      write(6,*)loadm2count(ic,1,2),loadm2count(ic,2,2),
-     &  loadm2count(ic,3,2)
-      write(6,*)loadmixed(ic,1,2),loadmixed(ic,2,2),loadmixed(ic,3,2),
-     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
+C      write(6,*) ' saturday loadcount loadm2count loadmixed'
+C      write(6,*)loadcount(ic,1,2),loadcount(ic,2,2),loadcount(ic,3,2),
+C     & loadcount(ic,4,1),loadcount(ic,5,1)
+C      write(6,*)loadm2count(ic,1,2),loadm2count(ic,2,2),
+C     &  loadm2count(ic,3,2)
+C      write(6,*)loadmixed(ic,1,2),loadmixed(ic,2,2),loadmixed(ic,3,2),
+C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
       if(ncas3.gt.0)then
         do 43 ij=1,ncas3
           if(icgt3(ij).eq.1)then
@@ -1459,10 +1459,10 @@ C Determine if any of the casual gain types were mixed.
       endif
 
 C Debug..
-      write(6,*)loadcount(ic,1,3),loadcount(ic,2,3),loadcount(ic,3,3),
-     & loadcount(ic,4,1),loadcount(ic,5,1)
-      write(6,*)loadmixed(ic,1,3),loadmixed(ic,2,3),loadmixed(ic,3,3),
-     &  loadmixed(ic,4,3),loadmixed(ic,5,3)
+C      write(6,*)loadcount(ic,1,3),loadcount(ic,2,3),loadcount(ic,3,3),
+C     & loadcount(ic,4,1),loadcount(ic,5,1)
+C      write(6,*)loadmixed(ic,1,3),loadmixed(ic,2,3),loadmixed(ic,3,3),
+C     &  loadmixed(ic,4,3),loadmixed(ic,5,3)
 C      write(6,*) load24
       return
       end

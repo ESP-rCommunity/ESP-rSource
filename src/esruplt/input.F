@@ -63,7 +63,7 @@ C Defaults.
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      CHARACTER H*72,LCFGF*72,path*72,LCMDFL*72
+      CHARACTER H*72,LCFGF*72,path*72,LCMDFL*144,L144*144
       CHARACTER outs*124
       LOGICAL OK,dok
 
@@ -80,11 +80,33 @@ C Initialise system configuration file (read only mode)
       IUNIT=IFIL+1
 
 C Ask for plant file name.
-C << Is this network file or a system config (which includes plant) ? >>
- 44   H(1)='This is the plant network definition.'
-      CALL EASKS(LCMDFL,' Plant network file name ?',
-     &   '  ',72,DPNF,'plant file name',IER,1)
-      IF(LCMDFL.eq.' ')goto 44
+      L144=LCMDFL
+
+C Call EASKF depending on the current file name length.
+   44 llt=lnblnk(L144)
+      H(1)='This is the plant network definition.'
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+#ifdef X11
+      if(llt.lt.96)then
+        CALL EASKF(L144,' Plant configuration file?',' ',96,DFCFG,
+     &    'plt config file name',IER,1)
+      elseif(llt.ge.96.and.llt.lt.124)then
+        CALL EASKF(L144,' Plant configuration file?',' ',124,DFCFG,
+     &    'plt config file name',IER,1)
+      elseif(llt.ge.124.and.llt.le.144)then
+        CALL EASKF(L144,' Plant configuration file?',' ',144,DFCFG,
+     &    'plt config file name',IER,1)
+      endif
+#else
+      CALL EASKF(L144,' Plant configuration file?',' ',144,DFCFG,
+     &  'plt config file name',IER,1)
+#endif
+
+      IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 44
+      call st2file(L144,LCMDFL)
 
 C Find the path and local file name.
       call fdroot(LCMDFL,path,LCFGF)
