@@ -7,6 +7,7 @@ PDFdir = $(SRCdir)/esrupdf
 TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 CETCdir = $(SRCdir)/cetc
+INCLdir = $(SRCdir)/include
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -210,7 +211,7 @@ clean:
 	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
 	stndrds.F startup.F tdfile.F \
 	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
-	MultiYear_climate.F
+	MultiYear_climate.F $(INCLdir)/espinstalldir.h
 
 
 
