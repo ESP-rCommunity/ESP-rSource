@@ -1,0 +1,117 @@
+# composite construction db defined in databases/ccht_constr.db1/databases/north_american.constrdb
+# based on materials db databases/ccht_constr.db1/databases/north_american.materialdb
+   18     # no of composites 
+# layers  description   optics 
+    5    ccht_wall     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    4    0.1000  Outer leaf brick
+    0    0.0250  air  0.170 0.170 0.170
+   67    0.0110  Chipboard
+  281    0.1400  Glass Fibre Quilt
+   72    0.0120  Plywood
+# layers  description   optics 
+    3    ccht_window   TRAN  ccht-win            
+# db ref  thick   db name & air gap R 
+  242    0.0030  Plate glass
+    0    0.0130  air  0.341 0.341 0.341
+  242    0.0030  Plate glass
+# layers  description   optics 
+    1    slab_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   21    0.2500  Light mix
+# layers  description   optics 
+    2    foundation_   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   21    0.2000  Light mix
+  107    0.0135  Gypsum plasterboard
+# layers  description   optics 
+    3    ceiling       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  107    0.0127  Gypsum plasterboard
+  219    0.2500  Thermalite turbo block
+   72    0.0250  Plywood
+# layers  description   optics 
+    5    ccht_wall_r   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   72    0.0120  Plywood
+  281    0.1400  Glass Fibre Quilt
+   67    0.0110  Chipboard
+    0    0.0250  air  0.170 0.170 0.170
+    4    0.1000  Outer leaf brick
+# layers  description   optics 
+    4    floors        OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  225    0.0150  Synthetic carpet
+   65    0.0250  Flooring
+    0    0.1000  air  0.170 0.170 0.170
+   70    0.0170  Plywood
+# layers  description   optics 
+    4    floors_r      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   70    0.0170  Plywood
+    0    0.1000  air  0.170 0.170 0.170
+   65    0.0250  Flooring
+  225    0.0150  Synthetic carpet
+# layers  description   optics 
+    1    int_doors     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69    0.0250  Oak (radial)
+# layers  description   optics 
+    3    ext_doors     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  283    0.0050  light steel door
+  205    0.0250  Polyurethane foam board
+  283    0.0050  light steel door
+# layers  description   optics 
+    2    asphalt       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  163    0.0050  Asphalt mastic roofing
+   72    0.0120  Plywood
+# layers  description   optics 
+    3    int_partitn   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  107    0.0125  Gypsum plasterboard
+    0    0.0250  air  0.170 0.170 0.170
+  107    0.0125  Gypsum plasterboard
+# layers  description   optics 
+    3    ceiling_r     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   72    0.0250  Plywood
+  219    0.2500  Thermalite turbo block
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    1    fictitious    TRAN  SC_fictit           
+# db ref  thick   db name & air gap R 
+  284    0.0050  fictitious
+# layers  description   optics 
+    5    exp_flr       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  225    0.0150  Synthetic carpet
+   65    0.0250  Flooring
+  281    0.1400  Glass Fibre Quilt
+    0    0.1000  air  0.170 0.170 0.170
+   70    0.0170  Plywood
+# layers  description   optics 
+    5    exp_flr_r     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   70    0.0170  Plywood
+    0    0.1000  air  0.170 0.170 0.170
+  281    0.1400  Glass Fibre Quilt
+   65    0.0250  Flooring
+  225    0.0150  Synthetic carpet
+# layers  description   optics 
+    5    wall_tb       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    4    0.1000  Outer leaf brick
+    0    0.0250  air  0.170 0.170 0.170
+   67    0.0110  Chipboard
+  285    0.1400  Glass Fibre Thermal Bridging
+   72    0.0120  Plywood
+# layers  description   optics 
+    5    wall_tb_r     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   72    0.0120  Plywood
+  285    0.1400  Glass Fibre Thermal Bridging
+   67    0.0110  Chipboard
+    0    0.0250  air  0.170 0.170 0.170
+    4    0.1000  Outer leaf brick
