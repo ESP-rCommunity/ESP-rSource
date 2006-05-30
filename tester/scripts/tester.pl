@@ -2099,35 +2099,46 @@ sub compare_results($$){
         if ( $extention =~ /xml/ ){
           # perform xml-specific analysis (Should check if
           # XML::Simple is available...)
-          
-          # Create new objects to hold document tree
-          $gRefXML  = new XML::Simple();
-          $gTestXML = new XML::Simple();
-    
-          # Parse Document trees
-          $gRefXML  = XML::Simple::XMLin($reference_file);
-          $gTestXML = XML::Simple::XMLin($test_file);
-    
-          # Compare reference and test xml: This function will parse the contents
-          # of $gRefXML and $gTestXML, and return a hash containing comparable
-          # values.
-          my %results = CollectXMLResults();
-    
-          # This function will compare the values in the % results hash.
-          my $case_failed = CompareXMLResults($folder,$model,\%results);
-    
-          if ( $case_failed ){
-            $gXML_Report_needed = 1;
-            $gTest_Results{"$folder/$model"}{$extention} = "fail";
-            $gTest_Results{"$folder/$model"}{"overall"} = "fail";
-          }else{
+
+
+          # First, check if files differ.
+          if ( ! compare( $reference_file, $test_file ) ){
+            # files are identical - there's no need to perform
+            # xml-comparison.
             $gTest_Results{"$folder/$model"}{$extention} = "pass";
+          }else{
+            # Files differ - delve into xml 
+
+            # Create new objects to hold document tree
+            $gRefXML  = new XML::Simple();
+            $gTestXML = new XML::Simple();
+      
+            # Parse Document trees
+            $gRefXML  = XML::Simple::XMLin($reference_file);
+            $gTestXML = XML::Simple::XMLin($test_file);
+      
+            # Compare reference and test xml: This function will parse the contents
+            # of $gRefXML and $gTestXML, and return a hash containing comparable
+            # values.
+            my %results = CollectXMLResults();
+      
+            # This function will compare the values in the % results hash.
+            my $case_failed = CompareXMLResults($folder,$model,\%results);
+      
+            if ( $case_failed ){
+              $gXML_Report_needed = 1;
+              $gTest_Results{"$folder/$model"}{$extention} = "fail";
+              $gTest_Results{"$folder/$model"}{"overall"} = "fail";
+            }else{
+              $gTest_Results{"$folder/$model"}{$extention} = "pass";
+            }
+            
+            # Delete unnecessasry objects.
+            $gRefXML = "";
+            $gTestXML = "";
+              
           }
-          
-          # Delete unnecessasry objects.
-          $gRefXML = "";
-          $gTestXML = "";
-  
+
         }elsif ( $extention =~/XXX/ ){
           # Add new extention-specific analsis here
     
