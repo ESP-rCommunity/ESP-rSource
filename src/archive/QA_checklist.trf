@@ -2,9 +2,6 @@
 .EQ
 delim ##
 .EN
-.\" ----------- Page formatting -----------
-.nr PS 12p
-.nr VS 14p
 .\" ---------------------------------------
 .TL
 ESP-r Developers' Quality Assurance Checklist 
