@@ -1289,10 +1289,22 @@ C floor area for each.
 
 C Check the U value for each external surface.
 C exposed walls and floors, pitched roofs, flat roofs
-            UV = 0.0
+            UVH = 0.0
+            UVU = 0.0
+            UVD = 0.0
             do 511 ii=1,nmlc
               if(SMLCN(ij)(1:12).eq.DESC(ii)(1:12)) then
-                call etmldbu(0,itu,IFCON,ii,UV)
+
+C Recover the ISO 6946 U values for horizontal, upwards and downwards
+C flow as well as internal partition (horizontal 0.13 both sides).
+C Note: ISO 6946 advises use of horizontal hc value for surfaces where
+C heat flow direction is unknown. This assumption is used in
+C the U and UA reporting below.
+                call etmldbu(0,itu,IFCON,ii,UVH,UVU,UVD,UVI)
+
+C Debug.
+                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
+     &            ii,UVH,UVU,UVD,UVI
               else
                 continue
               endif
@@ -1301,42 +1313,61 @@ C exposed walls and floors, pitched roofs, flat roofs
             xexposed = xexposed + SSNA(icc)
             if(SOTF(ij)(1:4).eq.'OPAQ')then
               if(SVFC(ij)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
                 areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UV)
+                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
                 vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
                 xvexposed = xvexposed + SSNA(icc)
                 xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UV)
+                xuavwall = xuavwall + (SSNA(icc) * UVH)
               elseif(SVFC(ij)(1:4).eq.'SLOP')then
+
+C For sloped surfaces.
                 areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
-                uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UV)
+                uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVH)
                 xareaslproof = xareaslproof + SSNA(icc)
-                xuavslproof = xuavslproof + (SSNA(icc) * UV)
+                xuavslproof = xuavslproof + (SSNA(icc) * UVH)
               elseif(SVFC(ij)(1:4).eq.'CEIL')then
+
+C For ceilings.
                 areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
-                uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UV)
+                uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UVH)
                 xareafltroof = xareafltroof + SSNA(icc)
-                xuavfltroof = xuavfltroof + (SSNA(icc) * UV)
+                xuavfltroof = xuavfltroof + (SSNA(icc) * UVH)
               else
+
+C For floors.
                 areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UV)
+                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
                 xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UV)
+                xuavwall = xuavwall + (SSNA(icc) * UVH)
               endif
             elseif(SOTF(ij)(1:4).eq.'TRAN')then
               if(SVFC(ij)(1:4).eq.'CEIL'.or.
      &           SVFC(ij)(1:4).eq.'SLOP')then
+
+C Consider glazing on ceiling or sloped to be a skylight.
                 areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
-                uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UV) 
+                uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVH) 
                 xareaskylt = xareaskylt + SSNA(icc)
-                xuavgsky = xuavgsky + (SSNA(icc) * UV)
-              else
+                xuavgsky = xuavgsky + (SSNA(icc) * UVH)
+              elseif(SVFC(ij)(1:4).eq.'VERT')then
+
+C Consider glazing on walls to be a part of facade.
                 areatran(IZZ) = areatran(IZZ) + SSNA(icc)
-                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UV)
+                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
                 vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
                 xvexposed = xvexposed + SSNA(icc)
                 xareatran = xareatran + SSNA(icc)
-                xuavgtran = xuavgtran + (SSNA(icc) * UV)
+                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
+              else
+                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
+                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
+                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                xvexposed = xvexposed + SSNA(icc)
+                xareatran = xareatran + SSNA(icc)
+                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
               endif
             else
               continue
@@ -1348,7 +1379,7 @@ C exposed walls and floors, pitched roofs, flat roofs
 
 C Write out UA information if extra information requested.
         if(zoneextrainfo.gt.0)then
-C If there is external glazing or skylights then report.
+
 C Debug...
 C         write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
 C         write(itu,*) 'area flat roof = ',areafltroof(IZZ)
@@ -1356,7 +1387,10 @@ C         write(itu,*) 'area sloped roof = ',areaslproof(IZZ)
 C         write(itu,*) 'area skylights = ',areaskylt(IZZ)
 C         write(itu,*) 'area windows = ',areatran(IZZ)
 C         write(itu,*) 'floor area = ',ZBASEA(IZZ)
+
           if(exposed(IZZ).gt.0.1)then
+
+C If there is external glazing or skylights then report.
             call rel16str(exposed(IZZ),t16a,lna,ier)
             call rel16str(vexposed(IZZ),t16b,lnb,ier)
             if(vexposed(IZZ).gt.0.1)then
@@ -1953,3 +1987,6 @@ C an offset from prj start position.
       return
 
       end
+
+
+      
