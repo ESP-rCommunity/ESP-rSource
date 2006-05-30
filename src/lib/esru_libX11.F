@@ -2784,7 +2784,6 @@ C ************* EAskPerYear
 C EASKPER: Provides multi-year capable interface to the more general
 C eAskPerGen below.
       SUBROUTINE eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
-
       CHARACTER*(*) PROMP1
       integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
       
@@ -2826,13 +2825,12 @@ C Flag indicating if multi-year simulations are in use
 C Initialize success flag, and character buffer index.       
         bDateOK = .true.
         k=0
-        
+
 C IFDAY describes how the date will be formatted:
 C   IFDAY = 0 -> DDD (1->365)
 C   IFDAY = 1 -> DD MM (1->31,1->12)
-        
-        IF(IFDAY.EQ.0)THEN
 
+        IF(IFDAY.EQ.0)THEN
 C Day of year to be provided  
     
           if ( .not. bMY_enabled ) then
@@ -2909,7 +2907,6 @@ C Append year to string
             CALL EASKS(HOLD,PROMP1,
      &        ' Start day, month & year (DD MM YYYY)?',
      &        16,' 1 1 2000','start day, month and year',IER,3)
-
           endif
 
 C Error handling.            
@@ -2960,8 +2957,7 @@ C check that end date is not before start-date.
                   iEDOY = 1
                   iEYr = iEyr + 1
                 endif 
-              endif
-                  
+              endif                 
             endif ! <- matches ' elseif (bMY_enabled)...
                
 C Convert end-day to day-month format 
@@ -2982,7 +2978,6 @@ C Get day, month & year  and append year to string.
               H(2)='in `DD MM YYYY` format. Note: Leap years are'
               H(3)='not presently supported.'
 
-              
               CALL EASKS(HOLD,PROMP1,
      &          ' End day, month & year (DD MM YYYY)?',
      &          16,' 31 12 2000','end day, month and year',IER,3)
@@ -3019,10 +3014,8 @@ C Check range, then convert to IEDOY.
 C For multi-year simulations, convert IEDOY:
             IEDOY = IEDOY + ( iEYr - iBYr ) * 365
                
-          endif
-          
-        endif
-        
+          endif 
+        endif  
       enddo 
       
       RETURN
