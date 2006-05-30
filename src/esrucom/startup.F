@@ -46,8 +46,15 @@ C External graphing tool.
 C External folder browser.
       common/folderbr/foldlbl,foldexe
 
-C A set of possible image formats (see config file) and
-C matching executables.
+C A set of possible image formats which can be accepted within
+C a model configuration file. These definitions are held in the
+C so-called esprc file. To add additional image types and/or 3rd
+C party display applications edit the ESP-r Install script which
+C creates the esprc file.
+C   imgtyp is the number of different image formats supported
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBM)
+C   fmtexe (20 char) is the application name used to display
+C          images of type fmttag.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
 
 C A set of possible cad packages: labels and executables.
