@@ -727,7 +727,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
      &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -775,7 +775,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
      &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       endif
 
@@ -1158,7 +1158,7 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1214,7 +1214,7 @@ C If one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1402,11 +1402,11 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1459,7 +1459,7 @@ C If one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
      &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1520,7 +1520,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1569,7 +1569,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1786,7 +1786,7 @@ C        call edisp(iuout,outs)
      &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
      &    ' with scene purpose ',aim(1:lnblnk(aim)),
      &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
