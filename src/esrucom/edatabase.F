@@ -439,9 +439,25 @@ C Reporting.
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
   15  CONTINUE
-      RT=RT+0.055+0.123
-      UVALUE=1.0/RT
-      write(OUTSTR,'(A,F7.2)')' Standardised U value = ',UVALUE
+
+C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
+C flow internal hc of 0.123.
+C      RT=RT+0.055+0.123
+C      UVALUE=1.0/RT
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+      RTH=RT+0.04+0.13
+      UVALUEH=1.0/RTH
+      RTU=RT+0.04+0.10
+      UVALUEU=1.0/RTU
+      RTD=RT+0.04+0.17
+      UVALUED=1.0/RTD
+      RTI=RT+0.13+0.13
+      UVALUEI=1.0/RTI
+      write(OUTSTR,'(A,3F7.3,a,F7.3)')
+     &  ' ISO 6946 U values (horiz/upward/downward heat flow)=',
+     &  UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
       IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
 C Also list optical properties for this construction (if it is
@@ -458,8 +474,9 @@ C QPAQ.
       END
 
 C *************** ETMLDBU
-C ETMLDBU return U value (UV) of current construction based on contents of common MLC.
-      SUBROUTINE ETMLDBU(ITRC,ITRU,IFCON,IFOC,UV)
+C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
+C on contents of common MLC.
+      SUBROUTINE ETMLDBU(ITRC,ITRU,IFCON,IFOC,UVH,UVU,UVD,UVI)
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -472,7 +489,16 @@ C Pick up general description of the composite.
       IF(ITRC.GE.1)THEN
       ENDIF
 
+C Reset U value reporting local variables.
       RT=0.
+      RTH=0.
+      RTU=0.
+      RTD=0.
+      RTI=0.
+      UVH=0.
+      UVU=0.
+      UVD=0.
+      UVI=0.
       DO 15, IL=1,LAYERS(IFOC)
 
 C If an air layer include the R values in the display.
@@ -491,16 +517,38 @@ C Also report on thermal resistance (m^2K/W) of the layer.
 
 C Calculate and (optionally) report.
   15  CONTINUE
-      RT=RT+0.055+0.123
-      UV=1.0/RT
+
+C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
+C flow internal hc of 0.123.
+C      RT=RT+0.055+0.123
+C      UV=1.0/RT
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow as well as
+C an inside wall to inside wall hc 0.13 both sides.
+      RTH=RT+0.04+0.13
+      UVH=1.0/RTH
+      RTU=RT+0.04+0.10
+      UVU=1.0/RTU
+      RTD=RT+0.04+0.17
+      UVD=1.0/RTD
+      RTI=RT+0.13+0.13
+      UVI=1.0/RTI
+      write(OUTSTR,'(A,4F7.3)')
+     &  ' ISO 6946 U values (horiz/upward/downward/partition)= ',
+     &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
         IF(OTF.EQ.'TRAN')THEN
-          WRITE(OUTSTR,'(A,A12,a,a12,a,F6.3)')
-     &     ' U value of ',MLCN,' with ',OPT,' optics is ',UV
+          WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3)')
+     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
+     &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
+     &    ' (downwards flow)',UVD,' (partition) ',UVI
         ELSE
-          WRITE(OUTSTR,'(A,A12,a,F6.3)')' U value of ',
-     &      MLCN,' is ',UV
+          WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3)')
+     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),
+     &    ' are (horiz flow)',UVH,' (upwards flow)',UVU,
+     &    ' (downwards flow)',UVD,' partition ',UVI
         ENDIF
         call edisp(itru,OUTSTR)
       endif
@@ -561,7 +609,7 @@ C in the materials database.
       ISEL=IVAL(1)
       CALL ETMLDB(2,iuout,IFCON,ISEL,imerr)
       call edisp(iuout,
-     & ' U value assumes: Rso = 0.055 & Rsi = 0.123 (m**2deg.C/W)')
+     & ' ISO 6946 U value assumes: Rso=0.04 & Rsi=0.13 (m**2deg.C/W)')
       RETURN
 
       END
