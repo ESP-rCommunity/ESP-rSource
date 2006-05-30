@@ -9,7 +9,7 @@ delim ##
 .TL
 ESP-r Developers' Quality Assurance Checklist 
 .br
-Last updated: May 1, 2006
+Last updated: May 12, 2006
 .sp 2
 .\"---------------------------------------
 .NH 1
@@ -36,10 +36,21 @@ of ESP-r's binaries, while Section 3 describes procedures specific to the
 \fIbps\fR simulation binary. Finally, Section 4 describes the steps necessary to 
 contribute your code to the common ESP-r development branch.
 .LP
+.I "Revision history"
+.LP
+This document is under versioning control, and suggestions and contributions are 
+strongly encouraged. The troff-formatted source file for the latest 
+version can be obtained at the following url:
+.nr PS 8
+.LD
+.fam C
+https://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf
+.nr PS 12
+.DE
+.LP
 .\"---------------------------------------
 .NH 1
 General changes to ESP-r
-
 .\"---------------------------------------
 .I "Placing your code under versioning control"
 .LP
@@ -48,8 +59,7 @@ branch to reflect recent changes in the repository.
 .RS
 .IP 1. 4
 If you have not already done so, commit your code to your sub-branch following the 
-directions in the document \fIVersioning Control for ESP-r Users and 
-Developers\fR. 
+directions in the document \fIAn Overview of Subversion for ESP-r Central Users\fR. 
 .IP 2. 4 
 Move to a new directory, and checkout a fresh copy of your sub-branch. Compile ESP-r and 
 be sure to include support for XML output. Ensure that no compilation errors are 
@@ -57,15 +67,13 @@ reported. If compilation errors are reported, check to see that all of your modi
 files have been correctly committed to your sub-branch.
 .IP 3. 4
 Perform an update to your sub-branch with recent changes in the development 
-branch. Follow the directions in the document \fIVersioning Control for ESP-r Users and
-Developers\fR.
+branch. Follow the directions in the document \fIAn Overview of Subversion for ESP-r Central Users\fR.
 .IP 4. 4 
 Resolve any conflicts reported during the merge, and compile your updated branch with 
 support for XML output enabled. Ensure that no compilation errors are reported.
 .RE
 .\"---------------------------------------
-.SH
-Code standards
+.I "Code standards"
 .LP
 These steps will help ensure your code meets standards for inclusion
 in the ESP-r Archive, and that your modifications don't conflict with 
@@ -89,8 +97,8 @@ These steps will ensure your code behaves as you intended, and that
 other ESP-r users can use your code with confidence.
 .RS
 .IP 7. 4
-Select a test case from the test-suite \fB[path to test suite to go 
-here]\fR that exercises the source code you've modified, or if you've 
+Select a test case from the test-suite (in the \fB./tester/test_suite\fR folder) that 
+exercises the source code you've modified, or if you've 
 added new features to ESP-r, create a new test-case exercising your modifications. Be 
 sure to create a simulation preset within the test case named \fItest\fR.
 .IP 8. 4
@@ -126,7 +134,7 @@ The \fItest bps\fR is the current version of bps available on the development
 branch, modified with your source code changes. To build a \fItest bps\fR, first
 ensure that your source code has been committed to your sub-branch. Then synchronize
 your sub-branch with the development branch using the directions contained in the
-document \fIVersioning Control for ESP-r Users and Developers\fR. Finally, compile
+document \fIAn Overview of Subversion for ESP-r Central Users\fR. Finally, compile
 the \fIbps\fR binary.
 .RE
 .LP
@@ -141,7 +149,8 @@ undertake these steps if you have access to multiple supported platforms.
 .RS
 .IP 11. 4
 If you created a test case to exercise your model in step 5, add your test case to the 
-test suite folder \fB[test suite path to go here]\fR, and commit these changes to your 
+test suite folder (\fB./tester/test_suite\fR), and commit 
+these changes to your 
 sub-branch.
 .IP 12. 4
 Create a results set archive using your \fItest bps\fR and test case. 
@@ -295,7 +304,7 @@ using the following command:
 .nr PS 8
 .LD
 .fam C
-$ forchk *.F -I ../include
+$ forchk -I ../include *.F
 .nr PS 12
 .DE
 .PP

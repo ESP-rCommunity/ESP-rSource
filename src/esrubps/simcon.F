@@ -1491,6 +1491,7 @@ C TIMSEC       - length of time increment in seconds
       SUBROUTINE MZSPER
 #include "building.h"
 #include "MultiYear_simulations.h"
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1521,15 +1522,8 @@ C Once per hour storage of results, averaged over that hour.
 
 C Request simulation period in user defined format of d-o-y
 C or day and month, return julian days and convert to month
-C and day.
-   14 if ( bMY_sim_enabled ) then
-         ifday = 2
-      else
-         ifday = 1
-      endif 
-   
-
-      if(.NOT.perok) then
+C and day. 
+   14 if(.NOT.perok) then
 C If period has not been defined, assign defaults        
         isds=9
         isdf=15
@@ -1549,10 +1543,16 @@ C Adjust end date for multi-year simulation
         
       endif
     8 if(.not.autook) then
-        call eAskPerYear('Simulation period:',isds,isdf,
+        if ( bMY_sim_enabled ) then
+C Multi-year simulation prompt    
+          call eAskPerYear('Simulation period:',isds,isdf,
      &                   iMY_start_year,iMY_end_year,ifday,ier)
+        else
+C Single year simulation prompt
+          call eAskPer('Simulation period:',isds,isdf,ifday,ier)
+        endif ! <- matches if ( bMY_sim_enabled )...
         IF(IER.NE.0) GOTO 14
-      endif
+      endif ! <- matches if (.not. autook)     
       call edayr(isds,isd1,ism1)
       call edayr(ISDF - 365*(iMY_end_year - iMY_start_year), ISD2,ISM2)
 

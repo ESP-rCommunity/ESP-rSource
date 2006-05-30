@@ -45,7 +45,9 @@ C           to which of the choices has been chosen.
 C EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
 C           to which of the choices has been chosen.
 C  EASKPER: Provides interface to specification of a period of days.
-C eAskPerYear: Provides interface to specification of a multiyear period of days. It
+C eAskPerYear: Provides interface to specification of a multiyear period of days.
+C easkPerGen: Handles specification of both single-year and multi-year
+C           simulation periods.
 C  DAYCLK:  Print day, month, day no. and time based on the julian day & time.
 
 C  FDROOT:  Given a file name see if it contains a path.
@@ -2760,118 +2762,125 @@ C of help supplied and then provide the prompt again.
       END
 
 C ************* EASKPER
-C EASKPER: Provides interface to specification of a period of days. It
-C returns IBDOY and IEDOY based on the current settings of IFDAY.
-C Promp1 gives the context of the request for a period. 
-C      SUBROUTINE EASKPER(PROMP1,IBDOY,IEDOY,IFDAY,IER)
-C      common/pophelp/h(60)
-C      CHARACTER*(*) PROMP1
-C      CHARACTER H*72,HOLD*16
-
-C      IER=0
-C  281 IF(IFDAY.EQ.0)THEN
-C        H(1)='Period  must be within a calendar year.'
-C        write(HOLD,'(I3,I4)')IBDOY,IEDOY
-C        CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
-C     &    ' 1  1 ','start & end day of year',IER,1)
-C        K=0
-C        CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
-C        CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
-C        if(ier.ne.0)goto 281
-C      ELSE
-
-C Start date.
-C        CALL EDAYR(IBDOY,IBD,IBM)
-C        write(HOLD,'(I3,I3)')IBD,IBM
-C        H(1)='Period  must be within a calendar year.'
-C        CALL EASKS(HOLD,PROMP1,' Start day & month?',
-C     &    16,' 1  1 ','start day and month',IER,1)
-C        K=0
-C        CALL EGETWI(HOLD,K,IBD,1,31,'F','start dom',IER)
-C        CALL EGETWI(HOLD,K,IBM,1,12,'F','start month',IER)
-C        if(ier.ne.0)goto 281
-
-C Check range, then convert to IBDOY.
-C        CALL EDAYCH(IBD,IBM,IERR)
-C        IF(IERR.EQ.1)goto 281
-C        CALL EDAY(IBD,IBM,IBDOY)
-
-C End date, set at least equal to the beginning day.
-C        if(IEDOY.lt.IBDOY)IEDOY=IBDOY+1
-C        CALL EDAYR(IEDOY,IED,IEM)
-C 282    write(HOLD,'(I3,I3)')IED,IEM
-C        H(1)='Period  must be within a calendar year.'
-C        CALL EASKS(HOLD,PROMP1,' End day & month?',
-C     &     16,' 31  1 ','end day month',IER,1)
-C        K=0
-C        CALL EGETWI(HOLD,K,IED,1,31,'F','end dom',IER)
-C        CALL EGETWI(HOLD,K,IEM,1,12,'F','end month',IER)
-C        if(ier.ne.0)goto 282
-
-C Check range, then convert to IEDOY.
-C        CALL EDAYCH(IED,IEM,IERR)
-C        IF(IERR.EQ.1)goto 282
-C        CALL EDAY(IED,IEM,IEDOY)
-C      ENDIF
-C      call usrmsg(' ',' ','-')
-
-C      RETURN
-C      END
-      
-C ************* EASKPER
-C EASKPER: Provides legacy interface to the more general eAskPerYear below.
+C EASKPER: Provides legacy interface to the more general eAskPerGen below.
       SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
-
-C Set initial values of iBYr iEYr (only used if IFDAY is 2).
       CHARACTER*(*) PROMP1
       integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
-      call eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
+
+      logical bMY_enabled
+      parameter ( bMY_enabled = .false. )
+
+C Note: There's no need to initialize iBYr and iEYr. They're not
+C referenced when multiyear simulations are disabled
+              
+      call eAskPerGen(PROMP1,IBDOY,IEDOY,
+     &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
+
+      return
+      end
+
+
+C ************* EAskPerYear
+C EASKPER: Provides multi-year capable interface to the more general
+C eAskPerGen below.
+      SUBROUTINE eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
+      CHARACTER*(*) PROMP1
+      integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
+      
+      logical bMY_enabled
+      parameter ( bMY_enabled = .true. )
+
+C initial values of iBYr iEYr are not need for single-year simulation
+      call eAskPerGen(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,bMY_enabled,
+     &                IER)
 
       return
       end
       
-C ************* eAskPerYear
-C eAskPerYear: Provides interface to specification of a multiyear period of days. It
+      
+C ************* eAskPerGen
+C eAskPerGen: Provides interface to specification of a multiyear period of days. It
 C returns IBDOY and IEDOY based on the current settings of IFDAY.
 C iBYr,iEYr are the begining year and ending year of the period.
 C Promp1 gives the context of the request for a period. 
-      SUBROUTINE eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,ier)
+      SUBROUTINE eAskPerGen(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,
+     &                      bMY_enabled,IER)
       common/pophelp/h
       CHARACTER*(*) PROMP1
       CHARACTER*72 h(60)
       character HOLD*16
 
+C Error flag      
       logical bDateOK
+
+C Flag indicating if multi-year simulations are in use
+      logical bMY_enabled
       
       IER=0
 
       bDateOk = .false.
 
       do while ( .not. bDateOK )
-C Initialize success flag         
+
+C Initialize success flag, and character buffer index.       
         bDateOK = .true.
+        k=0
 
 C IFDAY describes how the date will be formatted:
 C   IFDAY = 0 -> DDD (1->365)
 C   IFDAY = 1 -> DD MM (1->31,1->12)
-C   IDFAY = 2 -> DD MM YYYY (1->31, 1->12, 1900->2100)
 
         IF(IFDAY.EQ.0)THEN
 C Day of year to be provided  
-          H(1)='Period  must be within a calendar year.'
-          write(HOLD,'(I4,I4)')IBDOY,IEDOY
-          CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
+    
+          if ( .not. bMY_enabled ) then
+C Single year version
+            H(1)='Period  must be within a calendar year.'
+
+C Get start & end day
+            write(HOLD,'(I4,I4)')IBDOY,IEDOY
+            CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
      &      ' 1  1 ','start & end day of year',IER,1)
-          if ( ier .ne. 0 ) bDateOK = .false.
             
-C Note: both integer assignments must be error trapped:                        
-          K=0
-          CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
-          if  ( ier .ne. 0 ) BDateok = .false.
+            CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+            CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
             
-          CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
-          if ( ier .ne. 0 ) BDateok = .false.
+          else
+C Multi-year version
+            H(1)='Provide day-of-year and year for start'
+            H(2)='and end dates.'
             
+C Get start day and year 
+            write(HOLD,'(I4,I5)') IBDOY,iBYr
+            CALL EASKS(HOLD,PROMP1,' Start day and year?',16,
+     &      ' 1  2000 ','start day and year',IER,2)
+
+            CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+            CALL EGETWI(HOLD,K,iBYr,1900,2100,'F','start year',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+C Reset string index K                                            
+            K=0
+
+C Get end day and year
+            write(HOLD,'(I4,I5)') IEDOY,iEYr
+            CALL EASKS(HOLD,PROMP1,' End day and year?',16,
+     &      ' 365 2000 ','end day and year',IER,2)
+
+            CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+            CALL EGETWI(HOLD,K,iEYr,1900,2100,'F','end year',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+          endif !<- matches if ( .not. bMY_enabled )...
+          
         ELSEIF ( IFDAY .eq. 1 .or. IFDAY .eq. 2 ) THEN
 
 C Day & month or day, month & year to be provided
@@ -2879,10 +2888,10 @@ C Start date: Convert to dd mm format:
 
           CALL EDAYR(IBDOY,IBD,IBM)        
             
-          if ( ifday .eq. 1 ) then
+          if ( .not. bMY_enabled ) then
 C Get day & month
             write(HOLD,'(I2,A,I2)') IBD,' ',IBM
-            H(1)='Period  must be within a calendar year.'
+            H(1)='Period must be within a calendar year.'
             H(2)='( `1 1` to `31 12` )'
             CALL EASKS(HOLD,PROMP1,' Start day & month (DD MM)?',
      &        16,' 1  1 ','start day and month',ier,2)
@@ -2913,7 +2922,7 @@ C Convert stings to integers and flag errors
           if ( ier .ne. 0 ) bDateOK = .false.
 
 C Convert year string, if necessary             
-          if ( ifday .eq. 2 ) then
+          if ( bMY_enabled ) then
                
             CALL EGETWI ( HOLD, K, iBYr, 1900, 2100, 'F',
      &        'start year', ier)
@@ -2933,9 +2942,9 @@ C Only ask for end date if start-date successfully defined
           if ( bDateOK ) then
 
 C End date, set at least equal to the beginning day.
-            if ( ifday .eq. 1 .and. IEDOY.le.IBDOY ) then
+            if ( .not. bMY_enabled .and. IEDOY.le.IBDOY ) then
               IEBODY = IBDOY + 1
-            elseif ( ifday .eq. 2 ) then
+            elseif ( bMY_enabled ) then
 
 C Convert end-date into EDAYR friendly format and
 C check that end date is not before start-date.
@@ -2949,12 +2958,12 @@ C check that end date is not before start-date.
                   iEYr = iEyr + 1
                 endif 
               endif                 
-            endif 
+            endif ! <- matches ' elseif (bMY_enabled)...
                
 C Convert end-day to day-month format 
             CALL EDAYR(IEDOY,IED,IEM)
                
-            if ( ifday .eq. 1 ) then 
+            if ( .not. bMY_enabled ) then
               write(HOLD,'(I2,A,I2)') IED,' ',IEM
               H(1)='Period  must be within a calendar year.'
               H(2)='( `1 1` to `31 12` )'
@@ -2986,7 +2995,7 @@ C Convert strings to integers and errortrap
             if ( ier .ne. 0 ) bDateOK = .false.
 
 C Convert year string, if necessary             
-            if ( ifday .eq. 2 ) then
+            if ( bMY_enabled ) then
                
               CALL EGETWI ( HOLD, K, iEYr, 1900, 2100, 'F',
      &          'end year', ier)
