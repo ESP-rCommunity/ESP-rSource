@@ -139,8 +139,8 @@ my $Help_msg = "
          by FILE.
 
     -d <PATH>, --databases <PATH>: Use standard ESP-r databases
-         located in <PATH> when running simulations. Default:
-         /usr/esru/esp-r/databases         
+         and climate files located in <PATH> when running simulations.
+         Default: /usr/esru/esp-r
 
     -a <FILE>, --historical_archive <FILE>: Compare results to the
          historical archive contained in <FILE>. If specified,
@@ -326,10 +326,10 @@ my $Help_msg = "
             --historical_archive historical_achive.tar.gz
             --case /path/to/cfg/file.cfg -v
 
-    Use non-standard databases located in ~/esp-r/databases:
+    Use non-standard databases located in ~/esp-r/:
 
       \$ ./tester.pl /path/to/reference/bps /path/to/test/bps
-            --databases ~/esp-r/databases
+            --databases ~/esp-r/
             
 ";
  
@@ -371,7 +371,7 @@ $gTest_paths{'esp-r'}        = "/usr/esru/esp-r/bin";    # path to standard esp-
 $gTest_paths{'helper_apps'}  = ".;../../validation/QA/benchmark_model/cfg";
                                                          # paths in which to find helper apps
                                                          #   helper scripts.
-$gTest_paths{'default_dbs'}  = "/usr/esru/esp-r/databases";
+$gTest_paths{'default_dbs'}  = "/usr/esru/esp-r";
                                                          # Path to default databases.                                                         
 
 $gTest_paths{'user_databases'}= "";                      # path to user-specified databases
@@ -746,7 +746,6 @@ if ( $bin_count == 1 && ( $gTest_params{"create_archive"} ) ){
 }
 
 
-
 if ( $gTest_params{"compare_versions"} ){
   # 2 bps files should be specified
   if ( $bin_count != 2 ) {
@@ -866,22 +865,51 @@ if ( ! $gTest_params{"ish_found"} ){
 }
 
 #-----------------------------------------------------------------------
-# Look for customized database directory
+# Look for customized database directory. If it could not be found or
+# does not contain databases and climate folders, revert to standard
+# databases. 
 #-----------------------------------------------------------------------
 if ( $gTest_params{"user_databases"} ){
 
   $path = resolve_path($gTest_paths{"user_databases"});
 
-  if ( -d $path && -r $path && -x $path ){
-    
-    $gTest_paths{"user_databases"} = $path;
+  if ( -d $path &&
+       -r $path &&
+       -x $path ){
+    # Check that directory contains climate and databases folders
+    if ( ! -d "$path/climate" ||
+         ! -r "$path/climate" ||
+         ! -x "$path/climate"    ){
+
+      stream_out(
+        " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
+        "          does not contain a 'climate' folder. Using default databases\n".
+        "          instead ($gTest_paths{\"default_dbs\"}).\n"
+      );
+      $gTest_params{"user_databases"} = 0;
+    }
+    if ( ! -d "$path/databases" ||
+         ! -r "$path/databases" ||
+         ! -x "$path/databases"    ){
+
+      stream_out(
+        " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
+        "          does not contain a 'databases' folder'. Using default databases\n".
+        "          instead ($gTest_paths{\"default_dbs\"}).\n"
+      );
+      $gTest_params{"user_databases"} = 0;
+    }
+
+    if ( $gTest_params{"user_databases"} ) {
+      $gTest_paths{"user_databases"} = $path;
+    }
 
   }else{
 
     stream_out(
         " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
-        "          could not be found. Using default databses instead.\n".
-        "          (/usr/esru/esp-r/databases)\n"
+        "          could not be found. Using default databases instead.\n".
+        "          ($gTest_paths{\"default_dbs\"})\n"
     );
 
     $gTest_params{"user_databases"} = 0;
@@ -1854,7 +1882,7 @@ sub process_case($){
    
   # empty local folder
   execute("rm -fr $gTest_paths{\"local_models\"}/*");
-
+  
   # move to master path
   chdir $gTest_paths{"master"};
   
