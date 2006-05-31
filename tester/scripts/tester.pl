@@ -1702,7 +1702,6 @@ sub process_case($){
         my $file = $File::Find::name;
         return if $file =~ m/CVS./;
         return if $file =~ m/\.svn/;
-        print "$file\n";
         # Open file and read contents 
         open (EDIT_FILE, $file);
         my @lines = ();
@@ -1727,8 +1726,11 @@ sub process_case($){
         }
         close(WRITE_FILE);
        
-      },  $gTest_paths{"local_models"} )
+      },  $gTest_paths{"local_models"} );
 
+    # move back to master path
+    chdir $gTest_paths{"master"};
+      
   }
   # get model path, without .cfg extention
   my $test_root = $local_cfg_file;
