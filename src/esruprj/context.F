@@ -52,9 +52,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/appw/iappw,iappx,iappy
 
 C IPV description.
@@ -80,45 +77,26 @@ C Images.
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-      logical MODSIT,browse,XST,modish,OK,DOK,concat,unixok
+      logical MODSIT,browse,XST,modish,OK,DOK,concat
       logical closea,closeb,closec,closed,defview,FOUND
       dimension SALT(8),IVALS(8)
-      dimension nwlistf(50),ivlist(50)
       character*10 wkd1, wkd2
       character*10 wkday(7)
       character zname*12,zdesc*64,SEXP*31,SALT*31,hold*72,ZN*12
 
-C ITEMS is menu for site/context items, ITEMIMG is menu for editing
-C and control of project images.
-      character*33 ITEMS(27),ITEMIMG(20)
+C ITEMS is menu for site/context items.
+      character*33 ITEMS(27)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
-      character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character doit*248,tmode*8,cfgroot*24,LCFGF*72
       character longtfile*144
-      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
-      character iformat*4,ifocus*4,hold24*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1
-      character*72 LTDF,LTDFA
-      character GTNAME*15
-      character subpath*72,action*3,sfile*72,snpfile*72
-      character*72 path,odir
-      character*72 listf(50),listfc(50)
-
-C Menu string for image file selection.
-      character*70 listfc70(50)
+      character imgfmt*4,imgfoc*4,limgfil*72
+      character hold24*24,act*1,GTNAME*15
 
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
+C Set initial states to false.
       MODSIT=.false.
       modish=.false.
       call tstamp('>','PRJ: model context')
@@ -795,202 +773,7 @@ C        endif
       ELSEIF(INO.EQ.22)THEN
 
 C Manage images or browse by listing out current contents of image folder.
-C Create the secondary menu.
-  36    WRITE(ITEMIMG(1),'(a,i3,a)')'  current images ... (',noimg,')'
-        M=1
-        IF(noimg.GT.0)THEN
-          M=M+1
-          ITEMIMG(M)  =' type focus file             '
-          DO 35 IW=1,noimg
-            M=M+1
-            CALL EMKEY(M-2,KEY,IER)
-            WRITE(ITEMIMG(M),'(a,1x,a,1x,a,1x,a)')KEY,imgfmt(IW),
-     &       imgfoc(IW),limgfil(IW)(1:20)   
-  35      CONTINUE
-          M=M+1
-          ITEMIMG(M)=' _____________________________ '
-        else
-          M=M+1
-          ITEMIMG(M)=' _____________________________ '
-        ENDIF
-        M=M+1
-        ITEMIMG(M)='+ add / delete / copy image      '
-        M=M+1
-        ITEMIMG(M)='! list images                    '
-        M=M+1
-        ITEMIMG(m)='? help                           '
-        M=M+1
-        ITEMIMG(m)='- exit this menu                 '
-        nimgitms=m
-
-C Help text for menu.
-        h(1)='Images can be associated with various aspects of a'
-        h(2)='model. You can browse current images associated with '
-        h(3)='with each aspect of the model and you can'
-        h(4)='add an image to the list. '
-        h(5)=' '
-        h(6)='To edit an image, select it from the list.'
-
-        CALL EMENU('Project images',ITEMIMG,nimgitms,INOI)
-        if(INOI.EQ.nimgitms)then
-
-C Update configuration if images changed.
-          if(MODSIT.and.(.NOT.browse))then
-            CALL EMKCFG('-',IER)
-          endif
-          goto 3
-        elseif(INOI.EQ.nimgitms-1)then
-          CALL PHELPD('Model images',6,'-',0,0,IER)
-        elseif(INOI.EQ.nimgitms-2)then
-          subpath=' '
-          call usrdir(odir)
-          write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
-     &      path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
-
-#ifdef OSX
-C In OSX slightly different logic. If path ls ./ then standard logic
-C works. If path begins with /usr/esru then no need to prepend odir.
-          if(path(1:2).eq.'./')then
-            continue
-          elseif(path(1:9).eq.'/usr/esru')then
-            write(6,*) 'OSX path is ',path
-            subpath=' '
-            write(subpath,'(2a)') path(1:lnblnk(path)),
-     &        imgpth(1:lnblnk(imgpth))
-          else
-            continue
-          endif
-#endif
-          write(outs,*) 'files in ',subpath
-          sfile=' '
-          snpfile=' '
-          call edisp(iuout,' ')
-          call browsefilelist('p','img','fil',sfile,snpfile,nlist,iier)
-
-          call edisp(iuout,' General images...')
-          if(noimg.gt.0)call imgdisp(1,'****',ier)
-          call edisp(iuout,' Zone related images...')
-          if(noimg.gt.0)call imgdisp(1,'FZON',ier)
-          call edisp(iuout,' Network related images...')
-          if(noimg.gt.0)call imgdisp(1,'FNET',ier)
-          call edisp(iuout,' Control related images...')
-          if(noimg.gt.0)call imgdisp(1,'FCTL',ier)
-          call edisp(iuout,' Domain flow related images...')
-          if(noimg.gt.0)call imgdisp(1,'FDFS',ier)
-          call edisp(iuout,' Performance related images...')
-          if(noimg.gt.0)call imgdisp(1,'FPER',ier)
-        elseif(INOI.EQ.nimgitms-3)then
-          h(1)='Images can be associated with various aspects of a'
-          h(2)='model. You can add images to the current list.'
-          h(3)=' '
-          h(4)='To edit an image, select it from the list.'
-          CALL EASKABC(' Model image options',' :',
-     &      'add image','delete image','continue',IOK,6)
-          if(iok.eq.1)then
-            if(noimg.ge.10)then
-              call edisp(iuout,'No more images can be associated with')
-              call edisp(iuout,'the current model.')
-              continue
-            else
-
-C Ask for names of files in the ../images folder.
-              subpath=' '
-              call usrdir(odir)
-              write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
-     &          path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
-
-#ifdef OSX
-C In OSX slightly different logic. If path ls ./ then standard logic
-C works. If path begins with /usr/esru then no need to prepend odir.
-              if(path(1:2).eq.'./')then
-                continue
-              elseif(path(1:9).eq.'/usr/esru')then
-                write(6,*) 'OSX path is ',path
-                subpath=' '
-                write(subpath,'(2a)') path(1:lnblnk(path)),
-     &            imgpth(1:lnblnk(imgpth))
-              else
-                continue
-              endif
-#endif
-              write(outs,*) 'files in ',subpath
-              call clearfilelist(listf,50)
-              action='fil'
-              call getfilelist(subpath,action,listf,nwlistf,nlistf)
-              call copyfilelist(listf,nwlistf,listfc,50,maxw)
-              call printfilelist(outs,'p',listfc,50,nlistf)
-
-C Try to use information gathered from file scan.
-              if(nlistf.gt.0)then
-                h(1)='The following files have been found in the '
-                h(2)='project images folder. '
-                ix=1
-                do 76 ij=1,nlistf
-                  listfc70(ij)=' '
-                  write(listfc70(ij),'(a)') listfc(ij)(1:nwlistf(ij))
-  76            continue
-                CALL EPICKS(IX,ivlist,outs,' ',
-     &            maxw,nlistf,listfc70,'image files',IER,2)
-                if(ix.eq.1)then
-                  write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
-     &              listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-                  write(6,*) limg
-                else
-                  write(limg,'(a)')imgpth(1:lnblnk(imgpth))
-                endif
-              else
-                write(limg,'(a)')imgpth(1:lnblnk(imgpth))
-              endif
-              iformat='GIF '
-              ifocus='****'
- 242          call edimage(limg,iformat,ifocus,iier)
-              if(iier.eq.2)then
-                continue
-              elseif(iier.eq.0)then
-                noimg=noimg+1
-                limgfil(noimg)=limg
-                imgfmt(noimg)=iformat
-                imgfoc(noimg)=ifocus
-              endif
-              if(noimg.lt.10)then
-                dok=.false.
-                h(1)='If you have more images to associate with the'
-                h(2)='model say ok. '
-                CALL ASKOK(' ',' Another image?',OK,dok,2)
-                if(OK)then
-                  write(limg,'(a)')imgpth(1:lnblnk(imgpth))
-                  iformat='GIF '
-                  ifocus='****'
-                  goto 242
-                endif
-              endif
-              MODSIT=.true.
-            endif
-          elseif(iok.eq.2)then
-            call usrmsg('Option to delete and image not yet working.',
-     &                  ' ','W')
-            goto 36
-          elseif(iok.eq.3)then
-            goto 36
-          endif
-        ELSEIF(INOI.EQ.1.and.noimg.gt.0)THEN
-          goto 36
-        ELSEIF(inoi.gt.1.and.inoi.lt.nimgitms-4.and.noimg.gt.0)THEN
-          write(6,*) 'inoi ',inoi
-          limg=limgfil(inoi-2)
-          iformat=imgfmt(inoi-2)
-          ifocus=imgfoc(inoi-2)
-          call edimage(limg,iformat,ifocus,iier)
-          if(iier.eq.2)then
-            continue
-          elseif(iier.eq.0)then
-            limgfil(inoi-2)=limg
-            imgfmt(inoi-2)=iformat
-            imgfoc(inoi-2)=ifocus
-            MODSIT=.true.
-          endif
-        endif
-        goto 36
+        call manageimages(modsit)
       ELSEIF(INO.eq.24)then
 
 C Calendar functions. If number of daytypes is zero then
@@ -1007,6 +790,211 @@ C initialise. Then enter interactive facility.
       GOTO 3
 
       END
+
+C ****** manageimages
+C manageimages allows the user to manage images associated with a
+C model including view and add images (delete not yet working).
+      subroutine manageimages(modsit)
+#include "building.h"
+
+      COMMON/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/user/browse
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C Images.
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+
+      logical MODSIT,browse,XST,unixok
+
+C ITEMS is menu for site/context items, ITEMIMG is menu for editing
+C and control of project images.
+      character*33 ITEMIMG(20)
+      character H*72,outs*124
+      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
+      character iformat*4,ifocus*4
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      character sfile*72,snpfile*72
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+  36  WRITE(ITEMIMG(1),'(a,i3,a)')'  current images ... (',noimg,')'
+      M=1
+      IF(noimg.GT.0)THEN
+        M=M+1
+        ITEMIMG(M)  =' type focus file             '
+        DO 35 IW=1,noimg
+          M=M+1
+          CALL EMKEY(M-2,KEY,IER)
+          WRITE(ITEMIMG(M),'(a,1x,a,1x,a,1x,a)')KEY,imgfmt(IW),
+     &      imgfoc(IW),limgfil(IW)(1:20)   
+  35    CONTINUE
+        ITEMIMG(M+1)=' _____________________________ '
+      else
+        ITEMIMG(M+1)=' _____________________________ '
+      ENDIF
+      ITEMIMG(M+2)='+ add / delete image             '
+      ITEMIMG(M+3)='! display current images         '
+      ITEMIMG(m+4)='? help                           '
+      ITEMIMG(m+5)='- exit this menu                 '
+      nimgitms=m+5
+
+C Help text for menu.
+      h(1)='Images can be associated with a model for various'
+      h(2)='purposes: '
+      h(3)=' * document conditions at the physical site'
+      h(4)=' * document assumptions in the model'
+      h(5)=' * indicate what performance is expected'
+      h(6)=' '
+      h(7)='Up to 10 images can be associated with a model. '
+      h(8)=' '
+      h(9)='The following image types can be associated with a'
+      h(10)='model: GIF X11 bitmap, TIFF, JPEG/JPG '
+      h(11)=' '
+      h(12)='To edit an image name, select it from the list.'
+
+      CALL EMENU('Project images',ITEMIMG,nimgitms,INOI)
+      if(INOI.EQ.nimgitms)then
+
+C Update configuration if images changed.
+        if(MODSIT.and.(.NOT.browse))then
+          CALL EMKCFG('-',IER)
+        endif
+        return
+      elseif(INOI.EQ.nimgitms-1)then
+        CALL PHELPD('Model images',12,'-',0,0,IER)
+      elseif(INOI.EQ.nimgitms-2)then
+
+C Display each of the current images by topic.
+        call edisp(iuout,' ')
+        call edisp(iuout,' General images...')
+        if(noimg.gt.0)call imgdisp(1,'****',ier)
+        call edisp(iuout,' Zone related images...')
+        if(noimg.gt.0)call imgdisp(1,'FZON',ier)
+        call edisp(iuout,' Network related images...')
+        if(noimg.gt.0)call imgdisp(1,'FNET',ier)
+        call edisp(iuout,' Control related images...')
+        if(noimg.gt.0)call imgdisp(1,'FCTL',ier)
+        call edisp(iuout,' Domain flow related images...')
+        if(noimg.gt.0)call imgdisp(1,'FDFS',ier)
+        call edisp(iuout,' Performance related images...')
+        if(noimg.gt.0)call imgdisp(1,'FPER',ier)
+      elseif(INOI.EQ.nimgitms-3)then
+
+C Add images from images folder or other location.
+        h(1)='Images can be associated with various aspects of a'
+        h(2)='model. You can add images to the current list from'
+        h(3)='either the model images folder or by entering an '
+        h(4)='absolute path and file name. '
+        h(5)=' '
+        h(6)='Note: delete image does not yet work. '
+        CALL EASKABCD(' Model image options',' :',
+     &    'add from images folder','add from other folder',
+     &    'delete image','continue',IOK,6)
+        if(iok.eq.1)then
+          if(noimg.ge.10)then
+            call edisp(iuout,'No more images can be associated with')
+            call edisp(iuout,'the current model.')
+            continue
+          else
+
+C Ask for names of files in the ../images folder.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','img','fil',sfile,snpfile,nlist,
+     &        iier)
+
+C Try to use information gathered from file scan.
+            if(nlist.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','img','fil',sfile,snpfile,nlist,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+                write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
+     &            snpfile(1:lnblnk(snpfile))
+                write(6,*) limg
+              else
+                write(limg,'(a)')imgpth(1:lnblnk(imgpth))
+              endif
+            else
+              write(limg,'(a)')imgpth(1:lnblnk(imgpth))
+            endif
+            iformat='GIF '
+            ifocus='****'
+            call edimage(limg,iformat,ifocus,iier)
+            if(iier.eq.2)then
+              continue
+            elseif(iier.eq.0)then
+              noimg=noimg+1
+              limgfil(noimg)=limg
+              imgfmt(noimg)=iformat
+              imgfoc(noimg)=ifocus
+              modsit=.true.
+            endif
+          endif
+        elseif(iok.eq.2)then
+          if(noimg.ge.10)then
+            call edisp(iuout,'No more images can be associated with')
+            call edisp(iuout,'the current model.')
+            continue
+          else
+            limg=' '
+            call easks(limg,'Image file name',' ',72,'xxx.gif',
+     &        'image file name',ier,12)
+            iformat='GIF '
+            ifocus='****'
+            call edimage(limg,iformat,ifocus,iier)
+            if(iier.eq.0)then
+              noimg=noimg+1
+              limgfil(noimg)=limg
+              imgfmt(noimg)=iformat
+              imgfoc(noimg)=ifocus
+              modsit=.true.
+              goto 36
+            endif
+          endif
+        elseif(iok.eq.3)then
+          DO 33 IW=1,noimg
+            WRITE(outs,'(i2,1x,a,1x,a,1x,a)') iw,imgfmt(IW),
+     &        imgfoc(IW),limgfil(IW) 
+            call edisp(iuout,outs)  
+  33      CONTINUE
+          call usrmsg('Option to delete and image not yet working.',
+     &                ' ','W')
+          goto 36
+        elseif(iok.eq.4)then
+          goto 36
+        endif
+      ELSEIF(INOI.EQ.1.and.noimg.gt.0)THEN
+        goto 36
+      ELSEIF(inoi.gt.1.and.inoi.lt.nimgitms-4.and.noimg.gt.0)THEN
+        write(6,*) 'inoi ',inoi
+        limg=limgfil(inoi-2)
+        iformat=imgfmt(inoi-2)
+        ifocus=imgfoc(inoi-2)
+        call edimage(limg,iformat,ifocus,iier)
+        if(iier.eq.2)then
+          continue
+        elseif(iier.eq.0)then
+          limgfil(inoi-2)=limg
+          imgfmt(inoi-2)=iformat
+          imgfoc(inoi-2)=ifocus
+          MODSIT=.true.
+        endif
+      endif
+      goto 36
+      end
 
 C ************* setuptemporal
 C Setuptemporal coordinates access to and initial creation of
