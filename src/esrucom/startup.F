@@ -46,8 +46,15 @@ C External graphing tool.
 C External folder browser.
       common/folderbr/foldlbl,foldexe
 
-C A set of possible image formats (see config file) and
-C matching executables.
+C A set of possible image formats which can be accepted within
+C a model configuration file. These definitions are held in the
+C so-called esprc file. To add additional image types and/or 3rd
+C party display applications edit the ESP-r Install script which
+C creates the esprc file.
+C   imgtyp is the number of different image formats supported
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBM)
+C   fmtexe (20 char) is the application name used to display
+C          images of type fmttag.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
 
 C A set of possible cad packages: labels and executables.
@@ -720,7 +727,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
      &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -768,7 +775,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
      &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       endif
 
@@ -1151,7 +1158,7 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1207,7 +1214,7 @@ C If one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1395,11 +1402,11 @@ C If one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1452,7 +1459,7 @@ C If one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
      &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1513,7 +1520,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1562,7 +1569,7 @@ C If one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1779,7 +1786,7 @@ C        call edisp(iuout,outs)
      &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
      &    ' with scene purpose ',aim(1:lnblnk(aim)),
      &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        call edisp248(iuout,outs,90)
         return
       endif
 

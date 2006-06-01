@@ -664,7 +664,7 @@ clean:
 	AIMS.F TAC.F WaterProperties.F DG_controller.F elec_net_utilities.F \
 	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F TBinnedData.cpp \
 	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
-	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o \
+	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 
 

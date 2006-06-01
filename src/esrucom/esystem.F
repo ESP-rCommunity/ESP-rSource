@@ -260,7 +260,20 @@ C DPRFDB (72 char) name of default event profiles database.
 C DPCDB (72 char) name of default plant template database.
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
-C Images.
+C Images in the model.
+C  imgfmt (4 char) gives the format of each image associated with
+C         the model, it must match one of the known fmttag.
+C  imgfoc (4 char) associates an image with a specific topic:
+C         'FZON' is related to zone composition
+C         'FNET' is related to network composition
+C         'FCTL' is related to control composition
+C         'FDFS' is related to CFD domains
+C         'FPER' is related to predicted performance
+C         '****' is a general image displayed at startup
+C  limgfil (72 char) name of the image file << ?? longer string >>
+C  noimg is the number of images associated with the model.
+C  iton is a toggle iton=0 initial state where images have not been scanned
+C    and iton=1 images have been displayed.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
 C Initial view.
