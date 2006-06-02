@@ -1770,7 +1770,7 @@ sub process_case($){
         return if $file =~ m/CVS./;
         return if $file =~ m/\.svn/;
         # Open file and read contents 
-        open (EDIT_FILE, $file);
+        open (EDIT_FILE, $file) or fatalerror("Could not open $file for reading!");
         my @lines = ();
 
         while ( my $line = <EDIT_FILE> ) {
@@ -1787,7 +1787,7 @@ sub process_case($){
         close(EDIT_FILE);
 
         # Reopen file with status 'new' and write out contents.
-        open(WRITE_FILE, ">$file");
+        open(WRITE_FILE, ">$file") or fatalerror("Could not open $file for writing!");
         foreach my $line ( @lines ){
           print WRITE_FILE $line;
         }
@@ -1814,7 +1814,7 @@ sub process_case($){
   # identify simulation presets, and rename
   # res libraries for consistency
   #-----------------------------------------------------------------------
-  open(CFG_FILE, $local_cfg_file);
+  open(CFG_FILE, $local_cfg_file) or fatalerror("Could not open $local_cfg_file!");
   while ( my $line = <CFG_FILE> ) {
     # rename results libraries for consistancy
     $line =~ s/\*sblr[\s]*.*/*sblr $model_name.bres/g;
