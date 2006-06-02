@@ -61,6 +61,7 @@ sub move_simulation_results($$$$$);
 sub is_empty($);
 sub is_true_false($);
 sub execute($);
+sub log_msg($);
 sub resolve_path($);
 sub stream_out($);
 sub echo_config();
@@ -101,7 +102,9 @@ my @gDumped_parameters;    # Array containing list of test parameters
 
 my $gXML_Report_needed=0;  # Flag indicating differences were found
                            #    in the xml, and a report should be
-                           #    created. 
+                           #    created.
+
+my %gRun_Times;            # Run times for simulation
                                                       
 #-------------------------------------------------------------------
 # Help text. Dumped if help requested, or if no arguements supplied.
@@ -191,7 +194,8 @@ my $Help_msg = "
     -v, --verbose: Report progress and results to the buffer.
 
     -vv, --very_verbose: Report simulation messages and low-level
-         activity to the buffer.
+         activity to the buffer. Note: Code efficiency will not be
+         tested when the very-verbose option is active. 
 
     --echo: Report test configuration and quit.
 
@@ -265,6 +269,10 @@ my $Help_msg = "
  exceeds specified tolerances. It's also possible to adjust the
  tolerances used in this comparison using the '--adj_tol' command-
  line option.
+
+ In addition, tester.pl records the CPU runtime required for each
+ simulation, and reports on the relative increase or decrease in
+ simulation runtime between the reference and test version of bps.
       
  REPORTING:
 
@@ -407,9 +415,9 @@ $gTest_params{'period_name'}  ="test";   # name of test period
 $gTest_params{'abbreviated_runs'} = 0;                # Flag for short simulations
 $gTest_params{'abbreviated_run_period'} = "1 1 2 1";  # Start & end date for short simulations.
 
-$gTest_params{'default_version_#'} = "1.0";        # Default, minumum and maximum
+$gTest_params{'default_version_#'} = "1.1";        # Default, minumum and maximum
 $gTest_params{'min_version_#'} = "1.0";            #  supported configuration file
-$gTest_params{'max_version_#'} = "1.0";            #  version #'s
+$gTest_params{'max_version_#'} = "1.1";            #  version #'s
 
 $gTest_params{'create_report'} = 1;                   # Flag to create a report.
 $gTest_params{'report_file'} = "bps_test_report"; # Default report name
@@ -418,6 +426,13 @@ $gTest_params{'configuration_file'} = "configuration_file.txt";
                                                       # historical archive
                                                       #    configuration file name 
 
+$gTest_params{'test_efficiency'} = 1;          # Flag indicating efficiency should be
+                                               # tested.
+
+$gTest_params{'test_eff_arch_version'} = "1.1"; # Earliest historical archive
+                                                # version supporting efficiency
+                                                # test data.                                         
+                                          
 $gTest_params{"report_format"} = "ascii";    # Format for report.
                                                       
 # list of parameters that should be dumped into the configuration file
@@ -645,6 +660,9 @@ foreach $arg (@processed_args){
       # steam out all messages
       $gTest_params{"verbosity"} = "very_verbose";
       $gTest_params{"logfile"}="";
+
+      # Disable testing of efficiency
+      $gTest_params{"test_efficiency"} = 0;
   
       last SWITCH;
     }
@@ -1270,9 +1288,9 @@ sub create_report(){
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
-                  ."^^^^^^^";
+                  ."^^^^^^^^^^^^^^^^^^";
   push @output, $current_rule;
-  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> .fcts<> overall", "Folder", "Model");
+  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> .fcts<> overall<> dt-CPU(%%)", "Folder", "Model");
   push @output, $current_rule;
 
   # Loop throug results, and report to buffer
@@ -1283,12 +1301,36 @@ sub create_report(){
     my $h3k_pass  = result_to_string($test,"h3k");
     my $data_pass = result_to_string($test,"data");
     my $fcts_pass = result_to_string($test,"fcts");
-    my $overall_pass = result_to_string($test,"overall");;
-    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $fcts_pass, $overall_pass);
+    my $overall_pass = result_to_string($test,"overall");
+    my $cpu_change = $gRun_Times{"$folder/$model"}{"chg"};
+    # add extra space to align +ive and -ive CPU runtime changes
+    my $spacer = "";
+    if ( $gTest_params{"test_efficiency"} ){
+      if ( $cpu_change > 0 ){$spacer=" ";}
+      $cpu_change = sprintf($spacer."%-10.2g", $cpu_change);
+    }else{
+      $cpu_change = "N/A";
+    }
+    
+    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $fcts_pass, $overall_pass, $cpu_change);
   }
   push @output, $current_rule;
   push @output, "  ";
 
+  if ( $gTest_params{"test_efficiency"} ){
+    push @output, " Parameter dt-CPU describes the percent change in simulation CPU ";
+    push @output, " runtime between the reference and test versions of bps.";
+    push @output, "   - When different versions of bps are exercised on the same";
+    push @output, "     machine, dt-CPU is a measure of the relative efficieny of";
+    push @output, "     the ESP-r source code. ";
+    push @output, "   - When the same version of bps is exercised on different ";
+    push @output, "     machines, dt-CPU is a measure of the comparative performance";
+    push @output, "     of ESP-r on different hardware and operating systems.";
+  }else{
+    push @output, " Efficiency testing disabled.";
+  }
+  push @output, "  ";
+  
   # Detailed report of XML output comparison
   if ( $gTest_ext{"xml"} && ! $gXML_Report_needed ){
     push @output, " No differences were found in XML output. Detailed report unnecessary. ";
@@ -1575,6 +1617,13 @@ sub process_historical_archive(){
              $values[1] >= $gTest_params{"min_version_#"}    ){
           # version number is valid
           $version_ok = 1;
+
+          # check if various features are supported by current version
+          if ( $values[1] < $gTest_params{"test_eff_arch_version"} ){
+            # version predates efficiency testing. Disable.
+            $gTest_params{"test_efficiency"} = 0;
+          }
+          
         }else{
           $error_msgs .= "     - Configuration file version number ($values[2])".
                          " is not supported. (line: $line_number) \n";
@@ -1631,11 +1680,29 @@ sub process_historical_archive(){
           $values[3] = resolve_path("$gTest_paths{\"old_archive_folder\"}/$values[3]");
           $file_list .= "$values[2]:$values[3]";
           $gTestable_files{$values[1]}{"reference"} .= $file_list;
+
+
         }else{
           $error_msgs .= "      - Results file model/extention/path".
                          " ($values[1]/$values[2]$values[3])".
                          " not understood (line: $line_number)\n";
                          
+        }
+      }
+
+      # Parse recorded runtimes.
+      if ( $values[0] eq "*runtime" ){
+        if ( $values[1] && $values[2] && $values[3] ){
+          # arg 1: model path (folder/model name)
+          # arg 2: save level
+          # arg 3: runtime
+          $gRun_Times{$values[1]}{$values[2]}{"reference"} = $values[3];
+
+        }else{
+          # Runtime 
+          $error_msgs .= "      - Results file model/save-level/runtime".
+                         " ($values[1]/$values[2]$values[3])".
+                         " not understood (line: $line_number)\n";
         }
       }
     }
@@ -1966,10 +2033,20 @@ sub create_historical_archive(){
           $path =~ s/\/\//\//g;
           print TEST_CONFIG "*output $model $extention $path \n";
         }
+        # Add runtimes
+        foreach my $level (@gSave_levels){
+          print TEST_CONFIG "*runtime $model $level $gRun_Times{$model}{$level}{$version} \n";
+        }
       }
     }
   }
+  # Append measured CPU runtimes to test configuration file 
+  while ( my ( $model, $outputs ) = each %gTestable_files ){
 
+
+  }
+
+  
   close (TEST_CONFIG);
   
   # Tar and zip historical archive file. First, move to parent directory,
@@ -2014,22 +2091,63 @@ sub invoke_tests($$$$){
 
   my $model_path  = getcwd();
 
-  
+  my ( $cmd, $sim_msgs, $system_time, $user_time, $real_time, $run_time);
 
+  my @msg_buffer;
+  
   # optionally exercise reference case.
   if ( $gTest_params{"compare_versions"} ){
     # delete unnecessary files - may be lying around of previous test cycle
     # was interrupted
     delete_old_files();
 
-    # run reference binary
+    # run reference binary, and capture results
     stream_out( "   running: $gRef_Test_params{\"test_binary\"} (reference case, save level $save_level) ...");
-    my $cmd = "$gRef_Test_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
-    execute($cmd);
+    $cmd = "$gRef_Test_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
+    
+    if ( $gTest_params{"test_efficiency"} ){
 
+      # use time command to record CPU time. Note: we use
+      # the -p option to invoke the 'portable' version of time.
+      $sim_msgs =`time -p $cmd 2>&1`;
+  
+      # Split simulation messages into array & pop last three elements
+      # which contain the output from 'time'.
+      
+      @msg_buffer = split /\n/, $sim_msgs;
+    
+      $system_time = pop @msg_buffer;
+      $user_time = pop @msg_buffer;
+      $real_time = pop @msg_buffer;
+
+      # Get numerical data.
+      $real_time =~ s/real//g;
+      $real_time =~ s/\s//g;
+      $user_time =~ s/user//g;
+      $user_time =~ s/\s//g;
+
+      # Save data
+      $gRun_Times{"$folder/$model"}{$save_level}{"reference"} = $user_time;
+
+      # Prep message 
+      $run_time = "($user_time seconds on CPU)";
+
+      # Empty buffer
+      @msg_buffer = ();
+
+      # Log simulation messages. Disabled to supress warnings.
+      #log_msg($sim_msgs);
+  
+    }else{
+      # Display messages in real time to assist with diagnosis
+      execute($cmd);
+      $run_time="";
+    }
+  
     # archive output
     move_simulation_results($model_path,$model,$folder,$save_level,"reference",);
-    stream_out("done.\n")
+ 
+    stream_out("done. $run_time\n");
   }
   
   # run new bin
@@ -2039,15 +2157,51 @@ sub invoke_tests($$$$){
   # was interrupted
   delete_old_files();
 
-  my $cmd = "$gTest_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
+  $cmd = "$gTest_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
+  
+  if ( $gTest_params{"test_efficiency"} ){
 
-  execute($cmd);
+    # use time command to record CPU time. Note: we use
+    # the -p option to invoke the 'portable' version of time.
+  
+    $sim_msgs =`time -p $cmd 2>&1`;
 
+    # Split simulation messages into array & pop last three elements,
+    # which contain the output from 'time'.
+    @msg_buffer = split /\n/, $sim_msgs;
+  
+    $system_time = pop @msg_buffer;
+    $user_time = pop @msg_buffer;
+    $real_time = pop @msg_buffer;
+
+    # Get numerical data
+    $real_time =~ s/real//g;
+    $real_time =~ s/\s//g;
+    $user_time =~ s/user//g;
+    $user_time =~ s/\s//g;
+
+    # Save run time
+    $gRun_Times{"$folder/$model"}{$save_level}{"test"} = $user_time;
+
+    # Prep message for reporting to screen.    
+    $run_time = "($user_time seconds on CPU)";
+
+    # Empty buffer.
+    @msg_buffer = ();
+  
+    # Log simulation messages. Disabled to suppress warnings.
+    # log_msg($sim_msgs);
+
+  }else{
+    # Display messages in real time to assist with diagnosis. Time
+    # will not be available
+    execute($cmd);
+    $run_time = "";
+  }
+  
   # archive output
-  move_simulation_results($model_path,$model,$folder,$save_level,"test");
-  stream_out("done.\n");
-
- 
+  move_simulation_results($model_path,$model,$folder,$save_level,"test");  
+  stream_out("done. $run_time\n");
 }
 
 #--------------------------------------------------------------------
@@ -2279,7 +2433,44 @@ sub compare_results($$){
         stream_out ($gTest_Results{"$folder/$model"}{$extention}."\n");
       }
     }
+
+    # Compute average CPU runtimes for all save-levels
+    # and determine increase / reduction. Run times are
+    # not available in very verbose mode.
+    if ( $gTest_params{"test_efficiency"} ){
+      
+      foreach my $version ( ("reference", "test" ) ){
+
+        # Reset intitial value.
+        $gRun_Times{"$folder/$model"}{"avg"}{$version} = 0;
+        
+        foreach my $level (@gSave_levels){
+
+          
+          $gRun_Times{"$folder/$model"}{"avg"}{$version} =
+            $gRun_Times{"$folder/$model"}{"avg"}{$version}
+            + $gRun_Times{"$folder/$model"}{$level}{$version}/
+             ( scalar(@gSave_levels) ) ;
+
+        }
+      }
+
+      if ( $gRun_Times{"$folder/$model"}{"avg"}{"reference"} > 0 ){
+        $gRun_Times{"$folder/$model"}{"chg"} =
+          ( $gRun_Times{"$folder/$model"}{"avg"}{"test"} -
+            $gRun_Times{"$folder/$model"}{"avg"}{"reference"} ) /
+            $gRun_Times{"$folder/$model"}{"avg"}{"reference"} * 100;
+            
+      }else{
+        $gRun_Times{"$folder/$model"}{"chg"} = "N/A"
+      }
+      
+    }else{
+        $gRun_Times{"$folder/$model"}{"chg"} = "N/A"
+    }
+    
   }
+
   # Report overall test result to buffer
   stream_out (
                 sprintf ("    - %-12s %s \n","Overall:",
@@ -2874,6 +3065,14 @@ sub execute($){
   return $result;
 }
 
+#--------------------------------------------------------------------
+# Log messages in log file, if specified.
+#--------------------------------------------------------------------
+sub log_msg($){
+  my($msg) =@_;
+  system( "echo -E \"$msg\" $gTest_params{\"logfile\"}");
+  return 1;
+}
 
 #-----------------------------------------------------------------------
 # Extract model name (zzz) from path containing cfg file
