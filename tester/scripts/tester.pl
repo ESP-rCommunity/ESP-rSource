@@ -1031,7 +1031,7 @@ if ( $gTest_params{"echo_config"} ) {
 # Prepare results/simulation folders
 #-----------------------------------------------------------------------
 
-# Empty local simulation folder
+# Test that 'local_models' folder can be created.
 if ( ! -d $gTest_paths{"local_models"} ){
   execute("mkdir $gTest_paths{\"local_models\"}");
   if ( ! -d $gTest_paths{"local_models"} ){
@@ -1042,9 +1042,10 @@ if ( ! -d $gTest_paths{"local_models"} ){
   if ( ! -w $gTest_paths{"local_models"} ){
     fatalerror("Local model folder is not writable ($gTest_paths{\"local_models\"})");
   }
-}else{
-  execute("rm -fr $gTest_paths{\"local_models\"}/*");
 }
+# Now delete it. We'll create it as we need to later on.
+unlink $gTest_paths{"local_models"};
+
 
 
 # Scope varaibles needed for archives
@@ -1732,12 +1733,12 @@ sub process_historical_archive(){
 #-------------------------------------------------------------------
 sub process_case($){
 
-  
-
   # get starting path, and move to master path
   my $start_path = getcwd();
   chdir $gTest_paths{"master"};
 
+  execute("mkdir $gTest_paths{\"local_models\"}");
+  
   # collect test case path
   my ($test_model) = @_;
   $test_model = resolve_path($test_model);
@@ -1753,7 +1754,7 @@ sub process_case($){
   my $local_cfg_file = "$gTest_paths{\"local_models\"}/$model_root_name/cfg/$model_name.cfg";
   
   stream_out(" > TESTING: $model_name (in folder $model_root_name) \n");
-  execute("cp -fr $model_folder_path $gTest_paths{\"local_models\"}/$model_root_name");
+  execute("cp -fr $model_folder_path $gTest_paths{\"local_models\"}");
 
   # If user has specified local databases, replace default
   # database path with specified paths
@@ -1865,7 +1866,7 @@ sub process_case($){
     if ( $status ){ 
       # Open geometry file, and read until zone name is found 
       my $geometry_file = resolve_path( "$gTest_paths{\"local_models\"}/$model_root_name/cfg/$zone_geo_files{$zone}");
-      open (GEO_FILE, $geometry_file );
+      open (GEO_FILE, $geometry_file ) or fatalerror("Could not open $geometry_file for reading!");
   
       my @file_contents = ();
       my @file_lines=();
@@ -1950,7 +1951,7 @@ sub process_case($){
   }
    
   # empty local folder
-  execute("rm -fr $gTest_paths{\"local_models\"}/*");
+  unlink $gTest_paths{"local_models"};
   
   # move to master path
   chdir $gTest_paths{"master"};
@@ -1963,7 +1964,7 @@ sub process_case($){
   
   # delete archived results unless archive is requested.
   if ( ! $gTest_params{"save_output"} ){
-     execute("rm -fr $gTest_paths{\"results\"}/*");
+     unlink "$gTest_paths{\"results\"}";
   }
   # Return to starting path
   chdir $start_path;
