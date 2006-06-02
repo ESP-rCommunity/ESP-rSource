@@ -1,3 +1,4 @@
 bps Test Suite:
 
-Run "./scripts/tester.pl --help" for more information.
+Move to the ./scripts folder and run "./tester.pl --help" 
+for more information.

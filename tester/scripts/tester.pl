@@ -138,6 +138,10 @@ my $Help_msg = "
     -c <FILE>, --case <FILE>: Run tests on a single model described
          by FILE.
 
+    -d <PATH>, --databases <PATH>: Use standard ESP-r databases
+         and climate files located in <PATH> when running simulations.
+         Default: /usr/esru/esp-r
+
     -a <FILE>, --historical_archive <FILE>: Compare results to the
          historical archive contained in <FILE>. If specified,
          tester.pl will uncompress the <FILE> archive and
@@ -256,7 +260,7 @@ my $Help_msg = "
 
  However, tester.pl supports more detailed examination of the
  out.xml files. These files are parsed and their contents
-#  compared on a metric-by-metric basis.  The files are assumed
+ compared on a metric-by-metric basis.  The files are assumed
  to fail of the absolute or relative difference between any metric
  exceeds specified tolerances. It's also possible to adjust the
  tolerances used in this comparison using the '--adj_tol' command-
@@ -321,6 +325,11 @@ my $Help_msg = "
       \$ ./tester.pl/ /path/to/test/bps
             --historical_archive historical_achive.tar.gz
             --case /path/to/cfg/file.cfg -v
+
+    Use non-standard databases located in ~/esp-r/:
+
+      \$ ./tester.pl /path/to/reference/bps /path/to/test/bps
+            --databases ~/esp-r/
             
 ";
  
@@ -362,6 +371,10 @@ $gTest_paths{'esp-r'}        = "/usr/esru/esp-r/bin";    # path to standard esp-
 $gTest_paths{'helper_apps'}  = ".;../../validation/QA/benchmark_model/cfg";
                                                          # paths in which to find helper apps
                                                          #   helper scripts.
+$gTest_paths{'default_dbs'}  = "/usr/esru/esp-r";
+                                                         # Path to default databases.                                                         
+
+$gTest_paths{'user_databases'}= "";                      # path to user-specified databases
 
 $gTest_paths{'new_archive'} = "";   # Paths to old and new historical
 $gTest_paths{'old_archive'} = "";   #   results archive.
@@ -383,6 +396,7 @@ $gTest_params{'create_archive'}     = 0; # create historical archive for future
 $gTest_params{'compare_versions'}   = 1; # compare 2 bps executables
 $gTest_params{'verbosity'}          = "quiet"; # How loud should the tester be?
 
+$gTest_params{'user databases'}     = 0; # Use user specified databases
 
 $gTest_params{'save_output'}  = 0;       # Save results output.
 
@@ -484,8 +498,10 @@ $cmd_arguements =~ s/-c;/--case;/g;
 $cmd_arguements =~ s/-a;/--historical_archive;/g;
 $cmd_arguements =~ s/-v;/--verbose;/g;
 $cmd_arguements =~ s/-vv;/--very_verbose;/g;
+$cmd_arguements =~ s/-d;/--databases;/g;
 
 # Collate options expecting arguements
+$cmd_arguements =~ s/--databases;/--databases:/g;
 $cmd_arguements =~ s/--adj_tol;/--adj_tol:/g;
 $cmd_arguements =~ s/--path;/--path:/g;
 $cmd_arguements =~ s/--case;/--case:/g;
@@ -561,6 +577,18 @@ foreach $arg (@processed_args){
       last SWITCH;
     }
 
+    if ( $arg =~ /--databases:/){
+      # User has provided path to non-standard databases
+      $gTest_params{"user_databases"} = 1;
+      $gTest_paths{"user_databases"} = $arg;
+      $gTest_paths{"user_databases"} =~ s/--databases://g;
+      if ( ! $gTest_paths{"user_databases"} ) {
+        fatalerror("Path to databases must be specified with ".
+                   "--databases option!");
+      }
+      last SWITCH;
+    }
+    
     if ( $arg =~ /--adj_tol:/ ){
       # Multiply all comparison tolerances by specified value.
       $arg =~ s/--adj_tol://g;
@@ -718,7 +746,6 @@ if ( $bin_count == 1 && ( $gTest_params{"create_archive"} ) ){
 }
 
 
-
 if ( $gTest_params{"compare_versions"} ){
   # 2 bps files should be specified
   if ( $bin_count != 2 ) {
@@ -837,6 +864,58 @@ if ( ! $gTest_params{"ish_found"} ){
   stream_out("          Models with shading can not be tested.");
 }
 
+#-----------------------------------------------------------------------
+# Look for customized database directory. If it could not be found or
+# does not contain databases and climate folders, revert to standard
+# databases. 
+#-----------------------------------------------------------------------
+if ( $gTest_params{"user_databases"} ){
+
+  $path = resolve_path($gTest_paths{"user_databases"});
+
+  if ( -d $path &&
+       -r $path &&
+       -x $path ){
+    # Check that directory contains climate and databases folders
+    if ( ! -d "$path/climate" ||
+         ! -r "$path/climate" ||
+         ! -x "$path/climate"    ){
+
+      stream_out(
+        " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
+        "          does not contain a 'climate' folder. Using default databases\n".
+        "          instead ($gTest_paths{\"default_dbs\"}).\n"
+      );
+      $gTest_params{"user_databases"} = 0;
+    }
+    if ( ! -d "$path/databases" ||
+         ! -r "$path/databases" ||
+         ! -x "$path/databases"    ){
+
+      stream_out(
+        " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
+        "          does not contain a 'databases' folder'. Using default databases\n".
+        "          instead ($gTest_paths{\"default_dbs\"}).\n"
+      );
+      $gTest_params{"user_databases"} = 0;
+    }
+
+    if ( $gTest_params{"user_databases"} ) {
+      $gTest_paths{"user_databases"} = $path;
+    }
+
+  }else{
+
+    stream_out(
+        " Warning: specified database folder ($gTest_paths{\"user_databases\"})\n".
+        "          could not be found. Using default databases instead.\n".
+        "          ($gTest_paths{\"default_dbs\"})\n"
+    );
+
+    $gTest_params{"user_databases"} = 0;
+    
+  }
+}
 
 #-----------------------------------------------------------------------
 # If a historical archive has been specified, process the archive
@@ -1609,8 +1688,50 @@ sub process_case($){
   stream_out(" > TESTING: $model_name (in folder $model_root_name) \n");
   execute("cp -fr $model_folder_path $gTest_paths{\"local_models\"}/$model_root_name");
 
+  # If user has specified local databases, replace default
+  # database path with specified paths
+  if ( $gTest_params{"user_databases"} ){
+    
+    find( sub{
+        # move on to next file if (1) file is a directory,
+        # (2) file is not readable, (3) or file is not ascii,
 
-  
+        return if -d;
+        return unless -r;
+        return unless -T;
+        my $file = $File::Find::name;
+        return if $file =~ m/CVS./;
+        return if $file =~ m/\.svn/;
+        # Open file and read contents 
+        open (EDIT_FILE, $file);
+        my @lines = ();
+
+        while ( my $line = <EDIT_FILE> ) {
+        
+          # Replace standard dbs with user specified path
+          
+          $line =~ s/$gTest_paths{"default_dbs"}/$gTest_paths{"user_databases"}/g;
+          push @lines, $line;
+
+         
+        }
+
+        # Close file
+        close(EDIT_FILE);
+
+        # Reopen file with status 'new' and write out contents.
+        open(WRITE_FILE, ">$file");
+        foreach my $line ( @lines ){
+          print WRITE_FILE $line;
+        }
+        close(WRITE_FILE);
+       
+      },  $gTest_paths{"local_models"} );
+
+    # move back to master path
+    chdir $gTest_paths{"master"};
+      
+  }
   # get model path, without .cfg extention
   my $test_root = $local_cfg_file;
   $test_root =~ s/\.cfg$//g;
@@ -1763,7 +1884,7 @@ sub process_case($){
    
   # empty local folder
   execute("rm -fr $gTest_paths{\"local_models\"}/*");
-
+  
   # move to master path
   chdir $gTest_paths{"master"};
   
