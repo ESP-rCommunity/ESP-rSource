@@ -2340,6 +2340,116 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
 } /* horaxis_ */
 
 
+/* ***** popupimage_() display image with documentation */
+/* Could pass in:
+    title for the pop up box
+*/
+void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lendocu,int lenact,int lenfile)
+/* prom is the prompt for the image
+   docu is the documentation for the image (which might be editable)
+   file is the name of the image file
+   ier tracks if the default or cancel buttons have been selected (requires
+     suitable actions on the fortran side).
+   act = '-' documentation not to be edited, act = 'e' documentation can be edited (not implemented)
+*/
+{
+   PangoFontDescription *pfd;	/* to hold test font */
+   PangoContext *context;	/* for use in finding font properties */
+   PangoFontMetrics *metrics;
+   static GtkWidget *askbox;
+   GtkWidget *entry, *label;
+   GtkWidget *image;	/* space to draw the image into */
+   GtkWidget *closebutton;	/* button to close the popup */
+   GdkPixbuf *loadgpbimage;	/* the buffer for the image loaded from *file */
+   gint XSize, YSize;	/* size of the image */
+   gint imageloaded;	/* imageloaded = 0 false, imageloaded = 1 true */
+   gchar *docu_local;
+   gchar *question_local;
+   gchar *file_local;		/* local string variable for image file name */
+   int lnprom, lnfile, lndoc;	/* for non-blank length */
+   
+   f_to_c_l(docu,&lendocu,&lndoc);  /* find actual length of the documentation string. */
+   lndoc = lndoc + 1;  /* add a bit of cushion */
+   docu_local = g_strndup(docu, (gsize) lndoc);	/* make local string for documentation */
+
+   lnprom = 0;  /* find out actual length of prompt */
+   f_to_c_l(prom,&lenprom,&lnprom);
+   question_local = g_strndup(prom, (gsize) lnprom);
+
+   lnfile = 0;  /* find out actual length of the image file name */
+   f_to_c_l(file,&lenfile,&lnfile);
+   file_local = g_strndup(file, (gsize) lnfile);
+
+/* debug fprintf(stderr,"phrase %s\n",question_local);  */
+/* debug fprintf(stderr,"documentation is %s\n",docu_local); */
+/* debug fprintf(stderr,"image is %s\n",file_local); */
+/* debug fprintf(stderr,"nb of help lines %d\n",help_lines); */
+    
+   /* Create the widgets */
+   askbox = gtk_dialog_new();	/* create a new dialog (pop-up box) */
+   gtk_container_set_border_width (GTK_CONTAINER (askbox), 5);
+   gtk_box_set_spacing((GtkBox *) GTK_DIALOG(askbox)->vbox, 2);
+   gtk_window_set_title (GTK_WINDOW (askbox), question_local);			/* Set window title */
+
+   loadgpbimage = gdk_pixbuf_new_from_file(file_local,NULL);	/* Load the file into a pixbuf */
+   if( loadgpbimage==NULL) {
+     fprintf(stderr,"error loading image file %s\n",file_local);	/* if there is a problem set small size */
+     XSize = 150;
+     YSize = 100;
+     imageloaded = 0;
+   } else {
+     XSize = gdk_pixbuf_get_width(loadgpbimage);	/* get the actual size of the pixbuf */
+     YSize = gdk_pixbuf_get_height(loadgpbimage);
+     imageloaded = 1;
+     fprintf(stderr,"loaded image file %s %d %d\n",file_local,XSize,YSize);
+   }
+   image = gtk_image_new_from_pixbuf(loadgpbimage);	/* create a gtk image from the pixbuf */
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),image);
+   gtk_widget_set_size_request ( image, XSize+5,YSize+5);
+
+   entry = gtk_text_view_new ();  /* create a multi-line text editing area */
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
+
+/* now set the font size to be used for the image documentation. */
+   if (disp_fnt == 0 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 8");
+     fprintf(stderr,"configure font medium 8\n");	/* debug */
+   } else if (disp_fnt == 1 ) {	
+     pfd = pango_font_description_from_string("Serif,Medium 10");
+     fprintf(stderr,"configure font medium 10\n");	/* debug */
+   } else if (disp_fnt == 2 ) {	
+     pfd = pango_font_description_from_string("Serif,Medium 12");
+     fprintf(stderr,"configure font medium 12\n");	/* debug */
+   }
+   gtk_widget_modify_font(entry, pfd);
+   pango_font_description_free(pfd);
+
+   gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (entry)), 
+			    docu_local, -1);	/* put docu_local text in the entry text display */
+
+   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (entry), 8);	/* provide left and right gap */
+   gtk_text_view_set_right_margin (GTK_TEXT_VIEW (entry), 8);
+
+   gtk_text_view_set_wrap_mode ( GTK_TEXT_VIEW (entry), GTK_WRAP_WORD );       /* warp the words */
+   if ( XSize >= 250 ) {
+     gtk_widget_set_size_request ( entry, XSize,-1);	/* width same as image with auto height  */
+   } else {
+     gtk_widget_set_size_request ( entry, XSize,-1);	/* width same as image with auto height */
+   }
+
+/* Make a button for closing the popup and display the popup. Use the signal to destroy the widget. */
+   closebutton = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->action_area), closebutton);
+   gtk_widget_set_size_request ( closebutton, 80,-1);
+   g_signal_connect_swapped (GTK_OBJECT (closebutton),"clicked", 
+                             G_CALLBACK (gtk_widget_destroy),GTK_OBJECT (askbox));
+
+   gtk_widget_show_all (askbox);
+                      
+   return;
+   
+}
+
 
 
 

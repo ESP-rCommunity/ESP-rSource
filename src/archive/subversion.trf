@@ -6,7 +6,7 @@ delim $$
 .TL
 An Overview of Subversion for ESP-r Central Users
 .br
-Version of May 12, 2006
+Version of June 2, 2006
 .sp 2
 .LP
 ESP-r's source code was placed under a version control system in April 2006 to
@@ -55,10 +55,7 @@ source code on your local computer but you will not
 be able to make any changes to the ESP-r Central repository.
 .IP
 svn checkout  https://esp-r.net/espr/esp-r/trunk/src
-.IP
-User: anonymous
-.IP 
-Password: anonymous 
+
 .NH 
 ESP-r Development with Subversion. 
 .IP
@@ -178,50 +175,88 @@ http://svnbook.red-bean.com/en/1.1/ch03s05.html#svn-ch-3-sect-5.4
 .B
 Merging Branches 
 .IP
-Eventually you will wish to update your sub-branch with new additions from the development branch. Or perhaps you wish to commit your changes from your sub-branch to the development branch. To facilitate this we use a tool called "svnmerge".  (See "Structure of ESP-r Source Code Archive") 
+For the first time you merge changes from the development branch into your sub-branch, these
+simple steps will walk you through the process.
 .IP
-svnmerge assists you by:
+   1. Find out at what version you created the branch.
 .IP
-* Automatically tracking merged revisions and preventing you from merging a revision twice.
+        svn log --verbose --stop-on-copy http://esp-r.net/espr/esp-r/branches/my_branch
 .IP
-* Displaying available unmerged revisions as a revision list, commit logs, or diffs.
+   2. Which will produce the following message. Note the r34. This is the revision number
+at which your sub-branch was created.
 .IP
-* Tracking merges from multiple sources and and bi-directional merging.
+          ------------------------------------------------------------------------
 .IP
-* Creating automated commit messages.
+          r34 | user | 2002-11-03 15:27:56 -0600 (Thu, 07 Nov 2002) | 2 lines
 .IP
-The svnmerge command does not commit to the repository you must commit as a separate operation.
+          Changed paths:
 .IP
-Use the command:
+          A /esp-r/branches/my_branch (from /esp-r/branches/development_branch:340)
 .IP
-	svn revert -r
+   3. Check out a clean copy of your work.. 
 .IP
-when you need to start over. Note that "svn revert" will not delete any files so you may have to remove some files yourself to get a complete reversal. To review the complete syntax of the "svnmerge" command, as well as a description of its various options, use the command help option:
-.IP 
-	svnmerge help
+        svn  checkout http://esp-r.net/espr/esp-r/branches/my_branch
 .IP
-.B
-Example: Updating from the developer's branch
-.IP
-Suppose that you have worked for a while on your sub-branch and there is a feature on the developer?s branch that you wish to incorporate in your sub-branch.  To do this you need to merge the developer's branch into your sub-branch. 
-.IP
-To add changes from the developer's branch to your sub-branch:
-.IP
-1.  Get a fresh copy of your sub-branch.
-.IP
-        svn checkout  https://svn2.cvsdude.com/espr/esp-r//branches/<your_branch>
-.IP
-        cd branches/<your_branch>
-.IP
-2. Merge in the changes from the developer's branch.
-.IP
-        svnmerge init -f commit.txt /esp-r/branches/development_branch
-.IP
-The -f commit.txt option will create a commit message for you showing that you have merged the branch. 
-.IP
-3. Resolve any conflicts, compile and test. 
-.IP
-4. Commit your changes to your branch. 
-.IP
-        svn commit -F commit.txt && rm commit.txt
 
+   4. Determine the most recent revision (i.e. the highest number) on the development_branch.
+.IP
+        svn  log http://esp-r.net/espr/esp-r/branches/development_branch    
+.IP
+          ------------------------------------------------------------------------
+.IP
+          r56 | ibeausol | 2006-05-01 16:08:15 -0400 (Mon, 01 May 2006) | 5 lines
+.IP
+.IP
+          This commit merges in changes r41:55 on the sub-branch "Ian_Beausoleil-Morrison"
+.IP
+          into "development_branch".  This adds some clarifications to the document that
+.IP
+          describes the structure of the repository.  There is no impact upon the compilation
+.IP
+          of ESP-r nor upon simulation results.
+.LP
+   5. Merge the changes that have occurred on development_branch from r34
+(when your sub-branch was created) to r56.
+.IP
+
+.IP
+        cd <your_working_copy_from_step_3> 
+.IP
+        svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/developers_branch
+.IP
+          U integer.c
+.IP
+          U button.c
+.IP
+          U Makefile
+.IP
+   6. Check to see if there are any conficts and check the changes that have been merged
+.IP
+        svn status
+.IP
+          M integer.c
+.IP 
+          M button.c
+.IP
+          M Makefile
+.IP
+   7. Commit the merged changes into your sub-branch and provide an appropriate log message.
+You will rely on this message the next time you merge in changes from development_branch:
+rather than merging from the creation point of your sub-branch (r34 in the example above) you
+will merge from the last point at which your synchronized (r56 in this example).
+.IP
+         svn commit -m "Merged development_branch changes r34:56 into my_branch."
+.IP
+          Sending integer.c
+.IP
+          Sending button.c
+.IP
+          Sending Makefile
+.IP
+          Transmitting file data ...
+.IP
+          Committed revision 57.
+.IP
+
+.IP
+For more information on Subversion Merging, read Chapter 4: Branching and Merging of online SVN book.

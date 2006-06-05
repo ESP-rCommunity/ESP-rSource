@@ -2131,7 +2131,9 @@ C              write(6,*) 'reset tfile to ',tfile
             else
               call runit(doit,tmode)
             endif
-            call edisp(iuout,'This extract complete.')
+            write(outs,'(3a)') 'IPV extract ',
+     &        runtag(ij)(7:lnblnk(runtag(ij))),' is complete.'
+            call edisp(iuout,outs)
  668      continue
           if(IRT.eq.3)then
             tfile=sblres(nipvassmt)
@@ -2916,17 +2918,44 @@ C Do cursory check to see if the file is sorted.
 
 C ********** imgdisp
 C imgdisp displays images associated with start-up or at specific points
-C and the image browser has not been invoked do this now.
+C and the image browser has not been invoked do this now. In the case
+C of the GTK version use an in-built GTK function rather than an
+C external tool.
       subroutine imgdisp(iforce,focus,ier)
 
       common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
 
-C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+C A set of possible image formats which can be accepted within
+C a model configuration file. These definitions are held in the
+C so-called esprc file. To add additional image types and/or 3rd
+C party display applications edit the ESP-r Install script which
+C creates the esprc file.
+C   imgtyp is the number of different image formats supported
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBMP)
+C   fmtexe (20 char) is the application name used to display
+C          images of type fmttag.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
+
+C Images in the model.
+C  imgfmt (4 char) gives the format of each image associated with
+C         the model, it must match one of the known fmttag.
+C  imgfoc (4 char) associates an image with a specific topic:
+C         'FZON' is related to zone composition
+C         'FNET' is related to network composition
+C         'FCTL' is related to control composition
+C         'FDFS' is related to CFD domains
+C         'FPER' is related to predicted performance
+C         '****' is a general image displayed at startup
+C  limgfil (72 char) name of the image file << ?? longer string >>
+C  noimg is the number of images associated with the model.
+C  iton is a toggle iton=0 initial state where images have not been scanned
+C    and iton=1 images have been displayed.
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4,longtfile*124
+      character topic*248,head*136,act*1,h*72
 
       logical concat,show
 
@@ -2941,6 +2970,10 @@ C forces display.
         call edisp(iuout,'how to set up your .esprc file.')
         return
       endif
+
+#ifdef X11
+
+C If X11 version then request an external agent to display the image.
       if((iton.eq.0.or.iforce.eq.1))then
         do 498 imgv=1,imgtyp
           ilist=' '
@@ -2980,6 +3013,73 @@ C attempt to match the focus with the image.
           endif
  498    continue
       endif
+#else
+C If GTK version then use GTK calls to display images in popup.
+      if((iton.eq.0.or.iforce.eq.1))then
+
+C Setup help text for the popup.
+        h(1)='Images can be associated with a model for various'
+        h(2)='purposes: '
+        h(3)=' * document conditions at the physical site'
+        h(4)=' * document assumptions in the model'
+        h(5)=' * indicate what performance is expected'
+        h(6)='   '
+        h(7)='Images are added to a model via the context->images'
+        h(8)='menu item. There can be up to 10 images associate with'
+        h(9)='a model. '
+        h(10)='Images of type GIF and XBM and ?? are supported.'
+        CALL PHELPW(10,IHW,IER)
+        call dupphelp(10)
+
+        do 99 img=1,noimg
+          if(imgfmt(img)(1:3).eq.'GIF'.or.
+     &       imgfmt(img)(1:4).eq.'XBMP'.or.
+     &       imgfmt(img)(1:3).eq.'TIF'.or.
+     &       imgfmt(img)(1:3).eq.'JPG')then
+
+C If focus is `****` then show images marked with `****` , otherwise
+C attempt to match the focus with the image. Create a string topic
+C to pass to the display routine along with the image file name.
+C << tag for editing ?? >>
+            show=.false.
+            if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
+            if(show)then
+              longtfile=' '
+              call addpath(limgfil(img),longtfile,concat)
+              ixl=lnblnk(longtfile)
+              if(focus(1:4).eq.'****')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' is a general topic.'
+              elseif(focus(1:4).eq.'FZON')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' provides details of zone composition.'
+              elseif(focus(1:4).eq.'FNET')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' provides details of network composition.'
+              elseif(focus(1:4).eq.'FCTL')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' provides details of control composition.'
+              elseif(focus(1:4).eq.'FDFS')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' provides details of the CFD domain.'
+              elseif(focus(1:4).eq.'FPER')then
+                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &            ' relates to model performance.'
+              endif
+
+C Provide some feedback, set the title of the popup and then call C function
+C in lib/esp_draw.c
+              call edisp(iuout,topic)
+              write(head,'(2a)') 'Image: ',longtfile(1:ixl)
+              act='-'
+              call popupimage(head,topic,act,longtfile)
+              iton=1
+            endif
+          endif
+  99    continue
+      endif
+
+#endif
       return
       end
 

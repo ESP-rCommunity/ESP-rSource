@@ -67,6 +67,7 @@ C Current file (for use by low level I/O calls)
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      dimension nwlistf(50)
 
       logical XST,OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok
@@ -83,6 +84,8 @@ C Calendar.
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character*72 listf(50),listfc(50)
+      character subpath*72,action*3,outs*124
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -329,6 +332,9 @@ C information.
 
 C Allow user to edit the job notes file. Append to path if
 C necessary.  If vi then spawn a new window to do the editing.
+
+C << this would be a good place to offer an internal editing popup
+C << which uses GTK facilities.
       dok=.false.
       h(1)='Assuming you have an editor associated with esp-r '
       h(2)='you can edit the log file. '
@@ -355,10 +361,28 @@ C Ask about images and a results summary.
       h(5)='Images associated with a model are usually held in the '
       h(6)='`images` folder. '
       h(7)=' '
-      h(8)='If you have images tell ESP-r about them now. '
+      h(8)='If you have images please either place them in the'
+      h(9)='`images` folder of the model (a good idea because they'
+      h(10)='then become part of the model) or provide an absolute'
+      h(11)='path to the image file.'
+      h(12)=' '
+      h(13)='You can either tell ESP-r about them now or add them'
+      h(14)='to the model later on via the ~model context->images~'
+      h(15)='menu item.'
       CALL ASKOK('There may be images which are related to this ',
-     &  'project. Associate images now ?',OKI,dok,8)
+     &  'project. Associate images now ?',OKI,dok,15)
       if(OKI)then
+
+C Provide a listing of the current contents of the ../images folder.
+        subpath=' '
+        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+     &  path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
+        call clearfilelist(listf,50)
+        action='fil'
+        call getfilelist(subpath,action,listf,nwlistf,nlistf)
+        call copyfilelist(listf,nwlistf,listfc,50,maxw)
+        call printfilelist(outs,'p',listfc,50,nlistf)
+
         write(limg,'(a)')imgpth(1:lnblnk(imgpth))
         iformat='GIF '
         ifocus='****'
@@ -489,13 +513,14 @@ C      write(6,*) 'path is ',path
      &  path(1:lnblnk(path))
       write(outs,'(2a)') 'configuration files in ',
      &  subpath(1:lnblnk(subpath))
+
 #ifdef OSX
 C In OSX slightly different logic. If path ls ./ then standard logic
 C works. If path begins with /usr/esru then no need to prepend odir.
       if(path(1:2).eq.'./')then
         continue
       elseif(path(1:9).eq.'/usr/esru')then
-C        write(6,*) 'OSX path is ',path
+        write(6,*) 'OSX path is ',path
         subpath=' '
         write(subpath,'(a)') path(1:lnblnk(path))
         write(outs,'(2a)') 'configuration files in ',
