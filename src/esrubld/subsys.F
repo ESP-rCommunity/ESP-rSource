@@ -835,8 +835,8 @@ C (Paul Strachan) Temporary: remove next 2 lines and
 C restore last one.
 
 C Don't use correlation if artificial emissivity used (>1)
-        call zsid(icomp,I,ZSDES,ZSDESC,ZSDESS)
         IF(ABS(QELWF(I)).GT.495.0.AND.EE(ICOMP,I).LE.1.)THEN
+          call zsid(icomp,I,ZSDES,ZSDESC,ZSDESS)
           write(outs,'(A,F9.1,A,A,A,I6)')
      &    ' MZELWE: a longwave flux of',QELWF(I),
      &    ' Watts has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
