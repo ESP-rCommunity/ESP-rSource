@@ -80,3 +80,8 @@ C Logical function indicating that H3KREPORTS is not available
       return
       end
 
+      logical function bH3K_rep_enabled()
+      bH3K_rep_enabled = .false.
+      return 
+      end
+
