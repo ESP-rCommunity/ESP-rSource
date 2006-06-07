@@ -253,6 +253,7 @@ C foundshoc will become true if any zones have SHOCC descriptions.
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
       logical rep_xmlstatus ! function indicating if h3kreports is available.
+      logical bH3K_rep_enabled ! function indicating if h3kreports is enabled.
 
 C Expected finish time variables.
       character*24 ectime
@@ -278,28 +279,30 @@ C not presently supported.
 C.....H3Kreports.(timesteps).start.................
 C.....Minutes per timetep (building domain)
 C.....-> set name
-      WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
-      WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
+      if ( bH3K_rep_enabled() )  then
+        WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
+        WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
 C.....-> update meta-data
-      call REP_SET_PARAMETER(
+        call REP_SET_PARAMETER(
      &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
      &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
 C.....Timestep averaging parameter
 C.....-> set name
-      WRITE(H3K_rep_NAME,'(A)')'default_time_step_averaging'
+        WRITE(H3K_rep_NAME,'(A)')'default_time_step_averaging'
 
 C Set iadver = 1 to manually disable timestep averaging
 C (or include '<time_step_averaging>false</time_step_averaging>'
 C  in input.xml )
-      WRITE(H3K_rep_VALUE,'(I3)')  idaver
+        WRITE(H3K_rep_VALUE,'(I3)')  idaver
 C.....-> update meta-data
-      call REP_SET_PARAMETER(
+        call REP_SET_PARAMETER(
      &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
      &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
 
 C.....H3Kreports.(timesteps).end.................
 C.....H3Kreports.Set Meta initialization flag
-      call H3K_init_set_meta(.true.)
+        call H3K_init_set_meta(.true.)
+      endif ! <- matches 'if ( bH3K_rep_enabled() )...'
 C*h3koutput* Initialize data variables
       call H3KSTORE_ZERO_DATA
 
@@ -937,9 +940,12 @@ C New day events in SHOCC occur when btimef first exceeds 24.0 ...
             if(btimef.gt.24.0)btimef=btimef-24.
 
 C H3Kreports: send simulation time to reporting object
-            call H3K_Report_time(
-     &      btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep, 
-     &      nsinc )
+            
+            if ( bH3K_rep_enabled() ) then
+              call H3K_Report_time(
+     &          btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep, 
+     &          nsinc )
+            endif
 
 C Output current simulation increment if trace on.
             if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
@@ -1175,7 +1181,8 @@ C Find number of data blocks per hour to be saved.
               ENDIF
 
 C transport miscellaneous simulation data to reporting object
-              call H3K_transport_build_data(icomp)
+              if ( bH3K_rep_enabled() )
+     &           call H3K_transport_build_data(icomp)
 
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
@@ -1208,7 +1215,8 @@ C Call DHW simulation controller if DHW models are active.
             endif
 
 C Transport climate data to reporting object
-            call H3K_transport_climi_data()
+            if ( bH3K_rep_enabled() )
+     &          call H3K_transport_climi_data()
 
 C Perform ground simulation for the current time step
             IF(GRND3D)THEN
@@ -1372,7 +1380,7 @@ C  don't write plant libraries if save-levels 0 or 5 are active
               endif
 
 C write out plant results
-              call H3KSTORE_Plant_TimeSteps()
+              if ( bH3K_rep_enabled() ) call H3KSTORE_Plant_TimeSteps()
 
 C Post-process and save electrical network results:
               IF(IENTXIST.GT.0) then
@@ -1380,7 +1388,10 @@ C Database is not written if save-levels 0 or 5 are active.
                 if ( ISAVE .ne. 0 .and. isave .ne.5 ) then
                   CALL ENETLIBSV
                 endif
-                call H3K_transport_electric_data()
+
+C Call h3k reports electrical data transport routines 
+                if ( bH3K_rep_enabled() )
+     &                call H3K_transport_electric_data()
               endif
       
 
@@ -1406,8 +1417,9 @@ C building-side only electrical network solution (no plant).
 C Database is not written if save-levels 0 or 5 are active. 
               if ( ISAVE .ne. 0 .and. isave .ne.5 ) then
                 CALL ENETLIBSV
-              endif 
-              call H3K_transport_electric_data()
+              endif
+              if ( bH3K_rep_enabled() )
+     &          call H3K_transport_electric_data()
             ENDIF
 
 C For global control, increment pass counter.
@@ -1420,7 +1432,7 @@ C For global control, increment pass counter.
             endif
 
 C Save boundary condition data, if it exists
-            call report_BC_data()      
+            if ( bH3K_rep_enabled() ) call report_BC_data()
       
 C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting

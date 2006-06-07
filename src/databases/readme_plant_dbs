@@ -1,0 +1,19 @@
+ESP-r Plant Databases
+
+The ESP-r archive provides four databases for use with plant network
+models. Of these, only plantc.db1.a is supported and the other databases
+(hvac_bas_plant.dba, plantc.db2.a and plantc.tt.a) are depreciated.
+hvac_bas_plant.dba, plantc.db2.a and plantc.tt.a are merely subsets of
+plantc.db1.a, and all of the component models contained within these
+databases can also be found in plantc.db1.a
+
+The obsolete databases remain in the archive to ensure compatibility with
+legacy models, but they are no longer maintained and will one day be
+removed. For this reason, users are strongly encouraged to use the
+plantc.db1.a database when creating new plant networks. 
+
+Developers adding models to ESP-r are instructed add their plant database
+records to the plantc.db1.a file. Revisions inserting new component
+models into the hvac_bas_plant.dba, plantc.db2.a, plantc.tt.a or other
+plant component database files will not be accepted into the ESP-r
+archive. 

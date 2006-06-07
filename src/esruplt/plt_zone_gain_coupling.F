@@ -948,7 +948,7 @@ C----------------------------------------------------------------------
          write (cContext, '(2A)')
      &     'fZone_convective_gain(): Retrieving ',
      &     ' convective heat gain from plant components.'
-
+        bInitialized = .true.
       endif
  
 C-------------------------------------------------------------------
@@ -1024,7 +1024,7 @@ C----------------------------------------------------------------------
          write (cContext, '(2A)')
      &     'fZone_radiant_gain(): Retrieving ',
      &     'radiant heat gain from plant components.'
-
+         bInitialized = .true.
       endif
 
 C-------------------------------------------------------------------
@@ -1103,7 +1103,7 @@ C----------------------------------------------------------------------
          write (cContext, '(2A)')
      &     'fSurface_radiant_gain(): Retrieving ',
      &     'radiant heat gain from plant components.'
-
+         bInitialized = .true.
       endif
 
 C-------------------------------------------------------------------
@@ -1184,7 +1184,7 @@ C----------------------------------------------------------------------
          write (cContext, '(2A)')
      &     'fNode_embedded_gain(): Retrieving ',
      &     'embedded heat gain from plant components.'
-
+         bInitialized = .true. 
       endif
 C-------------------------------------------------------------------
 C     Recover gain from inventory

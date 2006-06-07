@@ -967,6 +967,19 @@ for file in "${cfgnames[@]}"; do
 #
 # Now update the paths in models to reflect install dir.
 #
+# Note: This approach will not work for models with plant
+#       networks. ESP-r saves the plant database path in
+#       two locations: a) in the .cfg file, and in the
+#       .pln file. prj uses the record in the .cfg file,
+#       while bps references the record in the .pln file.
+#       Thus training models containing plant networks will
+#       bre browsable, but will not run.
+#
+#       This code should either be updated to edit the .pln
+#       file as well, or (preferably) bps should be updated
+#       to reference the plant database record in the cfg
+#       file. 
+#
 sed -e 's|/usr/esru|'"${DESTdir}"'|' ${file} > ${ESPdir}/${file:2}
 
 done
@@ -1001,9 +1014,13 @@ rm -f ${DESTdir}/esp-r/databases/*
 rm -f ${DESTdir}/esp-r/climate/clm67
 rm -f ${DESTdir}/esp-r/training/results/test.res
 echo " "
+# Construction databases. Note constr.db1 and constr.db2 are merely subsets
+# of constr.db3. Perhaps they can be merged into a single file?
 echo "Creating binary materials databases ..."
 ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1
 ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2
+./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3
+./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
 echo "... done."
 
    cd ${SRCdir}/databases
@@ -1228,7 +1245,7 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
 
    cd ${SRCdir}/databases
    echo "Copying ASCII databases ..."
-   cp multicon.db1 multicon.db2 optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp multicon.db1 multicon.db2 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo "... done."
 
    echo "Creating example binary results database ..."
