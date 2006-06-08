@@ -1,0 +1,270 @@
+
+
+                     H3Kreports
+
+    A flexible and extensible reporting facility for ESP-r 
+    with support for xml output
+
+
+ABSTRACT
+
+This document describes the configuration and use of h3Kreports.
+
+
+INTRODUCTION
+
+H3Kreports is a C++ based reporting facility designed to compliment 
+ESP-r's existing 'res' program.  During the simulation, routines in
+ESP-r pass data to H3Kreports. Upon the completion of the simulation,
+H3Kreports outputs the stored data in a variety of different formats.
+
+REQUIREMENTS 
+
+H3Kreports requires the libxml2 library. The libxslt library is not
+required, but may facilitate formatting H3Kreports output.
+
+COMPILATION 
+
+ESP-r is not compiled with H3Kreports by default. To build H3Kreports,
+CETC's makefile, "Makefile_dev" must be used, and the XMLstatus flag 
+must be set to "ok". The following command will compile ESP-r with 
+h3kreports and install it into the user's home directory(ie. '~/esp-r') 
+if run from the 'esru/src' directory. 
+
+   $ make -f Makefile_dev XMLstatus=ok
+
+Other compile options are documented within Makefile_dev
+
+CONFIGURATION
+
+H3Kreports is configured using an xml file, called "input.xml".  
+H3Kreports expects to find this file in a model's /cfg directory. If
+the file is not found, a set of defaults are assumed. There is no
+support for configuring H3Kreports through ESP-r's graphical
+interfaces, and such capabilities are not envisioned in the future. 
+
+The basic structure of input.xml is as follows:
+
+   <?xml version="1.0" encoding="UTF-8"?>
+   <configuration>
+
+      <option_1>value</option_1>
+
+      <option_2>value</option_2>
+
+      <option_3>value</option_3>
+
+   </configuration>
+
+
+
+The <?xml ?> and <configuration /> tags are required. The <option_X />
+tags alter H3Kreports' default behavior, and are not required. Valid
+configuration options include:
+   
+   <apply_style_sheet> 
+
+     - Instructs H3Kreports to apply a set of  xslt transforms to out.xml
+       using the style sheets specified with the <style_sheet> tag, in order. 
+       The transform will only be applied if the specified style sheets can
+       be found and are readable. The xslt output will be directed to 
+       the file specified with the <transform_destination_file> tag.     
+
+     - Valid values: true, false (default) 
+
+
+   <dump_all_data>
+
+     - Instructs H3Kreports to store and output all data, in both 
+       .xml and .csv formats, regardless of which variable names 
+       were requested. 
+
+     - Valid values: true, false (default)
+
+
+   <enable_xml_wildcards>
+
+     - Enables simple wildcard matching when comparing x-path variable
+       names with requested output. 
+
+     - Valid values: true, false (default)
+
+
+   <hierarchy>
+
+     - Instructs H3Kreports to format xml output in flat, or nested
+       "tree" format.
+
+     - Valid values: flat, tree (default)
+
+   <link_style_sheet> 
+
+     - Instructs H3Kreports to include a link to the first specified style
+       sheet with the <style_sheet> tag to the out.xml file. If specified, 
+       the path included using the <style_sheet> tag will be used. 
+       The other stylesheets included in the input file will not be included. 
+
+     - Valid values: true, false (default)  
+
+   <log_variable>
+
+     - Instructs H3Kreports to calculate and store summary statistics
+       (min, max, average, monthly bin) for the specified variable. 
+       The specified variable will appear in out.xml.
+
+     - Valid values: x-path name for any H3Kreports variable. If the 
+       <enable_xml_wildcards> tag has been set to true, simple
+       wildcard matching is also available.
+
+           examples:
+
+               plant/Fan_3/power/net_power
+
+               plant/Fan_*/power/*        (wildcard matching, matches above)
+
+               
+   <output_dictionary> 
+  
+     - Instructs H3Kreports to output a list of all variables
+       encountered during a simulation in ascii format. The list will
+       appear in a file called "out.dictionary". This option is
+       especially useful if you are unfamiliar with the H3Kreports
+       variable naming convention used in ESP-r. 
+
+     - Valid values: true, false (default)
+
+
+   <report_startup_period_data>
+
+     - Instructs H3Kreports to output data collected during the simulation
+       start-up period, in addition to that collected during the normal
+       simulation period.
+
+     - Valid values: true, false (default)
+
+     
+   <step_variable>
+
+     - Instructs H3Kreports to store time-step data for the specified
+       variable. The specified variable will appear in out.csv, and
+       its time step data will be included in out.xml.
+
+     - Valid values: x-path name for any H3Kreports variable. If the 
+       <enable_xml_wildcards> tag has been set to true, simple
+       wildcard matching is also available.
+
+           examples:
+
+               plant/Fan_3/power/net_power
+
+               plant/[a-zA-Z0-9/_]*  (wildcard matching, matches above)
+
+     - Note: when wildcard matching is used to match a large set of
+       variables, ESP-r's memory requirements and the file sizes of 
+       out.xml & out.csv can grow significantly.
+
+       
+   <style_sheet>
+
+     - Specifies a  xslt style sheet. There can be more than
+       one stylesheet included. They will be performed in series. 
+       This is useful for preprocessing the data for unit conversion and 
+       maybe language translation. Note that the currently only XSLT 1.0 
+       is supported using the "LIBXSLT" c tool. 
+
+     - Valid value: path to any valid .xsl file.
+
+     - Various xsl files can be found in CETC's repository in the
+       xsl directory:
+          
+          bg_esp-r/src/cetc/h3kreports/xsl/
+     
+   <summary_variable>
+
+     - Instructs H3Kreports to store and output summary statistics 
+       for the specified variable. The specified variable will 
+       appear in out.summary.
+
+     - Valid values: x-path name for any H3Kreports variable. If the 
+       <enable_xml_wildcards> tag has been set to true, simple
+       wildcard matching is also available.
+
+           examples:
+
+               plant/Fan_3/power/net_power
+
+               plant/Fan_*/power/*  (wildcard matching, matches above)
+
+               
+   <time_step_averaging>
+ 
+     - Instructs H3Kreports to ignore ESP-r's time-step averaging
+       setting. If the provided value is true, time-step averaging
+       will be enabled, otherwise no time-step averaging will be
+       performed. If this tag is omitted from input.xml, the time-step
+       averaging setting  specified for the simulation will be used.  
+
+     - Valid values: true, false 
+
+
+   <transform_destination_file>
+
+     - Instructs H3Kreports to save the output from an xslt transform 
+       in the provided file. 
+
+     - Valid value: path to any writable file.
+
+
+
+ADDING DATA TO H3KREPORTS OUTPUT
+
+A single function call is used to pass data to H3KReports:
+
+   add_to_xml_reporting(
+        (real) Latest calculated value,
+        (string) Variable name
+        (string) Metadata mame
+        (string) Metadata value
+        (string) Variable Description
+   )
+
+Arguements:
+
+   -> Latest calculated value: real value of the variable to be
+      included in H3KReports
+   
+   -> Variable name: Unique identifier for variable. Use of
+      xpath notation to group variables is HIGHLY RECOMMENDED!
+      Examples:
+
+        'building/zone_1/casual_gains/radiant'
+        'plant/Fuel_Cell/misc_data/electrical_efficiency'
+        'climate/dry_bulb_temperature'
+
+      More examples are available in out.dictionary.
+
+   -> Metadata name: Type of metadata associated with variable.
+      Typically 'units' is used.
+
+   -> Metadata value: Metadata to be associated with variable.
+      Common values include '(oC)', '(W)', '(kg/s)', '(-)'
+
+   -> Variable description: Short, human-readable description
+      of the variable. (These strings will one-day be appended
+      to the variable names listed in out.dictionary.)
+
+
+Example:
+
+      call add_to_xml_reporting(
+     &     Fuel_Cell_Heat_Recovery,
+     &     'plant/Fuel_Cell/misc_data/heat_recovery',
+     &     'units',
+     &     '(W),
+     &     'Rate of heat transfer from fuel cell to cooling water'
+     & )
+     
+     
+   
+      
+     
