@@ -1,0 +1,19 @@
+                
+                ESP-r Central Reference Results
+
+ SYNOPSYS:
+
+ This folder contains reference results generated using ESP-r binaries
+ compiled from the ESP-r Central repository. The repository always
+ contains the most recent reference result sets for both the development
+ branch and trunk. 
+
+ =======================================================================
+ ESP-r Version     Date         Files
+ -----------------------------------------------------------------------
+ r208              13-06-2006   trunk_linux.tar.gz
+ (Current)                      development_branch_linux.tar.gz
+
+ =======================================================================
+
+ 
