@@ -1306,7 +1306,7 @@ sub create_report(){
     my $cpu_change = $gRun_Times{"$folder/$model"}{"chg"};
     # add extra space to align +ive and -ive CPU runtime changes
     my $spacer = "";
-    if ( $gTest_params{"test_efficiency"} ){
+    if ( $gTest_params{"test_efficiency"} && $cpu_change !~ /N\/A/){
       if ( $cpu_change > 0 ){$spacer=" ";}
       $cpu_change = sprintf($spacer."%-10.2g", $cpu_change);
     }else{
@@ -2327,10 +2327,12 @@ sub compare_results($$){
   # Do reference files exist?
   if ( ! defined $gTestable_files{"$folder/$model"}{"reference"} ){
     $gTest_Results{"$folder/$model"}{"overall"} = "unknown";
+    $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
 
   # Do test files exist?
   }elsif ( ! defined $gTestable_files{"$folder/$model"}{"test"} ){
     $gTest_Results{"$folder/$model"}{"overall"} = "fail";
+    $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
 
   }else{
     # Collect list of testable files for this model
@@ -2370,9 +2372,15 @@ sub compare_results($$){
         # get reference and test files
         my $reference_file = $reference_files{$extention};
         my $test_file      = $test_files{$extention};
-  
-    
-        if ( $extention =~ /xml/ ){
+
+        if (   $reference_file && ! $test_file ||
+              !$reference_file &&   $test_file  ){
+
+           $gTest_Results{"$folder/$model"}{$extention} = "fail";
+           $gTest_Results{"$folder/$model"}{"overall"} = "fail";
+           $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
+           
+        }elsif ( $extention =~ /xml/ ){
           # perform xml-specific analysis (Should check if
           # XML::Simple is available...)
 
@@ -2463,7 +2471,7 @@ sub compare_results($$){
             $gRun_Times{"$folder/$model"}{"avg"}{"reference"} * 100;
             
       }else{
-        $gRun_Times{"$folder/$model"}{"chg"} = "N/A"
+        $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
       }
       
     }else{
