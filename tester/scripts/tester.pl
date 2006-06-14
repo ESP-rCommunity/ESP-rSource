@@ -1207,6 +1207,10 @@ execute ("rm -fr $gTest_paths{\"local_models\"}");
 # Create a report describing the test results. 
 #-------------------------------------------------------------------
 sub create_report(){
+  
+  # move back to master path
+  chdir $gTest_paths{"master"};
+  
   # Scope variable storing all output
   my @output = ();
   my ($current_line, $current_rule);  
