@@ -360,8 +360,8 @@ if ( $Month < 10 ){ $Month = "0$Month";}
 $gSys_params{'date'} = "$Mday/$Month/$Year";
 $gSys_params{'time'} = "$Hour:$Min:$Sec";
 
-$gSys_params{'sys_type'} = `uname -p`;
-$gSys_params{'os_type'}  = `uname -o`;
+$gSys_params{'sys_type'} = `uname -m`;
+$gSys_params{'os_type'}  = `uname -s`.":".`uname -r`;
 $gSys_params{'username'} = $ENV{USER};
 $gSys_params{'hostname'} = $ENV{HOSTNAME};
 
@@ -992,6 +992,14 @@ if ($gTest_ext{"h3k"} ||
   push @gSave_levels, 5;
 }
 
+#-----------------------------------------------------------------------
+# Disable efficiency testing on cygwin systems. cygwin has an apparent
+# bug preventing access to the 'time' internal when called as a
+# child process
+#-----------------------------------------------------------------------
+if ( $gSys_params{"sys_type"} =~ /CYGWIN/ ){
+  $gTest_params{"test_efficiency"}= 0;
+}
 
 
 
