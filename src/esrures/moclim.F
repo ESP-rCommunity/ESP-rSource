@@ -337,9 +337,11 @@ C Global horizontal.
               CALL RCTDFR(0,ID,IJ-1,TP,VAL,ISD,IFOC,IER)
             endif
             if(IDIRSOL.ne.0)X1=VAL(ISD)
+            if(IGLOHSL.ne.0)X1=VAL(ISD)
             if(IALLCLM.ne.0)X1=VAL(ISD+2)
             CALL RCTDFR(0,ID,IJ,TF,VAL,ISD,IFOC,IER)
             if(IDIRSOL.ne.0)X2=VAL(ISD)
+            if(IGLOHSL.ne.0)X2=VAL(ISD)
             if(IALLCLM.ne.0)X2=VAL(ISD+2)
             VAL3(K,IJ)=X1+(((T-TP)*(X2-X1))/(TF-TP))
             GVAL(IJ)=VAL3(K,IJ)
