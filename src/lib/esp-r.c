@@ -96,7 +96,7 @@ static gboolean configure_event( GtkWidget *widget,
                      widget->window,
                      0, 0, 0, 0, -1, -1);*/
     g_object_unref(gr_image);
-    fprintf(stderr,"configure_event unref gr_image\n");
+/* debug fprintf(stderr,"configure_event unref gr_image\n"); */
   }
   
   gr_image = gdk_pixmap_new(widget->window,
@@ -114,7 +114,7 @@ static gboolean configure_event( GtkWidget *widget,
                      0, 0, 0, 0,
 		     widget->allocation.width, widget->allocation.height);
                      */
-  fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height);
+/* debug fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height); */
 
   return TRUE;
 }
@@ -128,8 +128,8 @@ static gboolean expose_event (GtkWidget *widget,
   max_w = widget->allocation.width;
   max_h = widget->allocation.height;
   
-  fprintf(stderr,"expose_event %d %d %d %d %d %d \n",
-    max_w,max_h,event->area.x,event->area.y,event->area.width,event->area.height);
+/* debug fprintf(stderr,"expose_event %d %d %d %d %d %d \n",
+    max_w,max_h,event->area.x,event->area.y,event->area.width,event->area.height); */
   
   gdk_draw_drawable (widget->window,gc, 
                      gr_image,
@@ -212,13 +212,13 @@ GtkWidget *create_text( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 8\n");	debug */
    } else if (disp_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 10\n");	debug */
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 12\n");	debug */
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -297,13 +297,13 @@ void text_feedback_reset ( void)
  * Use pango_font_get_metrics to get font width and height for this font. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"re-configure font medium 8\n");	/* debug */
+     /* fprintf(stderr,"re-configure font medium 8\n");	debug */
    } else if (disp_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"re-configure font medium 10\n");	/* debug */
+     /* fprintf(stderr,"re-configure font medium 10\n");	debug */
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"re-configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"re-configure font medium 12\n");	debug */
    }
    gtk_widget_modify_font(text, pfd);
    fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
@@ -406,13 +406,13 @@ void graphic_feedback_reset ( void)
  * Use pango_font_get_metrics to get font width and height. */
    if (butn_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"re-configure graphic font medium 8\n");	/* debug */
+     /* fprintf(stderr,"re-configure graphic font medium 8\n");	debug */
    } else if (butn_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"re-configure graphic font medium 10\n");	/* debug */
+     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
    } else if (butn_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"re-configure graphic font medium 12\n");	/* debug */
+     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
    }
    gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
    context = gtk_widget_get_pango_context (graphic);
@@ -447,7 +447,7 @@ void graphic_feedback_reset ( void)
 /* **** sml_menu_fbk_cb - callback function from small/medium/large text feedback font */
 void sml_menu_fbk_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_fbk_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_fbk_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (disp_fnt != GPOINTER_TO_INT (resize)) {
      disp_fnt = GPOINTER_TO_INT (resize);
      text_feedback_reset();
@@ -491,7 +491,7 @@ static GtkWidget *sml_menu_fbk ( void)
 /* **** sml_menu_gph_cb - callback function from small/medium/large text graphics font */
 void sml_menu_gph_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_gph_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_gph_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (butn_fnt != GPOINTER_TO_INT (resize)) {
      butn_fnt = GPOINTER_TO_INT (resize);
      graphic_feedback_reset();
@@ -535,7 +535,7 @@ static GtkWidget *sml_menu_gph ( void)
 /* **** sml_menu_mnu_cb - callback function from small/medium/large text menu font */
 void sml_menu_mnu_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_mnu_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_mnu_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (menu_fnt != GPOINTER_TO_INT (resize)) {
      menu_fnt = GPOINTER_TO_INT (resize);
      emenu_feedback_reset();
@@ -815,13 +815,13 @@ GtkWidget *create_dialog( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 8\n"); debug */
    } else if (disp_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 10\n"); debug */
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 12\n"); debug */
    }
    gtk_widget_modify_font(dialog, pfd);
    pango_font_description_free(pfd);
@@ -1507,13 +1507,13 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-   fprintf(stderr,"refresh graphic font medium 8\n");	/* debug */
+   /* fprintf(stderr,"refresh graphic font medium 8\n"); debug */
  } else if (butn_fnt == 1 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 10");
-   fprintf(stderr,"refresh graphic font medium 10\n");	/* debug */
+   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
  } else if (butn_fnt == 2 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 12");
-   fprintf(stderr,"refresh graphic font medium 12\n");	/* debug */
+   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
