@@ -216,7 +216,8 @@ C   accept value and ask again, '-' means no range checking.
 C IDEFLT is the default value if 'D','d' typed.
 C If a space or carriage return is typed then IVAL is not changed.
 C ERMSG is a string appended to the range checking or read error
-C to identify the value. IER is the error state, if 0 then OK.
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -292,7 +293,13 @@ C If in graphic mode use graphic faciltiies to edit the number.
         CALL askint(PROMPT,IVALUE,IFLG)
         write (6,*) 'EASKI',IVALUE,IVAL,IFLG
 
-        IF(iflg.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
@@ -432,7 +439,8 @@ C   'W' means warn user but accept, 'F' means refuse/fail to
 C   accept value and ask again, '-' means no range checking.
 C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
-C to identify the value. IER is the error state, if 0 then OK.
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -528,7 +536,13 @@ C If in graphic mode use graphic facilities to edit the number.
         CALL askreal(PROMPT,RVALUE,IFLG)
         write (6,*) 'EASKR',RVALUE,IFLG
 
-        IF(iflg.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
@@ -671,7 +685,8 @@ C   'W' means warn user but accept, 'F' means refuse/fail to
 C   accept value and ask again, '-' means no range checking.
 C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
-C to identify the value. IER is the error state, if 0 then OK.
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -724,7 +739,7 @@ C Generate help and default strings.
       ENDIF
 
 C Begin with prompts.
-C If in terminal type 8 (dialogue box) use ww facilities to get the
+C If in terminal type 8 (dialogue box) use graphic facilities to get the
 C string to convert.
       IF(MMOD.EQ.8)THEN
         idef=0
@@ -746,16 +761,24 @@ C string to convert.
         CALL askdialog(PROMPT,ask,IFLG)
         write (6,*) 'aske VAL:',ask,' iflg ',IFLG
 
-C Strip off the last character (end of line mark) as well as any
-C leading blanks from string returned.
-        call c2fstr(ask,WORD)
-        IF(idef.EQ.1)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
 
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
           RVAL=DEFLT
           call usrmsg('  ','  ','-')
           RETURN
+        ELSE
+
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+          call c2fstr(ask,WORD)
         ENDIF
         IF(WORD.EQ.' ')THEN
 
@@ -1073,7 +1096,7 @@ C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
 C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
-C  IER is the error state, if 0 then OK.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -1150,7 +1173,13 @@ C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
 
-        IF(IFLG.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
           LN=max(1,LNBLNK(DSTR))
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
      &      DSTR(1:LN),'.'
@@ -1261,7 +1290,7 @@ C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
 C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
-C  IER is the error state, if 0 then OK.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -1329,7 +1358,13 @@ C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
         write(6,*) word
 
-        IF(IFLG.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
           LN=max(1,LNBLNK(DSTR))
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
      &      DSTR(1:LN),'.'
@@ -1466,7 +1501,7 @@ C command action is selected.
 C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
-C  IER is the error state, if 0 then OK.
+C IER is the error state, if 0 then OK, if -3 then cancel pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -1536,7 +1571,13 @@ C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
 
-        IF(IFLG.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
           LN=max(1,LNBLNK(DSTR))
           WRITE(OUTSTR,'(3a)')' The default is ',
      &      DSTR(1:LN),'.'
@@ -1548,8 +1589,7 @@ C leading blanks from string returned.
           ELSE
             GOTO 20
           ENDIF
-        ENDIF
-        IF(IFLG.EQ.2)THEN
+        ELSEIF(IFLG.EQ.2)THEN
           IF(WORD.EQ.' ')THEN
 
 C A blank, carriage return or line feed encountered, assume user 
@@ -1660,7 +1700,7 @@ C a command action is selected.
 C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
-C  IER is the error state, if 0 then OK.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user. 
@@ -1729,7 +1769,13 @@ C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
 
-        IF(IFLG.EQ.-2)THEN
+        IF(iflg.EQ.-3)THEN
+
+C A cancel answer detected, set ier to -3 and return.
+          CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
+          ier=-3
+          RETURN
+        ELSEIF(iflg.EQ.-2)THEN
           LN=max(1,LNBLNK(DSTR))
           WRITE(OUTSTR,'(3a)')' The default is ',
      &      DSTR(1:LN),'.'
@@ -1741,8 +1787,7 @@ C leading blanks from string returned.
           ELSE
             GOTO 20
           ENDIF
-        ENDIF
-        IF(IFLG.EQ.2)THEN
+        ELSEIF(IFLG.EQ.2)THEN
           IF(WORD.EQ.' ')THEN
 
 C A blank, carriage return or line feed encountered, assume user 
@@ -1759,8 +1804,7 @@ C Must have input a character string.
           STRVAL=WORD(1:ISTRW)
           ICACT=1
           RETURN
-        endif
-        IF(IFLG.EQ.3)THEN
+        ELSEIF(IFLG.EQ.3)THEN
           IF(WORD.EQ.' ')THEN
 
 C A blank, carriage return or line feed encountered, assume user 
