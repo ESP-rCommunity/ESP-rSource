@@ -33,6 +33,7 @@ C CHARACTERISTICS OF THE CHOSEN CLIMATIC COLLECTION.
 
       SUBROUTINE CLMSYN
       COMMON/CLMVAR/VNAME(6)
+      COMMON/RADTYP/IDNGH
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -46,7 +47,11 @@ C CHARACTERISTICS OF THE CHOSEN CLIMATIC COLLECTION.
       ITEM(3) ='0 set time of day       '
       ITEM(4) ='  ____________________  '
       ITEM(5) ='1 dry bulb temperature  '
-      ITEM(6) ='2 direct normal solar   '
+      if(IDNGH.eq.0)then
+       ITEM(6)='2 direct normal solar   '
+      else
+       ITEM(6)='2 global horizon. solar '
+      endif
       ITEM(7) ='3 diffuse horiz. solar  '
       ITEM(8) ='4 wind speed (m/s)      '
       ITEM(9) ='5 wind direction (deg)  '
