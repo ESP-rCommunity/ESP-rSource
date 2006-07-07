@@ -21,8 +21,8 @@
 void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
 /* q1 is the question being posed to the user
    reply is the reply but has the current value from the fortran side
-   ier tracks if the default or cancel buttons have been selected (requires
-   suitable actions on the fortran side).
+   ier tracks if the default (-2) or cancel buttons (-3) have been selected (requires
+     a suitable actions on the fortran side).
 */
 {
    GtkWidget *askbox, *entry, *label;
@@ -30,24 +30,26 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gchar *question_local;
    gint result;
    int no_valid_event;
-   int lnq1;	/* for non-blank length */
+   int lnq1,lnrep;	/* for non-blank lengths */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
    
    *ier=0;	/* Reset value of ier flag */
-    
-   reply_local = g_strndup(reply, (gsize) lenrep);
+
+   f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
+   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
 
-/* debug */ fprintf(stderr,"phrase %s\n",question_local);
-/* debug */ fprintf(stderr,"text is %s\n",reply_local);
-/* debug */ fprintf(stderr,"nb of help lines %d\n",help_lines);
+/* debug g_print("askdialog phrase %s\n",question_local); */
+/* debug g_print("askdialog_ text is %s\n",reply_local); */
+/* debug g_print("askdialog nb of help lines %d\n",help_lines); */
     
    /* Create the widgets */
-   askbox = gtk_dialog_new_with_buttons("Text request",
+   askbox = gtk_dialog_new_with_buttons("Text  request",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
      GTK_STOCK_HELP, GTK_RESPONSE_HELP,"Use default", 99,
      GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -58,10 +60,9 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);
+   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
-
    
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
@@ -80,11 +81,17 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
      switch (result) {
        case GTK_RESPONSE_OK:
        /* 
-       Terminate this string properly for return to fortran 
+       Terminate this string properly for return to fortran. Check its actual size
+       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
+       with null terminator one past end. 
        */
-         reply_local = g_strstrip(gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1));
-         *reply = ' ';     /* clear response before overwriting with reply_local */
-         g_stpcpy (reply,reply_local);
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
+         lnrep = 0;	/* detect the actual size of the string returned */
+         f_to_c_l(reply_local,&lenrep,&lnrep);
+/* debug g_print ("askdialog local %d is %s",lnrep,reply_local); */
+         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
+/* debug g_print ("askdialog reply is %s",reply);  */
+         g_free (reply_local);
          no_valid_event = FALSE;
          break;
        case GTK_RESPONSE_HELP:
@@ -92,7 +99,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 99:
@@ -117,8 +124,8 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
 /* q1 is the question being posed to the user
    reply is the reply but has the current value from the fortran side
    cmd is an alternative command string from the fortran side
-   ier tracks if the default, cmd option or cancel buttons have been selected (requires
-   suitable actions on the fortran side).
+   ier tracks if the default (-2), cmd option (2) or cancel buttons (-3) have been selected (requires
+     a suitable actions on the fortran side).
    lenq1 is passed length of prompt, lenrep is passed length of reply, lencmd is passed length of cmd.
 */
 {
@@ -128,13 +135,15 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    gchar *cmd_local;
    gint result;
    int no_valid_event;
-   int lnq1,lncmd1;	/* for non-blank lengths */
+   int lnq1,lnrep,lncmd1;	/* for non-blank lengths */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
    
    *ier=0;	/* Reset value of ier flag */
     
-   reply_local = g_strndup(reply, (gsize) lenrep);
+   f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
+   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
@@ -143,10 +152,10 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    f_to_c_l(cmd,&lencmd,&lncmd1);
    cmd_local = g_strndup(cmd, (gsize) lncmd1);
 
-/* debug */ fprintf(stderr,"phrase %s\n",question_local);
-/* debug */ fprintf(stderr,"text is %s\n",reply_local);
-/* debug */ fprintf(stderr,"cmd is %s\n",cmd_local);
-/* debug */ fprintf(stderr,"nb of help lines %d\n",help_lines);
+/* debug g_print("phrase %s\n",question_local); */
+/* debug g_print("text is %s\n",reply_local); */
+/* debug g_print("cmd is %s\n",cmd_local); */
+/* debug g_print("nb of help lines %d\n",help_lines); */
     
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request with option",
@@ -160,7 +169,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);
+   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
@@ -182,18 +191,23 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
      switch (result) {
        case GTK_RESPONSE_OK:
        /* 
-       Terminate this string properly for return to fortran 
+       Terminate this string properly for return to fortran. Check its actual size
+       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
+       with null terminator one past end. 
        */
-         reply_local = g_strstrip(gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1));
-         g_stpcpy (reply,reply_local);
-         no_valid_event = FALSE;
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
+         lnrep = 0;	/* detect the actual size of the string returned */
+         f_to_c_l(reply_local,&lenrep,&lnrep);
+         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
+         g_free (reply_local);
+	 no_valid_event = FALSE;
          break;
        case GTK_RESPONSE_HELP:
          ibx= 0; iby= 0; more = 0;
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 98:
@@ -222,8 +236,8 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 /* q1 is the question being posed to the user
    reply is the reply but has the current value from the fortran side
    cmd is an alternative command string from the fortran side
-   ier tracks if the default, cmd option or cancel buttons have been selected (requires
-   suitable actions on the fortran side).
+   ier tracks if the default (-2), cmd1 option (2) cmd2 option (3) or cancel buttons (-3) have been
+     selected (requires a suitable actions on the fortran side).
    lenq1 is passed length of prompt, lenrep is passed length of reply, lencmd is passed length of cmd.
 */
 {
@@ -234,13 +248,15 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    gchar *cmd2_local;
    gint result;
    int no_valid_event;
-   int lnq1,lncmd1,lncmd2;	/* for non-blank lengths */
+   int lnq1,lnrep,lncmd1,lncmd2;	/* for non-blank lengths */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
    
    *ier=0;	/* Reset value of ier flag */
-    
-   reply_local = g_strndup(reply, (gsize) lenrep);
+
+   f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
+   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
@@ -252,11 +268,11 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    f_to_c_l(cmd2,&lencmd2,&lncmd2);
    cmd2_local = g_strndup(cmd2, (gsize) lncmd2);
 
-/* debug */ fprintf(stderr,"phrase %s\n",question_local);
-/* debug */ fprintf(stderr,"text is %s\n",reply_local);
-/* debug */ fprintf(stderr,"cmd1 is %s\n",cmd1_local);
-/* debug */ fprintf(stderr,"cmd2 is %s\n",cmd2_local);
-/* debug */ fprintf(stderr,"nb of help lines %d\n",help_lines);
+/* debug g_print("phrase %s\n",question_local); */
+/* debug g_print("text is %s\n",reply_local); */
+/* debug g_print("cmd1 is %s\n",cmd1_local); */
+/* debug g_print("cmd2 is %s\n",cmd2_local); */
+/* debug g_print("nb of help lines %d\n",help_lines); */
     
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request with option",
@@ -271,11 +287,10 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);
+   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
-   
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
@@ -293,10 +308,15 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
      switch (result) {
        case GTK_RESPONSE_OK:
        /* 
-       Terminate this string properly for return to fortran 
+       Terminate this string properly for return to fortran. Check its actual size
+       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
+       with null terminator one past end. 
        */
-         reply_local = g_strstrip(gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1));
-         g_stpcpy (reply,reply_local);
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
+         lnrep = 0;	/* detect the actual size of the string returned */
+         f_to_c_l(reply_local,&lenrep,&lnrep);
+         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
+         g_free (reply_local);
          no_valid_event = FALSE;
          break;
        case GTK_RESPONSE_HELP:
@@ -304,7 +324,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 97:	/* the first alternative command */
@@ -341,7 +361,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 /* q1 and q2 strings form the questioon being posed to the user
    reply is the reply but has the current value from the fortran side
-   ier tracks if the default or cancel buttons have been selected (requires
+   ier tracks if the default (-2 or cancel buttons (-3) have been selected (requires
      suitable actions on the fortran side).
 */
 {
@@ -363,8 +383,8 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
-/* debug */ fprintf(stderr,"r phrase %s\n",question_local);
-/* debug */ fprintf(stderr,"r nb of help lines %d\n",help_lines);
+/* debug g_print("r phrase %s\n",question_local); */
+/* debug g_print("r nb of help lines %d\n",help_lines); */
         
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Real number request",
@@ -400,7 +420,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
      switch (result) {
        case GTK_RESPONSE_OK:
        /* 
-       Terminate this string properly for return to fortran 
+       Return 'value' via call to gtk_adjustment_get_value and cast to real reply 
        */
          value = gtk_adjustment_get_value(spinner_adj);
          *reply = (gfloat) value;
@@ -411,7 +431,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 99:
@@ -438,7 +458,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 void askint_(char *q1, long int *reply,long int *ier, int lenq1)
 /* q1 and q2 strings form the question being posed to the user
    reply is the reply but has the current value from the fortran side
-   ier tracks if the default or cancel buttons have been selected (requires
+   ier tracks if the default (-2) or cancel buttons (-3) have been selected (requires
      suitable actions on the fortran side).
 */
 {
@@ -461,8 +481,8 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
-/* debug */ fprintf(stderr,"i phrase %s\n",question_local);
-/* debug */ fprintf(stderr,"i nb of help lines %d\n",help_lines);
+/* debug g_print("i phrase %s\n",question_local); */
+/* debug g_print("i nb of help lines %d\n",help_lines); */
         
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Integer request",
@@ -498,7 +518,7 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
      switch (result) {
        case GTK_RESPONSE_OK:
        /* 
-       Terminate this string properly for return to fortran 
+       Fill 'value' via call and cast to integer reply 
        */
          value = gtk_adjustment_get_value(spinner_adj);
          *reply = (gint) value;
@@ -509,7 +529,7 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 99:
@@ -532,8 +552,8 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
 void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
 /* q1 is the question being posed to the user
    reply is the reply but has the current value from the fortran side
-   ier tracks if the default or cancel buttons have been selected (requires
-   suitable actions on the fortran side).
+   ier tracks if the default (-2) or cancel (-3) buttons have been selected (requires
+     a suitable actions on the fortran side).
 */
 {
    GtkTextBuffer *buffer;
@@ -557,9 +577,9 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
 
-/* debugfprintf(stderr,"phrase %s\n",question_local); */ 
-/* debug fprintf(stderr,"text is %s\n",reply_local); */
-/* debug fprintf(stderr,"nb of help lines %d\n",help_lines) */;
+/* debug g_print("phrase %s\n",question_local); */ 
+/* debug g_print("text is %s\n",reply_local); */
+/* debug g_print("nb of help lines %d\n",help_lines) */;
     
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request",
@@ -599,9 +619,12 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
        */
          gtk_text_buffer_get_bounds (buffer, &start, &end);
          reply_local = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-/* debug         g_print ("local is %s",reply_local); */
-         g_stpcpy (reply,reply_local);
-/* debug         g_print ("reply is %s",reply); */
+         lnq1 = 0;	/* detect the actual size of reply_local */
+         f_to_c_l(reply_local,&lenrep,&lnq1);
+/* debug g_print ("askdialog248 local %d is %s",lnq1,reply_local); */
+         g_snprintf (reply, lnq1+1, "%s", reply_local); /* copy reply_local into reply +1 for null */
+/* debug g_print ("askdialog248 reply is %s",reply); */ 
+         g_free (reply_local);
          no_valid_event = FALSE;
          break;
        case GTK_RESPONSE_HELP:
@@ -609,7 +632,7 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
          egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case GTK_RESPONSE_CANCEL:
-         *ier=-1;
+         *ier=-3;
          no_valid_event = FALSE;
          break;
        case 99:
