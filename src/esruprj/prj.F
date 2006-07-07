@@ -3557,7 +3557,7 @@ C renamed with APE appendage
 C ILM = 1 means global tasks and site exposure
 C ILM = 2 means geometry and attribution
 C ILM = 3 means site exposure & ground reflectance
-C ILM = 4 means shading and insolation
+C ILM = 4 means shading and insolation and obstructions
 C ILM = 5 means view factors and radiant sensors
 C ILM = 6 means climate, latitude and longitude
 C ILM = 7 means pressure distribution
@@ -3848,7 +3848,9 @@ C Selection strings for site exposure.
         call edisp(iuout,'New configuration will hold new site data.')
       ELSEIF(M.EQ.4)THEN
 
-C Shading and insolation choices.
+C Shading and insolation choices. First find out if any of the
+C zones curently include shading files. If none do then allow
+C the user to select one or more zones.
         ishd=-1
         do 142 iz=1,ncomp
           if(ISI(iz).eq.1)ishd=1
@@ -3864,10 +3866,14 @@ C Shading and insolation choices.
           h(8)='You can nominate zones which you want to create solar'
           h(9)='obstructions in so that shading and insolation can'
           h(10)='be assessed.'
+          h(11)=' '
+          h(12)='Selecting continue at this point you will be asked'
+          h(13)='if you want to make any other changes to the model'
+          h(14)='before the information is written out. '
           CALL EASKABC(
      &    'The model does not include detailed shading/insolation.',
      &    ' ','select zones for insolation',
-     &    'select zones for shading/insolation','continue',IW,10)
+     &    'select zones for shading/insolation','continue',IW,14)
           if(iw.eq.1)then
             inpic=0
             call askmultizone(inpic,ivals,
@@ -3884,6 +3890,7 @@ C Shading and insolation choices.
           if(iw.eq.1.or.iw.eq.2)then
             if(inpic.gt.0)then
 
+C << need to deal with file separator more generically >>
               DO 151 IC=1,inpic
                 ICOMP=ivals(IC)
                 ISI(ICOMP)=1
@@ -3911,24 +3918,38 @@ C procedure can overwrite.
             endif
           endif
           if(iw.eq.2)then
+
+C Create an obstructions file for each of the selected zones.
+C First create initial name, then mangle it and write block.
             IUF=12
             if(inpic.gt.0)then
               DO 152 IC=1,inpic
                 ICOMP=ivals(IC)
+                if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                  WRITE(ZOBS(icomp),'(A,A4)')
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                else
+                  WRITE(ZOBS(icomp),'(3A,A4)') 
+     &              zonepth(1:lnblnk(zonepth)),'/',
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                endif
+                EXT='.obs'
+                CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
+                ZOBS(ICOMP)=NNAME
                 silent=.true.
                 CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
-                IF(IOBS(ICOMP).eq.1)then
-                  EXT='.obs'
-                  CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
-                  ZOBS(ICOMP)=NNAME
-                else
+                IF(IOBS(ICOMP).eq.0)then
                   ZOBS(ICOMP)=' '
                 endif
  152          continue
             endif
           endif
-          call edisp(iuout,'Shading files being copied. If the site')
-          call edisp(iuout,'has changed shading will be recalculated.')
+          if(iw.ne.3)then
+            call edisp(iuout,
+     &        'Shading files being copied. If site details have')
+            call edisp(iuout,
+     &        'changed shading/insolation will be recalculated.')
+          endif
         elseif(ishd.eq.1)then
 
 C There is shading and/or insulation check if user wants to dereference.
@@ -3943,11 +3964,20 @@ C There is shading and/or insulation check if user wants to dereference.
           h(10)=' '
           h(11)='You can nominate zones which you want to dereference'
           h(12)='both obstructions and shading files.'
-          CALL EASKABCD(
-     &      'The model includes detailed shading/insolation.',
-     &      ' ','dereference shading/insolation files',
-     &      'dereference obstructions',
-     &      'dereference obstructions and shading','continue',IW,12)
+          h(13)=' '
+          h(14)='You can either modify existing obstruction files (in'
+          h(15)='which case shading files will be copied) or create'
+          h(16)='obstructions for zones which do not have any in which'
+          h(17)='case place holder shading files will also be created.'
+          h(18)=' '
+          h(19)='Selecting continue at this point you will be asked'
+          h(20)='if you want to make any other changes to the model'
+          h(21)='before the information is written out. '
+          CALL EASKATOG(
+     &      'The model includes detailed shading/insolation.',' ',
+     &      'dereference shading','dereference obstructions',
+     &      'dereference obstr & shading','modify obstructions',
+     &      'continue',' ',' ',IW,21)
           if(iw.eq.1)then
             inpic=0
             call askmultizone(inpic,ivals,
@@ -3990,6 +4020,71 @@ C There is shading and/or insulation check if user wants to dereference.
      &        'Shading & obstruction files being dereferenced.')
             msg1='updating model for shading changes...'
           elseif(iw.eq.4)then
+
+C Create an obstructions file for each of the selected zones
+C which does not already have one. If there is an obstructions
+C file (iobs(icomp) is non-zero) then read current obstructions
+C update the file name and write back out to NNAME file.
+            IUF=12
+            if(inpic.gt.0)then
+              DO 156 IC=1,inpic
+                ICOMP=ivals(IC)
+                IF(IOBS(ICOMP).eq.1)then
+                  silent=.true.
+                  EXT='.obs'
+                  CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+                  CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
+                  ZOBS(ICOMP)=NNAME
+                  CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+                else
+
+C There is no current obstruction and shading file so first create
+C a base name for shading file and then tweak the name via fncngr.
+                  ISI(ICOMP)=1
+                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                    WRITE(LSHAD(icomp),'(A,A4)')
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+                  else
+                    WRITE(LSHAD(icomp),'(3A,A4)') 
+     &                zonepth(1:lnblnk(zonepth)),'/',
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+                  endif
+                  EXT='.shd'
+                  CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+                  LSHAD(ICOMP)=NNAME
+
+C Create a small place-holder file that subsequent calculation
+C procedure can overwrite.
+                  IUF=IFIL+2
+                  CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
+                  WRITE(IUF,'(2a)') 'Placeholder shading file for ',
+     &              zname(icomp)(1:lnblnk(zname(icomp)))
+                  CALL ERPFREE(IUF,ios)
+                  ishd=1
+
+C Create an obstruction file name, mangle the name and write
+C out default block.
+                  IOBS(ICOMP)=1
+                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                    WRITE(ZOBS(icomp),'(A,A4)')
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                  else
+                    WRITE(ZOBS(icomp),'(3A,A4)') 
+     &                zonepth(1:lnblnk(zonepth)),'/',
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                  endif
+                  EXT='.obs'
+                  CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
+                  ZOBS(ICOMP)=NNAME
+                  silent=.true.
+                  CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
+                endif
+ 156          continue
+              call edisp(iuout,
+     &          'Obstruction files being created/copied.')
+              msg1='updating model for obstruction changes...'
+            endif
+          elseif(iw.eq.5)then
             msg1='shading changes not selected'
           endif
         endif

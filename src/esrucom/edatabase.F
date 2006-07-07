@@ -39,7 +39,6 @@ C DRAIR is the air gap layer resistance for 3 orientations.
 
       SUBROUTINE ERMLDB(ITRC,ITRU,IER)
 #include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -288,7 +287,6 @@ C << note if transparent also should check optical properties >>
       subroutine ismlcsymmetric(ifoc,layermatch) 
 
 #include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       CHARACTER DESC*48
@@ -359,6 +357,7 @@ C construction based on contents of common MLC.
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/GVALCAL/CLAMDA(MMLC)
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*124,DESC*48,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
@@ -447,6 +446,7 @@ C      UVALUE=1.0/RT
 
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow.
+      CLAMDA(IFOC)=1./RT
       RTH=RT+0.04+0.13
       UVALUEH=1.0/RTH
       RTU=RT+0.04+0.10
@@ -460,6 +460,12 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
      &  UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
       IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
+C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs.
+C << NOTE this code needs further debugging.
+C      Rsi=0.12
+C      Rso=0.06
+C      call ADMIT(ITRC,ITRU,IFCON,IFOC,Rsi,Rso)
+
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
@@ -467,6 +473,7 @@ C QPAQ.
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
+
         endif
       endif
 
@@ -687,7 +694,6 @@ C current contents of common MLC.  In the case of an air layer sub-
 C stitute the U value for each layer.
       SUBROUTINE EMKAMLD(ITRU,IER)
 #include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)

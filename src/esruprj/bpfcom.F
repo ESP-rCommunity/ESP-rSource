@@ -29,6 +29,7 @@ C Add or delete a building/plant/flow control.
 #include "control.h"
 
       common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
@@ -59,6 +60,11 @@ C Add or delete a building/plant/flow control.
         h(1)='Controls are referenced by their index. '
         CALL EASKI(ID,' ',' Which control index to delete? ',
      &    1,'F',limit,'F',1,'delete control',IER,1)
+        IF(ID.LE.0.OR.ID.GT.LIMIT)THEN
+          WRITE(outs,*)'Index id=',ID,' not in range... Returning'
+          CALL EDISP(IUOUT,outs)
+          RETURN
+        ENDIF
 
 C If one control and asked to remove then just decrement ncf.
         if(icfoc.eq.0.and.ncf.eq.1)then

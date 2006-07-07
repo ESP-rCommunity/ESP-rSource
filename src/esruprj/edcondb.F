@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -482,7 +482,6 @@ C To indicate this, pass back ier as 2.
 C ************* EDPELEM 
 C EDPELEM: Edits a material.
       SUBROUTINE EDPELEM(ITRU,DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       DIMENSION PELM(11)
       CHARACTER H*72,NAM*72,PELM*34,tnam*72
@@ -566,6 +565,10 @@ C id string.
       SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
 #include "building.h"
 #include "epara.h"
+
+C MPN is max number of tranparent glazings per multilayer construction
+C If this parameter is changed also change it in subroutine GVALUE
+      PARAMETER (MPN=3)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
@@ -576,13 +579,18 @@ C id string.
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/GVALCAL/CLAMDA(MMLC)
+
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch
 
-      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12
-      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12
-      CHARACTER*29 MLCITM(35)
-      CHARACTER xfile*72,tg*1,delim*1,outs*124
+      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12,PROMP1*56
+      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,PROMP2*56
+      CHARACTER*29 MLCITM(36)
+      CHARACTER xfile*72,tg*1,delim*1,outs*124,TITL*72,NAM*72
+      CHARACTER STGLP(7)*56
+      DIMENSION IVALS(7)
+      REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
 
       IER=0
       ISEL=0
@@ -607,13 +615,13 @@ C select one and then list details of this construction based on info
 C in the materials database.
 C Setup for multi-page menu.
       MHEAD=0
-      MCTL=6
+      MCTL=7
       ILEN=NMLC
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
-   3  IER=0
+ 3    IER=0
       ILEN=NMLC
       INO=-3
 
@@ -640,11 +648,12 @@ C If a long list include page facility text.
         WRITE(MLCITM(M+1),15)IPM,MPM 
    15   FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
       ENDIF
-      MLCITM(M+2)='1 add/delete/copy/invert    '
-      MLCITM(M+3)='! list database contents    '
-      MLCITM(M+4)='> save database             '
-      MLCITM(M+5)='? help                      '
-      MLCITM(M+6)='- exit this menu            '
+      MLCITM(M+2)='# view g-value'
+      MLCITM(M+3)='1 add/delete/copy/invert    '
+      MLCITM(M+4)='! list database contents    '
+      MLCITM(M+5)='> save database             '
+      MLCITM(M+6)='? help                      '
+      MLCITM(M+7)='- exit this menu            '
       INO=-4
 
 C Help text for this menu.
@@ -947,13 +956,120 @@ C Bring up detailed editing menu.
           IPACT=CREATE
           CALL EKPAGE(IPACT)
         ENDIF
-      ELSEIF(INO.EQ.NITMS-5)THEN
+      ELSEIF(INO.EQ.NITMS-6)THEN
 
 C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
         ENDIF
+      ELSEIF(INO.EQ.NITMS-5)THEN
+
+C Calculate g-value of transparent constructions
+C First check if mlc is transparent
+        H(1)= 'Although g-values for transparent glazings are not used'
+        H(2)= 'in ESP-r is is possible to report these in accordance '
+        H(3)= 'with Test G5 TM33:2006 CIBSE. '
+        H(4)= 'You will be required to provide for each pane its  '
+        H(5)= 'transmittance and reflectance (both in the direction of'
+        H(6)= 'incident radiation and against it)'
+        H(7)= 'Single/double and triple glazings are supported '
+        H(8)= 'G-value calculations are currently restricted to '
+        H(9)= 'air or gas filled triple glazings which are symmetric'
+        H(10)='in construction'
+        CALL PHELPD('G-value for tran construction',10,'-',0,0,IER)
+        CALL EPMENSV
+        call epkmlc(iwh,'g-value for which construction?',' ',ierr)
+        CALL EPMENRC
+        moddb = .true.
+        chgdb=.true.
+        THCON=CLAMDA(IWH)
+        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM)
+        IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN')THEN
+          CALL EDISP(IUOUT,' ')
+          CALL EDISP(IUOUT,
+     &    ' G-value only defined for transparent constructions')
+          CALL EDISP(IUOUT,' ')
+        ELSE
+
+C Get number of non-air layers of glass
+          IPN=0
+          DO 501 ILAY=1,LAYERS(IWH)
+            CALL ERPCDB(IFCON,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
+     &           DBSHT,E,A,DRV,TITL,NAM)
+            IF(IER.EQ.1)RETURN
+            IF(IPR(IWH,ILAY).EQ.0)GOTO 501
+            IPN=IPN+1
+
+C For each nonair layer ask for reflectance, tranmittance and emissivity
+            H(1) ='In order to calculate G-value ESP-r needs values for'
+            H(2) ='trnt   = transmittance of the pane,'
+            H(3) ='ref    = reflectance of this pane in direction of'
+            H(4) ='         incident radiation'
+            H(5) ='o-ref  = reflectance of this pane in direction '
+            H(6) ='         opposite incident radiation'
+            H(7) ='ems    = emissivity of this pane in direction of'
+            H(8) ='         incident radiation'
+            H(9) ='o-ems  = emissivity of this pane in direction '
+            H(10)='         opposite incident radiation'
+            H(11)=' '
+            H(12)='Choose CIBSE TM33:2006 prescribed values or   '
+            H(13)='define your own'
+            H(14)='Note that low emissivity glass has been inverted'
+            H(15)='because it is always the 2nd pane for TM33'
+            INPICK=1
+            PROMP1='Choose TM33:2006 values or manually define '
+            WRITE(PROMP2,'(A,I2)')'properties for glazing layer no.',IPN
+            STGLP(1)='trnt  ref   o-ref ems   o-ems description'
+            STGLP(2)='0.789 0.072 0.072 0.837 0.837 clear glass'
+*            STGLP(3)='0.678 0.091 0.108 0.837 0.170 low-e glass'
+            STGLP(3)='0.678 0.108 0.091 0.170 0.837 low-e glass'
+            STGLP(4)='0.460 0.053 0.053 0.837 0.837 absorbing glass'
+            STGLP(5)='0.390 0.310 0.450 0.837 0.250 hi perf reflecting'
+*            STGLP(5)='0.390 0.450 0.310 0.250 0.837 hi perf reflecting'
+            STGLP(6)='manual / user defined'
+            CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
+     &                50,6,STGLP,' ',IER,15)
+            IF(IER.NE.0)RETURN
+            IPKD=IVALS(1)
+            IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
+              OUTS=STGLP(IPKD)(1:29)
+            ELSEIF(IPKD.EQ.6)THEN
+              CALL EASKS(OUTS,
+     &        'enter trnt, reft, op-reft, ems and op-ems (see help)',
+     &        ' ',72,' ','Construction name',IER,10)
+            ELSE
+              CALL EDISP(IUOUT,'No choice made ... returning')
+              RETURN
+            ENDIF
+            K=0
+            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','trans',IER)
+            TRNT(IPN)=VAL
+            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','reflect',IER)
+            REF(IPN)=VAL
+            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-reflect',IER)
+            OREF(IPN)=VAL
+
+C emissivity value not required
+            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','emiss',IER)
+            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-emiss',IER)
+            OEMS(IPN)=VAL 
+ 501      CONTINUE
+
+C Call subroutine to calculate g-value and report 
+          CALL GVALUE(IPN,TRNT,REF,OREF,OEMS,THCON,G)
+          CALL EDISP (IUOUT,' ')
+          CALL ECLOSE(0.0,G,0.001,ISZERO)
+          IF(ISZERO)THEN
+            CALL EDISP(IUOUT,'EDMLDB ... Error finding G-value')
+          ELSE
+            WRITE(OUTS,'(A,F4.2)')'G-value is ',G
+            CALL EDISP (IUOUT,OUTS)
+          ENDIF
+        ENDIF
+        CALL EDISP (IUOUT,' ')
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
 
 C Edit block identified by KEYIND, remind user of details and then
@@ -1004,7 +1120,7 @@ C Information on opaque/transparent is added to DESC.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,QUIET
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical moddb,chdb,showother,layermatch,layermatcha,modgeo
 
       dimension SNA(MS),PAZI(MS),PELV(MS)
@@ -1106,9 +1222,24 @@ C If an air layer include the R values in the display.
 
 C Rest of detail menu.
       M=M+1
-      RT=RT+0.055+0.123
-      UVALUE=1.0/RT
-      write(MLED(M),'(A,F6.2)')'  Standard U value: ',UVALUE
+
+C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
+C flow internal hc of 0.123.
+C       RT=RT+0.055+0.123
+C       UVALUE=1.0/RT
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+      RTH=RT+0.04+0.13
+      UVALUEH=1.0/RTH
+      RTU=RT+0.04+0.10
+      UVALUEU=1.0/RTU
+      RTD=RT+0.04+0.17
+      UVALUED=1.0/RTD
+      RTI=RT+0.13+0.13
+      UVALUEI=1.0/RTI
+      write(MLED(M),'(A,3F6.3)') ' ISO 6946 U h/u/d',
+     &    UVALUEH,UVALUEU,UVALUED
       M=M+1
       MLED(M)='  ____________________________   '
       M=M+1
@@ -1723,7 +1854,6 @@ C ************* MKBPRC
 C MKBPRC: Creates a binary materials db based on the
 C current contents of an ASCII file LASCI opened on unit IFA. 
       SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,OUTSTR*124
@@ -1802,7 +1932,6 @@ C ************* MKAPRC
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -1870,7 +1999,6 @@ C so that partitions are counted as half area).
       subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1917,4 +2045,80 @@ C Depending on the connection type, add the full or half area of surface.
 
       return
       end
+      
+C ******************* GVALUE *******************
+C Calculate g-value optical properties of systems given info on 
+C individual glazing layers. In accordance with BS EN 410:1998
+      SUBROUTINE GVALUE(IPN,TRNT,REF,OREF,OEMS,CLAMDA,G)
+
+C MPN is max number of tranparent glazings per multilayer construction
+C If this parameter is changed also change it in subroutine EDMLDB
+      PARAMETER(MPN=3)
+      REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
+
+      HE=23.
+      HI=3.6+4.4*OEMS(IPN)/0.837
+*  std CIBSE value is HI=8.
+      IF(IPN.EQ.1)THEN
+        TR=TRNT(1)
+        AE=1.-TRNT(1)-REF(1)
+        QI=AE*HI/(HE+HI)
+        G=TR+QI
+      ELSEIF(IPN.EQ.2)THEN
+        T1=TRNT(1)
+        R1=REF(1)
+        OR1=OREF(1)
+        T2=TRNT(2)
+        R2=REF(2)
+        OR2=OREF(2)
+        A1=1.-T1-R1
+        A2=1.-T2-R2
+        OA1=1.-T1-OR1
+
+C Following formula may not be the correct one 
+C        AE1=OA1+A1*T1*R2/(1.-OR1*R2)
+        AE1=OA1+A1*T1*R2/(1.-R1*R2)
+        AE2=A2*T1/(1.-OR1*R2)
+        QI=(AE1/HE+AE2/HE+AE2/CLAMDA)/(1./HI+1./HE+1./CLAMDA)
+
+C Following formula may not be the correct one 
+C        TR=T1*T2/(1.-OR1*R2)
+        TR=T1*T2/(1.-R1*R2)
+        G=TR+QI
+      ELSEIF(IPN.EQ.3)THEN
+        CLAMDA12=CLAMDA/2.
+        CLAMDA23=CLAMDA/2.
+
+C<< Possible future development is to take thermal conductance from mlc
+C properties and not simply assuming symmetry
+        T1=TRNT(1)
+        R1=REF(1)
+        OR1=OREF(1)
+        T2=TRNT(2)
+        R2=REF(2)
+        OR2=OREF(2)
+        T3=TRNT(3)
+        R3=REF(3)
+*        OR3=OREF(3)
+        A1=1.-T1-R1
+        A2=1.-T2-R2
+        A3=1.-T3-R3
+        OA1=1.-T1-OR1
+        OA2=1.-T2-OR2
+*        OA3=1.-T3-OR3
+        AE1=A1+(T1*OA1*R2*(1.-OR2*R3)+T1*T2**2.*OA1*R3)/
+     &      ((1.-OR1*R2)*(1.-OR2*R3)-(T2**2.*OR1*R3))
+        AE2=(T1*A2*(1.-OR2*R3)+T1*T2*OA2*R3)/
+     &      ((1.-OR1*R2)*(1.-OR2*R3)-(T2**2.*OR1*R3))
+        AE3=(T1*T2*A3)/
+     &      ((1.-OR1*R2)*(1.-OR2*R3)-(T2**2.*OR1*R3))
+        QI=(AE3/CLAMDA23+(AE3+AE2)/CLAMDA12+(AE3+AE2+AE1)/HE)/
+     &     (1./HI+1./HE+1./CLAMDA23+1./CLAMDA12)
+        TR=T1*T2*T3/((1.-OR1*R2)*(1.-OR2*R3)-(T2**2.*OR1*R3))
+        G=TR+QI
+      ELSE
+        G=0.0
+      ENDIF
+      RETURN
+      END
 

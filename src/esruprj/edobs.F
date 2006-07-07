@@ -782,6 +782,7 @@ C Provide default values for the new obstructions file.
         NGZ=10
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         IF(IER.NE.0)RETURN
+        IOBS(ICOMP)=1 
         MODIFY=.TRUE.
       ENDIF
       RETURN
