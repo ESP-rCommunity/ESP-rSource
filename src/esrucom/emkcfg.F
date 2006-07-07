@@ -162,7 +162,7 @@ C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -686,11 +686,15 @@ C write out ltdfa instead.
 
 C Simulation parameter presets.
       if(nsset.gt.0)then
-        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)
-     &    '# sim setup: no. sets startup zone_ts plant_ts save_lv'
-        WRITE(IFCFG,'(A,5i5)',IOSTAT=IOS,ERR=2) '*sps ',nsset,isstup,
-     &    isbnstep,ispnstep,issave
-
+        if(isavgh.eq.0)then
+          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)
+     &'# sim setup: no. sets startup zone_ts plant_ts save_lv @ each ts'
+        else
+          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)
+     &'# sim setup: no. sets startup zone_ts plant_ts save_lv @ 1 ts/hr'
+        endif
+        WRITE(IFCFG,'(A,6i4)',IOSTAT=IOS,ERR=2) '*sps ',nsset,isstup,
+     &    isbnstep,ispnstep,issave,isavgh
 
 C Deal with multi-year climate data (currently only works with
 C save level 5).

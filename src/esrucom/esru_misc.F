@@ -79,7 +79,7 @@ C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -267,6 +267,7 @@ C Clear pre-simulation sets.
       isstup= 0
       isbnstep= 0
       ispnstep= 0
+      isavgh=0
       issave= -1
       sipvres=' '
       do 39 i=1,5

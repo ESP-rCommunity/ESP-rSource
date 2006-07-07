@@ -1447,10 +1447,11 @@ C Parameters which can be set in the control file are as follows:
 C *St_up - startup period
 C *Period - the simulation start day and month, end day and month
 C *Time step - the number of time steps per hour
+C *Hourly - whether each timestep is written to the file.
 C *Save option - 1,2,3,4
-C *Results - building results db
-C *Flow_results - air flow results db
-C *Plant_results - plant results db
+C *Results - building results file
+C *Flow_results - air flow results file
+C *Plant_results - plant results file
 
 C Climate and control are as specified in the configuration file.
 
@@ -1469,7 +1470,10 @@ C USESPS uses configuration presimuilation data.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C Once per hour storage of results, averaged over that hour.
+      common/rdcgen/irdact
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -1504,7 +1508,18 @@ C Assign data.
       endif
       if(isbnstep.ne.0)then
         ntstep=isbnstep
+
+C Also check against user preference in simulation parameters for 
+C whether to save every timestep to the file.
+        if(isavgh.eq.1)then
+          irdact=1
+        else
+          irdact=0
+        endif
         tstepok=.true.
+
+C Debug.
+C       write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
       endif
 
 C Plant timesteps and plant time increment and

@@ -84,7 +84,7 @@ C is a logical flag, .true. restricts update/save options.
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -185,6 +185,7 @@ C Initialize variables and recover command line arguments.
       isbnstep=1
       ispnstep=2
       issave=2
+      isavgh=0
       NSIGFIG=3
 
 C Set folder separator (fs) to \ or / as required.
@@ -1149,6 +1150,11 @@ C to include the path and create a string to drive the modules.
       COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
+C Temporal header (to get its time frequency)
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
       common/IPVF/lipvdatf
 
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
@@ -1163,7 +1169,7 @@ C level).
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -1182,11 +1188,11 @@ C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
       character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      character brw*8
+      character brw*8,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat
+      logical browse,concat,hri,defok
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
 
       modparms=.false.
@@ -1231,7 +1237,17 @@ C constructions are known.
      &    ' of',nsset,')'
         write(ITEMS(2),'(a,a8)')  'b  set name: ',spfdescr(isset)
         write(ITEMS(3),'(a,i4)')  'c  startup days:',isstup
-        write(ITEMS(4),'(a,i3)')  'd  building timesteps/hr:',isbnstep
+        if(isbnstep.le.1)then
+          write(ITEMS(4),'(a,i3)')'d  zone ts/hr:',isbnstep
+        else
+          if(isavgh.eq.0)then
+            write(ITEMS(4),'(a,i3,a)')  'd  zone ts/hr:',isbnstep,
+     &        ' each ts saved'
+          else
+            write(ITEMS(4),'(a,i3,a)')  'd  zone ts/hr:',isbnstep,
+     &        ' saved 1 ts/hr'
+          endif
+        endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           write(ITEMS(5),'(a,i3)')'e  plant ts (per bldg ts):',ispnstep
         else
@@ -1538,6 +1554,7 @@ C Setup one parameter set or several sets to match IPV description.
             isbnstep=1
             ispnstep=10
             issave=4
+            isavgh=0
           else
             call edisp(iuout,'Scanning for startup days')
             call scntcnst(TDM,istd,TCM,ISTC)
@@ -1547,6 +1564,7 @@ C Setup one parameter set or several sets to match IPV description.
             isbnstep=1
             ispnstep=10
             issave=4
+            isavgh=0
           endif
           if(ID.eq.1)then
             h(1)='Typical names are win spr sum. '
@@ -1719,9 +1737,42 @@ C do not allow this set name to be changed.
           modparms=.true.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.4)then
+        if(itdflg.ne.0)then
+          write(outs,'(2a,i3,a)') 'The model includes a temporal file',
+     &      ' with ',ntsph,' per hour frequency. Please use the same.'
+          call edisp(iuout,outs)
+        endif
         H(1)='Zone-side timesteps range from 1 to 60 per hour.'
+        H(2)='Note: if the model includes temporal data then you must'
+        H(3)='use the same zone-side teimstep as in the temporal file.'
         CALL EASKI(isbnstep,'Zone-side timesteps per hour: ',' ',
      &       1,'F',60,'W',2,'zone steps per hour',IER,1)
+        if(isbnstep.gt.1)then
+          if(itdflg.ne.0)then
+
+C There is temporal data so must save at each timestep.
+            write(6,*) 'temporal data found so save each timestep'
+            isavgh=0
+          else
+            H(1) ='Bps calculates the value of each state variable '
+            H(2) ='at each computational time step. The default action'
+            H(3) ='is to transfer each value at each computational'
+            H(4) ='time step to the results database(s).'
+            H(5) ='This option allows to average results over one'
+            H(6) ='hour before transfer to the results database(s),'
+            H(7) ='thus decreasing the size of results database(s).'
+            defok=.false.
+            hri=.false.
+            call askok(' Hourly results integration: ',' ',hri,defok,7)
+            if(hri)then
+              isavgh=1
+            else
+              isavgh=0
+            endif
+          endif
+        else
+          isavgh=0
+        endif
         modparms=.true.
       elseif(MITEM.eq.23.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
@@ -1861,8 +1912,8 @@ C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of sets, Isauto (0=use info as
 C defaults 1=autoexec mode), istcnst (startup days), isbnstep (building
 C timesteps/hr), ispnstep (plant timesteps/hr), issave (results save
-C level).
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+C level), isavgh = 0 save every timestep = 1 save hourly zone data.
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/user/browse
@@ -2540,7 +2591,7 @@ C to include the path and create a string to drive the modules.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       character H*72,CXSTR*78
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -3538,7 +3589,7 @@ C << message to user that such a file does not exist
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       COMMON/C1/NCOMP,NCON
       common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3797,7 +3848,7 @@ C Selection strings for site exposure.
         call edisp(iuout,'New configuration will hold new site data.')
       ELSEIF(M.EQ.4)THEN
 
-C shading and insolation
+C Shading and insolation choices.
         ishd=-1
         do 142 iz=1,ncomp
           if(ISI(iz).eq.1)ishd=1
@@ -3832,6 +3883,7 @@ C shading and insolation
           endif
           if(iw.eq.1.or.iw.eq.2)then
             if(inpic.gt.0)then
+
               DO 151 IC=1,inpic
                 ICOMP=ivals(IC)
                 ISI(ICOMP)=1
@@ -3906,6 +3958,8 @@ C There is shading and/or insulation check if user wants to dereference.
                 ICOMP=ivals(IC)
                 ISI(ICOMP)=0
  153          continue
+              call edisp(iuout,'Shading files being dereferenced.')
+              msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.2)then
             inpic=0
@@ -3917,6 +3971,8 @@ C There is shading and/or insulation check if user wants to dereference.
                 ICOMP=ivals(IC)
                 IOBS(ICOMP)=0
  154          continue
+              call edisp(iuout,'Obstruction files being dereferenced.')
+              msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.3)then
             inpic=0
@@ -3930,15 +3986,16 @@ C There is shading and/or insulation check if user wants to dereference.
                 ISI(ICOMP)=0
  155          continue
             endif
+            call edisp(iuout,
+     &        'Shading & obstruction files being dereferenced.')
+            msg1='updating model for shading changes...'
           elseif(iw.eq.4)then
-            continue
+            msg1='shading changes not selected'
           endif
-          call edisp(iuout,'Shading files being dereferenced.')
         endif
-        msg1='updating model for shading changes...'
       ELSEIF(M.EQ.5)THEN
 
-C view factors and radiant sensors
+C View factors and radiant sensors
         inpic=0
         call askmultizone(inpic,ivals,
      &    ' Select zones for viewfactor variant?',
@@ -4440,6 +4497,8 @@ C mould and microtoxins
         msg1='updating model for mould and microtoxins changes...'
       ENDIF
 
+C Reached this point after user has selected a topic whether or
+C not any zones were selected.
       h(1)='You may wish to make a number of changes to the model'
       h(2)='variant. If so, select another option.'
       h(3)=' '

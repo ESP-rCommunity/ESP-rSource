@@ -352,7 +352,7 @@ C Description of distributed demands and file name.
       COMMON/BL1/dmdsdesc,bdmds
 
 C Simulation parameter sets.
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C ITM is main IPV menu.
 C ITMGET is menu for selecting metric types.
@@ -1752,7 +1752,7 @@ C Simulation parameter sets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
@@ -1781,6 +1781,7 @@ C of the common variables.
         isbnstep=1
         ispnstep=10
         issave=4
+        isavgh=0
       endif
       cr=cfgroot
       lr=lnblnk(cfgroot)
