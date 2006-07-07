@@ -1355,6 +1355,18 @@ echo " "
 if [ "$A" = "y" ] || [ "$A" = "" ] ; then
   cd ${SRCdir}
   make EXE=${EXE} -f ${MKFILE} clean
+  echo "  "
+  echo "Removing binary materials db from exemplars ..."
+  cd ${SRCdir}/training
+  rm -f training/glenview/databases/constr.db1
+  rm -f training/cellular_furn/dbs/cellular.materials
+  rm -f training/cellular_hires/dbs/cellular.materials
+  rm -f training/cellular_contam/dbs/cellular.materials
+  rm -f training/cellular_hvac/dbs/cellular.materials
+  rm -f training/cellular_bc/dbs/cellular.materials
+  rm -f training/house/svph/dbs/linford.materialdb
+  rm -f training/cellular_shd/dbs/cellular.materials
+  rm -f training/glenview/databases/constr.db1
 fi
 
 echo " "
