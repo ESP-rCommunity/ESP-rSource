@@ -65,13 +65,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"wstxpt graphic font medium 8\n");	debug */
+/*    g_print("wstxpt graphic font medium 8\n");	debug */
  } else if (butn_fnt == 1 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"wstxpt graphic font medium 10\n");	debug */
+/*    g_print("wstxpt graphic font medium 10\n");	debug */
  } else if (butn_fnt == 2 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"wstxpt graphic font medium 12\n");	debug */
+/*    g_print("wstxpt graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -92,7 +92,7 @@ int  len;        /* len is length passed from fortran */
  gdk_draw_layout (gr_image, gc,ix,iy-f_height,layout);
  g_object_unref (layout);	/* clear the layout */
 
-/*  fprintf(stderr,"wstxpt font height and width is %d %d  %s\n", f_height,f_width,buffer); debug */
+/*  g_print("wstxpt font height and width is %d %d  %s\n", f_height,f_width,buffer); debug */
 
 /* If echo send parameters to wwc file
  if ( wwc_ok == 1) {
@@ -131,13 +131,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"textatxy graphic font medium 8\n");	debug */
+/*    g_print("textatxy graphic font medium 8\n");	debug */
  } else if (butn_fnt == 1 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"textatxy graphic font medium 10\n");	debug */
+/*    g_print("textatxy graphic font medium 10\n");	debug */
  } else if (butn_fnt == 2 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"textatxy graphic font medium 12\n");	debug */
+/*    g_print("textatxy graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -236,13 +236,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"textpixwidth graphic font medium 8\n");	debug */
+/*    g_print("textpixwidth graphic font medium 8\n");	debug */
  } else if (butn_fnt == 1 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"textpixwidth graphic font medium 10\n");	debug */
+/*    g_print("textpixwidth graphic font medium 10\n");	debug */
  } else if (butn_fnt == 2 ) {	
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"textpixwidth graphic font medium 12\n");	debug */
+/*    g_print("textpixwidth graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -262,7 +262,7 @@ int  len;        /* len is length passed from fortran */
  pango_layout_get_extents (layout, NULL, &logical_rect);	/* find box the text fits within */
  vfw = MAX (width, PANGO_PIXELS (logical_rect.width));
  if (vfw > 1 ) *pixelwidth = (long int) vfw;
-/* debug fprintf(stderr,"phrase %s is %d %d %d pixels wide\n",buffer,vfw,width,PANGO_PIXELS (logical_rect.width)); */
+/* debug g_print("phrase %s is %d %d %d pixels wide\n",buffer,vfw,width,PANGO_PIXELS (logical_rect.width)); */
  g_object_unref (layout);	/* clear the layout */
 
  return;
@@ -308,13 +308,13 @@ void viewtext_(msg,linep,side,size,len)
  * Use pango_font_get_metrics to get font width and height. */
   if (butn_fnt == 0 ) {
     pfd = pango_font_description_from_string("Serif,Medium 8");
-/*     fprintf(stderr,"viewtext graphic font medium 8\n");	debug */
+/*     g_print("viewtext graphic font medium 8\n");	debug */
   } else if (butn_fnt == 1 ) {	
     pfd = pango_font_description_from_string("Serif,Medium 10");
-/*     fprintf(stderr,"viewtext graphic font medium 10\n");	debug */
+/*     g_print("viewtext graphic font medium 10\n");	debug */
   } else if (butn_fnt == 2 ) {	
     pfd = pango_font_description_from_string("Serif,Medium 12");
-/*     fprintf(stderr,"viewtext graphic font medium 12\n");	debug */
+/*    g_print("viewtext graphic font medium 12\n");	debug */
   }
   gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -350,7 +350,7 @@ void viewtext_(msg,linep,side,size,len)
   } else {
       ix = b_left + 7;
   }
-/* debugfprintf(stderr,"phrase %s is %d %d %d pixels wide at %d %d\n",msg,
+/* debug fprintf(stderr,"phrase %s is %d %d %d pixels wide at %d %d\n",msg,
                             fitpix,width,PANGO_PIXELS (logical_rect.width),ix,iy); */ 
 /*   winfnt_(&saved_font);                     restore font */
   gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
@@ -383,13 +383,13 @@ void findviewtext_(charposp,linep,size,irx,iry)
  * Use pango_font_get_metrics to get font width and height. */
   if (butn_fnt == 0 ) {
     pfd = pango_font_description_from_string("Serif,Medium 8");
-/*     fprintf(stderr,"findviewtext graphic font medium 8\n");	debug */
+/*     g_print("findviewtext graphic font medium 8\n");	debug */
   } else if (butn_fnt == 1 ) {	
     pfd = pango_font_description_from_string("Serif,Medium 10");
-/*     fprintf(stderr,"findviewtext graphic font medium 10\n");	debug */
+/*     g_print("findviewtext graphic font medium 10\n");	debug */
   } else if (butn_fnt == 2 ) {	
     pfd = pango_font_description_from_string("Serif,Medium 12");
-/*     fprintf(stderr,"findviewtext graphic font medium 12\n");	debug */
+/*     g_print("findviewtext graphic font medium 12\n");	debug */
   }
   gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -667,7 +667,7 @@ void testcscale_()
 /* should clear the bitmap first... << >> */
   if (gr_image) {
     g_object_unref(gr_image);
-/* debug    fprintf(stderr,"unreferenced pixmap\n");  */
+/* debug g_print("unreferenced pixmap\n");  */
   }
   gr_image = gdk_pixmap_new(graphic->window,
 			    graphic->allocation.width,
@@ -689,7 +689,7 @@ void testcscale_()
              pango_font_metrics_get_descent (metrics));
   f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
   pango_font_metrics_unref (metrics);	/* metrics no longer needed */
-/* debug   fprintf(stderr,"testcscale font height and width is %d %d\n", f_height,f_width); */
+/* debug   g_print("testcscale font height and width is %d %d\n", f_height,f_width); */
   layout = pango_layout_new (pango_context);
 
   for (ic=0; ic<45; ic++) {
@@ -823,11 +823,11 @@ void testcscale_()
   ilw = 1;
   gdk_gc_set_line_attributes(gc,ilw,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER); /* reset */
 
-/* debug  fprintf(stderr,"about to draw pixmap on graphic\n");  */
+/* debug g_print("about to draw pixmap on graphic\n");  */
   gdk_draw_drawable(graphic->window, gc, gr_image,0, 0, 0, 0,
 			        graphic->allocation.width,
 			        graphic->allocation.height); 
-/* debug  fprintf(stderr,"after draw_drawable call for graphic\n");  */
+/* debug  g_print("after draw_drawable call for graphic\n");  */
 /*  g_object_unref (metrics); */
   return;
 }
@@ -868,7 +868,7 @@ void testcscalea_()
              pango_font_metrics_get_descent (metrics));
   f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
   pango_font_metrics_unref (metrics);	/* metrics no longer needed */
-/* debug  fprintf(stderr,"testcscale font height and width is %d %d\n", f_height,f_width);  */
+/* debug  g_print("testcscale font height and width is %d %d\n", f_height,f_width);  */
   layout = pango_layout_new (pango_context);
 
   for (ic=0; ic<45; ic++) {
@@ -1017,11 +1017,11 @@ void testcscaleb_()
   ilw = 1;
   gdk_gc_set_line_attributes(gc,ilw,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER); /* reset */
 
-/* debug  fprintf(stderr,"about to draw pixmap on graphic\n");  */
+/* debug  g_print("about to draw pixmap on graphic\n");  */
   gdk_draw_drawable(graphic->window, gc, gr_image,0, 0, 0, 0,
 			        graphic->allocation.width,
 			        graphic->allocation.height); 
-/* debug  fprintf(stderr,"after draw_drawable call for graphic\n");  */
+/* debug  g_print("after draw_drawable call for graphic\n");  */
   return;
 }
 
@@ -1660,7 +1660,7 @@ void egrbox_(x,y,dx,dy,gp)
   b_left = ix; b_right = ix1;
   if((b_right-b_left)<=2)return; /* if no width return */
 
-/*  fprintf(stderr,"use grey cscale %ld\n",ngscale); */
+/*  g_print("use grey cscale %ld\n",ngscale); */
 
   if (gpo >= 0 && gpo < (gint) ngscale) {
 
@@ -2348,8 +2348,6 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* prom is the prompt for the image
    docu is the documentation for the image (which might be editable)
    file is the name of the image file
-   ier tracks if the default or cancel buttons have been selected (requires
-     suitable actions on the fortran side).
    act = '-' documentation not to be edited, act = 'e' documentation can be edited (not implemented)
 */
 {
@@ -2380,10 +2378,10 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    f_to_c_l(file,&lenfile,&lnfile);
    file_local = g_strndup(file, (gsize) lnfile);
 
-/* debug fprintf(stderr,"phrase %s\n",question_local);  */
-/* debug fprintf(stderr,"documentation is %s\n",docu_local); */
-/* debug fprintf(stderr,"image is %s\n",file_local); */
-/* debug fprintf(stderr,"nb of help lines %d\n",help_lines); */
+/* debug g_print("phrase %s\n",question_local);  */
+/* debug g_print("documentation is %s\n",docu_local); */
+/* debug g_print("image is %s\n",file_local); */
+/* debug g_print("nb of help lines %d\n",help_lines); */
     
    /* Create the widgets */
    askbox = gtk_dialog_new();	/* create a new dialog (pop-up box) */
@@ -2393,7 +2391,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 
    loadgpbimage = gdk_pixbuf_new_from_file(file_local,NULL);	/* Load the file into a pixbuf */
    if( loadgpbimage==NULL) {
-     fprintf(stderr,"error loading image file %s\n",file_local);	/* if there is a problem set small size */
+     g_print("error loading image file %s\n",file_local);	/* if there is a problem set small size */
      XSize = 150;
      YSize = 100;
      imageloaded = 0;
@@ -2401,7 +2399,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      XSize = gdk_pixbuf_get_width(loadgpbimage);	/* get the actual size of the pixbuf */
      YSize = gdk_pixbuf_get_height(loadgpbimage);
      imageloaded = 1;
-     fprintf(stderr,"loaded image file %s %d %d\n",file_local,XSize,YSize);
+     g_print("loaded image file %s %d %d\n",file_local,XSize,YSize);
    }
    image = gtk_image_new_from_pixbuf(loadgpbimage);	/* create a gtk image from the pixbuf */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),image);
@@ -2413,13 +2411,13 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* now set the font size to be used for the image documentation. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
+     /* g_print("configure font medium 8\n"); debug */
    } else if (disp_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
+     /* g_print("configure font medium 10\n"); debug */
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* g_print("configure font medium 12\n");	/* debug */
    }
    gtk_widget_modify_font(entry, pfd);
    pango_font_description_free(pfd);
