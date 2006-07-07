@@ -54,7 +54,7 @@ void g_get_esp_item_from_list_cb ( GtkWidget *a_list,
     
   got_item_n = gtk_list_child_position ((GtkList*)a_list, dlist->data);
   esp_selected = (gchar*) strdup(buf);
-  g_print("you clicked item %d: %s -\n", got_item_n, buf); /* debug */
+/* debug g_print("you clicked item %d: %s -\n", got_item_n, buf); */
   g_main_loop_quit (menu_loop);
 }
 
@@ -212,7 +212,7 @@ void espmenu_ (int *ino)
 void abcbox_callback( GtkWidget *widget,
                       gpointer  data )
 {
-  g_print ("Hello again - %d was pressed\n", GPOINTER_TO_INT (data));
+/* debug g_print ("Hello again - %d was pressed\n", GPOINTER_TO_INT (data)); */
   abc_pick = GPOINTER_TO_INT (data);	/* see spinbutton example */
 }
 
@@ -611,7 +611,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
 void okbox_callback( GtkWidget *widget,
                       gpointer  data )
 {
-  g_print ("Hello again - %d was pressed\n", GPOINTER_TO_INT (data));
+/* debug g_print ("Hello again - %d was pressed\n", GPOINTER_TO_INT (data)); */
   abc_pick = GPOINTER_TO_INT (data);	/* see spinbutton example */
 }
 
