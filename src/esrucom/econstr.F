@@ -574,11 +574,26 @@ C Jump if not all requied and not the focus surface.
             CALL EDISP(ITRU,OUTS)
           ENDIF
  9985   CONTINUE
-        RT(I)=RT(I)+0.055+0.123
-        UVALUE=1.0/RT(I)
-        write(OUTS,'(12x,3A,F7.2)')'Standard U value for construction ',
-     &    SMLCN(i)(1:lnblnk(SMLCN(i))),' is',UVALUE
-C        if(isur.ne.0)call edisp(itru,OUTS)
+
+C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
+C flow internal hc of 0.123.
+C       RT(I)=RT(I)+0.055+0.123
+C       UVALUE=1.0/RT(I)
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+        RTH=RT(I)+0.04+0.13
+        UVALUEH=1.0/RTH
+        RTU=RT(I)+0.04+0.10
+        UVALUEU=1.0/RTU
+        RTD=RT(I)+0.04+0.17
+        UVALUED=1.0/RTD
+        RTI=RT(I)+0.13+0.13
+        UVALUEI=1.0/RTI
+        write(OUTS,'(2x,3A,3F7.3,a,F7.3)')
+     &    ' ISO 6946 U values (hor/up/dn heat flow) for ',
+     &    SMLCN(i)(1:lnblnk(SMLCN(i))),' is',
+     &    UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
         call edisp(itru,OUTS)
  9986 CONTINUE
 
