@@ -6,7 +6,7 @@
    espmenu_ () display menu and wait for selection to be made
    abcbox_callback() actions when an abc... choice is made.
    espabcbox_ () initialise abcbox - will use radio buttons for entries
-   espdozenbox_ () initialise dozen choices use radio buttons for entries 
+   espdozenbox_ () initialise dozen choices use radio buttons for entries
    okbox_callback() actions when an ok... choice is made.
 
  */
@@ -38,20 +38,20 @@ void g_get_esp_item_from_list_cb ( GtkWidget *a_list,
 {
   GList *dlist;
   gchar *buf;
-    
+
   /* Fetch the selected items of the List, treat as read-only! */
   dlist = GTK_LIST (a_list)->selection; /* listbox widget */
-    
+
   if (!dlist) {
     esp_selected = buf = NULL; /* If deselected, nullify the strings */
     return;
   }
-        	
+
 /* Get the item from the doubly linked list,
  * query the data associated with list_item_data_key.
  * then write it to global (esp_selected) */
   buf = g_object_get_data (G_OBJECT (dlist->data), list_item_data_key);
-    
+
   got_item_n = gtk_list_child_position ((GtkList*)a_list, dlist->data);
   esp_selected = (gchar*) strdup(buf);
 /* debug g_print("you clicked item %d: %s -\n", got_item_n, buf); */
@@ -65,12 +65,12 @@ void espmenuinit_ (char *title, int len) {
    GtkWidget *label, *a_list_item;
    GtkWidget *title_frame;
    gint f_height;	/* pixel height of default font */
-   
+
    /* DEBUG...
       fprintf(stderr,"TITLE %s\n",title);
       fprintf(stderr,"LEN %d\n",len);
    */
-   
+
 /* create the outer frame 5 pixels wide */
    menu_frame = gtk_vbox_new (FALSE,5);
    gtk_container_set_border_width (GTK_CONTAINER (menu_frame), 1);
@@ -85,14 +85,14 @@ void espmenuinit_ (char *title, int len) {
    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (e_scrolled_window),
      GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
    gtk_container_add (GTK_CONTAINER (menu_frame), e_scrolled_window);
-   gtk_widget_set_size_request (e_scrolled_window, -1, 500); 
+   gtk_widget_set_size_request (e_scrolled_window, -1, 500);
    gtk_widget_show (e_scrolled_window);
 
-/* setup the list structure within e_scrolled_window */ 
+/* setup the list structure within e_scrolled_window */
    gtklist = gtk_list_new ();
    gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (e_scrolled_window),gtklist);
    gtk_widget_show (gtklist);
-     
+
    g_signal_connect (G_OBJECT (gtklist), "selection_changed",
                      G_CALLBACK (g_get_esp_item_from_list_cb),NULL);
 
@@ -113,10 +113,10 @@ void espmenuinit_ (char *title, int len) {
 
    gtk_widget_show_all (emenu); /* Display the new widgets. */
 }
-    
+
 
 /* *************** ESRU menu text update. *************** */
-/* 
+/*
  This function takes an array of strings from f77 and stores
  it in the static array m_list for subsequent use by other functions.
 */
@@ -153,12 +153,12 @@ void updmenu_(items,itypes,nitmsptr,iw,len_items)
 }
 
 /* *** espmenuitems_ () adds an item to the e_menu *** */
-void espmenuitems_ (char *item,long int *ino, int len) 
+void espmenuitems_ (char *item,long int *ino, int len)
 {
 
    GtkWidget *label, *a_list_item;
    gchar *item2,*str;
-   
+
    item2 = g_strndup(item, (gsize) len);
 
    /* DEBUG...
@@ -176,26 +176,26 @@ void espmenuitems_ (char *item,long int *ino, int len)
 }
 
 /* *** espmenu_ () display menu and wait for selection to be made *** */
-void espmenu_ (int *ino) 
+void espmenu_ (int *ino)
 {
-   
+
 /* Show menu and reset selection. */
    gtk_widget_show_all (gtklist);
    menu_pick = 0;
-   
+
    /* DEBUG...
     * fprintf(stderr,"INO1 %d\n",*ino);
     * fprintf(stderr,"INO2 %d\n",menu_pick);
     */
-   
-/* Create a new event loop and run it.  When a selection is 
+
+/* Create a new event loop and run it.  When a selection is
  * made the value of got_item_n will equal to the position in
  * the list (because the menu title is the first item).
  * This value is placed to the location that ino points to.
  */
    g_main_loop_run (menu_loop);
    *ino = got_item_n;	/* got_item_n is global set by g_get_esp_item_from_list_cb */
-   
+
    /* DEBUG...
     * fprintf(stderr,"INO4 %d\n",*ino);
     * fprintf(stderr,"INO5 %d\n",got_item_n);
@@ -208,7 +208,7 @@ void espmenu_ (int *ino)
 
 
 /* *** abcbox_callback() actions when an abc... choice is made. *** */
-    
+
 void abcbox_callback( GtkWidget *widget,
                       gpointer  data )
 {
@@ -217,7 +217,7 @@ void abcbox_callback( GtkWidget *widget,
 }
 
 /* *** espabcbox_ () initialise abcbox - will use radio buttons for entries *** */
-void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
+void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                  char *dopt, char *eopt, char *fopt, char *gopt, long int *ipick,
                  int msg1_len, int aopt_len, int bopt_len, int copt_len,
                  int dopt_len, int eopt_len, int fopt_len, int gopt_len) {
@@ -256,14 +256,14 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    f_to_c_l(gopt,&gopt_len,&gopt_l);
    gopt_local = g_strndup(gopt, (gsize) gopt_l);
 /* debug */ fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,fopt_l,gopt_l);
-   
+
    /* Set ok response, but if *ipick is zero reset to one. */
    abc_pick = (gint) *ipick;
    if ( abc_pick == 0 ) abc_pick = 1;
-   
-   /* Create the widgets: first the dialog window, then split the default 
-   vbox into two (left_col and right_col) by using a hbox so as the items 
-   can be displayed in two columns. 
+
+   /* Create the widgets: first the dialog window, then split the default
+   vbox into two (left_col and right_col) by using a hbox so as the items
+   can be displayed in two columns.
    */
    askbox = gtk_dialog_new_with_buttons(title_local,
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -278,7 +278,7 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    gtk_box_pack_start (GTK_BOX (hbox),left_col, TRUE, TRUE, 0);
    right_col = gtk_vbox_new (TRUE, 2);
    gtk_box_pack_start (GTK_BOX (hbox),right_col, TRUE, TRUE, 0);
-   
+
    /* Add entries to the columns in turn */
     button = gtk_radio_button_new_with_label (NULL, aopt_local);
     gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
@@ -287,17 +287,17 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (1));
     gtk_widget_show (button);
     group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
-    
+
     button = gtk_radio_button_new_with_label (group, bopt_local);
     gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
     if ( abc_pick==2 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
     g_signal_connect (G_OBJECT (button), "pressed",
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (2));
     gtk_widget_show (button);
-    
+
     /* Additional entries.  Check if defined before displaying (string longer than 1 char) */
     if (copt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), copt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==3 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -305,9 +305,9 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (3));
       gtk_widget_show (button);
     }
-    
+
     if (dopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), dopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==4 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -315,9 +315,9 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (4));
       gtk_widget_show (button);
     }
-    
+
     if (eopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), eopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==5 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -325,9 +325,9 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (5));
       gtk_widget_show (button);
     }
-    
+
     if (fopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), fopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==6 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -335,9 +335,9 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (6));
       gtk_widget_show (button);
     }
-    
+
     if (gopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), gopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==7 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -345,12 +345,12 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (7));
       gtk_widget_show (button);
     }
-    
+
    /*
       Display the new widgets.
    */
    gtk_widget_show_all (askbox);
-   
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
@@ -375,11 +375,11 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           break;
       }
    gtk_widget_destroy (askbox);
-   
+
 }
 
 /* *** espdozenbox_ () initialise dozen choices use radio buttons for entries *** */
-void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
+void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                  char *dopt, char *eopt, char *fopt, char *gopt,
                  char *hopt, char *iopt, char *jopt, char *kopt,
                  char *lopt, long int *ipick,
@@ -434,14 +434,14 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    lopt_local = g_strndup(lopt, (gsize) lopt_l);
 /* debug */ fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,
      fopt_l,gopt_l,hopt_l,iopt_l,jopt_l,kopt_l,lopt_l);
-   
+
    /* Set ok response, but if *ipick is zero reset to one. */
    abc_pick = (gint) *ipick;
    if ( abc_pick == 0 ) abc_pick = 1;
-   
-   /* Create the widgets: first the dialog window, then split the default 
-   vbox into two (left_col and right_col) by using a hbox so as the items 
-   can be displayed in two columns. 
+
+   /* Create the widgets: first the dialog window, then split the default
+   vbox into two (left_col and right_col) by using a hbox so as the items
+   can be displayed in two columns.
    */
    askbox = gtk_dialog_new_with_buttons(title_local,
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -456,7 +456,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    gtk_box_pack_start (GTK_BOX (hbox),left_col, TRUE, TRUE, 0);
    right_col = gtk_vbox_new (TRUE, 2);
    gtk_box_pack_start (GTK_BOX (hbox),right_col, TRUE, TRUE, 0);
-   
+
    /* Add entries to the columns in turn */
     button = gtk_radio_button_new_with_label (NULL, aopt_local);
     gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
@@ -465,17 +465,17 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (1));
     gtk_widget_show (button);
     group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
-    
+
     button = gtk_radio_button_new_with_label (group, bopt_local);
     gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
     if ( abc_pick==2 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
     g_signal_connect (G_OBJECT (button), "pressed",
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (2));
     gtk_widget_show (button);
-    
+
     /* Additional entries.  Check if defined before displaying (string longer than 1 char) */
     if (copt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), copt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==3 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -483,9 +483,9 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (3));
       gtk_widget_show (button);
     }
-    
+
     if (dopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), dopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==4 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -493,9 +493,9 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (4));
       gtk_widget_show (button);
     }
-    
+
     if (eopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), eopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==5 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -503,9 +503,9 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                       G_CALLBACK (abcbox_callback), GINT_TO_POINTER (5));
       gtk_widget_show (button);
     }
-    
+
     if (fopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), fopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==6 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -513,9 +513,9 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (6));
       gtk_widget_show (button);
     }
-    
+
     if (gopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), gopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==7 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -523,9 +523,9 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (7));
       gtk_widget_show (button);
     }
-    
+
     if (hopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), hopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==8 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -535,7 +535,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
     }
 
     if (iopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), iopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==9 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -545,7 +545,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
     }
 
     if (jopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), jopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==10 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -555,7 +555,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
     }
 
     if (kopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), kopt_local);
       gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
       if ( abc_pick==11 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -565,7 +565,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
     }
 
     if (lopt_l > 1 ) {
-      button = gtk_radio_button_new_with_label_from_widget 
+      button = gtk_radio_button_new_with_label_from_widget
                             (GTK_RADIO_BUTTON (button), lopt_local);
       gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
       if ( abc_pick==12 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
@@ -573,12 +573,12 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                         G_CALLBACK (abcbox_callback), GINT_TO_POINTER (12));
       gtk_widget_show (button);
     }
-    
+
    /*
       Display the new widgets.
    */
    gtk_widget_show_all (askbox);
-   
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
@@ -603,11 +603,11 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           break;
       }
    gtk_widget_destroy (askbox);
-   
+
 }
 
 /* *** okbox_callback() actions when an ok... choice is made. *** */
-    
+
 void okbox_callback( GtkWidget *widget,
                       gpointer  data )
 {
@@ -616,7 +616,7 @@ void okbox_callback( GtkWidget *widget,
 }
 
 /* *** espokbox_ () initialise askok box - will use radio buttons for entries *** */
-void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
+void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                 long int *idef,long int *ipick, int msg1_len,
                 int aopt_len, int bopt_len, int copt_len) {
 
@@ -630,7 +630,7 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    gint msg1_l; /* non-blank lengths for prompt */
 
 /*
- * Create a frame for the menu to be displayed in, add 
+ * Create a frame for the menu to be displayed in, add
  * title and then add it to the menu area of the main window.
  */
    title_local = "  ";
@@ -653,10 +653,10 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
 /* debug */ fprintf(stderr,"non-blank lengths are %d %d %d\n",aopt_l,bopt_l,copt_l);
    
    abc_pick = (gint) *idef;	/* Set default abc_pick response to current default */
-   
-   /* Create the widgets: first the dialog window, then split the default 
-   vbox into two (left_col and right_col) by using a hbox so as the items 
-   can be displayed in two columns. 
+
+   /* Create the widgets: first the dialog window, then split the default
+   vbox into two (left_col and right_col) by using a hbox so as the items
+   can be displayed in two columns.
    */
    if(*idef==1) {
      askbox = gtk_dialog_new_with_buttons(title_local,
@@ -687,7 +687,7 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    gtk_box_pack_start (GTK_BOX (hbox),left_col, TRUE, TRUE, 0);
    right_col = gtk_vbox_new (TRUE, 2);
    gtk_box_pack_start (GTK_BOX (hbox),right_col, TRUE, TRUE, 0);
-   
+
    /* Add entries to the columns in turn */
     button = gtk_radio_button_new_with_label (NULL, aopt_local);
     gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
@@ -696,19 +696,19 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
                       G_CALLBACK (okbox_callback), GINT_TO_POINTER (1));
     gtk_widget_show (button);
     group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
-    
+
     button = gtk_radio_button_new_with_label (group, bopt_local);
     gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
     if ( abc_pick==2 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
     g_signal_connect (G_OBJECT (button), "pressed",
                       G_CALLBACK (okbox_callback), GINT_TO_POINTER (2));
     gtk_widget_show (button);
-        
+
    /*
       Display the new widgets.
    */
    gtk_widget_show_all (askbox);
-   
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
@@ -741,6 +741,6 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           break;
       }
    gtk_widget_destroy (askbox);
-   
+
 }
 

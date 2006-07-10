@@ -1,14 +1,14 @@
-/* Functions to ask for user input. 
-   
+/* Functions to ask for user input.
+
    Functions:
       askdialog - prompt for a text entry (with help, default and cancel options).
       askdialogcmd - prompt for a text entry (with help, default, cancel, alternative cmd options).
       askdialog2cmd - prompt for a text entry (with help, default, cancel, two alternative cmd options).
       askreal - prompt for a real number entry (with help, default and cancel options).
       askint - prompt for a integer entry (with help, default and cancel options). <<not here yet>>
-     
+
 */
-   
+
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -26,8 +26,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
 */
 {
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local;
-   gchar *question_local;
+   gchar *reply_local, *question_local;
    gint result;
    int no_valid_event;
    int lnq1,lnrep;	/* for non-blank lengths */
@@ -57,33 +56,33 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
 
    label = gtk_label_new (question_local);
    entry = gtk_entry_new ();
-   
+
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
-   
+
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
+       /*
        Terminate this string properly for return to fortran. Check its actual size
        via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end. 
+       with null terminator one past end.
        */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
          lnrep = 0;	/* detect the actual size of the string returned */
@@ -113,7 +112,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
        }
      }
    gtk_widget_destroy (askbox);
-   
+
 }
 
 /* ***** askdialogcmd_() ask for text input with an additional command option */
@@ -138,9 +137,9 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    int lnq1,lnrep,lncmd1;	/* for non-blank lengths */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   
+
    *ier=0;	/* Reset value of ier flag */
-    
+
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
    reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
 
@@ -156,7 +155,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
 /* debug g_print("text is %s\n",reply_local); */
 /* debug g_print("cmd is %s\n",cmd_local); */
 /* debug g_print("nb of help lines %d\n",help_lines); */
-    
+
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request with option",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -166,34 +165,34 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
 
    label = gtk_label_new (question_local);
    entry = gtk_entry_new ();
-   
+
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
-   
+
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
+       /*
        Terminate this string properly for return to fortran. Check its actual size
        via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end. 
+       with null terminator one past end.
        */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
          lnrep = 0;	/* detect the actual size of the string returned */
@@ -225,7 +224,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
        }
      }
    gtk_widget_destroy (askbox);
-   
+
 }
 
 /* ***** askdialog2cmd_() ask for text input with two command options */
@@ -251,7 +250,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    int lnq1,lnrep,lncmd1,lncmd2;	/* for non-blank lengths */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   
+
    *ier=0;	/* Reset value of ier flag */
 
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
@@ -273,7 +272,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 /* debug g_print("cmd1 is %s\n",cmd1_local); */
 /* debug g_print("cmd2 is %s\n",cmd2_local); */
 /* debug g_print("nb of help lines %d\n",help_lines); */
-    
+
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request with option",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -284,7 +283,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 
    label = gtk_label_new (question_local);
    entry = gtk_entry_new ();
-   
+
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
@@ -295,22 +294,22 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
+       /*
        Terminate this string properly for return to fortran. Check its actual size
        via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end. 
+       with null terminator one past end.
        */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
          lnrep = 0;	/* detect the actual size of the string returned */
@@ -346,18 +345,18 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
        }
      }
    gtk_widget_destroy (askbox);
-   
+
 }
 
 /* ***** askreal_() ask for real number input */
 /* Could pass in:
-    min and max values if 'F' failure flag set (this would 
+    min and max values if 'F' failure flag set (this would
       trap the error here.
     number of decimal places to display.
     title for the pop up box.
    Fortran side needs updated to account for returned values of IER.
 */
-   
+
 void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 /* q1 and q2 strings form the questioon being posed to the user
    reply is the reply but has the current value from the fortran side
@@ -374,7 +373,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
    gdouble value;
-   
+
    /* Reset value of ier flag */
    *ier=0;
    value = (double) *reply;
@@ -385,7 +384,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
    question_local = g_strndup(q1, (gsize) lnq1);
 /* debug g_print("r phrase %s\n",question_local); */
 /* debug g_print("r nb of help lines %d\n",help_lines); */
-        
+
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Real number request",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -395,32 +394,32 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 
    label = gtk_label_new (question_local);
    entry = gtk_entry_new ();
-   
+
    /* Define entry box properties */
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    spinner_adj = (GtkAdjustment *) gtk_adjustment_new (value, -G_MAXFLOAT, G_MAXFLOAT, 0.1, 10., 10.);
-      
+
    /* creates the spinner, with three decimal places */
    spinner = gtk_spin_button_new (spinner_adj, 0.1, 3);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),spinner);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
-       Return 'value' via call to gtk_adjustment_get_value and cast to real reply 
+       /*
+       Return 'value' via call to gtk_adjustment_get_value and cast to real reply
        */
          value = gtk_adjustment_get_value(spinner_adj);
          *reply = (gfloat) value;
@@ -449,12 +448,12 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 
 /* ***** askint_() ask for number input */
 /* Could pass in:
-    min and max values if 'F' failure flag set (this would 
+    min and max values if 'F' failure flag set (this would
       trap the error here.
     title for the pop up box.
    Fortran side needs updated to account for returned values of IER.
 */
-   
+
 void askint_(char *q1, long int *reply,long int *ier, int lenq1)
 /* q1 and q2 strings form the question being posed to the user
    reply is the reply but has the current value from the fortran side
@@ -472,7 +471,7 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
    gdouble value;
-   
+
    /* Reset value of ier flag and cast integer reply to local double variable */
    *ier=0;
    value = (double) *reply;
@@ -483,7 +482,7 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
    question_local = g_strndup(q1, (gsize) lnq1);
 /* debug g_print("i phrase %s\n",question_local); */
 /* debug g_print("i nb of help lines %d\n",help_lines); */
-        
+
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Integer request",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -493,32 +492,32 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
 
    label = gtk_label_new (question_local);
    entry = gtk_entry_new ();
-   
+
    /* Define entry box properties */
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    spinner_adj = (GtkAdjustment *) gtk_adjustment_new (value, -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-      
+
    /* creates the spinner, with three decimal places */
    spinner = gtk_spin_button_new (spinner_adj, 1., 0);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),spinner);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
-       Fill 'value' via call and cast to integer reply 
+       /*
+       Fill 'value' via call and cast to integer reply
        */
          value = gtk_adjustment_get_value(spinner_adj);
          *reply = (gint) value;
@@ -568,19 +567,19 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    int lnq1;	/* for non-blank length */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   
+
    *ier=0;	/* Reset value of ier flag */
-    
+
    reply_local = g_strndup(reply, (gsize) lenrep);
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
 
-/* debug g_print("phrase %s\n",question_local); */ 
+/* debug g_print("phrase %s\n",question_local); */
 /* debug g_print("text is %s\n",reply_local); */
 /* debug g_print("nb of help lines %d\n",help_lines) */;
-    
+
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text request",
      GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -597,25 +596,25 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gtk_text_buffer_insert (buffer, &end, reply_local, -1);     /* insert text in the buffer */
    gtk_text_buffer_get_start_iter (buffer, &start);            /* re-establish start and end of buffer */
    gtk_text_buffer_get_end_iter (buffer, &end);
-      
+
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
    gtk_widget_show_all (askbox);
-                      
+
    /* Set dialog properties and wait for user response */
    gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
 
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for 
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
       example, a help dialog directly from here */
    no_valid_event = TRUE;
    while ( no_valid_event) {
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /* 
-       Terminate this string properly for return to fortran 
+       /*
+       Terminate this string properly for return to fortran
        */
          gtk_text_buffer_get_bounds (buffer, &start, &end);
          reply_local = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
@@ -623,7 +622,7 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
          f_to_c_l(reply_local,&lenrep,&lnq1);
 /* debug g_print ("askdialog248 local %d is %s",lnq1,reply_local); */
          g_snprintf (reply, lnq1+1, "%s", reply_local); /* copy reply_local into reply +1 for null */
-/* debug g_print ("askdialog248 reply is %s",reply); */ 
+/* debug g_print ("askdialog248 reply is %s",reply); */
          g_free (reply_local);
          no_valid_event = FALSE;
          break;
@@ -646,5 +645,5 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
        }
      }
    gtk_widget_destroy (askbox);
-   
+
 }
