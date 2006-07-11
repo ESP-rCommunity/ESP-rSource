@@ -3849,11 +3849,12 @@ C Selection strings for site exposure.
       ELSEIF(M.EQ.4)THEN
 
 C Shading and insolation choices. First find out if any of the
-C zones curently include shading files. If none do then allow
-C the user to select one or more zones.
+C zones curently include shading or obstruction files. If none do then
+C aloow the user to select one or more zones.
         ishd=-1
         do 142 iz=1,ncomp
           if(ISI(iz).eq.1)ishd=1
+          if(IOBS(iz).eq.1)ishd=1
  142    continue
         if(ishd.eq.-1)then
           h(1)='There are no current instructions to evaluate detailed'
@@ -3907,12 +3908,13 @@ C << need to deal with file separator more generically >>
                 LSHAD(ICOMP)=NNAME
 
 C Create a small place-holder file that subsequent calculation
-C procedure can overwrite.
+C procedure can overwrite. Mark for performing shading calculatons.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
      &            zname(icomp)(1:lnblnk(zname(icomp)))
                 CALL ERPFREE(IUF,ios)
+                ishad=1
                 ishd=1
  151          continue
             endif
@@ -3957,27 +3959,32 @@ C There is shading and/or insulation check if user wants to dereference.
           h(2)='shading and/or insolation patterns. '
           h(3)=' '
           h(4)='You can nominate zones which you want to dereference'
-          h(5)='the insolation analysis'
-          h(7)=' '
-          h(8)='You can nominate zones which you want to dereference'
-          h(9)='obstructions.'
+          h(5)='the insolation analysis (select from provided list)'
+          h(6)=' '
+          h(7)='You can nominate zones which you want to dereference'
+          h(8)='obstruction(s). Note: does not remove the file only'
+          h(9)='the reference to the obstruction file. '
           h(10)=' '
           h(11)='You can nominate zones which you want to dereference'
-          h(12)='both obstructions and shading files.'
-          h(13)=' '
-          h(14)='You can either modify existing obstruction files (in'
-          h(15)='which case shading files will be copied) or create'
-          h(16)='obstructions for zones which do not have any in which'
-          h(17)='case place holder shading files will also be created.'
-          h(18)=' '
-          h(19)='Selecting continue at this point you will be asked'
-          h(20)='if you want to make any other changes to the model'
-          h(21)='before the information is written out. '
+          h(12)='both obstructions and shading files. Note: does not'
+          h(13)='remove the files only the reference.'
+          h(14)=' '
+          h(15)='You can either modify existing obstruction files '
+          h(16)='or create obstructions for zones which do not'
+          h(17)='have any. In both cases place-holder shading'
+          h(18)='files will also be created.'
+          h(19)=' '
+          h(20)='Note: modifications to obstructions files does not'
+          h(21)='have an impact on zone geometry files. '
+          h(22)=' '
+          h(23)='Selecting continue at this point you will be asked'
+          h(24)='if you want to make any other changes to the model'
+          h(25)='before the information is written out. '
           CALL EASKATOG(
      &      'The model includes detailed shading/insolation.',' ',
      &      'dereference shading','dereference obstructions',
      &      'dereference obstr & shading','modify obstructions',
-     &      'continue',' ',' ',IW,21)
+     &      'continue',' ',' ',IW,25)
           if(iw.eq.1)then
             inpic=0
             call askmultizone(inpic,ivals,
@@ -3994,8 +4001,8 @@ C There is shading and/or insulation check if user wants to dereference.
           elseif(iw.eq.2)then
             inpic=0
             call askmultizone(inpic,ivals,
-     &        'Select zones for obstruction dereference?',
-     &        'Zone obstructions dereference variant','s',ier)
+     &        'Select zones do dereference obstructions?',
+     &        'Zone obstructions dereference','b',ier)
             if(inpic.gt.0)then
               DO 154 IC=1,inpic
                 ICOMP=ivals(IC)
@@ -4026,6 +4033,10 @@ C which does not already have one. If there is an obstructions
 C file (iobs(icomp) is non-zero) then read current obstructions
 C update the file name and write back out to NNAME file.
             IUF=12
+            inpic=0
+            call askmultizone(inpic,ivals,
+     &        'Select obstruction files to modify/add for this variant',
+     &        'List of zones/obstructions','b',ier)
             if(inpic.gt.0)then
               DO 156 IC=1,inpic
                 ICOMP=ivals(IC)
@@ -4037,30 +4048,6 @@ C update the file name and write back out to NNAME file.
                   ZOBS(ICOMP)=NNAME
                   CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
                 else
-
-C There is no current obstruction and shading file so first create
-C a base name for shading file and then tweak the name via fncngr.
-                  ISI(ICOMP)=1
-                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                    WRITE(LSHAD(icomp),'(A,A4)')
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
-                  else
-                    WRITE(LSHAD(icomp),'(3A,A4)') 
-     &                zonepth(1:lnblnk(zonepth)),'/',
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
-                  endif
-                  EXT='.shd'
-                  CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
-                  LSHAD(ICOMP)=NNAME
-
-C Create a small place-holder file that subsequent calculation
-C procedure can overwrite.
-                  IUF=IFIL+2
-                  CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
-                  WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &              zname(icomp)(1:lnblnk(zname(icomp)))
-                  CALL ERPFREE(IUF,ios)
-                  ishd=1
 
 C Create an obstruction file name, mangle the name and write
 C out default block.
@@ -4079,9 +4066,36 @@ C out default block.
                   silent=.true.
                   CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
                 endif
+
+C There will need to be a shading file for this modified obstruction
+C fileis so create a base name for shading file and then tweak the name via fncngr.
+                ISI(ICOMP)=1
+                if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                  WRITE(LSHAD(icomp),'(A,A4)')
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+                else
+                  WRITE(LSHAD(icomp),'(3A,A4)') 
+     &              zonepth(1:lnblnk(zonepth)),'/',
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+                endif
+                EXT='.shd'
+                CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+                LSHAD(ICOMP)=NNAME
+
+C Create a small place-holder file that subsequent calculation
+C procedure can overwrite. Mark to update shading files.
+                IUF=IFIL+2
+                CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
+                WRITE(IUF,'(2a)') 'Placeholder shading file for ',
+     &            zname(icomp)(1:lnblnk(zname(icomp)))
+                CALL ERPFREE(IUF,ios)
+                ishad=1
+                ishd=1
  156          continue
               call edisp(iuout,
      &          'Obstruction files being created/copied.')
+              call edisp(iuout,
+     &          'Placeholder shading files being created.')
               msg1='updating model for obstruction changes...'
             endif
           elseif(iw.eq.5)then
