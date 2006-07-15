@@ -164,6 +164,7 @@ fi
 #-----------------------------------------------------------
 if [ $architecture = "Linux" ]  ||
    [ $architecture = "SunOS" ] ||
+   [ $architecture = "Darwin" ] ||
    [ $architecture = "CYGWIN_NT-5.0" ] ||
    [ $architecture = "CYGWIN_NT-5.1" ] ||
    [ $architecture = "CYGWIN_NT-5.2" ] ||

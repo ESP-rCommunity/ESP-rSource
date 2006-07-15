@@ -40,11 +40,16 @@ C then it represents the zone which is currently being edited.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
       LOGICAL MODIFY,MODLEN,MODBND
+
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character ETEXT*82
 
       SMALL=0.01
 
@@ -79,6 +84,10 @@ C If viewpoint or bounds different then initialise viewing paramters.
           ENDIF
           CALL LENS(IER)
         ENDIF
+
+C Remind user of which model even when looking at one zone.
+        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        CALL viewtext(ETEXT,1,1,1)
 
 C Draw the selected bodies.
         CALL DRAWESP(ITRC,IER)
