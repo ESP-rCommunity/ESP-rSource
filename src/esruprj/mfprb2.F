@@ -820,6 +820,7 @@ C     SUPCMP(ICMP,6) - sum of local dynamic loss factors (-)
 
 #include "net_flow.h"
       common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)
@@ -845,13 +846,14 @@ C Synopsis of flow component.
       H(8)='220, 230, 240 & 250 to form complex networks.'
       H(9)=' '
       H(9)='Supplemental data:'
-      H(10)=' fluid type, conduit hydraulic diameter (m)  '
-      h(11)=' (when `0` a circular cross-section is assumed),'
-      H(12)=' cross-sectional area (m2), conduit length (m),'
-      H(13)=' absolute wall roughness (mm) and the sum of'
-      H(14)=' local dynamic loss factors (-).'
-      H(15)=' '
-      H(16)='See ESP-r manual section 3.6.'
+      H(10)=' fluid type (1=air or 2=water),'
+      H(11)=' conduit hydraulic diam (m) which is:'
+      H(12)='   (4*x-section area)/perimeter of conduit'
+      H(13)=' x-section area (m^2)'
+      H(14)=' conduit length (m), absolute wall roughness(mm),'
+      H(15)=' sum of local dynamic loss factors (suggest looking'
+      H(16)='   this up in a handbook)'
+      H(17)='See ESP-r manual section 3.6.'
 
 C Input fluid type.
       if(imix.eq.1)then
@@ -860,7 +862,7 @@ C Input fluid type.
         SUPCMP(ICMP,1)=2.0
       else
         write(prompt,'(3a)') 'Fluid through ',CMNAM(ICMP),':'
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,16)
+        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,17)
         SUPCMP(ICMP,1)=REAL(IW)
       endif
 
@@ -870,7 +872,7 @@ C Hydraulic diameter, cross-sectional area, length, roughness
   43  CALL EASKS(hold,
      & 'Hydraulic diam, x-sectional area, length (m), roughness (mm)?',
      &  '(help for synopsis)',48,' 1.0  1.0  1.5 0.61 ','comp 130',
-     &  IER,16)
+     &  IER,17)
       K=0
       CALL EGETWR(hold,K,VAL2,0.001,99.,'W','hydr diam',IER)
       CALL EGETWR(hold,K,VAL3,0.0,99.,'W','x-sect area',IER)
@@ -901,7 +903,7 @@ C Sum of local dynamic loss factors (-).
       VAL=SUPCMP(ICMP,6)
    60 CALL EASKR(VAL,' Sum of local dynamic loss factors',
      &  ' (Evaluated with average velocity in *this* conduit !!!) ?',
-     &  0.,'F',0.,'-',1.,'dynamic loss fac',IER,16)
+     &  0.,'F',0.,'-',1.,'dynamic loss fac',IER,17)
       IF(IER.NE.0) GOTO 60
       SUPCMP(ICMP,6)=VAL
 
@@ -1045,19 +1047,24 @@ C Show short description of flow component.
       H(3)='ends in a diverging 3-leg junction. '
       H(4)=' '
       H(5)='Supplemental data:'
-      H(6)=' fluid type, conduit hydraulic diam, x-section area'
-      H(7)=' conduit length, absolute wall roughness, sum of local'
-      H(8)=' dynamic loss factors, x-sectional area of common '
-      H(9)=' junction section, Ccp coefficients a0 - a5 in:'
-      H(10)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
-      H(11)='where X is the ratio between the volume flow rate in'
-      H(12)='this conduit and the common section, respectively and'
-      H(13)='Y is the ratio between the volume flow rate in the '
-      H(14)='other entrance of the junction and the common. '
-      H(15)=' '
-      H(16)='See discussion of type 210 & 220 as well as'
-      H(17)='the ESP-r manual section 3.6.'
-      if(OK) CALL PHELPD('comp 230',17,'-',0,0,IER)
+      H(6)=' fluid type (1=air or 2=water),'
+      H(7)=' conduit hydraulic diam (m) which is:'
+      H(8)='   (4*x-section area)/perimeter of conduit'
+      H(9)=' x-section area (m^2)'
+      H(10)=' conduit length (m), absolute wall roughness(mm), '
+      H(11)=' sum of local dynamic loss factors, '
+      H(12)=' x-sectional area of common junction section,'
+      H(13)=' '
+      H(14)=' Ccp coefficients a0 - a5 in:'
+      H(15)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+      H(16)='where X is the ratio between the volume flow rate in'
+      H(17)='this conduit and the common section, respectively and'
+      H(18)='Y is the ratio between the volume flow rate in the '
+      H(19)='other entrance of the junction and the common. '
+      H(20)=' '
+      H(21)='See discussion of type 210 & 220 as well as'
+      H(22)='the ESP-r manual section 3.6.'
+      if(OK) CALL PHELPD('comp 230',22,'-',0,0,IER)
 
 C Use MF210 to input the general data.
       ISDCMP(ICMP)=6
@@ -1080,7 +1087,7 @@ C Cross-sectional area of common section of junction.
    20 CALL EASKR(VAL,
      &  ' Cross-sectional area of junction common (m^2) ',
      &  ' (`0` indicates area equals area of conduit) ? ',
-     &  -0.0001,'F',0.,'-',0.,'x section area',IER,17)
+     &  -0.0001,'F',0.,'-',0.,'x section area',IER,22)
       IF(IER.NE.0) GOTO 20
       CALL ECLOSE(VAL,0.0,0.001,close)
       IF(.NOT.close) THEN
@@ -1094,7 +1101,7 @@ C Coefficients of Ccp relation.
         write(outs,'(A,I1)') ' Coef a',I
         VAL=SUPCMP(ICMP,I+8)
         CALL EASKR(VAL,outs,' ? ',
-     &    0.,'-',0.,'-',0.,'Coef a0',IER,17)
+     &    0.,'-',0.,'-',0.,'Coef a0',IER,22)
         SUPCMP(ICMP,I+8)=VAL
    32 CONTINUE
       if(IER.NE.0)goto 30
@@ -1143,20 +1150,26 @@ C Show short description of flow component.
       H(3)='ends in a converging 4-leg junction. '
       H(4)=' '
       H(5)='Supplemental data:'
-      H(6)=' fluid type, conduit hydraulic diam, x-section area'
-      H(7)=' conduit length, absolute wall roughness, sum of local'
-      H(8)=' dynamic loss factors, x-sectional area of common '
-      H(9)=' junction section, Ccp coefficients a0 - a9 in:'
-      H(10)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
-      H(11)='            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z'
-      H(12)='where X is the ratio between the volume flow rate in'
-      H(13)='this conduit and the common section, respectively and'
-      H(14)='Y & Z are the ratios between the volume flow rate in '
-      H(15)='the other entrances of the junction and the common. '
-      H(16)=' '
-      H(17)='See discussion of type 210 & 220 as well as Hensen'
-      H(18)='the ESP-r manual section 3.6.'
-      if(OK) CALL PHELPD('comp 240',18,'-',0,0,IER)
+      H(6)=' fluid type (1=air or 2=water),'
+      H(7)=' conduit hydraulic diam (m) which is:'
+      H(8)='   (4*x-section area)/perimeter of conduit'
+      H(9)=' x-section area (m^2)'
+      H(10)=' conduit length (m), absolute wall roughness(mm),'
+      H(11)=' sum of local dynamic loss factors (suggest looking'
+      H(12)='   this up in a handbook)'
+      H(13)=' x-sectional area of common junction section'
+      H(14)=' '
+      H(15)=' Ccp coefficients a0 - a9 in:'
+      H(16)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+      H(17)='            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z'
+      H(18)='where X is the ratio between the volume flow rate in'
+      H(19)='this conduit and the common section, respectively and'
+      H(20)='Y & Z are the ratios between the volume flow rate in '
+      H(21)='the other entrances of the junction and the common. '
+      H(22)=' '
+      H(23)='See discussion of type 210 & 220 as well as Hensen'
+      H(24)='the ESP-r manual section 3.6.'
+      if(OK) CALL PHELPD('comp 240',24,'-',0,0,IER)
 
 C Use MF210 to input the general data.
       ISDCMP(ICMP)=6
@@ -1179,7 +1192,7 @@ C Cross-sectional area of common section of junction.
    20 CALL EASKR(VAL,
      &  ' Cross-sectional area of junction common (m^2) ',
      &  ' (`0` indicates area equals area of conduit) ? ',
-     &    -0.0001,'F',0.,'-',0.,'x section area',IER,18)
+     &    -0.0001,'F',0.,'-',0.,'x section area',IER,24)
       IF(IER.NE.0) GOTO 20
       CALL ECLOSE(VAL,0.0,0.001,close)
       IF(.NOT.close) THEN
@@ -1193,7 +1206,7 @@ C Coefficients of Ccp relation.
         write(outs,'(A,I1)') ' Coef a',I
         VAL=SUPCMP(ICMP,I+8)
         CALL EASKR(VAL,outs,' ? ',
-     &    0.,'-',0.,'-',0.,'Coef a0',IER,18)
+     &    0.,'-',0.,'-',0.,'Coef a0',IER,24)
         SUPCMP(ICMP,I+8)=VAL
    32 CONTINUE
       if(IER.NE.0)goto 30
@@ -1242,20 +1255,26 @@ C Show short description of flow component.
       H(3)='starts with a diverging 4-leg junction. '
       H(4)=' '
       H(5)='Supplemental data:'
-      H(6)=' fluid type, conduit hydraulic diam, x-section area'
-      H(7)=' conduit length, absolute wall roughness, sum of local'
-      H(8)=' dynamic loss factors, x-sectional area of common '
-      H(9)=' junction section, Ccp coefficients a0 - a9 in:'
-      H(10)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
-      H(11)='            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z'
-      H(12)='where X is the ratio between the volume flow rate in'
-      H(13)='this conduit and the common section, respectively and'
-      H(14)='Y & Z are the ratios between the volume flow rate in '
-      H(15)='the other entrances of the junction and the common. '
+      H(7)=' fluid type (1=air or 2=water),'
+      H(8)=' conduit hydraulic diam (m) which is:'
+      H(9)='   (4*x-section area)/perimeter of conduit'
+      H(10)=' x-section area (m^2)'
+      H(11)=' conduit length (m), absolute wall roughness(mm),'
+      H(12)=' sum of local dynamic loss factors (suggest looking'
+      H(13)='   this up in a handbook)'
+      H(14)=' x-sectional area of common junction section,'
       H(16)=' '
-      H(17)='See discussion of type 210 & 220 as well as'
-      H(18)='the ESP-r manual section 3.6.'
-      if(OK) CALL PHELPD('comp 250',18,'-',0,0,IER)
+      H(17)='  Ccp coefficients a0 - a9 in:'
+      H(18)='    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+      H(19)='            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z'
+      H(20)='where X is the ratio between the volume flow rate in'
+      H(21)='this conduit and the common section, respectively and'
+      H(22)='Y & Z are the ratios between the volume flow rate in '
+      H(23)='the other entrances of the junction and the common. '
+      H(24)=' '
+      H(25)='See discussion of type 210 & 220 as well as'
+      H(26)='the ESP-r manual section 3.6.'
+      if(OK) CALL PHELPD('comp 250',26,'-',0,0,IER)
 
 C Use MF210 to input the general data.
       ISDCMP(ICMP)=6
@@ -1278,7 +1297,7 @@ C Cross-sectional area of common section of junction.
    20 CALL EASKR(VAL,
      &  ' Cross-sectional area of junction common (m^2) ',
      &  ' (`0` indicates area equals area of conduit) ? ',
-     &  -0.0001,'F',0.,'-',0.,'x section area',IER,18)
+     &  -0.0001,'F',0.,'-',0.,'x section area',IER,26)
       IF(IER.NE.0) GOTO 20
       CALL ECLOSE(VAL,0.0,0.001,close)
       IF(.NOT.close) THEN
@@ -1292,7 +1311,7 @@ C Coefficients of Ccp relation.
         write(outs,'(A,I1)') ' Coef a',I
         VAL=SUPCMP(ICMP,I+8)
         CALL EASKR(VAL,outs,' ? ',
-     &    0.,'-',0.,'-',0.,'Coef a0',IER,18)
+     &    0.,'-',0.,'-',0.,'Coef a0',IER,26)
         SUPCMP(ICMP,I+8)=VAL
    32 CONTINUE
       if(IER.NE.0)goto 30
