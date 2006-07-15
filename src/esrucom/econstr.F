@@ -465,8 +465,8 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
-      CHARACTER OUTS*124,zdesc*64,sn*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,DESC*48,TITL*72,LFMUL*72,LFCON*72
+      CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
+      character iprtext*4,DESC*48,TITL*72,LFMUL*72,LFCON*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then
@@ -478,10 +478,10 @@ C Heading if all surfaces.
 
 C Reporting.
       CALL EDISP(ITRU,' ')
-      write(outs,'(2a)') 'Surface    |Layer|Mat|Thick  |Conduc-|',
+      write(outs,'(2a)') 'Surface|Mat|Thick  |Conduc-|',
      &                   'Density |Specif|IR  |Solr| Description'
       CALL EDISP(ITRU,outs)
-      write(outs,'(2a)') '           |     |db | (mm)  |tivity |',
+      write(outs,'(2a)') 'layer  |db | (mm)  |tivity |',
      &                   '        |heat  |emis|abs |'
       CALL EDISP(ITRU,outs)
       DO 9994 I=1,NSUR
@@ -498,6 +498,7 @@ C Jump if not all requied and not the focus surface.
   5     continue
         if(imatch(i).eq.0) then
           call edisp(iuout,'Warning: no matching MLC defined!')
+          OPT(i)='UNKNOWN'
           NELT=NE(I)
           DO 155, IL=1,NELT
             PNAM(i,IL)='user defined'
@@ -550,27 +551,39 @@ C Find matching air gap layer and resistance.
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9986
         sn=SNAME(ICOMP,I)
+        lsml=lnblnk(SMLCN(i))
+        if(OPT(i)(1:6).eq.'OPAQUE')then
+          write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
+     &      SMLCN(i)(1:lsml),' and is opaque:'
+        elseif(OPT(i)(1:7).eq.'UNKNOWN')then
+          write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
+     &      SMLCN(i)(1:lsml),' and has unknown optical properties:'
+        else
+          write(outs,'(5a)') sn(1:lnblnk(sn)),' is composed of ',
+     &      SMLCN(i)(1:lsml),' & optics ',OPT(i)
+        endif
+        CALL EDISP(ITRU,OUTS)
         NELT=NE(I)
         DO 9985 J=1,NELT
           IF(J.EQ.1.AND.J.EQ.NELT)THEN
-            WRITE(OUTS,9980)sn,J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
-     &        DEN(I,J),SHT(I,J),EMISI(I),ABSI(I),PNAM(i,J)(1:20)
- 9980       FORMAT(a,I4,1x,a,F7.1,F9.3,2F8.1,2F5.2,1x,a20)
+            WRITE(OUTS,9980) J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
+     &        DEN(I,J),SHT(I,J),EMISI(I),ABSI(I),PNAM(i,J)(1:32)
+ 9980       FORMAT(I6,1x,a,F7.1,F9.3,2F8.1,2F5.2,2x,a32)
             CALL EDISP(ITRU,OUTS)
           ELSEIF(J.EQ.1)THEN
-            WRITE(OUTS,9981)sn,J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
-     &        DEN(I,J),SHT(I,J),EMISE(I),ABSE(I),PNAM(i,J)(1:20)
- 9981       FORMAT(a,I4,1x,a,F7.1,F9.3,2F8.1,2F5.2,1x,a20)
+            WRITE(OUTS,9981)J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
+     &        DEN(I,J),SHT(I,J),EMISE(I),ABSE(I),PNAM(i,J)(1:32)
+ 9981       FORMAT(I6,1x,a,F7.1,F9.3,2F8.1,2F5.2,2x,a32)
             CALL EDISP(ITRU,OUTS)
           ELSEIF(J.EQ.NELT)THEN
             WRITE(OUTS,9983)  J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
-     &        DEN(I,J),SHT(I,J),EMISI(I),ABSI(I),PNAM(i,J)(1:20)
- 9983       FORMAT(I16,1x,a,F7.1,F9.3,2F8.1,2F5.2,1x,a20)
+     &        DEN(I,J),SHT(I,J),EMISI(I),ABSI(I),PNAM(i,J)(1:32)
+ 9983       FORMAT(I6,1x,a,F7.1,F9.3,2F8.1,2F5.2,2x,a32)
             CALL EDISP(ITRU,OUTS)
           ELSE
             WRITE(OUTS,9982)J,iprtext(i,J),THK(I,J)*1000.,CON(I,J),
-     &        DEN(I,J),SHT(I,J),PNAM(i,J)(1:20)
- 9982       FORMAT(I16,1x,a,F7.1,F9.3,2F8.1,11x,a20)
+     &        DEN(I,J),SHT(I,J),PNAM(i,J)(1:32)
+ 9982       FORMAT(I6,1x,a,F7.1,F9.3,2F8.1,12x,a32)
             CALL EDISP(ITRU,OUTS)
           ENDIF
  9985   CONTINUE
@@ -590,11 +603,25 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         UVALUED=1.0/RTD
         RTI=RT(I)+0.13+0.13
         UVALUEI=1.0/RTI
-        write(OUTS,'(2x,3A,3F7.3,a,F7.3)')
+        write(OUTS,'(3A,3F7.3,a,F7.3)')
      &    ' ISO 6946 U values (hor/up/dn heat flow) for ',
      &    SMLCN(i)(1:lnblnk(SMLCN(i))),' is',
      &    UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
         call edisp(itru,OUTS)
+
+C Also list optical properties for this construction (if it is
+C transparent and the optical property is likely to be known).
+        if(OPT(i)(1:6).eq.'OPAQUE')then
+          continue
+        elseif(OPT(i)(1:7).eq.'UNKNOWN')then
+          continue
+        else
+          SOPT=OPT(i)
+          CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
+        endif
+
+        call edisp(itru,
+     &    '______________________________________________________')
  9986 CONTINUE
 
       RETURN
