@@ -710,6 +710,46 @@ The solar radiation is Direct Normal. Dry bulb temperatures:
  Typical winter week begins Monday 6 November,
 *help_end
 *item
+*name	Firenze-Peretola - ITA
+*aide	Firenze-Peretola - ITA was sourced from US DoE weather site
+*dbfl	/usr/esru/esp-r/climate/ITA_Firenze-Peretola_IGDG
+*avail	ONLINE
+*winter_s  1  1 25  2  3 12 31 12
+*spring_s 26  2 27  5  1 10  2 12
+*summer_s 28  5 30  9
+*winter_t 19  2 25  2 17 12 23 12
+*spring_t 16  4 22  4 22 10 28 10
+*summer_t 27  8  2  9
+*help_start
+Climate is Firenze-Peretola - ITA
+ Location: 43.80N  3.80W : 2001
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -5.2 @ 8h00 Thu-11       13.8 @16h00 Mon-15     5.1
+ Feb     -5.4 @ 8h00 Fri-09       15.7 @14h00 Wed-28     5.9
+ Mar     -2.2 @ 7h00 Thu-08       21.6 @15h00 Thu-29     9.7
+ Apr      1.7 @ 5h00 Tue-03       24.0 @15h00 Tue-17    12.9
+ May      4.9 @ 5h00 Sat-05       30.0 @16h00 Mon-28    17.1
+ Jun     10.2 @ 4h00 Fri-08       31.8 @15h00 Sat-30    21.1
+ Jul     12.8 @ 4h00 Fri-27       36.6 @16h00 Tue-31    23.8
+ Aug     12.3 @ 6h00 Thu-30       35.8 @14h00 Mon-13    23.2
+ Sep      8.4 @ 7h00 Sat-22       31.2 @16h00 Sun-02    19.8
+ Oct      1.1 @ 6h00 Sat-20       28.0 @16h00 Tue-09    15.1
+ Nov     -1.4 @ 7h00 Fri-30       21.0 @14h00 Tue-20    10.8
+ Dec     -4.6 @ 7h00 Sun-16       18.5 @15h00 Mon-03     5.8
+ Annual  -5.4 @ 8h00 Fri-09-Feb   36.6 @16h00 Tue-31-Jul    14.2
+ ---Seasons & typical periods---
+Winter season is Mon-01-Jan - Sun-25-Feb
+Typical winter week begins Mon-19-Feb
+Spring season is Mon-26-Feb - Sun-27-May
+Typical spring week begins Mon-16-Apr
+Summer season is Mon-28-May - Sun-30-Sep
+Typical summer week begins Mon-27-Aug
+Autumn season is Mon-01-Oct - Sun-02-Dec
+Typical autumn week begins Mon-22-Oct
+Winter season is Mon-03-Dec - Mon-31-Dec
+Typical winter week begins Mon-17-Dec
+*help_end
+*item
 *name	Gatwick IWEC WMO 037760
 *aide	London Gatwick UK (sourced from IWEC/DoE)
 *dbfl	/usr/esru/esp-r/climate/uk_gatwick
@@ -976,6 +1016,46 @@ Autumn season is Mon 17 Sep - Sun 18 Nov
 Typical autumn week begins Mon 22 Oct
 Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
+*help_end
+*item
+*name	MADRID - ESP from IWEC
+*aide	MADRID - ESP from IWEC was sourced from USA DoE weather site
+*dbfl	/usr/esru/esp-r/climate/ESP_Madrid_IWEC
+*avail	ONLINE
+*winter_s  1  1 29  4 12 11 31 12
+*spring_s 30  4 10  6 10  9 11 11
+*summer_s 11  6  9  9
+*winter_t 26  2  4  3  3 12  9 12
+*spring_t  7  5 13  5  8 10 14 10
+*summer_t 20  8 26  8
+*help_start
+Climate is MADRID - ESP from IWEC
+ Location: 55.90N  4.15W : 2001
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -4.6 @ 7h00 Tue-23       16.0 @16h00 Mon-29     5.6
+ Feb     -3.6 @ 7h00 Tue-06       18.0 @18h00 Mon-19     6.9
+ Mar     -2.0 @ 6h00 Tue-06       25.2 @16h00 Wed-21    10.0
+ Apr     -2.2 @ 7h00 Tue-17       27.4 @16h00 Sat-28    11.7
+ May      4.0 @ 7h00 Tue-01       29.8 @16h00 Fri-18    16.9
+ Jun      7.0 @ 6h00 Sat-09       34.0 @16h00 Sat-30    20.6
+ Jul     10.0 @ 5h00 Fri-06       39.0 @16h00 Mon-16    25.5
+ Aug      9.4 @ 7h00 Wed-29       40.4 @16h00 Mon-20    24.7
+ Sep     10.0 @ 4h00 Tue-18       30.8 @16h00 Wed-12    20.1
+ Oct      2.0 @ 8h00 Wed-24       25.0 @16h00 Wed-03    14.2
+ Nov     -3.4 @ 7h00 Fri-30       21.0 @14h00 Fri-02     9.4
+ Dec     -4.6 @ 7h00 Sun-23       15.0 @16h00 Sun-02     5.9
+ Annual  -4.6 @ 7h00 Tue-23-Jan   40.4 @16h00 Mon-20-Aug    14.3
+ ---Seasons & typical periods---
+Winter season is Mon-01-Jan - Sun-29-Apr
+Typical winter week begins Mon-26-Feb
+Spring season is Mon-30-Apr - Sun-10-Jun
+Typical spring week begins Mon-07-May
+Summer season is Mon-11-Jun - Sun-09-Sep
+Typical summer week begins Mon-20-Aug
+Autumn season is Mon-10-Sep - Sun-11-Nov
+Typical autumn week begins Mon-08-Oct
+Winter season is Mon-12-Nov - Mon-31-Dec
+Typical winter week begins Mon-03-Dec
 *help_end
 *item
 *name	MEMPHIS TN USA iwec 723340
