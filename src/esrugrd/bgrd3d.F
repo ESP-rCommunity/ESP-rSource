@@ -43,7 +43,7 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -80,6 +80,7 @@ C General image option flags.
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
 C Draw the complete building.
       IDRW1=1

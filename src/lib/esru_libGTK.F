@@ -9014,6 +9014,157 @@ C and nznog array of selected zone indices.
       return
       end
 
+C ************* GETZONENAMES
+C GETZONENAMES calls the c function putzonename to fill the C zonenames variable.
+      subroutine GETZONENAMES
+#include "building.h"
+
+      COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character zname*12,zdesc*64,t12*12
+
+      do 10 I=1,NCOMP
+        t12=zname(I)
+        call putzonename(t12,I)
+ 10   continue
+
+      return
+      end
+
+C ************* GDUPDATE
+C GDUPDATE Update the graphical display of the model.
+      subroutine GDUPDATE
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      common/rpath/path
+      COMMON/PREC8/SLAT,SLON
+
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, extrn = 2
+C       partn = 3 ,similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
+C ITEPT is not used,
+C ITZNM zone name toggle: display = 0, hidden = 1
+C ITSNM surface name toggle: display = 0, hidden = 1
+C ITORG origin toggle: display = 0, hidden = 1
+C ITSNR surf normal toggle: display = 0, hidden = 1.
+C ITOBS obstruction toggle: not yet enabled.
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITGRD grid toggle: display = 0, hidden = 1
+C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+
+      logical MODIFY,MODLEN,MODBND
+      DIMENSION MTHNAM(12)
+      CHARACTER DESCRH*5,DESCRD*5,path*72
+      CHARACTER MTHNAM*3,ETEXT*60,outs*124
+C      character tmode*8,longtfile*72
+
+      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &            'Sep','Oct','Nov','Dec'/
+
+C Refresh the image.
+      itrc=0
+      IUF=IFIL+1
+      MODLEN=.TRUE.
+      MODBND=.TRUE.
+      MODIFY=.TRUE.
+      write(6,*)ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      if(ITPPSW.eq.0)then
+
+C If perspective view do the normal wireframe calls.
+        if(ITHLS.eq.1)then
+
+C If ITHLS set to 1 then ask about which construction.
+C But this is disabled because epkmlc tries to use the current
+C main menu structure which causes a GTK fault. Need an alternative
+C list management for this.
+          call usrmsg('Hilight by construction is not yet working',
+     &                'this will be added in a later version.','P')
+C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
+C          ITHLZ=ISEL
+        endif
+
+        CALL INLNST(1)
+        CALL ADJVIEW(ITRC,IER)
+        MODLEN=.FALSE.
+        MODBND=.FALSE.
+        MODIFY=.FALSE.
+      elseif(ITPPSW.eq.1)then
+
+C User toggle to a plan view.
+        call PLELEV(IUF,'P',ier)
+      elseif(ITPPSW.eq.2)then
+
+C User toggle to a south view.
+        call PLELEV(IUF,'S',ier)
+      elseif(ITPPSW.eq.3)then
+
+C User toggled to an east view.
+        call PLELEV(IUF,'E',ier)
+      elseif(ITPPSW.eq.4)then
+
+C Perspective view from the sun.
+C Draw the zones and any obstructions based on sun
+C position. Confirm the lat, long, request day and time,
+C compute positon and update the view.
+        write(outs,'(A,F6.2,A,F6.2)')
+     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+        call edisp(iuout,' ')
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        call edisp(iuout,' Date and time for the view... ')
+        NTS=1
+        IMO=6
+        IDO=1
+        STIME=1.
+  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
+  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(itrc,IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          CALL viewtext(ETEXT,2,1,IFS)
+          CALL EASKAB(' ',' Next viewpoint:',
+     &        'next hour','exit',IW,0)
+          if(IW.eq.1)then
+            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+            goto 68
+          else
+            ITSNM=0
+          endif
+        else
+          CALL EASKAB(' View point below horizon:',' ',
+     &        'specify another time','exit',IW,0)
+          if(IW.eq.1)goto 67
+          ITSNM=0
+        endif
+
+        MODLEN=.FALSE.
+        MODBND=.FALSE.
+        MODIFY=.FALSE.
+      endif
+
+      return
+      end
+
 C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
 C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
@@ -9033,20 +9184,22 @@ C then it represents the zone which is currently being edited.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
-C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
-C       similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
+C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
 C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
-C ITEPT is
+C ITEPT is not yet used.
 C ITZNM zone name toggle: display = 0, hidden = 1
 C ITSNM surface name toggle: display = 0, hidden = 1
 C ITORG origin toggle: display = 0, hidden = 1
 C ITSNR surf normal toggle: display = 0, hidden = 1.
 C ITOBS obstruction toggle: not yet enabled.
 C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITHLZ additional qualifier for ITHLS.
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
@@ -9074,7 +9227,7 @@ C If not in graphic mode return.
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
       IER=0
-      idr=0
+      ITPPSW=0
       IUF=IFIL+1
 
 C Menu loop.
@@ -9091,18 +9244,18 @@ C Menu loop.
 
 C If image info altered (viewpoint) then update display.
       IF(MODIFY)THEN
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
           CALL INLNST(1)
           CALL ADJVIEW(ITRC,IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
           MODIFY=.FALSE.
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.1)then
           if(redraw)call PLELEV(IUF,'P',ier)
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.2)then
           if(redraw)call PLELEV(IUF,'S',ier)
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
           if(redraw)call PLELEV(IUF,'E',ier)
         endif
       ENDIF
@@ -9427,8 +9580,9 @@ C ITOBS obstruction toggle: not yet enabled.
 C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -9448,19 +9602,19 @@ C If not in graphic mode return.
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
       IER=0
-      idr=0
+C      ITPPSW=0
       IUF=IFIL+1
 
 C Menu loop.
    92 IER=0
 
-      if(idr.eq.0)then
+      if(ITPPSW.eq.0)then
         AOPT ='a Display >> perspective'
-      elseif(idr.eq.1)then
+      elseif(ITPPSW.eq.1)then
         AOPT ='a Display >> plan view'
-      elseif(idr.eq.2)then
+      elseif(ITPPSW.eq.2)then
         AOPT ='a Display >> south elevation'
-      elseif(idr.eq.3)then
+      elseif(ITPPSW.eq.3)then
         AOPT ='a Display >> west elevation'
       endif
       IF(ITDSP.EQ.0)THEN
@@ -9499,6 +9653,8 @@ C Hilight surface based on OPQ/TRAN or material.
       ELSEIF(ITBND.EQ.1)THEN
         DOPT ='e view bounds >> optimum'
       ELSEIF(ITBND.EQ.2)THEN
+
+C So what does ITBND=3 (focus on zone) actually mean?
         DOPT ='e view bounds >> focus on zone'
       ENDIF
 
@@ -9548,18 +9704,18 @@ C Hilight surface based on OPQ/TRAN or material.
 
 C If image info altered (viewpoint) then update display.
       IF(MODIFY)THEN
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
           CALL INLNST(1)
           CALL ADJVIEW(ITRC,IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
           MODIFY=.FALSE.
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.1)then
           if(redraw)call PLELEV(IUF,'P',ier)
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.2)then
           if(redraw)call PLELEV(IUF,'S',ier)
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
           if(redraw)call PLELEV(IUF,'E',ier)
         endif
       ENDIF
@@ -9595,11 +9751,11 @@ C width of the control menu.
         H(2)='the elevations are primarily for checking. '
         CALL EASKABCD(' View choices: ',' ','Perspective',
      &    'plan view ','south elevation ','west elevation ?',IW,2)
-        if(IW-1.ne.idr)then
+        if(IW-1.ne.ITPPSW)then
           redraw =.true.
           MODIFY=.TRUE.
         endif
-        idr=IW-1
+        ITPPSW=IW-1
       ELSEIF(IWHICH.EQ.2)THEN
 
 C If configuration file loaded then can filter surfaces by location.

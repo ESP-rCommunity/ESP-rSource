@@ -692,7 +692,7 @@ C
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
@@ -836,6 +836,7 @@ C Redraw the bluiding in the graphic screen.
             ITSNR=1
             ITGRD=1
             GRDIS=0.0
+            ITPPSW=0
             nzg=NCOMP
             if(nzg.gt.0)then
               DO 44 I=1,nzg
@@ -947,6 +948,7 @@ C Redraw the building in the graphic screen.
           ITSNR=1
           ITGRD=1
           GRDIS=0.0
+          ITPPSW=0
           nzg=NCOMP
           if(nzg.gt.0)then
             DO 45 I=1,nzg
@@ -1786,7 +1788,7 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124,H*72
@@ -1859,6 +1861,7 @@ C << might want to save current values for later recovery >>
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
       MODIFY=.TRUE.
       MODBND=.TRUE.
@@ -2023,7 +2026,7 @@ C This routine auto-generates elements of the fluid-flow network.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 

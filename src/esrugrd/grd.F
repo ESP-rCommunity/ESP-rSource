@@ -44,7 +44,7 @@ C << file names can be in place.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -137,6 +137,7 @@ C General image option flags.
       ITSNR=0
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
 C Initialise output device, assume minimal trace, and a smallish
 C display.

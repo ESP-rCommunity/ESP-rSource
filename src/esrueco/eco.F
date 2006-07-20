@@ -66,7 +66,7 @@ C View point, view direction, ...
 
 C Scale the project
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
 C Zone information
@@ -273,6 +273,7 @@ C General image option flags.
       ITOBS=0
       ITGRD=0
       GRDIS=0.0
+      ITPPSW=0
       IFS=1
       ITFS=1
 

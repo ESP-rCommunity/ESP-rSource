@@ -74,7 +74,7 @@ C wshad.f  - WSHAD:  Performs ASHRAE window shading.
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
@@ -199,6 +199,7 @@ C General image option flags.
       ITSNR=0
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
       IFS=1
       ITFS=1
       IMFS=1

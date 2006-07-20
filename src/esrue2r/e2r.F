@@ -36,7 +36,7 @@ C blank or NONE not required and not yet defined.
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -285,6 +285,7 @@ C General image option flags.
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
 C Initialise output device, assume minimal trace.
       MMOD=MODL

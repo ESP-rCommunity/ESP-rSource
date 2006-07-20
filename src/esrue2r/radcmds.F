@@ -735,6 +735,7 @@ C ITST is the start time (int).
           call edisp(iuout,' Date & time at start of animation...')
           iardoy=irdoy
           CALL EDAYR(iardoy,IADO,IAMO)
+          ATIMEST=4.0
           CALL ASKTIM(2,1,IAMO,IADO,iardoy,ATIMEST,ITST,IER)
 
 C Ask for end time of the animation.
