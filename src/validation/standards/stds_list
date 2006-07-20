@@ -551,7 +551,7 @@
 -1341 -1203 Annual_heating Total 1 0 -1295 # min, max, desc, data, zone id, surf id, std_val
 -412 -229 Annual_cooling Total 1 0 -229 # min, max, desc, data, zone id, surf id, std_val
 -0.200 -0.180 Peak_heating Max_value 1 0 -0.182 # min, max, desc, data, zone id, surf id, std_val
--0.179 -0.200 Peak_cooling Min_value 1 0 -0.179 # min, max, desc, data, zone id, surf id, std_val
+-0.200 -0.179 Peak_cooling Min_value 1 0 -0.179 # min, max, desc, data, zone id, surf id, std_val
 *endmetric
 *item
 *name	250-220
