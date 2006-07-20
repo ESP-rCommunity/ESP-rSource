@@ -664,9 +664,10 @@ c               NBCTT=2 ; internal air temperature sensed,
 c               NBCTT=3 ; daylight coeff. sensor lux maintainance
 C                         by linear optical property variation,
 C               NBCTT=4 ; SHOCC control (Lightswitch2002 manual control)
+C               NBCTT=-99; time based control (force alternative optics).
 c BACTPT  - actuation point of blind. Value of sensed variable
 c         must exceed this value for blind to operate. Setting
-c         actuation point at -99 forces the optical control to
+c         NBCTT is -99 the optical control is forced to
 c         operate at all times within the required period.
 c IBCSUR  - for a radiation sensor, specifies external surface
 c         on which sensor is placed.
@@ -900,7 +901,7 @@ C For each period.
           CALL STRIPC(IUA,OUTSTR,0,ND,1,'sensor data',IER)
           IF(IER.NE.0)GOTO 1001
           K=0
-          CALL EGETWI(OUTSTR,K,NCT,-99,3,'W','senor type',IER)
+          CALL EGETWI(OUTSTR,K,NCT,-99,4,'W','senor type',IER)
           NBCTT(ICOMP,KK,I)=NCT
           CALL EGETWR(OUTSTR,K,ACTP,0.,0.,'-','actuation pt',IER)
           BACTPT(ICOMP,KK,I)=ACTP
@@ -917,6 +918,8 @@ C Reporting.
               msg=' sensing daylight coeff.'
             elseif(NBCTT(ICOMP,KK,I).eq.4)then
               msg=' Lightswitch2002.'
+            elseif(NBCTT(ICOMP,KK,I).eq.-99)then
+              msg=' sensing time'
             endif
             WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2)') ' Period ',KK,
      &        ': from ',IBCST(ICOMP,KK,I),' to ',IBCFT(ICOMP,KK,I),

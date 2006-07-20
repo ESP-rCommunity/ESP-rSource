@@ -27,10 +27,9 @@ C          attempts to build a zone construction file.
 C  MKTWIN: Create a transparent construction file based on information
 C          currently held in common blocks.
 C  EDTWIN: Edit/configure transparent construction common block data.  
-C  EOPTKS: Edits optical properties of a glazing used in both default and
-C          TMC representations.
-C MATCHDB: Takes an existing zone construction file and scans mlc db to
-C          confirm matching vaules.
+C  EOPTKS: Edits optical properties of a transparent surface..
+C MATCHDB: Takes an existing zone construction file and scans the 
+C          constructions database to confirm matching vaules.
 C SCNTCNST: Scan model for current maximum time constant.
 
 C ************* EDCON 
@@ -382,21 +381,62 @@ C has resized the display, redraw.
 
 C Help text for this menu.
       H(1)='The surface attributes of the zone geometry file,'
-      H(2)='in conjunction with the composite construction db'
+      H(2)='in conjunction with the construction database'
       H(3)='will allow for zone construction details to be'
       H(4)='saved in the model definition.'
       H(5)=' '
       H(6)='The recommended procedure is to attribute the surfaces'
-      H(7)='in the geometry editing facility with composite '
-      H(8)='construction names before attempting to create a '
-      H(9)='zone construction file. '
+      H(7)='in the geometry editing facility with construction '
+      H(8)='names before attempting to create a zone contruction'
+      H(9)='file. '
       H(10)=' '
-      H(11)='Surfaces which are composed of transparent composite'
-      H(12)='constructions will have optical properties defined ' 
-      H(13)='from either the optical db or by manual input. If '
-      H(14)='there is a mismatch between information in a zone TMC'
+      H(11)='Surfaces which are composed of transparent constructions'
+      H(12)='will have optical properties defined from either' 
+      H(13)='the optical database or by manual input. If there'
+      H(14)='is a mismatch between information in a zone TMC'
       H(15)='file and existing surface attributes then you will be'
-      H(16)='asked to confirm the correct choice. '
+      H(16)='asked to confirm the correct choice.'
+      H(17)=' '
+      H(18)='Optical properties can have scheduled controls which'
+      H(19)='allow an alternative optical property to be use based'
+      H(20)='on sensing the following: '
+      H(21)=' a) time - alternative optics are used during a '
+      H(22)='    specific period of the day'
+      H(23)=' b) total radiation on the outside face of a'
+      H(24)='    surface in the zone - you specify a radiation'
+      H(25)='    level (W/m2) above which the alternate optics'
+      H(26)='    will be used.'
+      H(27)=' c) outside (ambient) temperature - you specify a'
+      H(28)='    temperature above which the alternative optics'
+      H(29)='    will be used.'
+      H(30)=' d) zone (drybulb) temperature - you specify the'
+      H(31)='    temperature above which the alternative optics'
+      H(32)='    will be used.'
+      H(33)=' e) lux level - you specify the lux level (as determined'
+      H(34)='    by XX) above which the alternative optics will'
+      H(35)='    be used.'
+      H(36)=' f) ??'
+      H(37)=' '
+      H(38)='Note: there can be up to 8 control periods during a day'
+      H(39)='(all days of the simulation will be treated the same). '
+      H(40)=' '
+      H(41)='The alternative optic set must have the same number'
+      H(43)='of layers as the standard optics. It is a good idea'
+      H(44)='to prepare the alternative optics via the database'
+      H(45)='management facility prior to using the transparent'
+      H(46)='properties facility in this menu. '
+      H(47)=' '
+      H(48)='Control of optical properties can be used to '
+      H(49)='approximate closing curtains and blinds. It can'
+      H(50)='also be used to approximate closing of shutters.'
+      H(51)=' '
+      H(52)='If the model has an air flow network you might also'
+      H(53)='think about controlling air flow components associated'
+      H(54)='with the transparent surfaces which you have specified'
+      H(55)='for optical controls. Note that air flow control logic'
+      H(56)='is different from optical control logic so some care and'
+      H(57)='testing is required to ensure that optics and flows'
+      H(58)='controls work together. '
 
 C Now display the menu.
       write(head,'(A,A)')' Composition of ',zname(ICOMP)
@@ -425,7 +465,7 @@ C Now display the menu.
 
 C If no existing file advise user to create from info in geom file and
 C various databases.
-        CALL PHELPD('zone geom file section',16,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',58,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Save data and then return to menu.
@@ -1212,6 +1252,14 @@ C For each of the TMC types.
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
      &        '  # sensing daylight coeff. @ actuation point'
+          elseif(NBCTT(ICOMP,K,I).eq.4)then
+            WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
+     &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
+     &        '  # sensing lightswitch @ actuation point'
+          elseif(NBCTT(ICOMP,K,I).eq.-99)then
+            WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
+     &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
+     &        '  # sensing time @ actuation point'
           endif
 
           WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
@@ -1250,7 +1298,7 @@ C Edit and configure transparent construction information
 C currently held in common blocks PRECTC, PRECT2, TMCB1,
 C TMCB2, TMCB3.
 
-C In essence this procedure assumes the use of items from the composite
+C In essence this procedure assumes the use of items from the
 C construction database, which if they are transparent make reference
 C to a named optical property in the optical properties database (if
 C UNKNOWN then the user must supply this information manually). It scans
@@ -1464,6 +1512,10 @@ C Display of current information...
             msg=' sensing zone temperature'
           elseif(NBCTT(ICOMP,KK,I).eq.3)then
             msg=' sensing daylight coeff.'
+          elseif(NBCTT(ICOMP,KK,I).eq.4)then
+            msg=' Lightswitch2002.'
+          elseif(NBCTT(ICOMP,KK,I).eq.-99)then
+            msg=' sensing time only'
           endif
           WRITE(outs,'(A,I2,A,I2,A,I2,2A,F7.2)') ' Period ',KK,
      &      ': from ',IBCST(ICOMP,KK,I),' to ',IBCFT(ICOMP,KK,I),
@@ -1546,40 +1598,83 @@ C For each control period get the appropriate replacement properties.
           IBCFT(ICOMP,ICP,IT)=INT(VAL)
 
           N3=NBCTT(ICOMP,ICP,IT)
-          H(1)='Control by time switches to the alternate'
-          H(2)='set of properties during the control period.'
-          H(3)='  '
-          H(4)='Control by incident radiation switches whenever the'
-          H(5)='Watts/m^2 at the sensor is > than the set point. '
-          H(6)=' '
-          H(7)='Control by ambient temperature switches whenever '
-          H(8)='the outside temperature is > than the set point. '
-          H(9)=' '
-          H(10)='Control by zone temperature switches whenever '
-          H(11)='the zone temperature is > than the set point. '
-          H(12)=' '
-          H(13)='Control by maintaining internal illuminance  '
-          H(14)='at set point by a linear change of properties. '
+          H(1)='Surfaces composed of transparent constructions'
+          H(2)='will have optical properties defined from either' 
+          H(3)='the optical database or by manual input. If there'
+          H(4)='is a mismatch between information in a zone TMC'
+          H(5)='file and existing surface attributes then you will be'
+          H(6)='asked to confirm the correct choice.'
+          H(7)=' '
+          H(8)='Optical properties can have scheduled controls which'
+          H(9)='allow an alternative optical property to be use based'
+          H(10)='on sensing the following: '
+          H(11)=' a) time - alternative optics are used during a '
+          H(12)='    specific period of the day'
+          H(13)=' b) total radiation on the outside face of a'
+          H(14)='    surface in the zone - you specify a radiation'
+          H(15)='    level (W/m2) above which the alternate optics'
+          H(16)='    will be used.'
+          H(17)=' c) outside (ambient) temperature - you specify a'
+          H(18)='    temperature above which the alternative optics'
+          H(19)='    will be used.'
+          H(20)=' d) zone (drybulb) temperature - you specify the'
+          H(21)='    temperature above which the alternative optics'
+          H(22)='    will be used.'
+          H(23)=' e) lux level - you specify the lux level (as '
+          H(24)='    determined by XX) above which the alternative'
+          H(25)='    optics will be used.'
+          H(26)=' f) ??'
+          H(27)=' '
+          H(28)='Note: there can be up to 8 control periods (all'
+          H(29)='days of the simulation will be treated the same). '
+          H(30)=' '
+          H(31)='The alternative optic set must have the same number'
+          H(32)='of layers as the standard optics. It is a good idea'
+          H(33)='to prepare the alternative optics via the database'
+          H(34)='management facility prior to using the transparent'
+          H(35)='properties facility in this menu. '
+          H(36)=' '
+          H(37)='Control of optical properties can be used to '
+          H(38)='approximate closing curtains and blinds. It can'
+          H(39)='also be used to approximate closing of shutters.'
+          H(40)=' '
+          H(41)='If the model has an air flow network you might also'
+          H(42)='think about controlling air flow components '
+          H(43)='associated with the transparent surfaces which you'
+          H(44)='have specified for optical controls.'
+          H(45)=' '
+          H(46)='Note that air flow control logic is different'
+          H(47)='from optical control logic so some care and'
+          H(48)='testing is required to ensure that optics and flows'
+          H(49)='controls work together. '
           if(n3.eq.-99)then
             call EASKATOG(' Controlled on:','(currently time) ',
      &      'time','incident radiation','ambient T','zone air T',
-     &      'lux','cancel',' ',IRT,14)
+     &      'lux','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.0)then
             call EASKATOG(' Controlled on:','(currently radiation) ',
      &      'time','incident radiation','ambient T','zone air T',
-     &      'lux ','cancel',' ',IRT,14)
+     &      'lux ','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.1)then
             call EASKATOG(' Controlled on:','(currently ambient T) ',
      &      'time','incident radiation','ambient T','zone air T',
-     &      'lux ','cancel',' ',IRT,14)
+     &      'lux ','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.2)then
             call EASKATOG(' Controlled on:','(currently zone T) ',
      &      'time','incident radiation','ambient T','zone air T',
-     &      'lux ','cancel',' ',IRT,14)
+     &      'lux ','LtSwitch','cancel',IRT,49)
+          elseif(n3.eq.3)then
+            call EASKATOG(' Controlled on:','(currently daylight coef)',
+     &      'time','incident radiation','ambient T','zone air T',
+     &      'lux ','LtSwitch','cancel',IRT,49)
+          elseif(n3.eq.4)then
+            call EASKATOG(' Controlled on:','(currently Lightswitch)',
+     &      'time','incident radiation','ambient T','zone air T',
+     &      'lux ','LtSwitch','cancel',IRT,49)
           else
             call EASKATOG(' Controlled on:','(currently undefined) ',
      &      'time','incident radiation','ambient T','zone air T',
-     &      'lux ','cancel',' ',IRT,14)
+     &      'lux ','LtSwitch','cancel',IRT,49)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -1587,32 +1682,36 @@ C For each control period get the appropriate replacement properties.
           elseif(irt.eq.2)then
             NBCTT(ICOMP,ICP,IT)= 0
             VAL=BACTPT(ICOMP,ICP,IT)
-            H(1)='Sensed radiation is in Watts/m^2.'
             CALL EASKR(VAL,' ',' Radiation set point: ',
-     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,1)
+     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.3)then
             NBCTT(ICOMP,ICP,IT)= 1
             VAL=BACTPT(ICOMP,ICP,IT)
-            H(1)='Sensed temperature is in deg C.'
             CALL EASKR(VAL,' ',' Ext. temperature set point: ',
-     &      0.00,'W',1000.0,'W',0.0,'ext. temp. set point',IER,1)
+     &      0.00,'W',1000.0,'W',0.0,'ext. temp. set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.4)then
             NBCTT(ICOMP,ICP,IT)= 2
             VAL=BACTPT(ICOMP,ICP,IT)
-            H(1)='Sensed temperature is in deg C.'
             CALL EASKR(VAL,' ',' Int. temperature set point: ',
-     &      0.00,'W',1000.0,'W',0.0,'int. temp. set point',IER,1)
+     &      0.00,'W',1000.0,'W',0.0,'int. temp. set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.5)then
             NBCTT(ICOMP,ICP,IT)= 3
             VAL=BACTPT(ICOMP,ICP,IT)
-            H(1)='Illuminance set point in lux.'
             CALL EASKR(VAL,' ',' Illuminance set point: ',
-     &      0.00,'W',1000.0,'W',0.0,'illum. set point',IER,1)
+     &      0.00,'W',1000.0,'W',0.0,'illum. set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
+
+C << Note: do not know what sort of question is to be asked here! >>
+            NBCTT(ICOMP,ICP,IT)= 4
+            VAL=BACTPT(ICOMP,ICP,IT)
+            CALL EASKR(VAL,' ',' Lightswitch illuminance set point:',
+     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,49)
+            BACTPT(ICOMP,ICP,IT)=VAL
+          elseif(irt.eq.7)then
             return
           ENDIF
           NTL=NGLAZ(IT)
@@ -1650,7 +1749,7 @@ C Error messages.
 
 
 C ************* EOPTKS 
-C Edits optical properties of a glazing used in transparent surfaces.
+C Edits optical properties associated with a transparent surface.
 C Takes in and returns data via common block GOPT. If WHICH='T' for
 C transparent construction data editing.
       SUBROUTINE EOPTKS(ITRC,ITRU,WHICH,IER)
