@@ -355,7 +355,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       CALL EDISP(IUOUT,' ')
       write(outs,'(2a)')
-     &  ' ESP-r Simulator: Version 5.4a of April 2006.',
+     &  ' ESP-r Simulator: Version 5.4a of July 2006.',
      &  ' Copyright 2001-6 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')
