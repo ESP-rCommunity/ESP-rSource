@@ -728,8 +728,8 @@ C to overwrite site information. Confirm the period to transfer.
           h(4)='Usually you want to update the site information.'
           CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
           silent=.false.
-          WRITE(STR,'(2A)')'Writing out data to file ',LCLIM
-          CALL EDISP(IUOUT,STR)
+          WRITE(outs,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
+          CALL EDISP(IUOUT,outs)
           if(ok)then
             CALL MKBCLM(iuout,1,LASCI,IUNIT,IDS,IDF,silent,IER)
           else

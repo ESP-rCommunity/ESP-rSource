@@ -222,7 +222,7 @@ at which your sub-branch was created.
 .IP
         cd <your_working_copy_from_step_3> 
 .IP
-        svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/developers_branch
+        svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/development_branch
 .IP
           U integer.c
 .IP
