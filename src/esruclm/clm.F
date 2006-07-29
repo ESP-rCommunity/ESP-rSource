@@ -245,7 +245,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       call edisp(IUOUT,' ')
       write(outs,'(2a)')
-     &  ' ESP-r Climate Analysis: Version 6.22a of April 2006.',
+     &  ' ESP-r Climate Analysis: Version 6.22a of July 2006.',
      &  ' Copyright 2001-6 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')
