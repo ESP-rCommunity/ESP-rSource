@@ -1,9 +1,17 @@
 General Guidelines for the Installation of the ESP-r System
 -----------------------------------------------------------
+Note: this document is in the process of being revised
+and some information is out of date.
 
-1.  Create a directory /usr/esru. If necessary this can
+Development for the native windows version of ESP-r is
+covered in a separate document (although you might find
+some useful information in this document)
+
+1.  Create a directory, typcially /usr/esru. If necessary this can
     be a link to a directory "esru" located anywhere on your
-    system (you will need to ask the superuser to do this). 
+    system (you will need to ask the superuser to do this).
+    On Linux boxes and/or MacOSX you might want to locate
+    the ESP-r distribution in /opt/esru 
 
     It is suggested that you create a user called esru to own
     this directory; this will offer more protection by
@@ -16,9 +24,9 @@ General Guidelines for the Installation of the ESP-r System
     script "unpacktargz" on the FTP site - run this to unpack 
     the compressed tar files that you downloaded.
 
-3.  Execute the script /usr/esru/src/esp-r/bin/esp-r-dir
-    to create the esp-r directory structure.  Add
-    /usr/esru/bin and /usr/esru/esp-r/bin to your path.
+3.  Add the location where you installed esp-r to your path
+    for example:
+    /usr/esru/bin and /usr/esru/esp-r/bin
     On some operating systems it may be necessary to add
     /usr/esru/esp-r/lib to your LD_LIBRARY_PATH environment
     variable (this is not usually required under Linux
@@ -28,18 +36,11 @@ General Guidelines for the Installation of the ESP-r System
     Install which will guide you through the installation
     procedure and allow you to make selections corresponding
     to the different operating systems and window managers.
-    Answer the questions to suit your system.  (Note that
-    it is possible to make ESP-r modules for operation
-    in text only mode on machines which do not support
-    X-Windows.  To do this you will need to redefine the
-    ULIBS definition to "-L${ESPdir}/lib -lesru_nb".)
+    Answer the questions to suit your system. 
 
 5.  Type "./Install" (for a complete installation) or
     "./Install -h" to see the other options.  Answer the
-    questions as posed. If you are installing ESP-r as 
-    a local copy (e.g. in a non-esru user directory for
-    development work), use the script "Install_local" rather
-    than "Install".
+    questions as posed. 
 
 6.  Set up your environment along the lines of the sample
     .* files of directory /usr/esru/src/esp-r/env.  In particular,
@@ -69,20 +70,26 @@ General Guidelines for the Installation of the ESP-r System
 
     in the file /usr/openwin/lib/openwin-sys.
 
-9.  With versions of Redhat Linux before 6.0, /usr/lib/libf2c.a is used
-    instead of /usr/lib/libg2c.a. For pre-6.0 versions, edit the 
-    Install script: instructions are included in the "For Linux"
-    section. For Suse Linux, it has been reported that this library
-    should not be included: again see the comment in the script.
-    
-10. For Silicon Graphics implementations before Irix 6.5 
-    (Fortran MIPSpro Compilers: Version 7.2.1), /usr/lib
-    is used instead of /usr/lib32. For earlier versions edit the 
-    Install script: instructions are included in the "For SGI" section.
+9.  The install process is essentially the same for most distributions
+    of Linux, but you are advised to use the GNU compilers version 3.4
+    rather than 4.0 because there are a few blocks of legacy code that
+    do not compile with the newer compiler.
 
-11. It is possible to compile ESP-r under Windows using Cygwin or 
-    under OS X on Mac's. These are beta releases - setting up instructions 
-    are in the "manual" directory.
+10. It is possible to compile ESP-r under Windows using Cygwin or 
+    to run using native windows graphics via the MSYS compiler
+    environment. ESP-r also compiles under OS X on Mac's and uses
+    the Apple supplied X11 windowing environment.  Instructions for 
+    these operating systems are found on the web
+    page download site <http://www.esru.strath.ac.uk>.
+
+11. ESP-r is also available via a subversion source code control
+    repository https://svn2.cvsdude.com/espr/esp-r/branches/development_branch
+    for the latest code and the official release version is also
+    available at https://svn2.cvsdude.com/espr/esp-r/trunk
+    Note these repositories are non-trival in size and include
+    extensive testing and validation folders. If you want to
+    join in the developer community please contact Ian Beausoliel-Morrison
+    at ibeausol@nrcan.gc.ca.
 
 12. With Linux Redhat Fedora Core 4, using the latest version of gcc,
     Fortran is not currently supported. To solve this:
@@ -104,9 +111,11 @@ General Guidelines for the Installation of the ESP-r System
 14. The manual is set in troff format and can be found in
     directory ~esru/esp-r/manual.  But note that an on-line help 
     and Web-based tutorial facility are available. These are improving
-    as time passes. The user guide and data model details can also
+    at a glacial pace. The user guide and data model details can also
     be obtained from the ESRU Web site in pdf format. (The Web
-    address is http://www.esru.strath.ac.uk).
+    address is http://www.esru.strath.ac.uk). There is an ESP-r
+    cookbook included in the manual folder which is a strategic
+    guide to the use of ESP-r.
 
 15. In directory validation/QA, there are models and scripts which
     can be run to check on your implementation. See the Readme
