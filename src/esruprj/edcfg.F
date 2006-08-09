@@ -442,7 +442,7 @@ C Domains associated with the model.
           h(6)='to zone geometry will be removed. The files will still'
           h(7)='exist, but you will have to re-establish the referencs.'
           call askok('Are you sure you want to change the domains',
-     &      'in the model? (you might loose information)',ok,dok,7)
+     &      'in the model? (you might lose information)',ok,dok,7)
           if(ok)then
             indcfg=isindcfg-1
             call usrmsg('Updating model domains...',' ','-')
