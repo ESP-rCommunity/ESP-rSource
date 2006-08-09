@@ -33,6 +33,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
+#include "bc_data.h"
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -492,6 +493,13 @@ C SHOCC: library file.
      &     SHOCCshlFile(1:lnblnk(SHOCCshlFile)),
      &     '  # SHOCC project library'
       endif
+
+C BCD (boundary condition definiton file)
+      if ( bBC_data_defined ) then
+         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*bcd  ',
+     &     cBC_data_file_name(1:lnblnk(cBC_data_file_name)),
+     &     '  # BCD file name'
+      endif 
 
 C Write control file if known.
       if(lnblnk(lctlf).eq.0)then
