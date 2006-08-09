@@ -411,7 +411,7 @@ C Optional title for graph and up to 5 other labels and their positions.
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -646,6 +646,8 @@ C Setup menu items.
         elseif(IHFLAG.eq.1)then
           ITEM(26)='* Time >> 0.4375  '
         endif
+
+C << place ILFLAG here to define tabular labels >>
       endif
       if (MENUTYPE.eq.3) then
         ITEM(27)='+ Add another profile'

@@ -35,7 +35,7 @@ C PLTTAB handles results view/setup requests for plant.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/DEFLT/IDEFLT
@@ -92,7 +92,7 @@ C               5=misc ??)
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
 
-C Default value for GRTOOL file = 0 (off).
+C Default value for GRTOOL file hourly flag = 0 (off).
       IHFLAG=0
 
 C Initialise variables
@@ -194,6 +194,8 @@ C Setup menu text.
       elseif(IHFLAG.eq.1)then
         ITEM(21)='* format >> 0.4375     '
       endif
+
+C << Place toggle for ILFLAG here and revise menu >>
       if(delim.eq.'-')then
         ITEM(22)='^ delim >> normal      '
       elseif(delim.eq.'T')then
@@ -1189,7 +1191,7 @@ C act='p' iget parameters already set.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/prav/IDAVER
 
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
 C Occupancy filter info.
