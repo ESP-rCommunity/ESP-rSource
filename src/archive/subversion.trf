@@ -15,132 +15,162 @@ Subversion maintains a record of changes to the source code and provides a means
 with concurrent changes to source files. It also allows developers a convenient method of
 contributing to the ESP-r code base.  This document describes how to use Subversion to checkout a
 working copy, to add and remove files, and to commit files back to the ESP-r code base.
+.LP
+.I "Revision history"
+.LP
+This document is under versioning control, and suggestions and contributions are 
+strongly encouraged. The troff-formatted source file for the latest 
+version can be obtained at the following url:
+.IP
+\fIhttps://esp-r.net/espr/esp-r/branches/development_branch/src/archive/subversion.trf\fR
+.LP
+.\" ---------------------- Introduction -----------------
 .NH
 Introduction
-.IP 
-.B 
+.LP
+.I 
 What is a Subversion Repository?
-.IP
+.LP
 A Subversion repository is both a storage area for project source code and a tracking system
 for source code changes. It keeps track of the history of changes to every file and directory
 contained within it.
 The ESP-r Central Subversion repository ensures that all developers and users have the most up-to-date
 version of the ESP-r source code. Subversion also allows for developers to commit their bug-fixes and/or
 enhancements to the repository. 
-.IP
+.LP
 For a complete description please refer to Chapter 2 of Versioning control with
-Subversion, by Collins-Sussman, Fitzpatrick and Pilato
+Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
 .IP
-http://svnbook.red-bean.com/en/1.1/ch02.html
-.B 
+\fIhttp://svnbook.red-bean.com/en/1.1/ch02.html\fR
+.LP
+.I
 Obtaining a Subversion Client
-.IP
+.LP
 A command line client can be downloaded from the subversion website: 
 .IP
-http://subversion.tigris.org/project_packages.html. 
-.IP
-Note: There are a number of graphical user interfaces that can be used to access a
+\fIhttp://subversion.tigris.org/project_packages.html\fR
+.LP
+There are also a number of graphical user interfaces that can be used to access a
 Subversion repository.  Due to variations in their use, they are not documented here.
 Most of these tools provide a command line mode so this documentation is still applicable. 
+.\" ----------- Anonymous access ---------------
 .NH 
 Anonymous access for Non-Developers
-.IP
+.LP
 If you do not plan to modify ESP-r source code, you may download a working copy using
 anonymous access. This is convenient for students and professionals who simply wish to
 download and compile the latest version of ESP-r. 
-.IP
+.LP
 The following command will download ESP-r's source code from the ESP-r Central repository to
-the current working directory of your local computer.  You will be able to compile and alter the
-source code on your local computer but you will not
-be able to make any changes to the ESP-r Central repository.
-.IP
+the current working directory of your local computer:
+.LD
+.fam C
 svn checkout  https://esp-r.net/espr/esp-r/trunk/src
-
+.DE
+With this working directory, you will be able to compile and alter the
+source code on your local computer but you will not be able to make any
+changes to the ESP-r Central repository.
+.\" -------------------- Development -----------------
 .NH 
 ESP-r Development with Subversion. 
-.IP
+.LP
 If you wish to make changes to the ESP-r Central repository, you must become familiar with the
-concepts of working on "branches" and merging branches back into the main "trunk" of the repository.
+concepts of working on ``branches'' and merging branches back into the main ``trunk'' of the repository.
 These concepts are not trivial, and it is highly recommended that you make yourself familiar with them. 
-.IP
+.LP
 For a complete description of branches and merging, please refer to chapter 4 of Versioning
 control with Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
-http://svnbook.red-bean.com/en/1.1/ch04.html
 .IP
-ESP-r development occurs on separate "sub-branches" that are assigned to individual contributors
+\fIhttp://svnbook.red-bean.com/en/1.1/ch04.html\fR
+.LP
+ESP-r development occurs on separate ``sub-branches'' that are assigned to individual contributors
 or teams of contributors. Contributors modify and commit their code on to these sub-branches, where
 they can be inspected by others. After completing a rigorous testing process, the ESP-r archivist merges
 contributions from a sub-branch on to the main development branch, where they can be
 accessed by all developers. 
-.IP
+.LP
 A complete description of the ESP-r Subversion branch structure is available in the document
-"Structure of the ESP-r source code archive".
-.B
+``Structure of the ESP-r source code archive''.
+.LP
+.I
 Obtaining a Developer's Account and Sub-branch
-.IP
+.LP
 In order to work on a sub-branch, you must first have an ESP-r developer's account and a sub-branch
 name assigned to you.  For details on obtaining an account and sub-branch, contact
 Ian Beausoleil-Morrison. Ibeausol@nrcan.gc.ca.
-.B
+.LP
+.I
 Checking out a Sub-branch
-.IP
-You must perform a repository "checkout" to obtain a working copy of your sub-branch.  A "checkout"
+.LP
+You must perform a repository ``checkout'' to obtain a working copy of your sub-branch.  A ``checkout''
 will download the module into your current working directory, where you can compile, alter the
-source code, and "commit" your changes back to your developer-specific sub-branch for others to view.
+source code, and ``commit'' your changes back to your developer-specific sub-branch for others to view.
 To perform a checkout, use the following command:
-.IP
-svn checkout  https://esp-r.net/espr/esp-r/branches/<sub-branch_name>
-.IP
+.LD
+.fam C
+svn checkout https://esp-r.net/espr/esp-r/branches/<sub-branch_name>
+.DE
 Provide your developer's account name and password when prompted.
-.B
+.LP
+.NH
 Common Subversion Commands
-.IP
+.LP
 There are many commands available in Subversion.  The following are the basic commands you will need.
 For a more extensive list, please refer to Chapter 3 of the book Versioning control with
-Subversion (http://svnbook.red-bean.com/en/1.1/ch03s05.html). 
+Subversion:
 .IP
-NOTE: None of these commands will affect other developer-specific sub-branches, they only affect the
+\fIhttp://svnbook.red-bean.com/en/1.1/ch03s05.html\fR
+.LP
+None of these commands will affect other developer-specific sub-branches, they only affect the
 sub-branch you have been assigned to work with. 
-.IP
-.B
-ADD/REMOVE files from your workspace. 
-.IP
-Use these commands to schedule adding/removing files or directories to/from the sub-branch you are working on.  
-.IP
-NOTE: adding or deleting a file will only take effect in the repository once you perform a "COMMIT"
-command. 
-.IP
-        svn add <path_to_file_to_be_added>
-.IP
-        svn delete <path_to_file_to_be_deleted>
-.IP
-.B
+.LP
+.I
+ADD and DELETE files 
+.LP
+Use these commands to schedule adding/removing files or directories to/from the sub-branch you are working on.
+Additions and deletions will only take effect in the repository once you perform a ``commit''
+command.
+.LD
+.fam C
+svn add <path_to_file_to_be_added>
+svn delete <path_to_file_to_be_deleted>
+.DE
+.I
 Check the STATUS of your workspace. 
-.IP
+.LP
 This command will list all the files you have changed relative to the sub-branch you are working on,
-which is handy to use before a "COMMIT" or an "UPDATE".
-.IP
+which is handy to use before a ``commit'' or an ``update''.
+.LP
         svn status <directory_or_filename>
-.IP
-.B
+.LP
+.I
 UPDATE files/directories of your workspace.
-.IP
-This command will update your workspace with any changes that other developers have committed to
-the branch you are working on since your last checkout/update. Careful! It automatically merges code
-in, so inspect all updated files and ensure your code still works correctly.  
-.IP
-NOTE: This command has the potential of flagging a conflict, which is dealt with in more detail below. 
-.IP
-        svn update  <directory_or_file_to_be_updated>
-.IP
-.B
+.LP
+While you'll initially work on your own personal branch, you may also be
+involved in collaborative projects requiring several developers to share
+the same branch. In these projects, it will be necessary to periodically
+update your working copy with changes other developers have committed to
+the project branch. The ``update'' command will update your local copy
+with any changes that other developers have committed to the project
+branch since your last checkout/update. Careful! It automatically merges
+code into your files, so inspect all updated files and ensure your code
+still works correctly.
+.LD
+.fam C
+svn update  <directory_or_file_to_be_updated>
+.DE
+A \fIconflict\fR may occur if changes in the repository affect the same files you've
+modified in your local copy. Conflicts are discussed in detail below.
+.LP
+.I
 COMMIT your changes to the repository. 
-.IP
+.LP
 This command will commit all file changes, as well as Adds and Removes, to the branch you are working on.
 Only valid ESP-r developer account holders can use this command. 
-.IP
-        svn commit <directory_or_filename>
-.IP
+.LD
+.fam C
+svn commit <directory_or_filename>
+.DE
 A text editor will be opened after you issue the above command.  Enter a detailed message
 that elaborates the reasons for your coding change/addition, the intent of your code, and
 the testing that you have conducted.  You should indicate in detail what impact this change
@@ -148,115 +178,133 @@ has upon ESP-r functionality, in particular the impact it has upon calculation r
 This message will be permanently recorded in ESP-r Central's repository log and will act
 as a reference for other developers and for yourself in the future.  Use proper sentence
 structure and grammar to effectively communicate this critical information to your colleagues.
-.IP
-.B
+.LP
+.NH
 Conflicts
-.IP
+.LP
 Conflicts arise when changes received from another developer, during an update or merge, overlap
 with local changes that you have in your working copy. You must resolve these conflicts before
-committing your changes to the repository. Subversion will flag files in conflict with a "C" after
+committing your changes to the repository. Subversion will flag files in conflict with a ``C'' after
 the update command has been executed. 
-.IP
-    svn update
-.IP
+.LD
+.fam C
+svn update
+.DE
 Example of command response from Subversion:
-.IP
-	U  Install		<-- U indicates the file Install updated
-.IP
-	C  esrubps/bps.F	<-- C indicates the file esrubps/bps.F has one or more conflicts
-.IP
-	Updated to revision 3.	<-- Notification of update to revision number
-.IP
+.LD 
+.fam C
+U  Install              <-- \fIU indicates the file Install updated\fR
+C  esrubps/bps.F        <-- \fIC indicates conflicts exist in esrubps/bps.F\fR
+Updated to revision 3.  <-- \fINotification of update to revision number\fR
+.DE
 Subversion will not allow you to commit any files until the conflict is manually resolved.  A full
 discussion on resolving conflicts can be found in Chapter 3 of Versioning control with Subversion,
 by Collins-Sussman, Fitzpatrick and Pilato:
-http://svnbook.red-bean.com/en/1.1/ch03s05.html#svn-ch-3-sect-5.4 
 .IP
-.B
-Merging Branches 
-.IP
-For the first time you merge changes from the development branch into your sub-branch, these
-simple steps will walk you through the process.
-.IP
-   1. Find out at what version you created the branch.
-.IP
-        svn log --verbose --stop-on-copy http://esp-r.net/espr/esp-r/branches/my_branch
-.IP
-   2. Which will produce the following message. Note the r34. This is the revision number
-at which your sub-branch was created.
-.IP
-          ------------------------------------------------------------------------
-.IP
-          r34 | user | 2002-11-03 15:27:56 -0600 (Thu, 07 Nov 2002) | 2 lines
-.IP
-          Changed paths:
-.IP
-          A /esp-r/branches/my_branch (from /esp-r/branches/development_branch:340)
-.IP
-   3. Check out a clean copy of your work.. 
-.IP
-        svn  checkout http://esp-r.net/espr/esp-r/branches/my_branch
-.IP
-
-   4. Determine the most recent revision (i.e. the highest number) on the development_branch.
-.IP
-        svn  log http://esp-r.net/espr/esp-r/branches/development_branch    
-.IP
-          ------------------------------------------------------------------------
-.IP
-          r56 | ibeausol | 2006-05-01 16:08:15 -0400 (Mon, 01 May 2006) | 5 lines
-.IP
-.IP
-          This commit merges in changes r41:55 on the sub-branch "Ian_Beausoleil-Morrison"
-.IP
-          into "development_branch".  This adds some clarifications to the document that
-.IP
-          describes the structure of the repository.  There is no impact upon the compilation
-.IP
-          of ESP-r nor upon simulation results.
+\fIhttp://svnbook.red-bean.com/en/1.1/ch03s05.html#svn-ch-3-sect-5.4\fR
 .LP
-   5. Merge the changes that have occurred on development_branch from r34
-(when your sub-branch was created) to r56.
-.IP
+.NH
+Merging changes from the development branch
+.LP
+The repository's development branch will be updated periodically as developers
+submit new features and bug fixes for inclusion in ESP-r. As the maintainer of your
+sub-branch, it's your responsibility to merge these changes into your sub-branch.
+Your contributions will not be accepted into the development branch until you've
+synchronized your branch with the development branch, proving your code is compatible
+with the current source from the development branch.
+.LP
+The following example illustrates the steps involved in updating your sub-branch
+with changes in the development branch for the first time:
+.bp
+.IP 1. 4
+Determine the revision number at which your branch was created:
+.LD
+.fam C
+svn log --verbose --stop-on-copy http://esp-r.net/espr/esp-r/branches/my_branch
 
-.IP
-        cd <your_working_copy_from_step_3> 
-.IP
-        svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/development_branch
-.IP
-          U integer.c
-.IP
-          U button.c
-.IP
-          U Makefile
-.IP
-   6. Check to see if there are any conficts and check the changes that have been merged
-.IP
-        svn status
-.IP
-          M integer.c
-.IP 
-          M button.c
-.IP
-          M Makefile
-.IP
-   7. Commit the merged changes into your sub-branch and provide an appropriate log message.
+---------------------- (OUTPUT) ----------------------------------------
+r12 | author | 2006-04-25 10:31:38 -0400 (Tue, 25 Apr 2006) | 3 lines
+
+This update make some more changes....
+
+
+------------------------------------------------------------------------
+r11 | author | 2006-04-25 10:26:58 -0400 (Tue, 25 Apr 2006) | 3 lines
+
+This update makes some changes ...
+
+
+------------------------------------------------------------------------
+r10 | ibeausol | 2006-04-25 08:53:27 -0400 (Tue, 25 Apr 2006) | 3 lines
+
+This update makes a copy of the development branch for use by author.
+
+------------------------------------------------------------------------
+.DE
+Note revision r10. This is the revision number at which branch "my_branch" was created.
+.IP 2. 4
+Check out a clean copy of your work:
+.LD
+.fam C
+svn  checkout http://esp-r.net/espr/esp-r/branches/my_branch
+.DE
+.IP 3. 4
+Determine the most recent revision (i.e. the highest number) on the development_branch.
+.LD
+.fam C
+svn info http://esp-r.net/espr/esp-r/branches/development_branch
+---------------------- (OUTPUT) ----------------------------------------
+Path: development_branch
+URL: https://esp-r.net/espr/esp-r/branches/development_branch
+Repository Root: https://esp-r.net/espr/esp-r
+Repository UUID: 7d53e970-de11-0410-8a54-3d01b9da36cf
+Revision: 385
+Node Kind: directory
+Last Changed Author: ibeausol
+Last Changed Rev: 355
+Last Changed Date: 2006-07-28 08:03:06 -0400 (Fri, 28 Jul 2006)
+.DE
+Note the current revision number (385).
+.IP 4. 4
+Merge the changes that have occurred on development_branch from r10
+(when your sub-branch was created) to r385.
+.LD
+.fam C
+cd <your_working_copy_from_step_3>
+svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/development_branch
+---------------------- (OUTPUT) ----------------------------------------
+U integer.c
+U button.c
+U Makefile
+.DE
+.IP 6. 4
+ Check to see if there are any conflicts and check the changes that have been merged
+.LD
+.fam C
+svn status
+---------------------- (OUTPUT) ----------------------------------------
+M integer.c
+M button.c
+M Makefile
+.DE
+.IP 7. 4
+Commit the merged changes into your sub-branch and provide an appropriate log message.
 You will rely on this message the next time you merge in changes from development_branch:
-rather than merging from the creation point of your sub-branch (r34 in the example above) you
-will merge from the last point at which your synchronized (r56 in this example).
+rather than merging from the creation point of your sub-branch (r10 in the example above) you
+will merge from the last point at which your synchronized (r385 in this example).
+.LD
+.fam C
+svn commit -m "Merged development_branch changes r10:385 into my_branch."
+---------------------- (OUTPUT) ----------------------------------------
+Sending integer.c
+Sending button.c
+Sending Makefile
+Transmitting file data ...
+Committed revision 386.
+.DE
+.LP
+For more information on Subversion Merging, read Chapter 4:
+Branching and Merging of Versioning control with Subversion,
+by Collins-Sussman, Fitzpatrick and Pilato:
 .IP
-         svn commit -m "Merged development_branch changes r34:56 into my_branch."
-.IP
-          Sending integer.c
-.IP
-          Sending button.c
-.IP
-          Sending Makefile
-.IP
-          Transmitting file data ...
-.IP
-          Committed revision 57.
-.IP
-
-.IP
-For more information on Subversion Merging, read Chapter 4: Branching and Merging of online SVN book.
+\fIhttp://svnbook.red-bean.com/en/1.1/svn-book.html#svn-ch-4\fR

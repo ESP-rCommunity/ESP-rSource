@@ -38,12 +38,8 @@ contribute your code to the common ESP-r development branch.
 This document is under versioning control, and suggestions and contributions are 
 strongly encouraged. The troff-formatted source file for the latest 
 version can be obtained at the following url:
-.nr PS 8
-.LD
-.fam C
-https://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf
-.nr PS 12
-.DE
+.IP
+\fIhttps://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf\fR
 .LP
 .\"---------------------------------------
 .NH 1
