@@ -6,7 +6,7 @@ delim ##
 .TL
 ESP-r Developers' Quality Assurance Checklist 
 .br
-Last updated: May 12, 2006
+Last updated: August 11, 2006
 .sp 2
 .\"---------------------------------------
 .NH 1
@@ -49,6 +49,7 @@ https://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklis
 .NH 1
 General changes to ESP-r
 .\"---------------------------------------
+.LP
 .I "Placing your code under versioning control"
 .LP
 In this section, you'll commit your code to your sub-branch, and update your 
