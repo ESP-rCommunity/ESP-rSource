@@ -1771,6 +1771,7 @@ C control file sensors, actuator, control types, control laws.
 #include "control.h"
 #include "power.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       common/pcnam/pcname(mpcom)
@@ -1805,13 +1806,14 @@ C control file sensors, actuator, control types, control laws.
       CHARACTER SSTR*72,WHICH*1,ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
       CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SN*12
+
       SSTR=' '
 
-      if(icfoc.eq.0)goto 42
-      if(icfoc.eq.1)goto 43
-      if(icfoc.eq.2)goto 44
-      if(icfoc.eq.3)goto 46 
-      if(icfoc.eq.4)goto 45 
+      if(icfoc.eq.0)goto 42     ! zone ideal control
+      if(icfoc.eq.1)goto 43     ! plant control
+      if(icfoc.eq.2)goto 44     ! network flow control
+      if(icfoc.eq.3)goto 46     ! global control
+      if(icfoc.eq.4)goto 45     ! electrical control
   42  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
 
 C Ideal Sensor.
@@ -1909,29 +1911,8 @@ C Control type.
       ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
 
 C Ideal Control law.
-        SSTR='undefined control        '
-        IF(IBCLAW(II,JJ,KK).EQ.1) SSTR='basic control        '
-        IF(IBCLAW(II,JJ,KK).EQ.2) SSTR='free floating        '
-        IF(IBCLAW(II,JJ,KK).EQ.3) SSTR='pre-heat/cool        '
-        IF(IBCLAW(II,JJ,KK).EQ.4) SSTR='fixed inject/extract '
-        IF(IBCLAW(II,JJ,KK).EQ.5) SSTR='basic proportional   '
-        IF(IBCLAW(II,JJ,KK).EQ.6) SSTR='flux zone/plant      '
-        IF(IBCLAW(II,JJ,KK).EQ.7) SSTR='multi-stage with hyst'
-        IF(IBCLAW(II,JJ,KK).EQ.8) SSTR='variable supply      '
-        IF(IBCLAW(II,JJ,KK).EQ.9) SSTR='heat pipe in constr  '
-        IF(IBCLAW(II,JJ,KK).EQ.10)SSTR='separate ON/OFF flux '
-        IF(IBCLAW(II,JJ,KK).EQ.11)SSTR='match temp - ideal'
-        IF(IBCLAW(II,JJ,KK).EQ.12)SSTR='match temp - on-off'
-        IF(IBCLAW(II,JJ,KK).EQ.13)SSTR='time-proportional ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.14)SSTR='floating control'
-        IF(IBCLAW(II,JJ,KK).EQ.15)SSTR='opt. start logic ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.16)SSTR='opt. stop logic ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.17)SSTR='fuzzy logic PI-PD ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.18)SSTR='null controller.'
-        IF(IBCLAW(II,JJ,KK).EQ.19)SSTR='basic multi-sensor'
-        IF(IBCLAW(II,JJ,KK).EQ.20)SSTR='evaporative source'
-        IF(IBCLAW(II,JJ,KK).EQ.21)SSTR='slave capacity controller'
-        IF(IBSN(II,1).EQ.-99)     SSTR='control law not used'
+        SSTR='undefined law '
+        call usrmsg('should have called EVCNTRLAW',' ','W')
       ENDIF
       return
 
@@ -2043,19 +2024,8 @@ C Plant control type.
       ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
 
 C Plant Control law.
-        SSTR='undefined control        '
-        IF(IPCLAW(II,JJ,KK).EQ.0) SSTR='period off        '
-        IF(IPCLAW(II,JJ,KK).EQ.1) SSTR='PID flux control.  '
-        IF(IPCLAW(II,JJ,KK).EQ.2) SSTR='PID flow control. '
-        IF(IPCLAW(II,JJ,KK).EQ.3) SSTR='Prop numerical ctrl.'
-        IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
-        IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
-        IF(IPCLAW(II,JJ,KK).EQ.6) SSTR='Null controller.'
-        IF(IPCLAW(II,JJ,KK).EQ.7) SSTR='Duty Cycle Ctlr.'
-        IF(IPCLAW(II,JJ,KK).EQ.8) SSTR='On-Off control.'
-        IF(IPCLAW(II,JJ,KK).EQ.9) SSTR='Multi-sensor on-off.'
-        IF(IPCLAW(II,JJ,KK).EQ.10) SSTR='Cogen. controller'
-
+        SSTR='undefined law '
+        call usrmsg('should have called EVCNTRLAW',' ','W')
       ENDIF
       return
 
@@ -2161,10 +2131,7 @@ C Flow control type.
 
 C Control law.
         SSTR='undefined law '
-        IF(IFCLAW(II,JJ,KK).EQ.0) SSTR='on / off                 '
-        IF(IFCLAW(II,JJ,KK).EQ.1) SSTR='proportional + hysteresis'
-        IF(IFCLAW(II,JJ,KK).EQ.2) SSTR='low/default/mid/hi       '
-        IF(IFCLAW(II,JJ,KK).EQ.3) SSTR='multi sensor on/off      '
+        call usrmsg('should have called EVCNTRLAW',' ','W')
       endif
       RETURN
 
@@ -2204,6 +2171,257 @@ C Return actuator type. << check to see if any other values allowed >>
 
       END
 
+C ******************** EVCNTRLAW 
+C EVCNTRLAW: Decodes and returns two strings (72 char & 248 char) describing
+C an esp-r control file control laws for zone/plant/flow/electrical.
+      SUBROUTINE EVCNTRLAW(icfoc,II,JJ,KK,SSTR,message)
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+#include "control.h"
+#include "power.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      common/pcnam/pcname(mpcom)
+      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
+     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
+     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
+     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
+      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
+     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
+     &       pmiscd(mcl,mpcdt,mpcdp,misc)
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
+     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
+     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
+     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
+     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
+     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
+     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+      CHARACTER SSTR*72,ZNAME*12,ZN*12,zdesc*64
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15
+      CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
+      dimension cm(misc)
+
+C sub-strings for describing multi-sensor flow controls.
+      character msg1*24,msg2*24,msg3*24,msg4*24,msg*72,lmsg*248
+      character message*248
+      logical oka,okb
+
+      SSTR=' '
+      message=' '
+
+      if(icfoc.eq.0)then
+
+C Ideal Control law.
+        SSTR='undefined control        '
+        IF(IBCLAW(II,JJ,KK).EQ.1) SSTR='basic control        '
+        IF(IBCLAW(II,JJ,KK).EQ.2) SSTR='free floating        '
+        IF(IBCLAW(II,JJ,KK).EQ.3) SSTR='pre-heat/cool        '
+        IF(IBCLAW(II,JJ,KK).EQ.4) SSTR='fixed inject/extract '
+        IF(IBCLAW(II,JJ,KK).EQ.5) SSTR='basic proportional   '
+        IF(IBCLAW(II,JJ,KK).EQ.6) SSTR='flux zone/plant      '
+        IF(IBCLAW(II,JJ,KK).EQ.7) SSTR='multi-stage with hyst'
+        IF(IBCLAW(II,JJ,KK).EQ.8) SSTR='variable supply      '
+        IF(IBCLAW(II,JJ,KK).EQ.9) SSTR='heat pipe in constr  '
+        IF(IBCLAW(II,JJ,KK).EQ.10)SSTR='separate ON/OFF flux '
+        IF(IBCLAW(II,JJ,KK).EQ.11)SSTR='match temp - ideal'
+        IF(IBCLAW(II,JJ,KK).EQ.12)SSTR='match temp - on-off'
+        IF(IBCLAW(II,JJ,KK).EQ.13)SSTR='time-proportional ctl'
+        IF(IBCLAW(II,JJ,KK).EQ.14)SSTR='floating control'
+        IF(IBCLAW(II,JJ,KK).EQ.15)SSTR='opt. start logic ctl'
+        IF(IBCLAW(II,JJ,KK).EQ.16)SSTR='opt. stop logic ctl'
+        IF(IBCLAW(II,JJ,KK).EQ.17)SSTR='fuzzy logic PI-PD ctl'
+        IF(IBCLAW(II,JJ,KK).EQ.18)SSTR='null controller.'
+        IF(IBCLAW(II,JJ,KK).EQ.19)SSTR='basic multi-sensor'
+        IF(IBCLAW(II,JJ,KK).EQ.20)SSTR='evaporative source'
+        IF(IBCLAW(II,JJ,KK).EQ.21)SSTR='slave capacity controller'
+        IF(IBSN(II,1).EQ.-99)     SSTR='control law not used'
+        message='not yet coded for ideal controls.'
+        return
+      ENDIF
+
+      if(icfoc.eq.1)then
+
+C Plant control law.
+        SSTR='undefined control        '
+        IF(IPCLAW(II,JJ,KK).EQ.0) SSTR='period off        '
+        IF(IPCLAW(II,JJ,KK).EQ.1) SSTR='PID flux control.  '
+        IF(IPCLAW(II,JJ,KK).EQ.2) SSTR='PID flow control. '
+        IF(IPCLAW(II,JJ,KK).EQ.3) SSTR='Prop numerical ctrl.'
+        IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
+        IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
+        IF(IPCLAW(II,JJ,KK).EQ.6) SSTR='Null controller.'
+        IF(IPCLAW(II,JJ,KK).EQ.7) SSTR='Duty Cycle Ctlr.'
+        IF(IPCLAW(II,JJ,KK).EQ.8) SSTR='On-Off control.'
+        IF(IPCLAW(II,JJ,KK).EQ.9) SSTR='Multi-sensor on-off.'
+        IF(IPCLAW(II,JJ,KK).EQ.10) SSTR='Cogen. controller'
+        message='not yet coded for system controls.'
+        return
+      ENDIF
+
+      if(icfoc.eq.2)then
+
+C Flow control law.
+        SSTR='undefined law '
+        IF(IFCLAW(II,JJ,KK).EQ.0)then
+          SSTR='on / off                 '
+          msg1=' on/off '
+          cm(2)=fmiscd(II,JJ,KK,2)
+          write(msg2,'(a,f7.2)') ' setpoint ',cm(2)
+          cm(3)=fmiscd(II,JJ,KK,3)
+          if(int(cm(3)).eq.-1)msg3=' inverse action'
+          if(int(cm(3)).eq.1) msg3=' direct action'
+          cm(4)=fmiscd(II,JJ,KK,4)
+          write(msg4,'(a,f5.3)') ' ON fraction ',cm(4)
+
+C Gather up all of the message parts into lmsg and then
+C use sdelim to remove extra white space.
+          write(lmsg,'(5a)') 
+     &      msg1(1:lnblnk(msg1)),msg2(1:lnblnk(msg2)),
+     &      msg3(1:lnblnk(msg3)),msg4(1:lnblnk(msg4)),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        elseif(IFCLAW(II,JJ,KK).EQ.1)then
+          SSTR='proportional + hysteresis'
+          cm(2)=fmiscd(II,JJ,KK,2)
+          cm(3)=fmiscd(II,JJ,KK,3)
+          cm(4)=fmiscd(II,JJ,KK,4)
+          cm(5)=fmiscd(II,JJ,KK,5)
+          cm(6)=fmiscd(II,JJ,KK,6)
+          write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f4.1,a,f6.2,a)') 
+     &      ' proportional + hysteresis: signal lower limit ',cm(2),
+     &      ' valve lower limit (%)',cm(3),' signal upper limit ',
+     &      'cm(4), valve upper limit (%)',cm(5),' dS ',cm(6),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        elseif(IFCLAW(II,JJ,KK).EQ.2)then
+          SSTR='low/default/mid/hi       '
+          cm(2)=fmiscd(II,JJ,KK,2)
+          cm(3)=fmiscd(II,JJ,KK,3)
+          cm(4)=fmiscd(II,JJ,KK,4)
+          cm(5)=fmiscd(II,JJ,KK,5)
+          cm(6)=fmiscd(II,JJ,KK,6)
+          cm(7)=fmiscd(II,JJ,KK,7)
+          write(lmsg,'(a,f7.2,a,f6.2,a,f6.2,a,f5.2,a,f5.2,a,f5.2,a)') 
+     &      ' range setpoints: low ',cm(2),' mid ',cm(3),
+     &      ' high ',cm(4),' actuation ranges: low (< low sp)',cm(5),
+     &      ' mid (>mid sp) ',cm(6),' high (>high sp)',cm(7),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        elseif(IFCLAW(II,JJ,KK).EQ.3)then
+
+C Set short SSTR and then begin to build up the longer message (lmsg)
+C based on the miscel data items.
+          SSTR='multi sensor on/off      '
+          cm(1)=fmiscd(II,JJ,KK,1)
+          nitems=nint(cm(1))
+          do 77 mloop=2,nitems
+            cm(mloop)=fmiscd(II,JJ,KK,mloop)
+  77      continue
+          NSEN=NINT(cm(3))
+          if(nint(cm(2)).eq.0)then
+            write(lmsg,'(a,i1,a)') 
+     &        ' multi-sensor: normally closed with ',nsen,
+     &        ' sensors: For'
+          elseif(nint(cm(2)).eq.1)then
+            write(lmsg,'(a,i1,a)') 
+     &        ' multi-sensor: normally open with ',nsen,
+     &        ' sensors: For'
+          else
+            write(lmsg,'(a,i1,a)') 
+     &        ' multi-sensor: unknown position with ',nsen,
+     &        ' sensors: For'
+          endif
+          llongmsg=lnblnk(lmsg)
+          lx=llongmsg+1
+          DO 358 ISEN=1,NSEN
+            ndx=4+8*(ISEN-1)
+            call eclose(cm(ndx),-3.0,0.001,oka)
+            if(oka)then
+              inear=nint(cm(ndx+1))
+              msg1=' sensor unknown'
+              if(inear.eq.0)msg1=' senses ambient T'
+              if(inear.eq.2)msg1=' senses wind speed'
+              if(inear.eq.3)msg1=' senses wind direction'
+              if(inear.eq.4)msg1=' senses diffuse solar'
+              if(inear.eq.5)msg1=' senses direct solar'
+              if(inear.eq.6)msg1=' senses RH'
+            endif
+            call eclose(cm(ndx),-4.0,0.001,okb)
+            if(okb)then
+              inear=nint(cm(ndx+1))
+              write(msg1,'(2a)') ' senses node ',ndnam(inear)
+            endif
+            write(msg2,'(a,f7.2)') ' setpoint ',cm(ndx+4)
+            if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
+            if(int(cm(ndx+5)).eq.1) msg3=' direct action'
+            if(int(cm(ndx+7)).eq.1) msg4=' AND'
+            if(int(cm(ndx+7)).eq.2) msg4=' OR'
+            if(isen.lt.nsen)then
+              write(msg,'(a,i1,4a)') ' sensor ',isen,
+     &          msg1(1:lnblnk(msg1)),msg2(1:lnblnk(msg2)),
+     &          msg3(1:lnblnk(msg3)),msg4(1:lnblnk(msg4))
+            else
+              write(msg,'(a,i1,4a)') ' sensor ',isen,
+     &          msg1(1:lnblnk(msg1)),msg2(1:lnblnk(msg2)),
+     &          msg3(1:lnblnk(msg3)),'.'
+            endif
+
+C Append the sensor msg to the end of lmsg and increment lx position.
+            llmsg=lnblnk(msg)
+            ly=lx+llmsg
+            if(ly.lt.247)then
+              write(lmsg(lx:ly),'(a)') msg(1:llmsg)
+              lx=ly+1
+            endif
+ 358      continue
+
+C Tell the user about the multi sensor data.
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        endif
+        return
+      endif
+
+      if(icfoc.eq.3)then
+
+C Global control. Return sensor type << check required if values other
+C than -3 allowed for sensor >>.
+        SSTR='undefined law '
+        IF(igctyp(II,JJ,KK).eq.1)SSTR= 'Global on-off controller'
+        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global capacity controller'
+        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global schedule on controller'
+        lmsg='not yet coded for global controls.'
+        return
+      ENDIF
+
+      if(icfoc.eq.4)then
+
+C Power systems control law.
+        SSTR='undefined law '
+        IF(IECTYP(II,JJ,KK).eq.1)SSTR= 'Voltage > Reactive power '
+        IF(IECTYP(II,JJ,KK).eq.10)SSTR= 'ApparentPower > on/off '
+        lmsg='not yet coded for electrical controls.'
+        return
+      ENDIF
+
+      END
+
 C ******** LSTCNTLD
 C List one day type of a building/plant/flow/global control. 
       SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
@@ -2231,7 +2449,7 @@ C List one day type of a building/plant/flow/global control.
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-      character outs*124,SSTR*72,TMP*72
+      character outs*124,SSTR*72,TMP*72,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character outsa*84,outsb*84,outsc*84
 
@@ -2287,7 +2505,7 @@ c      call edisp(itru,' ')
      &' Per|Start|Sensing  |Actuating  | Control law       | Data')
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
-        CALL EVCNTRL(icfoc,II,JJ,K,'L',TMP)
+        CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
         if(icfoc.eq.0)then
           WRITE(outsa,83)K,TBCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
           NITEMS=INT(BMISCD(II,JJ,K,1))
@@ -2333,6 +2551,12 @@ C Print out first 9 miscellaneous data if applicable.
           write(outs,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:52),
      &        outsc(1:lnblnk(outsc))
           CALL EDISP(ITRU,outs)
+
+C For flow controls list out the verbose decoding of the misc items.
+C << might consider stripping extra spaces from ltmp? >>
+          if(icfoc.eq.2)then
+            call edisp248(itru,ltmp,90)
+          endif
         elseif(NITEMS.eq.0)then
           write(outs,'(a)',IOSTAT=IOS,ERR=3) outsa(1:52)
           CALL EDISP(ITRU,outs)

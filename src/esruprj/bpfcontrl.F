@@ -610,7 +610,7 @@ C If not browsing the model ask user if they want to save any changes to control
             ICTLF=IFIL+1
             CALL CTLWRT(ICTLF,IER)
             call edisp(IUOUT,' Saving system configuration file.')
-	    CALL EMKCFG('-',IER)
+            CALL EMKCFG('-',IER)
           ENDIF
         endif
         IF(IRETURN.EQ.1)RETURN
@@ -1130,7 +1130,7 @@ C Edit building control function II.
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outsb*84,outsc*84,ltmp*248
       logical close1,close2,close3,close4
 
 C Number of building functions and day type must be > 0.
@@ -1159,7 +1159,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(0,II,JJ,KK)
         CALL EVCNTRL(0,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(0,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(0,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F6.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -2555,7 +2555,8 @@ C Edit plant control function II.
       CHARACTER*84 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,PSALT*40,KEY*1
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outsb*84,outsc*84,ltmp*248
+
       CHARACTER hold*60
       logical close1
 
@@ -2586,7 +2587,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(1,II,JJ,KK)
         CALL EVCNTRL(1,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(1,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(1,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -3374,11 +3375,15 @@ C Edit flow control function II.
      &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      COMMON/MFLOW2/NDNAM(0:MNOD)
 
       CHARACTER*84 VERT(20)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
-      character outsa*84,outsb*84,outsc*84,hold*42
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1,NDNAM*12
+      character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
+
+C Portions of multi-sensor feedback message.
+      character msg1*24,msg2*24,msg3*24,msg4*24
       logical close1
 
 C Number of functions and day type must be > 0.
@@ -3407,7 +3412,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(2,II,JJ,KK)
         CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(2,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(2,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -3658,7 +3663,7 @@ C Miscellaneous data for multi sensor flow controller.
           H(23)='pass through error traps therefore define sensor '
           H(24)='location as usual. '
           H(25)=' '
-          H(26)='The logical action is a means to combine logically'	
+          H(26)='The logical action is a means to combine logically'
           H(27)='the outcomes of the multiple sensors. e.g. if in a'
           H(28)='multisensor control comprising 3 sensors the  '
           H(29)='logical action of sensor1 is AND, sensor2 is OR '
@@ -3672,7 +3677,7 @@ C Miscellaneous data for multi sensor flow controller.
           H(37)='   = -1 measuring a plant component node,'
           H(38)='   = -2 measuring mix air:radiant,'
           H(39)='   = -3 ambient where the 2nd item is:'
-          H(40)='      0 = db,  	    2 = wind velocity, '
+          H(40)='      0 = db,       2 = wind velocity, '
           H(41)='      3 = wind dir, 4 = diffuse radiation, '
           H(42)='      5 = direc norm rad, 6 = RH'
           H(43)='   = -4 measuring a flow side condition.'
@@ -3704,7 +3709,7 @@ C Default position: 1=open,0=closed
           cm(1)=2.+8.*NSEN
  
 C Auxiliary sensor details,
-          DO 58 ISEN=1,NSEN
+          DO 358 ISEN=1,NSEN
             ndx=4+8*(ISEN-1)
             WRITE(OUTS,'(A,I3)')'What to sense for sensor number ',ISEN
             CALL EASKAB(OUTS,' ','Climate variable','Node temperature'
@@ -3719,21 +3724,39 @@ C Auxiliary sensor details,
      &        ino,idno,51)
               IF(INO.EQ.1)THEN
                 CM(NDX+1)=0
-              ELSE
+                msg1=' senses ambient T'
+              elseif(INO.eq.2)then
                 CM(NDX+1)=INO
+                msg1=' senses wind speed'
+              elseif(INO.eq.3)then
+                CM(NDX+1)=INO
+                msg1=' senses wind direction'
+              elseif(INO.eq.4)then
+                CM(NDX+1)=INO
+                msg1=' senses diffuse solar'
+              elseif(INO.eq.5)then
+                CM(NDX+1)=INO
+                msg1=' senses direct solar'
+              elseif(INO.eq.6)then
+                CM(NDX+1)=INO
+                msg1=' senses RH'
               ENDIF
             ELSEIF(IW.EQ.2)THEN
               CM(NDX)=-4.
               call ASKRNOD('  sensed flow node','-',INOD,IER)
               CM(NDX+1)=INOD
+              write(msg1,'(2a)') ' senses nd ',ndnam(inod)
             ENDIF
             CM(NDX+2)=0
             CM(NDX+3)=0
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
      &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,51)
+            write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
  57         CALL EASKR(cm(ndx+5),' ',' Aux sensor inverse action ? ',
      &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,51)
             if(int(cm(ndx+5)).eq.0)goto 57
+            if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
+            if(int(cm(ndx+5)).eq.1) msg3=' direct action'
 
 C<< To implement "fraction on" in a sensible way (setting it to diffent)
 C values for different sensors may cause ambiguity if differnet sensors
@@ -3745,10 +3768,18 @@ C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,51)
      &      'with next sensor','AND','OR',iad,51)
             IF(IAD.EQ.1)THEN
               CM(NDX+7)=1.
+              msg4=' AND'
             ELSEIF(IAD.EQ.2)THEN
               CM(NDX+7)=2.
+              msg4=' OR'
             ENDIF
- 58       CONTINUE
+
+C Echo back to the user what they just put in.
+            write(outs,'(a,i1,4a)') 'For sensor ',isen,
+     &        msg1(1:lnblnk(msg1)),msg2(1:lnblnk(msg2)),
+     &        msg3(1:lnblnk(msg3)),msg4(1:lnblnk(msg4))
+            call edisp(iuout,outs)
+ 358      CONTINUE
  
 C Miscellaneous data for additional flow controllers should follow here.
         endif
@@ -3782,7 +3813,7 @@ C Edit global control function II.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,LTMP*248
       character outsa*84,outsb*84,outsc*84,KEY*1
       character hold*42
       CHARACTER*84 VERT(20)
@@ -3814,7 +3845,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(3,II,JJ,KK)
         CALL EVCNTRL(3,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(3,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(3,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -4354,8 +4385,9 @@ C  isn2  index node/connection
 C  isn3  2nd index node (for differences), or contaminant number
 C  isn4=  0 node, 1=connection (tie in with type later), 2 contaminant control
         H(1)='A typical flow sensor is at a node in the mass flow '
-        H(2)='network.  Only in the case of sensing mass flow would'
-        H(3)='a specific connection be used as the sensed point. '
+        H(2)='network.  Only in the case of sensing 1st or 2nd phase'
+        H(3)='mass flow would a specific connection be used as'
+        H(3)='the sensed point. '
         CALL EASKABC(' ',' Flow sensor at:',' flow node (typical) ',
      &    ' specific flow connection (see help) ','continue',IW,3)
         if(IW.eq.1)then
@@ -4365,7 +4397,28 @@ C if actuation is at a component.
 C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
   93      isn1= -4
           isn4=0
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1) ='Synopsis of sensed properties: '
+          H(2) ='a) Nodes linked to thermal zones will take their'
+          H(3) =' temperature the last know temperature of the zone.'
+          H(4) =' Many users prefer to sense flow node temperatures'
+          H(5) =' rather than sense the thermal thermal zones directly.'
+          H(6) =' '
+          H(7) ='b) enthalpy is know at each node and can be sensed.'
+          H(8) =' '
+          H(9) ='c) additional plant output might be something like'
+          H(10)=' the demand (W) of the component.'
+          H(11)=' '
+          H(12)='d/e/g/h) the Delta selections are in the form of'
+          H(13)=' the value at the 1st node of the connection minus'
+          H(14)=' the value at the 2nd node of the connection.'
+          H(15)=' For example: if a window should open if the ambient'
+          H(16)=' temperature is less than a room node temperature and'
+          H(17)=' the connection was defined from ambient to room then'
+          H(18)=' the delta T should be negative for an ON state.'
+          H(19)=' '
+          H(20)='i) contanimate concentration - the units are '
+          H(21)=' typically g/kg .....'
+          H(22)=' '
           ino=IFCTYP(II,1,1)
           idno=1
           write(outs,'(2a,i3,a)')'Select a property to sense ',
@@ -4377,12 +4430,14 @@ C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
      &     'g delta pressure between nodes',
      &     'h abs delta pressure between nodes',
      &     'i contaminant concentration at node',' ',' ',' ',
-     &     ino,idno,1)
+     &     ino,idno,22)
           if(ino.eq.0)then
             call usrmsg('You did not select a valid control law.',
      &        'Please redefine.','W')
             goto 93
           endif
+
+C Depening on the users selection set isense and nsup.
           nsup=1
           if(ino.eq.1)isense=1
           if(ino.eq.2)isense=3
