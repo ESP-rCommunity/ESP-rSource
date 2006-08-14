@@ -1761,7 +1761,7 @@ C Heat pipe.
      &      0.,'F',1.,'-',0.,'iteration index',IER,1)
 
           CALL EASKR(cm(3),' ',' Surface no with heat pipe ? ',
-     &      1.,'F',8.,'F',1.,'surface with heatpipe',IER,1)
+     &      1.,'F',32.,'F',1.,'surface with heatpipe',IER,1)
           CALL EASKR(cm(4),' ',' Outer node for heatpipe ? ',
      &      1.,'F',8.,'F',1.,'outer node',IER,1)
           CALL EASKR(cm(5),' ',' Inner node for heatpipe ? ',

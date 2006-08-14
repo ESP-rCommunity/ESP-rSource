@@ -22,7 +22,8 @@ C econtrol.f includes the following subroutines:
 C  EZCTLR:  Reads the configuration control strategy file.
 C  EZCTLI:  Zeroes all control data in common BCTL, CCTL, and FCTL.
 C  EVCNTRL: Decodes & returns string describing control file sensors,
-C           actuators, control types, control laws.
+C           actuators, control types.
+C  EVCNTRLAW: Decodes & returns string describing control file laws.
 C  Ezctlc:  Checks all building control functions, plant loops, and
 C           mass flow control functions for validity.
 C  tscdta:  Sets TSC6 variables in the case of TSC6 called from a
@@ -2229,29 +2230,415 @@ C sub-strings for describing multi-sensor flow controls.
 
 C Ideal Control law.
         SSTR='undefined control        '
-        IF(IBCLAW(II,JJ,KK).EQ.1) SSTR='basic control        '
-        IF(IBCLAW(II,JJ,KK).EQ.2) SSTR='free floating        '
-        IF(IBCLAW(II,JJ,KK).EQ.3) SSTR='pre-heat/cool        '
-        IF(IBCLAW(II,JJ,KK).EQ.4) SSTR='fixed inject/extract '
-        IF(IBCLAW(II,JJ,KK).EQ.5) SSTR='basic proportional   '
-        IF(IBCLAW(II,JJ,KK).EQ.6) SSTR='flux zone/plant      '
-        IF(IBCLAW(II,JJ,KK).EQ.7) SSTR='multi-stage with hyst'
-        IF(IBCLAW(II,JJ,KK).EQ.8) SSTR='variable supply      '
-        IF(IBCLAW(II,JJ,KK).EQ.9) SSTR='heat pipe in constr  '
-        IF(IBCLAW(II,JJ,KK).EQ.10)SSTR='separate ON/OFF flux '
-        IF(IBCLAW(II,JJ,KK).EQ.11)SSTR='match temp - ideal'
-        IF(IBCLAW(II,JJ,KK).EQ.12)SSTR='match temp - on-off'
-        IF(IBCLAW(II,JJ,KK).EQ.13)SSTR='time-proportional ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.14)SSTR='floating control'
-        IF(IBCLAW(II,JJ,KK).EQ.15)SSTR='opt. start logic ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.16)SSTR='opt. stop logic ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.17)SSTR='fuzzy logic PI-PD ctl'
-        IF(IBCLAW(II,JJ,KK).EQ.18)SSTR='null controller.'
-        IF(IBCLAW(II,JJ,KK).EQ.19)SSTR='basic multi-sensor'
-        IF(IBCLAW(II,JJ,KK).EQ.20)SSTR='evaporative source'
-        IF(IBCLAW(II,JJ,KK).EQ.21)SSTR='slave capacity controller'
-        IF(IBSN(II,1).EQ.-99)     SSTR='control law not used'
-        message='not yet coded for ideal controls.'
+        IF(IBCLAW(II,JJ,KK).EQ.1.or.IBCLAW(II,JJ,KK).EQ.1)then
+          IF(IBCLAW(II,JJ,KK).EQ.1)then
+            SSTR='basic control        '
+            msg1=' basic control:'
+          ELSEIF(IBCLAW(II,JJ,KK).EQ.3)then
+            SSTR='pre-heat/cool        '
+            msg1=' pre-heat/cool '
+          ENDIF
+          cm(1)=bmiscd(II,JJ,KK,1)
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          if(nint(cm(1)).eq.7)then
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &        msg1,' max heating capacity ',cm(2),
+     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
+     &        cm(4),'W min heaing capacity ',cm(5),
+     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &        cm(7),'C.'
+          elseif(nint(cm(1)).eq.11)then
+            if(nint(cm(12)).eq.1)then
+              write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
+     &          msg1,' max heating capacity ',cm(2),
+     &          'W min heating capacity ',cm(3),
+     &          'W max cooling capacity ',cm(4),
+     &          'W min heaing capacity ',cm(5),
+     &          'W. Heating setpoint ',cm(6),
+     &          'C cooling setpoint ',cm(7),
+     &          'C and moisture inj humidity control with upper sp',
+     &          cm(8),'(%) lower sp ',cm(9),
+     &          '(%) max humidification rate ',cm(10),
+     &          '(g/s) max dehujidification rage ',cm(11),'(g/s).'
+            elseif(nint(cm(12)).eq.2)then
+              write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
+     &          a,f7.2,a,f5.1,a,f5.1,a)') 
+     &          msg1,' max heating capacity ',cm(2),
+     &          'W min heating capacity ',cm(3),
+     &          'W max cooling capacity ',cm(4),
+     &          'W min heaing capacity ',cm(5),
+     &          'W. Heating setpoint ',cm(6),
+     &          'C cooling setpoint ',cm(7),
+     &          'C abd temp based humidity control with upper sp ',
+     &          cm(8),'(%) lower sp ',cm(9),'(%).'
+            endif
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.2)then
+          SSTR='free floating        '
+          message=' free floating (no parameters).'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.4)then
+          SSTR='fixed inject/extract '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a)') 
+     &      ' fixed injection/extraction: heating injection ',cm(2),
+     &      'W cooling extraction ',cm(3),
+     &      'W. Heating setpoint ',cm(4),
+     &      'C cooling setpoint ',cm(5),'C.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.5)then
+          SSTR='basic proportional   '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
+          if(nint(cm(2)).eq.1)then
+            write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
+     &        a,f7.2,a,f5.2,a)') 
+     &      ' proportional: max heating ',cm(3),
+     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
+     &      'C min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      'C throttling range ',cm(10),'C.' 
+          elseif(nint(cm(2)).eq.2)then
+            write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
+     &        a,f7.2,a,f5.2,a,f6.1,a)') 
+     &      ' proportional+integral: max heating ',cm(3),
+     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
+     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      'C throttling range ',cm(10),'C integral action time',
+     &      cm(11),'s.' 
+          elseif(nint(cm(2)).eq.3)then
+            write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
+     &        a,f7.2,a,f5.2,a,f6.1,a)') 
+     &      ' proportional+derivative: max heating ',cm(3),
+     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
+     &      'W min cooling ',cm(8),' Wcooling setpoint ',cm(9),
+     &      'C throttling range ',cm(10),'C derivative action time',
+     &      cm(11),'s.' 
+          elseif(nint(cm(2)).eq.4)then
+            write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
+     &        a,f7.2,a,f5.2,a,f6.1,a,f6.1,a)') 
+     &      ' proportional+I+D: max heating ',cm(3),
+     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
+     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      'C throttling range ',cm(10),'C integral action time',
+     &      cm(11),'s derivative action time ',cm(12),'s.' 
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.6)then
+          SSTR='flux zone/plant      '
+          cm(1)=bmiscd(II,JJ,KK,1)
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          if(nint(cm(4)).eq.1)then
+            if(nint(cm(1)).eq.5)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
+     &        ' plant/zone coupling: plant component',nint(cm(3)),
+     &        ' plant component node ',nint(cm(4)),
+     &        ' coupling type mCp(0s-0a) sequential. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),'W.'
+            elseif(nint(cm(1)).eq.7)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
+     &        ' plant/zone coupling: source plant component',
+     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        ' coupling type mCp(0s-0a) sequential. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),
+     &        'W. Extract plant component ',nint(cm(7)),
+     &        ' and extract node ',nint(cm(8)),'.'
+            endif
+          elseif(nint(cm(4)).eq.2)then
+            if(nint(cm(1)).eq.5)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
+     &        ' plant/zone coupling: plant component',nint(cm(3)),
+     &        ' plant component node ',nint(cm(4)),
+     &        ' coupling type hrA(0s-0a) sequential. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),'W.'
+            elseif(nint(cm(1)).eq.7)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
+     &        ' plant/zone coupling: source plant component',
+     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        ' coupling type hrA(0s-0a) concurrent. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),
+     &        'W. Extract plant component ',nint(cm(7)),
+     &        ' and extract node ',nint(cm(8)),'.'
+            endif
+          elseif(nint(cm(4)).eq.5)then
+            if(nint(cm(1)).eq.5)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
+     &        ' plant/zone coupling: plant component',nint(cm(3)),
+     &        ' plant component node ',nint(cm(4)),
+     &        ' coupling type mCp(0s-0a) concurrent. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),'W.'
+            elseif(nint(cm(1)).eq.7)then
+              write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
+     &        ' plant/zone coupling: source plant component',
+     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        ' coupling type mCp(0s-0a) concurrent. Max heating ',
+     &        cm(5),'W max cooling ',cm(6),
+     &        'W. Extract plant component ',nint(cm(7)),
+     &        ' and extract node ',nint(cm(8)),'.'
+            endif
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.7)then
+          SSTR='multi-stage with hyst'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
+          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,
+     &      a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f7.2,a,f5.2,a)') 
+     &    ' multistage: heating off ',cm(2),
+     &    'W heating stage 1 ',cm(3),'W heating stage 2 ',cm(4),
+     &    'W heating stage 3 ',cm(5),'W cooling off ',cm(6),
+     &    'W cooling stage 1 ',cm(7),'W cooling stage 2 ',cm(8),
+     &    'W cooling stage 3 ',cm(9),'W heating setpoint ',cm(10),
+     &    'C heating deadband ',cm(11),'C cooling setpoint ',cm(12),
+     &    'C cooling deadband ',cm(13),'C.' 
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.8)then
+          SSTR='variable supply      '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          if(nint(cm(7)).eq.0) msg1='C cooling available.'
+          if(nint(cm(7)).eq.1) msg1='C no cooling available.'
+          write(lmsg,'(a,f7.2,a,f7.2,a,f9.4,a,f6.2,a,f6.2,a)') 
+     &    ' variable supply temp: max supply T',cm(2),
+     &    'C min supply T',cm(3),'C air flow rate  ',cm(4),
+     &    '(m^3/s) heating setpoint ',cm(5),'C cooling setpoint',cm(6),
+     &    msg1 
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.9)then
+          SSTR='heat pipe in constr  '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          if(nint(cm(2)).eq.0) msg1=' heat pipe: no iteration'
+          if(nint(cm(2)).eq.1) msg1=' heat pipe: iterating'
+          write(lmsg,'(a,i2,a,i2,a,i2,a,f7.2,a,i3,a,f5.2,a)') 
+     &    msg1,' surface index',nint(cm(3)),' outer node index',
+     &    nint(cm(4)),' inner node index ',nint(cm(5)),
+     &    ' critical temperature ',cm(6),'C max iterations',nint(cm(7)),
+     &    ' flux difference tolerance ',cm(8),'W.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.10)then
+          SSTR='separate ON/OFF flux '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,a)') 
+     &    ' separate ON/OFF flux: max heating capacity ',cm(2),
+     &    'W max cooling capacity ',cm(3),'W heating on at ',cm(4),
+     &    'C heating off at ',cm(5),'C cooling on at ',cm(6),
+     &    'C cooling off at ',cm(7),'C.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.11)then
+          SSTR='match temp - ideal'
+          message='match temperature (ideal) report TBD'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.12)then
+          SSTR='match temp - on-off'
+          message='match temperature (on/off) report TBD'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.13)then
+          SSTR='time-proportional ctl'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
+          cm(13)=bmiscd(II,JJ,KK,13)
+          write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,
+     &      a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a)') 
+     &    ' time proportioning on/off: max heating capacity ',cm(2),
+     &    'W max cooling capacity ',cm(3),'W heating on setpoint ',
+     &    cm(4),'C heating off setpoint ',cm(5),
+     &    'C cooling on setpoint ',cm(6),'C cooling off setpoint ',
+     &    cm(7),' total heating minutes',cm(8),
+     &    ' min heating On minutes',cm(9),
+     &    ' min heating OFF minutes',cm(10),
+     &    ' total cooling minutes',cm(11),' min cooling On minutes',
+     &    cm(12),' min cooling OFF minutes',cm(13),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.14)then
+          SSTR='floating control'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
+          cm(13)=bmiscd(II,JJ,KK,13)
+          cm(14)=bmiscd(II,JJ,KK,14)
+          cm(15)=bmiscd(II,JJ,KK,15)
+          write(lmsg,'(a,f7.2,a,f5.2,a,f5.2,a,f5.2,a,f7.2,a,f5.2,
+     &      a,f5.2,a,f5.2,a,f9.2,a,f9.2,a,f5.2,a,f9.2,a,f9.2,
+     &      a,f5.2,a)') 
+     &    ' floating three position control: heating setpoint',cm(2),
+     &    'C heating deadband',cm(3),'C heating shut diff ',cm(4),
+     &    'C heating open diff ',cm(5),
+     &    'C cooling setpoint ',cm(6),'C cooling deadband ',cm(7),
+     &    'C cooling open diff',cm(8),'C cooling shut diff',cm(9),
+     &    'C max heating capacity',cm(10),'W min heating capacity',
+     &    cm(11),'W rate of change for heating',cm(12),
+     &    ' max cooling capacity',cm(13),'Wmin cooling capacity',
+     &    cm(14),' rate of change for cooling',cm(15),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.15)then
+          SSTR='opt. start logic ctl'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          if(nint(cm(7)).eq.0)then
+            msg1=' optimum 4am start:'
+            write(lmsg,'(2a,f9.2,a,f6.2,a,f5.2,a,f5.2,a,f5.2,a)') 
+     &      msg1,': heating capacity',cm(2),
+     &      'W heating setpoint',cm(3),'C temperature diff ',cm(4),
+     &      'C desired time of arrival ',cm(5),
+     &      'Hr minimum time difference ',cm(6),'Hr.'
+          elseif(nint(cm(7)).eq.1)then
+            msg1=' optimum user def start'
+            write(lmsg,'(2a,f9.2,a,f6.2,a,f5.2,a,f5.2,a,f5.2,a,f5.2,a)') 
+     &      msg1,': heating capacity',cm(2),
+     &      'W heating setpoint',cm(3),'C temperature diff ',cm(4),
+     &      'C desired time of arrival ',cm(5),
+     &      'Hr minimum time difference ',cm(6),'Hr starting at ',
+     &      cm(8),'Hr.'
+          elseif(nint(cm(7)).eq.2)then
+            msg1=' optimum Birtles&John Eq'
+            write(lmsg,'(2a,f9.2,a,f6.2,a,f5.2,a,f5.2,a,f5.2,a,f5.2,
+     &        a,f5.2,a,f5.2,a)') 
+     &      msg1,' start: heating capacity',cm(2),
+     &      'W heating setpoint',cm(3),'C temperature diff ',cm(4),
+     &      'C desired time of arrival ',cm(5),
+     &      'Hr minimum time difference ',cm(6),
+     &      'Hr B&J Eqn 1st Coef ',cm(8),' B&J 2nd coef ',cm(9),
+     &      ' B&J 3rd coef ',cm(10),'.'
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.16)then
+          SSTR='opt. stop logic ctl'
+          message='optimal stop logic report TBD'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.17)then
+          SSTR='fuzzy logic PI-PD ctl'
+          message='fuzzy logic report TBD'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.18)then
+          SSTR='null controller.'
+          message='null controller has no data'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.19)then
+          SSTR='basic multi-sensor'
+          message='ideal multi-sensor controller report TBD'
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.20)then
+          SSTR='evaporative source'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          if(nint(cm(2)).eq.0)then
+            lmsg=' wet surface in zone (see actuator) '
+          elseif(nint(cm(2)).eq.1)then
+            msg1=' swiming pool surface: '
+            write(lmsg,'(2a,f9.2,a,f6.3,a,f6.3,a,f5.2,a,f5.2,a,f5.3,
+     &        a,f5.2,a,f8.2,a,f7.2,a)') 
+     &        msg1,' pool surface area',cm(3),'m^2 pool surf conv htc',
+     &        cm(4),' pool surf radiative htc ',cm(5),
+     &        ' pool temperature ',cm(6),'C ground temperature ',cm(7),
+     &        'C water supply rate ',cm(8),
+     &        '(kg/s) water supply temperature ',cm(9),
+     &        'C submerged wall area ',cm(10),'m^2 and U value ',
+     &        cm(11),'.'
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.21)then
+          SSTR='slave capacity controller'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          write(lmsg,'(a,i2,a,f9.2,a,f9.2,a)') 
+     &      ' master/slave control: index of master control loop',
+     &       nint(cm(2)),' slave maximum heating capacity ',cm(3),
+     &      ' slave maximum cooling capacity ',cm(4),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBSN(II,1).EQ.-99)then
+          SSTR='control law not used'
+          message='type -99 control law not used'
+        ENDIF
         return
       ENDIF
 
@@ -2306,7 +2693,7 @@ C          call edisp248(6,message,80)
           write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f4.1,a,f6.2,a)') 
      &      ' proportional + hysteresis: signal lower limit ',cm(2),
      &      ' valve lower limit (%)',cm(3),' signal upper limit ',
-     &      'cm(4), valve upper limit (%)',cm(5),' dS ',cm(6),'.'
+     &      cm(4),' valve upper limit (%)',cm(5),' dS ',cm(6),'.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         elseif(IFCLAW(II,JJ,KK).EQ.2)then
@@ -2552,9 +2939,10 @@ C Print out first 9 miscellaneous data if applicable.
      &        outsc(1:lnblnk(outsc))
           CALL EDISP(ITRU,outs)
 
-C For flow controls list out the verbose decoding of the misc items.
-C << might consider stripping extra spaces from ltmp? >>
-          if(icfoc.eq.2)then
+C For zone & flow controls list out the verbose decoding of the misc items.
+          if(icfoc.eq.0)then
+            call edisp248(itru,ltmp,90)
+          elseif(icfoc.eq.2)then
             call edisp248(itru,ltmp,90)
           endif
         elseif(NITEMS.eq.0)then
