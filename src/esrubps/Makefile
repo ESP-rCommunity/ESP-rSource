@@ -55,13 +55,13 @@ FOBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  SOFC_Annex42.o shocc_dummy.o
 ## for Solaris comment out the ifeq lines, for GNU compilers and make ifeq is ok to use.
-## ifeq ($(xml_support),yes)
+ifeq ($(xml_support),yes)
  	COBJECTS=TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
  	FOBJECTS += ConfigureH3kReports.o
-##else
-##	COBJECTS= 
-##	FOBJECTS += TReports_dummy.o 
-## endif
+else
+	COBJECTS= 
+	FOBJECTS += TReports_dummy.o 
+endif
 
 $(PROG): $(FOBJECTS) $(COBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(FOBJECTS) $(COBJECTS) $(ULIBS) $(F_to_C_flags)
