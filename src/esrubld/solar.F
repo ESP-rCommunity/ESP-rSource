@@ -193,6 +193,7 @@ C in elevation and azimuth.
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -306,6 +307,7 @@ C
       logical VTSOL,vsolfl,closea,neglum
 
       character outs*124,zname*12,zdesc*64,vsnam*72
+      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
 
       DIMENSION QIABS(MS),IANS(MS),IND1(MS),IND2(MS),ANGI(MS),
      &SRADDO(MS),SRADF(MS)
@@ -314,6 +316,10 @@ C
 
 C Daylight coeff specific
       dimension alt(8)
+
+C tdtrace is the direct transmission at the current timestep for each surface.
+C tfftrace is the diffuse transmission at the current timestep for each surface.
+      dimension tdtrace(MS),tfftrace(MS)
 
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -1120,15 +1126,20 @@ C Get diffuse transmission from common block.
             ENDIF
 
             TFF=SRADF(I)*SNA(ICOMP,I)*XF
+            tfftrace(i)=tff
+
 C For bidirectional data, add in the direct-diffuse component.
-            IF(IBIDIR.NE.0)TFF=TFF+SRADF(I)*SNA(ICOMP,I)*DTOD 
-  
+            if(IBIDIR.NE.0)then
+              TFF=TFF+SRADF(I)*SNA(ICOMP,I)*DTOD 
+              tfftrace(i)=tff
+            endif
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
             ELSE
               POO=PO(ICOMP,I,IHRF)
             ENDIF
             TD=SRADDO(I)*SNA(ICOMP,I)*(1.-POO)*XD
+            tdtrace(i)=td
 
             QZNTOT=QZNTOT+TD+TFF
             q1outs(2)=q1outs(2)+td+tff
@@ -1139,7 +1150,9 @@ C                 ------------------------------
 C Set TD, TFF for a type 3 surface (internal surface with adjacent zone).
           IF(IE(ICOMP,I).GT.0) THEN
             TD=DIRT(ICOMP,I)*SNA(ICOMP,I)
+            tdtrace(i)=td
             TFF=DIFT(ICOMP,I)*SNA(ICOMP,I)
+            tfftrace(i)=tff
 
             QZNTOT=QZNTOT+TD+TFF
             q1adjz(2)=q1adjz(2)+td+tff
@@ -1409,14 +1422,12 @@ C Trace output ?
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
-      write(outs,'(A,I4,A,A)')' Subroutine MZSLGN Trace output ',ICNT,
-     &  ' Zone ',zname(ICOMP)
+      write(outs,'(A,I4,3A)')' Subroutine MZSLGN Trace output ',ICNT,
+     &  ' Zone ',zname(ICOMP),' All output W/m^2'
+      call edisp(itu,' ')
       call edisp(itu,outs)
       ICNT=ICNT+1
       CALL DAYCLK(IDYP,BTIMEF,ITU)
-
-      call edisp(itu,' All output W/m^2')
-      call edisp(itu,' ')
 
 C Output solar intensity details.
       write(outs,9993)SAZI,SALT
@@ -1430,35 +1441,42 @@ C Output solar intensity details.
 
 C Output QSOLE and QSOLI for each construction if sun up.
       if(SALT.lt.-1.0)goto 9992
-      call edisp(itu,' Surface External   Internal    TMC nodal  ')
-      call edisp(itu,'         Solar      Solar       absorptions')
-      call edisp(itu,'         Absorption Absorption  (outside>inside)')
+      call edisp(itu,' Surface    External  Internal  TMC nodal  ')
+      call edisp(itu,'            Solar     Solar     absorptions')
+      call edisp(itu,'            Abs       Abs       (outside>inside)')
       DO 9991 I=1,NC
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.LE.0)then
-          write(outs,'(I8,2F11.2)')I,QSOLE(I,2),QSOLI(I,2)
+          write(outs,'(a,2F9.2)')sname(icomp,I),QSOLE(I,2),QSOLI(I,2)
           call edisp(itu,outs)
         else
           NN=NNDC(ICOMP,I)
-          if(NN.le.10)then
-            write(outs,'(I8,2F11.2,10F6.2)')I,QSOLE(I,2),QSOLI(I,2),
-     &       (QTMCA(I,J,2),J=1,NN)
+          if(NN.le.12)then
+            write(outs,'(a,2F9.2,12F6.2)')sname(icomp,I),QSOLE(I,2),
+     &        QSOLI(I,2),(QTMCA(I,J,2),J=1,NN)
             call edisp(itu,outs)
-          elseif(NN.gt.10)then
-            write(outs,'(I8,2F11.2,10F6.2)')I,QSOLE(I,2),QSOLI(I,2),
-     &       (QTMCA(I,J,2),J=1,10)
+          elseif(NN.gt.12)then
+            write(outs,'(a,2F9.2,12F6.2)')sname(icomp,I),QSOLE(I,2),
+     &        QSOLI(I,2),(QTMCA(I,J,2),J=1,12)
             call edisp(itu,outs)
-            write(outs,'(30X,20F6.2)')(QTMCA(I,J,2),J=11,NN)
+            write(outs,'(30X,20F6.2)')(QTMCA(I,J,2),J=13,NN)
             call edisp(itu,outs)
           endif
+
+C Write out the direct and diffuse solar passing glazing and then clear.
+          write(outs,'(12X,a,F8.2,a,F8.2,a)') ' direct solar trn',
+     &      tdtrace(i),' diffuse solar trn',tfftrace(i),'(W).'
+          call edisp(itu,outs)
+          tdtrace(i)=0.
+          tfftrace(i)=0.
         endif
  9991 CONTINUE
  9992 continue
 
 
 C Output computed results.
-      write(outs,9996)icomp
- 9996 format(' Solar energy distribution for zone ',I2,' (Watts)')
+      write(outs,'(3a,i3,a)') ' Solar energy distribution for ',
+     &  zname(ICOMP),' (',icomp,') in Watts.'
       call edisp(itu,' ')
       call edisp(itu,outs)
       write(outs,'(8X,A)')
