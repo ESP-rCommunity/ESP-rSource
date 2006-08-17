@@ -86,7 +86,23 @@ C use the control file specified in the cfg file.
           h(1)='Confirm control associated with the model.'
           write(outs,'(2a)')' Use ',LCTLF(1:lnblnk(LCTLF))
           CALL ASKOK(outs,' with the current model? ',OK,dok,1)
-          if(OK)goto 42
+          if(OK)then
+
+C Do initial setup of ier, ncf and if running silently then turn off trace
+C or if interactive then only set trace if the first simulation.
+            ier=0
+            ncf=0
+            if(autook)then
+              itrc=0
+            else
+              if(isim.gt.1)then
+                itrc=0
+              else
+                itrc=1
+              endif
+            endif
+            goto 42
+          endif
         endif
       endif
 
@@ -108,25 +124,32 @@ C use the control file specified in the cfg file.
         CALL EASKS(LTMP,' System control file: ',
      &     ' ',72,DFILE,'control file name',IER,6)
         IF(LTMP.NE.' ')THEN
+
+C Assign the control file name, reset ier and ncf and only
+C report contents for first simulation if running multiple simulations.
           LCTLF=LTMP
+          ier=0
+          ncf=0
+          if (ISIM.gt.1) then
+            ITRC=0
+          else
+            ITRC=1
+          endif
         ELSE
           CALL EZCTLI
           CTLDOC='NONE '
           RETURN
         ENDIF
-      endif
+      else
 
-  42  IER=0
-      NCF=0
+C In silent mode or subsequent simulation of a set.
+        ier=0
+        ncf=0
+        ITRC=0
+      endif
 
 C Read in the control file (close before returning from EZCTLR).
-C Only report contents for first simulation if running multiple simulations.
-      if (ISIM.gt.1) then
-        ITRC=0
-      else
-        ITRC=1
-      endif
-      CALL EZCTLR(IUNIT,ITRC,IUOUT,IER)
+  42  CALL EZCTLR(IUNIT,ITRC,IUOUT,IER)
       IF(IER.NE.0)THEN
         dok=.false.
         h(1)='At simulation time there should not be any problems with'
