@@ -296,14 +296,14 @@ C If plot show add profile, otherwise toggle delimiter state.
       if(MENUTYPE.eq.3) then
 
 C If plot give graph command and labels command, otherwise list command.
-        ITEM(26)='* labels        '
+        ITEM(26)='@ labels        '
         ITEM(27)='! draw graph    '
         nl=2
       elseif(MENUTYPE.eq.4)then
         if(ILFLAG.eq.0)then
-          ITEM(26)='* labels>>short'
+          ITEM(26)='@ labels>>short'
         elseif(ILFLAG.eq.1)then
-          ITEM(26)='* labels>>long '
+          ITEM(26)='@ labels>>long '
         endif
         ITEM(27)='! list data    '
         nl=2
