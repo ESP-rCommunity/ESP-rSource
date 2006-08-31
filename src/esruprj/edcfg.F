@@ -2489,10 +2489,35 @@ C Global tasks.
           h(15)=' '
           h(16)='You can nominate zones which you want to dereference'
           h(17)='the insolation analysis'
+          H(18)=' '
+          H(19)='Reminder: '
+          H(20)='When you run shading analysis and review the synopsis'
+          H(21)='of shading and find surfaces which have patterns which'
+          H(22)='are not quite what you expect it might be because of'
+          H(23)='the order of the edges in the surfaces of the zone: '
+          H(24)=' '
+          H(25)=' a) you are getting sun when you do not expect it - '
+          H(26)='    double check that what looks like a west facing'
+          H(27)='    surface in the wire frame view is actually'
+          H(28)='    facing west.'
+          H(29)=' b) the zone details confirm that a surface is'
+          H(30)='    oriented correctly and the wire-frame view looks'
+          H(31)='    correct but shading predictions are strage - '
+          H(32)='    then check the ordering of the edges of the'
+          H(33)='    surface(s) that are problematic. Below is the'
+          H(34)='    standard advise for edge ordering....'
+          H(35)=' '
+          H(36)='NOTE: it is suggested that the first surface edge be'
+          H(37)='close to horizontal if at all possible.'
+          H(38)='The shading analysis application gets confused if the'
+          H(39)='first edge of a surface is vertical. Nothing in esp-r'
+          H(40)='warns you of this - so get into a consistent habit of'
+          H(41)='avoiding vertical first edges in surfaces! '
           CALL EASKABCD(
      &      'Shading/insolation options for multiple zones:',
-     &      ' ','recalculate shading','dereference shading files',
-     &      'add insolation calculations','continue',IW,17)
+     &      '(see help)','recalculate shading',
+     &      'dereference shading files','add insolation calculations',
+     &      'continue',IW,41)
           if(IW.eq.1)then
             call eddshd
           elseif(IW.eq.2)then

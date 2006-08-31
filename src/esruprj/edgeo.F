@@ -3609,6 +3609,13 @@ C Help text for this menu.
       H(11)='axis updates vertices associated with that surface '
       H(12)='and thus surfaces sharing these vertices.  Useful '
       H(13)='for expanding/shrinking a zone. '
+      H(14)=' '
+      H(15)='NOTE: it is suggested that the first surface edge be'
+      H(16)='horizontal (or close to horizontal) if at all possible.'
+      H(17)='The shading analysis application gets confused if the'
+      H(18)='first edge of a surface is vertical. Nothing in esp-r'
+      H(19)='warns you of this so get into a consistent habit of '
+      H(20)='avoiding vertical first edges in surfaces. '
 
 C Now display the menu.
       write(head,'(A,A)')'Surface topology of ',zname(ICOMP)
@@ -3623,7 +3630,7 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the vertex menu.
-        CALL PHELPD('vertex section',13,'-',0,0,IER)
+        CALL PHELPD('vertex section',20,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Check vertex topology.
