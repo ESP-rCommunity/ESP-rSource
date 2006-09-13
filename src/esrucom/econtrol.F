@@ -1619,7 +1619,25 @@ C Re-initialise control file for fuzzy data.
         RETURN
       ENDIF
 
+C Look for definition of fuzzy data referenced by other
+C control laws. If fuzzy data not found set an error condition
+C free control file and return. 
       CALL FZDATA(IUNIT,IER)
+      IF(IER.eq.1)THEN
+        write(outs,'(a)') 'Error reading fuzzy data.'
+        if(dll)then
+          dllsubr='FZDATA'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          CALL EDISP(ITRU,OUTSTR)
+          CALL ERPFREE(IUNIT,ISTAT)
+          ier=1
+          return
+        endif
+      ENDIF
 
 C Set TSC6 data items, if applicable.
       call tscdta
@@ -3293,7 +3311,8 @@ C ADJUST PERIOD START DAY & HOUR IF PERIOD START = 0.0 HOURS,
 
 C ******************** FZDATA
 C fzdat reads fuzzy logic data from configuration control file.
-
+C It returns ier=1 if it cannot find the fuzzy data description
+C section in the control file or had a problem reading the data.
       SUBROUTINE FZDATA(IUNIT,IER)
 
 #include "building.h"
@@ -3321,15 +3340,16 @@ C fzdat reads fuzzy logic data from configuration control file.
       IFOUND=0
 
       DO 150 K=1,NCF
-       DO 145 KK=1,NBCDT(K)
-        DO 140 KKK=1,NBCDP(K,KK)
-          IF(IBCLAW(K,KK,KKK).EQ.17)IFUZ=IFUZ+1
-  140   CONTINUE
- 145   CONTINUE
+        DO 145 KK=1,NBCDT(K)
+         DO 140 KKK=1,NBCDP(K,KK)
+           IF(IBCLAW(K,KK,KKK).EQ.17)IFUZ=IFUZ+1
+  140    CONTINUE
+ 145    CONTINUE
 150   CONTINUE
       
       IF(IFUZ.EQ.0)RETURN
       DO 550 LL=1,3000
+
 C Read header : * FUZZY CONTROL.
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'* CONTROL ',IER)
         IF(IER.NE.0)GOTO 900
@@ -3340,22 +3360,22 @@ C Read header : * FUZZY CONTROL.
         ENDIF
         IFOUND=1
 
-      CALL STRIPC(IUNIT,OUTSTR,1,ITEMS,1,'No. fz data sets',IER)
-      IF(IER.NE.0)GOTO 990
-      KG=0
-      CALL EGETWI(
-     &OUTSTR,KG,NOFP,1,20,'F','No. of fzy data sets',IER)   
+        CALL STRIPC(IUNIT,OUTSTR,1,ITEMS,1,'No. fz data sets',IER)
+        IF(IER.NE.0)GOTO 990
+        KG=0
+        CALL EGETWI(
+     &    OUTSTR,KG,NOFP,1,20,'F','No. of fzy data sets',IER)   
 
-      IF(NOFP.EQ.0)RETURN
+        IF(NOFP.EQ.0)RETURN
 
-      DO 650 I=1,NOFP
-         CALL STRIPC(IUNIT,OUTSTR,1,ITEMS,1,'Fz data set',IER)
-         IF(IER.NE.0)GOTO 990
-         KG=0
-         CALL EGETWI(
-     &   OUTSTR,KG,IFP,1,20,'F','Fz data set',IER)
+        DO 650 I=1,NOFP
+          CALL STRIPC(IUNIT,OUTSTR,1,ITEMS,1,'Fz data set',IER)
+          IF(IER.NE.0)GOTO 990
+          KG=0
+          CALL EGETWI(
+     &      OUTSTR,KG,IFP,1,20,'F','Fz data set',IER)
                
-         DO 870 L=1,3
+          DO 870 L=1,3
             CALL STRIPC(IUNIT,OUTSTR,1,ITEMS,1,'No. fz mb',IER)
             IF(IER.NE.0)GOTO 990
             KG=0
@@ -3367,9 +3387,9 @@ C Read in fuzzy labels.
      &        'MF labels',IER)
             KG=0
             DO 872 M=1,NFZF(IFP,L)
-               IF(IER.NE.0)GOTO 988
-               CALL EGETW(OUTSTR,KG,WORD,'F','-',IER)
-               FZLABL(IFP,L,M)=WORD(1:6)
+              IF(IER.NE.0)GOTO 988
+              CALL EGETW(OUTSTR,KG,WORD,'F','-',IER)
+              FZLABL(IFP,L,M)=WORD(1:6)
   872       CONTINUE
 
 C Membership function shape data.
@@ -3378,28 +3398,28 @@ C Membership function shape data.
             IF(IER.NE.0)GOTO 989
             IV=0
             DO 864 N=1,NFZF(IFP,L)
-               DO 868 KV=1,6
-                  IV=IV+1
-                  FZM(IFP,L,N,KV)=RVA(IV)
-  868          CONTINUE
+              DO 868 KV=1,6
+                IV=IV+1
+                FZM(IFP,L,N,KV)=RVA(IV)
+  868         CONTINUE
  864        CONTINUE
-870      CONTINUE
+870       CONTINUE
 
-         IVAL=1
-         DO 777 K=1,NFZF(IFP,IVAL)
+          IVAL=1
+          DO 777 K=1,NFZF(IFP,IVAL)
             CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,'Lookup vals',IER)
             IF(IER.NE.0)GOTO 987
             KG=0
             IVALU=2
             DO 779 KL=1,NFZF(IFP,IVALU)
-               CALL EGETW(OUTSTR,KG,WORD,'F','-',IER)
-               IF(IER.NE.0)GOTO 987
-               FZLOOK(IFP,K,KL)=WORD(1:6)
+              CALL EGETW(OUTSTR,KG,WORD,'F','-',IER)
+              IF(IER.NE.0)GOTO 987
+              FZLOOK(IFP,K,KL)=WORD(1:6)
   779       CONTINUE
- 777     CONTINUE
+ 777      CONTINUE
 
-650   CONTINUE
-      GOTO 950
+650     CONTINUE
+        GOTO 950
 550   CONTINUE
 
 900   IF(IFOUND.EQ.0)GOTO 980
@@ -3410,22 +3430,23 @@ C Establish slopes and intercepts for each membership function.
 
 C Error messages.
 980   CALL EDISP(IUOUT,' * FUZZY label not found')
-      GOTO 999
+      ier=1
+      return
 
 987   CALL EDISP(IUOUT,'Error reading in fuzzy look-up table')
-      GOTO 999
+      ier=1
+      return
 
 988   CALL EDISP(IUOUT,'Error reading in fuzzy labels')
-      GOTO 999
+      ier=1
+      return
 
 989   CALL EDISP(IUOUT,'Error reading in fuzzy membership data')
-      GOTO 999
+      ier=1
+      return
 
 990   CALL EDISP(IUOUT,'Error reading in No. of fuzzy membership sets')
-      GOTO 999
-
-999   CALL EPWAIT
-      CALL EPAGEND
-      STOP
+      ier=1
+      return
 
       END
