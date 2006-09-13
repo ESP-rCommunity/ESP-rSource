@@ -2076,14 +2076,25 @@ C Flow Sensor.
           ENDIF
         ELSEIF(IFSN(II,1).EQ.-4)THEN
 
-C Decode which connection or node is sensed.
+C Decode which connection or node is sensed. NNAM is the string
+C representing the index of the node.
           L=IFSN(II,2)
           NNAM=' '
           CALL INTSTR(L,NNAM,LEN,IER)
           DESC=NDNAM(L)(1:lnblnk(NDNAM(L)))
           IF(IFSN(II,4).EQ.0)THEN
-            WRITE(SSTR,'(4A)')'senses node (',NNAM(1:LNBLNK(NNAM)),
-     &       ') ',DESC
+            if(ifsn(ii,2).gt.0.and.ifsn(ii,3).gt.0)then
+              nl1=lnblnk(ndnam(ifsn(ii,2)))
+              nl2=lnblnk(ndnam(ifsn(ii,3)))
+              write(SSTR,'(3a,i3,3a,i3,a)')'sensors are nodes ',
+     &          ndnam(ifsn(ii,2))(1:nl1),' (',ifsn(ii,2),') & ',
+     &          ndnam(ifsn(ii,3))(1:nl2),' (',ifsn(ii,3),')'
+            elseif(ifsn(ii,2).gt.0.and.ifsn(ii,3).eq.0)then
+              WRITE(SSTR,'(4A)')'senses node (',NNAM(1:LNBLNK(NNAM)),
+     &          ') ',DESC(1:lnblnk(desc))
+            else
+              SSTR='  # sensor node(s) not yet defined'
+            endif
           ELSEIF(IFSN(II,4).EQ.1)THEN
             WRITE(SSTR,'(A,i3,4a)') 'senses connection (',
      &        L,') ',NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',

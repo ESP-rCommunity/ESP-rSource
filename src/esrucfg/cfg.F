@@ -99,11 +99,11 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,OTHEROK,XST
-      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP
-      logical M1OK,M2OK,M4OK,M5OK,M6OK
+      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
+      logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
       logical unixok,there,prob,longpause
 
-      DIMENSION ITEMS1(21)
+      DIMENSION ITEMS1(22)
       CHARACTER LCFGF*72,H*72,CFGFN*72,LTMP*144
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
       CHARACTER ITEMS1*30,inf*144,CXSTR*78,outs*124,outs248*248
@@ -159,6 +159,7 @@ C failed searches brought to users attention.
       M4SKP=.TRUE.
       M5SKP=.TRUE.
       M6SKP=.TRUE.
+      M7SKP=.TRUE.
       OTHEROK=.TRUE.
 
 C Assume that the configuration, mlc db, primitive db, control file
@@ -395,39 +396,44 @@ C Find the path and local file name.
       else
         ITEMS1(9)= 'g   marked adiabatic : Yes   '
       endif
-      if(M5SKP)then
+      if(M6SKP)then
         ITEMS1(10)='h   marked BASESIMP  : No    '
       else
         ITEMS1(10)='h   marked BASESIMP  : Yes   '
       endif
-      if(M0SKP)then
-        ITEMS1(11)='i   if no match found: No    '
+      if(M7SKP)then
+        ITEMS1(11)='h   marked IDENT_CEN  : No   '
       else
-        ITEMS1(11)='i   if no match found: Yes   '
+        ITEMS1(11)='h   marked IDENT_CEN  : Yes  '
       endif
-      ITEMS1(12)=  '  _____________________      '
+      if(M0SKP)then
+        ITEMS1(12)='i   if no match found: No    '
+      else
+        ITEMS1(12)='i   if no match found: Yes   '
+      endif
+      ITEMS1(13)=  '  _____________________      '
 
-      ITEMS1(13)=  'p edit individual connections'
-      ITEMS1(14)=  'q clear some/all contiguity  '
-      ITEMS1(15)=  'r check via vertex contiguity'
-      ITEMS1(16)=  '  _____________________      '
+      ITEMS1(14)=  'p edit individual connections'
+      ITEMS1(15)=  'q clear some/all contiguity  '
+      ITEMS1(16)=  'r check via vertex contiguity'
+      ITEMS1(17)=  '  _____________________      '
 
       IF(ITRC.EQ.0)THEN
-        ITEMS1(17)='s reporting >> silent        '
+        ITEMS1(18)='s reporting >> silent        '
       ELSEIF(ITRC.EQ.1)THEN  
-        ITEMS1(17)='s reporting >> summary       ' 
+        ITEMS1(18)='s reporting >> summary       ' 
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS1(17)='s reporting >> verbose       '
+        ITEMS1(18)='s reporting >> verbose       '
       ENDIF
-      ITEMS1(18)=  '! list connections           '
+      ITEMS1(19)=  '! list connections           '
       if(longpause)then
-        ITEMS1(19)='* pause during check 1 sec   '
+        ITEMS1(20)='* pause during check 1 sec   '
       else
-        ITEMS1(19)='* pause during check 0.5 sec '
+        ITEMS1(20)='* pause during check 0.5 sec '
       endif
-      ITEMS1(20)=  '? help                       '
-      ITEMS1(21)=  '- exit program               '
-      MITEM=21
+      ITEMS1(21)=  '? help                       '
+      ITEMS1(22)=  '- exit program               '
+      MITEM=22
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -640,6 +646,15 @@ C Flip logic for case of BASESIMP or no match found.
         endif
       ELSEIF(INO.EQ.11)THEN
 
+C Flip logic for case of CEN 13791 partition or no match found.
+        call tstamp('>','CFG: toggle no match found')
+        if(M7SKP)then
+          M7SKP=.false.
+        else
+          M7SKP=.true.
+        endif
+      ELSEIF(INO.EQ.12)THEN
+
 C Flip logic for case of UNKNOWN or no match found.
         call tstamp('>','CFG: toggle no match found')
         if(M0SKP)then
@@ -653,11 +668,11 @@ C Flip logic for case of UNKNOWN or no match found.
           CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
           M0SKP=.true.
         endif
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.14)THEN
 
 C Edit single connection.
         call edaconn(itrc,ier)
-      ELSEIF(INO.EQ.14)THEN
+      ELSEIF(INO.EQ.15)THEN
 
 C Clear contiguity.
         h(1)='In restructuring a model it is sometimes useful to '
@@ -710,7 +725,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,9)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,IER)
+            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
           endif
         elseif(IRT.eq.2)then
           call tstamp('>','CFG: clearing partial contiguity')
@@ -726,6 +741,7 @@ C attributes.
           call askok(' ','Clear items marked GROUND?',M4OK,dok,6)
           call askok(' ','Clear items marked ADIABETIC?',M5OK,dok,6)
           call askok(' ','Clear items marked BASESIMP?',M6OK,dok,6)
+          call askok(' ','Clear items marked IDENT_CEN?',M7OK,dok,6)
           call usrmsg('Clearing partial contiguity...',bl,'-')
           ICC=0
           do 187 IZ=1,NCOMP
@@ -767,6 +783,13 @@ C attributes.
                 ICT(ICC)=0
                 IC2(ICC)=0
                 IE2(ICC)=0
+              elseif(ICT(ICC).eq.7.and.M7OK)then
+                ICC=ICC+1
+                IC1(ICC)=IZ
+                IE1(ICC)=IS
+                ICT(ICC)=0
+                IC2(ICC)=0
+                IE2(ICC)=0
               else
                 ICC=ICC+1
                 IC1(ICC)=IZ
@@ -794,7 +817,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,7)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,IER)
+            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
           endif
         elseif(IRT.eq.3)then
           goto 3
@@ -859,7 +882,7 @@ C Older configuration file format, ask for its name.
           if(CFGFN.ne.' ')LCFGF=CFGFN
           CALL EMKCFG('-',IER)
         endif
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Check vertex matches and rebuild configuration file. If icfgv = 3 then
 C only need to update the connections file. If it changes also update
@@ -894,7 +917,7 @@ C Older configuration file format, ask for its name.
 C Look for connections.
         call tstamp('>','CFG: do graphic match of surfaces')
         CALL CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &    M4SKP,M5SKP,M6SKP,OTHEROK)
+     &    M4SKP,M5SKP,M6SKP,M7SKP,OTHEROK)
 
 C Save data to configuration file.
 C If overwriting the same connections file then open it and write.
@@ -930,7 +953,7 @@ C Re-build zone:surface to connection hash array.
         else
           CALL EMKCFG('-',IER)
         endif
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.18)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
@@ -951,7 +974,7 @@ C ************** CONFIG
 C CONFIG processes the vertex data and presents close matches for
 C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &  M4SKP,M5SKP,M6SKP,OTHEROK)
+     &  M4SKP,M5SKP,M6SKP,M7SKP,OTHEROK)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -987,7 +1010,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       dimension ICVALS(MCOM),TOTHER(MS),ipmz(3),ipms(3)
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,DOIT,OTHEROK,UPDGEO
-      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP
+      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical closea,closee,close,longpause
       character outs*124,CXSTR*78,zname*12,SN*12,ZN*12,SO*12,TOTHER*12
       character SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,DESCRC*25
@@ -1245,6 +1268,24 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
+C If user said skip marked IDENT_CEN, check and update the
+C surface attribute if it does not match and jump around. 
+            if(M7SKP.and.(ICT(IC).eq.7))then
+              call edisp(iuout,'known connection skipped.')
+              if(MMOD.eq.8)then
+                if(longpause)then
+                  call pauses(1)
+                else
+                  call pausems(400)
+                endif
+              endif
+              if(SO(1:9).ne.'IDENT_CEN')then
+                TOTHER(JS)='IDENT_CEN'
+                UPDGEO=.TRUE.
+              endif
+              goto 110
+            endif
+
 C Ask user if some other type of connection. If M0SKP is true then
 C set connection to exterior and proceed.
             if(OTHEROK)then
@@ -1276,9 +1317,10 @@ C set connection to exterior and proceed.
                 H(8)='    Ground (3D conduction ground model)'
                 H(9)='5 - Adiabatic (no heat flux)'
                 H(10)='6 - BASESIMP foundation'
-                H(11)='UNKNOWN (at this time)'
-                H(12)='Other types via edit of individual connections'
-                H(13)='or use of the project manager.'
+                H(11)='7 - CEN 13791 partition (section 4.4.2 CEN13791)' 
+                H(12)='UNKNOWN (at this time)'
+                H(13)='Other types via edit of individual connections'
+                H(14)='or use of the project manager.'
                 if(ICT(IC).eq.3)then
                   write(outs,'(a,a)') 
      &              'Partition, but no geometric match found. Is ',
@@ -1294,8 +1336,9 @@ C set connection to exterior and proceed.
      &  'c static boundary conditions','d ground (standard profile) ',
      &  'e ground (user def profile) ','f ground (3D conduction)    ',
      &  'g adiabatic (no heat flux)  ','h BASESIMP foundation       ',
-     &  'i UNKNOWN (at this time)    ','j accept current            ',
-     &   ' ',' ',iart,idno,13)
+     &  'i CEN 13791 partition       ',
+     &  'j UNKNOWN (at this time)    ','k accept current            ',
+     &   ' ',iart,idno,14)
                 if(IART.eq.0)then
                   continue
                 elseif(IART.eq.1)then
@@ -1462,6 +1505,18 @@ C attribute to the surface under consideration.
                   endif
 C BASESIMP end.
                 elseif(IART.eq.9)then
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=7
+                  IE2(IC)=0
+                  IC2(IC)=0
+                  if(SO(1:7).ne.'IDENT_CEN')then
+                    TOTHER(JS)='IDENT_CEN'
+                    UPDGEO=.TRUE.
+                  endif
+
+C CEN 13791 partition end.
+                elseif(IART.eq.10)then
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=0
@@ -1704,7 +1759,7 @@ C ************* ESACON
 C ESACON import surface connection attributes into the problem topology
 C common block C3 while taking into account confirmation preferences.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,IER)
+      SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1726,7 +1781,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
-      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP
+      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
 
       CHARACTER CXSTR*78,outs*124
       CHARACTER OUTSTR*124,SO*12,TMP*54,zname*12,zdesc*64,H*72
@@ -1804,6 +1859,9 @@ C check for easy matches.
           GOTO 123
         ELSEIF(SO(1:8).EQ.'BASESIMP'.AND.ICT(ICC).EQ.6)THEN
           CALL EDISP(iuout,'   topology & attribute BASESIMP match.')
+          GOTO 123
+        ELSEIF(SO(1:9).EQ.'IDENT_CEN'.AND.ICT(ICC).EQ.7)THEN
+          CALL EDISP(iuout,'   topology & attribute IDENT_CEN match.')
           GOTO 123
         ELSEIF(SO(1:7).EQ.'UNKNOWN'.OR.SO(1:2).EQ.'  ')THEN
           CALL EDISP(iuout,' surface attribute was UNKNOWN: skipping.')
@@ -2011,6 +2069,34 @@ C attribute to the surface under consideration.
      &      ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
           IE2(ICC)=Ifrac
 C BASESIMP end.
+          GOTO 123
+        ELSEIF(SO(1:9).EQ.'IDENT_CEN')THEN
+          MODIFY=.TRUE.
+          if(MMOD.eq.8)CALL INLNST(1)
+          LINSTY(ICC)=2
+          nzg=1
+          nznog(1)=IC1(ICC)
+          izgfoc=IC1(ICC)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(.NOT.M7SKP)then
+            call edisp(iuout,OUTSTR)
+            call edisp(iuout,TMP)
+            dok=.true.
+            h(1)='This pause allows you to correct errors. '
+            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            IF(.NOT.OK)GOTO 123
+          endif
+          CALL EDISP(iuout,'   topology << IDENT_CEN.')
+          if(MMOD.eq.8)then
+            if(longpause)then
+              call pauses(1)
+            else
+              call pausems(400)
+            endif
+          endif
+          ICT(ICC)=7
+          IC2(ICC)=0
+          IE2(ICC)=0
           GOTO 123
         ELSEIF(SO(1:8).EQ.'EXTERIOR')THEN
           MODIFY=.TRUE.

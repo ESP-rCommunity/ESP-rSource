@@ -44,6 +44,7 @@ c                  the connection.
 C          IE=-4 ; ground coupled.
 C          IE=-5 ; adiabatic.
 C          IE=-6 ; BASESIMP foundation.
+C          IE=-7 ; CEN 13791 partition.
 
 C ATP    - present time adjacent temperature
 C ATF    - future time adjacent temperature
@@ -118,7 +119,7 @@ C values for use as present values at the next time-step.
 
       DIMENSION qlwsum(MS),qradcas(MS),qadjsol(MS),tinside(MS)
       DIMENSION tother(MS),qradcin(MS),qpltri(MS),qpltro(MS)
-
+      DIMENSION qswsum(MS)
 C.....Named constnats for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
@@ -178,6 +179,7 @@ C     &      QPLTP(ICOMP),QPLTF(ICOMP)
           ATP(ICOMP,I)=ATFS(ICOMP,I)
           ARP(ICOMP,I)=ARFS(ICOMP,I)
           qlwsum(I)=0.0
+          qswsum(I)=0.0
           qradcas(I)=0.0
           qadjsol(I)=0.0
           tinside(I)=TFS(ICOMP,I)
@@ -241,7 +243,7 @@ C Plant radiant energy at other face same as inside face.
                 IF(K.NE.I)qlwsum(I) = qlwsum(I) + (HRS(ICOMP,K,I)*
      &                  (TFS(ICOMP,K)-TFS(ICOMP,I)))
   802         CONTINUE
-
+      
               ATF(ICOMP,I)=TFA(ICOMP)+FLOAT(IC2(J))
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
@@ -387,8 +389,49 @@ C as a function of temperature. Treated the same here as for connection
 C type 2.
               APf(ICOMP,I)=0.6*Psat01(ATF(ICOMP,I))
 
+
+            ELSEIF(ICT(J).EQ.7)THEN
+
+C Connection 7: CEN partition case - This is as the "similar" but
+C there is the same shortwave solar radiation for both sides
+C(adjacent zone air temperature set to
+C external surface temperature). Note that this is an exact treatment.
+C The following parameters assume a corresponding action in MZSETU.
+
+C Plant radiant energy at other face same as inside face.
+              qpltro(I)=qpltri(I)
+
+              qlwsum(I)=0.
+              qswsum(I)=0.      
+              DO 1802 K=1,NCONST(ICOMP)
+                IF(K.NE.I)qlwsum(I) = qlwsum(I) + (HRS(ICOMP,K,I)*
+     &                  (TFS(ICOMP,K)-TFS(ICOMP,I)))
+ 1802         CONTINUE
+
+              qswsum(I)=QSLIF(ICOMP,I)
+
+              ATF(ICOMP,I)=TFA(ICOMP)+FLOAT(IC2(J))
+C This appears to be a bug:
+C The timestep-averaged zone radiative casual gains
+C are used to calculate the future gains at the outside surface.
+              qradcas(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+     &                    ei(icomp,I)/emarea(icomp)
+              
+C Instead, use the future zone radiative casual gains, and append
+C the gains resulting from plant containments on the outside
+C surface. 
+C
+C              qradcas(I)=
+C     &         Cas_Rad_dat(icomp) * ei(icomp,I)/emarea(icomp)
+C
+
+
+              ARF(ICOMP,I)=qlwsum(I)+qradcas(I)+qswsum(I)
+              APf(ICOMP,I)=Pfair(ICOMP)
+      
 C Other connection types go here !
-C           ELSEIF  ......
+C           ELSEIF  ......    
+        
             ENDIF
 
 C No other connections need to be tested, jump to next construction.

@@ -736,14 +736,14 @@ C The temporal file was not found, but keep reading until * end tdf found.
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
 
 C Check for simulation setup data and save level.
-        CALL EGETWI(OUTSTR,K,nsset,1,5,'W','no. of sets',IER)
+        CALL EGETWI(OUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
         CALL EGETWI(OUTSTR,K,isstup,0,300,'W','startup',IER)
         CALL EGETWI(OUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(OUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(OUTSTR,K,issave,0,5,'W','save_lv',IER)
 
 C If 6 items on line also read whether to save only 1stph.
-        if(ND.eq.6)then
+        if(ND.eq.7)then
           CALL EGETWI(OUTSTR,K,isavgh,0,1,'W','save_hourly',IER)
         else
           isavgh=0
@@ -806,7 +806,7 @@ C If building or building & plant then read in the building info.
 
 C At this point there may be ground information, if abscent then
 C this is the `* Building` section.
-      CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
+      CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
       IF(IER.NE.0)goto 1
       if(OUTSTR(1:8).eq.'* Ground'.or.OUTSTR(1:8).eq.'* GROUND')then
  344    CALL STRIPC(IUC,OUTSTR,0,ND,1,'ground info',IER)
@@ -857,7 +857,7 @@ C Read more ground related information.
         goto 344
       elseif(OUTSTR(1:10).eq.'* Building'.or.
      &       OUTSTR(1:10).eq.'* BUILDING')then
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
+        CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
         IF(IER.NE.0)goto 1
         LSNAM=OUTSTR(1:72)
       else
@@ -1141,7 +1141,7 @@ C Read in the building connectivity information.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),0,6,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),0,7,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -1230,7 +1230,7 @@ C Check if there is an fluid (1=text, 2=grphic) air flow network available: 0 = 
 C If there is an fluid (=air) flow network available then:
       IF(IAIRN.ge.1)THEN
 
-C Read name of flow network or graphic network flow file.
+C Read name of flow network file or graphic network flow file.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'leakage file',IER)
         LAPROB=OUTSTR(1:72)
         IF(IER.NE.0)goto 1

@@ -226,6 +226,11 @@ C Editing of items.
         H(6)='4 - Ground (monthly profile)'
         H(7)='5 - Adiabatic boundary'
         H(8)='6 - BASESIMP foundation configuration'
+        H(9)='7 - CEN 13791 partition which is like the SIMILAR'
+        H(10)='    but for CEN 13791 test. The offset temperauture'
+        H(11)='    and radiation (W/m^2) in SIMILAR is not available'
+        H(12)='    for the CEN 13791 partition type. For details see'
+        H(13)='    section 4.4.2 CEN 13791 standard. '
         write(outs,'(a,a,a)')' Connection (currently ',
      &    CXSTR(1:lnblnk(CXSTR)),' )'
         idno=ICT(IFOC)
@@ -235,8 +240,8 @@ C Editing of items.
      &  'c static boundary conditions','d surface in another zone   ',
      &  'e ground (standard profile) ','f ground (user def profile) ',
      &  'g ground (3D conduction)    ','h adiabatic (no heat flux)  ',
-     &  'i BASESIMP foundation       ','j continue ',' ',' ',
-     &   iart,idno,8)
+     &  'i BASESIMP foundation       ','j CEN 13791 partition       ',
+     &  'k continue ',' ',iart,idno,13)
         if(iart.eq.0)then
           continue
         elseif(iart.eq.1)then
@@ -469,7 +474,23 @@ C attribute to the surface under consideration.
             UPDGEO=.TRUE.
           endif
 C BASESIMP end.
-        elseif(iart.eq.10)then
+
+C CEN 13791 partition start
+        elseif(iart.eq.10)then 
+          modcfg=.true.
+          ICT(IFOC)=7
+
+          VALT=0.0
+          VALW=0.0
+          IC2(IFOC)=INT(VALT)
+          IE2(IFOC)=INT(VALW)
+          if(SO(1:7).ne.'IDENT_CEN')then
+            TOTHER(IE1(IFOC))='IDENT_CEN'
+            UPDGEO=.TRUE.
+          endif
+C CEN 13791 partition end
+
+        elseif(iart.eq.11)then
           goto 3
         endif 
 
@@ -600,6 +621,14 @@ C information.
         else
           WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
      &      ZST1(:lzn1),' >|< BASESIMP'
+        endif
+      ELSEIF(ICT(ICON).EQ.7)THEN
+        if((lsn1+lzn1+22).lt.43)then
+          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
+     &      ZST1(:lzn1),' >|< IDENT_CEN'
+        else
+          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
+     &      ZST1(:lzn1),' >|< IDENT_CEN'
         endif
       ENDIF
 
