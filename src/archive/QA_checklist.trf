@@ -6,7 +6,7 @@ delim ##
 .TL
 ESP-r Developers' Quality Assurance Checklist 
 .br
-Last updated: May 12, 2006
+Last updated: August 11, 2006
 .sp 2
 .\"---------------------------------------
 .NH 1
@@ -38,17 +38,14 @@ contribute your code to the common ESP-r development branch.
 This document is under versioning control, and suggestions and contributions are 
 strongly encouraged. The troff-formatted source file for the latest 
 version can be obtained at the following url:
-.nr PS 8
-.LD
-.fam C
-https://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf
-.nr PS 12
-.DE
+.IP
+\fIhttps://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf\fR
 .LP
 .\"---------------------------------------
 .NH 1
 General changes to ESP-r
 .\"---------------------------------------
+.LP
 .I "Placing your code under versioning control"
 .LP
 In this section, you'll commit your code to your sub-branch, and update your 
