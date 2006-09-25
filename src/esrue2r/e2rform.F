@@ -512,7 +512,7 @@ C Explains composition/geometry menu.
         else
           dok=.false.
           h(1)='The Radiance outside surfaces description file'
-          h(2)='has not yet been generated. You might loose information'
+          h(2)='has not yet been generated. You might lose information'
           h(3)='if you exit before the file is generated. '
           CALL ASKOK(' Descriptions not yet been generated...',
      &      ' Is it ok to exit ?',OK,dok,3)
