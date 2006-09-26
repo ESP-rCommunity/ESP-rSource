@@ -1,12 +1,12 @@
-/* Functions to set up the main display window and 
-   divide it into frames: graphics, text, menu. 
-   
+/* Functions to set up the main display window and
+   divide it into frames: graphics, text, menu.
+
    Functions:
      wstxpt_() write a string beginning at pixel x and y.
      textatxy_() write a string at pixel x y in colour xcolid.
      textpixwidth_() find width of string (buff) in current font.
      viewtext_() display text in graphics box
-     findviewtext_() find position of display text in graphics box  
+     findviewtext_() find position of display text in graphics box
      drawswl() draw a line of width 1 between two points
      esymbol_() symbol drawing routine.
      eline_() line drawing routine.
@@ -21,20 +21,20 @@
      drawoodash() draw an on-off dashed line of user defined width between two points
      axiscale_() determine scaling ratios
      linescale_() store scaling parameters for lines
-     etplot_() general line plotting. 
+     etplot_() general line plotting.
      erectan_() rectangle drawing routine.
      egrbox_() grey box drawing routine.
      etriang_() triangle drawing routine.
      ecirc_() circle drawing routine.
-     earc_() arc drawing routine. 
+     earc_() arc drawing routine.
      dinterval_() finds interval DV on an axis
      labelstr() generate a tic label
      etlabel_() display text as in old teklib tlabel
      vrtaxis_() draws a vertical axis (tic & labels on right or left side).
-     horaxis_() construct and draw a horiz axis 
+     horaxis_() construct and draw a horiz axis
      testcscale_() test drawing primitives & colors
 */
-   
+
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -44,7 +44,7 @@ extern FILE *wwc;
 /* ********* wstxpt_() write a string beginning at pixel x and y. ******* */
 /* Note the calling code assumes that the pixel is at the lower left
    corner of the block of text. An internal adjustment is required
-   as Pango layout uses the upper left corner. 
+   as Pango layout uses the upper left corner.
 */
 void wstxpt_(x,y,buff,len)
 char *buff;
@@ -65,13 +65,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"wstxpt graphic font medium 8\n");	debug */
- } else if (butn_fnt == 1 ) {	
+/*    g_print("wstxpt graphic font medium 8\n");	debug */
+ } else if (butn_fnt == 1 ) {
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"wstxpt graphic font medium 10\n");	debug */
- } else if (butn_fnt == 2 ) {	
+/*    g_print("wstxpt graphic font medium 10\n");	debug */
+ } else if (butn_fnt == 2 ) {
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"wstxpt graphic font medium 12\n");	debug */
+/*    g_print("wstxpt graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -92,7 +92,7 @@ int  len;        /* len is length passed from fortran */
  gdk_draw_layout (gr_image, gc,ix,iy-f_height,layout);
  g_object_unref (layout);	/* clear the layout */
 
-/*  fprintf(stderr,"wstxpt font height and width is %d %d  %s\n", f_height,f_width,buffer); debug */
+/*  g_print("wstxpt font height and width is %d %d  %s\n", f_height,f_width,buffer); debug */
 
 /* If echo send parameters to wwc file
  if ( wwc_ok == 1) {
@@ -109,7 +109,7 @@ int  len;        /* len is length passed from fortran */
 void textatxy_(x,y,buff,act,n,len)
 long int *x, *y;       /* x y is the position of the string */
 char *buff;
-char *act;  /* single character passed for colour set */	
+char *act;  /* single character passed for colour set */
 long int *n;       /* colour index within the set */
 int  len;        /* len is length passed from fortran */
 {
@@ -120,7 +120,7 @@ int  len;        /* len is length passed from fortran */
  gint ix = (gint) *x;
  gint iy = (gint) *y;
  int ilen;
- int ic; 
+ int ic;
  gint f_height;	/* pixel height of default font */
  gint f_width;	/* pixel width of default font */
  char buffer[248];
@@ -131,13 +131,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"textatxy graphic font medium 8\n");	debug */
- } else if (butn_fnt == 1 ) {	
+/*    g_print("textatxy graphic font medium 8\n");	debug */
+ } else if (butn_fnt == 1 ) {
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"textatxy graphic font medium 10\n");	debug */
- } else if (butn_fnt == 2 ) {	
+/*    g_print("textatxy graphic font medium 10\n");	debug */
+ } else if (butn_fnt == 2 ) {
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"textatxy graphic font medium 12\n");	debug */
+/*    g_print("textatxy graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -196,7 +196,7 @@ int  len;        /* len is length passed from fortran */
  gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
  g_object_unref (layout);	/* clear the layout */
  gdk_gc_set_foreground(gc,&black);
-  
+
 
 /* If echo send parameters to wwc file */
  if ( wwc_ok == 1) {
@@ -236,13 +236,13 @@ int  len;        /* len is length passed from fortran */
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-/*    fprintf(stderr,"textpixwidth graphic font medium 8\n");	debug */
- } else if (butn_fnt == 1 ) {	
+/*    g_print("textpixwidth graphic font medium 8\n");	debug */
+ } else if (butn_fnt == 1 ) {
    pfd = pango_font_description_from_string("Serif,Medium 10");
-/*    fprintf(stderr,"textpixwidth graphic font medium 10\n");	debug */
- } else if (butn_fnt == 2 ) {	
+/*    g_print("textpixwidth graphic font medium 10\n");	debug */
+ } else if (butn_fnt == 2 ) {
    pfd = pango_font_description_from_string("Serif,Medium 12");
-/*    fprintf(stderr,"textpixwidth graphic font medium 12\n");	debug */
+/*    g_print("textpixwidth graphic font medium 12\n");	debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -262,7 +262,7 @@ int  len;        /* len is length passed from fortran */
  pango_layout_get_extents (layout, NULL, &logical_rect);	/* find box the text fits within */
  vfw = MAX (width, PANGO_PIXELS (logical_rect.width));
  if (vfw > 1 ) *pixelwidth = (long int) vfw;
-/* debug fprintf(stderr,"phrase %s is %d %d %d pixels wide\n",buffer,vfw,width,PANGO_PIXELS (logical_rect.width)); */
+/* debug g_print("phrase %s is %d %d %d pixels wide\n",buffer,vfw,width,PANGO_PIXELS (logical_rect.width)); */
  g_object_unref (layout);	/* clear the layout */
 
  return;
@@ -308,13 +308,13 @@ void viewtext_(msg,linep,side,size,len)
  * Use pango_font_get_metrics to get font width and height. */
   if (butn_fnt == 0 ) {
     pfd = pango_font_description_from_string("Serif,Medium 8");
-/*     fprintf(stderr,"viewtext graphic font medium 8\n");	debug */
-  } else if (butn_fnt == 1 ) {	
+/*     g_print("viewtext graphic font medium 8\n");	debug */
+  } else if (butn_fnt == 1 ) {
     pfd = pango_font_description_from_string("Serif,Medium 10");
-/*     fprintf(stderr,"viewtext graphic font medium 10\n");	debug */
-  } else if (butn_fnt == 2 ) {	
+/*     g_print("viewtext graphic font medium 10\n");	debug */
+  } else if (butn_fnt == 2 ) {
     pfd = pango_font_description_from_string("Serif,Medium 12");
-/*     fprintf(stderr,"viewtext graphic font medium 12\n");	debug */
+/*    g_print("viewtext graphic font medium 12\n");	debug */
   }
   gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -333,7 +333,7 @@ void viewtext_(msg,linep,side,size,len)
   pango_layout_set_text (layout, buffer, t_len);	/* add t_len char of text */
   pango_layout_get_extents (layout, NULL, &logical_rect);	/* find box the text fits within */
   fitpix = MAX (width, PANGO_PIXELS (logical_rect.width));
-  
+
   fsize = *size;
   mid = 0 + ((graphic->allocation.width)/2);
 /*  saved_font = current_font;	 save current font  */
@@ -350,8 +350,8 @@ void viewtext_(msg,linep,side,size,len)
   } else {
       ix = b_left + 7;
   }
-/* debugfprintf(stderr,"phrase %s is %d %d %d pixels wide at %d %d\n",msg,
-                            fitpix,width,PANGO_PIXELS (logical_rect.width),ix,iy); */ 
+/* debug fprintf(stderr,"phrase %s is %d %d %d pixels wide at %d %d\n",msg,
+                            fitpix,width,PANGO_PIXELS (logical_rect.width),ix,iy); */
 /*   winfnt_(&saved_font);                     restore font */
   gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
   g_object_unref (layout);	/* clear the layout */
@@ -383,13 +383,13 @@ void findviewtext_(charposp,linep,size,irx,iry)
  * Use pango_font_get_metrics to get font width and height. */
   if (butn_fnt == 0 ) {
     pfd = pango_font_description_from_string("Serif,Medium 8");
-/*     fprintf(stderr,"findviewtext graphic font medium 8\n");	debug */
-  } else if (butn_fnt == 1 ) {	
+/*     g_print("findviewtext graphic font medium 8\n");	debug */
+  } else if (butn_fnt == 1 ) {
     pfd = pango_font_description_from_string("Serif,Medium 10");
-/*     fprintf(stderr,"findviewtext graphic font medium 10\n");	debug */
-  } else if (butn_fnt == 2 ) {	
+/*     g_print("findviewtext graphic font medium 10\n");	debug */
+  } else if (butn_fnt == 2 ) {
     pfd = pango_font_description_from_string("Serif,Medium 12");
-/*     fprintf(stderr,"findviewtext graphic font medium 12\n");	debug */
+/*     g_print("findviewtext graphic font medium 12\n");	debug */
   }
   gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
   context = gtk_widget_get_pango_context (graphic);
@@ -402,7 +402,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
   pango_font_description_free(pfd);
 
   b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
-  
+
   fsize = *size;
   charpos = *charposp;
   mid = b_left + ((graphic->allocation.width)/2);
@@ -428,12 +428,12 @@ void drawswl(xa,ya,xb,yb)
 }
 
 /* *************** esymbol_() symbol drawing routine. *************** */
-/* 
+/*
  esymbol is passed a pixel coord, a symbol index, and a size.
  currently there are 32 symbols.
 */
 void esymbol_(x,y,sym,size)
-  long int *x, *y, *sym, *size;	
+  long int *x, *y, *sym, *size;
 {
   gint isym,isize,ix,iy,width;
   GdkPoint p[12];
@@ -453,7 +453,7 @@ void esymbol_(x,y,sym,size)
   gdk_gc_set_line_attributes(gc,width,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_MITER); /* gives same as default */
 
 /* initial values to zero */
-  p[0].x=0; p[0].y=0; p[1].x=0; p[1].y=0; 
+  p[0].x=0; p[0].y=0; p[1].x=0; p[1].y=0;
   p[2].x=0; p[2].y=0; p[3].x=0; p[3].y=0;
   p[4].x=0; p[4].y=0; p[5].x=0; p[5].y=0;
   p[6].x=0; p[6].y=0; p[7].x=0; p[7].y=0;
@@ -462,76 +462,76 @@ void esymbol_(x,y,sym,size)
   p[12].x=0; p[12].y=0;
 
   switch ( isym ) {    /* pick the appropriate symbol */
-    case 0 :	       /* box 4 pixels wide and high */  
-      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix+2; p[1].y=iy-2; 
+    case 0 :	       /* box 4 pixels wide and high */
+      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix+2; p[2].y=iy+2; p[3].x=ix-2; p[3].y=iy+2;
       p[4].x=ix-2; p[4].y=iy-2;
       gdk_draw_lines(gr_image,gc,p,5); break;
     case 1 :  		/* triangle p[].x= ; p[].y= ; */
-      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+2; p[1].y=iy+2; 
+      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+2; p[1].y=iy+2;
       p[2].x=ix-2; p[2].y=iy+2; p[3].x=ix; p[3].y=iy-3;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 2 : 		/* upside down triangle */   
-      p[0].x=ix; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2; 
+    case 2 : 		/* upside down triangle */
+      p[0].x=ix; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix-2; p[2].y=iy-2; p[3].x=ix; p[3].y=iy+3;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 3 : 		/* diamond */	
-      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+3; p[1].y=iy; 
+    case 3 : 		/* diamond */
+      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+3; p[1].y=iy;
       p[2].x=ix; p[2].y=iy+3; p[3].x=ix-3; p[3].y=iy;
       p[4].x=ix; p[4].y=iy-3; p[5].x=ix; p[5].y=iy-3;
       gdk_draw_lines(gr_image,gc,p,6); break;
-    case 4 : 		/* lower right triangle */	
-      p[0].x=ix-3; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy+2; 
+    case 4 : 		/* lower right triangle */
+      p[0].x=ix-3; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy+2;
       p[2].x=ix+2; p[2].y=iy-3; p[3].x=ix-3; p[3].y=iy+2;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 5 : 		/* lower left triangle */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+3; p[1].y=iy+2; 
+    case 5 : 		/* lower left triangle */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+3; p[1].y=iy+2;
       p[2].x=ix-2; p[2].y=iy-3; p[3].x=ix-2; p[3].y=iy+2;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 6 : 		/* upper left triangle */	
-      p[0].x=ix-2; p[0].y=iy+3; p[1].x=ix+3; p[1].y=iy-2; 
+    case 6 : 		/* upper left triangle */
+      p[0].x=ix-2; p[0].y=iy+3; p[1].x=ix+3; p[1].y=iy-2;
       p[2].x=ix-2; p[2].y=iy-2; p[3].x=ix-2; p[3].y=iy+3;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 7 : 		/* upper right triangle */	
-      p[0].x=ix+2; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2; 
+    case 7 : 		/* upper right triangle */
+      p[0].x=ix+2; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix-3; p[2].y=iy-2; p[3].x=ix+2; p[3].y=iy+3;
       gdk_draw_lines(gr_image,gc,p,4); break;
-    case 8 : 		/* dot 2 pix wide, 3 pix high */	
+    case 8 : 		/* dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
       drawswl(ix-1,iy+1,ix+1,iy+1);  break;
-    case 9 : 		/* X */	
+    case 9 : 		/* X */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy+3,ix+3,iy-2);  break;
-    case 10 : 		/* * asterick */	
+    case 10 : 		/* * asterick */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix-2,iy,ix+3,iy);  break;
-    case 11 : 		/* + */	
+    case 11 : 		/* + */
       drawswl(ix-2,iy,ix+3,iy);
       drawswl(ix,iy-2,ix,iy+3);  break;
-    case 12 : 		/* ^ up arrow */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix; p[1].y=iy-2; 
+    case 12 : 		/* ^ up arrow */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix; p[1].y=iy-2;
       p[2].x=ix+3; p[2].y=iy+3;
       gdk_draw_lines(gr_image,gc,p,3); break;
-    case 13 : 		/* v down arrow */	
-      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix; p[1].y=iy+2; 
+    case 13 : 		/* v down arrow */
+      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix; p[1].y=iy+2;
       p[2].x=ix+3; p[2].y=iy-3;
       gdk_draw_lines(gr_image,gc,p,3); break;
-    case 14 : 		/* > left arrow */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy; 
+    case 14 : 		/* > left arrow */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy;
       p[2].x=ix-3; p[2].y=iy-3;
       gdk_draw_lines(gr_image,gc,p,3); break;
-    case 15 : 		/* < right arrow */	
-      p[0].x=ix+2; p[0].y=iy+2; p[1].x=ix-2; p[1].y=iy; 
+    case 15 : 		/* < right arrow */
+      p[0].x=ix+2; p[0].y=iy+2; p[1].x=ix-2; p[1].y=iy;
       p[2].x=ix+3; p[2].y=iy-3;
       gdk_draw_lines(gr_image,gc,p,3); break;
-    case 16 : 		/* big dot with vertical line */	
+    case 16 : 		/* big dot with vertical line */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix-1,iy-1,ix+2,iy-1);
       drawswl(ix-1,iy,ix+2,iy);
       drawswl(ix-1,iy+1,ix+2,iy+1);  break;
-    case 17 : 		/* dot with horizontal line */	
+    case 17 : 		/* dot with horizontal line */
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
@@ -543,42 +543,42 @@ void esymbol_(x,y,sym,size)
       drawswl(ix,iy-3,ix+2,iy+2);
       drawswl(ix+2,iy+2,ix-2,iy+2);
       drawswl(ix-2,iy+2,ix,iy-3);  break;
-    case 19 : 		/* solid upside down triangle */   
+    case 19 : 		/* solid upside down triangle */
       drawswl(ix,iy-2,ix,iy+3);
       drawswl(ix-1,iy-2,ix-1,iy+1);
       drawswl(ix+1,iy-2,ix+1,iy+1);
       drawswl(ix,iy+3,ix+2,iy-2);
       drawswl(ix+2,iy-2,ix-2,iy-2);
       drawswl(ix-2,iy-2,ix,iy+3);  break;
-    case 20 : 		/* solid lower right triangle */	
+    case 20 : 		/* solid lower right triangle */
       drawswl(ix-1,iy+1,ix+2,iy+1);
       drawswl(ix,iy,ix+2,iy);
       drawswl(ix+1,iy-1,ix+2,iy-1);
       drawswl(ix-3,iy+2,ix+2,iy+2);
       drawswl(ix+2,iy+2,ix+2,iy-3);
       drawswl(ix+2,iy-3,ix-3,iy+2);  break;
-    case 21 : 		/* solid lower left triangle */	
+    case 21 : 		/* solid lower left triangle */
       drawswl(ix-2,iy+1,ix+2,iy+1);
       drawswl(ix-2,iy,ix+1,iy);
       drawswl(ix-2,iy-1,ix+1,iy-1);
       drawswl(ix-2,iy+2,ix+3,iy+2);
       drawswl(ix+3,iy+2,ix-2,iy-3);
       drawswl(ix-2,iy-3,ix-2,iy+2);  break;
-    case 22 : 		/* solid upper left triangle */	
+    case 22 : 		/* solid upper left triangle */
       drawswl(ix-2,iy+1,ix,iy+1);
       drawswl(ix-2,iy,ix+1,iy);
       drawswl(ix-2,iy-1,ix+2,iy-1);
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix-2,iy-2);
       drawswl(ix-2,iy-2,ix-2,iy+3);  break;
-    case 23 : 		/* solid upper right triangle */	
+    case 23 : 		/* solid upper right triangle */
       drawswl(ix-1,iy-1,ix+2,iy-1);
       drawswl(ix,iy,ix+2,iy);
       drawswl(ix+1,iy+1,ix+2,iy+1);
       drawswl(ix+2,iy+3,ix+2,iy-2);
       drawswl(ix+2,iy-2,ix-3,iy-2);
       drawswl(ix-3,iy-2,ix+2,iy+3);  break;
-    case 24 : 		/* solid diamond */	
+    case 24 : 		/* solid diamond */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix-1,iy-1,ix-1,iy+2);
@@ -587,31 +587,31 @@ void esymbol_(x,y,sym,size)
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 25 :	       /* box 5 pixels wide and high with \ */ 
+    case 25 :	       /* box 5 pixels wide and high with \ */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy-2,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix+3,iy+3);
       drawswl(ix+3,iy+3,ix-2,iy+3);
       drawswl(ix-2,iy+3,ix-2,iy-2);  break;
-    case 26 : 		/* diamond with vertical line */	
+    case 26 : 		/* diamond with vertical line */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix,iy-3,ix+3,iy);
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 27 :	       /* box 5 pixels wide and high with / */ 
+    case 27 :	       /* box 5 pixels wide and high with / */
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix-2,iy-2,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix+3,iy+3);
       drawswl(ix+3,iy+3,ix-2,iy+3);
       drawswl(ix-2,iy+3,ix-2,iy-2);  break;
-    case 28 : 		/* diamond with horizontal line */	
+    case 28 : 		/* diamond with horizontal line */
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix,iy-3,ix+3,iy);
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 29 : 		/* wireframe image control symbol */	
+    case 29 : 		/* wireframe image control symbol */
       drawswl(ix-12,iy+2,ix-6,iy+5);	/* bounds of box */
       drawswl(ix-6,iy+5,ix-1,iy+1);
       drawswl(ix-1,iy+1,ix-1,iy-3);
@@ -627,18 +627,18 @@ void esymbol_(x,y,sym,size)
       drawswl(ix+6,iy-4,ix+6,iy-2);
       drawswl(ix+6,iy-2,ix+7,iy);
       drawswl(ix+7,iy-3,ix+7,iy-1);  break;
-    case 30 : 		/* > closed left arrow */	
+    case 30 : 		/* > closed left arrow */
       drawswl(ix-3,iy+2,ix+2,iy);
-      drawswl(ix+2,iy,ix-3,iy-3); 
+      drawswl(ix+2,iy,ix-3,iy-3);
       drawswl(ix-3,iy-3,ix-3,iy+2);  break;
-    case 31 : 		/* < closed right arrow */	
+    case 31 : 		/* < closed right arrow */
       drawswl(ix+3,iy+2,ix-2,iy);
       drawswl(ix-2,iy,ix+3,iy-3);
       drawswl(ix+3,iy-3,ix+3,iy+2);  break;
-    case 32 : 		/* dot 2 pix wide, 2 pix high */	
+    case 32 : 		/* dot 2 pix wide, 2 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy); break;
-    default : 		/* big dot 2 pix wide, 3 pix high */	
+    default : 		/* big dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
       drawswl(ix-1,iy+1,ix+1,iy+1);  break;
@@ -667,7 +667,7 @@ void testcscale_()
 /* should clear the bitmap first... << >> */
   if (gr_image) {
     g_object_unref(gr_image);
-/* debug    fprintf(stderr,"unreferenced pixmap\n");  */
+/* debug g_print("unreferenced pixmap\n");  */
   }
   gr_image = gdk_pixmap_new(graphic->window,
 			    graphic->allocation.width,
@@ -689,7 +689,7 @@ void testcscale_()
              pango_font_metrics_get_descent (metrics));
   f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
   pango_font_metrics_unref (metrics);	/* metrics no longer needed */
-/* debug   fprintf(stderr,"testcscale font height and width is %d %d\n", f_height,f_width); */
+/* debug   g_print("testcscale font height and width is %d %d\n", f_height,f_width); */
   layout = pango_layout_new (pango_context);
 
   for (ic=0; ic<45; ic++) {
@@ -823,11 +823,11 @@ void testcscale_()
   ilw = 1;
   gdk_gc_set_line_attributes(gc,ilw,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER); /* reset */
 
-/* debug  fprintf(stderr,"about to draw pixmap on graphic\n");  */
+/* debug g_print("about to draw pixmap on graphic\n");  */
   gdk_draw_drawable(graphic->window, gc, gr_image,0, 0, 0, 0,
 			        graphic->allocation.width,
-			        graphic->allocation.height); 
-/* debug  fprintf(stderr,"after draw_drawable call for graphic\n");  */
+			        graphic->allocation.height);
+/* debug  g_print("after draw_drawable call for graphic\n");  */
 /*  g_object_unref (metrics); */
   return;
 }
@@ -868,7 +868,7 @@ void testcscalea_()
              pango_font_metrics_get_descent (metrics));
   f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
   pango_font_metrics_unref (metrics);	/* metrics no longer needed */
-/* debug  fprintf(stderr,"testcscale font height and width is %d %d\n", f_height,f_width);  */
+/* debug  g_print("testcscale font height and width is %d %d\n", f_height,f_width);  */
   layout = pango_layout_new (pango_context);
 
   for (ic=0; ic<45; ic++) {
@@ -1017,38 +1017,38 @@ void testcscaleb_()
   ilw = 1;
   gdk_gc_set_line_attributes(gc,ilw,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER); /* reset */
 
-/* debug  fprintf(stderr,"about to draw pixmap on graphic\n");  */
+/* debug  g_print("about to draw pixmap on graphic\n");  */
   gdk_draw_drawable(graphic->window, gc, gr_image,0, 0, 0, 0,
 			        graphic->allocation.width,
-			        graphic->allocation.height); 
-/* debug  fprintf(stderr,"after draw_drawable call for graphic\n");  */
+			        graphic->allocation.height);
+/* debug  g_print("after draw_drawable call for graphic\n");  */
   return;
 }
 
 /* *************** eline_() line drawing routine. *************** */
-/* 
- co-ords, operation flag equiv to fwwutil parameters: 
-	1=move to absolute pixel coord, 
-	0=draw line to absolute pixel coord, 
+/*
+ co-ords, operation flag equiv to fwwutil parameters:
+	1=move to absolute pixel coord,
+	0=draw line to absolute pixel coord,
 	3=move to relitive pixel coord,
 	2=draw line to relitive pixel coord.
 */
 void eline_(x,y,operation)
-  long int *x, *y, *operation;	
+  long int *x, *y, *operation;
 {
   gint x1,y1,op,width;
 
 /* If echo send parameters to wwc file */
-   if ( wwc_ok == 1) { 
-     fprintf(wwc,"*eline\n"); 
-     fprintf(wwc,"%ld %ld %ld\n",*x,*y,*operation); 
-   } 
-   x1 = (gint) *x; 
-   y1 = (gint) *y; 
-   op = (gint) *operation; 
+   if ( wwc_ok == 1) {
+     fprintf(wwc,"*eline\n");
+     fprintf(wwc,"%ld %ld %ld\n",*x,*y,*operation);
+   }
+   x1 = (gint) *x;
+   y1 = (gint) *y;
+   op = (gint) *operation;
    width = 1;
    gdk_gc_set_line_attributes(gc,width,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_MITER); /* gives same as default */
- 
+
    if      (op == 0) {    /* LNDRAWABS */
      gdk_draw_line(gr_image,gc,xold,yold,x1,y1);
      xold = x1; yold = y1;
@@ -1064,7 +1064,7 @@ void eline_(x,y,operation)
 }
 
 /* *************** edline_() dotted line drawing routine. *************** */
-/* 
+/*
  This function is passed both sets of pixel co-ords.
  The ipdis is the number of pixels between each dot.  Typical values
  are 2 for a dense dotted line, 3 for a sparce one, values over 4 are
@@ -1072,7 +1072,7 @@ void eline_(x,y,operation)
  point.
 */
 void edline_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   gint ix1,iy1,ix2,iy2,ldis,ldash,width;
   double crow;
@@ -1122,19 +1122,19 @@ void edline_(x1,y1,x2,y2,ipdis)
 }
 
 /* *************** edash_() dashed line drawing routine. *************** */
-/* 
+/*
  Edash draws a dashed line based on start and end point pixel co-ords.
  Ipdis is the number of pixels between each dot.  Typical values
  are 2 for a dense dashed line, 3 for a normal one, values over 4 are
  probably not useful. Two static values are used:
    dash_on : to say whether current increment is part of a dash,
    dash_rem: to give the pixel distance remainder.
- 
+
  dash_on and dash_rem are cleared if edash call is made with ipdis = 0.
-  
+
 */
 void edash_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   gint ix1,iy1,ix2,iy2;
   gint ldash;
@@ -1183,11 +1183,11 @@ void edash_(x1,y1,x2,y2,ipdis)
 }
 
 /* *************** eswline_() single width line drawing routine. *************** */
-/* 
+/*
  Draws a single pixel wide line between two pixel coordinates passed from fortran.
 */
 void eswline_(x1,y1,x2,y2)
-  long int *x1, *y1, *x2, *y2;	
+  long int *x1, *y1, *x2, *y2;
 {
   gint ix1,iy1,ix2,iy2,width;
   ix1 = (gint) *x1;         /* first point */
@@ -1201,11 +1201,11 @@ void eswline_(x1,y1,x2,y2)
 }
 
 /* *************** edwline_() double width line drawing routine. *************** */
-/* 
+/*
  Draws a two pixel wide line between two pixel coordinates.
 */
 void edwline_(x1,y1,x2,y2)
-  long int *x1, *y1, *x2, *y2;	
+  long int *x1, *y1, *x2, *y2;
 {
   gint ix1,iy1,ix2,iy2,width;
   ix1 = (gint) *x1;         /* first point */
@@ -1219,19 +1219,19 @@ void edwline_(x1,y1,x2,y2)
 }
 
 /* *************** echain_() chained line drawing routine. *************** */
-/* 
+/*
  Echain is passed start and end point pixel co-ords.
  The ipdis is the number of pixels between each dot.  Typical values
  are 3 for a dense chain, 4 for a normal one, values over 6 are
  probably not useful. Two static values are used:
    dash_on : to say whether current increment is part of a dash,
    dash_rem: to give the pixel distance remainder.
- 
+
  dash_on and dash_rem are cleared if edash call is made with ipdis = 0.
-  
+
 */
 void echain_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   gint ix1,iy1,ix2,iy2;
   gint ldash;
@@ -1319,15 +1319,15 @@ void drawoodash(xa,ya,xb,yb,uwidth)
 
 
 /* ************** axiscale_() determine scaling ratios ******************* */
-/* 
- Determine the scaling ratios based on the axis range of 
- XMN to XMY for the horizontal axis and YMN to YMX for the vertical 
- axis within a window "gw" pixels wide by "gh" pixels high. XSC is the 
- scaling factor for the horizontal axis, YSC for the vertical and SCA 
- is a scaling factor which gives an equal aspect ratio.  In mixed cases 
- of minimum/maximum X/Y coords being negative set a data offset Xadd & 
- Yadd to assist in line drawing ( window coords are 0,0 upper left 
- whereas line drawing is 0,0 in the lower left). 
+/*
+ Determine the scaling ratios based on the axis range of
+ XMN to XMY for the horizontal axis and YMN to YMX for the vertical
+ axis within a window "gw" pixels wide by "gh" pixels high. XSC is the
+ scaling factor for the horizontal axis, YSC for the vertical and SCA
+ is a scaling factor which gives an equal aspect ratio.  In mixed cases
+ of minimum/maximum X/Y coords being negative set a data offset Xadd &
+ Yadd to assist in line drawing ( window coords are 0,0 upper left
+ whereas line drawing is 0,0 in the lower left).
 */
 
 void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
@@ -1362,8 +1362,8 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
 	*ysc = (float)*gh / (*ymx - *ymn);
 	*yadd = 0.0;
     }
-/* 
- Choose single scale so will have correct aspect ratio for site plans etc. 
+/*
+ Choose single scale so will have correct aspect ratio for site plans etc.
 */
     *sca = *xsc;
     if (*ysc < *xsc) {
@@ -1382,16 +1382,16 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
 } /* axscale_ */
 
 /* ************** linescale_() store scaling parameters for lines *********** */
-/* 
+/*
  Store scaling parameters for lines so that calls to __ can be
  in user units.  The parameters are as follows and are derived
  from calles to win3d & axiscale:
 
    loff & boff are the pixel coords of the lower left corner of
-     the drawing area is the axis origins.    
+     the drawing area is the axis origins.
    lscale & bscale are the scaling factors.
-   ladd & badd are offsets in user units for each axis so that 
-     various data ranges can be acommodated (see axiscale). 
+   ladd & badd are offsets in user units for each axis so that
+     various data ranges can be acommodated (see axiscale).
 */
 void linescale_(loff,ladd,lscale,boff,badd,bscale)
  float *ladd, *lscale, *badd, *bscale;
@@ -1415,13 +1415,13 @@ void linescale_(loff,ladd,lscale,boff,badd,bscale)
 }
 
 /* *************** u2pixel_() user units to pixel coords. *************** */
-/* 
+/*
  Based on scaling data passed to linescale this returns the pixel
  co-ords for a particular sets of user data.
 */
 void u2pixel_(ux,uy,ix,iy)
-  float *ux, *uy;	
-  long int *ix, *iy;	
+  float *ux, *uy;
+  long int *ix, *iy;
 {
   float x,y;
   x = *ux;
@@ -1436,13 +1436,13 @@ void u2pixel_(ux,uy,ix,iy)
 }
 
 /* *************** pixel2u_() pixel coords to user units  *************** */
-/* 
+/*
  Based on scaling data passed to linescale this returns the grid
  co-ords for a particular set of input pixcel co-ords.
 */
 void pixel2u_(ux,uy,gx,gy)
-  long int *ux, *uy;	
-  float *gx, *gy;	
+  long int *ux, *uy;
+  float *gx, *gy;
 {
   long int x,y;
   x = *ux;
@@ -1458,21 +1458,21 @@ void pixel2u_(ux,uy,gx,gy)
 }
 
 /* *************** etplot_() general line plotting. *************** */
-/* 
+/*
  Based on scaling data passed to linescale this draws a solid or
- dashed or dotted line or symbol as in tplot. 
+ dashed or dotted line or symbol as in tplot.
  Updown = 0 is pen up, > 0 pen down, -1 to -100 dashed line,
           -101 to -200 chain line, -201 to -300 dotted line,
  in each case the spacing of dashes etc is defined by the value
  ie. -4 is a dashed line 4 pixels long, -203 is dots @ 3 pixels.
 
  sym is the symbol number to plot, if 0 then no symbol, otherwise
- map tplot conventions to esymbol. 
+ map tplot conventions to esymbol.
 
 */
 void etplot_(ux,uy,updown,sym)
-  float *ux, *uy;	
-  long int *updown, *sym;	
+  float *ux, *uy;
+  long int *updown, *sym;
 {
   float x,y;
   gint isymbol,iupd,x1,x2,y1,y2,width;
@@ -1555,7 +1555,7 @@ void etplot_(ux,uy,updown,sym)
     case 29: gs=30;  break;  /* solid left arrow */
     case 30: gs=31;  break;  /* solid right arrow */
     case 31: gs=32;  break;  /* solid 2x3 square */
-    default: gs=-1;  break;  /* nothing */	
+    default: gs=-1;  break;  /* nothing */
   }
   if(gs >= 0)esymbol_(&lx2,&ly2,&gs,&isz);
   wwc_macro = 0;    /* if echoing commands, turn back on */
@@ -1572,7 +1572,7 @@ void etplot_(ux,uy,updown,sym)
  the C code via a previous call to linescale.
 */
 void erectan_(x,y,dx,dy,dt)
-  float *x, *y,*dx,*dy,*dt;	
+  float *x, *y,*dx,*dy,*dt;
 {
   gfloat xo,yo,x1,y1,dx1,dy1,dt1,dd,xc,xs,yc,ys,ri;
   double xcd;
@@ -1631,7 +1631,7 @@ void erectan_(x,y,dx,dy,dt)
 */
 void egrbox_(x,y,dx,dy,gp)
   float *x, *y,*dx,*dy;
-  long int *gp;	
+  long int *gp;
 {
   gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
   float xo,yo,x1,y1,dx1,dy1;
@@ -1660,7 +1660,7 @@ void egrbox_(x,y,dx,dy,gp)
   b_left = ix; b_right = ix1;
   if((b_right-b_left)<=2)return; /* if no width return */
 
-/*  fprintf(stderr,"use grey cscale %ld\n",ngscale); */
+/*  g_print("use grey cscale %ld\n",ngscale); */
 
   if (gpo >= 0 && gpo < (gint) ngscale) {
 
@@ -1673,7 +1673,7 @@ void egrbox_(x,y,dx,dy,gp)
   }else if(gpo >= 2 && gpo < 14) {
     gdk_gc_set_foreground(gc,&gmodbg);
     gdk_gc_set_background(gc,&gmodbg);
-    gdk_draw_rectangle (gr_image,gc,TRUE,b_left,b_top, width, height); 
+    gdk_draw_rectangle (gr_image,gc,TRUE,b_left,b_top, width, height);
     gdk_gc_set_foreground(gc,&black);
     gdk_draw_rectangle (gr_image,gc,FALSE,b_left,b_top, width, height);
   }else if(gpo >= 14 && gpo < 29) {
@@ -1702,7 +1702,7 @@ void egrbox_(x,y,dx,dy,gp)
   x,y dx
 */
 void etriang_(x,y,dx,dy,dt)
-  float *x, *y,*dx,*dy,*dt;	
+  float *x, *y,*dx,*dy,*dt;
 {
   gfloat xo,yo,x1,y1,dx1,dy1,dt1,dd,xc,xs,yc,ys,ri;
   double xcd;
@@ -1745,9 +1745,9 @@ void etriang_(x,y,dx,dy,dt)
 }
 
 /* *************** ecirc_() circle drawing routine. *************** */
-/* 
- co-ords, operation flag: 
-	0=draw circle is drawn with clear inside. 
+/*
+ co-ords, operation flag:
+	0=draw circle is drawn with clear inside.
 	1=draw filled black circle.
 	2=to be added...
 	3=to be added...
@@ -1756,7 +1756,7 @@ void etriang_(x,y,dx,dy,dt)
  bounding box width and height is rad1 * 2.
 */
 void ecirc_(x,y,rad,operation)
-  long int *x, *y, *rad, *operation;	
+  long int *x, *y, *rad, *operation;
 {
   gint x1,y1,rad1,op,ul,ut,boxdim;
   x1 = (gint) *x;
@@ -1784,19 +1784,19 @@ void ecirc_(x,y,rad,operation)
 }
 
 /* *************** earc_() arc drawing routine. *************** */
-/* 
- co-ords, operation flag: 
-	0=draw arc is drawn with clear inside. 
+/*
+ co-ords, operation flag:
+	0=draw arc is drawn with clear inside.
 	1=draw filled black arc.
  passed the x,y centre (pixels) and the radius (pixels), and two
- angles, the first is degrees from 3-o'clock position (+ is 
+ angles, the first is degrees from 3-o'clock position (+ is
  counterclockwise) and the 2nd is degress from the first angle.
  See fig 6-1 in Xlib programming manual.
  These are converted into position of the upper left corner of the
  bounding box (ul & ut) and the bounding box width and height is rad1 * 2.
 */
 void earc_(x,y,rad,ang1,ang2,operation)
-  long int *x, *y, *rad, *operation, *ang1, *ang2;	
+  long int *x, *y, *rad, *operation, *ang1, *ang2;
 {
   gint x1,y1,rad1,op,ul,ut,boxdim,an1,an2;
   x1 = (gint) *x;
@@ -1824,7 +1824,7 @@ void earc_(x,y,rad,ang1,ang2,operation)
 }
 
 /* ******** dinterval_() finds interval DV on an axis ******************** */
-/* 
+/*
  DINTERVAL finds interval DV on an AXIS(V1,V2) and a suitable number of
  decimal places for the axis values. When 'mode'=0, factors of 10 are
  removed and the interval IS 0.2 for scale length 1-2
@@ -1832,12 +1832,12 @@ void earc_(x,y,rad,ang1,ang2,operation)
                  1.0                  5-10
 
  When 'mode'=1 the hour interval on the graphical time (x-axis) is
- set as follow: 
- v=v2-v1     for v < 12 dv=1 
-                 v < 18 dv=2 
-                 v < 24 dv=3 
-                 v < 48 dv=6 
-                 v < 96 dv=12   else dv=24. 
+ set as follow:
+ v=v2-v1     for v < 12 dv=1
+                 v < 18 dv=2
+                 v < 24 dv=3
+                 v < 48 dv=6
+                 v < 96 dv=12   else dv=24.
 */
 
 void dinterval_(v1,v2,dv,ndec,mode)
@@ -1864,7 +1864,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 	w = 10.0;
 	if (vr < 5.0) w = 5.0;
 	if (vr < 2.0) w = 2.0;
-	
+
 	dvv = w * 0.1 * (float) dz;
 	if (vv < 0.0) dvv = -dvv;
 
@@ -1872,7 +1872,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 	if (w == 10.0) --nd;
         else if (w == 5.0) nd = 1;
         else if (w == 2.0) nd = 2;
-        
+
        	if (nd < 0) nd = 0;
 
     } else {
@@ -2011,12 +2011,12 @@ void etlabel_(msg,x,y,ipos,size,len)
 } /* etlabel */
 
 /* ************** vrtaxis_() construct and draw a vert axis *************** */
-/* 
- Construct and draw a vertical axis via WW where: YMN,YMX are the data 
- minimum & maximum values, offl & offb are the pixel coords of the     
- lower start of the axis.  SCA is the scaling factor and Yadd 
- is a data offset to adjust plotting for various data ranges. 
- Mode = 1 for time axis, Mode = 0 for other data display types. 
+/*
+ Construct and draw a vertical axis via WW where: YMN,YMX are the data
+ minimum & maximum values, offl & offb are the pixel coords of the
+ lower start of the axis.  SCA is the scaling factor and Yadd
+ is a data offset to adjust plotting for various data ranges.
+ Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
  msg is the axis label and mlen is it's length (passed from f77).
 */
@@ -2029,8 +2029,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  char  *msg;
 {
 /*
- Local variables: WticL is the maximum character width of a tic label, 
- ix & iy are the pixel coords, vertadj is half of the text height. 
+ Local variables: WticL is the maximum character width of a tic label,
+ ix & iy are the pixel coords, vertadj is half of the text height.
 */
  PangoLayout *layout;	/* pango layout for the text in the buffer */
  gint f_height;	/* pixel height of default font */
@@ -2070,7 +2070,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 
 /* set box extents of graphic for user later */
  b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
- 
+
 /* Define tic intervals (DDX data increment, NY decimal places). */
  ny = 0;
  ddy = 0.;
@@ -2142,7 +2142,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 /*     s_3 = iy + vertadj;            font centered vertically     */
     s_3 = iy - vertadj;            /* font centered vertically     */
     if (sid == 0) {              /* position label left or right */
-      s_5 = ofl - (((label_width+1) * f_width)); 
+      s_5 = ofl - (((label_width+1) * f_width));
     } else {
       s_5 = ofl + f_width +2;
     }
@@ -2153,7 +2153,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
       gdk_draw_layout (gr_image, gc,s_5,s_3,layout);	/* draw it on the pixmap */
       last_label_pixel = s_3;
       gdk_draw_line(gr_image,gc,ix1,iy1,s_2,iy);	/* extra tic length at label */
-    } 
+    }
     ix = ix1 = ofl; iy1 = iy;	/* remember position */
     yticv += ddy;
   }
@@ -2163,10 +2163,10 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   iy = ofb - (int) ((*ymx + *yadd) * *sca);
   gdk_draw_line(gr_image,gc,ix1,iy1,ix,iy);
 
-/* 
- Print out the axis label on left or right. 
- Looping through each character in the string 
- and placing in a buffer for printing. 
+/*
+ Print out the axis label on left or right.
+ Looping through each character in the string
+ and placing in a buffer for printing.
 */
   if (sid == 0) {
       ix = b_left+10;
@@ -2190,7 +2190,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 } /* vrtaxs_ */
 
 /* ************ horaxis_() construct and draw a horiz axis *************** */
-/* 
+/*
  Construct and draw a horizontal axis via WW where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
@@ -2206,9 +2206,9 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  char  *msg;
 {
 /*
- Local variables: 
+ Local variables:
  WticC is the pixel shift (horizontal) to centre the tic label, ix & iy
- are the pixel coords. 
+ are the pixel coords.
 */
  PangoLayout *layout;	/* pango layout for the text in the buffer */
  gint f_height;	/* pixel height of default font */
@@ -2292,7 +2292,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
    }
    iy1 = iy; ix1 = ix;	/* remember position */
  }
- 
+
 /* Loop from minimum to maximum by DDX incriments. */
 
  s_1 = nintvl;
@@ -2316,7 +2316,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
      gdk_draw_layout (gr_image, gc,s_2,s_3,layout);	/* draw it on the pixmap */
      last_label_right_pixel = s_5 + (label_width * f_width);
      gdk_draw_line(gr_image,gc,ix,iy,ix,s_4+2);  /* extra tic length at label */
-   } 
+   }
    ix = ix1 = ofl; iy1 = iy;	/* remember position */
    xticv += ddx;
  }
@@ -2348,8 +2348,6 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* prom is the prompt for the image
    docu is the documentation for the image (which might be editable)
    file is the name of the image file
-   ier tracks if the default or cancel buttons have been selected (requires
-     suitable actions on the fortran side).
    act = '-' documentation not to be edited, act = 'e' documentation can be edited (not implemented)
 */
 {
@@ -2367,7 +2365,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    gchar *question_local;
    gchar *file_local;		/* local string variable for image file name */
    int lnprom, lnfile, lndoc;	/* for non-blank length */
-   
+
    f_to_c_l(docu,&lendocu,&lndoc);  /* find actual length of the documentation string. */
    lndoc = lndoc + 1;  /* add a bit of cushion */
    docu_local = g_strndup(docu, (gsize) lndoc);	/* make local string for documentation */
@@ -2380,11 +2378,11 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    f_to_c_l(file,&lenfile,&lnfile);
    file_local = g_strndup(file, (gsize) lnfile);
 
-/* debug fprintf(stderr,"phrase %s\n",question_local);  */
-/* debug fprintf(stderr,"documentation is %s\n",docu_local); */
-/* debug fprintf(stderr,"image is %s\n",file_local); */
-/* debug fprintf(stderr,"nb of help lines %d\n",help_lines); */
-    
+/* debug g_print("phrase %s\n",question_local);  */
+/* debug g_print("documentation is %s\n",docu_local); */
+/* debug g_print("image is %s\n",file_local); */
+/* debug g_print("nb of help lines %d\n",help_lines); */
+
    /* Create the widgets */
    askbox = gtk_dialog_new();	/* create a new dialog (pop-up box) */
    gtk_container_set_border_width (GTK_CONTAINER (askbox), 5);
@@ -2393,7 +2391,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 
    loadgpbimage = gdk_pixbuf_new_from_file(file_local,NULL);	/* Load the file into a pixbuf */
    if( loadgpbimage==NULL) {
-     fprintf(stderr,"error loading image file %s\n",file_local);	/* if there is a problem set small size */
+     g_print("error loading image file %s\n",file_local);	/* if there is a problem set small size */
      XSize = 150;
      YSize = 100;
      imageloaded = 0;
@@ -2401,7 +2399,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      XSize = gdk_pixbuf_get_width(loadgpbimage);	/* get the actual size of the pixbuf */
      YSize = gdk_pixbuf_get_height(loadgpbimage);
      imageloaded = 1;
-     fprintf(stderr,"loaded image file %s %d %d\n",file_local,XSize,YSize);
+     g_print("loaded image file %s %d %d\n",file_local,XSize,YSize);
    }
    image = gtk_image_new_from_pixbuf(loadgpbimage);	/* create a gtk image from the pixbuf */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),image);
@@ -2413,18 +2411,18 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
 /* now set the font size to be used for the image documentation. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
-   } else if (disp_fnt == 1 ) {	
+     /* g_print("configure font medium 8\n"); debug */
+   } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
-   } else if (disp_fnt == 2 ) {	
+     /* g_print("configure font medium 10\n"); debug */
+   } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* g_print("configure font medium 12\n");	/* debug */
    }
    gtk_widget_modify_font(entry, pfd);
    pango_font_description_free(pfd);
 
-   gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (entry)), 
+   gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (entry)),
 			    docu_local, -1);	/* put docu_local text in the entry text display */
 
    gtk_text_view_set_left_margin (GTK_TEXT_VIEW (entry), 8);	/* provide left and right gap */
@@ -2441,13 +2439,13 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
    closebutton = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->action_area), closebutton);
    gtk_widget_set_size_request ( closebutton, 80,-1);
-   g_signal_connect_swapped (GTK_OBJECT (closebutton),"clicked", 
+   g_signal_connect_swapped (GTK_OBJECT (closebutton),"clicked",
                              G_CALLBACK (gtk_widget_destroy),GTK_OBJECT (askbox));
 
    gtk_widget_show_all (askbox);
-                      
+
    return;
-   
+
 }
 
 

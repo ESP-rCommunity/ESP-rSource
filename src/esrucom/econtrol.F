@@ -295,12 +295,6 @@ C          flow control function.
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
 
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
-
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
       common/curfile/currentfile
@@ -976,6 +970,8 @@ C Read m. flow control functions information and perform checks.
         ifsn(ii,2)=IVAL
         CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 3rd ',IER)
         ifsn(ii,3)=IVAL
+        CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 4th ',IER)
+        ifsn(ii,4)=IVAL
         IF(IER.NE.0)GOTO 99
 
 C Range checking.
@@ -2216,7 +2212,6 @@ C List one day type of a building/plant/flow/global control.
 #include "net_flow.h"
 #include "control.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),

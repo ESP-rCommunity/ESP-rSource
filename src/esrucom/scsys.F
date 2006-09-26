@@ -128,7 +128,7 @@ C HVAC
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -425,7 +425,7 @@ C If '* CONFIGURATION' found then read db until '* PROJ LOG' found.
 
 C Read databases until '* PROJ LOG' found.
   44  continue
-      CALL STRIPC(IUC,OUTSTR,0,ND,1,'db names',IER)
+      CALL STRIPC(IUC,OUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
@@ -733,14 +733,21 @@ C The temporal file was not found, but keep reading until * end tdf found.
         endif
         ITEMSTD=M
         CALL ERPFREE(IUTDF,ISTAT)
-      elseif(WORD(1:4).eq.'*sps')then
+      elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
 
-C Check for simulation setup data.
+C Check for simulation setup data and save level.
         CALL EGETWI(OUTSTR,K,nsset,1,5,'W','no. of sets',IER)
         CALL EGETWI(OUTSTR,K,isstup,0,300,'W','startup',IER)
         CALL EGETWI(OUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(OUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(OUTSTR,K,issave,0,5,'W','save_lv',IER)
+
+C If 6 items on line also read whether to save only 1stph.
+        if(ND.eq.6)then
+          CALL EGETWI(OUTSTR,K,isavgh,0,1,'W','save_hourly',IER)
+        else
+          isavgh=0
+        endif
         do 333 iss=1,nsset
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           K=0

@@ -1,6 +1,6 @@
-/* Functions to set up the main display window and 
-   divide it into frames: graphics, text, menu dialog. 
-   
+/* Functions to set up the main display window and
+   divide it into frames: graphics, text, menu dialog.
+
    Functions:
      destroy       - kill the program
      winfin_       - kill the program (called from fortran code)
@@ -12,11 +12,11 @@
      expose_event    - handles exposure of drawable area
 
      winclr	   - clears whole application to white
-     win3d()       - finds pixel offsets within graphics window   
+     win3d()       - finds pixel offsets within graphics window
      startbuffer_() clear view/3d display box.
      forceflush_() force graphic buffer to flush
 */
-   
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
@@ -85,20 +85,20 @@ long int menuchw;	/* char width of initial menu (from fortran) */
  * some point in the future. */
 static gboolean configure_event( GtkWidget *widget,
                                  GdkEventConfigure *event )
-{      
+{
 /* if there was an event detected then unreference the current gr_image
    and then create a new one the size of the widget window, set fg to white
    draw white on the pixmap and then reset fg to black. */
 
   if (gr_image) {
-   /* gdk_draw_drawable (gr_image_old, 
-                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)], 
+   /* gdk_draw_drawable (gr_image_old,
+                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                      widget->window,
                      0, 0, 0, 0, -1, -1);*/
     g_object_unref(gr_image);
-    fprintf(stderr,"configure_event unref gr_image\n");
+/* debug fprintf(stderr,"configure_event unref gr_image\n"); */
   }
-  
+
   gr_image = gdk_pixmap_new(widget->window,
 			    widget->allocation.width,
 			    widget->allocation.height,
@@ -108,35 +108,35 @@ static gboolean configure_event( GtkWidget *widget,
 		      TRUE,
 		      0, 0,widget->allocation.width,widget->allocation.height);
 
-  /*gdk_draw_drawable (widget->window, 
-                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)], 
+  /*gdk_draw_drawable (widget->window,
+                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                      gr_image_old,
                      0, 0, 0, 0,
 		     widget->allocation.width, widget->allocation.height);
                      */
-  fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height);
+/* debug fprintf(stderr,"configure_event widget %d %d \n",widget->allocation.width,widget->allocation.height); */
 
   return TRUE;
 }
 
-static gboolean expose_event (GtkWidget *widget, 
+static gboolean expose_event (GtkWidget *widget,
                               GdkEventExpose *event)
-{  
+{
   gint max_w;
   gint max_h;
-  
+
   max_w = widget->allocation.width;
   max_h = widget->allocation.height;
-  
-  fprintf(stderr,"expose_event %d %d %d %d %d %d \n",
-    max_w,max_h,event->area.x,event->area.y,event->area.width,event->area.height);
-  
-  gdk_draw_drawable (widget->window,gc, 
+
+/* debug fprintf(stderr,"expose_event %d %d %d %d %d %d \n",
+    max_w,max_h,event->area.x,event->area.y,event->area.width,event->area.height); */
+
+  gdk_draw_drawable (widget->window,gc,
                      gr_image,
                      event->area.x, event->area.y,
 		     event->area.x, event->area.y,
 		     event->area.width, event->area.height);
- 
+
   return FALSE;
 }
 
@@ -163,7 +163,7 @@ gint delete_event( GtkWidget *widget,GdkEvent *event,gpointer data )
    GtkWidget *q_dialog;
    gboolean do_not_quit;
    gint result;
-   
+
 /* If you return FALSE in the "delete_event" signal handler,
  * GTK will emit the "destroy" signal. Returning TRUE means
  * you don't want the window to be destroyed.
@@ -191,7 +191,7 @@ gint delete_event( GtkWidget *widget,GdkEvent *event,gpointer data )
    return do_not_quit;
 }
 
-   
+
 /* **** create_text() - create a scrolled text area that displays text *** */
 GtkWidget *create_text( void )
 {
@@ -200,7 +200,7 @@ GtkWidget *create_text( void )
    PangoFontDescription *pfd;	/* to hold test font */
 
    text = gtk_text_view_new ();
-   
+
    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
    gtk_text_view_set_editable (GTK_TEXT_VIEW (text), FALSE);
    gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (text), FALSE);
@@ -212,13 +212,13 @@ GtkWidget *create_text( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
-   } else if (disp_fnt == 1 ) {	
+     /* fprintf(stderr,"configure font medium 8\n");	debug */
+   } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
-   } else if (disp_fnt == 2 ) {	
+     /* fprintf(stderr,"configure font medium 10\n");	debug */
+   } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 12\n");	debug */
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -229,7 +229,7 @@ GtkWidget *create_text( void )
 
    return scrolled_window;
 }
- 
+
 /* egphelp_disp() - display help text via egphelpscroll_ */
 void egphelp_disp ( void)
 {
@@ -239,7 +239,7 @@ void egphelp_disp ( void)
  egphelpscroll_(&IBX,&IBY,&IPFLG,&more,&iuresp);
 
 }
- 
+
 /* copyright_disp() - display help text in a new window via call to cpwpk_
  * this is a call-back function from the static menu structure. */
 void copyright_disp ( void)
@@ -248,7 +248,7 @@ void copyright_disp ( void)
    avail_cpw = 1;
    cpwpk_(&avail_cpw);
 }
- 
+
 /* esru_ask_disp() - display help text in a new window via call to ask_about_
  * this is a call-back function from the static menu structure. This
  * wrapper is needed because askabout takes parameters. */
@@ -260,7 +260,7 @@ void esru_ask_disp ( void)
    strcpy(buf,cappl);	/* copy global text variable for current application to buf */
    askabout_(buf,&initialit);
 }
- 
+
 /* text_feedback_reset() - called from the text feedback display font reset
  * callbacks to pass information back to fortran via updview_. */
 void text_feedback_reset ( void)
@@ -297,13 +297,13 @@ void text_feedback_reset ( void)
  * Use pango_font_get_metrics to get font width and height for this font. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"re-configure font medium 8\n");	/* debug */
-   } else if (disp_fnt == 1 ) {	
+     /* fprintf(stderr,"re-configure font medium 8\n");	debug */
+   } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"re-configure font medium 10\n");	/* debug */
-   } else if (disp_fnt == 2 ) {	
+     /* fprintf(stderr,"re-configure font medium 10\n");	debug */
+   } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"re-configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"re-configure font medium 12\n");	debug */
    }
    gtk_widget_modify_font(text, pfd);
    fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
@@ -327,7 +327,7 @@ void text_feedback_reset ( void)
    updview_(&ifsc,&itfsc,&imfsc,&b_left,&b_right,&b_top,&b_bottom,&gw,&gh,&lttyc);
 
 }
- 
+
 /* emenu_feedback_reset() - called from the menu display font reset
  * callbacks to pass information back to fortran via updview_. */
 void emenu_feedback_reset ( void)
@@ -371,7 +371,7 @@ void emenu_feedback_reset ( void)
  *  } else if (menu_fnt == 1 ) {
  *    pfd = pango_font_description_from_string("Serif,Medium 10");
  *    fprintf(stderr,"re-configure font medium 10\n");
- *  } else if (menu_fnt == 2 ) {	
+ *  } else if (menu_fnt == 2 ) {
  *    pfd = pango_font_description_from_string("Serif,Medium 12");
  *    fprintf(stderr,"re-configure font medium 12\n");
  *  }
@@ -385,7 +385,7 @@ void emenu_feedback_reset ( void)
    updview_(&ifsc,&itfsc,&imfsc,&b_left,&b_right,&b_top,&b_bottom,&gw,&gh,&lttyc);
 
 }
- 
+
 /* graphic_feedback_reset() - called from the graphic font reset
  * callbacks to pass information back to fortran via updview_. */
 void graphic_feedback_reset ( void)
@@ -406,13 +406,13 @@ void graphic_feedback_reset ( void)
  * Use pango_font_get_metrics to get font width and height. */
    if (butn_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"re-configure graphic font medium 8\n");	/* debug */
-   } else if (butn_fnt == 1 ) {	
+     /* fprintf(stderr,"re-configure graphic font medium 8\n");	debug */
+   } else if (butn_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"re-configure graphic font medium 10\n");	/* debug */
-   } else if (butn_fnt == 2 ) {	
+     /* fprintf(stderr,"re-configure graphic font medium 10\n"); debug */
+   } else if (butn_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"re-configure graphic font medium 12\n");	/* debug */
+     /* fprintf(stderr,"re-configure graphic font medium 12\n"); debug */
    }
    gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
    context = gtk_widget_get_pango_context (graphic);
@@ -443,11 +443,11 @@ void graphic_feedback_reset ( void)
    updview_(&ifsc,&itfsc,&imfsc,&b_left,&b_right,&b_top,&b_bottom,&gw,&gh,&lttyc);
 
 }
- 
+
 /* **** sml_menu_fbk_cb - callback function from small/medium/large text feedback font */
 void sml_menu_fbk_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_fbk_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_fbk_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (disp_fnt != GPOINTER_TO_INT (resize)) {
      disp_fnt = GPOINTER_TO_INT (resize);
      text_feedback_reset();
@@ -460,12 +460,12 @@ static GtkWidget *sml_menu_fbk ( void)
    GtkWidget *sml_menu;
    GtkWidget *menuitem;
    GSList *group;
-   
+
    sml_menu = gtk_menu_new ();
    group = NULL;
 
    menuitem = gtk_radio_menu_item_new_with_label (group,"small");
-   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));  
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
    g_signal_connect (G_OBJECT (menuitem), "activate",
                      G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (0));
@@ -491,7 +491,7 @@ static GtkWidget *sml_menu_fbk ( void)
 /* **** sml_menu_gph_cb - callback function from small/medium/large text graphics font */
 void sml_menu_gph_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_gph_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_gph_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (butn_fnt != GPOINTER_TO_INT (resize)) {
      butn_fnt = GPOINTER_TO_INT (resize);
      graphic_feedback_reset();
@@ -504,12 +504,12 @@ static GtkWidget *sml_menu_gph ( void)
    GtkWidget *sml_menu;
    GtkWidget *menuitem;
    GSList *group;
-   
+
    sml_menu = gtk_menu_new ();
    group = NULL;
 
    menuitem = gtk_radio_menu_item_new_with_label (group,"small");
-   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));  
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
    g_signal_connect (G_OBJECT (menuitem), "activate",
                      G_CALLBACK (sml_menu_gph_cb), GINT_TO_POINTER (0));
@@ -535,7 +535,7 @@ static GtkWidget *sml_menu_gph ( void)
 /* **** sml_menu_mnu_cb - callback function from small/medium/large text menu font */
 void sml_menu_mnu_cb (GtkWidget *widget, gpointer resize)
 {
-   fprintf(stderr,"** sml_menu_mnu_cb %d\n", GPOINTER_TO_INT (resize));
+   /* debug fprintf(stderr,"** sml_menu_mnu_cb %d\n", GPOINTER_TO_INT (resize)); */
    if (menu_fnt != GPOINTER_TO_INT (resize)) {
      menu_fnt = GPOINTER_TO_INT (resize);
      emenu_feedback_reset();
@@ -548,12 +548,12 @@ static GtkWidget *sml_menu_mnu ( void)
    GtkWidget *sml_menu;
    GtkWidget *menuitem;
    GSList *group;
-   
+
    sml_menu = gtk_menu_new ();
    group = NULL;
 
    menuitem = gtk_radio_menu_item_new_with_label (group,"small");
-   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));  
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
    g_signal_connect (G_OBJECT (menuitem), "activate",
                      G_CALLBACK (sml_menu_mnu_cb), GINT_TO_POINTER (0));
@@ -582,7 +582,7 @@ static void menuitem_response( gchar *string )
 {
   printf ("%s\n", string);
 }
- 
+
 /* esru_rotate_left() - send message to fortran to rotate wireframe left. */
 void esru_rotate_left ( void)
 {
@@ -590,7 +590,7 @@ void esru_rotate_left ( void)
   azichange = 10;	/* visual clockwise */
   chgazi_(&azichange);  /* Deal with user selection of azimuth decrement  */
 }
- 
+
 /* esru_rotate_right() - send message to fortran to rotate wireframe left. */
 void esru_rotate_right ( void)
 {
@@ -598,7 +598,7 @@ void esru_rotate_right ( void)
   azichange = -10;	/* visual anticlockwise */
   chgazi_(&azichange);  /* Deal with user selection of azimuth decrement  */
 }
- 
+
 /* esru_elev_up() - send message to fortran to rotate wireframe up. */
 void esru_elev_up ( void)
 {
@@ -606,7 +606,7 @@ void esru_elev_up ( void)
   elevchange = 10;	/* visual up */
   chgelev_(&elevchange);  /* Deal with user selection of azimuth decrement  */
 }
- 
+
 /* esru_elev_down() - send message to fortran to rotate wireframe down. */
 void esru_elev_down ( void)
 {
@@ -614,7 +614,7 @@ void esru_elev_down ( void)
   elevchange = -10;	/* visual up */
   chgelev_(&elevchange);  /* Deal with user selection of azimuth decrement  */
 }
- 
+
 /* esru_wire_pick() - send message to fortran to rotate wireframe down. */
 void esru_wire_pick ( void)
 {
@@ -622,7 +622,7 @@ void esru_wire_pick ( void)
   avail_wire = wire_avail;
   wirepk_(&avail_wire);  /* Deal with user selection of wireframe control  */
 }
- 
+
 /* esru_wire_tog() - send message to fortran to rotate wireframe down. */
 void esru_wire_tog ( void)
 {
@@ -639,7 +639,7 @@ void updwire_(avail)
   return;
 } /* openwire_ */
 
- 
+
 /* **** create_static_menus() - create static menus associated with the
  * interface (File, Settings, View, Help etc) */
 GtkWidget *create_static_menus( void )
@@ -675,7 +675,7 @@ GtkWidget *create_static_menus( void )
      menu_items = gtk_menu_item_new_with_label (buf);
      gtk_menu_shell_append (GTK_MENU_SHELL (file_items), menu_items);
      g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
-		               G_CALLBACK (menuitem_response), 
+		               G_CALLBACK (menuitem_response),
                               (gpointer) g_strdup (buf));
    }
 
@@ -683,7 +683,7 @@ GtkWidget *create_static_menus( void )
    sml_text_fbk = sml_menu_fbk();
    sml_text_gph = sml_menu_gph();
    sml_text_mnu = sml_menu_mnu();
-  
+
 /* settings_items is the menu structure for "Settings" */
    settings_items = gtk_menu_new ();
 
@@ -803,7 +803,7 @@ GtkWidget *create_dialog( void )
    PangoFontDescription *pfd;	/* to hold test font */
 
    dialog = gtk_text_view_new ();
-   
+
    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (dialog));
    gtk_text_view_set_editable (GTK_TEXT_VIEW (dialog), FALSE);
    gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (dialog), FALSE);
@@ -815,13 +815,13 @@ GtkWidget *create_dialog( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
-   } else if (disp_fnt == 1 ) {	
+     /* fprintf(stderr,"configure font medium 8\n"); debug */
+   } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
-   } else if (disp_fnt == 2 ) {	
+     /* fprintf(stderr,"configure font medium 10\n"); debug */
+   } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 12\n"); debug */
    }
    gtk_widget_modify_font(dialog, pfd);
    pango_font_description_free(pfd);
@@ -832,7 +832,7 @@ GtkWidget *create_dialog( void )
 
    return scrolled_dialog;
 }
- 
+
 /* createwin_ - create the default window set-up. Called from EPAGES in esru_lib.F
    It does initial setup of the application window with graphic feedback, text feedback,
    dialog area and e_menu area (each of these are resizable, but based on parameters
@@ -870,7 +870,7 @@ void createwin_ (long int *width,long int *height,long int *imenuchw,long int *i
 /* << Note iappx and iappy from calling subroutine don't seem to be usable
    << as gtk only has limited options to place application on monitor */
 
-/* strings to set interface greys 5 standards and 5 alternatives if allocation fails. */ 
+/* strings to set interface greys 5 standards and 5 alternatives if allocation fails. */
 char *gintstr[] = {
   "grey96","grey94","grey92","grey86","grey64","grey50",
   "grey95","grey93","grey91","grey85","grey63","grey49","grey43" };
@@ -907,7 +907,7 @@ char *gintstr[] = {
     mdepth = 0;  /* to pass to fortran: sceen depth */
 
     gtk_init (NULL, NULL);
-  
+
     menuchw = *imenuchw;	/* remember initial request */
     fprintf(stderr,"WIN SIZE MENUCHW LIMTTY %ld %ld %ld %ld\n", *height,*imenuchw,*ilimtty,menuchw);	/* debug */
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);	/* create top level window structure */
@@ -921,14 +921,14 @@ char *gintstr[] = {
 		      G_CALLBACK (delete_event), NULL);
     g_signal_connect (G_OBJECT (window), "destroy",
 	              G_CALLBACK (destroy), NULL);
-                      
+
     gtk_container_set_border_width (GTK_CONTAINER (window), 1);
     iwidth = (gint) *width; iheight = (gint) *height;
     gtk_window_set_default_size (GTK_WINDOW (window), iwidth, iheight);
     xrt_width = iwidth; xrt_height = iheight;  /* remember initial application size */
 
 /* centre application on monitor (gtk does not support specific pixel placement) */
-    gtk_window_set_position ( GTK_WINDOW (window),GTK_WIN_POS_CENTER); 
+    gtk_window_set_position ( GTK_WINDOW (window),GTK_WIN_POS_CENTER);
 
 /*
   In the application window create a menu bar, an upper frame_u (for feedback and
@@ -940,14 +940,14 @@ char *gintstr[] = {
     vpaned_top = gtk_vbox_new (FALSE, 0);
     gtk_container_add (GTK_CONTAINER (window), vpaned_top);
     gtk_widget_show (vpaned_top);
-    
+
 /* Creat the menu bar across the top */
     menu_bar = create_static_menus ();
     gtk_box_pack_start (GTK_BOX (vpaned_top), menu_bar, FALSE, FALSE, 0);
     gtk_widget_show (menu_bar);
 
 /*  Create a vpaneunder widget to go below the menu_bar to hold all the
-    others so that there can be an upper and lower frame to work within. 
+    others so that there can be an upper and lower frame to work within.
 */
     vpaneunder = gtk_vpaned_new ();
     gtk_box_pack_start (GTK_BOX (vpaned_top), vpaneunder, TRUE, TRUE, 5);
@@ -993,7 +993,7 @@ char *gintstr[] = {
     gtk_frame_set_shadow_type (GTK_FRAME (feedback), GTK_SHADOW_OUT);
     gtk_paned_pack1 (GTK_PANED (hpaned), feedback, TRUE, TRUE);
     gtk_widget_show (feedback);
-    
+
 /* Setup frame for the menu and request initial width based on *imenuchw
    Remember menu_pix_wd for use elsewhere. NOTE: find a way to update
    if the application is re-sized */
@@ -1053,14 +1053,14 @@ char *gintstr[] = {
 
 /* so the emenu is a frame which we could try
    using the esp_list_in_frame function with */
-   
-    /* 
-       Create a vpaned widget and add it to our feedback pane window 
+
+    /*
+       Create a vpaned widget and add it to our feedback pane window
     */
     vpaned = gtk_vpaned_new ();
     gtk_container_add (GTK_CONTAINER (feedback), vpaned);
     gtk_widget_show (vpaned);
-   
+
 /*  Now create the contents of the two halves of the window. */
     graphicf = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type (GTK_FRAME (graphicf), GTK_SHADOW_OUT);
@@ -1069,11 +1069,11 @@ char *gintstr[] = {
     graphic = gtk_drawing_area_new ();
     gtk_container_add (GTK_CONTAINER (graphicf), graphic);
     gtk_widget_show_all (graphicf);
-    
+
 /* Set up signal handlers for the graphics area here. */
-    g_signal_connect (G_OBJECT (graphic), "expose_event",  
+    g_signal_connect (G_OBJECT (graphic), "expose_event",
                       G_CALLBACK (expose_event), NULL);
-/*    g_signal_connect (G_OBJECT (graphic), "configure_event",  
+/*    g_signal_connect (G_OBJECT (graphic), "configure_event",
                       G_CALLBACK (configure_event), NULL); */
     gtk_widget_set_events (graphic, GDK_EXPOSURE_MASK
 			          | GDK_LEAVE_NOTIFY_MASK
@@ -1091,9 +1091,9 @@ char *gintstr[] = {
     textv = create_text ();
     gtk_container_add (GTK_CONTAINER (textf), textv);
     gtk_widget_show (textf);
-    
+
     gtk_widget_show (window);
-    
+
     menu_loop = g_main_loop_new (NULL, FALSE);
 
 /* Get the system color map */
@@ -1138,7 +1138,7 @@ char *gintstr[] = {
     gr_image_old = NULL;
     gr_image = gdk_pixmap_new(graphic->window,
        graphic->allocation.width,graphic->allocation.height,-1);
-               
+
     mdepth = gdk_drawable_get_depth(gr_image); /* recover depth of the display */
 
 /* generate a gdk graphic context for the graphic window */
@@ -1148,7 +1148,7 @@ char *gintstr[] = {
     gdk_gc_set_foreground(gc,&white);
     gdk_draw_rectangle (gr_image,gc,TRUE,0, 0,
 	graphic->allocation.width,graphic->allocation.height);
-                      
+
     gtk_widget_queue_draw_area (graphic,0, 0,
 	graphic->allocation.width,graphic->allocation.height);  /* force queued actions to be updated */
 
@@ -1396,10 +1396,10 @@ void foundcolour_(md,nic,ncs,ngs,nzc)
 /* action "i" interface greys index  0 >= n <= ngr */
 /* action "-" resets the forground to standard fg colour */
 void winscl_(act,n)
-char *act;  /* single character passed */	
+char *act;  /* single character passed */
 long int *n;
 {
- int ic; 
+ int ic;
  ic = (gint) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
@@ -1457,7 +1457,7 @@ void winclr_()
  if (entire_image) {
     g_object_unref(entire_image);
   }
-  
+
   entire_image = gdk_pixmap_new(window->window,
 	window->allocation.width,window->allocation.height,-1);
   gdk_gc_set_foreground(gc,&white);
@@ -1466,7 +1466,7 @@ void winclr_()
 
   fprintf(stderr,"about to draw pixmap to clear application \n");
   gdk_draw_drawable(window->window, gc, entire_image,0, 0, 0, 0,
-	window->allocation.width,window->allocation.height); 
+	window->allocation.width,window->allocation.height);
   gdk_gc_set_foreground(gc,&black);
 */
   return;
@@ -1507,13 +1507,13 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * Use pango_font_get_metrics to get font width and height. */
  if (butn_fnt == 0 ) {
    pfd = pango_font_description_from_string("Serif,Medium 8");
-   fprintf(stderr,"refresh graphic font medium 8\n");	/* debug */
- } else if (butn_fnt == 1 ) {	
+   /* fprintf(stderr,"refresh graphic font medium 8\n"); debug */
+ } else if (butn_fnt == 1 ) {
    pfd = pango_font_description_from_string("Serif,Medium 10");
-   fprintf(stderr,"refresh graphic font medium 10\n");	/* debug */
- } else if (butn_fnt == 2 ) {	
+   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
+ } else if (butn_fnt == 2 ) {
    pfd = pango_font_description_from_string("Serif,Medium 12");
-   fprintf(stderr,"refresh graphic font medium 12\n");	/* debug */
+   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
  context = gtk_widget_get_pango_context (graphic);
@@ -1558,7 +1558,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
 /* ************* startbuffer_() create a new graphic buffer pixmap *** */
 /* graphic is the gtk widget for the graphic feedback area. This
    creates a new bitmap the same size (and paints it white and then
-   resets the foreground colour to black before returning). 
+   resets the foreground colour to black before returning).
    Note: this should be called once to clear pixmap before the drawing primitives.
    But if it is not called and there is a previous pixmap drawing primitives will
    be appended to the pixmap. */
@@ -1589,7 +1589,7 @@ void forceflush_()
 {
 /*  fprintf(stderr,"flush pixmap to graphic area %d %d \n",graphic->allocation.width,graphic->allocation.height);  debug */
   gdk_draw_drawable(graphic->window, gc, gr_image,0, 0, 0, 0,
-	graphic->allocation.width,graphic->allocation.height); 
+	graphic->allocation.width,graphic->allocation.height);
   return;
 }
 

@@ -266,7 +266,7 @@ C Flag to enable inter-domain iteration
       logical bInter_domain_iteration
 
 C Indicies of start, end, current & future indicies
-      integer iMY_start_yr_index, iMY_end_yr_index
+      integer iMY_start_yr_index, iMY_end_yr_index,
      &        iMY_current_yr_index, iMY_future_yr_index
 
 C Store start time for reporting simulationd duration

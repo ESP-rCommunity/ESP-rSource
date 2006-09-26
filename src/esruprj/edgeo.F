@@ -2000,6 +2000,9 @@ C A non-blank, possibly known construction.
      &          ok,dok,2)
               if(ok)then
                 CALL ECONST(LTHRM(ICOMP),IFIL+2,ICOMP,0,IUOUT,IER)
+
+C << this would also be a good place to list out optical
+C << properties and the optical name.
                 CALL CONINF(ICOMP,IS,iuout)
               endif
             endif

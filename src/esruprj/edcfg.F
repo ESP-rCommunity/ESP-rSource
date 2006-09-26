@@ -76,7 +76,7 @@ C Defaults.
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/entfile/entflnam,ientxist
@@ -1000,6 +1000,7 @@ C the results file should be placed in the users home folder.
      &                filen(1:lnblnk(filen))
                   endif
                 endif
+C Debug.
 C                write(6,*) 'remote so reset tfile to ',tfile
               endif
               havefile=.true.
@@ -1028,6 +1029,7 @@ C                write(6,*) 'remote so reset tfile to ',tfile
      &                filen(1:lnblnk(filen))
                   endif
                 endif
+C Debug.
 C                write(6,*) 'remote so reset tfile to ',tfile
               endif
               havefile=.true.
@@ -1581,6 +1583,7 @@ C If control exists confirm update to zone links (assume no control
 C in the copied zone).  Begin by reading the existing control before
 C incrementing the ncomp.
           OKC=.false.
+C Debug.
 C          write(6,*) 'lctlf is ',LCTLF
           if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
             continue
@@ -1949,6 +1952,8 @@ C Find out if there are construction files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(CFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
+
+C Debug.
 C                write(6,*) CFILE
                 LTHRM(NCOMP)=CFILE
               endif
@@ -1969,6 +1974,7 @@ C Find out if there are tmc files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
+C Debug.
 C                  write(6,*) DFILE
                   LTWIN(NCOMP)=DFILE
                   ITW(NCOMP)=1
@@ -2046,6 +2052,7 @@ C Find out if there are operation files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
+C Debug.
 C                write(6,*) DFILE
                 LPROJ(NCOMP)=DFILE
               endif
@@ -2108,6 +2115,8 @@ C Find out if there are viewfactor files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
+
+C Debug.
 C                  write(6,*) DFILE
                   LVIEW(NCOMP)=DFILE
                   IVF(NCOMP)=1
@@ -2169,6 +2178,8 @@ C Find out if there are casual gain control files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
+
+C Debug.
 C                  write(6,*) DFILE
                   LCGCIN(NCOMP)=DFILE
                   ICGC(NCOMP)=1
@@ -2230,6 +2241,8 @@ C Find out if there are casual gain control files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
+
+C Debug.
 C                  write(6,*) DFILE
                   LHCCO(NCOMP)=DFILE
                   IHC(NCOMP)=1
@@ -3210,8 +3223,7 @@ C Also scan utility files if they exist.
 
 C Call EASKF depending on the current file name length.
 C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
-C name with the full path.
+C name of the file.
         llt=lnblnk(ltmp)
 #ifdef X11
         if(llt.lt.96)then
@@ -3225,6 +3237,10 @@ C name with the full path.
      &    'config file name',IER,17)
         endif
 #else
+
+C Note for GTK, LTMP will be returned with the absolute path to the folder
+C even if prj started up in the cfg folder. There is subsequent
+C logic which determines if we actually are browsing.
         CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
      &    'config file name',IER,17)
 #endif
@@ -3234,32 +3250,83 @@ C name with the full path.
         call st2file(LTMP,LCMDFL)
       endif
 
-C If requested, find the path and local file name. If path is
-C ./ then not browsing, otherwise check.
+C Debug.
+C      write(6,*) ' after easkf ',ckpath
+C      write(6,*) ' ltmp is ',ltmp(1:lnblnk(ltmp))
+C      write(6,*) ' lcmdfl is ',lcmdfl(1:lnblnk(ltmp))
+C      write(6,*) ' path is ',path(1:lnblnk(path))
+
+C If requested, find the path and local file name.
       if(ckpath)then
         write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/training'
         ldirpath=lnblnk(dirpath)
         call fdroot(LCMDFL,path,LCFGF)
+
+C Debug << check out this on a native windows machine >>
+C        write(6,*) ' after fdroot path is ',path(1:lnblnk(path))
+C        write(6,*) ' lcfgf is ',lcfgf(1:lnblnk(lcfgf))
         if(path(1:2).eq.'./')then
+
+C A ./ indicates that fdroot found no file separators. Must be in cfg folder.
+          browse=.false.
+        elseif(path(1:1).eq.'.'.and.path(2:2).eq.fs)then
+
+C A .\ indicates that fdroot found no file separators. Must be in cfg folder.
           browse=.false.
         elseif(path(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C The path is to the installed esp-r training folder so we must be
+C browsing the model.
           browse=.true.
         else
+
+C There were folder separators in the name.
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,path)
-C         write(6,*) 'iaccess is ',iaccess,icerr,ifold,path
+
+C Debug.
+C          write(6,*) 'a iaccess is ',iaccess,icerr,ifold,path
           if(iaccess.eq.1)then
+
+C If iaccedss is non-zero then we do not have permission to write there
+C and so we treat that model as if browsing.
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
           else
             browse=.false.
           endif
+
+#ifndef X11
+
+C For GTK versions, find odir (where prj was started) and compare with the
+C current path (both lnpath and lnpath-1 lengths) if there
+C is a match then even though there was a full explicit path
+C we can recognise that we started in a cfg folder. 
+          call usrdir(odir)
+          lnpath=lnblnk(path)
+
+C Debug.
+C          write(6,*) ' GTK path is ',path(1:lnblnk(path))
+C          write(6,*) ' GTK odir is ',odir(1:lnblnk(odir))
+          if(path(1:lnpath).eq.odir(1:lnpath))then
+            browse=.false.
+          elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
+            browse=.false.
+          else
+            call tstamp('>','PRJ: on browse mode')
+            browse=.true.
+          endif
+#endif
         endif
       else
+
+C Called without request to check paths.
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,path)
-C        write(6,*) 'iaccess is ',iaccess,icerr,ifold,path
+
+C Debug.
+C        write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
         if(iaccess.eq.1)then
           call tstamp('>','PRJ: on browse mode')
           browse=.true.
@@ -3267,7 +3334,9 @@ C        write(6,*) 'iaccess is ',iaccess,icerr,ifold,path
           browse=.false.
         endif
       endif
-C      write(6,*) 'NEWPRB browse status is ',browse
+
+C Debug.
+      write(6,*) 'NEWPRB browse status is ',browse
 
 C Get file separator.
       if(unixok)then
@@ -3281,7 +3350,9 @@ C it was a root name).
       XST=.FALSE.
       ifold=-1
       call ckaccess(ifold,iaccess,icerr,LCMDFL)
-C      write(6,*) 'iaccess is ',iaccess,icerr,ifold,LCMDFL
+
+C Debug.
+C      write(6,*) 'c iaccess is ',iaccess,icerr,ifold,LCMDFL
       if(ifold.eq.0.and.icerr.eq.0)then
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
@@ -3311,6 +3382,9 @@ C works. If path begins with /usr/esru then no need to prepend odir.
           else
             continue
           endif
+
+C Debug.
+C          write(6,*) ' subpath of folder is ',subpath(1:lnblnk(subpath))
 #endif
 #ifdef MINGW
 C In MINGW slightly different logic. If path ls ./ then standard logic
@@ -3353,6 +3427,8 @@ C Try to use information gathered from file scan.
               write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
               write(sfile,'(3a)') t144(1:lnblnk(t144)),fs,
      &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
+
+C Debug.
               write(6,*) 'sfile is ',sfile
               call fdroot(sfile,path,LCFGF)
               CALL ERPFREE(IFCFG,ISTAT)

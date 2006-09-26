@@ -1513,6 +1513,7 @@ C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       character outs*124,H*72,LCFD*72
 
@@ -1522,8 +1523,9 @@ C Once per hour storage of results, averaged over that hour.
 
 C Request simulation period in user defined format of d-o-y
 C or day and month, return julian days and convert to month
-C and day. 
-   14 if(.NOT.perok) then
+C and day.
+  14  if(.NOT.perok) then
+
 C If period has not been defined, assign defaults        
         isds=9
         isdf=15
@@ -1532,6 +1534,7 @@ C If period has not been defined, assign defaults
            iMY_end_year   = 2000
         endif     
       else
+
 C If period has been defined get start & end days
         CALL EDAY(isd1,ism1,isds)
         CALL EDAY(isd2,ism2,isdf)
@@ -1561,7 +1564,7 @@ C Check start day before finish day.
       CALL edisp(iuout,' Start/Finish dates out of order. ')
       if ( .not. autook ) goto 8
 
-C << The following if...endif is the NRCan version. >>
+C Define startup period.
  16   if ( .not.autook ) then
          
          H(1)='The start-up period is one or more days preceding'
@@ -1572,88 +1575,20 @@ C << The following if...endif is the NRCan version. >>
          H(6)='Note that during a single year simulation, a start-up'
          H(7)='period prior to January 1 will utilise climatic data'
          H(8)='from the end of the same year.'
-        
          CALL EASKI(ITCNST,' Start-up period duration:',
      &                     ' Number of days ? ',
      &                     0,'F',364,'F',1,'startup period',IER,8)
-
       endif
-
-C << The block from 16 continue was taken from input.F version
-C << dialog for startup period. Its logic requires a value for
-C << IREP which is not yet passed to MZSPER 
-C << commented out until it can be tested.      
-C 16   continue
-
-C Now check if user wants to re-specify simulation start-up period. 
-C Only if not in autoexec mode as defined in the simulator parameter 
-C file - use default value if start up undefined in the spf file.
-C If IREP=1 then use default. 
-C      if (spfileok) then
-C        if (autook) then
-C          if (.not.startupok) then
-C            write(outs,'(a,I3,a)')
-C     &                 ' Assuming indicative start-up period of ',
-C     &                    ITCNST,' days. '
-C            call edisp(iuout,outs)
-C          endif
-C          OK=.true.
-C        else
-C          WRITE(outs,'(A,I3,A)')
-C     &      'Indicative simulation start-up period is ',
-C     &      ITCNST,' days. Is this ok?'
-C          dok=.true.
-C          h(1)='The suggested startup period is usually a compromise'
-C          h(2)='in stability and execution time. If you say no and'
-C          h(3)='enter fewer days it will run faster, but the first'
-C          h(4)='few days may be inaccurate. If you say no and enter'
-C          h(5)='more days the execution time will be longer. '
-C          CALL ASKOK(outs,'(see help)',OK,dok,5)
-C        endif
-
-C << IREP is currently undefined in MZSPER code temporarily commented out >>
-C       elseif (IREP.eq.1) then
-C        write(outs,'(a,I3,a)')
-C     &     ' Using indicative start-up period of ',ITCNST,' days. '
-C        call edisp(iuout,outs)
-C        OK=.true.
-C      else
-C        WRITE(outs,'(A,I3,A)')
-C     &    'Indicative simulation start-up period is ',
-C     &    ITCNST,' days. Is this ok?'
-C        dok=.true.
-C        h(1)='The suggested startup period is usually a compromise'
-C        h(2)='in stability and execution time. If you say no and'
-C        h(3)='enter fewer days it will run faster, but the first'
-C        h(4)='few days may be inaccurate. If you say no and enter'
-C        h(5)='more days the execution time will be longer. '
-C        CALL ASKOK(outs,'(see help)',OK,dok,5)
-C      endif
-C      IF(.NOT.OK)THEN
-C        H(1)='The start-up period is one or more days preceding'
-C        H(2)='the user defined simulation period. The results for'
-C        H(3)='this start-up period are not transferred to the'
-C        H(4)='results library and so cannot be analysed. '
-C        H(5)='  '
-C        H(6)='Note that a start-up period prior to January 1 '
-C        H(7)='will utilise climatic data from the end of the'
-C        H(8)='same year. '
-
-C        CALL EASKI(ITCNST,' ',' Number of days ? ',
-C     &          0,'F',364,'F',1,'startup period',IER,8)
-C      ENDIF
-C << end of block of code from input.F which needs testing
 
 C Define computational time-step.
       if (.not.autook) then
         if(.not.tstepok) NTSTEP=1
         IF(INDCFG.EQ.2)goto 31
         h(1)=' The zone-side equations will be established'
-        h(2)=' and solved this many times per hour. A 1/hour'
+        h(2)=' and solved this many times per hour. A 2/hour'
         h(3)=' scheme is usually sufficient, although smaller'
         h(4)=' time-steps may be required for some control'
         h(5)=' regimes to permit frequent control decision points.'
-C        mtsphr=int(real(mtms)/24.0)
         mtsphr=60
         call easki(ntstep,' ',' Zone side: time-steps/hour ?',
      &    1,'F',mtsphr,'F',1,'time-steps/hour?',ier,5)
@@ -1747,27 +1682,40 @@ C CFD simulation period.
 C Set, once per hour storage of results, averaged over that hour.
       if(ntstep.gt.1.or.(indcfg.ne.1.and.ntstep*ntstpp.gt.1)) then
         if (.not.autook) then
-          H(1) ='Bps calculates the value of each state variable '
-          H(2) ='at each computational time step. The default action'
-          H(3) ='is to transfer each value at each computational'
-          H(4) ='time step to the results database(s).'
-          H(5) ='This option allows to average results over one'
-          H(6) ='hour before transfer to the results database(s),'
-          H(7) ='thus decreasing the size of results database(s).'
+          H(1) ='The simulator calculates the value of each state'
+          H(2) ='variable at each computational time step. The default'
+          H(3) ='action is to transfer each value at each time'
+          H(4) ='step to the results files(s).'
+          H(5) =' '
+          H(6) ='This option allows to average results over one hour'
+          H(7) ='before transfer to the results file(s), thus'
+          H(8) ='decreasing the size of results files(s). Subsequent'
+          H(9) ='invocations of the results analysis module will'
+          H(10)='be the same as if the simulation timestep was one'
+          H(11)='per hour.'
           defok=.false.
           hri=.false.
-          call askok(' Hourly results integration: ',' ',hri,defok,7)
+          call askok(' Hourly results integration: ',' ',hri,defok,11)
           if(hri)then
             irdact=1
           else
             irdact=0
           endif
         else
-          irdact=0
+
+C Check against user preference in simulation parameters.
+          if(isavgh.eq.1)then
+            irdact=1
+          else
+            irdact=0
+          endif
         endif
       else
         irdact=0
       endif
+
+C Debug.
+C      write(6,*) 'in mzper irdact & isavgh are ',irdact,isavgh 
 
       RETURN
       END
@@ -1888,6 +1836,8 @@ c Added a 5th computed goto for save level 5
           NREC=NREC+1
    20   CONTINUE
    10 CONTINUE
+
+C << with wider record width is MS+5 still ok for file size prediction ?? >>
       if(irdact.ne.0)then
         NWORD=(IDAYS*irdact*NREC*24+IRECPL)*(MS+5)
       else
@@ -1954,12 +1904,17 @@ C Derive string for simulation period.
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.2)goto 131
-      write(outs,'(a,I5,a,F6.2,a)')' Zone time-steps      : ',NTSTEP,
-     &  ' / hr ( ',TMIN,' min. intervals)'
+      if(irdact.eq.0)then
+        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+     &    ' / hr ( ',TMIN,' min. intervals saved at each timestep)'
+      else
+        write(outs,'(a,I6,a,F5.2,a)')' Zone time-steps      :',NTSTEP,
+     &    ' / hr ( ',TMIN,' min. intervals saved once per hour)'
+      endif 
       call edisp(icout,outs)
       write(outs,'(a,I5)') ' Number of zones      : ',NCOMP
       call edisp(icout,outs)
-      write(outs,'(a,I5)') ' Zone-time increments : ',NZTS
+      write(outs,'(a,I6)') ' Zone-time increments :',NZTS
       call edisp(icout,outs)
 
       IF(INDCFG.EQ.1)goto 133

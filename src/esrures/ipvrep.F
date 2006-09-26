@@ -111,7 +111,7 @@ C << is pvdayhr useful? >>
       common/spm55/pvdayhr(2*MTS)
       common/ract/paction
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -426,6 +426,16 @@ C If IPV report format has not been set ask the user (i.e. zero value).
         CALL EASKABC('Format output for:',' ','Text','comma separated',
      &    'java',ipvform,2)
       endif
+
+C If text output the set tab to a space and delimeter to -.
+      if(ipvform.eq.1)then
+        delim = '-'
+        tab=' '
+      else
+        delim = 'C'
+        tab=','
+      endif
+
 
 C If the first or only season then write out a heading.
       if(iseas.eq.1)then
@@ -1972,7 +1982,7 @@ C If IPV report format has not been set ask the user.
 C Set tab based on format of report.
       iof = ipvform
       if(iof.eq.1)then
-        tab = '='
+        tab = ' '
       else
         tab = ','
       endif

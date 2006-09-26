@@ -859,6 +859,7 @@ C MFLIST Fluid flow file: list common block contents.
       SUBROUTINE MFLIST(itru)
 
 #include "net_flow.h"
+#include "building.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -869,7 +870,11 @@ C MFLIST Fluid flow file: list common block contents.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
+      COMMON/C1/NCOMP,NCON
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,zname*12,zdesc*64
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4
       logical written
 
@@ -1073,6 +1078,26 @@ C Connections data
  1070   FORMAT(1X,I4,1X,A12,F7.3,3X,A12,F7.3,3X,A12,1X,2F8.3)
         CALL EDISP(itru,outs)
    70 CONTINUE
+
+C Thermal zone - air flow node mapping (if any)
+C<< Plant and air flow node mapping to be added
+      IHEAD1=0
+      IHEAD2=0
+      DO 234 IC=1,NCOMP
+        IF(IHEAD1.NE.1)THEN
+          CALL EDISP(ITRU,'thermal zone to air flow node mapping:')
+          CALL EDISP(ITRU,'thermal zone -> air flow node')
+          IHEAD1=1
+        ENDIF
+        IF(ICAAS(IC).NE.0)THEN
+          WRITE(OUTS,'(A12,A4,A12)')ZNAME(IC),' -> ',NDNAM(ICAAS(IC))
+          CALL EDISP(ITRU,OUTS)
+        ELSE
+          WRITE(OUTS,'(A12,A4,A16)')ZNAME(IC),' -> ','node not defined'
+          CALL EDISP(ITRU,OUTS)
+        ENDIF
+ 234  CONTINUE
+      
 
   100 RETURN
 

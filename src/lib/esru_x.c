@@ -1,5 +1,5 @@
 /*
-esru_x.c	(making use of raw X calls) 
+esru_x.c	(making use of raw X calls)
 These routines are called from ESP-r fortran code for
 intialisation and graphics, using ww. The routines are :-
 
@@ -18,7 +18,7 @@ intialisation and graphics, using ww. The routines are :-
 	feedbox		:- setup feedback display box
 	winfnt(n)	:- changes the font (4 different sizes 0,1,2,3)
 	wstxpt(x,y,buff,len):-outputs a string beginning at pixel x and y.
-	win3d(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)          
+	win3d(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
                         :- opens a viewing box taking into account menu
                            width and dialogue box.
 	win3dclr_()     :- clear viewing box.
@@ -44,12 +44,12 @@ intialisation and graphics, using ww. The routines are :-
 	egdisp_(msg,iw,line,len)
                         :- writes text in the scrolling text display area.
 	egdispclr_()    :- clears scrolling text display at EPAGEW.
-	eline_(x,y,operation) 
+	eline_(x,y,operation)
                         :- draws or moves a line @ pixel location x y.
 	edline_(x1,y1,x2,y2,ipdis)
-                        :- draws a dotted line from x1 y1 to x2 y2.       
+                        :- draws a dotted line from x1 y1 to x2 y2.
 	edash_(x1,y1,x2,y2,ipdis)
-                        :- draws a dashed line from x1 y1 to x2 y2. 
+                        :- draws a dashed line from x1 y1 to x2 y2.
 	echain_(x1,y1,x2,y2,ipdis)
                         :- draws a chained line from x1 y1 to x2 y2.
 	edwline_(x1,y1,x2,y2)
@@ -233,7 +233,7 @@ Colormap theCmap; /* same as xv browCmap */
 static Cursor arrow_cursor, cross_cursor, zoom_cursor, wait_cursor, inviso;
 
 int cur_cursor = -1;
-Pixmap gray25Tile, gray50Tile;   /* used for 3d effect on 1-bit disp's */                  
+Pixmap gray25Tile, gray50Tile;   /* used for 3d effect on 1-bit disp's */
 
 static int curstype;	/* xv cursor type */
 static int mono;	/* true if displaying grayscale */
@@ -244,7 +244,7 @@ static int ipwait_flag = 0;        /* remember i/o mode */
 
 static long int mdepth = 0;  /* to pass to fortran: sceen depth */
 static unsigned int dispDEEP;
-/* indicies used for various colours */ 
+/* indicies used for various colours */
 static unsigned long fg, bg, bd, bw, white, black, infofg, infobg;
 static unsigned long gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;
 static unsigned long cscale[49], zscale[29], gscale[29];
@@ -313,7 +313,7 @@ static char capt_tf_file[73];	/* file for text feedback buffer dump */
 static char capt_all_exe[73];	/* command for capture all of display */
 static char captut_exe[73];	/* command for tutorial */
 FILE *tf_dump;			/* file for text dump */
-static int ask_len;             /* width of the input box */ 
+static int ask_len;             /* width of the input box */
 static int x_off,y_off;         /* display X & Y offsets in pixels (see linescale) */
 static float x_add,x_scale,y_add,y_scale;  /* X & Y axis scales and data offsets (see linescale) */
 static int dash_on = 0;         /* toggle for dashed section of a line */
@@ -437,7 +437,7 @@ static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 ste
   "#55FF00","#40FF00","#2AFF00","#15FF00","#00FF00","#00FF15","#00FF2B","#00FF40","#00FF55","#00FF6A",
   "#00FF80","#00FF95","#00FFAA","#00FFBF","#00FFD4","#00FFEA","#00FFFF","#00EAFF","#00D4FF","#00BFFF",
   "#00AAFF","#00AAFF","#00AAFF","#006AFF","#0055FF","#0040FF","#002BFF","#0015FF","#0000FF" };
-/* strings to set interface greys 5 standards and 5 alternatives if allocation fails. */ 
+/* strings to set interface greys 5 standards and 5 alternatives if allocation fails. */
 static char *gintstr[] = {
   "grey96","grey94","grey92","grey86","grey64","grey50",
   "grey95","grey93","grey91","grey85","grey63","grey49","grey43" };
@@ -498,7 +498,7 @@ char *msg;                /* window heading      */
   int width = 1;
   Bool exp = 1;
   bgstr = whitestr = blackstr = NULL;
-  mono = 0;  
+  mono = 0;
   curstype = XC_top_left_arrow;
 
 /* Open the display using the $DISPLAY env variable */
@@ -582,14 +582,14 @@ bd = WhitePixel(theDisp,theScreen);
 
 /* init default colors (as used in Xv (RGB values as hex)) */
 bgstr="#B2C0DC"; /* 198|213|226 */
- 
+
 
 /* from xv initial setup of colour data */
 best = -1;
 rvinfo.class  = TrueColor;
 rvinfo.screen = theScreen;
 flags = VisualClassMask | VisualScreenMask;
-    
+
 vinfo = XGetVisualInfo(theDisp, flags, &rvinfo, &numvis);
 if (vinfo) {     /* look for a TrueColor, 24-bit or more (pref 24) */
   for (i=0, best = -1; i<numvis; i++) {
@@ -611,11 +611,11 @@ if (best == -1) {   /* look for a DirectColor, pref 24-bit */
 }
 
 if (vinfo) XFree((char *) vinfo);
-  
+
 /* make linear colormap for DirectColor visual */
 /* if (theVisual->class == DirectColor) makeDirectCmap(); */
 
-defaultVis = (XVisualIDFromVisual(theVisual) == 
+defaultVis = (XVisualIDFromVisual(theVisual) ==
        XVisualIDFromVisual(DefaultVisual(theDisp,DefaultScreen(theDisp))));
 /* fprintf(stderr,"defaultVis is %d \n",defaultVis); */
 
@@ -659,7 +659,7 @@ defaultVis = (XVisualIDFromVisual(theVisual) ==
       XAllocColor(theDisp, theCmap, &ecdef)) { black = ecdef.pixel; }
 */
   /* set up fg,bg colors */
-  fg = black;   bg = white;  
+  fg = black;   bg = white;
   if (bgstr && XParseColor(theDisp, theCmap, bgstr, &ecdef) &&
       XAllocColor(theDisp, theCmap, &ecdef)) bg = ecdef.pixel;
 
@@ -750,7 +750,7 @@ xsh.y = START_ULY;
 
 /* standard properties for the window manager */
   argv = NULL; argc = 0;
-  XSetStandardProperties(theDisp,win,msg,msg,None,0,argc,&xsh); 
+  XSetStandardProperties(theDisp,win,msg,msg,None,0,argc,&xsh);
 
 /* structure for X window */
   xwmh.input = True;
@@ -771,7 +771,7 @@ xsh.y = START_ULY;
   theGC = XCreateGC(theDisp,win, (GCFont | GCForeground | GCBackground), &gcv);
 
 /* event types */
-  XSelectInput(theDisp,win, ExposureMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | PointerMotionMask | StructureNotifyMask | VisibilityChangeMask); 
+  XSelectInput(theDisp,win, ExposureMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | PointerMotionMask | StructureNotifyMask | VisibilityChangeMask);
 
 /* map window to make it visible */
   XMapWindow(theDisp,win);
@@ -811,12 +811,12 @@ xsh.y = START_ULY;
   }
 
 /* clear event stack of initial visibility and configure events */
-  if(XPending(theDisp) > 0) {  
+  if(XPending(theDisp) > 0) {
 /* debug   fprintf(stderr,"winint: events remaining %d\n",XPending(theDisp));  */
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor); /* turn on arrow cursor */
   return;
  }
@@ -933,7 +933,7 @@ void setzscale_() {
         zscale[ic] = black;
       }
       izc = izc + 1;
-    } 
+    }
   }
   return;
 }
@@ -958,10 +958,10 @@ void foundcolour_(md,nic,ncs,ngs,nzc)
 /* action "i" interface greys index  0 >= n <= ngr */
 /* action "-" resets the forground to standard fg colour */
 void winscl_(act,n)
-char *act;  /* single character passed */	
+char *act;  /* single character passed */
 long int *n;
 {
- int ic; 
+ int ic;
  ic = *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
@@ -1010,11 +1010,11 @@ long int *n;
 /* action "i" interface greys index  0 >= n <= ngr */
 /* action "-" resets the forground to standard fg colour */
 void winenqcl_(act,n,xcolid)
-char *act;  /* single character passed */	
+char *act;  /* single character passed */
 long int *n;	/* index as in winscl_ */
 long int *xcolid;	/* index of colour used by X */
 {
- int ic; 
+ int ic;
  ic = *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
@@ -1184,7 +1184,7 @@ void winlod_(name,itime,lix,liy,len)
 char *name;
 long int *lix, *liy, *itime;
 int len;
-{ 
+{
  Pixmap exbit,logobit,underit; /* bitmap from logo_bits data, pixmap of logo, area under */
  long int iupx,iupy;
  box gmenubx;
@@ -1194,7 +1194,7 @@ int len;
  FILE *bf;
 
  iupx = *lix; iupy = *liy; persist = *itime;
-/* 
+/*
  * Terminate at fortran length, find actual string length and then reterminate.
  */
   f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
@@ -1212,7 +1212,7 @@ int len;
  else if (result == BitmapSuccess) {
    underit = XCreatePixmap(theDisp,win,iwidth,iheight,dispDEEP);
    logobit = XCreatePixmap(theDisp,win,iwidth,iheight,dispDEEP);
-   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,0,0,iwidth,iheight,0,0,(unsigned long) 1); 
+   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,0,0,iwidth,iheight,0,0,(unsigned long) 1);
    if ((iupy - (int) iheight) <= 0) {
      gmenubx.b_top = 10; gmenubx.b_bottom= 10 + (int) iheight;
    } else {
@@ -1255,7 +1255,7 @@ char *name;
 long int *lreqx, *lreqy, *lreqwidth, *lreqheight, *lix, *liy;
 long int *boxulx, *boxuly, *boxlrx, *boxlry;
 int len;
-{ 
+{
  Pixmap exbit,logobit,underit; /* bitmap from logo_bits data, pixmap of logo, area under */
  long int ilreqx,ilreqy,ilreqwidth,ilreqheight;
  long int iupx,iupy;
@@ -1266,7 +1266,7 @@ int len;
  FILE *bf;
  ilreqx=*lreqx; ilreqy=*lreqy; ilreqwidth=*lreqwidth; ilreqheight=*lreqheight;
  iupx = *lix; iupy = *liy;
-/* 
+/*
  * Terminate at fortran length, find actual string length and then reterminate.
  */
   f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
@@ -1296,7 +1296,7 @@ int len;
  else if (result == BitmapSuccess) {
    underit = XCreatePixmap(theDisp,win,ilreqwidth,ilreqheight,dispDEEP);
    logobit = XCreatePixmap(theDisp,win,ilreqwidth,ilreqheight,dispDEEP);
-   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,ilreqx,ilreqy,ilreqwidth,ilreqheight,0,0,(unsigned long) 1); 
+   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,ilreqx,ilreqy,ilreqwidth,ilreqheight,0,0,(unsigned long) 1);
    if ((iupy - (int) ilreqheight) <= 0) {
      gmenubx.b_top = 15; gmenubx.b_bottom= 15 + (int) ilreqheight;
    } else {
@@ -1337,7 +1337,7 @@ char *name;
 long int *lreqx, *lreqy, *lreqwidth, *lreqheight, *lix, *liy;
 long int *boxulx, *boxuly, *boxlrx, *boxlry;
 int len;
-{ 
+{
  Pixmap exbit; /* bitmap from data file */
  long int ilreqx,ilreqy,ilreqwidth,ilreqheight;
  long int iupx,iupy;
@@ -1348,7 +1348,7 @@ int len;
  FILE *bf;
  ilreqx=*lreqx; ilreqy=*lreqy; ilreqwidth=*lreqwidth; ilreqheight=*lreqheight;
  iupx = *lix; iupy = *liy;
-/* 
+/*
  * Terminate at fortran length, find actual string length and then reterminate.
  */
   f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
@@ -1391,7 +1391,7 @@ int len;
 /* ********* Displays the ESRU logo. */
 void showlogo_(itime,lix,liy)
 long int *itime,*lix, *liy; /* persistance, position from lower left of the 3dviewing image area */
-{ 
+{
  Pixmap exbit,logobit,underit; /* bitmap from logo_bits data, pixmap of logo, area under */
  long int iupx,iupy;
  int persist;
@@ -1405,7 +1405,7 @@ long int *itime,*lix, *liy; /* persistance, position from lower left of the 3dvi
  XSetForeground(theDisp,theGC,black);
  XSetBackground(theDisp,theGC,white);
  XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,0,0,(unsigned int)logo_width,(unsigned int)logo_height,0,0,
-   (unsigned long) 1); 
+   (unsigned long) 1);
  iupx = *lix; iupy = *liy; persist = *itime;
  gmenubx.b_top   = iupy - (logo_height); gmenubx.b_bottom= iupy;
  gmenubx.b_left  = iupx;  gmenubx.b_right = iupx + logo_width;
@@ -1437,7 +1437,7 @@ int len;	/* string length from fortran */
  char name2[80];
  wwc_ok = 1;   /* set flag to echo drawing commands to wwc */
 
-/* 
+/*
  * Terminate at fortran length, find actual string length
  * and then reterminate.
  */
@@ -1558,7 +1558,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 	`dir` get list of folders, `fil` get list of files in the folder,
 	`cfg` get list of configuration files, `ctl` get list of control files,
 	`afn` get list of air flow networks, `gnf` get list of graphic network files,
-	`res` get list of results files, `mfr` get list of mass flow results 
+	`res` get list of results files, `mfr` get list of mass flow results
 	`geo` get list of geometry files, `obs` obstructions file,
 	`opr` get list of operation files, `con` get list of construction files,
         `vwf` get list of viewfactor files, `tmc` zone optics file,
@@ -1568,9 +1568,9 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 	`dba` legacy ascii database,
 	`xbm` X bitmaps, `gif` gif image files.
         `ipv` IPV definition file, `rep` IPV report file
-        `qac` QA contents file, `zip` cflo3 zip (geometry) file. 
+        `qac` QA contents file, `zip` cflo3 zip (geometry) file.
  */
-	
+
   char *flist;	/* f77 array of returned folders or file names */
   long int nwflist[];	/* array of character widths for each folder or file name. */
   long int *nflist;	/* number of folders or file names */
@@ -1613,11 +1613,11 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   i = stat(name2, &st);
   ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
   if (ifolder == 0) {
-    fprintf(stderr,"folder passed %s %d %d is not a folder.\n",name2,ilen,lenfolder); 
+    fprintf(stderr,"folder passed %s %d %d is not a folder.\n",name2,ilen,lenfolder);
     return;
   }
   if (lenact == 0) {
-    fprintf(stderr,"requested file or folder listing action was blank.\n"); 
+    fprintf(stderr,"requested file or folder listing action was blank.\n");
     return;
   }
 
@@ -1750,7 +1750,7 @@ int  len;        /* len is length passed from fortran */
 void textatxy_(x,y,buff,act,n,len)
 long int *x, *y;       /* x y is the position of the string */
 char *buff;
-char *act;  /* single character passed for colour set */	
+char *act;  /* single character passed for colour set */
 long int *n;       /* colour index within the set */
 int  len;        /* len is length passed from fortran */
 {
@@ -1759,7 +1759,7 @@ int  len;        /* len is length passed from fortran */
  int ix = *x;
  int iy = *y;
  int ilen;
- int ic; 
+ int ic;
  ic = *n;
 /* sets the current forground colour n depending on which active colour set being used */
  if(*act == 'g') {
@@ -1797,7 +1797,7 @@ int  len;        /* len is length passed from fortran */
     xcolid = fg;
  }
  colid = (unsigned long) xcolid;
-  
+
  f_to_c_l(buff,&len,&ilen);
  XSetForeground(theDisp,theGC,colid);
  XDrawString(theDisp,win,theGC,ix,iy,buff,ilen);  /* print text */
@@ -1953,16 +1953,16 @@ void xbox(b,fgc,bgc,flags) box b; unsigned long fgc; unsigned long bgc; int flag
     XSetForeground(theDisp,theGC, bgc);
     XSetBackground(theDisp,theGC, bgc);
     XFillRectangle(theDisp,win,theGC,b.b_left,b.b_top,(unsigned int)wid,(unsigned int)hight);
-    XSetForeground(theDisp,theGC, fgc); 
+    XSetForeground(theDisp,theGC, fgc);
     XSetBackground(theDisp,theGC, bgc);
   }
   if(flags&(BMCLEAR|BMNOT)){
     XClearArea(theDisp,win,b.b_left+1,b.b_top+1,wid-1,hight-2,exp); /* clear inner box */
     XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
-    XSetForeground(theDisp,theGC, bgc); 
+    XSetForeground(theDisp,theGC, bgc);
     XSetBackground(theDisp,theGC, bgc);
     XFillRectangle(theDisp,win,theGC,b.b_left+1,b.b_top+1,wid-1,hight-1);
-    XSetForeground(theDisp,theGC, fgc); 
+    XSetForeground(theDisp,theGC, fgc);
     XSetBackground(theDisp,theGC, bgc);
   }
   if(flags&BMEDGES){
@@ -2024,13 +2024,13 @@ void feedbox_(menu_char,d_lines,gw,gh)
 
 /* Clear area under the rectangle, set colours (gfeedfr), fill rectangle, re-set colours
  * and draw the bounding box.
- */ 
+ */
   XClearArea(theDisp,win,fbb.b_left,fbb.b_top,(unsigned int)wid,(unsigned int)hight,exp);
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
   XSetForeground(theDisp,theGC, gfeedfr);
   XSetBackground(theDisp,theGC, gfeedfr);
   XFillRectangle(theDisp,win,theGC,fbb.b_left,fbb.b_top,(unsigned int)wid,(unsigned int)hight);
-  XSetForeground(theDisp,theGC, black); 
+  XSetForeground(theDisp,theGC, black);
   XSetBackground(theDisp,theGC, bg);
   XDrawRectangle(theDisp,win,theGC,fbb.b_left,fbb.b_top,wid,hight);
 
@@ -2203,13 +2203,13 @@ void viewtext_(msg,linep,side,size,len)
     fprintf(wwc,"%ld %ld %ld\n",*linep,*side,*size);
     fprintf(wwc,"%s\n",msg);
   }
-  
+
   fsize = *size;
   mid = dbx1.b_left + ((dbx1.b_right - dbx1.b_left)/2);
   saved_font = current_font;	/* save current font  */
   winfnt_(&fsize);	/* set to size        */
 
-  iy = dbx1.b_top + 3 + (f_height * *linep); 
+  iy = dbx1.b_top + 3 + (f_height * *linep);
   if (*side == 0) {
       ix = dbx1.b_left + 7;
   } else if (*side == 1) {
@@ -2240,7 +2240,7 @@ void findviewtext_(charposp,linep,size,irx,iry)
   long int fsize, charpos;
   long int saved_font;
   box backing;	/* area under text to clear */
-  
+
   fsize = *size;
   charpos = *charposp;
   mid = dbx1.b_left + ((dbx1.b_right - dbx1.b_left)/2);
@@ -2324,7 +2324,7 @@ void Timer(msec)   /* from xvmisc.c */
 
   if (msec <= 0) return;
   usec = (long) msec * 1000;
-    
+
   time.tv_sec = usec / 1000000L;
   time.tv_usec = usec % 1000000L;
   select(0, XV_FDTYPE NULL, XV_FDTYPE NULL, XV_FDTYPE NULL, &time);
@@ -2342,7 +2342,7 @@ void pausems_(msec)   /* from xvmisc.c */
   msecond = *msec;
   if (msecond <= 0) return;
   usec = (long) msecond * 1000;
-    
+
   time.tv_sec = usec / 1000000L;
   time.tv_usec = usec % 1000000L;
   select(0, XV_FDTYPE NULL, XV_FDTYPE NULL, XV_FDTYPE NULL, &time);
@@ -2372,12 +2372,12 @@ void drawswl(xa,ya,xb,yb)
 }
 
 /* *************** ESRU symbol drawing routine. *************** */
-/* 
+/*
  esymbol is passed a pixel coord, a symbol index, and a size.
  currently there are 32 symbols.
 */
 void esymbol_(x,y,sym,size)
-  long int *x, *y, *sym, *size;	
+  long int *x, *y, *sym, *size;
 {
   int isym,isize,ix,iy,width;
   XPoint p[12];
@@ -2394,81 +2394,81 @@ void esymbol_(x,y,sym,size)
   }
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
 /*
-      p[0].x=; p[0].y=; p[1].x=; p[1].y=; 
+      p[0].x=; p[0].y=; p[1].x=; p[1].y=;
       p[2].x=; p[2].y=; p[3].x=; p[3].y=;
       p[4].x=; p[4].y=; p[5].x=; p[5].y=;
 */
   switch ( isym ) {    /* pick the appropriate symbol */
-    case 0 :	       /* box 4 pixels wide and high */  
-      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix+2; p[1].y=iy-2; 
+    case 0 :	       /* box 4 pixels wide and high */
+      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix+2; p[2].y=iy+2; p[3].x=ix-2; p[3].y=iy+2;
       p[4].x=ix-2; p[4].y=iy-2;
       XDrawLines(theDisp,win,theGC,p,5,CoordModeOrigin); break;
     case 1 :  		/* triangle p[].x= ; p[].y= ; */
-      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+2; p[1].y=iy+2; 
+      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+2; p[1].y=iy+2;
       p[2].x=ix-2; p[2].y=iy+2; p[3].x=ix; p[3].y=iy-3;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 2 : 		/* upside down triangle */   
-      p[0].x=ix; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2; 
+    case 2 : 		/* upside down triangle */
+      p[0].x=ix; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix-2; p[2].y=iy-2; p[3].x=ix; p[3].y=iy+3;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 3 : 		/* diamond */	
-      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+3; p[1].y=iy; 
+    case 3 : 		/* diamond */
+      p[0].x=ix; p[0].y=iy-3; p[1].x=ix+3; p[1].y=iy;
       p[2].x=ix; p[2].y=iy+3; p[3].x=ix-3; p[3].y=iy;
       p[4].x=ix; p[4].y=iy-3; p[5].x=ix; p[5].y=iy-3;
       XDrawLines(theDisp,win,theGC,p,6,CoordModeOrigin); break;
-    case 4 : 		/* lower right triangle */	
-      p[0].x=ix-3; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy+2; 
+    case 4 : 		/* lower right triangle */
+      p[0].x=ix-3; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy+2;
       p[2].x=ix+2; p[2].y=iy-3; p[3].x=ix-3; p[3].y=iy+2;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 5 : 		/* lower left triangle */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+3; p[1].y=iy+2; 
+    case 5 : 		/* lower left triangle */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+3; p[1].y=iy+2;
       p[2].x=ix-2; p[2].y=iy-3; p[3].x=ix-2; p[3].y=iy+2;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 6 : 		/* upper left triangle */	
-      p[0].x=ix-2; p[0].y=iy+3; p[1].x=ix+3; p[1].y=iy-2; 
+    case 6 : 		/* upper left triangle */
+      p[0].x=ix-2; p[0].y=iy+3; p[1].x=ix+3; p[1].y=iy-2;
       p[2].x=ix-2; p[2].y=iy-2; p[3].x=ix-2; p[3].y=iy+3;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 7 : 		/* upper right triangle */	
-      p[0].x=ix+2; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2; 
+    case 7 : 		/* upper right triangle */
+      p[0].x=ix+2; p[0].y=iy+3; p[1].x=ix+2; p[1].y=iy-2;
       p[2].x=ix-3; p[2].y=iy-2; p[3].x=ix+2; p[3].y=iy+3;
       XDrawLines(theDisp,win,theGC,p,4,CoordModeOrigin); break;
-    case 8 : 		/* dot 2 pix wide, 3 pix high */	
+    case 8 : 		/* dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
       drawswl(ix-1,iy+1,ix+1,iy+1);  break;
-    case 9 : 		/* X */	
+    case 9 : 		/* X */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy+3,ix+3,iy-2);  break;
-    case 10 : 		/* * asterick */	
+    case 10 : 		/* * asterick */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix-2,iy,ix+3,iy);  break;
-    case 11 : 		/* + */	
+    case 11 : 		/* + */
       drawswl(ix-2,iy,ix+3,iy);
       drawswl(ix,iy-2,ix,iy+3);  break;
-    case 12 : 		/* ^ up arrow */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix; p[1].y=iy-2; 
+    case 12 : 		/* ^ up arrow */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix; p[1].y=iy-2;
       p[2].x=ix+3; p[2].y=iy+3;
       XDrawLines(theDisp,win,theGC,p,3,CoordModeOrigin); break;
-    case 13 : 		/* v down arrow */	
-      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix; p[1].y=iy+2; 
+    case 13 : 		/* v down arrow */
+      p[0].x=ix-2; p[0].y=iy-2; p[1].x=ix; p[1].y=iy+2;
       p[2].x=ix+3; p[2].y=iy-3;
       XDrawLines(theDisp,win,theGC,p,3,CoordModeOrigin); break;
-    case 14 : 		/* > left arrow */	
-      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy; 
+    case 14 : 		/* > left arrow */
+      p[0].x=ix-2; p[0].y=iy+2; p[1].x=ix+2; p[1].y=iy;
       p[2].x=ix-3; p[2].y=iy-3;
       XDrawLines(theDisp,win,theGC,p,3,CoordModeOrigin); break;
-    case 15 : 		/* < right arrow */	
-      p[0].x=ix+2; p[0].y=iy+2; p[1].x=ix-2; p[1].y=iy; 
+    case 15 : 		/* < right arrow */
+      p[0].x=ix+2; p[0].y=iy+2; p[1].x=ix-2; p[1].y=iy;
       p[2].x=ix+3; p[2].y=iy-3;
       XDrawLines(theDisp,win,theGC,p,3,CoordModeOrigin); break;
-    case 16 : 		/* big dot with vertical line */	
+    case 16 : 		/* big dot with vertical line */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix-1,iy-1,ix+2,iy-1);
       drawswl(ix-1,iy,ix+2,iy);
       drawswl(ix-1,iy+1,ix+2,iy+1);  break;
-    case 17 : 		/* dot with horizontal line */	
+    case 17 : 		/* dot with horizontal line */
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
@@ -2480,42 +2480,42 @@ void esymbol_(x,y,sym,size)
       drawswl(ix,iy-3,ix+2,iy+2);
       drawswl(ix+2,iy+2,ix-2,iy+2);
       drawswl(ix-2,iy+2,ix,iy-3);  break;
-    case 19 : 		/* solid upside down triangle */   
+    case 19 : 		/* solid upside down triangle */
       drawswl(ix,iy-2,ix,iy+3);
       drawswl(ix-1,iy-2,ix-1,iy+1);
       drawswl(ix+1,iy-2,ix+1,iy+1);
       drawswl(ix,iy+3,ix+2,iy-2);
       drawswl(ix+2,iy-2,ix-2,iy-2);
       drawswl(ix-2,iy-2,ix,iy+3);  break;
-    case 20 : 		/* solid lower right triangle */	
+    case 20 : 		/* solid lower right triangle */
       drawswl(ix-1,iy+1,ix+2,iy+1);
       drawswl(ix,iy,ix+2,iy);
       drawswl(ix+1,iy-1,ix+2,iy-1);
       drawswl(ix-3,iy+2,ix+2,iy+2);
       drawswl(ix+2,iy+2,ix+2,iy-3);
       drawswl(ix+2,iy-3,ix-3,iy+2);  break;
-    case 21 : 		/* solid lower left triangle */	
+    case 21 : 		/* solid lower left triangle */
       drawswl(ix-2,iy+1,ix+2,iy+1);
       drawswl(ix-2,iy,ix+1,iy);
       drawswl(ix-2,iy-1,ix+1,iy-1);
       drawswl(ix-2,iy+2,ix+3,iy+2);
       drawswl(ix+3,iy+2,ix-2,iy-3);
       drawswl(ix-2,iy-3,ix-2,iy+2);  break;
-    case 22 : 		/* solid upper left triangle */	
+    case 22 : 		/* solid upper left triangle */
       drawswl(ix-2,iy+1,ix,iy+1);
       drawswl(ix-2,iy,ix+1,iy);
       drawswl(ix-2,iy-1,ix+2,iy-1);
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix-2,iy-2);
       drawswl(ix-2,iy-2,ix-2,iy+3);  break;
-    case 23 : 		/* solid upper right triangle */	
+    case 23 : 		/* solid upper right triangle */
       drawswl(ix-1,iy-1,ix+2,iy-1);
       drawswl(ix,iy,ix+2,iy);
       drawswl(ix+1,iy+1,ix+2,iy+1);
       drawswl(ix+2,iy+3,ix+2,iy-2);
       drawswl(ix+2,iy-2,ix-3,iy-2);
       drawswl(ix-3,iy-2,ix+2,iy+3);  break;
-    case 24 : 		/* solid diamond */	
+    case 24 : 		/* solid diamond */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix-1,iy-1,ix-1,iy+2);
@@ -2524,31 +2524,31 @@ void esymbol_(x,y,sym,size)
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 25 :	       /* box 5 pixels wide and high with \ */ 
+    case 25 :	       /* box 5 pixels wide and high with \ */
       drawswl(ix-2,iy-2,ix+3,iy+3);
       drawswl(ix-2,iy-2,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix+3,iy+3);
       drawswl(ix+3,iy+3,ix-2,iy+3);
       drawswl(ix-2,iy+3,ix-2,iy-2);  break;
-    case 26 : 		/* diamond with vertical line */	
+    case 26 : 		/* diamond with vertical line */
       drawswl(ix,iy-3,ix,iy+3);
       drawswl(ix,iy-3,ix+3,iy);
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 27 :	       /* box 5 pixels wide and high with / */ 
+    case 27 :	       /* box 5 pixels wide and high with / */
       drawswl(ix-2,iy+3,ix+3,iy-2);
       drawswl(ix-2,iy-2,ix+3,iy-2);
       drawswl(ix+3,iy-2,ix+3,iy+3);
       drawswl(ix+3,iy+3,ix-2,iy+3);
       drawswl(ix-2,iy+3,ix-2,iy-2);  break;
-    case 28 : 		/* diamond with horizontal line */	
+    case 28 : 		/* diamond with horizontal line */
       drawswl(ix-3,iy,ix+3,iy);
       drawswl(ix,iy-3,ix+3,iy);
       drawswl(ix+3,iy,ix,iy+3);
       drawswl(ix,iy+3,ix-3,iy);
       drawswl(ix-3,iy,ix,iy-3);  break;
-    case 29 : 		/* wireframe image control symbol */	
+    case 29 : 		/* wireframe image control symbol */
       drawswl(ix-12,iy+2,ix-6,iy+5);	/* bounds of box */
       drawswl(ix-6,iy+5,ix-1,iy+1);
       drawswl(ix-1,iy+1,ix-1,iy-3);
@@ -2564,18 +2564,18 @@ void esymbol_(x,y,sym,size)
       drawswl(ix+6,iy-4,ix+6,iy-2);
       drawswl(ix+6,iy-2,ix+7,iy);
       drawswl(ix+7,iy-3,ix+7,iy-1);  break;
-    case 30 : 		/* > closed left arrow */	
+    case 30 : 		/* > closed left arrow */
       drawswl(ix-3,iy+2,ix+2,iy);
-      drawswl(ix+2,iy,ix-3,iy-3); 
+      drawswl(ix+2,iy,ix-3,iy-3);
       drawswl(ix-3,iy-3,ix-3,iy+2);  break;
-    case 31 : 		/* < closed right arrow */	
+    case 31 : 		/* < closed right arrow */
       drawswl(ix+3,iy+2,ix-2,iy);
       drawswl(ix-2,iy,ix+3,iy-3);
       drawswl(ix+3,iy-3,ix+3,iy+2);  break;
-    case 32 : 		/* dot 2 pix wide, 2 pix high */	
+    case 32 : 		/* dot 2 pix wide, 2 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy); break;
-    default : 		/* big dot 2 pix wide, 3 pix high */	
+    default : 		/* big dot 2 pix wide, 3 pix high */
       drawswl(ix-1,iy-1,ix+1,iy-1);
       drawswl(ix-1,iy,ix+1,iy);
       drawswl(ix-1,iy+1,ix+1,iy+1);  break;
@@ -2710,17 +2710,17 @@ void okbox(msg,msglen,asklen,b_bottom,b_left,act)
 } /* okbox */
 
 /* *************** ESRU constrained floating pop-up menu. *************** */
-/* 
+/*
  This function takes a static list of selections and displays it in a box
  and waits for the user to click a mouse to select an item. No help or
- paging supported. 
+ paging supported.
 */
 #define OFFEND		(-1)	/* no item selected */
 
 void epopup_(titleptr,	/* title for menu                   */
   listptr,		/* static list                      */
   impx,impy,		/* menu position (upper right)      */
-  ino			/* selected item number: if ino<0 dont show menu */	
+  ino			/* selected item number: if ino<0 dont show menu */
   )
 char	*titleptr;
 char	**listptr;
@@ -2749,9 +2749,9 @@ int *ino;
   ilen = num;
   if(ilen == 0){	/* don't bother if no list */
     *ino = -1;
-    if(XPending(theDisp) > 0) { 
+    if(XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
     return;
   }
 /* remember position and size of the whole module (so as to detect changes) */
@@ -2778,7 +2778,7 @@ int *ino;
   mob_height = mib_height + (5 + (f_height + 8));  /* include space for title  */
   mib_width = (iwth*f_width);	/* inner pixel width */
   mob_width = mib_width +20;	/* box slightly wider than longest line */
-/* 
+/*
  If a specific box starting point has been passed then try to honor
  this otherwise place it slightly above the dialogue box.
 */
@@ -2787,11 +2787,11 @@ int *ino;
   }
 
 /* Create the menu box. */
-  gmenubx.b_top   = yb - mob_height;  gmenubx.b_bottom= yb;	  
+  gmenubx.b_top   = yb - mob_height;  gmenubx.b_bottom= yb;
   gmenubx.b_left  = xb;  gmenubx.b_right = xb + mob_width;
   menubx.b_top   = gmenubx.b_top + (f_height + 8);  menubx.b_bottom= gmenubx.b_bottom - 5;
   menubx.b_left  = gmenubx.b_left + 5;  menubx.b_right = gmenubx.b_right - 5;
-  hl_box.b_left = menubx.b_left +2;  hl_box.b_right = menubx.b_right -2; 
+  hl_box.b_left = menubx.b_left +2;  hl_box.b_right = menubx.b_right -2;
   lineheight = (menubx.b_bottom - menubx.b_top - 3) / ilen;
 
   u_width = WIDTH(gmenubx); u_height = HEIGHT(gmenubx); /* width & height area to save */
@@ -2799,7 +2799,7 @@ int *ino;
   box_to_pix(win,gmenubx,under,u_width,u_height);   /* save rect under gmenubx to under */
 
   xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-  xbox(gmenubx,fg,bg,BMEDGES);              
+  xbox(gmenubx,fg,bg,BMEDGES);
   xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw menu display box  */
 
   XDrawString(theDisp,win,theGC,menubx.b_left+10,menubx.b_top-5,titleptr,lt1);  /* title */
@@ -2821,7 +2821,7 @@ int *ino;
         if(event.xvisibility.state == 0 ) {
           refreshenv_();
           xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-          xbox(gmenubx,fg,bg,BMEDGES);              
+          xbox(gmenubx,fg,bg,BMEDGES);
           xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw menu display box  */
           XDrawString(theDisp,win,theGC,menubx.b_left+10,menubx.b_top-5,titleptr,lt1);  /* title */
 
@@ -2843,7 +2843,7 @@ int *ino;
           config_altered = 1;
           refreshenv_();
           xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-          xbox(gmenubx,fg,bg,BMEDGES);              
+          xbox(gmenubx,fg,bg,BMEDGES);
           xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw menu display box  */
           XDrawString(theDisp,win,theGC,menubx.b_left+10,menubx.b_top-5,titleptr,lt1);  /* title */
 
@@ -2872,7 +2872,7 @@ int *ino;
            XFlush(theDisp);
            XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
            Timer(300);
-           xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */ 
+           xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
            *ino = i;  /* return index (based on list starting at zero */
    	   break;
          }
@@ -2887,11 +2887,11 @@ int *ino;
   if(config_altered == 0)pix_to_box(under,u_width,u_height,gmenubx,win);
 
   XFreePixmap(theDisp, under);
-  if(XPending(theDisp) > 0) { 
+  if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   if (changed_font == 1) winfnt_(&saved_font);  /* Restore font.  */
   XFlush(theDisp); /* added to force draw */
   if(config_altered == 1) refreshenv_();
@@ -2978,7 +2978,7 @@ void doitbox(dobox,msg,msglen,asklen,sav_font,use_font,b_bottom,b_left,topic,act
     } else if (strncmp(topic, "setup", 5) == 0) {
        choice = -1;
        iupx = disp.b_left + (disp.b_right - disp.b_left)/2; iupy = dbx1.b_bottom -25;
-       epopup_("window options",envmenu,&iupx,&iupy,&choice);   
+       epopup_("window options",envmenu,&iupx,&iupy,&choice);
 
        last=disp_fnt;
        switch(choice){
@@ -3038,7 +3038,7 @@ void doitbox(dobox,msg,msglen,asklen,sav_font,use_font,b_bottom,b_left,topic,act
            new = 3;
            if(butn_fnt != new) { butn_fnt = new; refreshenv_(); }
            break;
-         case 13: 
+         case 13:
            refreshenv_();   break;
          default: break;
        }
@@ -3099,7 +3099,7 @@ void dosymbox(dobox,asklen,sav_font,use_font,b_bottom,b_left,topic,act)
   } else if (strncmp(topic, "elevplus", 8) == 0) {
     elevplus = dobox;          /* up arrow  */
   } else if (strncmp(topic, "elevminus", 9) == 0) {
-    elevminus = dobox;          /* down arrow  */ 
+    elevminus = dobox;          /* down arrow  */
   }
   if(act == '-') {
     xbox(dobox,fg,white,BMCLEAR |BMEDGES);   /* draw box with edges & text */
@@ -3112,7 +3112,7 @@ void dosymbox(dobox,asklen,sav_font,use_font,b_bottom,b_left,topic,act)
     } else if (strncmp(topic, "elevplus", 8) == 0) {
       sym=1; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* up arrow  */
     } else if (strncmp(topic, "elevminus", 9) == 0) {
-      sym=2; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* down arrow  */ 
+      sym=2; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* down arrow  */
     }
   } else if (act == '!') {
     xbox(dobox,fg,ginvert, BMCLEAR | BMNOT |BMEDGES);        /* invert */
@@ -3149,7 +3149,7 @@ void dosymbox(dobox,asklen,sav_font,use_font,b_bottom,b_left,topic,act)
     } else if (strncmp(topic, "elevplus", 8) == 0) {
       sym=1; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* up arrow  */
     } else if (strncmp(topic, "elevminus", 9) == 0) {
-      sym=2; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* down arrow  */ 
+      sym=2; sz=0; esymbol_(&axt,&ayt,&sym,&sz);          /* down arrow  */
     }
   }
   XFlush(theDisp);  /* added to force draw */
@@ -3245,9 +3245,9 @@ void alt2box(msg,msglen,asklen,b_bottom,b_left,act)
 /* **************  Open one of a b c d e f g box *************** */
 /*
   Standard opening of a b c d boxes for dialogs that needs one or more
-  of these. Takes text to display character width of box, pixels for 
+  of these. Takes text to display character width of box, pixels for
   lower left corner and a char indicator for which box to be working with.
-  NOTE: expects boxes "a = b = c = d = e = f = g " to have been 
+  NOTE: expects boxes "a = b = c = d = e = f = g " to have been
   done in the calling function.
 */
 void abcdboxs(msg,msglen,asklen,b_bottom,b_left,act)
@@ -3386,7 +3386,7 @@ void openaskbox_(msg1,msg2,asklen,len1,len2)
   dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
   okbox("ok",2,3,&msgbx.b_bottom,&okbox_left,'-');
   xbox(askbx,fg,white,BMCLEAR |BMEDGES);   /* draw input box with edges  */
-  XFlush(theDisp); 
+  XFlush(theDisp);
   if (saved_font != butn_fnt) winfnt_(&saved_font);
   return;
 } /* openaskbox */
@@ -3395,7 +3395,7 @@ void openaskbox_(msg1,msg2,asklen,len1,len2)
 /*
  Passed the prompts which were sent to the dialogue box so that the
  correct position is defined. msgbx contains the prompts, cmdbox shows
- alternative command (action) and askbx is reserved for user input.  
+ alternative command (action) and askbx is reserved for user input.
  If the width of the string
  would cause the input box to over-run the dialogue box then
  truncate the input box. If there is only a " " in the second
@@ -3470,7 +3470,7 @@ void openaskaltbox_(msg1,msg2,alt,asklen,len1,len2,len3)
 /*
  Passed the prompts which were sent to the dialogue box so that the
  correct position is defined. msgbx contains the prompts, cmdbox &
- cmdbox2 shows alternative command (actions) and askbx is reserved for user input.  
+ cmdbox2 shows alternative command (actions) and askbx is reserved for user input.
  If the width of the string
  would cause the input box to over-run the dialogue box then
  truncate the input box. If there is only a " " in the second
@@ -3547,7 +3547,7 @@ void openask2altbox_(msg1,msg2,alt,alt2,asklen,len1,len2,len3,len4)
 
 
 /* **************  Redraw edited text and cursor ***** */
-void update_edit_str(ebox,edstr,xbar,lstrlen) 
+void update_edit_str(ebox,edstr,xbar,lstrlen)
   char *edstr;         /* string to display */
   box ebox;            /* box to update string within */
   int *xbar,*lstrlen;   /*  | position and character width */
@@ -3566,7 +3566,7 @@ void update_edit_str(ebox,edstr,xbar,lstrlen)
 }
 
 /* **************  track editing of text and cursor ***** */
-void track_edit_str(sbuf,event,tx1,tf_len,tlen,tfitchars,toffsc,tno_valid_event) 
+void track_edit_str(sbuf,event,tx1,tf_len,tlen,tfitchars,toffsc,tno_valid_event)
   XEvent *event;
   char sbuf[124];      /* string to display */
   int *tx1,*tlen,*tf_len,*tfitchars;   /*  | position and avail character space and current width */
@@ -3608,7 +3608,7 @@ void track_edit_str(sbuf,event,tx1,tf_len,tlen,tfitchars,toffsc,tno_valid_event)
       no_valid_event = FALSE;
     } else if (buf[0] == '\177' || buf[0] == '\010') {  /*  buf[0] is DEL or BS  */
       if((x1-f_width) > askbx.b_left) {
-/* debug fprintf(stderr,"track_edit_str *** sbuf %s char @ %c offsc %d len %d %d\n",sbuf,sbuf[offsc],offsc,len,f_len);  */ 
+/* debug fprintf(stderr,"track_edit_str *** sbuf %s char @ %c offsc %d len %d %d\n",sbuf,sbuf[offsc],offsc,len,f_len);  */
         for (i=offsc; i<f_len; i++) sbuf[i-1] = sbuf[i];  /* shift characters above offsc << */
         if(offsc <= len) {
           sbuf[len]=' ';  /* last nonblank char becomes a space if | within string */
@@ -3655,7 +3655,7 @@ void track_edit_str(sbuf,event,tx1,tf_len,tlen,tfitchars,toffsc,tno_valid_event)
 
 
 /* *************** ESRU help message update. *************** */
-/* 
+/*
  This function takes an array of strings from f77 and stores
  it in the static array help_list for subsequent use by
  other functions.
@@ -3683,13 +3683,13 @@ void updhelp_(items,nitmsptr,iw,len_items)
 }
 
 /* *************** ESRU pop-up help box. *************** */
-/* 
+/*
  This function takes current help text and displays it in a box
  and waits for the user to press a key or click a mouse to get rid of it.
  If a long list paging is supported, if additional text is available
  then an extra "show me more" box is included.
- If the longest string will not fit in the width of the box then a 
- smaller font will be used. 
+ If the longest string will not fit in the width of the box then a
+ smaller font will be used.
 */
 void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   long int  *impx,*impy;	/* box position (if 0,0 use default) */
@@ -3729,7 +3729,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   if(ilen <= 20) h_height = (ilen*(f_height+1))+20;  /* include a bit of extra space  */
   if(ilen > 20)  h_height = (20*(f_height+1))+20;  /* include a bit of extra space  */
   h_width = (help_width*f_width)+20;	  /* box slightly wider than longest line */
-/* 
+/*
  If a specific box starting point has been passed then try to honor
  this otherwise place it slightly above the dialogue box.
 */
@@ -3738,7 +3738,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   }
 
 /*  Check if the text will fit within window, if not down-size until it does.*/
-  while ((xrt_width - 50) < h_width) {  
+  while ((xrt_width - 50) < h_width) {
     if (use_font == 0) break;
     use_font-- ;
     winfnt_(&use_font);
@@ -3766,7 +3766,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
 
   dismissbx.b_left = ghelpbx.b_left + 10;
   dismissbx.b_right = dismissbx.b_left + (18 * f_width);
-  dismissbx.b_bottom= helpbx.b_bottom + f_height + 5; 
+  dismissbx.b_bottom= helpbx.b_bottom + f_height + 5;
   dismissbx.b_top = helpbx.b_bottom + 3;
   if( pflg == 1) {
     prevbx.b_left = ghelpbx.b_right - ( 24 * f_width);
@@ -3787,11 +3787,11 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   }
 
   xbox(ghelpbx,fg,gfeedfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-  xbox(ghelpbx,fg,bg,BMEDGES);              
+  xbox(ghelpbx,fg,bg,BMEDGES);
   xbox(helpbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
 
   xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-  if (use_font != small_fnt) winfnt_(&small_fnt); 
+  if (use_font != small_fnt) winfnt_(&small_fnt);
   XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
   if( showmoreflg == 1) {
     xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
@@ -3827,7 +3827,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
     }
     if( pflg == 1) {
       xbox(prevbx,fg,white,BMCLEAR|BMEDGES); sym=1; sz=0; esymbol_(&ext,&eyt,&sym,&sz);	/* prev arrow  */
-      xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */ 
+      xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */
     }
   }
   no_valid_event = TRUE;
@@ -3839,10 +3839,10 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
         if(event.xvisibility.state == 0 ) {
           refreshenv_();
           xbox(ghelpbx,fg,gfeedfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-          xbox(ghelpbx,fg,bg,BMEDGES);              
+          xbox(ghelpbx,fg,bg,BMEDGES);
           xbox(helpbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-          if (use_font != small_fnt) winfnt_(&small_fnt); 
+          if (use_font != small_fnt) winfnt_(&small_fnt);
           XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
           if( showmoreflg == 1) {
             xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
@@ -3869,7 +3869,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
             }
             if( pflg == 1) {
               xbox(prevbx,fg,white,BMCLEAR|BMEDGES); sym=1; sz=0; esymbol_(&ext,&eyt,&sym,&sz);	/* prev arrow  */
-              xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */ 
+              xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */
             }
           }
           XFlush(theDisp);
@@ -3885,10 +3885,10 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
           config_altered = 1;
           refreshenv_();
           xbox(ghelpbx,fg,gfeedfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-          xbox(ghelpbx,fg,bg,BMEDGES);              
+          xbox(ghelpbx,fg,bg,BMEDGES);
           xbox(helpbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-          if (use_font != small_fnt) winfnt_(&small_fnt); 
+          if (use_font != small_fnt) winfnt_(&small_fnt);
           XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
           if( showmoreflg == 1) {
             xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
@@ -3915,7 +3915,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
             }
             if( pflg == 1) {
               xbox(prevbx,fg,white,BMCLEAR|BMEDGES); sym=1; sz=0; esymbol_(&ext,&eyt,&sym,&sz);	/* prev arrow  */
-              xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */ 
+              xbox(nextbx,fg,white,BMCLEAR|BMEDGES); sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz);	/* next arrow  */
             }
           }
           XFlush(theDisp);
@@ -3949,7 +3949,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
            }
            Timer(100);
            xbox(prevbx,fg,white, BMCLEAR | BMEDGES);
-           sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz); /* prev arrow  */ 
+           sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz); /* prev arrow  */
    	   break;
          } else if ( pflg == 1 && xboxinside(nextbx,x,y)){
            saved_font = current_font;
@@ -3982,7 +3982,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
          } else if (xboxinside(dismissbx,x,y)){
            no_valid_event = FALSE;
            *uresp = 0;
-           xbox(helpbx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */ 
+           xbox(helpbx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */
            break;
          } else if (showmoreflg == 1 && xboxinside(showmorebx,x,y)){
            no_valid_event = FALSE;
@@ -4046,7 +4046,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
             }
             Timer(100);
             xbox(prevbx,fg,white, BMCLEAR | BMEDGES);
-            sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz); /* prev arrow  */ 
+            sym=2; sz=0; esymbol_(&exb,&eyb,&sym,&sz); /* prev arrow  */
    	    break;
           }
         }
@@ -4056,11 +4056,11 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   XClearArea(theDisp,win,ghelpbx.b_left,ghelpbx.b_top,(unsigned int) u_width,(unsigned int) u_height,exp);
   if(config_altered == 0)pix_to_box(under,u_width,u_height,ghelpbx,win);
   XFreePixmap(theDisp, under);
-  if(XPending(theDisp) > 0) { 
+  if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   if (changed_font == 1) winfnt_(&saved_font);  /* Restore font.  */
   XFlush(theDisp); /* added to force draw */
   if(config_altered == 1) refreshenv_();
@@ -4068,7 +4068,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
 
 /* **************  Get string from dialogue input box *************** */
 /*
- Code implements control of a single line input facility.  
+ Code implements control of a single line input facility.
  Input begins when cursor is within askbx.
 */
 void askdialog_(sstr,id,iq,f_len)
@@ -4107,7 +4107,7 @@ void askdialog_(sstr,id,iq,f_len)
   strcpy(sbuf,"                                                                                  ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
-  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len); 
+  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
 
   b_width = WIDTH(askbx);
   fitchars = ((b_width - f_width) / f_width);
@@ -4161,7 +4161,7 @@ void askdialog_(sstr,id,iq,f_len)
           if( lstrlen == 1 ) {
             offsc = 1;
             x1 = (askbx.b_left+f_width) + (offsc * f_width);
-          } 
+          }
           if (x2 < x1 ) {
             offsc = lstrlen;
             x1 = (askbx.b_left+f_width) + (offsc * f_width);
@@ -4186,7 +4186,7 @@ void askdialog_(sstr,id,iq,f_len)
 	  impx = 0; impy = 0; ishowmoreflg = 0; uresp = 0;
           if (help_lines <= 20) ipflg = 0;
           if (help_lines > 20) ipflg = 1;
-          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp); 
+          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
           break;
         } else {
           iaux = aux_menu((XEvent *) &event);	/* check and see if text scrolled etc. */
@@ -4214,7 +4214,7 @@ void askdialog_(sstr,id,iq,f_len)
   if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
   }
   strncpy(sstr,sbuf,(unsigned int)f_len);
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor);
@@ -4224,7 +4224,7 @@ void askdialog_(sstr,id,iq,f_len)
 
 /* **************  Get string from dialogue & alt command input box *************** */
 /*
- Code implements control of a single line input facility with alt control detect. 
+ Code implements control of a single line input facility with alt control detect.
  Input begins when cursor is within askbx.
 */
 void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
@@ -4263,7 +4263,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   strcpy(sbuf,"                                                                                  ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
-  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len); 
+  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
   f_to_c_l(alt,&a_len,&lm3);
 
   b_width = WIDTH(askbx);
@@ -4274,7 +4274,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   XDrawString(theDisp,win,theGC,askbx.b_left+f_width,askbx.b_bottom-3,sbuf,lstrlen);
   XFlush(theDisp);
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
-  
+
   while ( no_valid_event) {
     XNextEvent(theDisp, &event);
     switch (event.type) {
@@ -4321,7 +4321,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
           if( lstrlen == 1 ) {
             offsc = 1;
             x1 = (askbx.b_left+f_width) + (offsc * f_width);
-          } 
+          }
           if ((len+2) > fitchars ) { lstrlen = fitchars; } else { lstrlen = len; }
           update_edit_str(askbx,sbuf,&x1,&lstrlen);  /* clear and re-draw askbx box and text */
           initial_button_in = TRUE;
@@ -4345,7 +4345,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 	  impx = 0; impy = 0; ishowmoreflg = 0; uresp = 0;
           if (help_lines <= 20) ipflg = 0;
           if (help_lines > 20) ipflg = 1;
-          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp); 
+          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
           break;
         }
       case KeyPress:	/* (XKeyEvent)&ev */
@@ -4358,7 +4358,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
   }
 
   strncpy(sstr,sbuf,(unsigned int)f_len);
@@ -4368,7 +4368,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 
 /* **************  Get string from dialogue & 2 alt command input boxs *************** */
 /*
- Code implements control of a single line input facility with 2 alt control detect. 
+ Code implements control of a single line input facility with 2 alt control detect.
  Input begins when cursor is within askbx.
 */
 void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
@@ -4409,7 +4409,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
   strcpy(sbuf,"                                                                                  ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
-  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len); 
+  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
   f_to_c_l(alt,&a_len,&lm3);
   f_to_c_l(alt2,&b_len,&lm4);
 
@@ -4421,7 +4421,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
   XDrawString(theDisp,win,theGC,askbx.b_left+f_width,askbx.b_bottom-3,sbuf,lstrlen);
   XFlush(theDisp);
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
-  
+
   while ( no_valid_event) {
     XNextEvent(theDisp, &event);
     switch (event.type) {
@@ -4471,7 +4471,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
           if( lstrlen == 1 ) {
             offsc = 1;
             x1 = (askbx.b_left+f_width) + (offsc * f_width);
-          } 
+          }
           if ((len+2) > fitchars ) { lstrlen = fitchars; } else { lstrlen = len; }
           update_edit_str(askbx,sbuf,&x1,&lstrlen);  /* clear and re-draw askbx box and text */
           initial_button_in = TRUE;
@@ -4500,7 +4500,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 	  impx = 0; impy = 0; ishowmoreflg = 0; uresp = 0;
           if (help_lines <= 20) ipflg = 0;
           if (help_lines > 20) ipflg = 1;
-          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp); 
+          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
           break;
         }
       case KeyPress:	/* (XKeyEvent)&ev */
@@ -4513,7 +4513,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
   if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
   }
 
   strncpy(sstr,sbuf,(unsigned int)f_len);
@@ -4544,8 +4544,8 @@ void msgbox_(msg1,msg2,len1,len2)
   f_to_c_l(msg2,&len2,&lm2);
 
 /* Set number of dialogue line =2 to signal that the dialogue box exists */
-  dialogue_lines = 2;  
-  msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3; msgbx.b_bottom= xrt_height - 3; 
+  dialogue_lines = 2;
+  msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3; msgbx.b_bottom= xrt_height - 3;
   msgbx.b_left  = 2;
 /*  msgbx.b_right = xrt_width - (f_width * 11); */
   msgbx.b_right = xrt_width - 2;
@@ -4562,7 +4562,7 @@ void msgbox_(msg1,msg2,len1,len2)
  Passed the prompts which were sent to the dialogue box so that the
  correct position is defined. choicebx contains the prompts while
  a box is reserved for user input. If there is only a " " in the second
- prompt then position askbx against the left side. 
+ prompt then position askbx against the left side.
 */
 void continuebox_(msg1,msg2,opta,len1,len2,len3)
   char    *msg1,*msg2;         /* character strings for each line */
@@ -4616,7 +4616,7 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
 */
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
   while ( no_valid_event) {
-    XNextEvent(theDisp, &event);  
+    XNextEvent(theDisp, &event);
     switch (event.type) {
       case VisibilityNotify:
 /* debug fprintf(stderr,"continue box: vis event %d\n",event.xvisibility.state);  */
@@ -4650,7 +4650,7 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
         x1 = event.xbutton.x;  y1 = event.xbutton.y;
         if (xboxinside(a,x1,y1)){
           no_valid_event = FALSE;
-          xbox(a,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(a,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,a.b_left+4,a.b_bottom-3,opta,lm3);
@@ -4677,11 +4677,11 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
         break;
     }
   }
-  if(XPending(theDisp) > 0) {  
+  if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor); /* turn on arrow cursor */
 
 /* Clear the dialogue box. */
@@ -4805,7 +4805,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
 */
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
   while ( no_valid_event) {
-    XNextEvent(theDisp, &event); 
+    XNextEvent(theDisp, &event);
     switch (event.type) {
       case VisibilityNotify: /* user obscured window so refresh window and dialogue */
 /* debug fprintf(stderr,"abcdefbox: vis event %d\n",event.xvisibility.state); */
@@ -4855,7 +4855,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
         x1 = event.xbutton.x;  y1 = event.xbutton.y;
         if (xboxinside(a,x1,y1)){
           no_valid_event = FALSE;
-          xbox(a,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(a,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,a.b_left+4,a.b_bottom-3,opta,lm3);
@@ -4864,7 +4864,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
    	  break;
         } else if (xboxinside(b,x1,y1)){
           no_valid_event = FALSE;
-          xbox(b,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(b,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,b.b_left+4,b.b_bottom-3,optb,lm4);
@@ -4873,7 +4873,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
           break;
         } else if (xboxinside(c,x1,y1) && nopts >= 3){
           no_valid_event = FALSE;
-          xbox(c,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(c,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,c.b_left+4,c.b_bottom-3,optc,lm5);
@@ -4882,7 +4882,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
           break;
         } else if (xboxinside(d,x1,y1) && nopts >= 4){
           no_valid_event = FALSE;
-          xbox(d,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(d,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,d.b_left+4,d.b_bottom-3,optd,lm6);
@@ -4891,7 +4891,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
           break;
         } else if (xboxinside(e,x1,y1) && nopts >= 5){
           no_valid_event = FALSE;
-          xbox(e,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(e,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,e.b_left+4,e.b_bottom-3,opte,lm7);
@@ -4900,7 +4900,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
           break;
         } else if (xboxinside(f,x1,y1) && nopts >= 6){
           no_valid_event = FALSE;
-          xbox(f,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(f,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,f.b_left+4,f.b_bottom-3,optf,lm8);
@@ -4909,7 +4909,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
           break;
         } else if (xboxinside(g,x1,y1) && nopts >= 7){
           no_valid_event = FALSE;
-          xbox(g,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */ 
+          xbox(g,fg,ginvert,BMEDGES|BMNOT|BMCLEAR); /* invert box */
           Timer(50);
           XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
           XDrawString(theDisp,win,theGC,g.b_left+4,g.b_bottom-3,optg,lm9);
@@ -4966,7 +4966,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
   if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
   }
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor); /* turn on arrow cursor */
 
@@ -5028,7 +5028,7 @@ void drscrollbar()
  disp_opend is a static flag so that other facilities know there is
  a text display box.
  Range checking to make sure that it does not squeeze any graphic
- display area beyond endurance. 
+ display area beyond endurance.
 */
 void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
  long int *menu_char,*displ_l,*dialogue_l,*gdw,*gdh;
@@ -5140,7 +5140,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
   winfnt_(&butn_fnt);  /* restore button font */
 
  *gdh= disp.b_bottom - disp.b_top; /* text display box pixel height  */
- *gdw= disp.b_right - disp.b_left; /* text display box pixel width   */	
+ *gdw= disp.b_right - disp.b_left; /* text display box pixel width   */
 
   winfnt_(&saved_font);  /* restore std font */
   return;
@@ -5148,8 +5148,8 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 
 
 /* *************** display text *************** */
-/* 
- disptext displays the text in the text display box defined in opengdisp. 
+/*
+ disptext displays the text in the text display box defined in opengdisp.
  The string passed will be displayed on a single line
  however if it will  not fit in the box it will be truncated.
 */
@@ -5168,7 +5168,7 @@ void disptext()
   disp_lines = (int) ((disp.b_bottom - disp.b_top) / (f_height+1));
   if (disp_lines != tfb_limtty) {
     tfb_line = tfb_line - tfb_limtty + disp_lines;
-    tfb_limtty = disp_lines; 
+    tfb_limtty = disp_lines;
   }
 /*  fprintf(stderr,"spad values limit %d limtty %d line %d disp_lines %d edisp_index %d\n",
            tfb_limit,tfb_limtty,tfb_line,disp_lines,edisp_index);  */
@@ -5179,7 +5179,7 @@ void disptext()
   for ( i = jstart; i < (scroll_index +1); i++ ) {
     strcpy(msg2,edisp_list[i]);	/* copy to local */
     f_to_c_l(msg2,&len,&lm1);  if ( lm1 < len ) msg2[lm1] = '\0';
-    if (((disp.b_right - 15) - disp.b_left) < ((lm1+1) * f_width)) {  
+    if (((disp.b_right - 15) - disp.b_left) < ((lm1+1) * f_width)) {
       lm1 = (((disp.b_right - 15) - disp.b_left) / f_width)-1;
     }
     iy = disp.b_top + 1 + ((f_height+1) * (j + 1));
@@ -5200,7 +5200,7 @@ void disptext()
 } /* disptext */
 
 /* *************** text display box *************** */
-/* 
+/*
  egdisp takes a string from f77 and attempts to display
  it in the text display box.
 */
@@ -5218,7 +5218,7 @@ void egdisp_(msg,line,len)
   if( len <= 1 )return;	/* don`t bother if no characters */
 
 /* add message to the queue */
-  if(edisp_index < EDISP_LIST_LEN-1) {	
+  if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
     strcpy(edisp_list[edisp_index],msg);	/* copy to static array */
   } else {
@@ -5256,9 +5256,9 @@ void espad_(llimit,llimtty,lline)
 /*   ipcommands(pipin,command);     set handler up  */
 /* }  */
 
-/* 
+/*
  todh takes a string from f77 and attempts to send it
- out channel ?? to the dialogue hander. 
+ out channel ?? to the dialogue hander.
  The string passed will be displayed on a single line
  however if it will  not fit in the box it will be truncated.
  */
@@ -5330,7 +5330,7 @@ void trackview_(ichar,irx,iry)
         break;
       case ButtonPress:
        *irx = x = event.xbutton.x;  *iry = y = event.xbutton.y;
-       *ichar = event.xbutton.button;	/* check about cast << >> */		
+       *ichar = event.xbutton.button;	/* check about cast << >> */
        if (xboxinside(viewbx,x,y)){
           no_valid_event = FALSE;
           drawpoint(x,y);
@@ -5349,41 +5349,41 @@ void trackview_(ichar,irx,iry)
   if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
   }
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor); /* turn on arrow cursor */
   return;
 }
 
 /* *************** ESRU line drawing routine. *************** */
-/* 
- co-ords, operation flag equiv to fwwutil parameters: 
-	1=move to absolute pixel coord, 
-	0=draw line to absolute pixel coord, 
+/*
+ co-ords, operation flag equiv to fwwutil parameters:
+	1=move to absolute pixel coord,
+	0=draw line to absolute pixel coord,
 	3=move to relitive pixel coord,
 	2=draw line to relitive pixel coord.
 */
 void eline_(x,y,operation)
-  long int *x, *y, *operation;	
+  long int *x, *y, *operation;
 {
   int x1,y1,op;
 
 /* If echo send parameters to wwc file */
-   if ( wwc_ok == 1) { 
-     fprintf(wwc,"*eline\n"); 
-     fprintf(wwc,"%ld %ld %ld\n",*x,*y,*operation); 
-   } 
-   x1 = *x; 
-   y1 = *y; 
-   op = *operation; 
- 
+   if ( wwc_ok == 1) {
+     fprintf(wwc,"*eline\n");
+     fprintf(wwc,"%ld %ld %ld\n",*x,*y,*operation);
+   }
+   x1 = *x;
+   y1 = *y;
+   op = *operation;
+
    if      (op == 0) {    /* LNDRAWABS */
-     XDrawLine(theDisp,win,theGC,xold,yold,x1,y1); 
+     XDrawLine(theDisp,win,theGC,xold,yold,x1,y1);
      xold = x1; yold = y1;
    } else if (op == 1) {  /* LNMOVEABS */
      xold = x1; yold = y1;
    } else if (op == 2) {  /* LNDRAWREL */
-     XDrawLine(theDisp,win,theGC,xold,yold,xold+x1,yold+y1); 
+     XDrawLine(theDisp,win,theGC,xold,yold,xold+x1,yold+y1);
      xold = xold+x1; yold = yold+y1;
    } else if (op == 3) {  /* LNMOVEREL */
      xold = xold+x1; yold = yold+y1;
@@ -5392,13 +5392,13 @@ void eline_(x,y,operation)
 }
 
 /* *************** User units to pixel coords. *************** */
-/* 
+/*
  Based on scaling data passed to linescale this returns the pixel
  co-ords for a particular sets of user data.
 */
 void u2pixel_(ux,uy,ix,iy)
-  float *ux, *uy;	
-  long int *ix, *iy;	
+  float *ux, *uy;
+  long int *ix, *iy;
 {
   float x,y;
   x = *ux;
@@ -5413,13 +5413,13 @@ void u2pixel_(ux,uy,ix,iy)
 }
 
 /* *************** pixel coords to user units  *************** */
-/* 
+/*
  Based on scaling data passed to linescale this returns the grid
  co-ords for a particular set of input pixcel co-ords.
 */
 void pixel2u_(ux,uy,gx,gy)
-  long int *ux, *uy;	
-  float *gx, *gy;	
+  long int *ux, *uy;
+  float *gx, *gy;
 {
   long int x,y;
   x = *ux;
@@ -5435,21 +5435,21 @@ void pixel2u_(ux,uy,gx,gy)
 }
 
 /* *************** General line plotting. *************** */
-/* 
+/*
  Based on scaling data passed to linescale this draws a solid or
- dashed or dotted line or symbol as in tplot. 
+ dashed or dotted line or symbol as in tplot.
  Updown = 0 is pen up, > 0 pen down, -1 to -100 dashed line,
           -101 to -200 chain line, -201 to -300 dotted line,
  in each case the spacing of dashes etc is defined by the value
  ie. -4 is a dashed line 4 pixels long, -203 is dots @ 3 pixels.
 
  sym is the symbol number to plot, if 0 then no symbol, otherwise
- map tplot conventions to esymbol. 
+ map tplot conventions to esymbol.
 
 */
 void etplot_(ux,uy,updown,sym)
-  float *ux, *uy;	
-  long int *updown, *sym;	
+  float *ux, *uy;
+  long int *updown, *sym;
 {
   float x,y;
   int isymbol,iupd,x1,x2,y1,y2;
@@ -5530,7 +5530,7 @@ void etplot_(ux,uy,updown,sym)
     case 29: gs=30;  break;  /* solid left arrow */
     case 30: gs=31;  break;  /* solid right arrow */
     case 31: gs=32;  break;  /* solid 2x3 square */
-    default: gs=-1;  break;  /* nothing */	
+    default: gs=-1;  break;  /* nothing */
   }
   if(gs >= 0)esymbol_(&lx2,&ly2,&gs,&isz);
   wwc_macro = 0;    /* if echoing commands, turn back on */
@@ -5541,14 +5541,14 @@ void etplot_(ux,uy,updown,sym)
 }
 
 /* *************** Dotted line drawing routine. *************** */
-/* 
+/*
  This function is passed both sets of pixel co-ords.
  The ipdis is the number of pixels between each dot.  Typical values
  are 2 for a dense dotted line, 3 for a sparce one, values over 4 are
  probably not useful.
 */
 void edline_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   int ir,itrat,ix,iy,ldis,ldash;
   float xd,yd,r1,r2,xx1,xx2,yy1,yy2,xx3,yy3;
@@ -5604,12 +5604,12 @@ void drawdwl(xa,ya,xb,yb)
 }
 
 /* *************** ESRU double width line drawing routine. *************** */
-/* 
+/*
  Draws a two pixel wide line between two pixel coordinates.
  Based on the slope of the line an adjacent line is drawn one pixel away.
 */
 void edwline_(x1,y1,x2,y2)
-  long int *x1, *y1, *x2, *y2;	
+  long int *x1, *y1, *x2, *y2;
 {
   int ix,iy,jx,jy;
   int width = 2;
@@ -5628,11 +5628,11 @@ void edwline_(x1,y1,x2,y2)
 }
 
 /* *************** ESRU single width line drawing routine. *************** */
-/* 
+/*
  Draws a single pixel wide line between two pixel coordinates.
 */
 void eswline_(x1,y1,x2,y2)
-  long int *x1, *y1, *x2, *y2;	
+  long int *x1, *y1, *x2, *y2;
 {
   int ix,iy,jx,jy;
   int width = 1;
@@ -5657,19 +5657,19 @@ void drawvwl(xa,ya,xb,yb,width)
 }
 
 /* *************** ESRU dashed line drawing routine. *************** */
-/* 
+/*
  Edash draws a dashed line based on start and end point pixel co-ords.
  Ipdis is the number of pixels between each dot.  Typical values
  are 2 for a dense dashed line, 3 for a normal one, values over 4 are
  probably not useful. Two static values are used:
    dash_on : to say whether current increment is part of a dash,
    dash_rem: to give the pixel distance remainder.
- 
+
  dash_on and dash_rem are cleared if edash call is made with ipdis = 0.
-  
+
 */
 void edash_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   int ir1,ir2,ix1,iy1,ix2,iy2;
   int ix,iy,ixl,iyl,ix3,iy3,ldash,lrem,ldis;
@@ -5701,7 +5701,7 @@ void edash_(x1,y1,x2,y2,ipdis)
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
 
 /* dots in line taking into account carry-over. << itrat not used >> */
-  trat = (float) (ldis-dash_rem) / (float) ldash;  
+  trat = (float) (ldis-dash_rem) / (float) ldash;
   lrem = (ldis-dash_rem)%ldash;       /* remaining pixels in line. */
 
   if(dash_rem >= 1) {                   /* If carry over get portion to draw */
@@ -5713,7 +5713,7 @@ void edash_(x1,y1,x2,y2,ipdis)
 */
       if(dash_on == 1)XDrawLine(theDisp,win,theGC,ixl,iyl,ix2,iy2);
 
-      dash_rem =ldis-dash_rem;       
+      dash_rem =ldis-dash_rem;
       return;
     }
     ir2 = ldis - dash_rem;
@@ -5751,8 +5751,8 @@ void edash_(x1,y1,x2,y2,ipdis)
   }
 /*
  If not quite to the end then complete the fraction of the dash
- and remember portion of dash to be carried over. 
-*/  
+ and remember portion of dash to be carried over.
+*/
   if(lrem >= 1 || dash_rem >= 1) {      /* finish if non-trivial */
     dash_rem =ldash-lrem;             /* carry over */
     if(dash_rem < 0)dash_rem=0;
@@ -5764,19 +5764,19 @@ void edash_(x1,y1,x2,y2,ipdis)
 }
 
 /* *************** ESRU chained line drawing routine. *************** */
-/* 
+/*
  Echain is passed start and end point pixel co-ords.
  The ipdis is the number of pixels between each dot.  Typical values
  are 3 for a dense chain, 4 for a normal one, values over 4 are
  probably not useful. Two static values are used:
    dash_on : to say whether current increment is part of a dash,
    dash_rem: to give the pixel distance remainder.
- 
+
  dash_on and dash_rem are cleared if edash call is made with ipdis = 0.
-  
+
 */
 void echain_(x1,y1,x2,y2,ipdis)
-  long int *x1, *y1, *x2, *y2, *ipdis;	
+  long int *x1, *y1, *x2, *y2, *ipdis;
 {
   int ir1,ir2,ix1,iy1,ix2,iy2;
   int ix,iy,ixl,iyl,ix3,iy3,ldash,lrem,ldis;
@@ -5808,7 +5808,7 @@ void echain_(x1,y1,x2,y2,ipdis)
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
 
 /* dots in line taking into account carry-over. */
-  trat = (float) (ldis-dash_rem) / (float) ldash;  
+  trat = (float) (ldis-dash_rem) / (float) ldash;
   lrem = (ldis-dash_rem)%ldash;       /* remaining pixels in line. */
 
   if(dash_rem >= 1) {                   /* If carry over get portion to draw */
@@ -5819,7 +5819,7 @@ void echain_(x1,y1,x2,y2,ipdis)
  from the remainder and then return without flipping status.
 */
       if(dash_on == 1)XDrawLine(theDisp,win,theGC,ixl,iyl,ix2,iy2);
-      dash_rem =ldis-dash_rem;       
+      dash_rem =ldis-dash_rem;
       return;
     }
     ir2 = ldis - dash_rem;
@@ -5864,7 +5864,7 @@ void echain_(x1,y1,x2,y2,ipdis)
 
 /*
  If not quite to the end then complete the fraction of the dash
- and remember portion of dash to be carried over. 
+ and remember portion of dash to be carried over.
 */
   if(lrem >= 1 || dash_rem >= 1) {      /* finish if non-trivial */
     dash_rem =ldash-lrem;             /* carry over */
@@ -5912,7 +5912,7 @@ void drawoodash(xa,ya,xb,yb,width)
  the C code via a previous call to linescale.
 */
 void erectan_(x,y,dx,dy,dt)
-  float *x, *y,*dx,*dy,*dt;	
+  float *x, *y,*dx,*dy,*dt;
 {
   float xo,yo,x1,y1,dx1,dy1,dt1,dd,xc,xs,yc,ys,ri;
   double xcd;
@@ -5965,11 +5965,11 @@ void erectan_(x,y,dx,dy,dt)
 */
 void egrbox_(x,y,dx,dy,gp)
   float *x, *y,*dx,*dy;
-  long int *gp;	
+  long int *gp;
 {
   float xo,yo,x1,y1,dx1,dy1;
   int   gpo,ix,iy,ix1,iy1;
-  box	gbox; 
+  box	gbox;
   long int   lix,liy;
   xo = *x;     /* origin x coord */
   yo = *y;     /* origin y coord */
@@ -6012,7 +6012,7 @@ void egrbox_(x,y,dx,dy,gp)
   x,y dx
 */
 void etriang_(x,y,dx,dy,dt)
-  float *x, *y,*dx,*dy,*dt;	
+  float *x, *y,*dx,*dy,*dt;
 {
   float xo,yo,x1,y1,dx1,dy1,dt1,dd,xc,xs,yc,ys,ri;
   double xcd;
@@ -6061,7 +6061,7 @@ void etriang_(x,y,dx,dy,dt)
 */
 void ecirarc_(x,y,ths,thf,r,num,di)
   float *x, *y,*ths,*thf,*r,*di;
-  long int *num;	
+  long int *num;
 {
   float xo,yo,xp,yp,ths1,thf1,di1,xc,yc;
   float ri,fn,thid,th,radius,xps,yps,xpss,ypss,xpi1,ypi1,xpi2,ypi2;
@@ -6105,13 +6105,13 @@ void ecirarc_(x,y,ths,thf,r,num,di)
         ypi2=yps+0.75*ypss;
         u2pixel_(&xpi1,&ypi1,&lix,&liy); /* move to midpoint */
         ix1 = lix; iy1 = liy;
-        u2pixel_(&xpi2,&ypi2,&lix,&liy); 
+        u2pixel_(&xpi2,&ypi2,&lix,&liy);
         ix2 = lix; iy2 = liy;
         XDrawLine(theDisp,win,theGC,ix1,iy1,ix2,iy2);
         xps=xp;
         yps=yp;
     } else if (di1 == 0.0) {
-        u2pixel_(&xp,&yp,&lix,&liy); 
+        u2pixel_(&xp,&yp,&lix,&liy);
         ix1 = lix; iy1 = liy;
         XDrawLine(theDisp,win,theGC,ix,iy,ix1,iy1);
         ix = ix1; iy = iy1;
@@ -6120,9 +6120,9 @@ void ecirarc_(x,y,ths,thf,r,num,di)
 }
 
 /* *************** ESRU circle drawing routine. *************** */
-/* 
- co-ords, operation flag: 
-	0=draw circle is drawn with clear inside. 
+/*
+ co-ords, operation flag:
+	0=draw circle is drawn with clear inside.
 	1=draw filled black circle.
 	2=to be added...
 	3=to be added...
@@ -6131,7 +6131,7 @@ void ecirarc_(x,y,ths,thf,r,num,di)
  bounding box width and height is rad1 * 2.
 */
 void ecirc_(x,y,rad,operation)
-  long int *x, *y, *rad, *operation;	
+  long int *x, *y, *rad, *operation;
 {
   int x1,y1,rad1,op,ul,ut,boxdim;
   x1 = *x;
@@ -6145,29 +6145,29 @@ void ecirc_(x,y,rad,operation)
   if (op == 0) {
     XDrawArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,0, 360*64);
   } else if (op == 1) {
-    XSetForeground(theDisp,theGC, fg); 
+    XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, fg);
     XFillArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,0, 360*64);
-    XSetForeground(theDisp,theGC, fg); 
+    XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, bg);
   }
   return;
 }
 
 /* *************** ESRU arc drawing routine. *************** */
-/* 
- co-ords, operation flag: 
-	0=draw arc is drawn with clear inside. 
+/*
+ co-ords, operation flag:
+	0=draw arc is drawn with clear inside.
 	1=draw filled black arc.
  passed the x,y centre (pixels) and the radius (pixels), and two
- angles, the first is degrees from 3-o'clock position (+ is 
+ angles, the first is degrees from 3-o'clock position (+ is
  counterclockwise) and the 2nd is degress from the first angle.
  See fig 6-1 in Xlib programming manual.
  These are converted into position of the upper left corner of the
  bounding box (ul & ut) and the bounding box width and height is rad1 * 2.
 */
 void earc_(x,y,rad,ang1,ang2,operation)
-  long int *x, *y, *rad, *operation, *ang1, *ang2;	
+  long int *x, *y, *rad, *operation, *ang1, *ang2;
 {
   int x1,y1,rad1,op,ul,ut,boxdim,an1,an2;
   x1 = *x;
@@ -6183,25 +6183,25 @@ void earc_(x,y,rad,ang1,ang2,operation)
   if (op == 0) {
     XDrawArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,an1*64, an2*64);
   } else if (op == 1) {
-    XSetForeground(theDisp,theGC, fg); 
+    XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, fg);
     XFillArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,an1*64, an2*64);
-    XSetForeground(theDisp,theGC, fg); 
+    XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, bg);
   }
   return;
 }
 
 /* ************** AXSCALE ************************ */
-/* 
- Determine the scaling ratios for use by ww based on the axis range of 
- XMN to XMY for the horizontal axis and YMN to YMX for the vertical 
- axis within a window "gw" pixels wide by "gh" pixels high. XSC is the 
- scaling factor for the horizontal axis, YSC for the vertical and SCA 
- is a scaling factor which gives an equal aspect ratio.  In mixed cases 
- of minimum/maximum X/Y coords being negative set a data offset Xadd & 
- Yadd to assist in line drawing ( window coords are 0,0 upper left 
- whereas line drawing is 0,0 in the lower left). 
+/*
+ Determine the scaling ratios for use by ww based on the axis range of
+ XMN to XMY for the horizontal axis and YMN to YMX for the vertical
+ axis within a window "gw" pixels wide by "gh" pixels high. XSC is the
+ scaling factor for the horizontal axis, YSC for the vertical and SCA
+ is a scaling factor which gives an equal aspect ratio.  In mixed cases
+ of minimum/maximum X/Y coords being negative set a data offset Xadd &
+ Yadd to assist in line drawing ( window coords are 0,0 upper left
+ whereas line drawing is 0,0 in the lower left).
 */
 
 void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
@@ -6236,8 +6236,8 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
 	*ysc = (float)*gh / (*ymx - *ymn);
 	*yadd = 0.0;
     }
-/* 
- Choose single scale so will have correct aspect ratio for site plans etc. 
+/*
+ Choose single scale so will have correct aspect ratio for site plans etc.
 */
     *sca = *xsc;
     if (*ysc < *xsc) {
@@ -6254,16 +6254,16 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
 } /* axscale_ */
 
 /* ************** LINESCALE *********************** */
-/* 
+/*
  Store scaling parameters for lines so that calls to __ can be
  in user units.  The parameters are as follows and are derived
  from calles to win3d & axiscale:
 
    loff & boff are the pixel coords of the lower left corner of
-     the drawing area is the axis origins.    
+     the drawing area is the axis origins.
    lscale & bscale are the scaling factors.
-   ladd & badd are offsets in user units for each axis so that 
-     various data ranges can be acommodated (see axiscale). 
+   ladd & badd are offsets in user units for each axis so that
+     various data ranges can be acommodated (see axiscale).
 */
 void linescale_(loff,ladd,lscale,boff,badd,bscale)
  float *ladd, *lscale, *badd, *bscale;
@@ -6287,7 +6287,7 @@ void linescale_(loff,ladd,lscale,boff,badd,bscale)
 }
 
 /* ******** DINTERVAL ******************** */
-/* 
+/*
  DINTERVAL finds interval DV on an AXIS(V1,V2) and a suitable number of
  decimal places for the axis values. When 'mode'=0, factors of 10 are
  removed and the interval IS 0.2 for scale length 1-2
@@ -6295,12 +6295,12 @@ void linescale_(loff,ladd,lscale,boff,badd,bscale)
                  1.0                  5-10
 
  When 'mode'=1 the hour interval on the graphical time (x-axis) is
- set as follow: 
- v=v2-v1     for v < 12 dv=1 
-                 v < 18 dv=2 
-                 v < 24 dv=3 
-                 v < 48 dv=6 
-                 v < 96 dv=12   else dv=24. 
+ set as follow:
+ v=v2-v1     for v < 12 dv=1
+                 v < 18 dv=2
+                 v < 24 dv=3
+                 v < 48 dv=6
+                 v < 96 dv=12   else dv=24.
 */
 
 void dinterval_(v1,v2,dv,ndec,mode)
@@ -6327,7 +6327,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 	w = 10.0;
 	if (vr < 5.0) w = 5.0;
 	if (vr < 2.0) w = 2.0;
-	
+
 	dvv = w * 0.1 * (float) dz;
 	if (vv < 0.0) dvv = -dvv;
 
@@ -6335,7 +6335,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 	if (w == 10.0) --nd;
         else if (w == 5.0) nd = 1;
         else if (w == 2.0) nd = 2;
-        
+
        	if (nd < 0) nd = 0;
 
     } else {
@@ -6393,12 +6393,12 @@ void labelstr(n,val,WticC,sstr)
 } /* labelstr */
 
 /* ************** VRTAXS *********************** */
-/* 
- Construct and draw a vertical axis via WW where: YMN,YMX are the data 
- minimum & maximum values, offl & offb are the pixel coords of the     
- lower start of the axis.  SCA is the scaling factor and Yadd 
- is a data offset to adjust plotting for various data ranges. 
- Mode = 1 for time axis, Mode = 0 for other data display types. 
+/*
+ Construct and draw a vertical axis via WW where: YMN,YMX are the data
+ minimum & maximum values, offl & offb are the pixel coords of the
+ lower start of the axis.  SCA is the scaling factor and Yadd
+ is a data offset to adjust plotting for various data ranges.
+ Mode = 1 for time axis, Mode = 0 for other data display types.
  Side = 0 lables and tic on left, Side = 1 labels and tic on right.
  msg is the axis label and mlen is it's length (passed from f77).
 */
@@ -6411,8 +6411,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  char  *msg;
 {
 /*
- Local variables: WticL is the maximum character width of a tic label, 
- ix & iy are the pixel coords, vertadj is half of the text height. 
+ Local variables: WticL is the maximum character width of a tic label,
+ ix & iy are the pixel coords, vertadj is half of the text height.
 */
  int s_0,s_1, s_2, s_3, s_4, s_5;
  int ofl,ofb,oft,sid;
@@ -6437,7 +6437,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  }
 
  ofl = *offl; ofb = *offb; oft = *offt; mde = *mode; sid = *side;
- 
+
 /* Define tic intervals (DDX data increment, NY decimal places). */
  dinterval_(ymn, ymx, &ddy, &ny, &mde);
 
@@ -6504,7 +6504,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 
     s_3 = iy + vertadj;            /* font centered vertically     */
     if (sid == 0) {              /* position label left or right */
-      s_5 = ofl - (((label_width+1) * f_width)); 
+      s_5 = ofl - (((label_width+1) * f_width));
     } else {
       s_5 = ofl + f_width +2;
     }
@@ -6514,7 +6514,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
       XDrawString(theDisp,win,theGC,s_5,s_3,sstr,n);
       last_label_pixel = s_3;
       XDrawLine(theDisp,win,theGC,ix1,iy1,s_2,iy);	/* extra tic length at label */
-    } 
+    }
     ix = ix1 = ofl; iy1 = iy;	/* remember position */
     yticv += ddy;
   }
@@ -6524,10 +6524,10 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   iy = ofb - (int) ((*ymx + *yadd) * *sca);
   XDrawLine(theDisp,win,theGC,ix1,iy1,ix,iy);
 
-/* 
- Print out the axis label on left or right. 
- Looping through each character in the string 
- and placing in a buffer for printing. 
+/*
+ Print out the axis label on left or right.
+ Looping through each character in the string
+ and placing in a buffer for printing.
 */
   if (sid == 0) {
       ix = dbx1.b_left+10;
@@ -6549,7 +6549,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 } /* vrtaxs_ */
 
 /* ************** HORAXS *********************** */
-/* 
+/*
  Construct and draw a horizontal axis via WW where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
@@ -6565,9 +6565,9 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  char  *msg;
 {
 /*
- Local variables: 
+ Local variables:
  WticC is the pixel shift (horizontal) to centre the tic label, ix & iy
- are the pixel coords. 
+ are the pixel coords.
 */
  int s_1, s_2, s_3, s_4, s_5;
  int ofl,ofb,ofr;
@@ -6630,7 +6630,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
    }
    iy1 = iy; ix1 = ix;	/* remember position */
  }
- 
+
 /* Loop from minimum to maximum by DDX incriments. */
 
  s_1 = nintvl;
@@ -6652,7 +6652,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
      XDrawString(theDisp,win,theGC,s_2,s_3,sstr,n);
      last_label_right_pixel = s_5 + (label_width * f_width);
      XDrawLine(theDisp,win,theGC,ix,iy,ix,s_4+2);  /* extra tic length at label */
-   } 
+   }
    ix = ix1 = ofl; iy1 = iy;	/* remember position */
    xticv += ddx;
  }
@@ -6673,7 +6673,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
 } /* horaxis_ */
 
 /* ************** HORAXSHDW *********************** */
-/* 
+/*
  Construct and draw a hour/day/week horizontal axis where: XMN,XMX are the data
  minimum & maximum values, offL & offB are the pixel coords of the
  left start of the axis.  SCA is the scaling factor and Xadd is a data
@@ -6697,9 +6697,9 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  char  *msg;
 {
 /*
- Local variables: 
+ Local variables:
  WticC is the pixel shift (horizontal) to centre the tic label, ix & iy
- are the pixel coords. 
+ are the pixel coords.
 */
  int s_1, s_2, s_3, s_4, s_5;
  int ofl,ofb,ofr;
@@ -6784,7 +6784,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
    }
    iy1 = iy; ix1 = ix;	/* remember position */
  }
- 
+
 /* Loop from minimum to maximum by DDX incriments. */
 
  s_1 = nintvl;
@@ -6817,7 +6817,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
      XDrawString(theDisp,win,theGC,s_2,s_3,sstr,n);
      last_label_right_pixel = s_5 + (label_width * f_width);
      XDrawLine(theDisp,win,theGC,ix,iy,ix,s_4+2);  /* extra tic length at label */
-   } 
+   }
    ix = ix1 = ofl; iy1 = iy;	/* remember position */
    xticv += ddx;
  }
@@ -6838,7 +6838,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
 } /* horaxis_ */
 
 /* *************** ESRU menu text update. *************** */
-/* 
+/*
  This function takes an array of strings from f77 and stores
  it in the static array m_list for subsequent use by other functions.
 */
@@ -6888,28 +6888,28 @@ void movemse()
   mouse.b_top = dbx1.b_bottom - bh - bh;    /* double height box here */
   mouse.b_bottom = dbx1.b_bottom - 2;
   mouse.b_left = mouse.b_right - (f_width * 8) +4;
-  xbox(mouse,fg,white, BMCLEAR | BMEDGES); 
+  xbox(mouse,fg,white, BMCLEAR | BMEDGES);
   mouse_avail = 1;             /* tell the world that mouse help is available */
   XDrawString(theDisp,win,theGC,mouse.b_left+2,mouse.b_bottom-2," mouse ",7);
 
 /* Draw boxes representing buttons */
-  mouse1.b_top = mouse.b_top + 1;    
+  mouse1.b_top = mouse.b_top + 1;
   mouse1.b_bottom = mouse.b_top + bh;
   mouse1.b_left = mouse.b_left + 2;
-  mouse1.b_right = mouse1.b_left + bh; 
-  xbox(mouse1,fg,white, BMCLEAR | BMEDGES); 
-  mouse2.b_top = mouse.b_top + 1;    
+  mouse1.b_right = mouse1.b_left + bh;
+  xbox(mouse1,fg,white, BMCLEAR | BMEDGES);
+  mouse2.b_top = mouse.b_top + 1;
   mouse2.b_bottom = mouse.b_top + bh;
   mouse2.b_left = mouse1.b_right + 2;
-  mouse2.b_right = mouse2.b_left + bh; 
-  xbox(mouse2,fg,white, BMCLEAR | BMEDGES); 
-  mouse3.b_top = mouse.b_top + 1;    
+  mouse2.b_right = mouse2.b_left + bh;
+  xbox(mouse2,fg,white, BMCLEAR | BMEDGES);
+  mouse3.b_top = mouse.b_top + 1;
   mouse3.b_bottom = mouse.b_top + bh;
-  mouse3.b_right = mouse.b_right - 2; 
+  mouse3.b_right = mouse.b_right - 2;
   mouse3.b_left = mouse3.b_right - bh;
-  xbox(mouse3,fg,white, BMCLEAR | BMEDGES); 
+  xbox(mouse3,fg,white, BMCLEAR | BMEDGES);
   if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
-  
+
   return;
 } /* movemse */
 
@@ -6918,20 +6918,20 @@ void closemouse_()
 {
   mouse_avail = 0;             /* tell the world that mouse help is not available */
   mouse.b_bottom = mouse.b_bottom + 1;
-  mouse.b_right = mouse.b_right + 1; 
-  xbox(mouse,fg,white, BMCLEARALL); 
-  
+  mouse.b_right = mouse.b_right + 1;
+  xbox(mouse,fg,white, BMCLEARALL);
+
   return;
 } /* closemouse */
 
 /* *************** ESRU pop-up menu box. *************** */
-/* 
+/*
  This function takes current menu text and displays it in a box
  and waits for the user to press a key or click a mouse to select
  a command choice. A long list paging is supported, by returning
  control to calling code to supply revised menu array.
- If the menu will not fit in the width of the box then a 
- smaller font will be used. 
+ If the menu will not fit in the width of the box then a
+ smaller font will be used.
 */
 #define OFFEND		(-1)	/* no menu item selected */
 
@@ -6939,8 +6939,8 @@ void evwmenu_(titleptr,	/* title for menu                   */
   impx,impy,		/* menu position (upper right)      */
   iwth,			/* menu character width to print    */
   irpx,irpy,		/* selected x and y mouse position  */
-  ino,			/* selected item number: if ino<0 dont show menu */	
-  ipflg,uresp,		/* implement paging, miscel user response */	
+  ino,			/* selected item number: if ino<0 dont show menu */
+  ipflg,uresp,		/* implement paging, miscel user response */
   len_title		/* length of title (from f77 compiler) */
   )
 char	*titleptr;
@@ -6989,7 +6989,7 @@ int		len_title;
 
 /*  Check if the text will fit within window, if not down-size until it does. */
   menu_height = (m_lines+1)*(f_height+2);
-  while (xrt_height < menu_height) { 
+  while (xrt_height < menu_height) {
     if (use_font == 0) break;
     use_font-- ;
     winfnt_(&use_font);
@@ -7002,7 +7002,7 @@ int		len_title;
   mob_height = mib_height + (5 + (f_height + 8));  /* include space for title  */
   mib_width = (iw*f_width+2);	/* inner pixel width */
   mob_width = mib_width +20;	/* box slightly wider than longest line */
-/* 
+/*
  If a specific box starting point has been passed then try to honor
  this otherwise place it slightly above the dialogue box.
 */
@@ -7017,7 +7017,7 @@ int		len_title;
   menubx.b_top   = gmenubx.b_top + (f_height + 8);
   menubx.b_bottom= gmenubx.b_bottom - 5;
   menubx.b_left  = gmenubx.b_left + 5;  menubx.b_right = gmenubx.b_right - 5;
-  hl_box.b_left = menubx.b_left +2;  hl_box.b_right = menubx.b_right -2; 
+  hl_box.b_left = menubx.b_left +2;  hl_box.b_right = menubx.b_right -2;
   lineheight = f_height+2;
 
 /* Check to see if menu is over mouse help button */
@@ -7025,7 +7025,7 @@ int		len_title;
     if (gmenubx.b_bottom>mouse.b_top&&gmenubx.b_left<mouse.b_right) {
       closemouse_();
       mouse.b_right = gmenubx.b_left - 4;
-      movemse(); 
+      movemse();
     }
   }
 
@@ -7034,7 +7034,7 @@ int		len_title;
   box_to_pix(win,gmenubx,under,u_width,u_height);   /* save rect under gmenubx to under */
 
   xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-  xbox(gmenubx,fg,bg,BMEDGES);              
+  xbox(gmenubx,fg,bg,BMEDGES);
   xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw menu display box  */
 
   XDrawString(theDisp,win,theGC,menubx.b_left+10,menubx.b_top-5,titleptr,lt1);  /* title */
@@ -7099,7 +7099,7 @@ int		len_title;
              XFlush(theDisp);
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
-             xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */ 
+             xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
              *ino = i +1;  /* compensate for c starting at zero */
              *uresp = 0;
    	     break;
@@ -7159,7 +7159,7 @@ int		len_title;
           if (buf[0] == '\r' || buf[0] == '\n' ) {
             no_valid_event = FALSE;
             *uresp = 0;
-            xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */ 
+            xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */
    	    break;
           } else if (buf[0] == '\010') {  /*  buf[0] is BS  */
             XBell(theDisp, 50);  /*  buf[0] is BS but at left edge  */
@@ -7196,7 +7196,7 @@ int		len_title;
                 XFlush(theDisp);
                 XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
                 Timer(300);
-                xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu */ 
+                xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu */
    	        break;
               }
             }
@@ -7212,19 +7212,19 @@ int		len_title;
   XClearArea(theDisp,win,gmenubx.b_left,gmenubx.b_top,(unsigned int) u_width,(unsigned int) u_height,exp);
   if(config_altered == 0)pix_to_box(under,u_width,u_height,gmenubx,win);
   XFreePixmap(theDisp, under);
-  if(XPending(theDisp) > 0) { 
+  if(XPending(theDisp) > 0) {
 /* debug  fprintf(stderr,"evwmenu: events remaining %d\n",XPending(theDisp)); */
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   if (changed_font == 1) winfnt_(&saved_font);  /* Restore font.  */
   XFlush(theDisp); /* added to force draw */
-  if(config_altered == 1) refreshenv_(); 
-  return; 
+  if(config_altered == 1) refreshenv_();
+  return;
 }
 
-/* ****************** auxulliary menu   
+/* ****************** auxulliary menu
   Used to test for mouse click in other portions of the screen.
 */
 int aux_menu(event)  XEvent *event; {
@@ -7297,7 +7297,7 @@ int aux_menu(event)  XEvent *event; {
         if(network_gpc){
 
 /* Add in a pointer motion mask so that mouse movement is regarded as an event */
-         XSelectInput(theDisp,win, ExposureMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | PointerMotionMask | ButtonMotionMask |StructureNotifyMask | VisibilityChangeMask); 
+         XSelectInput(theDisp,win, ExposureMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask | PointerMotionMask | ButtonMotionMask |StructureNotifyMask | VisibilityChangeMask);
 
 /* Case of first mouse click (with shift) return x-y to the fortran side */
           if(butid==1){
@@ -7542,24 +7542,24 @@ point*/
                     snap=1;
                     isnap=1;
                   }
-                  gridupdt_(&zoom,&grid_rz,&grid_oo,&snap,&ipan,&dx,&dy); 
+                  gridupdt_(&zoom,&grid_rz,&grid_oo,&snap,&ipan,&dx,&dy);
                   snap=0;
                   break;
-                case 6: 
-                  break;     
+                case 6:
+                  break;
               }
-            } 
-          } 
+            }
+          }
 /* button click inside graphics area 3rd mouse button */
 
         } /* -> end of network graphics 'ere */
 /* debug  fprintf(stderr," inside graphic display at: xpos %d ypos %d \n",x,y); */
-      } 
+      }
       if (xboxinside(updown_text,x,y)) {
         vert = updown_text.b_left+15;
         no_valid_event = TRUE;
         while ( no_valid_event) {
-          XNextEvent(theDisp,event); 
+          XNextEvent(theDisp,event);
           switch (event->type) {
             case MotionNotify:	/* while mouse is moving track position  */
               x = event->xmotion.x;  y = event->xmotion.y;
@@ -7591,7 +7591,7 @@ point*/
           no_valid_event = TRUE;
           while ( no_valid_event) {
             scrlast = scroll_index;
-            XNextEvent(theDisp,event); 
+            XNextEvent(theDisp,event);
             switch (event->type) {
               case MotionNotify:	/* while mouse is moving track position  */
                 y = event->xmotion.y;
@@ -7625,7 +7625,7 @@ point*/
           vert=y;
           no_valid_event = TRUE;
           while ( no_valid_event) {
-            XNextEvent(theDisp,event); 
+            XNextEvent(theDisp,event);
             switch (event->type) {
               case MotionNotify:	/* while mouse is moving track position  */
                 y = event->xmotion.y;
@@ -7665,7 +7665,7 @@ point*/
           vert=x;
           no_valid_event = TRUE;
           while ( no_valid_event) {
-            XNextEvent(theDisp,event); 
+            XNextEvent(theDisp,event);
             switch (event->type) {
               case MotionNotify:	/* while mouse is moving track position  */
                 x = event->xmotion.x;
@@ -7714,7 +7714,7 @@ point*/
       } else if(capture_avail >= 1 && xboxinside(captext,x,y)) {
 
 /* capture text button */
-        saved_font = current_font; 
+        saved_font = current_font;
         bottom = fbb.b_bottom; left = captext_left;
         doitbox(capture,"capture text",12,13,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
         but_rlse = 1;
@@ -7755,8 +7755,8 @@ point*/
         doitbox(cpw,"copyright",9,10,&saved_font,&butn_fnt,&bottom,&left,"copyright",'!');
       } else if (cfg_boxs == 0 && xboxinside(cfgz,x,y)) {
 
-/* Check buttons inside graphics feedback.  If in button then do required 
-   operations, if not then return the x,y coord and which button was pressed.   
+/* Check buttons inside graphics feedback.  If in button then do required
+   operations, if not then return the x,y coord and which button was pressed.
    if in config boxs cfgz (registration) */
         saved_font = current_font;
         if (saved_font != disp_fnt) winfnt_(&disp_fnt);
@@ -7844,17 +7844,17 @@ point*/
           sym=29; sz=0; esymbol_(&eyex,&eyey,&sym,&sz);
         }
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
-      } else if (mouse_avail > 0 && xboxinside(mouse,x,y)) {    
+      } else if (mouse_avail > 0 && xboxinside(mouse,x,y)) {
 
 /* if in mouse box - help on mouse button clicks */
         saved_font = current_font;
         if (saved_font != small_fnt) winfnt_(&small_fnt);
         bh = f_height+2;	/* box height is font height +2 */
         msehbx.b_bottom = mouse.b_top - 4;
-        msehbx.b_top = msehbx.b_bottom - bh;    
-        msehbx.b_right = mouse.b_right - 2; 
+        msehbx.b_top = msehbx.b_bottom - bh;
+        msehbx.b_right = mouse.b_right - 2;
         msehbx.b_left = msehbx.b_right - (f_width * 10);
-        xbox(msehbx,fg,white, BMCLEAR); 
+        xbox(msehbx,fg,white, BMCLEAR);
         if (butid == 1) {
           xbox(mouse1,fg,ginvert, BMCLEAR | BMNOT |BMEDGES);      /* invert box */
           XDrawString(theDisp,win,theGC,msehbx.b_left+4,msehbx.b_bottom-2,mseb1h,strlen(mseb1h));
@@ -7866,7 +7866,7 @@ point*/
           xbox(mouse3,fg,ginvert, BMCLEAR | BMNOT |BMEDGES);      /* invert box */
           bh = f_width*strlen(mseb3h);
           XDrawString(theDisp,win,theGC,msehbx.b_right-2-bh,msehbx.b_bottom-2,mseb3h,strlen(mseb3h));
-        } 
+        }
         no_valid_event = TRUE;
         while (no_valid_event) {
           XNextEvent(theDisp,event);
@@ -7876,14 +7876,14 @@ point*/
               break;
             default:
               break;
-          } 
-        } 
-        xbox(msehbx,fg,white, BMCLEAR); 
+          }
+        }
+        xbox(msehbx,fg,white, BMCLEAR);
         if (saved_font != disp_fnt) winfnt_(&saved_font);  /* restore std font */
       } else if (xboxinside(viewbx,x,y)){
 
 /* inside graphics display - note this and return */
-        but_rlse=5;    
+        but_rlse=5;
       }
     return (but_rlse);
   }
@@ -7909,7 +7909,7 @@ void refreshenv_()
    disp_lines = (int) ((disp.b_bottom - disp.b_top) / (f_height+1));
    if (disp_lines != tfb_limtty) {
      tfb_line = tfb_line - tfb_limtty + disp_lines;
-     tfb_limtty = disp_lines; 
+     tfb_limtty = disp_lines;
    }
    if (disp_fnt != saved_font) winfnt_(&saved_font); 	/* Restore font. */
 
@@ -7923,7 +7923,7 @@ void refreshenv_()
 
    menu_char=menu_offset;                        /* redraw feedbox  */
    d_lines=fbb_b_lines;
-   feedbox_(&menu_char,&d_lines,&gw,&gh);  
+   feedbox_(&menu_char,&d_lines,&gw,&gh);
 
    if(dialogue_lines == 2) {                     /* if text feedback box redraw it */
       displ_l=disp_lines;
@@ -7974,7 +7974,7 @@ void opentutorial_()
 
  saved_font = current_font;
  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
-  
+
  tut_avail = 1;             /* tell the world that tutorial is available */
  l_tut = xrt_width - ((f_width * 10) + 3);
  if (cpw_avail >= 1) {
@@ -8029,9 +8029,9 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
  saved_font = current_font;
  if (saved_font != disp_fnt) winfnt_(&disp_fnt);
  cfg_boxs = *cfg_type;	/* tell the world that config boxes are available */
- 
+
 /*
- boxs are buttons, set them to unused area until required. 
+ boxs are buttons, set them to unused area until required.
 */
   cfgz.b_top = cfgn.b_top = cfgc.b_top = cfgdfn.b_top = viewbx.b_top;
   cfgz.b_bottom = cfgn.b_bottom = cfgc.b_bottom = cfgdfn.b_bottom = viewbx.b_top+1;
@@ -8044,24 +8044,24 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
   if (cfg_boxs == 0){	/* registration level  */
     cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
     cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
-    xbox(cfgz,fg,white, BMCLEAR | BMEDGES); 
+    xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
     XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration ",13);
   } else {
     if (oocfgz == 1) {	/* zones */
       cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
       cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
-      xbox(cfgz,fg,white, BMCLEAR | BMEDGES); 
+      xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
       XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones        ",13);
       if (iiocfgz >= 1) {	/* zones images */
         eyex = cfgz.b_right - 14;
         eyey = cfgz.b_bottom - (f_height/2);
         sym=29; sz=0; esymbol_(&eyex,&eyey,&sym,&sz);
       }
-    } 
+    }
     if (oocfgn == 1) {	/* network */
       cfgn.b_top   = viewbx.b_top +bh +bh +4;   cfgn.b_bottom = cfgn.b_top + bh;
       cfgn.b_right = viewbx.b_right - 2; cfgn.b_left = cfgn.b_right - (f_width * 15);
-      xbox(cfgn,fg,white, BMCLEAR | BMEDGES);  
+      xbox(cfgn,fg,white, BMCLEAR | BMEDGES);
       XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks     ",13);
       if (iiocfgn >= 1) {	/* network images */
         eyex = cfgn.b_right - 14;
@@ -8083,7 +8083,7 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
     if (oocfgdfn == 1) {	/* domain flow */
       cfgdfn.b_top   = viewbx.b_top + (4 * bh) +12;   cfgdfn.b_bottom = cfgdfn.b_top + bh;
       cfgdfn.b_right = viewbx.b_right - 2; cfgdfn.b_left = cfgdfn.b_right - (f_width * 15);
-      xbox(cfgdfn,fg,white, BMCLEAR | BMEDGES); 
+      xbox(cfgdfn,fg,white, BMCLEAR | BMEDGES);
       XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow  ",13);
       if (iiocfgdfn >= 1) {	/* network images */
         eyex = cfgdfn.b_right - 14;
@@ -8112,7 +8112,7 @@ void opensetup_()
    b_setup = tut.b_top -8;  /* place above tutorial */
  } else {
    if (dialogue_lines != 0) { b_setup = msgbx.b_top -8; } else { b_setup = xrt_height -18; }
- }  
+ }
  bottom = b_setup; left = l_setup;
  doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
  return;
@@ -8275,29 +8275,29 @@ void openmouse_(mseb1,mseb2,mseb3,len1,len2,len3)
   bh = f_height+2;	/* box height is font height +2 */
   mouse.b_top = dbx1.b_bottom - bh - bh;    /* double height box here */
   mouse.b_bottom = dbx1.b_bottom - 2;
-  mouse.b_right = dbx1.b_right - 4; 
+  mouse.b_right = dbx1.b_right - 4;
   mouse.b_left = dbx1.b_right - (f_width * 8);
-  xbox(mouse,fg,white, BMCLEAR | BMEDGES); 
+  xbox(mouse,fg,white, BMCLEAR | BMEDGES);
   XDrawString(theDisp,win,theGC,mouse.b_left+2,mouse.b_bottom-2," mouse ",7);
 
 /* Draw boxes representing buttons */
-  mouse1.b_top = mouse.b_top + 1;    
+  mouse1.b_top = mouse.b_top + 1;
   mouse1.b_bottom = mouse.b_top + bh;
   mouse1.b_left = mouse.b_left + 2 ;
-  mouse1.b_right = mouse1.b_left + bh; 
-  xbox(mouse1,fg,white, BMCLEAR | BMEDGES); 
-  mouse2.b_top = mouse.b_top + 1;    
+  mouse1.b_right = mouse1.b_left + bh;
+  xbox(mouse1,fg,white, BMCLEAR | BMEDGES);
+  mouse2.b_top = mouse.b_top + 1;
   mouse2.b_bottom = mouse.b_top + bh;
   mouse2.b_left = mouse1.b_right + 2;
-  mouse2.b_right = mouse2.b_left + bh; 
-  xbox(mouse2,fg,white, BMCLEAR | BMEDGES); 
-  mouse3.b_top = mouse.b_top + 1;    
+  mouse2.b_right = mouse2.b_left + bh;
+  xbox(mouse2,fg,white, BMCLEAR | BMEDGES);
+  mouse3.b_top = mouse.b_top + 1;
   mouse3.b_bottom = mouse.b_top + bh;
-  mouse3.b_right = mouse.b_right - 2; 
+  mouse3.b_right = mouse.b_right - 2;
   mouse3.b_left = mouse3.b_right - bh;
-  xbox(mouse3,fg,white, BMCLEAR | BMEDGES); 
+  xbox(mouse3,fg,white, BMCLEAR | BMEDGES);
   if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
-  
+
   return;
 } /* openmouse */
 
@@ -8406,11 +8406,11 @@ ndata=*dat;
 }
 
 /* *************** ESRU fortan callable proforma for checkboxs and editing. *************** */
-/* 
+/*
  This function takes fortran strings to display and edit, arrays indicating which items
  are labels, which are associated with tick boxes and which are to be edited. It then
  builds the proforma and waits for the user to select one or more tick boxes and editing one or
- more items. No paging supported. 
+ more items. No paging supported.
 */
 void fprofma_(sstr,nstr,title,list,nlist,listtypes,impx,impy,impcwth,swidth,listact,ino,nhelp,lensstr,lentitle,lenlist)
 char	*sstr;	/* f77 array of strings to edit */
@@ -8475,9 +8475,9 @@ int iwhich;	/* local indicator of what has been selected */
 int iwth = *impcwth;	/* character width of proforma */
 
   if(ilen == 0){	/* don't bother if no list */
-    if(XPending(theDisp) > 0) { 
+    if(XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
+    }
     return;
   }
   help_lines = *nhelp; /* set number of help lines setup for this display */
@@ -8526,7 +8526,7 @@ int iwth = *impcwth;	/* character width of proforma */
   mib_width = (iwth*f_width);	/* inner pixel width */
   mob_width = mib_width +20;	/* outer box slightly wider */
   edhight = f_height;
-/* 
+/*
  If a specific box starting point has been passed then try to honor
  this otherwise place it slightly above the dialogue area.
 */
@@ -8535,7 +8535,7 @@ int iwth = *impcwth;	/* character width of proforma */
   }
 
 /* Create the outer and inner boxs. */
-  gmenubx.b_top   = yb - mob_height;  gmenubx.b_bottom= yb;	  
+  gmenubx.b_top   = yb - mob_height;  gmenubx.b_bottom= yb;
   gmenubx.b_left  = xb;  gmenubx.b_right = xb + mob_width;
   okbox_left = gmenubx.b_right - ((2 * 5) + (f_width * 5));
   qbox_left = gmenubx.b_right - ((1 * 5) + (f_width * 2));
@@ -8555,7 +8555,7 @@ int iwth = *impcwth;	/* character width of proforma */
 
 /* display outer and inner boxes and controls */
   xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw border box with edges  */
-  xbox(gmenubx,fg,bg,BMEDGES);              
+  xbox(gmenubx,fg,bg,BMEDGES);
   xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw inner box  */
   okbox("ok",2,3,&gmenubx.b_bottom,&okbox_left,'-');	/* draw ok box  */
   qbox_("?",1,2,&gmenubx.b_bottom,&qbox_left,'-');	/* draw ? box  */
@@ -8566,11 +8566,11 @@ int iwth = *impcwth;	/* character width of proforma */
   for ( i = 0; i < ilen; i++ ) {
     iy = menubx.b_top + ((i + 1) * (f_height+4)) + 5;
     if( loclisttypes[i] == 't' ) {  /* print text after tick */
-      tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight; 
+      tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight;
       if ( listact[i] == 1 ) {
         xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
         xbox(tk_box[i],fg,ginvert, BMCLEAR | BMNOT );	/* then grey tick box  */
-      } else if ( listact[i] == 0 ) { 
+      } else if ( listact[i] == 0 ) {
         xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
       }
       XDrawString(theDisp,win,theGC,menubx.b_left+20,iy,display_list[i],cwidth[i]);
@@ -8586,9 +8586,9 @@ int iwth = *impcwth;	/* character width of proforma */
       XDrawString(theDisp,win,theGC,edit_box[w_edit].b_left+5,edit_box[w_edit].b_bottom-3,
         edit_list[w_edit],lt2[w_edit]);
     } else if( loclisttypes[i] == '-' ) {
-      XSetForeground(theDisp,theGC, ginvert); 
+      XSetForeground(theDisp,theGC, ginvert);
       drawvwl(menubx.b_left + 15,iy-5,menubx.b_right - 15,iy-5,2);
-      XSetForeground(theDisp,theGC, fg); 
+      XSetForeground(theDisp,theGC, fg);
     } else if( listtypes[i] == 'l' ) {
       XDrawString(theDisp,win,theGC,menubx.b_left+15,iy,display_list[i],cwidth[i]);  /* print label */
     } else if( listtypes[i] == 'c' ) {
@@ -8612,7 +8612,7 @@ int iwth = *impcwth;	/* character width of proforma */
         if(event.xvisibility.state == 0 ) {
           refreshenv_();
           xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-          xbox(gmenubx,fg,bg,BMEDGES);              
+          xbox(gmenubx,fg,bg,BMEDGES);
           xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw inner box  */
           okbox("ok",2,3,&gmenubx.b_bottom,&okbox_left,'-');
           qbox_("?",1,2,&gmenubx.b_bottom,&qbox_left,'-');
@@ -8622,14 +8622,14 @@ int iwth = *impcwth;	/* character width of proforma */
           for ( i = 0; i < ilen; i++ ) {
             iy = menubx.b_top + ((i + 1) * (f_height+4)) + 5;
             if( loclisttypes[i] == 't' ) {	/* print text after tick */
-              tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight; 
+              tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight;
               if ( listact[i] == 1 ) {
                 xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
                 xbox(tk_box[i],fg,ginvert, BMCLEAR | BMNOT );	/* then grey tick box  */
-              } else if ( listact[i] == 0 ) { 
+              } else if ( listact[i] == 0 ) {
                 xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
               }
-              XDrawString(theDisp,win,theGC,menubx.b_left+20,iy,display_list[i],cwidth[i]);  
+              XDrawString(theDisp,win,theGC,menubx.b_left+20,iy,display_list[i],cwidth[i]);
             } else if( loclisttypes[i] == 'e' ) {	/* print editing label and editing text */
               w_edit = list2edit[i];
               XDrawString(theDisp,win,theGC,menubx.b_left+5,iy,display_list[i],cwidth[i]);
@@ -8641,9 +8641,9 @@ int iwth = *impcwth;	/* character width of proforma */
               XDrawString(theDisp,win,theGC,edit_box[w_edit].b_left+5,edit_box[w_edit].b_bottom-3,
                 edit_list[w_edit],lt2[w_edit]);
             } else if( loclisttypes[i] == '-' ) {
-              XSetForeground(theDisp,theGC, ginvert); 
+              XSetForeground(theDisp,theGC, ginvert);
               drawvwl(menubx.b_left + 15,iy-5,menubx.b_right - 15,iy-5,2);
-              XSetForeground(theDisp,theGC, fg); 
+              XSetForeground(theDisp,theGC, fg);
             } else if( listtypes[i] == 'l' ) {
               XDrawString(theDisp,win,theGC,menubx.b_left+15,iy,display_list[i],cwidth[i]);  /* print label */
             } else if( listtypes[i] == 'c' ) {
@@ -8659,7 +8659,7 @@ int iwth = *impcwth;	/* character width of proforma */
 /* debug       fprintf(stderr,"fprofma detected configure event\n");  */
         refreshenv_();
         xbox(gmenubx,fg,gpopfr,BMCLEAR |BMEDGES);	/* draw boarder box with edges  */
-        xbox(gmenubx,fg,bg,BMEDGES);              
+        xbox(gmenubx,fg,bg,BMEDGES);
         xbox(menubx,fg,white,BMCLEAR|BMEDGES);	/* draw inner box  */
         okbox("ok",2,3,&gmenubx.b_bottom,&okbox_left,'-');
         qbox_("?",1,2,&gmenubx.b_bottom,&qbox_left,'-');
@@ -8669,11 +8669,11 @@ int iwth = *impcwth;	/* character width of proforma */
         for ( i = 0; i < ilen; i++ ) {
           iy = menubx.b_top + ((i + 1) * (f_height+4)) + 5;
           if( loclisttypes[i] == 't' ) {  /* print text after tick */
-            tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight; 
+            tk_box[i].b_bottom = iy; tk_box[i].b_top = iy -edhight;
             if ( listact[i] == 1 ) {
               xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
               xbox(tk_box[i],fg,ginvert, BMCLEAR | BMNOT );	/* then grey tick box  */
-            } else if ( listact[i] == 0 ) { 
+            } else if ( listact[i] == 0 ) {
               xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
             }
             XDrawString(theDisp,win,theGC,menubx.b_left+20,iy,display_list[i],cwidth[i]);
@@ -8688,9 +8688,9 @@ int iwth = *impcwth;	/* character width of proforma */
             XDrawString(theDisp,win,theGC,edit_box[w_edit].b_left+5,edit_box[w_edit].b_bottom-3,
               edit_list[w_edit],lt2[w_edit]);
           } else if( loclisttypes[i] == '-' ) {
-            XSetForeground(theDisp,theGC, ginvert); 
+            XSetForeground(theDisp,theGC, ginvert);
             drawvwl(menubx.b_left + 15,iy-5,menubx.b_right - 15,iy-5,2);
-             XSetForeground(theDisp,theGC, fg); 
+             XSetForeground(theDisp,theGC, fg);
           } else if( listtypes[i] == 'l' ) {
             XDrawString(theDisp,win,theGC,menubx.b_left+15,iy,display_list[i],cwidth[i]);  /* print label */
           } else if( listtypes[i] == 'c' ) {
@@ -8713,7 +8713,7 @@ int iwth = *impcwth;	/* character width of proforma */
             if ( listact[i] == 0 ) {
               xbox(tk_box[i],fg,ginvert, BMCLEAR | BMNOT );	/* draw grey tick box  */
               listact[i] = 1;	/* note that this tick box has been checked. */
-            } else if ( listact[i] == 1 ) { 
+            } else if ( listact[i] == 1 ) {
               xbox(tk_box[i],fg,white,BMCLEAR|BMEDGES);	/* draw open tick box  */
               listact[i] = 0;	/* note that this tick box has been checked. */
             }
@@ -8735,7 +8735,7 @@ int iwth = *impcwth;	/* character width of proforma */
             c_edit = list2edit[i];
             if (xboxinside(edit_box[c_edit],x,y)){
               strcpy(sbuf,"                                                                                  ");
-              strncpy(sbuf,edit_list[c_edit],(unsigned int)lt2[c_edit]); 
+              strncpy(sbuf,edit_list[c_edit],(unsigned int)lt2[c_edit]);
 /* debug fprintf(stderr,"i %d cur_ed %d lt2 %d swidth %l\n",i,c_edit,lt2[c_edit],swidth[c_edit]); */
 
               b_width = WIDTH(edit_box[c_edit]);
@@ -8749,7 +8749,7 @@ int iwth = *impcwth;	/* character width of proforma */
               if( lstrlen == 1 ) {
                 offsc = 1;
                 x1 = (edit_box[c_edit].b_left+5) + (offsc * f_width);
-              } 
+              }
               if (x2 < x1 ) {
                 offsc = lstrlen;
                 x1 = (edit_box[c_edit].b_left+5) + (offsc * f_width);
@@ -8769,7 +8769,7 @@ int iwth = *impcwth;	/* character width of proforma */
 	   imx = gmenubx.b_left-10; imy = gmenubx.b_top-25; ishowmoreflg = 0; uresp = 0;
            if (help_lines <= 20) ipflg = 0;
            if (help_lines > 20) ipflg = 1;
-           egphelp_(&imx,&imy,&ipflg,&ishowmoreflg,&uresp); 
+           egphelp_(&imx,&imy,&ipflg,&ishowmoreflg,&uresp);
            break;
         } else if (xboxinside(okb,x,y)){
           okbox("ok",2,3,&gmenubx.b_bottom,&okb.b_left,'!'); /* brief hilight */
@@ -8862,11 +8862,11 @@ int iwth = *impcwth;	/* character width of proforma */
   XClearArea(theDisp,win,gmenubx.b_left,gmenubx.b_top,(unsigned int) u_width,(unsigned int) u_height,exp);
   pix_to_box(under,u_width,u_height,gmenubx,win);
   XFreePixmap(theDisp, under);
-  if(XPending(theDisp) > 0) { 
+  if(XPending(theDisp) > 0) {
     while ( XPending(theDisp) > 0) {
       XNextEvent (theDisp,&event);	/* flush events */
-    } 
-  } 
+    }
+  }
   if (changed_font == 1) winfnt_(&saved_font);  /* Restore font.  */
   XFlush(theDisp); /* added to force draw */
   *ino = iwhich;	/* << >> set return value */

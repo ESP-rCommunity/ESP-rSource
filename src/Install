@@ -164,6 +164,7 @@ fi
 #-----------------------------------------------------------
 if [ $architecture = "Linux" ]  ||
    [ $architecture = "SunOS" ] ||
+   [ $architecture = "Darwin" ] ||
    [ $architecture = "CYGWIN_NT-5.0" ] ||
    [ $architecture = "CYGWIN_NT-5.1" ] ||
    [ $architecture = "CYGWIN_NT-5.2" ] ||
@@ -1145,6 +1146,12 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
    echo "... Finningley ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_finningley -act asci2bin silent uk_finningley_iwec.a
 
+   echo "... Firenze-Peretola - ITA ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ITA_Firenze-Peretola_IGDG -act asci2bin silent ITA_Firenze-Peretola_IGDG.a
+
+   echo "... Hemsby ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_hemsby -act asci2bin silent uk_hemsby_iwec.a
+
    echo "... Geneva ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/CHE_Geneva_IWEC -act asci2bin silent CHE_Geneva_IWEC.a
 
@@ -1163,8 +1170,8 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
    echo "... London Gatwick ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_gatwick -act asci2bin silent uk_gatwick_iwec.a
 
-   echo "... Hemsby ..."
-   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_hemsby -act asci2bin silent uk_hemsby_iwec.a
+   echo "... ESP Madrid ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ESP_Madrid_IWEC -act asci2bin silent ESP_Madrid_IWEC.a
 
    echo "... Memphis ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TN_Memphis_iwec -act asci2bin silent USA_TN_Memphis_iwec.a
@@ -1355,6 +1362,18 @@ echo " "
 if [ "$A" = "y" ] || [ "$A" = "" ] ; then
   cd ${SRCdir}
   make EXE=${EXE} -f ${MKFILE} clean
+  echo "  "
+  echo "Removing binary materials db from exemplars ..."
+  cd ${SRCdir}/training
+  rm -f training/glenview/databases/constr.db1
+  rm -f training/cellular_furn/dbs/cellular.materials
+  rm -f training/cellular_hires/dbs/cellular.materials
+  rm -f training/cellular_contam/dbs/cellular.materials
+  rm -f training/cellular_hvac/dbs/cellular.materials
+  rm -f training/cellular_bc/dbs/cellular.materials
+  rm -f training/house/svph/dbs/linford.materialdb
+  rm -f training/cellular_shd/dbs/cellular.materials
+  rm -f training/glenview/databases/constr.db1
 fi
 
 echo " "

@@ -94,7 +94,7 @@ C compact schedule is correctly written out.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
 
 C Simulation parameter presets.
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       COMMON/CLMDT1/CLMLOC
@@ -147,7 +147,7 @@ C surface can be resolved into a quad).
 
       logical found,close,close1,foundmlc,closea,closeb,closec
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
-      logical loadonday
+      logical loadonday,ok,dok
 
 C Viewfactor to ground.
       dimension PROPG(8)
@@ -1705,7 +1705,8 @@ C Test edge adjacencies and subsurfaces.
         call suredgeadj(0,act,mz,ier)
 
 C << this process failed for a surface with 11 edges, see if there
-C << is some logic that will get around this.
+C << is some logic that will get around this. What we really want
+C << to know is if this surface has one or more holes in it.
 
 C For each surface write out data. We know that most
 C surfaces with a hole in them will have 10 edges and the first 4
@@ -1715,9 +1716,15 @@ C that most surfaces with 8 edges will be a wall with a door in it.
           icc=izstocn(mz,is)
           if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
 
+C Patch for 10/11/12 edges might represent wall with window or an
+C extra vertex or wall with joined windows in one hole.
+C          if((NVER(IS).gt.4.and.NVER(IS).lt.10).or.NVER(IS).gt.12)then
+
 C Check how many corners there are in the surface by looping through
 C all the edges and checking for angles greater than 5 degrees. Do the
 C corner at the 1st vertex first.
+
+C << so why are we trying to reduce the number of edges in a surface? >>
             iedgcnt=0
             iwhich1=JVN(IS,NVER(IS))
             iwhich2=JVN(IS,1)
@@ -1841,17 +1848,48 @@ C Have not yet worked out equivalent to a constant boundary condition.
           endif
 
 C If a surface is transparent, it must have a non-blank
-C parent, if not skip it.
+C parent, if not ask the user for a suggestion.
           if(SSOTF(icc)(1:4).EQ.'TRAN'.and.
      &       SSPARENT(icc)(1:2).eq.'  ')then
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
             write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
-     &        ' is transparent without parent so skipping.'
+     &        ' is transparent without parent.'
             call edisp(iuout,outs)
-            WRITE(ioout,'(a)') ' '
-            WRITE(ioout,'(2a)',iostat=ios,err=6) 
+            dok=.false.
+            h(1)='Is its parent surface in the current'
+            h(2)='zone. If not say no. '
+            izz=ic1(icc)
+            write(outs,'(5a)') 'Does ',ssname(icc),
+     &        ' have a parent surface in ',zname(izz),'?'
+            call askok(outs,
+     &        ' (saying no skips this subsurface)',ok,dok,2)
+            if(ok)then
+              write(outs,'(5a)') 'Specify parent surface for ',
+     &          ssname(icc),' in ',zname(izz),'.'
+              call easksur(izz,iss,'-',outs,' ',ier)
+              ibinval=izstocn(izz,iss)
+              if(ibinval.ne.0)then
+                SSPARENT(icc)=ssname(ibinval)
+              else
+                SSPARENT(icc)=' '
+                write(outs,'(3a,i2,a)') 'Surface ',
+     &            ZSDES(1:lnblnk(ZSDES)),
+     &            ' is transparent without parent.'
+                WRITE(ioout,'(a)') ' '
+                WRITE(ioout,'(2a)',iostat=ios,err=6) 
+     &            '!- ',outs(1:lnblnk(outs))
+                goto 60
+              endif
+            else
+              SSPARENT(icc)=' '
+              write(outs,'(3a,i2,a)') 'Surface ',
+     &          ZSDES(1:lnblnk(ZSDES)),
+     &          ' is transparent without parent.'
+              WRITE(ioout,'(a)') ' '
+              WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          '!- ',outs(1:lnblnk(outs))
-            goto 60
+              goto 60
+            endif
           endif
 
 C The initial tag is dependant on whether the surface is
