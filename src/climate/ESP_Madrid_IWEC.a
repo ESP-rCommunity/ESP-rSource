@@ -8,7 +8,7 @@
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
 MADRID - ESP from IWEC          # site name
- 2001,55.90,-4.15,0   # year latitude long diff rad flag
+ 2001,40.23,-3.33,0   # year latitude long diff rad flag
  1,365    # period (julian days)
 * day  1 month  1
  0,97,0,72,250,85

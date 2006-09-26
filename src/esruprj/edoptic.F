@@ -555,7 +555,7 @@ C ilabs is string arry for layer insert/delet selection.
 
       IER=0
       edited=.false.
-   3  INO=-1
+   3  INO=-2
 
 C re-establish reflectance tran+absorbs
       sr(1)=1.0-DGED(1)

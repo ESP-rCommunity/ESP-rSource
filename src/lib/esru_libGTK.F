@@ -32,7 +32,8 @@ C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
 C  st2name: Given `string' swap blanks & wildcards to _ return as `name'.
 C  st2file: Given `string' strip blanks & wildcards and return as `name'.
-C prevblnk: Given a string, return position of blank just before ipos.
+C iprevblnk: Given a string, return position of blank just before ipos.
+C inextblnk: Given a string, return position of blank just after ipos.
 C  icutstr: Given a string, cuts icut characters from position ipos.
 C  EPICKS:  Allows several selections to be made from an array of strings.
 C  MENUATOL Single item menu pick with items passed via parameters.
@@ -2099,6 +2100,62 @@ C If the current position is 1 do not bother with position zero.
             goto 42
           elseif(ichar(a).eq.32.or.ichar(a).eq.9)then
             iprevblnk = right
+            return
+          endif
+        endif
+      endif
+      end
+
+C ********** inextblnk(string,ipos)
+C inextblnk: given a string, return position of blank just after ipos
+C (or the end of the string if that happens first).
+      function inextblnk(string,ipos)
+      character*(*) string
+      character a*1,b*1
+      integer right
+
+C right is the defined length of string.
+      right=len(string)
+      lnb=lnblnk(string)
+
+C If requested position beyond the length of the string return the
+C declared length of the string.
+      if(ipos.gt.right)then
+        inextblnk=right
+        return
+      endif
+
+C If requrested position is beyond lnblnk then return lnblnk.
+      if(ipos.gt.lnb)then
+        inextblnk=lnb
+        return
+      endif
+
+C Set position for checking to ipos
+      inextblnk=ipos
+      right=ipos
+ 42   continue
+      right=right+1
+      if(right.ge.lnb)then
+
+C If position zero reached end of string set to lnb and return.
+        inextblnk = lnb
+        return
+      else
+
+C If the current character is non blank then continue rightwards.
+        a=string(right:right)
+        b=string(right+1:right+1)
+        if(ichar(a).gt.32)then
+          goto 42
+        elseif(ichar(a).eq.32.or.ichar(a).eq.9)then
+
+C If the current character is a blank and the character to its
+C left is also a blank carry on stepping leftwards, otherwise return.
+          if(ichar(b).eq.32.or.ichar(b).eq.9)then
+            goto 42
+          else
+            inextblnk = right
             return
           endif
         endif
@@ -4964,7 +5021,8 @@ C set based on nearest width to iwid.
       SUBROUTINE EDISP248(ITRU,MSG,iwid)
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) MSG
-      CHARACTER outs*124
+      CHARACTER outs*144    ! the text buffer for printing one line
+      integer lenmsg,lenalts  ! length of the passed msg
 
 C If width for word-warp is not reasonable, return.
       if(iwid.lt.24.or.iwid.gt.144)then
@@ -4972,17 +5030,115 @@ C If width for word-warp is not reasonable, return.
         return
       endif
 
+C Remember length of MSG
+      lenmsg=0
+      lenmsg=max0(1,lnblnk(MSG))
+
 C Find blanks near iwid points along the text block. It is
-C assumed that iwid is ~72, but can be 48-144.
-      ipa=iprevblnk(MSG,iwid)
-      ipb=iprevblnk(MSG,ipa+iwid)
-      ipc=iprevblnk(MSG,ipb+iwid)
-      ipd=iprevblnk(MSG,ipc+iwid)
-      ipe=iprevblnk(MSG,ipd+iwid)
-      ipf=iprevblnk(MSG,ipe+iwid)
+C assumed that iwid is ~72, but can be 48-144. In the case of
+C long words burried in the block of text we might get cases
+C where ipb is the same as ipa. Use call to inextblnk to find
+C the next blank after ipos. If the next blank is farther along
+C the string than we would normally warp to this indicates we
+C have a long phrase. If is is before we would normally warp
+C then it might be because we have reaced the end of the string.
+      iwidhalf=iwid/2 
+      ipa=iprevblnk(MSG,iwid)     ! find blank before iwid
+      ipanext=inextblnk(MSG,iwid) ! find blank after iwid
+      ipb=iprevblnk(MSG,ipa+iwid) ! find blank nearest next iwid point
+      if(ipa.eq.ipb)then
+        if(ipanext.ge.ipa+iwid)then
+          ipb=ipanext             ! found a long phrase
+        elseif(ipanext.eq.lenmsg)then
+          ipb=lenmsg              ! at end of MSG
+        else
+          ipb=iprevblnk(MSG,ipa+iwid+iwidhalf)
+          if(ipa.eq.ipb)then
+
+C If ipb is still the same test from double the iwid.
+C This should catch phrases that are approximately
+C double the width of iwid (like file names with explicit paths).
+            ipb=iprevblnk(MSG,ipa+iwid+iwid)
+          endif
+        endif
+      endif 
+
+C Repeat logic for potential third line. First ensure we
+C are not testing beyond the length of the string.
+      if(ipb+iwid.ge.lenmsg)then
+        ipc=lenmsg
+      else
+        ipc=iprevblnk(MSG,ipb+iwid)
+        ipcnext=inextblnk(MSG,ipb+iwid)
+        if(ipb.eq.ipc)then
+          if(ipcnext.ge.ipb+iwid)then
+            ipc=ipcnext
+          elseif(ipcnext.eq.lenmsg)then
+            ipc=lenmsg
+          else
+            ipc=iprevblnk(MSG,ipb+iwid+iwidhalf)
+            if(ipb.eq.ipc)then
+              ipc=iprevblnk(MSG,ipb+iwid+iwid)
+            endif
+          endif
+        endif
+      endif
+
+C Repeat logic for potential fourth line. First ensure we
+C are not testing beyond the length of the string.
+      if(ipc+iwid.ge.lenmsg)then
+        ipd=lenmsg
+      else
+        ipd=iprevblnk(MSG,ipc+iwid)
+        ipdnext=inextblnk(MSG,ipc+iwid)
+        if(ipc.eq.ipd)then
+          if(ipdnext.ge.ipc+iwid)then
+            ipd=ipdnext
+          elseif(ipdnext.eq.lenmsg)then
+            ipd=lenmsg
+          else
+            ipd=iprevblnk(MSG,ipc+iwid+iwidhalf)
+            if(ipc.eq.ipd)then
+              ipd=iprevblnk(MSG,ipc+iwid+iwid)
+            endif
+          endif
+        endif
+      endif
+
+C Repeat logic for potential fifth line. First ensure we
+C are not testing beyond the length of the string.
+      if(ipd+iwid.ge.lenmsg)then
+        ipe=lenmsg
+      else
+        ipe=iprevblnk(MSG,ipd+iwid)
+        ipenext=inextblnk(MSG,ipd+iwid)
+        if(ipd.eq.ipe)then
+          if(ipenext.ge.ipc+iwid)then
+            ipe=ipenext
+          elseif(ipenext.eq.lenmsg)then
+            ipe=lenmsg
+          else
+            ipe=iprevblnk(MSG,ipd+iwid+iwidhalf)
+            if(ipd.eq.ipe)then
+              ipe=iprevblnk(MSG,ipd+iwid+iwid)
+            endif
+          endif
+        endif
+      endif
+
+C And the 6th line.
+      if(ipe+iwid.ge.lenmsg)then
+        ipf=lenmsg
+      else
+        ipf=iprevblnk(MSG,ipe+iwid)
+      endif
 
 C Debug.
-C      write(6,*) 'blanks @ ',ipa,ipb,ipc,ipd,ipe,ipf
+      lenalts=0
+      lenalts=max0(lenmsg,ipa,ipb,ipc,ipd,ipe,ipf)
+C      write(6,*) 'blanks @ ',ipa,ipb,ipc,ipd,ipe,ipf,
+C     &  'lenmsg lenalts ',lenmsg,lenalts
+C      write(6,*) 'n blanks @ ',ipanext,ipcnext,ipdnext,ipenext
 
 C Process first block of text, and if subsequent blocks are
 C non-blank, do them as well. If iwid is less than 72 there
@@ -4991,23 +5147,45 @@ C will be more lines.
       write(outs,'(a)') MSG(1:ipa)
       call edisp(itru,outs)
       if(ipb.gt.ipa)then
+
+C Trap phrases longer than the outs buffer.
+        if(ipb-(ipa+1).gt.143)then
+          ipbb = ipa+143
+        else
+          ipbb = ipb
+        endif
         outs=' '
-        write(outs,'(a)') MSG(ipa+1:ipb)
+        write(outs,'(a)') MSG(ipa+1:ipbb)
         call edisp(itru,outs)
       endif
       if(ipc.gt.ipb)then
+        if(ipc-(ipb+1).gt.143)then
+          ipcc = ipb+143
+        else
+          ipcc = ipc
+        endif
         outs=' '
-        write(outs,'(a)') MSG(ipb+1:ipc)
+        write(outs,'(a)') MSG(ipb+1:ipcc)
         call edisp(itru,outs)
       endif
       if(ipd.gt.ipc)then
+        if(ipd-(ipc+1).gt.143)then
+          ipdd = ipc+143
+        else
+          ipdd = ipd
+        endif
         outs=' '
-        write(outs,'(a)') MSG(ipc+1:ipd)
+        write(outs,'(a)') MSG(ipc+1:ipdd)
         call edisp(itru,outs)
       endif
       if(ipe.gt.ipd)then
+        if(ipe-(ipd+1).gt.143)then
+          ipee = ipd+143
+        else
+          ipee = ipe
+        endif
         outs=' '
-        write(outs,'(a)') MSG(ipd+1:ipe)
+        write(outs,'(a)') MSG(ipd+1:ipee)
         call edisp(itru,outs)
       endif
       if(ipf.gt.ipe)then
@@ -6560,13 +6738,16 @@ C are all valid.
 C Current file (for use by low level I/O calls)
       common/curfile/currentfile
 
+C LOUTSTR is for messages to the user and should be long enough
+c to prevent truncation of messge contents.
+
       CHARACTER*(*) STRING, MSG
-      CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,OUTSTR*124
+      CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,LOUTSTR*248
       character currentfile*72
 
 C Pick up line and length for error messages.
       ils=max(1,lnblnk(STRING))
-      if(ils.gt.105)ils=105
+      if(ils.gt.230)ils=230
 
       IER=0
       WORD=' '
@@ -6588,32 +6769,32 @@ C Check RV against minimum and respond based on RACT.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &        STRING(1:ils)
           endif
-          call edisp(iuout,OUTSTR)
-          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp248(iuout,LOUTSTR,90)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
-          call edisp(iuout,OUTSTR)
+          call edisp248(iuout,LOUTSTR,90)
         ELSEIF(RACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &      STRING(1:ils)
           endif
-          call edisp(iuout,OUTSTR)
-          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp248(iuout,LOUTSTR,90)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') < allowable minumum ',
      &       STR2(1:IW2),'!'
-          call edisp(iuout,outstr)
+          call edisp248(iuout,loutstr,90)
           IER=1
           RETURN
         ENDIF
@@ -6624,33 +6805,33 @@ C Check RV against minimum and respond based on RACT.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &      STRING(1:ils)
           endif
-          call edisp(iuout,OUTSTR)
-          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp248(iuout,LOUTSTR,90)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') > normal  maximum ',
      &       STR2(1:IW2),'!'
-          call edisp(iuout,OUTSTR)
+          call edisp248(iuout,LOUTSTR,90)
         ELSEIF(RACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(LOUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+            write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &      STRING(1:ils)
           endif
-          call edisp(iuout,OUTSTR)
-          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp248(iuout,LOUTSTR,90)
+          write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') > allowable maximum ',
      &       STR2(1:IW2),'!'
-          call edisp(iuout,outstr)
+          call edisp248(iuout,loutstr,90)
           IER=1
           RETURN
         ENDIF
@@ -6661,18 +6842,18 @@ C Check RV against minimum and respond based on RACT.
  1002 if(currentfile(1:2).ne.'  ')then
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
-        WRITE(OUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
+        WRITE(LOUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
      &    currentfile(1:LN),': conversion of ',
      &    MSG(1:LNM),' value in ',WORD
       else
         LNM=max(1,lnblnk(MSG))
-        WRITE(OUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
+        WRITE(LOUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
  1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
       endif
-      CALL EDISP(iuout,OUTSTR)
+      CALL EDISP248(iuout,LOUTSTR,90)
       IER=2
       GOTO 100
-   1  write(6,*) 'EGETR: error writing warning re: ',STRING
+   1  write(6,*) 'EGETWR: error writing warning re: ',STRING
 
       END
 

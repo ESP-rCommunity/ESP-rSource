@@ -343,12 +343,21 @@ C If requested or writing to file start lines with a '#'.
 C Write day of results and column headings information (skip if IPV mode).
         CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
         if(act.ne.'m')then
-          if (IDHFLG.eq.1.or.ixopen.eq.1) then
+          if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
             call edisp(itru,outs)
             write(outs,'(3A)')'# ',DESCR1,' timestep misc. listing'
             call edisp(itru,outs)
             outs='# '
+            call edisp(itru,outs)
+          elseif (IDHFLG.eq.0.and.ixopen.eq.1) then
+            continue
+          elseif (IDHFLG.eq.0.and.ixopen.eq.0) then
+            continue
+          elseif (IDHFLG.eq.1.and.ixopen.eq.0) then
+            outs='  '
+            call edisp(itru,outs)
+            write(outs,'(3A)')' ',DESCR1,' timestep misc. listing'
             call edisp(itru,outs)
           else
             outs='  '
@@ -365,11 +374,17 @@ C   don't do this if printing to file.
             if (ir.gt.1) then
               outs='     '
             else
-              if (IHFLAG.eq.1.or.ixopen.eq.1) then
+              if (IHFLAG.eq.1.and.ixopen.eq.1) then
                 if (delim.eq.'X') then
                   outs='*time'
                 else
                   outs='#Time'
+                endif
+              elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
+                if (delim.eq.'X') then
+                  outs='*time'
+                else
+                  outs='Time'
                 endif
               else
                 outs='Time '
@@ -423,7 +438,13 @@ C demarcations are omitted.
             if (IDAY.eq.IODS)then
               call eddisp(itru,outs)
             else
-              if (IDHFLG.eq.1.or.ixopen.eq.1) call eddisp(itru,outs)
+              if (IDHFLG.eq.1.and.ixopen.eq.1)then
+                call eddisp(itru,outs)
+              elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
+                call eddisp(itru,outs)
+              else
+                continue
+              endif
             endif
  100      continue
         endif

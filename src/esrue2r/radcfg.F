@@ -1027,7 +1027,7 @@ C Open df points file in working directory.
 
 C Write points and sensor direction (plane normal).
       do 555 IV=1,NDFP
-        write(ITA1,'(6f8.4)')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
+       write(ITA1,'(6(f8.4,1x))')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
  555  continue
       DFDIR(1)=PEQN(1)
       DFDIR(2)=PEQN(2)

@@ -1539,26 +1539,43 @@ C For each of the TMC types found in this zone ask if there is any
 C control attached.
       DO 22 IT=1,NTMC
         if(IBCMT(ICOMP,IT).eq.1)then
-          dok=.true.
           h(1)='There is a surface attribute that indicates that an'
-          h(2)='existing optical control. To keep it say ok. '
-          WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,' there is an'
-          CALL ASKOK(OUTS,' optical control. Keep it? ',OK,dok,2)
+          h(2)='existing optical control. You have the following '
+          h(3)='options: '
+          h(4)=' a) remove this optical control '
+          h(5)=' b) edit the current optical control'
+          h(6)=' c) continue with out changing this control'
+          h(7)=' '
+          h(8)='Hint - scroll the text feedback backwards to see the'
+          h(9)='current optical control details. '
+          WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,
+     &      ' there is an optical control. Options:'
+          CALL EASKABC(outs,' ','remove this optical control',
+     &      'edit this optical contr4ol','accept control as-is',iwa,6)
+          if(iwa.eq.1)then
+            IBCMT(ICOMP,IT)=0
+            GOTO 22
+          elseif(iwa.eq.2)then
+            OK=.true.
+          elseif(iwa.eq.3)then
+            IBCMT(ICOMP,IT)=1
+            GOTO 22
+          endif
         else
           dok=.false.
           h(1)='There is a surface attribute that indicates that an'
           h(2)='optical control could be defined. To do it say ok. '
           WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,' is there any'
           CALL ASKOK(OUTS,' optical control? ',OK,dok,2)
+          IF(.NOT.OK)THEN
+            IBCMT(ICOMP,IT)=0
+            GOTO 22
+          ENDIF
         endif
-        IF(.NOT.OK)THEN
-          IBCMT(ICOMP,IT)=0
-          GOTO 22
-        ENDIF
 
         IBCMT(ICOMP,IT)=1
         N1=NBCTMC(ICOMP,IT)
-        H(1)='Up to 3 control periods are allowed. '
+        H(1)='Up to 8 control periods are allowed. '
         CALL EASKI(N1,' ',' No of control periods? ',
      &    1,'F',MBP,'F',1,'no of control periods',IER,1)
         NBCTMC(ICOMP,IT)=N1

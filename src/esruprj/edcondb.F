@@ -92,6 +92,7 @@ C Gather the names of the various classes and present this list.
       CLSDES(M+4)=  '? help                        '
       CLSDES(M+5)=  '- exit                        '
       NCO=M+5
+      ICO=-2
 
 C Help text for this menu.
       H(1)='The classifications shown in the display include up to'
