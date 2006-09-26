@@ -65,7 +65,12 @@ C     MMOD   - determines the device type attached to the current job.
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
 
 C Path to problem
       common/rpath/path
@@ -142,9 +147,11 @@ C File unit numbers.
       IFRES=13
       IUA=14
 
-C Default value for GRTOOL file = 0 (off), day hash marks off.
+C Default value for GRTOOL file = 0 (off), day hash marks off and
+C tabular labels on multiple lines.
       IHFLAG=0
       IDHFLG=0
+      ILFLAG=0
 
 C Assume most legible day and time formats.
       IFDAY=2

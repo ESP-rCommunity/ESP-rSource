@@ -74,6 +74,10 @@ C LPNF (72 char) plant network file name.
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
+     &              TVTR2(MCOM,MTMC,MBP)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
@@ -1517,6 +1521,11 @@ C then parse TMC file and if there are optical controls then list.
      &              ' control periods.'
                   call edisp(itu,outs)
                 endif
+
+C Remind user of standard optics as well as the alternatives.
+                write(outs,'(a,5f6.3)') ' Standard optic solar trans:',
+     &            (TMCT(IVALS(IZ),I,M),M=1,5)
+                call edisp(itu,outs)
                 DO 2021 KK=1,NBCTMC(IVALS(IZ),I)
                   if(NBCTT(IVALS(IZ),KK,I).eq.0)then
                     msg=' sensing total radiation'
@@ -1531,10 +1540,11 @@ C then parse TMC file and if there are optical controls then list.
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.-99)then
                     msg=' sensing time only'
                   endif
-                  WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2)') 
+                  WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2,a,5f6.3)') 
      &              ' Period ',KK,': from ',IBCST(IVALS(IZ),KK,I),
-     &              ' to ',IBCFT(IVALS(IZ),KK,I),msg,
-     &              ' set @ ',BACTPT(IVALS(IZ),KK,I)
+     &              ' to ',IBCFT(IVALS(IZ),KK,I),msg(1:lnblnk(msg)),
+     &              ' setpoint @ ',BACTPT(IVALS(IZ),KK,I),' alt solar',
+     &              (TMCT2(IVALS(IZ),I,M,KK),M=1,5)
                   CALL EDISP(itu,OUTS)
  2021           continue
               endif

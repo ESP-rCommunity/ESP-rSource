@@ -372,7 +372,7 @@ C Only one zone possible so set IZ to 1.
 C plot grid.
         CALL INICNT
         CALL GRID(ier)
-        call VGRID3D
+        call VGRID3D('---','xyz',iz)
         call VSB3D(0)
         call VAO3D(0)
       ELSE
@@ -436,7 +436,7 @@ C Only one zone possible so set IZ to 1.
 C plot grid.
           CALL INICNT
           CALL GRID(ier)
-          call VGRID3D
+          call VGRID3D('---','xyz',iz)
           call VSB3D(0)
           call VAO3D(0)
         ELSE

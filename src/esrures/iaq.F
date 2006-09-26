@@ -29,7 +29,7 @@ C facilities are 'hidden' in the current version.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -58,10 +58,12 @@ C Setup for menu.
         ITEM(9) ='> output >> screen     '
       endif
       if(IHFLAG.eq.0)then
-        ITEM(10)='* format >> 10h30      '
+        ITEM(10)='* time >> 10h30      '
       elseif(IHFLAG.eq.1)then
-        ITEM(10)='* format >> 0.4375     '
+        ITEM(10)='* time >> 0.4375     '
       endif
+
+C << put ILFLAG toggle here >>
       ITEM(11)  ='? help                 '
       ITEM(12)  ='- exit                 '
 

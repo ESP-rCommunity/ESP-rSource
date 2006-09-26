@@ -59,7 +59,7 @@ C an ascii file.
       CHARACTER*72 LCTLF
       character outs*248,outsd*248
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,ctldoc*248
-      character DS*7,DS1*10,DE*7,DE1*10,SSTR*72,SSTR1*72
+      character DS*7,DS1*10,DE*7,DE1*10,SSTR*72,SSTR1*72,SSTR2*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
       logical Vldtng
@@ -122,7 +122,7 @@ C Building control information.
 
           DO 30 K=1,LL
             KK=K
-            CALL EVCNTRL(0,II,JJ,KK,'L',SSTR)
+            CALL EVCNTRLAW(0,II,JJ,KK,SSTR,SSTR2)
             LN=max(1,LNBLNK(SSTR))
             WRITE(IUNIT,'(2I5,F8.3,3A)',IOSTAT=ios,ERR=1)
      &        IBCTYP(II,JJ,KK),IBCLAW(II,JJ,KK),TBCPS(II,JJ,KK),
@@ -199,7 +199,7 @@ C Plant control information.
 
           DO 60 K=1,LL
             KK=K
-            CALL EVCNTRL(1,II,JJ,KK,'L',SSTR)
+            CALL EVCNTRLAW(1,II,JJ,KK,SSTR,SSTR2)
             WRITE(IUNIT,'(2I5,F8.3,3a)',IOSTAT=ios,ERR=1)
      &        IPCTYP(II,JJ,KK),IPCLAW(II,JJ,KK),TPCPS(II,JJ,KK),
      &        '  # ctl type, law (',SSTR(1:lnblnk(SSTR)),'), start @'
@@ -271,15 +271,16 @@ C Flow control information.
             KK=K
 
 C In the case of mass flow the controller type is the same for
-C each period.
+C each period. Include the verbose decoding of data in the comment line.
             CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
             LN=max(1,LNBLNK(SSTR))
-            CALL EVCNTRL(2,II,JJ,KK,'L',SSTR1)
+            CALL EVCNTRLAW(2,II,JJ,KK,SSTR1,SSTR2)
             LN1=max(1,LNBLNK(SSTR1))
+            LN2=max(1,LNBLNK(SSTR2))
             WRITE(IUNIT,'(2I5,F8.3,5A)',IOSTAT=ios,ERR=1)
      &        IFCTYP(II,1,1),IFCLAW(II,JJ,KK),TFCPS(II,JJ,KK),
      &        '  # ctl type (',SSTR(1:ln),'), law (',
-     &        SSTR1(1:ln1),'), start @'
+     &        SSTR2(1:ln2),'), starting @'
             WRITE(IUNIT,'(F8.0,A)',IOSTAT=ios,ERR=1)FMISCD(II,JJ,KK,1),
      &        '  # No. of data items'
             NITEMS=INT(FMISCD(II,JJ,KK,1))+1

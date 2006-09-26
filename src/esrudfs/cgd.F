@@ -48,7 +48,7 @@ C IC = zone number (if in dfs set to 1)
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
-      CHARACTER ITEM(10)*24, H*72
+      CHARACTER ITEM(16)*32, H*72
       character outs*124,zname*12,zdesc*64,ETEXT*30
 
       logical GRMODE
@@ -80,17 +80,23 @@ C Reset the display bounds for grid display.
 
 C Let the user pick a menu item.
    1  INO=-5
-      ITEM(1) ='a Plot x-y plane grid'
-      ITEM(2) ='b Plot x-z plane grid'
-      ITEM(3) ='c Plot y-z plane grid'
-      ITEM(4) ='c Plot grids in 3D   '
-      ITEM(5) ='  ------------------ '
-      ITEM(6) ='d List x plane points'
-      ITEM(7) ='e List y plane points'
-      ITEM(8) ='f List z plane points'
-      ITEM(9) ='? Help               '
-      ITEM(10)='- Exit               '
-      NITMS=10
+      ITEM(1) ='a Plot x-y plane (2D) grid     '
+      ITEM(2) ='b Plot x-z plane (2D) grid     '
+      ITEM(3) ='c Plot y-z plane (2D) grid     '
+      ITEM(4) =' --3D grid options -------     '
+      ITEM(5) ='d  geometry+grid               '
+      ITEM(6) ='e  geometry+grid+solid         '
+      ITEM(7) ='f  geometry+grid+solid+openings'
+      ITEM(8) ='g  only grid                   '
+      ITEM(9) ='h  only grid+solid             '
+      ITEM(10)='i  only grid+solid+openings    '
+      ITEM(11)='  ------------------------     '
+      ITEM(12)='j List x plane coordinates     '
+      ITEM(13)='k List y plane coordinates     '
+      ITEM(14)='l List z plane coordinates     '
+      ITEM(15)='? Help                         '
+      ITEM(16)='- Exit                         '
+      NITMS=16
 
 C Help text for menu.
       h(1)='This facility displays or lists the CFD grid.'
@@ -104,6 +110,18 @@ C Help text for menu.
       h(9)='a good grid it should never be greater than 1.2 -->'
       h(10)='check especially cells between two gridding regions.'
       h(11)=' ' 
+      h(12)='The grid coordinates can be important when mapping from' 
+      h(13)='actual room geometry to CFD boundary cells. It can save' 
+      h(14)='time if you make a note of the critical coordinates in' 
+      h(15)='the room so that you can double check that the gridding' 
+      h(16)='that you set up is correct. ' 
+      h(17)=' ' 
+      h(18)='It is also a good idea to view the domain in 1D 2D and 3D' 
+      h(19)='to ensure the grid is correct before defining other ' 
+      h(20)='of the domain. You also have a number of options for' 
+      h(21)='what you see in the 1/2/3D views: '
+      h(22)='  * cell gridding only'
+      h(23)='  * cells plus boundary volumes and flow openings'
 
    12 CALL EMENU('Grid visualisation',ITEM,NITMS,INO)
       IF(INO.EQ.0)THEN
@@ -126,26 +144,97 @@ C x-z plane grid.
 C y-z plane grid.
         WRITE(ETEXT,'(A,A15)') ' Y-Z grid for ',ZNAME(ic)
         call VGRID2D(YZ,ZZ,YV,ZW,NJ,NK,ETEXT,'Y axis (m)','Z')
-      ELSEIF(INO.EQ.4.and.GRMODE)THEN
+      ELSEIF(INO.EQ.5.and.GRMODE)THEN
 
-C 3D gridding.
-        h(1)= 'You have the option of viewing the cell gridding only'
-        h(2)= 'of cells plus boundary volumes and flow openings.'
-        CALL EASKABCD('Options for 3D gridding:',' ','gridding',
-     &    'grid + solids','grid + solids + openings','cancel',IWO,2)
+C 3D gridding with zone geometry.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east->west','high->low',IWO,23)
         if(iwo.eq.1)then
-          call VGRID3D
+          call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
-          call VGRID3D
-          call VSB3D(0)
+          call VGRID3D('zn ','xzg',ic)
         elseif(iwo.eq.3)then
-          call VGRID3D
-          call VSB3D(0)
-          call VAO3D(0)
-        else
-          continue
+          call VGRID3D('zn ','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('zn ','xyg',ic)
         endif
-      ELSEIF(INO.EQ.6)THEN
+      ELSEIF(INO.EQ.6.and.GRMODE)THEN
+
+C 3D gridding with zone geometry and solids.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east->west','high->low',IWO,23)
+        if(iwo.eq.1)then
+          call VGRID3D('zn ','xyz',ic)
+        elseif(iwo.eq.2)then
+          call VGRID3D('zn ','xzg',ic)
+        elseif(iwo.eq.3)then
+          call VGRID3D('zn ','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('zn ','xyg',ic)
+        endif
+        call VSB3D(0)
+      ELSEIF(INO.EQ.7.and.GRMODE)THEN
+
+C 3D gridding with zone geometry and solids and openings.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east->west','high->low',IWO,23)
+        if(iwo.eq.1)then
+          call VGRID3D('zn ','xyz',ic)
+        elseif(iwo.eq.2)then
+          call VGRID3D('zn ','xzg',ic)
+        elseif(iwo.eq.3)then
+          call VGRID3D('zn ','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('zn ','xyg',ic)
+        endif
+        call VSB3D(0)
+        call VAO3D(0)
+      ELSEIF(INO.EQ.8.and.GRMODE)THEN
+
+C 3D gridding without zone geometry.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east_.west','high->low',IWO,23)
+        if(iwo.eq.1)then
+          call VGRID3D('---','xyz',ic)
+        elseif(iwo.eq.2)then
+          call VGRID3D('---','xzg',ic)
+        elseif(iwo.eq.3)then
+          call VGRID3D('---','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('---','xyg',ic)
+        endif
+      ELSEIF(INO.EQ.9.and.GRMODE)THEN
+
+C 3D gridding without zone geometry and with solids.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east->west','high->low',IWO,23)
+        if(iwo.eq.1)then
+          call VGRID3D('---','xyz',ic)
+        elseif(iwo.eq.2)then
+          call VGRID3D('---','xzg',ic)
+        elseif(iwo.eq.3)then
+          call VGRID3D('---','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('---','xyg',ic)
+        endif
+        call VSB3D(0)
+      ELSEIF(INO.EQ.10.and.GRMODE)THEN
+
+C 3D gridding without zone geometry and with solids and openings.
+        CALL EASKABCD('Options for 3D gridding:',' ','all faces',
+     &    'south->north','east->west','high->low',IWO,23)
+        if(iwo.eq.1)then
+          call VGRID3D('---','xyz',ic)
+        elseif(iwo.eq.2)then
+          call VGRID3D('---','xzg',ic)
+        elseif(iwo.eq.3)then
+          call VGRID3D('---','yzg',ic)
+        elseif(iwo.eq.4)then
+          call VGRID3D('---','xyg',ic)
+        endif
+        call VSB3D(0)
+        call VAO3D(0)
+      ELSEIF(INO.EQ.12)THEN
 
 C Text listings
         call edisp(iuout,'Grid in the X axis... ')
@@ -164,7 +253,7 @@ C Text listings
           call edisp(iuout,outs)
   101   CONTINUE
 
-      ELSEIF(INO.EQ.7)THEN
+      ELSEIF(INO.EQ.13)THEN
         call edisp(iuout,'Grid in the Y axis... ')
         outs='Cell index, Y start & end,   distance, aspect ratio'
         call edisp(iuout,outs)
@@ -180,7 +269,7 @@ C Text listings
      &          asprat 
           call edisp(iuout,outs)
   102   CONTINUE
-      ELSEIF(INO.EQ.8)THEN
+      ELSEIF(INO.EQ.14)THEN
         call edisp(iuout,'Grid in the Z axis... ')
         outs='Cell index, Z start & end,   distance, aspect ratio'
         call edisp(iuout,outs)
@@ -196,9 +285,9 @@ C Text listings
      &          asprat 
           call edisp(iuout,outs)
   103   CONTINUE
-      ELSEIF(INO.EQ.9)THEN
-        CALL PHELPD('grid visualization',11,'-',0,0,IER)
-      ELSEIF(INO.EQ.10)THEN
+      ELSEIF(INO.EQ.15)THEN
+        CALL PHELPD('grid visualization',23,'-',0,0,IER)
+      ELSEIF(INO.EQ.16)THEN
 
 C Finish grid visualization, returning display to initial state.
         IF(MMOD.EQ.8)THEN
@@ -349,9 +438,19 @@ C Store the scaling parameters used in drawing the axes.
 
 
 C ********************* VGRID3D *********************
-C VGRID3D - draws the CFD domain gridding in 3d.
-      SUBROUTINE VGRID3D
+C VGRID3D - draws the CFD domain gridding in 3d. The paremater
+C act has the following meanings:
+C   zact = zn then draw the zone geometry as well.
+C   zact = - do not draw zone geometry.
+C   gact = xyg then draw only top and bottom face grid
+C   gact = yzg then draw only east and west face grid
+C   gact = xzg then draw only north and south face grid
+C   gact = xyz then draw all face grids
+C izone is the index of the zone to be drawin (if zero do not bother`).
+      SUBROUTINE VGRID3D(zact,gact,izone)
+#include "building.h"
 #include "cfd.h"
+      PARAMETER  (MPL = 200 )
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -360,6 +459,9 @@ C VGRID3D - draws the CFD domain gridding in 3d.
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
@@ -367,7 +469,13 @@ C VGRID3D - draws the CFD domain gridding in 3d.
      2            DZHP(ntcelz),DZPL(ntcelz),
      3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+
+      DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
+      DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
+      DIMENSION  SBBOX(3,2)
+
       logical greyok
+      character gact*3,zact*3
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -399,94 +507,182 @@ C Determine the 2D coords of the site extremes.
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C Loop through all X-Y plane grid lines.
-      do 10 I=2,NI
-        do 20 J=2,NJ
+      if(gact.eq.'xyz'.or.gact.eq.'xyg')then
+        do 10 I=2,NI
+          do 20 J=2,NJ
 
 C Transform first point to screen coords.
-          CALL ORTTRN(XU(i),YV(j),0.,TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ixs,iys)
+            CALL ORTTRN(XU(i),YV(j),0.,TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ixs,iys)
 
 C Transform first point to screen coords.
-          CALL ORTTRN(XU(i),YV(j),ZW(NK),TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ix,iy)
+            CALL ORTTRN(XU(i),YV(j),ZW(NK),TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ix,iy)
 
 C Draw dotted line.
-          if (I.eq.2.or.I.eq.NI.or.J.eq.2.or.J.eq.NJ) then
-            if ((I.eq.2.and.J.eq.2).or.(I.eq.NI.and.J.eq.NJ).or.
-     &          (I.eq.2.and.J.eq.NJ).or.(I.eq.NI.and.J.eq.2)) then
-              call eline(ixs,iys,1)
-              call eline(ix,iy,0)
-            else
-              if(greyok)call winscl('i',nifgrey-3)
-              call edline(ixs,iys,ix,iy,5)
-              if(greyok)call winscl('-',0)
-              call forceflush()
+            if (I.eq.2.or.I.eq.NI.or.J.eq.2.or.J.eq.NJ) then
+              if ((I.eq.2.and.J.eq.2).or.(I.eq.NI.and.J.eq.NJ).or.
+     &            (I.eq.2.and.J.eq.NJ).or.(I.eq.NI.and.J.eq.2)) then
+                call eline(ixs,iys,1)
+                call eline(ix,iy,0)
+              else
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ixs,iys,ix,iy,5)
+                if(greyok)call winscl('-',0)
+                call forceflush()
+              endif
             endif
-          endif
- 20     continue
- 10   continue
+ 20       continue
+ 10     continue
+      endif
 
 C Loop through all Z-Y plane grid lines.
-      do 30 K=2,NK
-        do 40 J=2,NJ
+      if(gact.eq.'xyz'.or.gact.eq.'yzg')then
+        do 30 K=2,NK
+          do 40 J=2,NJ
 
 C Transform first point to screen coords.
-          CALL ORTTRN(0.,YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ixs,iys)
+            CALL ORTTRN(0.,YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ixs,iys)
 
 C Transform first point to screen coords.
-          CALL ORTTRN(XU(NI),YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ix,iy)
+            CALL ORTTRN(XU(NI),YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ix,iy)
 
 C Draw line to end point.
-          if (K.eq.2.or.K.eq.NK.or.J.eq.2.or.J.eq.NJ) then
-            if ((K.eq.2.and.J.eq.2).or.(K.eq.NK.and.J.eq.NJ).or.
-     &          (K.eq.2.and.J.eq.NJ).or.(K.eq.NK.and.J.eq.2)) then
-              call eline(ixs,iys,1)
-              call eline(ix,iy,0)
-            else
-              if(greyok)call winscl('i',nifgrey-3)
-              call edline(ixs,iys,ix,iy,4)
-              if(greyok)call winscl('-',0)
-              call forceflush()
+            if (K.eq.2.or.K.eq.NK.or.J.eq.2.or.J.eq.NJ) then
+              if ((K.eq.2.and.J.eq.2).or.(K.eq.NK.and.J.eq.NJ).or.
+     &            (K.eq.2.and.J.eq.NJ).or.(K.eq.NK.and.J.eq.2)) then
+                call eline(ixs,iys,1)
+                call eline(ix,iy,0)
+              else
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ixs,iys,ix,iy,4)
+                if(greyok)call winscl('-',0)
+                call forceflush()
+              endif
             endif
-          endif
- 40     continue
- 30   continue
+ 40       continue
+ 30     continue
+      endif
 
 C Loop through all Z-X plane grid lines.
-      do 50 K=2,NK
-        do 60 I=2,NI
+      if(gact.eq.'xyz'.or.gact.eq.'xzg')then
+        do 50 K=2,NK
+          do 60 I=2,NI
 
 C Transform first point to screen coords.
-          CALL ORTTRN(XU(i),0.,ZW(k),TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ixs,iys)
+            CALL ORTTRN(XU(i),0.,ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ixs,iys)
 
 C Transform end point to screen coords.
-          CALL ORTTRN(XU(i),YV(NJ),ZW(k),TEMAT,X0,Y0,Z0,IERR)
-          CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
-          call u2pixel(X1,Y1,ix,iy)
+            CALL ORTTRN(XU(i),YV(NJ),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,ix,iy)
 
 C Draw line to end point.
-          if (K.eq.2.or.K.eq.NK.or.I.eq.2.or.I.eq.NI) then
-            if ((K.eq.2.and.I.eq.2).or.(K.eq.NK.and.I.eq.NI).or.
-     &          (K.eq.2.and.I.eq.NI).or.(K.eq.NK.and.I.eq.2)) then
-              call eline(ixs,iys,1)
-              call eline(ix,iy,0)
-            else
-              if(greyok)call winscl('i',nifgrey-3)
-              call edline(ixs,iys,ix,iy,4)
-              if(greyok)call winscl('-',0)
-              call forceflush()
+            if (K.eq.2.or.K.eq.NK.or.I.eq.2.or.I.eq.NI) then
+              if ((K.eq.2.and.I.eq.2).or.(K.eq.NK.and.I.eq.NI).or.
+     &            (K.eq.2.and.I.eq.NI).or.(K.eq.NK.and.I.eq.2)) then
+                call eline(ixs,iys,1)
+                call eline(ix,iy,0)
+              else
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ixs,iys,ix,iy,4)
+                if(greyok)call winscl('-',0)
+                call forceflush()
+              endif
             endif
-          endif
- 60     continue
- 50   continue
+ 60       continue
+ 50     continue
+      endif
+
+C If the zone geometry is requested then use some of the code from
+C cread3dv.F to draw the surfaces of the zone in bold lines.
+      if(zact(1:2).eq.'zn'.and.izone.ne.0)then
+
+C Continue on with any surfaces in the zone.
+  205   DO 1000 I=1,NZSUR(izone)
+          icc=IZSTOCN(izone,I)
+
+C Copy polygon for Surface I into structure A for compatibility with
+C viewer format 'holes' in surfaces.
+C NAP   = Number of vertex points on surface
+C IANXT = Index of 'next' point
+C IAPNT = Pointer to first vertex of polygon
+          IAPNT = 1
+          NAP = NZNVER(icc)
+          DO 1100 J = 1,NZNVER(icc)
+            K = NZJVN(icc,J)
+            AX(J) = VCOORD(izone,K,1)
+            AY(J) = VCOORD(izone,K,2)
+            AZ(J) = VCOORD(izone,K,3)
+            IANXT(J) = J + 1
+ 1100     CONTINUE
+
+          IANXT(NZNVER(icc)) = IAPNT
+
+C-----------------------------------------------------------------------
+C Transform surface polygon to EYE co-ordinates
+C Take structure A multiply by TEMAT return structure B
+C TEMAT = Model to Eye Matrix
+          CALL MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+     &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
+
+C Generate clipping flags and clip geometry in eye coords.
+C If ISTAT =  0 : totally inside frustrum
+C If ISTAT =  1 : totally outside frustrum
+C If ISTAT = -1 : straddles frustrum
+          CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
+          IF (ISTAT .EQ. 1) THEN
+            GOTO  1000
+          ELSEIF (ISTAT .EQ. -1) THEN
+            CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
+
+C Debug...
+C          write(6,*)'icc nap nbp nb',icc,nap,nbp,nb,
+C     &      ISTOK,AX(1),AY(1),AZ(1),AX(2),AY(2),AZ(2)
+
+C Count the edges in case enhanced edge drawing required.
+          iedge=0
+          DO 300 J = 1,NB
+            IP = IABS(IBPNT)
+            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+            call u2pixel(AAX,AAY,ix,iy)
+            ixlast=ix
+            iylast=iy
+
+            IP1 = IBNXT(IP)
+
+ 351        CONTINUE
+            iedge=iedge+1
+            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+            call u2pixel(AAX,AAY,ix,iy)
+            call edwline(ixlast,iylast,ix,iy)
+            call forceflush()
+
+C Repeat until next point is the first, remember position.
+            IP1 = IBNXT(IP1)
+            ixlast=ix
+            iylast=iy
+            IF(IP1 .NE. IP) GOTO 351
+
+C Complete the polygon.
+            iedge=iedge+1
+            CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+            call u2pixel(AAX,AAY,ix,iy)
+            call edwline(ixlast,iylast,ix,iy)
+            call forceflush()
+  300     CONTINUE
+          call forceflush()
+ 1000   CONTINUE
+      endif
 
       return
       end
@@ -552,6 +748,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
@@ -563,6 +760,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JSBi(Isbn,ICFD)),
@@ -574,6 +772,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JSBi(Isbn,ICFD)),
@@ -585,6 +784,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           Y=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
@@ -594,6 +794,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'SB',Isbn
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
 
         elseif (ILOCAT.eq.3.or.ILOCAT.eq.4) then
           if (ILOCAT.eq.4) then
@@ -617,6 +818,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
@@ -628,6 +830,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(MNOD),
@@ -639,6 +842,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(MNOD),
@@ -650,6 +854,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           X=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
@@ -659,6 +864,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'SB',Isbn
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
           if (ILOCAT.eq.6) then
             MNOD=NK
@@ -681,6 +887,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(JSBf(Isbn,ICFD)+1),
@@ -692,6 +899,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(JSBf(Isbn,ICFD)+1),
@@ -703,6 +911,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
@@ -714,6 +923,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           X=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
@@ -723,6 +933,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'SB',Isbn
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
         endif
  70   continue
 
@@ -791,6 +1002,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JOPENf(Iaop,ICFD)+1),
@@ -802,6 +1014,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JOPENi(Iaop,ICFD)),
@@ -813,6 +1026,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(MNOD),YV(JOPENi(Iaop,ICFD)),
@@ -824,6 +1038,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           Y=(YV(JOPENi(Iaop,ICFD))+YV(JOPENf(Iaop,ICFD)))/2.
@@ -833,6 +1048,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'AO',Iaop
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
 
         elseif (ILOCAT.eq.3.or.ILOCAT.eq.4) then
           if (ILOCAT.eq.4) then
@@ -856,6 +1072,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(MNOD),
@@ -867,6 +1084,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(MNOD),
@@ -878,6 +1096,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(MNOD),
@@ -889,6 +1108,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           X=(XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
@@ -898,6 +1118,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'AO',Iaop
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
         elseif (ILOCAT.eq.5.or.ILOCAT.eq.6) then
           if (ILOCAT.eq.6) then
             MNOD=NK
@@ -920,6 +1141,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENf(Iaop,ICFD)+1),YV(JOPENf(Iaop,ICFD)+1),
@@ -931,6 +1153,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(JOPENf(Iaop,ICFD)+1),
@@ -942,6 +1165,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
           ixs=ix
           iys=iy
           CALL ORTTRN(XU(IOPENi(Iaop,ICFD)),YV(JOPENi(Iaop,ICFD)),
@@ -953,6 +1177,7 @@ C Transform local coords to screen coords and draw box around boundary.
           else
             call eswline(ixs,iys,ix,iy)
           endif
+          call forceflush()
 
 C Label in center of boundary.
           X=(XU(IOPENi(Iaop,ICFD))+XU(IOPENf(Iaop,ICFD)))/2.
@@ -962,6 +1187,7 @@ C Label in center of boundary.
           call u2pixel(X1,Y1,ix,iy)
           write (temp,'(a,i2)') 'AO',Iaop
           CALL wstxpt(ix,iy,temp)
+          call forceflush()
         endif
  70   continue
 

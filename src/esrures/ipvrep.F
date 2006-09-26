@@ -55,7 +55,12 @@ C Comfort parameters and hash table.
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       common/exporttg/xfile,tg,delim

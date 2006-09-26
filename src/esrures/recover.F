@@ -47,7 +47,12 @@ C READPIF - read performance information file and gather data.
 
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       
 C exporttg common defn:
 C  xfile - name of file data exported to
