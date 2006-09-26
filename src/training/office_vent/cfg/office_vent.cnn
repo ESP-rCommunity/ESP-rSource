@@ -1,5 +1,5 @@
-*connections  for office_vent
-*Date Thu Jul 29 17:34:11 2004
+*connections  for office_vent_netvent
+*Date Mon Sep  4 16:14:45 2006
     106   # number of connections
    1   1   3   2   2  #   1  pt_general in manager >|< pt_mgrs in general
    1   2   3   2  13  #   2  part_frame in manager >|< part_frame in general
