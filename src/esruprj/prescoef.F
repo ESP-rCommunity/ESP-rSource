@@ -353,7 +353,7 @@ C should calculate pressure coefficients.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -1447,12 +1447,29 @@ C Help text for the menu.
       H(6)='Wind pressure coefficients are pressure coefficients'
       H(7)='for surfaces in typical positions and within several'
       H(8)='different exposure categories. '
-      H(9)='See the ESP manual for additional info.'
-      H(10)=' '
-      H(11)='Here you can change the data of an existing pressure'
-      H(12)='coefficient set (by clicking on it), add/delete/copy'
-      H(13)='a set, list the file contents of the existing pc-file'
-      H(14)='or update changes you have made.'
+      H(9)=' '
+      H(10)='The first 27 data sets in the standard pressure coef'
+      H(11)='database are from the Air Infiltration and Ventilation'
+      H(12)='Centre Handbook called <Air Infiltration Calculation'
+      H(13)='Techniques - An Applications Guide>. The 27 data sets'
+      H(14)='are only applicable for buildings up to 3 storeys and'
+      H(15)='come with the usual warnings about usage of the data.'
+      H(16)=' '
+      H(17)='Each data set is described with the following terms: '
+      H(18)=' a) facade or roof at different roof pitch angles'
+      H(19)=' b) the ratio of the building length to width and'
+      H(20)='    for a non square building there will be a long and'
+      H(21)='    a short wall to select'
+      H(22)=' c) site shielding as follows:'
+      H(23)='   exposed - open countryside with no obstructions'
+      H(24)='   simi-exposed - rural with some obstructions'
+      H(25)='   sheltered - urban, surrounded on all sides by'
+      H(26)='     obstructions of similar size.'
+      H(27)=' '
+      H(28)='Here you can change the data of an existing pressure'
+      H(29)='coefficient set (by clicking on it), add/delete/copy'
+      H(30)='a set, list the file contents of the existing pc-file'
+      H(31)='or update changes you have made.'
 
 C Now display the menu.
       if(mmod.eq.8)then
@@ -1479,7 +1496,7 @@ C Check for changes/ask user to save.
       ELSEIF(IVERT.EQ.(NITMS-1))THEN
 
 C The block with the help messages.
-        CALL PHELPD('pc help menue',14,'-',0,0,IER)
+        CALL PHELPD('pc help menue',31,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(NITMS-2)) THEN
 
 C Update pressure coefficient database. 

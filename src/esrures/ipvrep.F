@@ -55,7 +55,12 @@ C Comfort parameters and hash table.
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       common/exporttg/xfile,tg,delim
@@ -111,7 +116,7 @@ C << is pvdayhr useful? >>
       common/spm55/pvdayhr(2*MTS)
       common/ract/paction
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -426,6 +431,16 @@ C If IPV report format has not been set ask the user (i.e. zero value).
         CALL EASKABC('Format output for:',' ','Text','comma separated',
      &    'java',ipvform,2)
       endif
+
+C If text output the set tab to a space and delimeter to -.
+      if(ipvform.eq.1)then
+        delim = '-'
+        tab=' '
+      else
+        delim = 'C'
+        tab=','
+      endif
+
 
 C If the first or only season then write out a heading.
       if(iseas.eq.1)then
@@ -1972,7 +1987,7 @@ C If IPV report format has not been set ask the user.
 C Set tab based on format of report.
       iof = ipvform
       if(iof.eq.1)then
-        tab = '='
+        tab = ' '
       else
         tab = ','
       endif

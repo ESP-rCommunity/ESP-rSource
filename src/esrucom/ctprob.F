@@ -51,8 +51,8 @@ C Definitions of most variables is given in ctread.F
      &SPMTYP(MSPMNO),SSNAME(MSPMNO),NSPMNO,SSLINK1(MSPMNO,MCONTM)
       COMMON/CONTM6/CNCNI(MCONTM,MNOD)
 
-      CHARACTER*2 SOUTS
-      CHARACTER*124 CNTMDESC,LOUTS
+      CHARACTER*10 SOUTS
+      CHARACTER*124 CNTMDESC,LOUTS,TOUTS
       CHARACTER*72 CNTMFIL,LAPROB,LAPRES,LAFRES
       CHARACTER*12 CONTMNAM,SSNAME,NDNAM,CMNAM
       CHARACTER LTPCMP*60,MOUTS*12
@@ -92,9 +92,16 @@ C Write name, ambient concentrations, source/sink models
           NSSLINC=NSSLINC+1
           CALL INTSTR(SSLINK1(ISPMNO,ICONTM),SOUTS,I,J)
           IF(NSSLINC.EQ.1)THEN
-            LOUTS=SOUTS
+            write(LOUTS,'(a)') SOUTS(1:lnblnk(SOUTS))
           ELSE
-            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
+
+C Append to LOUTS the SSLINK1 index by using TOUTS and LOUTS
+C string variables.
+            TOUTS=' '
+            write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
+            write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
+     &        SOUTS(1:lnblnk(SOUTS))
+C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK1(ISPMNO,ICONTM).NE.0)GOTO 501
@@ -211,9 +218,16 @@ C Write source/sink models data
         DO 513 ICSD=1,NCSD
           CALL RELSTR(SPMSUP(ISPMNO,ICSD),MOUTS,ISSMODL,I)
           IF(ICSD.EQ.1)THEN
-            LOUTS=MOUTS
+            write(LOUTS,'(a)') MOUTS(1:lnblnk(MOUTS))
           ELSE
-            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//MOUTS
+
+C Append to LOUTS the SSLINK1 index by using TOUTS and LOUTS
+C string variables.
+            TOUTS=' '
+            write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
+            write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
+     &        MOUTS(1:lnblnk(MOUTS))
+C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//MOUTS
           ENDIF
  513    CONTINUE
       WRITE(IFCTM,1027,IOSTAT=ISTAT,ERR=99)
@@ -237,9 +251,16 @@ C Write source/sink models linkage with nodes
           NSSLINC=NSSLINC+1
           CALL INTSTR(SSLINK2(ISPMNO,INOD),SOUTS,I,J)
           IF(NSSLINC.EQ.1)THEN
-            LOUTS=SOUTS
+            write(LOUTS,'(a)') SOUTS(1:lnblnk(SOUTS))
           ELSE
-            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
+
+C Append to LOUTS the SSLINK1 index by using TOUTS and LOUTS
+C string variables.
+            TOUTS=' '
+            write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
+            write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
+     &        SOUTS(1:lnblnk(SOUTS))
+C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK2(ISPMNO,INOD).NE.0)GOTO 515
@@ -295,7 +316,7 @@ C Definitions of most variables is given in ctread.F
       CHARACTER*124 CNTMDESC
       CHARACTER*72 CNTMFIL,H,CTMF,LCFGF
       CHARACTER CONTMNAM*12,CMNAM*12,LTPCMP*60,SSNAME*12
-      CHARACTER NDNAM*12,FS*1,CFGROOT*24
+      CHARACTER NDNAM*12,FS*1,CFGROOT*24,outs*124
       CHARACTER*33 ITEMS(MCNN+20)
       CHARACTER*55 ITEML(MCNN+20)
       INTEGER SPMTYP,SSLINK1,SSLINK2
@@ -781,8 +802,9 @@ C Ask if changes need to be saved
         IF(IER.NE.0)GOTO 81
         CALL CTWRIT(IUNIT)
         CALL ERPFREE(IUNIT,ISTAT)
-        CALL EDISP(IUOUT,' Saved contaminant model in... ')
-        CALL EDISP(IUOUT,' '//CNTMFIL(1:LNBLNK(CNTMFIL)))
+        write(outs,'(2a)') ' Saved contaminant model in ',
+     &    CNTMFIL(1:LNBLNK(CNTMFIL))
+        CALL EDISP(IUOUT,outs)
       ENDIF
 
 C Update the configuration file so that contmainant information is known

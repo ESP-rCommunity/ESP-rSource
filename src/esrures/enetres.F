@@ -426,7 +426,7 @@ C **********************************************************************
 
 C Export parameters. 
       COMMON/EXPORTI/IXOPEN,IXUNIT,IXPUNIT
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/EXPORTTG/XFILE,TG,DELIM
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 

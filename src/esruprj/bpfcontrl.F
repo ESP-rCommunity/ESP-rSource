@@ -19,6 +19,18 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Configuration control file definition.
+C This file contains the following subroutines:
+C CONTRL : Principal interfacing subroutine that builds menus and
+C          governs user interaction
+C TOTCTLPER : Finds current number of periods in all control loops
+C             of type icfoc.
+C EBCNTRL : Edit building control function
+C EPCNTRL : Edit plant control function
+C EFCNTRL : Edit flow control function
+C EGCNTRL : Edit global control function
+C SENLOC : Returns sensor location depending upon control domain
+C ACTLOC : Returns actuator location depending upon control domain
+c ASKMFCTM : Asks for one or more contaminants
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
 #include "building.h"
@@ -560,6 +572,9 @@ C Flag that links made.
         endif
 
       ELSEIF(IVERT.EQ.MVERT)THEN
+
+C local variable ireturn is non-zero to signal user wants to exit.
+        IRETURN=0
         if(icfoc.eq.0)then
           if(.NOT.LINKED)then
             dok=.false.
@@ -573,16 +588,32 @@ C Flag that links made.
      &        ' linked to the thermal zones. Exit anyway?',
      &        OK,dok,6)
             IF(OK)then
-              return
+              IRETURN=1
             else
               goto 92
             endif
           else
-            return
+            IRETURN=1
           endif
         elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.icfoc.eq.4)then
-          RETURN
+          IRETURN=1
         endif
+
+C If not browsing the model ask user if they want to save any changes to control file.
+        if(cfgok.and.(.NOT.browse))then
+          IRETURN=1
+          DOK=.TRUE.
+          h(1)='You might have made changes to the model control file.'
+          h(2)='If you exit without saving the changes will be lost. '
+          CALL ASKOK(' Save changes to control file ?','  ',OK,dok,2)
+          IF(OK)THEN
+            ICTLF=IFIL+1
+            CALL CTLWRT(ICTLF,IER)
+            call edisp(IUOUT,' Saving system configuration file.')
+            CALL EMKCFG('-',IER)
+          ENDIF
+        endif
+        IF(IRETURN.EQ.1)RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Explanation
@@ -1099,7 +1130,7 @@ C Edit building control function II.
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outsb*84,outsc*84,ltmp*248
       logical close1,close2,close3,close4
 
 C Number of building functions and day type must be > 0.
@@ -1128,7 +1159,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(0,II,JJ,KK)
         CALL EVCNTRL(0,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(0,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(0,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F6.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -1730,7 +1761,7 @@ C Heat pipe.
      &      0.,'F',1.,'-',0.,'iteration index',IER,1)
 
           CALL EASKR(cm(3),' ',' Surface no with heat pipe ? ',
-     &      1.,'F',8.,'F',1.,'surface with heatpipe',IER,1)
+     &      1.,'F',32.,'F',1.,'surface with heatpipe',IER,1)
           CALL EASKR(cm(4),' ',' Outer node for heatpipe ? ',
      &      1.,'F',8.,'F',1.,'outer node',IER,1)
           CALL EASKR(cm(5),' ',' Inner node for heatpipe ? ',
@@ -2302,7 +2333,7 @@ C If no cooling capacity then set cooling set point to 100C.
           H(2)=' '
           H(3)=' The number of data items = 7 + 6 * no. of sensors'
           H(4)=' For each auxiliary sensor, 6 items are needed:'
-          H(5)=' 4 for the sensor location, followed by the'
+          H(5)=' 4 items for the sensor location, followed by the'
           H(6)=' heating set-point and cooling set-point for'
           H(7)=' that auxiliary sensor'
           H(8)=' - Refer ESP-r Data Model section 9 '
@@ -2524,7 +2555,8 @@ C Edit plant control function II.
       CHARACTER*84 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,PSALT*40,KEY*1
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outsb*84,outsc*84,ltmp*248
+
       CHARACTER hold*60
       logical close1
 
@@ -2555,7 +2587,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(1,II,JJ,KK)
         CALL EVCNTRL(1,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(1,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(1,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -3343,11 +3375,15 @@ C Edit flow control function II.
      &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      COMMON/MFLOW2/NDNAM(0:MNOD)
 
       CHARACTER*84 VERT(20)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
-      character outsa*84,outsb*84,outsc*84,hold*42
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1,NDNAM*12
+      character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
+
+C Portions of multi-sensor feedback message.
+      character msg1*24,msg2*24,msg3*24,msg4*24
       logical close1
 
 C Number of functions and day type must be > 0.
@@ -3376,7 +3412,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(2,II,JJ,KK)
         CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(2,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(2,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -3470,7 +3506,7 @@ C function (ie. all periods are the same for flow).
 C What is the equivalent for flow.....
         H(1)='See ESP-r Data Model section 9 for details. '
         H(2)='The range controler is for use with component types'
-        H(3)='30 35 40 110 and should sense a node temperature '
+        H(3)='30 35 40 110 130 and should sense a node temperature '
         H(4)='or outside db temperature. It returns a ratio of the'
         H(5)='nominal rate or area associated with each range. '
         ino=iclaw+1
@@ -3480,7 +3516,7 @@ C What is the equivalent for flow.....
      &    iclaw+1,')'
         call MENUATOL(outs,' Available laws','a on/off',
      &   'b proportional with hysteresis',
-     &   'c range based (for 30 35 40 110)',
+     &   'c range based (for 30 35 40 110 130)',
      &   'd multi-sensor on/off',' ',' ',' ',' ',' ',' ',' ',' ',
      &   ino,idno,5)
         if(ino.eq.0)then
@@ -3579,7 +3615,7 @@ C Miscellaneous data for proportional controller.
           h(16)=' '
           h(17)='NOTE: this controller works with sensed conditions'
           h(18)='such as node temperature and can be used with '
-          h(19)='components 30 35 40 and 110. '
+          h(19)='components 30 35 40 110 and 130. '
           CALL EASKS(HOLD,
      &      ' Range setpoints: low, mid, high (see help)',
      &      ' : ',42,' 0. 10. 20. ',' flow range controller',IER,19)
@@ -3603,79 +3639,147 @@ C Miscellaneous data for multi sensor flow controller.
           cm(1)=2.
   56      WRITE(HOLD,'(2f8.2)')cm(2),cm(3)
           H(1)= 'Number of items for multi sensor flow'
-          H(2)= 'controller = 2 + 6 * no. of sensors'
-          H(3)= '  1st is default position: open or closed,'
+          H(2)= 'controller = 2 + 8 * no. of sensors'
+          H(3)= '  1st is default position: (1=open,0=closed)'
           H(4)= '  2nd is number of auxiliary sensors. Then'
-          H(5)= '  for each auxiliary sensor 6 items are needed:'
-          H(6)= '    4 for the sensor location, followed by the'
-          H(7)= '    set-point, and inverse action flag.'
-          H(8)= '    The connection/component will CHANGE from'
-          H(9)= '    the default position when the sensed value'
-          H(10)='    is above the set-point. In case the inverse'
-          H(11)='    action flag is -1, the CHANGE will take place'
-          H(12)='    when the sensed value is below the set-point.'
-          H(13)='  Note that this multi sensor controller'
-          H(14)='  assumes the default position, and will'
-          H(15)='  change the position of the connection/'
-          H(16)='  component in case ANY of the auxiliary'
-          H(17)='  sensors demands a change.'
-          CALL EASKS(HOLD,
-     &      ' Multi sensor on/off: default position (1=open), ',
-     &      ' number of aux sensors (max MSEN) ',42,
-     &      ' 1.  2. ',' flow multi sensor on/off',
-     &      IER,17)
+          H(5)= '  for each auxiliary sensor 8 items are needed:'
+          H(6)= '    4 items for the sensor location followed by'
+          H(7)= '    1 item for the set point temperature'
+          H(8)= '    1 item for action flag (1=direct, -1=inverse)'
+          H(9)= '    1 item for fraction ON (currently not implemented)'
+          H(10)='    1 item for logical action (AND/OR)'
+          H(11)='  The connection/component will CHANGE from'
+          H(12)='  the default position when the sensed value'
+          H(13)='  is above the set-point. In case the inverse'
+          H(14)='  action flag is -1, the CHANGE will take place'
+          H(15)='  when the sensed value is below the set-point.'
+          H(16)=' '
+          H(17)='This CHANGE when it takes place will switch the  '
+          H(18)='connection from its default position (open or'
+          H(19)='closed) to the inverse. ' 
+          H(20)=' '
+          H(21)='Any sensor defined in the sensor location menu will'
+          H(22)='be overridden. But sensor needs to be defined to '
+          H(23)='pass through error traps therefore define sensor '
+          H(24)='location as usual. '
+          H(25)=' '
+          H(26)='The logical action is a means to combine logically'
+          H(27)='the outcomes of the multiple sensors. e.g. if in a'
+          H(28)='multisensor control comprising 3 sensors the  '
+          H(29)='logical action of sensor1 is AND, sensor2 is OR '
+          H(30)='and sensor3 is AND then the outcome of the multisensor'
+          H(31)='will be sensor1 AND sensor2 OR sensor3 '
+          H(32)='Note that logical action of sensor3 is irrelevant'
+          H(33)=' '
+          H(34)='The sensor details are essentially the same as '
+          H(35)='required in a control point sensor ie. '
+          H(36)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(37)='   = -1 measuring a plant component node,'
+          H(38)='   = -2 measuring mix air:radiant,'
+          H(39)='   = -3 ambient where the 2nd item is:'
+          H(40)='      0 = db,       2 = wind velocity, '
+          H(41)='      3 = wind dir, 4 = diffuse radiation, '
+          H(42)='      5 = direc norm rad, 6 = RH'
+          H(43)='   = -4 measuring a flow side condition.'
+          H(44)=' '
+          H(45)='Currently only option -3 and -4 are supported and'
+          H(46)='only node temperature is supported for option -4'
+          H(47)='Therefore the four items for sensor location are'
+          H(48)='-3 ? 0 0 where ?=0 or 2 to 6 depending upon climate'
+          H(49)='variable. OR. -4 ? 0 0 where ?= node number to'
+          H(50)='be sensed.'
+          H(51)=' '
+
+C<< To include feed back to text feedback area using USRMSG
+C Default position: 1=open,0=closed
+          CALL EASKAB('Default position? ',' ','closed','open',IW,51)
+          cm(2)=IW-1
+
+          WRITE(OUTS,'(A,I4,A)')'number of sensors (max ',MSEN,' )?' 
+          HOLD='   2'
+          CALL EASKS(HOLD,OUTS,' ',42,' 1.  2. ',
+     &    ' flow multi sensor on/off',IER,51)
           K=0
-          CALL EGETWI(HOLD,K,INPUT,0,1,'F','def position',IER)
-          cm(2)=INPUT
           CALL EGETWI(HOLD,K,INPUT,0,MSEN,'F','no of sensors',IER)
           cm(3)=INPUT
           if(ier.ne.0)goto 56
  
           call edisp(iuout,' Ideal multi-sensor controller:')
-          NSEN=int(cm(3))
-          cm(1)=2.+6.*NSEN
+          NSEN=NINT(cm(3))
+          cm(1)=2.+8.*NSEN
  
 C Auxiliary sensor details,
-          H(1)= 'The sensor details are essentially the same as '
-          H(2)= 'required in a control point sensor ie. '
-          H(3)= ' 1st item >0 is a zone and or surface, =0 any zone,'
-          H(4)= '   = -1 measuring a plant component node,'
-          H(5)= '   = -2 measuring mix air:radiant,'
-          H(6)= '   = -3 ambient where the 2nd item is:'
-          H(7)= '        0 = db,              2 = wind velocity, '
-          H(8)= '        3 = wind dir, 4 = diffuse radiation, '
-          H(9)= '        5 = direc norm rad, 6 = RH'
-          H(10)='  = -4 measuring a flow side condition.'
-          H(11)=' '
-          H(12)='This data is followed - per sensor - by the'
-          H(13)='set-point and inverse action flag.'
-          H(14)='The connection/component will change from the'
-          H(15)='the default position when ANY of the aux sensors'
-          H(16)='demands a change; i.e. when for that sensor the'
-          H(17)='sensed value is above the set-point, or - in'
-          H(18)='case the inverse action flag = -1, when the'
-          H(19)='sensed value is below the set-point.'
- 
-          DO 58 ISEN=1,NSEN
-            ndx=4+6*(ISEN-1)
-            call edisp(iuout,' ')
-            WRITE(outs,'(a,i2,a)')' For aux sensor ',ISEN,' define....'
-            call edisp(iuout,outs)
-            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
-     &        -4.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,19)
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,19)
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,19)
-            CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,19)
- 
+          DO 358 ISEN=1,NSEN
+            ndx=4+8*(ISEN-1)
+            WRITE(OUTS,'(A,I3)')'What to sense for sensor number ',ISEN
+            CALL EASKAB(OUTS,' ','Climate variable','Node temperature'
+     &      ,IW,51)
+            IF(IW.EQ.1)THEN
+              CM(NDX)=-3.
+              idno=1
+              call MENUATOL(' ',' Climate variables','a temperature',
+     &        'b wind speed','c wind direction',
+     &        'd diffuse radiation','e direct radiation ',
+     &        'e relative humidity ',' ',' ',' ',' ',' ',' ',
+     &        ino,idno,51)
+              IF(INO.EQ.1)THEN
+                CM(NDX+1)=0
+                msg1=' senses ambient T'
+              elseif(INO.eq.2)then
+                CM(NDX+1)=INO
+                msg1=' senses wind speed'
+              elseif(INO.eq.3)then
+                CM(NDX+1)=INO
+                msg1=' senses wind direction'
+              elseif(INO.eq.4)then
+                CM(NDX+1)=INO
+                msg1=' senses diffuse solar'
+              elseif(INO.eq.5)then
+                CM(NDX+1)=INO
+                msg1=' senses direct solar'
+              elseif(INO.eq.6)then
+                CM(NDX+1)=INO
+                msg1=' senses RH'
+              ENDIF
+            ELSEIF(IW.EQ.2)THEN
+              CM(NDX)=-4.
+              call ASKRNOD('  sensed flow node','-',INOD,IER)
+              CM(NDX+1)=INOD
+              write(msg1,'(2a)') ' senses nd ',ndnam(inod)
+            ENDIF
+            CM(NDX+2)=0
+            CM(NDX+3)=0
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
-     &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,19)
+     &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,51)
+            write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
  57         CALL EASKR(cm(ndx+5),' ',' Aux sensor inverse action ? ',
-     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,19)
+     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,51)
             if(int(cm(ndx+5)).eq.0)goto 57
- 58       continue
+            if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
+            if(int(cm(ndx+5)).eq.1) msg3=' direct action'
+
+C<< To implement "fraction on" in a sensible way (setting it to diffent)
+C values for different sensors may cause ambiguity if differnet sensors
+C require a connection to open to different fractions
+C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
+C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,51)
+            cm(ndx+6)=0.
+            IF(ISEN.NE.NSEN)CALL EASKAB('Logical action variable',
+     &      'with next sensor','AND','OR',iad,51)
+            IF(IAD.EQ.1)THEN
+              CM(NDX+7)=1.
+              msg4=' AND'
+            ELSEIF(IAD.EQ.2)THEN
+              CM(NDX+7)=2.
+              msg4=' OR'
+            ENDIF
+
+C Echo back to the user what they just put in.
+            write(outs,'(a,i1,4a)') 'For sensor ',isen,
+     &        msg1(1:lnblnk(msg1)),msg2(1:lnblnk(msg2)),
+     &        msg3(1:lnblnk(msg3)),msg4(1:lnblnk(msg4))
+            call edisp(iuout,outs)
+ 358      CONTINUE
  
 C Miscellaneous data for additional flow controllers should follow here.
         endif
@@ -3709,7 +3813,7 @@ C Edit global control function II.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72
+      CHARACTER outs*124,H*72,SSTR*72,TMP*72,LTMP*248
       character outsa*84,outsb*84,outsc*84,KEY*1
       character hold*42
       CHARACTER*84 VERT(20)
@@ -3741,7 +3845,7 @@ C Generate menu entry for each period in day type.
         m=m+1
         call stfctl(3,II,JJ,KK)
         CALL EVCNTRL(3,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRL(3,II,JJ,KK,'L',TMP)
+        CALL EVCNTRLAW(3,II,JJ,KK,TMP,LTMP)
         NITEMS=INT(cm(1))
         WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
         outsb=' '
@@ -3981,7 +4085,7 @@ C flow connections.It is assumed that the user will make one selection only.
 
       DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
       CHARACTER VERT*40,KEY*1,prompt2*36
-      character h*72,outs*124,SALT*40,contmnam*12
+      character h*72,outs*124,SALT*40
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4281,8 +4385,9 @@ C  isn2  index node/connection
 C  isn3  2nd index node (for differences), or contaminant number
 C  isn4=  0 node, 1=connection (tie in with type later), 2 contaminant control
         H(1)='A typical flow sensor is at a node in the mass flow '
-        H(2)='network.  Only in the case of sensing mass flow would'
-        H(3)='a specific connection be used as the sensed point. '
+        H(2)='network.  Only in the case of sensing 1st or 2nd phase'
+        H(3)='mass flow would a specific connection be used as'
+        H(3)='the sensed point. '
         CALL EASKABC(' ',' Flow sensor at:',' flow node (typical) ',
      &    ' specific flow connection (see help) ','continue',IW,3)
         if(IW.eq.1)then
@@ -4292,7 +4397,28 @@ C if actuation is at a component.
 C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
   93      isn1= -4
           isn4=0
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1) ='Synopsis of sensed properties: '
+          H(2) ='a) Nodes linked to thermal zones will take their'
+          H(3) =' temperature the last know temperature of the zone.'
+          H(4) =' Many users prefer to sense flow node temperatures'
+          H(5) =' rather than sense the thermal thermal zones directly.'
+          H(6) =' '
+          H(7) ='b) enthalpy is know at each node and can be sensed.'
+          H(8) =' '
+          H(9) ='c) additional plant output might be something like'
+          H(10)=' the demand (W) of the component.'
+          H(11)=' '
+          H(12)='d/e/g/h) the Delta selections are in the form of'
+          H(13)=' the value at the 1st node of the connection minus'
+          H(14)=' the value at the 2nd node of the connection.'
+          H(15)=' For example: if a window should open if the ambient'
+          H(16)=' temperature is less than a room node temperature and'
+          H(17)=' the connection was defined from ambient to room then'
+          H(18)=' the delta T should be negative for an ON state.'
+          H(19)=' '
+          H(20)='i) contanimate concentration - the units are '
+          H(21)=' typically g/kg .....'
+          H(22)=' '
           ino=IFCTYP(II,1,1)
           idno=1
           write(outs,'(2a,i3,a)')'Select a property to sense ',
@@ -4304,12 +4430,14 @@ C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
      &     'g delta pressure between nodes',
      &     'h abs delta pressure between nodes',
      &     'i contaminant concentration at node',' ',' ',' ',
-     &     ino,idno,1)
+     &     ino,idno,22)
           if(ino.eq.0)then
             call usrmsg('You did not select a valid control law.',
      &        'Please redefine.','W')
             goto 93
           endif
+
+C Depening on the users selection set isense and nsup.
           nsup=1
           if(ino.eq.1)isense=1
           if(ino.eq.2)isense=3
@@ -4539,7 +4667,7 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.2)then
         WRITE(VERT(1),'(a)')'a single flow connection              '
         WRITE(VERT(2),'(a)')'b flow component (& assoc connections)'
-        if(IFCTYP(II,1,1).eq.41)vert(2)='b contaminate source      '
+        if(IFCTYP(II,1,1).eq.41)vert(2)='b contaminant source      '
         WRITE(VERT(3),'(a)')'  ------------------------------------'
       elseif(icfoc.eq.3)then
         WRITE(VERT(1),'(a)')'a actuator not used                   '
@@ -4663,7 +4791,7 @@ C At a flow connection.
           ian3=0
         endif
 
-C If sensor is a -4 and and connection type ask for specific
+C If sensor is a -4 and connection type ask for specific
 C supplemental nodes.
         if(ifsn(ii,1).eq.-4.and.ian1.eq.-3)then
           CALL EPMENSV

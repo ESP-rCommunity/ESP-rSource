@@ -38,7 +38,12 @@ C MOTABL produces tabular output for a 24 hour period.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       common/prec7/itcnst
@@ -51,7 +56,7 @@ C Special materials file flag
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/getmenu/menutype,igetind(65),igetflux(65)
 
-      CHARACTER*23 ITEM(14)
+      CHARACTER*23 ITEM(15)
       character outs*124
       character*72 xfile,H
       character tg*1,delim*1
@@ -61,6 +66,7 @@ C Special materials file flag
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
       IDHFLG=0
+      ILFLAG=0
 
   503 ITEM(1)   ='2 select result set    '
       ITEM(2)   ='3 define period        '
@@ -81,20 +87,25 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
       elseif(IHFLAG.eq.1)then
         ITEM(11)='* time >> 0.4375       '
       endif
-      if(delim.eq.'-')then
-        ITEM(12)='^ delim >> normal      '
-      elseif(delim.eq.'T')then
-        ITEM(12)='^ delim >> TAB         '
-      elseif(delim.eq.'C')then
-        ITEM(12)='^ delim >> comma       '
-      elseif(delim.eq.'S')then
-        ITEM(12)='^ delim >> space       '
-      elseif(delim.eq.'X')then
-        ITEM(12)='^ delim >> tagged      '
+      if(ILFLAG.eq.0)then
+        ITEM(12)='* labels >> multiline  '
+      elseif(ILFLAG.eq.1)then
+        ITEM(12)='* labels >> on one line'
       endif
-      ITEM(13)  ='? help                 '
-      ITEM(14)  ='- exit                 '
-      NITMS=14
+      if(delim.eq.'-')then
+        ITEM(13)='^ delim >> normal      '
+      elseif(delim.eq.'T')then
+        ITEM(13)='^ delim >> TAB         '
+      elseif(delim.eq.'C')then
+        ITEM(13)='^ delim >> comma       '
+      elseif(delim.eq.'S')then
+        ITEM(13)='^ delim >> space       '
+      elseif(delim.eq.'X')then
+        ITEM(13)='^ delim >> tagged      '
+      endif
+      ITEM(14)  ='? help                 '
+      ITEM(15)  ='- exit                 '
+      NITMS=15
       INO=-2
 
 C Instanciate h() string array.
@@ -143,6 +154,18 @@ C Toggle time format and day separators.
         IDHFLG=IDH-1
       elseif(INO.EQ.12.AND.ISAVE.GE.1)then
 
+C Toggle tabular listing label format.
+        ILFLAG=ILFLAG+1
+        if(ILFLAG.GT.1)ILFLAG=0
+        if(ILFLAG.eq.0)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'column labels on multi-lines ')
+        elseif(ILFLAG.eq.1)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'column labels on one line (spreadsheets)')
+        endif
+      elseif(INO.EQ.13.AND.ISAVE.GE.1)then
+
 C Toggle delimeter.
         H(1) ='Tabular data can be sent to file with various '
         H(2) ='delimiters: '
@@ -165,9 +188,9 @@ C Toggle delimeter.
         elseif(iwm.eq.5)then
           delim = 'X'
         endif
-      elseif(INO.EQ.13)then
+      elseif(INO.EQ.14)then
         CALL PHELPD('tabular',4,'-',0,0,IER)
-      elseif(INO.GE.14)then
+      elseif(INO.GE.15)then
         RETURN
       else
 
@@ -205,7 +228,7 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -320,12 +343,21 @@ C If requested or writing to file start lines with a '#'.
 C Write day of results and column headings information (skip if IPV mode).
         CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
         if(act.ne.'m')then
-          if (IDHFLG.eq.1.or.ixopen.eq.1) then
+          if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
             call edisp(itru,outs)
             write(outs,'(3A)')'# ',DESCR1,' timestep misc. listing'
             call edisp(itru,outs)
             outs='# '
+            call edisp(itru,outs)
+          elseif (IDHFLG.eq.0.and.ixopen.eq.1) then
+            continue
+          elseif (IDHFLG.eq.0.and.ixopen.eq.0) then
+            continue
+          elseif (IDHFLG.eq.1.and.ixopen.eq.0) then
+            outs='  '
+            call edisp(itru,outs)
+            write(outs,'(3A)')' ',DESCR1,' timestep misc. listing'
             call edisp(itru,outs)
           else
             outs='  '
@@ -342,11 +374,17 @@ C   don't do this if printing to file.
             if (ir.gt.1) then
               outs='     '
             else
-              if (IHFLAG.eq.1.or.ixopen.eq.1) then
+              if (IHFLAG.eq.1.and.ixopen.eq.1) then
                 if (delim.eq.'X') then
                   outs='*time'
                 else
                   outs='#Time'
+                endif
+              elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
+                if (delim.eq.'X') then
+                  outs='*time'
+                else
+                  outs='Time'
                 endif
               else
                 outs='Time '
@@ -400,7 +438,13 @@ C demarcations are omitted.
             if (IDAY.eq.IODS)then
               call eddisp(itru,outs)
             else
-              if (IDHFLG.eq.1.or.ixopen.eq.1) call eddisp(itru,outs)
+              if (IDHFLG.eq.1.and.ixopen.eq.1)then
+                call eddisp(itru,outs)
+              elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
+                call eddisp(itru,outs)
+              else
+                continue
+              endif
             endif
  100      continue
         endif

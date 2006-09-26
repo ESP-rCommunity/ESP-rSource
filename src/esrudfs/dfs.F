@@ -42,7 +42,7 @@ C if these are 0 then use default values.
       COMMON/GFONT/IFS,ITFS,IMFS
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
@@ -207,6 +207,7 @@ C General image option flags.
       ITOBS=0
       ITGRD=0
       GRDIS=0.0
+      ITPPSW=0
       IFS=1
       ITFS=1
 
@@ -371,7 +372,7 @@ C Only one zone possible so set IZ to 1.
 C plot grid.
         CALL INICNT
         CALL GRID(ier)
-        call VGRID3D
+        call VGRID3D('---','xyz',iz)
         call VSB3D(0)
         call VAO3D(0)
       ELSE
@@ -435,7 +436,7 @@ C Only one zone possible so set IZ to 1.
 C plot grid.
           CALL INICNT
           CALL GRID(ier)
-          call VGRID3D
+          call VGRID3D('---','xyz',iz)
           call VSB3D(0)
           call VAO3D(0)
         ELSE

@@ -18,6 +18,28 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C This source file contains:
+C CFDCOMP - controls the editing of CFD input files.
+C CFDGGRD - define domain gridding.
+C CFDSVAR - controls the editing of CFD solution variables.
+C CFDEDAT - controls the editing of CFD equations.
+C CFDBVAR - controls the editing of CFD boundary variables.
+C EDAIRO  - controls the editing of CFD air flow opening boundary variables.
+C MFCONF  - defines conflation of CFD and mfs 
+C EDSLDB  - controls the editing of CFD solid boundary variables.
+C EDSRC   - controls the editing of CFD sources - humidity, CO2, etc.
+C EDBLK   - controls the editing of CFD blockages to flow
+C HANDSHK - controls the editing of the handshaking mechanism.
+C PIKCELS - controls the editing of the cells defining a boundary region.
+C PIKFACE - controls the editing of the faceof the boundary region.
+C TOPBOT  - define upper and lower curvilinear x-section for use in
+C           gridding generation.
+C GRIDDEF - define gridding via regions and specify number of cells
+C           and cell distribution for each region.
+C ASKMFNOD- asks for one or more mass flow nodes (copy of mfoutp.F).
+C ASKMFCON- Asks for one or more mass flow connections (copy of mfoutp.F).  
+
+
 C ************* CFDCOMP 
 C CFDCOMP controls the editing of CFD input files.
 C ITRU unit number for user output, IUF unit number for CFD input file.
@@ -31,7 +53,7 @@ C IER=0 indicates no error.
       common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -191,13 +213,36 @@ C Help text for this menu.
       h(10)= 'Each of the menu items in this list should be selected'
       h(11)= 'in turn to build-up the CFD input file.'
       h(12)= ' '
-      H(13)='You should refer to Section 5.9 - Zone CFD Domain File'
-      H(14)='in: Data Model Summary ESP-r Version 9 Series,'
-      H(15)='ESRU Report TR96/2, which forms part of the ESP-r'
-      H(16)='distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
-      H(17)=' '
-      H(18)='Note that CFD domains are currently restricted to'
-      H(19)='cuboidal zones.'
+      h(13)= 'Some hints on working with CFD domains: '
+      h(14)= ' '
+      h(15)= ' a) this portion of ESP-r is full of jargon because'
+      h(16)= '    those who work in CFD have evolved expressions that'
+      h(17)= '    seem like english but have a particular meaning. For'
+      h(18)= '    example, the `south face` of the domain might not'
+      h(19)= '    actually be facing south.'
+      h(20)= ' '
+      h(21)= ' b) there are lots of parameter options, some of which'
+      h(22)= '    influcence computation time and some of which are'
+      h(23)= '    not as well documented as some users would expect.'
+      h(24)= ' '
+      h(25)= ' c) ESP-r is normally compiled for domains of limited'
+      h(26)= '    grid resolution, it can be recompiled to increase'
+      h(27)= '    the grid density and those who do this should '
+      h(28)= '    carefully check their models and predictions.'
+      h(29)= ' '
+      h(30)= ' d) it is recommended that you plan your cfd domains'
+      h(31)= '    first and there are some places where efficiency'
+      h(32)= '    is improved if you record critical dimensions'
+      h(33)= '    as you work - e.g. so that boundary surface and'
+      h(34)= '    cell groups can be more reliably associated.'
+      h(35)= ' '
+      H(36)='You should refer to Section 5.9 - Zone CFD Domain File'
+      H(37)='in: Data Model Summary ESP-r Version 9 Series,'
+      H(38)='ESRU Report TR96/2, which forms part of the ESP-r'
+      H(39)='distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
+      H(40)=' '
+      H(41)='Note that CFD domains are currently restricted to'
+      H(42)='cuboidal zones.'
  
       CALL EMENU('Zone air movement description',ITEM,NITMS,INO)
 
@@ -210,7 +255,7 @@ C Wrong pick.
         dtmp='Model of room air flow'
         ltmp=TITLE(ICFD)
         call EASKS(ltmp,'Description of CFD model:',' ',72,dtmp,
-     &             'CFD description',IER,3)
+     &             'CFD description',IER,42)
         TITLE(ICFD)=ltmp
       ELSEIF(INO.EQ.4)THEN
 
@@ -275,7 +320,7 @@ C Save Data to dfs input file.
 
 C Help.
       ELSEIF(INO.EQ.(NITMS-1))THEN
-        CALL PHELPD('CFD inputs',19,'-',0,0,IER)
+        CALL PHELPD('CFD inputs',42,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS)THEN
 
 C Exit CFD editing menu.
@@ -314,7 +359,7 @@ C IER=0 indicates no error.
       common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1476,10 +1521,20 @@ C ITRU unit number for user output.
 C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
-C #include "building.h"
+#include "building.h"
 #include "cfd.h"
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      common/gzonpik/izgfoc,nzg,nznog(mcom)
+      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      common/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
       COMMON/ICFNOD/ICFD,ICP
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -1491,12 +1546,19 @@ C #include "building.h"
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
       COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
+      common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
 
       dimension IDEL(MNVLS)
 
       character H*72,ITEM(MNVLS+8)*40
       character KEY*1,t24*24,SRCE*12
       character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      logical origin,xgrid,ygrid,zgrid,zegrid,ortho
+      logical MODIFY,MODLEN,MODBND
+
+C << Note: for more complex domains grow this menu needs
+C << to be one that can support multiple pages.
 
 C Create menu text.
  5    M=0
@@ -1539,9 +1601,10 @@ C Create menu text.
  10   continue
       ITEM(M+1)=' --------------------'
       ITEM(M+2)='+ Add/ delete a boundary definition'
-      ITEM(M+3)='? Help'
-      ITEM(M+4)='- exit'
-      NITMS=M+4
+      ITEM(M+3)='! View current gridding'
+      ITEM(M+4)='? Help'
+      ITEM(M+5)='- exit'
+      NITMS=M+5
 
 C Help text for this menu.
       h(1)='A summary of each boundary condition is presented.'
@@ -1575,9 +1638,47 @@ C Help.
         ENDIF
       elseif (INO.eq.(NITMS-2)) then
 
+C View the current gridding.
+        if (origin.and.xgrid.AND.ygrid.AND.zgrid) then
+          call cgd(izone,ierr)
+
+C Restore standard graphics window variables.
+          if(MMOD.EQ.8)then
+#ifdef X11
+            CALL feedbox(menuchw,2,igfw,igfh)
+            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+#endif
+            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            call startbuffer()
+
+C Redraw zone and vertex points. Note, if user has returned
+C from 3D grid visualisation then G1 common blocks will need
+C to be refreshed.
+            nzg=1
+            nznog(1)=izone
+            izgfoc=izone
+            CALL EGOMIN(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,IUOUT,IER)
+            CALL ESCZONE(izone)
+            CALL BNDOBJ(0,IER)
+            CALL ERCZONE(izone)
+            MODIFY=.TRUE.
+            MODLEN=.TRUE.
+            MODBND=.TRUE.
+            itvno=0
+            itsnm=0
+            CALL INLNST(1)
+            CALL ADJVIEW(ITRC,IER)
+          endif
+        else
+          CALL USRMSG(' Define origin of CFD domain ',
+     &         ' and grid axes first ','W')
+        endif
+      elseif (INO.eq.(NITMS-3)) then
+
 C Add a new/ delete a boundary definition.
+        h(1)='No one has written a help message for this dialog.'
         call easkabc('Add/ delete a boundary condition?','  ','Add',
-     &               'Delete','Cancel',IAD,0)
+     &               'Delete','Cancel',IAD,1)
         if (IAD.eq.1) then
           h(1)='Choose the type of new boundary condition.'
           call EASKATOG('Which type of boundary?','  ',
@@ -1641,8 +1742,7 @@ C Set up some defaults and call relavent editing routine.
           endif
         elseif (IAD.eq.2) then
 
-C Delete a boundary condition.
-C Ask which one.
+C Delete a boundary condition. First, ask which one.
           if (NVOL(ICFD).gt.0) then
             INDEL=1
             do 233 I=1,NVOL(ICFD)
@@ -1651,7 +1751,7 @@ C Ask which one.
             h(1)='Select a key volume to delete.'
             INVOL=NVOL(ICFD)
             call EPICKS(INDEL,IDEL,' ',' ',12,INVOL,NAMES,
-     &                                        'Key volume name',IER,1)
+     &        'Key volume name',IER,1)
      
 C Move all definitions greater than selected volume up one slot.
             do 333 I=IDEL(1),NVOL(ICFD)
@@ -1892,12 +1992,12 @@ C Reset location to whole of volume for non face choices.
         else
           t20='Air opening'
           call PIKFACE(t20,VOLNAME(IAO,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                          IVOLF(IAO,ICFD),IER)
+     &      IVOLF(IAO,ICFD),IER)
         endif
       elseif (INO.eq.5) then
         t20='Air opening'
         call PIKCELS(t20,VOLNAME(IAO,ICFD),Ii,If,Ji,Jf,Ki,Kf,
-     &                                           IVOLF(IAO,ICFD),IER)
+     &    IVOLF(IAO,ICFD),IER)
         IVCELLS(IAO,ICFD,1)=Ii+1
         IVCELLS(IAO,ICFD,2)=If+1
         JVCELLS(IAO,ICFD,1)=Ji+1
@@ -1916,15 +2016,15 @@ C Reset location to whole of volume for non face choices.
           h(2)= 'or leaving the domain.  '
           VAL=VOLVel(IAO,ICFD)
           call EASKR(VAL,' ',
-     &               'Mass flow rate (kg/s) at chosen face of cells?',
-     &                      -50.,'W',50.,'W',0.5,'flow rate',IER,2)
+     &      'Mass flow rate (kg/s) at chosen face of cells?',
+     &       -50.,'W',50.,'W',0.5,'flow rate',IER,2)
           if (IER.eq.0) VOLVel(IAO,ICFD)=VAL
         elseif (IVTYPE(IAO,ICFD).eq.13) then
           h(1)= 'This is the mass flow rate entering'
           h(2)= 'or leaving the domain.  '
           VAL=VOLVel(IAO,ICFD)
           call EASKR(VAL,' ','Mass flow rate (kg/s) entering cells?',
-     &                      -10.,'W',10.,'W',0.02,'mass flow',IER,2)
+     &                        -10.,'W',10.,'W',0.02,'mass flow',IER,2)
           if (IER.eq.0) VOLVel(IAO,ICFD)=VAL
         endif
       elseif (INO.eq.9) then
@@ -3152,10 +3252,19 @@ C PIKCELS controls the editing of the cells defining a boundary region.
 
       SUBROUTINE PIKCELS(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 
+#include "cfd.h"
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
       character BTYPE*20,BNAME*12,s30*30,dflt*30,H*72,lface*7,t30*30
+      character outs*124
 
  5    IER=0
       t30='  '
@@ -3177,44 +3286,124 @@ C Ask for face first if necessary.
         lface='UNKNOWN'
       endif
       if (IFACE.lt.7) then
-        h(1)= 'You will have to pick a face at which'
-        h(2)= 'the boundary condition will apply.'
+        h(1)= 'You will have to pick a face at which the'
+        h(2)= 'boundary condition will apply.'
+        h(3)= 'Based on the face you select, information about'
+        h(4)= 'the face X/Y or Z cell coordinates will be reported'
+        h(5)= 'in the text feedback area. '
         write (t30,'(2a)') 'Current face: ',lface
         CALL EASKATOG('Boundary face is on which side?',t30,'West',
-     &                'East','South','North','Low','High',' ',IFACE,2)
+     &                'East','South','North','Low','High',' ',IFACE,5)
       endif
       IONE=1
+
+C Remind the user of the cell coordinates for the particular
+C fact they they selected.
+      XZ=0.
+      YZ=0.
+      ZZ=0.
+      if (IFACE.eq.1.or.IFACE.eq.2) then
+
+C List out the Y-Z coordinates for west face and east face.
+        call edisp(iuout,'Grid in the Y axis... ')
+        call edisp(iuout,'Cell index, Y start & end,   distance(m)')
+        DO 102 I=2,(NJ-1)
+          yd=YV(I+1)-YV(I)
+          write(outs,'(i7,3f10.4)') I-1,YV(I)+YZ,YV(I+1)+YZ,yd 
+          call edisp(iuout,outs)
+  102   CONTINUE
+        call edisp(iuout,' ')
+        call edisp(iuout,'Grid in the Z axis... ')
+        call edisp(iuout,'Cell index, Z start & end,   distance(m)')
+        DO 103 I=2,(NK-1)
+          zd=ZW(I+1)-ZW(I)
+          write(outs,'(i7,3f10.4)') I-1,ZW(I)+ZZ,ZW(I+1)+ZZ,zd
+          call edisp(iuout,outs)
+  103   CONTINUE
+      elseif (IFACE.eq.3.or.IFACE.eq.4) then
+
+C List out the X-Z coordinates for south and north face.
+        call edisp(iuout,'Grid in the X axis... ')
+        call edisp(iuout,'Cell index, X start & end,   distance(m)')
+        DO 106 I=2,(NI-1)
+          xd=XU(I+1)-XU(I)
+          write(outs,'(i7,3f10.4)') I-1,XU(I)+XZ,XU(I+1)+XZ,xd
+          call edisp(iuout,outs)
+  106   CONTINUE
+        call edisp(iuout,' ')
+        call edisp(iuout,'Grid in the Z axis... ')
+        call edisp(iuout,'Cell index, Z start & end,   distance(m)')
+        DO 107 I=2,(NK-1)
+          zd=ZW(I+1)-ZW(I)
+          write(outs,'(i7,4f10.4)') I-1,ZW(I)+ZZ,ZW(I+1)+ZZ,zd
+          call edisp(iuout,outs)
+  107   CONTINUE
+      elseif (IFACE.eq.5.or.IFACE.eq.6) then
+
+C List out X and Y cell coordinates for low and high face.
+        call edisp(iuout,'Grid in the X axis... ')
+        call edisp(iuout,'Cell index, X start & end,   distance(m)')
+        DO 110 I=2,(NI-1)
+          xd=XU(I+1)-XU(I)
+          write(outs,'(i7,3f10.4)') I-1,XU(I)+XZ,XU(I+1)+XZ,xd
+          call edisp(iuout,outs)
+  110   CONTINUE
+        call edisp(iuout,'  ')
+        call edisp(iuout,'Grid in the Y axis... ')
+        call edisp(iuout,'Cell index, Y start & end,   distance(m)')
+        DO 111 I=2,(NJ-1)
+          yd=YV(I+1)-YV(I)
+          write(outs,'(i7,3f10.4)') I-1,YV(I)+YZ,YV(I+1)+YZ,yd 
+          call edisp(iuout,outs)
+  111   CONTINUE
+      endif
+
+C Setup Ii and If and dflt and t30 for each of the faces.
       if (IFACE.eq.1) then
+
+C West face.
         Ii=1
         If=1
         write(dflt,'(6i4)') Ii,If,IONE,NTCY,IONE,NTCZ
         t30='(current face: west)'
       elseif (IFACE.eq.2) then
+
+C East face.
         Ii=NTCX
         If=NTCX
         write(dflt,'(6i4)') Ii,If,IONE,NTCY,IONE,NTCZ
         t30='(current face: east)'
       elseif (IFACE.eq.3) then
+
+C South face.
         Ji=1
         Jf=1
         write(dflt,'(6i4)') IONE,NTCX,Ji,Jf,IONE,NTCZ
         t30='(current face: south)'
       elseif (IFACE.eq.4) then
+
+C North face.
         Ji=NTCY
         Jf=NTCY
         write(dflt,'(6i4)') IONE,NTCX,Ji,Jf,IONE,NTCZ
         t30='(current face: north)'
       elseif (IFACE.eq.5) then
+
+C Low face.
         Ki=1
         Kf=1
         write(dflt,'(6i4)') IONE,NTCX,IONE,NTCY,Ki,Kf
         t30='(current face: low)'
       elseif (IFACE.eq.6) then
+
+C High face.
         Ki=NTCZ
         Kf=NTCZ
         write(dflt,'(6i4)') IONE,NTCX,IONE,NTCY,Ki,Kf
         t30='(current face: high)'
       else
+
+C Unknown face.
         write(dflt,'(6i4)') IONE,NTCX,IONE,NTCY,IONE,NTCZ
         t30='(current face: UNKNOWN)'
       endif
@@ -3227,10 +3416,13 @@ C Ask for face first if necessary.
 C Ask for cells.
         write(s30,'(6i4)') Ii,If,Ji,Jf,Ki,Kf
       endif
- 10   h(1)= 'The boundary condition will apply to a volume (or face)'
-      h(2)= 'defined by the start and end control volume in the three'
-      h(3)= 'orthogonal directions i,j,k.'
-      call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,3)
+ 10   h(1)='The boundary condition will apply to a volume (or face)'
+      h(2)='defined by the start and end control volume in the three'
+      h(3)='orthogonal directions i,j,k.'
+      h(4)=' '
+      h(5)='If in doubt, review the cell coordinates which listed'
+      h(6)='in the text feedback area.'
+      call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
       call CHITMS(s30,NITMS)
       if (NITMS.ne.6) goto 10
 
@@ -3275,7 +3467,7 @@ C Check for incompatable face/ cell definition
       end
 
 C ************************** PIKFACE **************************
-C PIKFACE controls the editing of the faceof the boundary region.
+C PIKFACE controls the editing of the face of the boundary region.
 
       SUBROUTINE PIKFACE(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 C Check which two start/ end locations are the same.  Keep count of 
@@ -3383,7 +3575,7 @@ C gridding generation.
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
 C Curvilinear boundary vertex numbers.
@@ -3935,10 +4127,6 @@ C Help.
       endif
       goto 5
       end
-
-
-
-
 
 C ************************ ASKMFNOD ************************
 C This subroutine is copied here from esrures/mfoutp.F

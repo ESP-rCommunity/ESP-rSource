@@ -54,12 +54,17 @@ C act='p' iget parameters already set.
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
       common/getmenu/menutype,igetind(65),igetflux(65)
+      common/exporttg/xfile,tg,delim
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/RESLIB/RFILE
 
-      COMMON/GRTOOL/IHFLAG,IDHFLG
+C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
+C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
+C          between tabular reporting days.
+C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
+      COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
 
@@ -68,7 +73,7 @@ C Occupancy filter info.
       common/mfocup/iocpzone
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
-      COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS)
+      COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
 
 C Simulator parameters.
@@ -77,13 +82,14 @@ C Simulator parameters.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
-      character outs*124,TLABEL*60,trange*20,tranged*20
+      character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
       character ALABEL(5)*12,t20*20,act*1,H*72
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
-      character SMFLABEL*32,GMFLABEL*20,LTMPC*72
+      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,LTMPC*72
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14,RFILE*72
       character graftitle*64,grlbl*24,t24*24,LTIME*5
       character LAPROB*72,LAPRES*72,LAFRES*72,RSNAME*40
+      character xfile*72,tg*1,delim*1,tab*1
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)
@@ -158,7 +164,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NMFGET.ge.1)then
-          write(outs,'(2a)')GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),
+          write(outs,'(2a)')GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
      &      '>> file.'
         else
           write(outs,'(a)')' Output being directed to file.' 
@@ -323,7 +329,7 @@ C Calculate average.
 
 C Inform user of the histo range and reset nb of bins and typcial bin size.
         write(outs,'(a,a,a,f9.2,a,f10.2)')'The ',
-     &    GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),' data range is',
+     &    GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),' data range is',
      &    XMIN,' to',XMAX
         call edisp(itru,outs)
         if(iocupf.eq.1.and.iocpzone.ne.0)then
@@ -448,61 +454,92 @@ C write out labels for each column.
             outs='# '
             call edisp(itru,outs)
           else
-            outs='  '
+            louts='  '
           endif
           if (IHFLAG.eq.1) then
-            outs='#Time'
+            louts='#Time'
           else
-            outs='Time '
+            louts='Time '
           endif
           K=6
+
+C For those dumping to a spreadsheet file this would be a good
+C place to write out longer label on a single line.
           do 20 IL=1,NMFGET
-            KE=K+11
-            if(KE.le.124)then
-             write (outs(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
-             K=K+11
+            if(ILFLAG.eq.0)then
+              KE=K+11
+            else
+              lke=lnblnk(GLMFLABEL(IL))
+              KE=K+lke+1
+            endif
+            if(KE.le.248)then
+              if(ILFLAG.eq.0)then
+                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
+                K=K+11
+              else
+
+C Also use the current delimiter.
+                if(delim.eq.'-')then
+                  write (louts(K:KE),'(a,a)') '|',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'T')then
+                  tab=CHAR(9)
+                  write (louts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'C')then
+                  write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'S')then
+                  write (louts(K:KE),'(a,a)') ' ',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'X')then
+                  write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                endif
+                K=K+lke+1
+              endif
             endif
  20       continue
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
           if (IDAY.eq.IODS)then
-            call edisp(itru,outs)
+            call edisp(itru,louts)
           else
-            if (IDHFLG.eq.1)call edisp(itru,outs)
+            if (IDHFLG.eq.1)call edisp(itru,louts)
           endif
-          if (IDHFLG.eq.1) then
-            outs='#    '
-          else
-            outs='     '
-          endif
-          if (IHFLAG.eq.1) then
-            outs='#    '
-          else
-            outs='     '
-          endif
-          K=6
-          do 225 IL=1,NMFGET
-            KE=K+11
-            if(KE.le.124)then
-             write (outs(K:KE),'(a,a)') '|',GMFLABEL(IL)(11:20)
-             K=K+11
+
+C If multi-line labels then write out the 2nd line.
+          if(ILFLAG.eq.0)then
+            if (IDHFLG.eq.1) then
+              louts='#    '
+            else
+              louts='     '
             endif
- 225      continue
-          if (IDAY.eq.IODS)then
-            call edisp(itru,outs)
-          else
-            if (IDHFLG.eq.1)call edisp(itru,outs)
+            if (IHFLAG.eq.1) then
+              louts='#    '
+            else
+              louts='     '
+            endif
+            K=6
+            do 225 IL=1,NMFGET
+              KE=K+11
+              if(KE.le.248)then
+                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(11:20)
+                K=K+11
+              endif
+ 225        continue
+            if (IDAY.eq.IODS)then
+              call edisp(itru,louts)
+            else
+              if (IDHFLG.eq.1)call edisp(itru,louts)
+            endif
           endif
+
           if (IDHFLG.eq.1) then
-            outs='#    '
+            louts='#    '
           else
-            outs='     '
+            louts='     '
           endif
           if (IHFLAG.eq.1) then
-            outs='#    '
+            louts='#    '
           else
-            outs='     '
+            louts='     '
           endif
         endif
 
@@ -534,21 +571,21 @@ C If there is occupancy filter and occupancy then use pattern
 C from zone iocpzone. Start with assumption of full occupancy.
               call DATIME(JJ,ATIME)
               TIME=float(IHRD)+ATIME
-              outs='  '
+              louts='  '
               if (IHFLAG.eq.0) then 
 
 C Split flow time into hours and minutes, repeating every 24 hours.
                 call STIME(JJ,LTIME)
-                write (outs,'(a5)') LTIME
+                write (louts,'(a5)') LTIME
                 K=6
               else
                 RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                write (outs,'(f10.4)') RDOTY
+                write (louts,'(f10.4)') RDOTY
                 K=11
               endif
               do 410 IXY=1,NMFGET
                 KE=K+11
-                if(KE.le.124)then
+                if(KE.le.248)then
 
 C If there is occupancy filter and occupancy then include in check.
 C Assume fully occupied.
@@ -558,14 +595,14 @@ C Assume fully occupied.
                     call getocup(iocpzone,IDAY,ih,ioc,iier)
                   endif
                   if(ioc.ne.0) then
-                    write (outs(K:KE),'(f11.4)') FLOWVALS(IXY)
+                    write (louts(K:KE),'(f11.4)') FLOWVALS(IXY)
                   else
-                    write (outs(K:KE),'(a)') '  not occ  '
+                    write (louts(K:KE),'(a)') '  not occ  '
                   endif
                   K=K+11
                 endif
  410          continue
-              call eddisp(itru,outs)
+              call eddisp(itru,louts)
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
               goto 10
             endif
@@ -748,21 +785,21 @@ C indicate that several flow items (e.g. nodes) are included.
             if(NMFGET.eq.1)then
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
      &            DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
      &            DXBIN
               endif
             else
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),
+     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
      &            ' (...), Bin width =',DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GMFLABEL(1)(1:lnblnk(GMFLABEL(1))),
+     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
      &            ' (...), Bin width =',DXBIN
               endif
             endif
@@ -783,7 +820,7 @@ C a tabular report.
           endif
 
           call edisp(itru,' ')
-          call edisp(itru,GMFLABEL(1))
+          call edisp(itru,GLMFLABEL(1))
           call edisp(itru,
      &' Bin   data range       Distri-  freq.   cumulative  cumulative')
           call edisp(itru,

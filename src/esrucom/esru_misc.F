@@ -79,7 +79,7 @@ C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -267,6 +267,7 @@ C Clear pre-simulation sets.
       isstup= 0
       isbnstep= 0
       ispnstep= 0
+      isavgh=0
       issave= -1
       sipvres=' '
       do 39 i=1,5
@@ -2744,7 +2745,8 @@ C It returns inpick and array IVALS.
 C MOD display modifier - `c` note constructions defined, `o` note
 C operations defined, `s` note shading defined, `z` note zone attrib
 C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
-C `h` heat transfer (comvective) methods, `-` zone names only.
+C `h` heat transfer (comvective) methods, 'b' obstruction blocks,
+C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
 #include "epara.h"
@@ -2845,6 +2847,20 @@ C Check for existing shading files.
               WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
             else
               call FINDFIL(LSHAD(L),XST)
+              if(XST)then
+                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
+              else
+                WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &            ' (not found)'
+              endif
+            endif 
+          elseif(mod.eq.'b')then
+
+C Check for existing obstruction block files.
+            if(ZOBS(L)(1:7).eq.'UNKNOWN')then
+              WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (undefined)'
+            else
+              call FINDFIL(ZOBS(L),XST)
               if(XST)then
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (defined)'
               else

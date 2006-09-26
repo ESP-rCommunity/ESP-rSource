@@ -35,7 +35,7 @@ C Commom for the optimim start/stop simulation.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)

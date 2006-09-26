@@ -153,7 +153,8 @@ C first view.
       dimension Vstart(3),Vend(3),IC(6,2)
 
 C Need to reset scale factors - do this by redrawing the domain.
-      call VGRID3D
+      iz=0
+      call VGRID3D('---','xyz',iz)
 
 C << res cannot draw boundaries just now but calls useful in prj >>
 C << TODO add boundary information to cfd results library to get round this >>

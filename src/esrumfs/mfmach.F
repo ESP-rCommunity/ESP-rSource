@@ -1233,10 +1233,10 @@ C Apply value of ctlpos to WDTH if component controlled.
         if(ctlpos(icnn).lt.0.0)then
           WDTH=0.00
           write(6,*) 'door width reset to 0mm'
-        elseif(ctlpos(icnn).gt.1.0)then
-          WDTH=SUPCMP(ICMP,2)
-C          write(6,*) 
-C    &       'door width reset - cannot be greater than nominal width'
+c        elseif(ctlpos(icnn).gt.1.0)then
+c          WDTH=SUPCMP(ICMP,2)
+c          write(6,*) 
+c     &       'door width reset - cannot be greater than nominal width'
         else
           WDTH=SUPCMP(ICMP,2)*ctlpos(icnn)
 C          write(6,*) 'door width reset to ',WDTH,ctlpos(icnn)

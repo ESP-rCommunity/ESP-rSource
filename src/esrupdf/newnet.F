@@ -1042,7 +1042,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/FILEP/IFIL
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -1182,6 +1182,7 @@ C General image option flags.
               ITSNR=1
               ITGRD=1
               GRDIS=0.0
+              ITPPSW=0
 
               MODIFY=.TRUE.
               MODBND=.TRUE.
@@ -2508,7 +2509,7 @@ C Common for the building plant lin
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/FILEP/IFIL
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -2696,6 +2697,7 @@ C General image option flags.
            ITSNR=1
            ITGRD=1
            GRDIS=0.0
+           ITPPSW=0
 
            MODIFY=.TRUE.
            MODBND=.TRUE.

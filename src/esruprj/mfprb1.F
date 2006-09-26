@@ -59,7 +59,7 @@ C fluid flow model description file.
       COMMON/MFLOWIT/fndegc,imix 
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       common/user/browse
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -692,7 +692,7 @@ C
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
@@ -836,6 +836,7 @@ C Redraw the bluiding in the graphic screen.
             ITSNR=1
             ITGRD=1
             GRDIS=0.0
+            ITPPSW=0
             nzg=NCOMP
             if(nzg.gt.0)then
               DO 44 I=1,nzg
@@ -947,6 +948,7 @@ C Redraw the building in the graphic screen.
           ITSNR=1
           ITGRD=1
           GRDIS=0.0
+          ITPPSW=0
           nzg=NCOMP
           if(nzg.gt.0)then
             DO 45 I=1,nzg
@@ -1060,6 +1062,26 @@ C Help text for this menu.
           h(14)='Select the pressure coefficient from this list, ' 
           h(15)='which is most appropriate for the location of the '
           h(16)='external node.'
+          h(17)=' '
+          h(18)='Notes about pressure coefficients: '
+          H(19)='The first 27 data sets in the standard pressure coef'
+          H(20)='database are from the Air Infiltration & Ventilation'
+          H(21)='Centre Handbook called <Air Infiltration Calculation'
+          H(22)='Techniques - An Applications Guide>. The 27 data '
+          H(23)='sets are only applicable for buildings up to 3 '
+          H(24)='storeys andcome with the usual warnings about usage'
+          H(25)='of the data. '
+          H(26)=' '
+          H(27)='Each data set is described with the following terms:'
+          H(28)=' a) facade or roof at different roof pitch angles'
+          H(29)=' b) the ratio of the building length to width and'
+          H(30)='    for a non square building there will be a long'
+          H(31)='    and a short wall to select'
+          H(32)=' c) site shielding as follows:'
+          H(33)='   exposed - open countryside with no obstructions'
+          H(34)='   simi-exposed - rural with some obstructions'
+          H(35)='   sheltered - urban, surrounded on all sides by'
+          H(36)='     obstructions of similar size.'
   
 C Now display the menu.
           call USRMSG('Select the pressure coefficient set which',
@@ -1070,7 +1092,7 @@ C Now display the menu.
      &      'You must select one pressure coefficient set!',' ','W')
             GOTO 70
           ELSEIF(IVERT.EQ.NITMS-1)THEN
-            CALL PHELPD('databases overview',16,'-',0,0,IER)
+            CALL PHELPD('databases overview',36,'-',0,0,IER)
             GOTO 70
           ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -1786,7 +1808,7 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124,H*72
@@ -1859,6 +1881,7 @@ C << might want to save current values for later recovery >>
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
       MODIFY=.TRUE.
       MODBND=.TRUE.
@@ -2023,7 +2046,7 @@ C This routine auto-generates elements of the fluid-flow network.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 

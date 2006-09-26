@@ -76,6 +76,8 @@ C LPNF (72 char) plant network file name.
       COMMON/PREC2/VOL(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
+     &              TVTR2(MCOM,MTMC,MBP)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
@@ -124,8 +126,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/clmlst/cdblbl,cdblfil
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
       common/IPVF/lipvdatf
 
 C  ipvtitl = main title of IPV
@@ -135,7 +135,6 @@ C  ipvsynop= up to 248 characters of text.
 
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
 
@@ -151,9 +150,6 @@ C Project log file.
 
 C External text editor.
       common/texted/tedlbl,teditor
-
-C External document previewer.
-      common/textpv/tprevlbl,tpreview
 
 C External figure generator.
       common/figtool/figlbl,figexe
@@ -186,7 +182,7 @@ C Remember if each zone is fully attributed.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
-      character LCFGF*72,H*72,lco*72,lcot*72,tfile*72
+      character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -203,8 +199,8 @@ C Remember if each zone is fully attributed.
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24
       CHARACTER dmdsdesc*248,bdmds*72
-      character LTDF*72,LTDFA*72,DBTAG*12,DBTASK*12,DBZN*15
-      character tprevlbl*20,tpreview*48,figlbl*20,figexe*48
+      character DBTAG*12,DBTASK*12,DBZN*15
+      character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
@@ -1115,7 +1111,7 @@ C List control data.
 
 C If there is a flow network, rescan and list its contents.
       if(netinfo.gt.0)then
- 243    if(IAIRN.ge.1)then
+        if(IAIRN.ge.1)then
           WRITE(outs,240)
           call edisp(itu,outs)
           call edisp(itu,' ')
@@ -1303,8 +1299,8 @@ C the U and UA reporting below.
                 call etmldbu(0,itu,IFCON,ii,UVH,UVU,UVD,UVI)
 
 C Debug.
-                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
-     &            ii,UVH,UVU,UVD,UVI
+C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
+C     &            ii,UVH,UVU,UVD,UVI
               else
                 continue
               endif
@@ -1525,6 +1521,11 @@ C then parse TMC file and if there are optical controls then list.
      &              ' control periods.'
                   call edisp(itu,outs)
                 endif
+
+C Remind user of standard optics as well as the alternatives.
+                write(outs,'(a,5f6.3)') ' Standard optic solar trans:',
+     &            (TMCT(IVALS(IZ),I,M),M=1,5)
+                call edisp(itu,outs)
                 DO 2021 KK=1,NBCTMC(IVALS(IZ),I)
                   if(NBCTT(IVALS(IZ),KK,I).eq.0)then
                     msg=' sensing total radiation'
@@ -1534,11 +1535,16 @@ C then parse TMC file and if there are optical controls then list.
                     msg=' sensing zone temperature'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.3)then
                     msg=' sensing daylight coeff.'
+                  elseif(NBCTT(IVALS(IZ),KK,I).eq.4)then
+                    msg=' Lightswitch2002.'
+                  elseif(NBCTT(IVALS(IZ),KK,I).eq.-99)then
+                    msg=' sensing time only'
                   endif
-                  WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2)') 
+                  WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2,a,5f6.3)') 
      &              ' Period ',KK,': from ',IBCST(IVALS(IZ),KK,I),
-     &              ' to ',IBCFT(IVALS(IZ),KK,I),msg,
-     &              ' set @ ',BACTPT(IVALS(IZ),KK,I)
+     &              ' to ',IBCFT(IVALS(IZ),KK,I),msg(1:lnblnk(msg)),
+     &              ' setpoint @ ',BACTPT(IVALS(IZ),KK,I),' alt solar',
+     &              (TMCT2(IVALS(IZ),I,M,KK),M=1,5)
                   CALL EDISP(itu,OUTS)
  2021           continue
               endif
@@ -1816,7 +1822,7 @@ C not browsing.
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
-      character zname*12,zdesc*64,ZN*12,doit*248,tmode*8,tfile*72
+      character zname*12,zdesc*64,ZN*12,doit*248,tmode*8
       character longtfile*144
       logical ok,dok,ddok,found,XST,concat,anyish
 
@@ -1987,6 +1993,190 @@ C an offset from prj start position.
       return
 
       end
+      
+C ******************* ADMIT *******************
+C Calculate U and Y values and surface factor.
+C If a negative conductivity is supplied the abs value represents the 
+C resistance of an air gap.
+C << NOTE: this routine gets close for some constructions, but
+C << some variables are off - further debugging required.
+      subroutine ADMIT(ITRC,ITRU,IFCON,IFOC,Rsi,Rso)
+#include "building.h"
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      
+      dimension thick(8),rho(8),Cp(8),cond(8)
+      CHARACTER DESC*48,NAM*72
+      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
+      character MLCSYM*12
+      
+      COMPLEX P,L(2,2),M(2,2),N(2,2)
 
+C Pick up general description of the composite.
+      ier=0
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      
+C ESP-r defines layers from outside to inside. The code in
+C subroutine admit works from inside to outside.
+C Debug layer info.
+C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
+      layer=LAYERS(IFOC)+1
+      do 5 IL=1,LAYERS(IFOC)
+        CALL ERPCDB(IFCON,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+     &           DBSHT,E,A,DRV,TITL,NAM)
+        layer=layer-1
+        thick(layer)=DTHK(IFOC,IL)
 
+C If an air gap (material zero) then set cond(IL) to negative of air gap res.
+        IF(IPR(IFOC,IL).EQ.0)THEN
+          cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
+          rho(layer)=1.0
+          Cp(layer)=1.0
+        else
+          cond(layer)=DBCON
+          rho(layer)=DBDEN
+          Cp(layer)=DBSHT
+        endif
+
+C Debug
+        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
+     &    thick(layer),cond(layer),rho(layer),Cp(layer)
+ 5    continue
+      
+C Start calculation of U-value.
+      Uvalue=Rsi
+      
+C Define inside surface resistance matrix.
+      L(1,1)=CMPLX(1.,0.)
+      L(1,2)=CMPLX(Rsi,0.)
+      L(2,1)=CMPLX(0.,0.)
+      L(2,2)=CMPLX(1.,0.)
+      
+C Loop through layers (inside to outside).
+      do 10 I=1,LAYERS(IFOC)
+        if (cond(I).gt.0) then
+          Uvalue=Uvalue+(thick(I)/cond(I))
+
+C Define terms for arrays.
+          xP=((4.*ATAN(1.))*thick(I)*thick(I)*rho(I)*Cp(I))/
+     &     (86400.*cond(I))
+          xP=SQRT(xP)
+        
+C Calculate cosh(P).
+          xcreal=((exp(xP)+exp(-xP))*cos(xP))/2.
+          xcimage=((exp(xP)-exp(-xP))*sin(xP))/2.
+
+C and sinh(P).
+          xsreal=((exp(xP)-exp(-xP))*cos(xP))/2.
+          xsimage=((exp(xP)+exp(-xP))*sin(xP))/2.
+        
+C Enter matrix coefficients
+          M(1,1)=CMPLX(xcreal,xcimage)
+          M(1,2)=(thick(I))*CMPLX(xsreal,xsimage)/
+     &         (cond(I)*CMPLX(xP,xP))
+          M(2,1)=(cond(I)*CMPLX(xP,xP))*CMPLX(xsreal,xsimage)/
+     &         (thick(I))
+          M(2,2)=CMPLX(xcreal,xcimage)
+        else
+        
+C Air gap
+          Uvalue=Uvalue+abs(cond(I))
+          M(1,1)=CMPLX(1.,0.)
+          M(1,2)=CMPLX(abs(cond(I)),0.)
+          M(2,1)=CMPLX(0.,0.)
+          M(2,2)=CMPLX(1.,0.)
+        endif
+
+C Calculate L*M, result in N.
+        call CMATMUL(L,M,N)
+        
+C Copy N to L.
+        L(1,1)=N(1,1)
+        L(1,2)=N(1,2)
+        L(2,1)=N(2,1)
+        L(2,2)=N(2,2)
+ 10   continue
+      Uvalue=Uvalue+Rso
+      Uvalue=1./Uvalue
+ 
+      write (ITRU,'(a)') ' '
+      write (ITRU,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
+     &  rsi,' Rso ',rso,' & Uvalue=',Uvalue
+      
+C Outside face resistance.
+      M(1,1)=CMPLX(1.,0.)
+      M(1,2)=CMPLX(Rso,0.)
+      M(2,1)=CMPLX(0.,0.)
+      M(2,2)=CMPLX(1.,0.)
+      call CMATMUL(L,M,N)
+            
+C Calculate admittance.
+      P=N(2,2)/N(1,2)
+      Y=abs(P)
+      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+
+      write (ITRU,*) 'External surface'
+      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
+      
+C Calculate decrement factor.
+      P=1./(Uvalue*N(1,2))
+      f=abs(P)
+      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0) then
+        phi=12.-phi
+      else
+        phi=-phi
+      endif
+      
+      write (ITRU,'(2(a,f6.2))') ' Decrement factor f=',f,'  phi=',phi
+
+C Calculate surface factor.
+      P=1.-(Rsi*N(2,2)/N(1,2))
+      f=abs(P)
+      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0) then
+        phi=12.-phi
+      else
+        phi=-phi
+      endif
+      
+      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
+
+C Internal surfaces.
+      P=(N(2,2)-1.)/N(1,2)
+      Y=abs(P)
+      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+
+      write (ITRU,*) '  '
+      write (ITRU,*) 'Partition'
+      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
+      
+C Calculate surface factor.
+      P=1.-(Rsi*P)
+      f=abs(P)
+      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0) then
+        phi=12.-phi
+      else
+        phi=-phi
+      endif
+      
+      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
+      return
+      end
+
+C ******************** CMATMUL 
+C CMATMUL multiplies the complex (2x2) matrices A by B returning C.
+      SUBROUTINE CMATMUL(A,B,C)
+
+      COMPLEX A(2,2),B(2,2),C(2,2)
+
+C Calculate A*B.
+      DO 10 I=1,2
+        C(I,1)=A(I,1)*B(1,1)+A(I,2)*B(2,1)
+        C(I,2)=A(I,1)*B(1,2)+A(I,2)*B(2,2)
+   10 CONTINUE
+
+      return
+      end
       

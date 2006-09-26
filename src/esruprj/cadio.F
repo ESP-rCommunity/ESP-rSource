@@ -19,13 +19,14 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Project Manager: file cadio.F comprising
-C exportcad: Model export facility.
+C exportcad: controls model export facilities.
 C cadin:     Drives the conversion of CAD input into data model.
 C rexmpl:    Scan the exemplars file and offer user list/info on exemplars.
+C wtarentry: write entry in tar names file accountin for ../
 C archiveit:  Archive the current model.
 
 C ********** exportcad
-C Model export facility.
+C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
 #include "building.h"
 
@@ -595,7 +596,7 @@ C Re-read the upgraded configuration file. Reconstruct the path.
       end
 
 C ********* rexmpl
-C Scan the exemplars file, parse information and offer the user
+C rexmpl: scan the exemplars file, parse information and offer the user
 C selection of or information about exemplars. 
       subroutine rexmpl(iexfil,exfil,exemplar,ier)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1017,7 +1018,7 @@ C the user to kill it.
       end
 
 C ***** wtarentry
-C Write entry in tar names file taking into account case where file
+C wtarentry: write entry in tar names file taking into account case where file
 C name begins with ../ .
       subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf,ier)
       logical pathome,unixok
@@ -1059,9 +1060,10 @@ C Error.
 
 
 C ***** archiveit
-C Archive the current model by building up an "include" file to
+C archiveit: archives the current model by building up an "include" file to
 C pass to tar archive. Detect where the current model is located
 C and if the user is browsing the model.
+C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 #include "building.h"
 #include "uncertainty.h"
@@ -1684,31 +1686,6 @@ C Use ifdef compiler variable passed into Make to identify which
 C block of code to use.
 #ifdef SUN
 C Unix version of tar.
-      call esppid(ipid)
-      write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
-      call st2file(LFIL,LF)
-      if(patdot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patcfg)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patroot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ./; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-#endif
-
-#ifdef SGI
-C Unix SGI version of tar.
       call esppid(ipid)
       write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
       call st2file(LFIL,LF)

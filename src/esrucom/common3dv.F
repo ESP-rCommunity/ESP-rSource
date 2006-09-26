@@ -40,11 +40,16 @@ C then it represents the zone which is currently being edited.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
+
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character ETEXT*82
 
       SMALL=0.01
 
@@ -79,6 +84,10 @@ C If viewpoint or bounds different then initialise viewing paramters.
           ENDIF
           CALL LENS(IER)
         ENDIF
+
+C Remind user of which model even when looking at one zone.
+        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        CALL viewtext(ETEXT,1,1,1)
 
 C Draw the selected bodies.
         CALL DRAWESP(ITRC,IER)
@@ -171,9 +180,10 @@ C SVDSOPT - save graphics display options.
       subroutine SVDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY2SV/ITDSPsv,ITBNDsv,ITEPTsv,ITZNMsv,ITSNMsv,ITVNOsv,
-     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv
+     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv,
+     &      ITPPSWsv
 
       ITDSPsv=ITDSP
       ITBNDsv=ITBND
@@ -188,6 +198,7 @@ C SVDSOPT - save graphics display options.
       ITHLZsv=ITHLZ
       ITGRDsv=ITGRD
       GRDISsv=GRDIS
+      ITPPSWsv=ITPPSW
 
       return
       end
@@ -197,9 +208,10 @@ C RCDSOPT - recover graphics display options.
       subroutine RCDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY2SV/ITDSPsv,ITBNDsv,ITEPTsv,ITZNMsv,ITSNMsv,ITVNOsv,
-     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv
+     &      ITORGsv,ITSNRsv,ITOBSsv,ITHLSsv,ITHLZsv,ITGRDsv,GRDISsv,
+     &      ITPPSWsv
 
       ITDSP=ITDSPsv
       ITBND=ITBNDsv
@@ -214,6 +226,7 @@ C RCDSOPT - recover graphics display options.
       ITHLZ=ITHLZsv
       ITGRD=ITGRDsv
       GRDIS=GRDISsv
+      ITPPSW=ITPPSWsv
 
       return
       end
@@ -232,7 +245,7 @@ C clips the image and draws it.
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -505,7 +518,7 @@ C ****** Routine to draw ground topology.
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY6G/LINSTYG(MGRT)
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)

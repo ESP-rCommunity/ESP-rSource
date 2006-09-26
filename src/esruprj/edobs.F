@@ -53,7 +53,7 @@ C Use file unit IPRODB temporarily.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/appw/iappw,iappx,iappy
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -782,6 +782,7 @@ C Provide default values for the new obstructions file.
         NGZ=10
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         IF(IER.NE.0)RETURN
+        IOBS(ICOMP)=1 
         MODIFY=.TRUE.
       ENDIF
       RETURN
@@ -801,7 +802,7 @@ C EDOBSB: Edit details of an obstruction block.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)

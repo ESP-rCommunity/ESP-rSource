@@ -864,7 +864,7 @@ C if MODE is not - then sensor points file name confirmation required.
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
@@ -1027,7 +1027,7 @@ C Open df points file in working directory.
 
 C Write points and sensor direction (plane normal).
       do 555 IV=1,NDFP
-        write(ITA1,'(6f8.4)')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
+       write(ITA1,'(6(f8.4,1x))')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
  555  continue
       DFDIR(1)=PEQN(1)
       DFDIR(2)=PEQN(2)
@@ -1070,7 +1070,7 @@ C the daylight factor (act = d|D).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)

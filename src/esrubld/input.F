@@ -1299,7 +1299,7 @@ C USESPS uses configuration presimuilation data.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
-      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
@@ -1330,9 +1330,20 @@ C Assign data.
       endif
       if(isbnstep.ne.0)then
         ntstep=isbnstep
+
+C Also check against user preference in simulation parameters for 
+C whether to save every timestep to the file.
+        if(isavgh.eq.1)then
+          irdact=1
+        else
+          irdact=0
+        endif
         tstepok=.true.
+        write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
       endif
+
 C << Need to do plant timesteps >>
+
       if(issave.ge.0)then
         isave=issave
         saveok=.true.

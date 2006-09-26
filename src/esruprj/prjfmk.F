@@ -4484,7 +4484,7 @@ C << Note change to real when casual gains data structure improves >>
           else
             iper(I)=iperf(I-1)
           endif
-          iperf(I)=iper(I)+incr
+          iperf(I)=iper(I)+nint(incr)
           IF(iperf(I).gt.24) iperf(I)=24
 100     CONTINUE
       endif

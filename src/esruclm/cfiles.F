@@ -669,6 +669,7 @@ C Recover one day's data from climate file into common block for use.
       PARAMETER (MT=24)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/RADTYP/IDNGH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)
@@ -678,7 +679,11 @@ C Recover one day's data from climate file into common block for use.
 
       VNAME(1)='Diffuse horiz. radiation (W/m^2)'
       VNAME(2)='Dry bulb temperature (C)        '
-      VNAME(3)='Direct normal radiation (W/m^2) '
+      if(IDNGH.eq.0)then
+        VNAME(3)='Direct normal radiation (W/m^2) '
+      else
+        VNAME(3)='Global horiz. radiation (W/m^2) '
+      endif
       VNAME(4)='Wind velocity (m/s)             '
       VNAME(5)='Wind direction (degrees)        '
       VNAME(6)='Relative humidity (%)           '

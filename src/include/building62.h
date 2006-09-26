@@ -37,7 +37,7 @@ C For the building:
       PARAMETER (MDY=3)
       PARAMETER (MT=24)
       PARAMETER (MA=24)
-      PARAMETER (MBP=3)
+      PARAMETER (MBP=8)
       PARAMETER (MTMS=1440)
       PARAMETER (MTS=1440)
 
@@ -74,8 +74,8 @@ C optic sets in optics database.
 
 C MISC is the maximum number of miscellaneous data
 C items for control laws.
-C Should be equal to 9 + 6*MSEN with a minimum of 16
-      PARAMETER (MISC=33)
+C Should be equal to 9 + 8*MSEN with a minimum of 16
+      PARAMETER (MISC=41)
       PARAMETER (MSEN=4)
       PARAMETER (MO=24)
 

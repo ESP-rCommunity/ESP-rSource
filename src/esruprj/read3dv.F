@@ -50,7 +50,7 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -67,7 +67,7 @@ C converts into viewing coords, clips the image and draws it.
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character SSPARENT*12
+      character SSPARENT*12,ETEXT*82
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
@@ -115,6 +115,10 @@ C If site grid or ground is asked for draw now.
       IF(ITGRD.EQ.0)CALL DSGRID(0.0,GRDIS,5,IER)
       IF(ITDSP.EQ.5.or.ITDSP.EQ.6)call EGRNDR(IER)
       IF(ITDSP.EQ.6)return
+
+C Remind user of which project.
+      WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      CALL viewtext(ETEXT,1,1,1)
 
 C Beginning of loop to read in several ESP compatible geometry files.
       IZ=0

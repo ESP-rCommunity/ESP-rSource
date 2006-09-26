@@ -1475,6 +1475,7 @@ C act is '-' derive geometric data or 'c' also determine parent
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -1491,9 +1492,11 @@ C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12,outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
@@ -1552,7 +1555,8 @@ C Debug...
 
 C Debug...
           if(itrc.gt.0)then
-            write(outs,*) 'duplicates for conn ',icc,' ',ssname(icc),
+            write(outs,*) 'duplicate edges for conn ',icc,' ',
+     &        ssname(icc)(1:lnblnk(ssname(icc))),
      &        ' is ',nbedgdup(icc)
             call edisp(iuout,outs)
           endif
@@ -1597,8 +1601,8 @@ C If an edge matches, test if other surface is facing the same way.
                 if(j.eq.kk.and.k.eq.jj)then
 C Debug...
                   if(itrc.gt.0)then
-                    write(outs,*) 'edges for conns ',icc,icco,' are ',
-     &                j,k,' & ',jj,kk
+                    write(outs,*) 'edges for conns ',icc,' & ',icco,
+     &                ' are ',j,k,' & ',jj,kk
                     call edisp(iuout,outs)
                   endif
 
@@ -1637,15 +1641,17 @@ C increment nbedgshr once even if other surface shares several edges).
 
 C Debug...
             if(itrc.gt.0)then
-              write(outs,*) 'iedgshr ',iedgshr(icc,i),' imatshr ',
-     &          imatshr(icc,i)
+              write(outs,*) 'iedgshr ',iedgshr(icc,i),
+     &          ' shared construction ',imatshr(icc,i)
               call edisp(iuout,outs)
             endif
   42      continue
 
 C Debug...
           if(itrc.gt.0)then
-            write(outs,*) 'nbedgshr for conn ',icc,' is ',nbedgshr(icc)
+            write(outs,*) 'nbedgshr for ',
+     &        ssname(icc)(1:lnblnk(ssname(icc))),
+     &        ' is ',nbedgshr(icc)
             call edisp(iuout,outs)
           endif
 
@@ -1701,10 +1707,12 @@ C Also find out which bin has the most entries.
   448           continue
                 if(itrc.gt.0)then
                   write(outs,*)'nidif is ',nidif,' max @ array index',
-     &              midif
+     &              midif,' for connection ',icc
                   call edisp(iuout,outs)
                 endif
                 if(nidif.gt.2)then
+C for testing.
+C                if(nidif.gt.3)then
                   ibinval=0
                 else
                   if(itrc.gt.0)then
@@ -1732,7 +1740,27 @@ C bother the user. If ibinval was set to zero then clear SSPARENT.
                   SSPARENT(icc)=ssname(ibinval)
                 endif
               else
-                SSPARENT(icc)=' '
+                dok=.false.
+                h(1)='Is its parent surface in the current'
+                h(2)='zone. If not say no. '
+                izz=ic1(icc)
+                write(outs,'(5a)') 'Does ',ssname(icc),
+     &              ' have a parent surface in ',zname(izz),'?'
+                call askok(outs,
+     &            ' (saying no sets parent to blank)',ok,dok,2)
+                if(ok)then
+                  write(outs,'(5a)') 'Specify parent surface for ',
+     &               ssname(icc),' in ',zname(izz),'.'
+                  call easksur(izz,iss,'-',outs,' ',ier)
+                  ibinval=izstocn(izz,iss)
+                  if(ibinval.ne.0)then
+                    SSPARENT(icc)=ssname(ibinval)
+                  else
+                    SSPARENT(icc)=' '
+                  endif
+                else
+                  SSPARENT(icc)=' '
+                endif
               endif
             endif
           endif

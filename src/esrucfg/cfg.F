@@ -44,8 +44,22 @@ C  surbox - find bounding box and centre of a surface.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
+C       similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
+C ITEPT is
+C ITZNM zone name toggle: display = 0, hidden = 1
+C ITSNM surface name toggle: display = 0, hidden = 1
+C ITORG origin toggle: display = 0, hidden = 1
+C ITSNR surf normal toggle: display = 0, hidden = 1.
+C ITOBS obstruction toggle: not yet enabled.
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITGRD grid toggle: display = 0, hidden = 1
+C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
@@ -175,6 +189,7 @@ C General image option flags.
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,
@@ -946,7 +961,7 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
@@ -1704,7 +1719,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       common/scanpause/longpause
