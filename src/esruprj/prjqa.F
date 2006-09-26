@@ -1295,8 +1295,8 @@ C the U and UA reporting below.
                 call etmldbu(0,itu,IFCON,ii,UVH,UVU,UVD,UVI)
 
 C Debug.
-                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
-     &            ii,UVH,UVU,UVD,UVI
+C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
+C     &            ii,UVH,UVU,UVD,UVI
               else
                 continue
               endif
@@ -1526,6 +1526,10 @@ C then parse TMC file and if there are optical controls then list.
                     msg=' sensing zone temperature'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.3)then
                     msg=' sensing daylight coeff.'
+                  elseif(NBCTT(IVALS(IZ),KK,I).eq.4)then
+                    msg=' Lightswitch2002.'
+                  elseif(NBCTT(IVALS(IZ),KK,I).eq.-99)then
+                    msg=' sensing time only'
                   endif
                   WRITE(OUTS,'(A,I2,A,I2,A,I2,2A,F7.2)') 
      &              ' Period ',KK,': from ',IBCST(IVALS(IZ),KK,I),

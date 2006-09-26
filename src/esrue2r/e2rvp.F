@@ -100,7 +100,7 @@ C ******* Default views formation.
       common/rad2/mono,intext,ifocz
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -129,7 +129,7 @@ C then it is an update to an existing view.
       addview=.false.
       trvewsh='new'
       ier=0
-      idr=3
+      ITPPSW=3
 
 C First thing is to ask what zones to include
 C in the plan view.
@@ -272,7 +272,7 @@ C view point is within the bounds of the image.
               EYEM(2)=rvpy
               EYEM(3)=rvpz
               if(intext.eq.0)then
-                idr=3
+                ITPPSW=3
                 call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),
      &             OXMX,OYMX,OZMX,eang)
                 angv=eang*1.25
@@ -285,7 +285,7 @@ C view point is within the bounds of the image.
                 MODIFY=.TRUE.
                 MODLEN=.TRUE.
               else
-                idr=0
+                ITPPSW=0
                 call edisp(iuout,' ')
                 call edisp(iuout,'Use plan or elevation views.')
                 angv=90.0
@@ -309,7 +309,7 @@ C Reflect eyepoint in the perspective view.
       EYEM(3)=rvpz
       call AZ2UV(azim,elev,vdx,vdy,vdz)
       if(intext.eq.0)then
-        idr=3
+        ITPPSW=3
         call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
         angv=eang*1.25
@@ -322,7 +322,7 @@ C Reflect eyepoint in the perspective view.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       else
-        idr=0
+        ITPPSW=0
         call edisp(iuout,' ')
         call edisp(iuout,'Use plan or elevation views for interiors...')
         angv=90.0
@@ -337,36 +337,36 @@ C Reconstitute the viewing vector and eye angle.
 
       ITEM(1) =                   'a view list                   '
       ITEM(2) =                   'b zones to include            '
-      if(idr.eq.0)then
+      if(ITPPSW.eq.0)then
         ITEM(3) =                 'c display >> plan view        '
-      elseif(idr.eq.1)then 
+      elseif(ITPPSW.eq.1)then 
         ITEM(3) =                 'c display >> south elevation  '
-      elseif(idr.eq.2)then
+      elseif(ITPPSW.eq.2)then
         ITEM(3) =                 'c display >> west elevation   '
-      elseif(idr.eq.3)then
+      elseif(ITPPSW.eq.3)then
         ITEM(3) =                 'c display >> perspective      '
       endif
       ITEM(4) =                   '  __________________________  '
       write(ITEM(5),'(A,3F6.1)')  'e eye @ :',rvpx,rvpy,rvpz
       write(ITEM(6),'(A,2F6.1)')  'f direc azi elv:',azim,elev
       write(ITEM(7),'(A,3F6.2)')  '  (vector):',vdx,vdy,vdz
-      if(idr.eq.3)then
+      if(ITPPSW.eq.3)then
         write(ITEM(8),'(A,F5.1,a,F5.1,a)')
      &                            'h view angle: ',angh,' (',eang,')'
       else
         write(ITEM(8),'(A,F5.1)') 'h view angle: ',angh
       endif
       ITEM(9) =                   '  __________________________  '
-      if(idr.eq.0)then
+      if(ITPPSW.eq.0)then
         write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
         write(ITEM(11),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
-      elseif(idr.eq.1)then
+      elseif(ITPPSW.eq.1)then
         write(ITEM(10),'(A,2F6.1)') 'l south min~max: ',XMN,XMX
         write(ITEM(11),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
-      elseif(idr.eq.2)then
+      elseif(ITPPSW.eq.2)then
         write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',YMN,YMX
         write(ITEM(11),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
-      elseif(idr.eq.3)then
+      elseif(ITPPSW.eq.3)then
         write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
         write(ITEM(11),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
       endif
@@ -379,16 +379,16 @@ C Reconstitute the viewing vector and eye angle.
       if(redraw)then
 
 C Draw the problem in plan/elevation with viewcone.
-        if(idr.eq.0)then
+        if(ITPPSW.eq.1)then
           call PLELEV(IUF,'P',ier)
           call VCONE('P')
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.2)then
           call PLELEV(IUF,'S',ier)
           call VCONE('S')
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.3)then
           call PLELEV(IUF,'E',ier)
           call VCONE('E')
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.0)then
           MODIFY=.TRUE.
           CALL ADJVIEW(ITRC,IER)
           MODLEN=.FALSE.
@@ -460,12 +460,12 @@ C Present list of views.
         H(2)='the elevations are primarily for checking. '
         CALL EASKABCD(' View choices: ',' ','plan',
      &    'south elevation ','west elevation','perspective ?',IW,2)
-        if(IW-1.ne.idr)redraw =.true.
-        idr=IW-1
+        if(IW-1.ne.ITPPSW)redraw =.true.
+        ITPPSW=IW-1
       elseif(INO.EQ.5)THEN
 
 C Eye Point...(assume begins at centre of zone).
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
           H(1)='In plan view you can only edit or pick on the plan.'
           CALL EASKABC(' Specify via: ',' ','editing',
      &     'pick on plan','ignore ?',IEE,1)
@@ -501,7 +501,7 @@ C Transform back from mouse position to actual coordinate.
               rvpz=VIEWM(3)
             endif
           endif
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
           CALL EASKABC(' Specify via: ',' ','editing',
      &     'accept current eyepoint','ignore ?',IEE,1)
           if(IEE.eq.3)then
@@ -548,7 +548,7 @@ C Transform back from mouse position to actual coordinate.
           redraw =.true.
           call etplot(rvpx,rvpy,0,14)
           call forceflush()
-          if(idr.eq.3)then
+          if(ITPPSW.eq.3)then
             dok=.false.
             h(1)='The wireframe view can be updated to approximate'
             h(2)='the radiance view (does not work well for internal'
@@ -575,7 +575,7 @@ C Transform back from mouse position to actual coordinate.
 
 C Directional vector. Input as azimuth and elevation and then
 C convert into normal or take the direction from the perspective.
-        if(idr.eq.3)then
+        if(ITPPSW.eq.3)then
           CALL EASKABC(' Specify via: ',' ','editing',
      &     'accept current direction','ignore ?',IEE,1)
           if(IEE.eq.3)then
@@ -626,7 +626,7 @@ C View angle...
         CALL EASKR(angh,outs,' View angle (deg) ? ',
      &    0.01,'W',180.,'W',60.,'view angle',IER,2)
         angv=angh
-        if(idr.eq.3)then
+        if(ITPPSW.eq.3)then
           dok=.false.
           h(1)='The wireframe view can be updated to approximate'
           h(2)='the radiance view (does not work well for internal'
@@ -646,7 +646,7 @@ C View angle...
 
 C horiz axis...
         H(1)='Adjust axis min and max to allow more distant view.'
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
   41      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
           CALL EASKS(HOLD,' East axis minimum and maximum: ',
      &      '  ',28,' ','east axis min-max',IER,1)
@@ -656,7 +656,7 @@ C horiz axis...
           if(ier.ne.0)goto 41
           call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.1)then
  141      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
           CALL EASKS(HOLD,' South axis minimum and maximum: ',
      &      '  ',28,' ','south axis min-max',IER,1)
@@ -666,7 +666,7 @@ C horiz axis...
           if(ier.ne.0)goto 141
           CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.2)then
  241      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
           CALL EASKS(HOLD,' East axis minimum and maximum: ',
      &      '  ',28,' ','east axis min-max',IER,1)
@@ -676,7 +676,7 @@ C horiz axis...
           if(ier.ne.0)goto 241
           CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
         endif
         vewdone=.false.
         redraw =.true.
@@ -684,7 +684,7 @@ C horiz axis...
 
 C vertical axis...
         H(1)='Adjust axis min and max to allow more distant view.'
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
  144      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
           CALL EASKS(HOLD,' North axis minimum and maximum: ',
      &      '  ',28,' ','north axis min-max',IER,1)
@@ -694,7 +694,7 @@ C vertical axis...
           if(ier.ne.0)goto 144
           call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.1)then
  145      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
      &      '  ',28,' ','up axis min-max',IER,1)
@@ -704,7 +704,7 @@ C vertical axis...
           if(ier.ne.0)goto 145
           CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.2)then
  245      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
      &      '  ',28,' ','up axis min-max',IER,1)
@@ -714,7 +714,7 @@ C vertical axis...
           if(ier.ne.0)goto 245
           CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
         endif
         vewdone=.false.
         redraw =.true.

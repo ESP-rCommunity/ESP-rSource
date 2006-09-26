@@ -355,7 +355,7 @@ C Data items.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
@@ -618,6 +618,7 @@ C General image option flags.
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
       MODIFY=.TRUE.
       MODBND=.TRUE.
@@ -820,6 +821,7 @@ C General image option flags.
         ITSNR=1
         ITGRD=1
         GRDIS=0.0
+        ITPPSW=0
 
         MODIFY=.TRUE.
         MODBND=.TRUE.

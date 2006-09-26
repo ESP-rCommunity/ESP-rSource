@@ -120,7 +120,7 @@ C IPV description.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
@@ -253,6 +253,7 @@ C General image option flags.
       ITOBS=0
       ITGRD=0
       GRDIS=0.0
+      ITPPSW=0
       IFS=1
       ITFS=1
       IMFS=1

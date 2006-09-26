@@ -154,7 +154,7 @@ C air flow reporting.
       character ll1*8,ll2*8,ll3*8,lodlabel*6 
       character zname*12,zdesc*64,zn*12
 
-      DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD)
+      DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
 
       integer YAXSET, ADDLIN
 
@@ -1096,14 +1096,27 @@ C If CRLST is true restrict node lists to internal node types.
 
 C Ask if only flows associated with a single node.
         if (CNLST) then
-          h(1)='Individual: get data for each connection separatly.'
-          h(2)='Total flow: sum data for selected connections. You'
-          h(3)='  will first be asked for the node related to the'
-          h(4)='  connections to be selected so that flow directions'
-          h(5)='  can be resolved.'
-          h(6)='Flow entering: sum of all flows entering the node. '
-          call easkabcd('Flow options: ',' ','individual connections',
-     &      'total of connections','total entering node','cancel',IDH,6)
+          h(1)='Individual connections: get data for each connection'
+          h(2)='  separatly and report separately.'
+          h(3)='Total of connections: sum data for selected con-'
+          h(4)='  nections. You will first be asked for the node which'
+          h(5)='  is related to the connections to be selected (in'
+          h(6)='  order to resolve flow directions.'
+          h(7)='Total entering node: sum of all flows into/towards the'
+          h(8)='  node (e.g. entering a room) from all connections'
+          h(9)='  to other internal and boundary nodes.'
+          h(10)=' Note that total flow exiting a node equals that '
+          h(11)=' entering it for a converged network.'
+          h(12)='Total infiltration: sum of all flows into/toward the'
+          h(13)='   node (e.g. entering a room) from boundary nodes.'
+          h(14)='Inter-node flow: asks for two nodes and reports back'
+          h(15)='  net flow between the nodes by summing up flows to '
+          h(16)='  and from one node to the other and vice versa'
+          call MENUATOL('Select a flow option',' ',           
+     &   'a individual connections','b total of connections', 
+     &   'c total entering node','d total from ambient',      
+     &   'e inter-nodal flow ','f cancel ',' ',' ',' ',' ',' ',
+     &   ' ',IDH,IDNO,16)  
           if(IDH.eq.1)then
             INODE=0
             itotal=0      
@@ -1129,7 +1142,22 @@ C Note: return INPKT and NNPKT for this case.
             call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,NH)
             INODE=0
             itotal=1       
-          elseif(IDH.eq.4)then
+          elseif(IDH.eq.4.or.idh.eq.5)then
+            NNPKT=NNOD
+            IF(IDH.EQ.5)NNPKT=1
+            PROMPT1='Select node for flow'
+            PROMPT2=' '
+            NH=0
+            call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,NH)
+            if(idh.eq.5)then
+              NNPKT=NNOD
+              PROMPT1='Select second node'
+              NH=0
+              call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,NH)
+            endif
+            INODE=0
+            itotal=1       
+          elseif(IDH.eq.6)then
             NMFGET=NMFGET-1
             goto 1
           endif
@@ -1401,7 +1429,7 @@ C otherwise add the extra entry.
                   endif
                 endif
  20           continue
-            else
+            elseif(idh.eq.3)then
 
 C Total flow into node.
               do 21 I=1,NNPKT
@@ -1422,7 +1450,7 @@ C If there are reporting slots available, copy the information set in
 C the previous IMFGETNO for use with additional connections.
                   if((NMFGET+1).GT.MFRS)then
                     call usrmsg('Number of items exceeded.',' ','P')
-                    goto 21
+                    goto 22
                   endif
                   NMFGET=NMFGET+1
                   IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
@@ -1439,8 +1467,131 @@ C the previous IMFGETNO for use with additional connections.
                   endif
                   write(GMFLABEL(NMFGET),'(3a)')'->',
      &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                ENDIF
+ 21           CONTINUE
+ 22           continue
+            elseif(idh.eq.4)then
+
+C Total flow into node from ambient
+              do 201 I=1,NNPKT
+                if (I.eq.1) then
+                  IMFGETNO(NMFGET,2)=-1
+                  IMFGETNO(NMFGET,3)=INPKT(I)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT(I))
+                  if(lnblnk(SUFFIX).le.5)then
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),11)
+                  else
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),9)
+                  endif
+                  write(GMFLABEL(NMFGET),'(3a)')'amb->',
+     &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                  NMFGET=NMFGET+1
+                  DO 211 NXT=1,7
+                    IMFGETNO(NMFGET,NXT)=IMFGETNO(NMFGET-1,NXT)
+ 211              CONTINUE
+                  write(GMFLABEL(NMFGET),'(3a)')'amb<-',
+     &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                else
+
+C If there are reporting slots available, copy the information set in
+C the previous IMFGETNO for use with additional connections.
+                  if((NMFGET+1).GT.MFRS)then
+                    call usrmsg('Number of items exceeded.',' ','P')
+                    goto 202
+                  endif
+                  NMFGET=NMFGET+1
+                  IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
+                  IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
+                  IMFGETNO(NMFGET,3)=INPKT(I)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT(I))
+                  IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
+                  IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
+                  IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  if(lnblnk(SUFFIX).le.5)then
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),11)
+                  else
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),9)
+                  endif
+                  write(GMFLABEL(NMFGET),'(3a)')'amb->',
+     &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                  NMFGET=NMFGET+1
+                  IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
+                  IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
+                  IMFGETNO(NMFGET,3)=INPKT(I)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT(I))
+                  IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
+                  IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
+                  IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  write(GMFLABEL(NMFGET),'(3a)')'amb<-',
+     &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
                 endif
- 21           continue
+ 201           continue
+ 202           continue
+            elseif(idh.eq.5)then
+
+C Inter-nodal flow
+              do 251 I=1,NNPKT
+                if (I.eq.1) then
+                  IMFGETNO(NMFGET,2)=-2
+                  IMFGETNO(NMFGET,3)=INPKT(I)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT2(I))
+                  if(lnblnk(SUFFIX).le.5)then
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),12)
+                    lnname2=MIN0(lnblnk(NDNAM(INPKT2(I))),12)
+                  else
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(I))),10)
+                    lnname2=MIN0(lnblnk(NDNAM(INPKT2(I))),12)
+                  endif
+                  write(GMFLABEL(NMFGET),'(4a)')
+     &              NDNAM(INPKT(I))(1:lnname),'->',
+     &              NDNAM(INPKT2(I))(1:lnname2),SUFFIX(1:lnblnk(SUFFIX))
+                  NMFGET=NMFGET+1
+                  DO 261 NXT=1,7
+                    IMFGETNO(NMFGET,NXT)=IMFGETNO(NMFGET-1,NXT)
+ 261              CONTINUE
+                  write(GMFLABEL(NMFGET),'(4a)')
+     &              NDNAM(INPKT2(I))(1:lnname2),'->',
+     &              NDNAM(INPKT(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                else
+
+C If there are reporting slots available, copy the information set in
+C the previous IMFGETNO for use with additional connections.
+                  if((NMFGET+1).GT.MFRS)then
+                    call usrmsg('Number of items exceeded.',' ','P')
+                    goto 203
+                  endif
+                  NMFGET=NMFGET+1
+                  IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
+                  IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
+                  IMFGETNO(NMFGET,3)=IMFGETNO(NMFGET-1,3)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT2(I))
+                  IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
+                  IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
+                  IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  if(lnblnk(SUFFIX).le.5)then
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(1))),12)
+                    lnname2=MIN0(lnblnk(NDNAM(INPKT2(I))),12)
+                  else
+                    lnname=MIN0(lnblnk(NDNAM(INPKT(1))),10)
+                    lnname2=MIN0(lnblnk(NDNAM(INPKT2(I))),12)
+                  endif
+                  write(GMFLABEL(NMFGET),'(4a)')
+     &            NDNAM(INPKT(1))(1:lnname),'->',
+     &            NDNAM(INPKT2(I))(1:lnname2),SUFFIX(1:lnblnk(SUFFIX))
+                  NMFGET=NMFGET+1
+                  IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
+                  IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
+                  IMFGETNO(NMFGET,3)=IMFGETNO(NMFGET-1,3)
+                  IMFGETNO(NMFGET,4)=-1*(INPKT2(I))
+                  IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
+                  IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
+                  IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+                  write(GMFLABEL(NMFGET),'(4a)')
+     &            NDNAM(INPKT2(I))(1:lnname2),'->',
+     &            NDNAM(INPKT(1))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
+                endif
+ 251           continue
+ 203           continue
             endif
           endif
 
@@ -1552,6 +1703,7 @@ C to arrays IMFGETNO and MFRECVR.
 C Update timestep array with new records.
 C Read required records based on flags in MFRECVR
       IUNIT=IFIL+4
+      NEXT=0
 
 C Calculate start record for specified day, hour, timestep.
 C Assuming at same frequency as building results
@@ -1569,6 +1721,10 @@ C          write (6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
 
 C Put requested data into correct slots.
       do 20 I=1,NMFGET
+        IF(NEXT.EQ.1)then
+          next=0
+          GOTO 20
+        endif
         if (IMFGETNO(I,1).eq.1) then
 
 C Node pressure.
@@ -1591,11 +1747,25 @@ C Single connection. Depending on IMFGETNO(I,4) return +ive, -ive or net flow.
             else
               FLOWVALS(I)=FRDAT(IROW,2)+FRDAT(IROW,3)
             endif
-          else
+          elseif(IMFGETNO(I,2).eq.0)then
 
-C All connections, return total flow into node.
+C All connections, return total flow INTO the node.
             call MFSUMCON(I,1,FLOW1,FLOW2)
-            FLOWVALS(I)=FLOW1+FLOW2
+            FLOWVALS(I)=FLOW1
+          elseif(IMFGETNO(I,2).eq.-1) then
+
+C Return flow to and from ambient for this node
+            call MFSUMCON(I,1,FLOW1,FLOW2)
+            FLOWVALS(I)=FLOW1
+            FLOWVALS(I+1)=FLOW2
+            NEXT=1
+          elseif(IMFGETNO(I,2).eq.-2) then
+
+C Return inter-node flow for two nodes
+            call MFSUMCON(I,1,FLOW1,FLOW2)
+            FLOWVALS(I)=FLOW1
+            FLOWVALS(I+1)=FLOW2
+            NEXT=1
           endif
         elseif (IMFGETNO(I,1).eq.4) then
 
@@ -1611,11 +1781,25 @@ C Single connection. Depending on IMFGETNO(I,4) return +ive, -ive or net flow.
             else
               FLOWVALS(I)=VFLOW1+VFLOW2
             endif
-          else
+          elseif(IMFGETNO(I,2).eq.0)then
 
 C All connections, return total flow into node.
             call MFSUMCON(I,2,VFLOW1,VFLOW2)
-            FLOWVALS(I)=VFLOW1+VFLOW2
+            FLOWVALS(I)=VFLOW1
+          elseif(IMFGETNO(I,2).eq.-1) then
+
+C Return flow to and from ambient for this node
+            call MFSUMCON(I,2,VFLOW1,VFLOW2)
+            FLOWVALS(I)=VFLOW1
+            FLOWVALS(I+1)=VFLOW2
+            NEXT=1
+          elseif(IMFGETNO(I,2).eq.-2) then
+
+C Return inter-node flow for two nodes
+            call MFSUMCON(I,2,VFLOW1,VFLOW2)
+            FLOWVALS(I)=VFLOW1
+            FLOWVALS(I+1)=VFLOW2
+            NEXT=1
           endif
         elseif (IMFGETNO(I,1).eq.5) then
 
@@ -1631,12 +1815,30 @@ C return +ive, -ive or net flow.
               FLOWVALS(I)=VFLOW1+VFLOW2
             endif
             FLOWVALS(I)=FLOWVALS(I)*3600.0/SUPNOD(IMFGETNO(I,3),2)
-          else
+          elseif(IMFGETNO(I,2).eq.0)then
 
 C All connections, return total flow into node.
             call MFSUMCON(I,2,VFLOW1,VFLOW2)
-            FLOWVALS(I)=VFLOW1+VFLOW2
+            FLOWVALS(I)=VFLOW1
             FLOWVALS(I)=FLOWVALS(I)*3600.0/SUPNOD(IMFGETNO(I,3),2)
+          elseif(IMFGETNO(I,2).eq.-1) then
+
+C Return flow to and from ambient for this node
+            call MFSUMCON(I,2,VFLOW1,VFLOW2)
+            FLOWVALS(I)=VFLOW1
+            FLOWVALS(I+1)=VFLOW2
+            FLOWVALS(I)=FLOWVALS(I)*3600.0/SUPNOD(IMFGETNO(I,3),2)
+            FLOWVALS(I+1)=FLOWVALS(I+1)*3600.0/SUPNOD(IMFGETNO(I,3),2)
+            NEXT=1
+          elseif(IMFGETNO(I,2).eq.-2) then
+
+C Return inter-node flow for two nodes
+            call MFSUMCON(I,2,VFLOW1,VFLOW2)
+            FLOWVALS(I)=VFLOW1
+            FLOWVALS(I+1)=VFLOW2
+            FLOWVALS(I)=FLOWVALS(I)*3600.0/SUPNOD(IMFGETNO(I,3),2)
+            FLOWVALS(I+1)=FLOWVALS(I+1)*3600.0/SUPNOD(IMFGETNO(I,3),2)
+            NEXT=1
           endif
         elseif (IMFGETNO(I,1).eq.6) then
 
@@ -1738,14 +1940,16 @@ C MASS2VOL: Converts mass flow rate to volume flow rate (kg/s) -> (m^3/s)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)
+      CHARACTER CONTMNAM*12
 
 C Depending on flow direction calc density for sending node temperature.
       IFLD=NDFLD(NODPS(ICON))
       TPOS=FRDAT(2,NODPS(ICON))
       TNEG=FRDAT(2,NODNE(ICON))
-      FLOW1=FRDAT(2+ICON,2)
+      FLOW1=FRDAT(2+ICON+NCONTM,2)
       if (FLOW1.gt.0.0) then
         VFLOW1=FLOW1/DENSIT(IFLD,TPOS)
       else
@@ -1773,6 +1977,7 @@ C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
 #include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -1866,7 +2071,8 @@ C          write (6,'(3i4,4f8.4)') NODE,IDPS,IDNE,FLOW1,FLOW2,FLIN,FLOUT
 
 C Negate FLOUT (the above sum results in positive values for both flows).
         FLOUT=FLOUT*(-1.0)
-      else
+      elseif(ABS(IMFGETNO(IG,4)).eq.IMFGETNO(IG,3)
+     &       .AND.IMFGETNO(IG,2).EQ.0)THEN
 
 C All valid connections to node=-1*IMFGETNO(IG,4)
         NODE=abs(IMFGETNO(IG,4))
@@ -1911,12 +2117,102 @@ C or first node then a +ive flow is leaving the node and vice versa).
             endif
           endif
  30     continue
+      elseif(ABS(IMFGETNO(IG,4)).eq.IMFGETNO(IG,3)
+     &       .AND.IMFGETNO(IG,2).EQ.-1)THEN
 
-C Set flout to zero so that ac/h gets correct value.
-        FLOUT=0.0
+C All valid connections to node=-1*IMFGETNO(IG,4) to/from ambient
+        NODE=abs(IMFGETNO(IG,4))
+        do 301 ICNN=1,NCNN
+          IDPS=NODPS(ICNN)
+          IDNE=NODNE(ICNN)
+
+C Get data for current connection.
+          if (IUNIT.eq.1) then
+            IROW=2+NCONTM+ICNN
+            FLOW1=FRDAT(IROW,2)
+            FLOW2=FRDAT(IROW,3)
+          elseif (IUNIT.eq.2) then
+            call MASS2VOL(ICNN,FLOW1,FLOW2)
+          elseif (IUNIT.eq.3) then
+            call MASS2VOL(ICNN,FLOW1,FLOW2)
+          endif
+
+C Sum flows depending on connection definition (If NODE id the +ive 
+C or first node then a +ive flow is leaving the node and vice versa).
+          if (IDPS.eq.NODE.AND.NDTYP(IDNE).GE.2) then
+            if (FLOW1.gt.0.0) then
+              FLOUT=FLOUT+FLOW1
+            else
+              FLIN=FLIN-FLOW1
+            endif
+            if (FLOW2.gt.0.0) then
+              FLOUT=FLOUT+FLOW2
+            else
+              FLIN=FLIN-FLOW2
+            endif
+          elseif(IDNE.eq.NODE.AND.NDTYP(IDPS).GE.2)then
+            if (FLOW1.gt.0.0) then
+              FLIN=FLIN+FLOW1
+            else
+              FLOUT=FLOUT-FLOW1
+            endif
+            if (FLOW2.gt.0.0) then
+              FLIN=FLIN+FLOW2
+            else
+              FLOUT=FLOUT-FLOW2
+            endif
+          endif
+ 301    continue
+      elseif(IMFGETNO(IG,4).lt.0.and.IMFGETNO(IG,3).gt.0.and.
+     &       IMFGETNO(IG,2).EQ.-2)THEN
+
+C Net flows between nodes -1*(IMFGETNO(IG,4) and (IMFGETNO(IG,3)
+        NODE=abs(IMFGETNO(IG,4))
+        JNOD=ABS(IMFGETNO(IG,3))
+        do 351 ICNN=1,NCNN
+          IDPS=NODPS(ICNN)
+          IDNE=NODNE(ICNN)
+
+C Get data for current connection.
+          if (IUNIT.eq.1) then
+            IROW=2+NCONTM+ICNN
+            FLOW1=FRDAT(IROW,2)
+            FLOW2=FRDAT(IROW,3)
+          elseif (IUNIT.eq.2) then
+            call MASS2VOL(ICNN,FLOW1,FLOW2)
+          elseif (IUNIT.eq.3) then
+            call MASS2VOL(ICNN,FLOW1,FLOW2)
+          endif
+
+C Sum flows depending on connection definition (If NODE id the +ive 
+C or first node then a +ive flow is leaving the node and vice versa).
+          if (IDPS.eq.NODE.AND.IDNE.EQ.JNOD) then
+            if (FLOW1.gt.0.0) then
+              FLOUT=FLOUT+FLOW1
+            else
+              FLIN=FLIN-FLOW1
+            endif
+            if (FLOW2.gt.0.0) then
+              FLOUT=FLOUT+FLOW2
+            else
+              FLIN=FLIN-FLOW2
+            endif
+          elseif(IDNE.eq.NODE.AND.IDPS.EQ.JNOD)then
+            if (FLOW1.gt.0.0) then
+              FLIN=FLIN+FLOW1
+            else
+              FLOUT=FLOUT-FLOW1
+            endif
+            if (FLOW2.gt.0.0) then
+              FLIN=FLIN+FLOW2
+            else
+              FLOUT=FLOUT-FLOW2
+            endif
+          endif
+ 351    continue
       endif
 
-C      write (6,'(2F8.4)') FLIN,FLOUT
+C         write (6,'(2F8.4)') FLIN,FLOUT
       return
       end
 

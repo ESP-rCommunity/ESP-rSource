@@ -21,7 +21,9 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib.h>
 #include <esp-r.h>
+#include <commons.h>
 
 #define ESP_LIST_MAIN
 #include <esp_list.h>
@@ -79,6 +81,8 @@ gint xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 
 gint menu_pix_wd;	/* pixel width of initial menu (based on nb of characters *imenuchw) */
 long int menuchw;	/* char width of initial menu (from fortran) */
+
+char zonenames[MCOM][13];  /* g pointer array to current zone names - filled by calling the fortran routine getzonenames() */
 
 /* event loops */
 /* configure_event currently not called, but might be included at
@@ -258,6 +262,17 @@ void esru_ask_disp ( void)
    long int initialit;
    initialit = 0;
    strcpy(buf,cappl);	/* copy global text variable for current application to buf */
+   askabout_(buf,&initialit);
+}
+
+/* esru_ask_wire() - display wireframe help text in a new window via call to ask_about_
+ * this is a call-back function. This wrapper is needed because askabout takes parameters. */
+void esru_ask_wire ( void)
+{
+   char buf[5];
+   long int initialit;
+   initialit = 1;
+   strcpy(buf,"wire");	/* copy global text variable for current application to buf */
    askabout_(buf,&initialit);
 }
 
@@ -631,6 +646,502 @@ void esru_wire_tog ( void)
   wiretog_(&avail_wire);  /* Deal with user selection of wireframe control  */
 }
 
+/* putzonename(name) - add name to zonenames char array */
+void putzonename_ (char* name, long int* id,  int length)
+{
+   gchar *name_local;
+   int zoneid = (int) *id;
+
+   name_local = g_strndup(name, (gsize) length);
+   //fprintf(stderr,"number of zone %d\n", zoneid);
+   //fprintf(stderr,"name of zone %s\n",name_local);
+   /* copy local string to char array*/
+   strcpy(zonenames[zoneid-1],name_local);
+   //fprintf(stderr,"zone name%s\n",zonenames[zoneid-1]);
+}
+
+/* esru_wire_ctl() - wireframe control.
+    This routine alters the contents of the following common block/struct directly:
+      ray2
+      image
+    On pressing 'apply' the fortran routine GDUPDATE is called.
+    On pressing 'OK' GDUPDATE is called and the dialog closed.*/
+void esru_wire_ctl ( void)
+{
+   /* Main popup widget */
+   GtkWidget *control;
+
+   /* Generic display wigets - reused several times */
+   GtkWidget *hbox, *vbox, *label, *spinner, *frame, *table;
+
+   /* Specific widgets - each will have a value passed to and from fortran */
+   GtkObject *EyePointValueX, *EyePointValueY, *EyePointValueZ;
+   GtkObject *ViewPointValueX, *ViewPointValueY, *ViewPointValueZ;
+   GtkWidget *ViewBoundOptimum;
+   GtkObject *ViewAngleValue;
+   GtkWidget *DisplayZoneName, *DisplaySurfaceName, *DisplayVertexNumbers;
+   GtkWidget *DisplaySurfaceNormals, *DisplaySiteGrid, *DisplaySiteOrigin;
+   GtkWidget *GridSpacingOtimum;
+   GtkObject *GridSpacingDistance;
+   GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev, *ViewFromSun;
+   GtkWidget *zone_button[MCOM];
+   GtkWidget *IncludeAll, *IncludeSurfaces, *IncludeExternal, *IncludePartition;
+   GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
+   GtkWidget *HighDefault, *HighConstr, *HighOpaque, *HighTrans, *HighPartAtt;
+
+   gint nrows, irow, icol, izone, itchar, ichar, result;
+   int no_valid_event;
+   long int ibx,iby,more;	/* set default position of help */
+   long int ipflg,iuresp;	/* response from pop-up help */
+
+   esru_ask_wire();	/* instanciate the help associated with this interface */
+
+   control = gtk_dialog_new_with_buttons("Wireframe control",
+     GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
+     GTK_STOCK_HELP, GTK_RESPONSE_HELP,
+     GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
+     GTK_STOCK_OK, GTK_RESPONSE_OK,NULL);
+
+   /* create eye point dialog (label and three spinner boxes) */
+   frame = gtk_frame_new ("View orientation");
+   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
+   vbox = gtk_vbox_new (FALSE, 1);
+   hbox = gtk_hbox_new (FALSE, 1);
+   label = gtk_label_new ("Eye point (x,y,z):");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   EyePointValueX = gtk_adjustment_new ((gdouble) image_.EYEM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueX), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   EyePointValueY = gtk_adjustment_new ((gdouble) image_.EYEM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueY), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   EyePointValueZ = gtk_adjustment_new ((gdouble) image_.EYEM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueZ), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   gtk_container_add (GTK_CONTAINER (vbox),hbox);
+
+   /* create view point dialog (label and three spinner boxes) */
+   hbox = gtk_hbox_new (FALSE, 1);
+   label = gtk_label_new ("View point (x,y,z):");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   ViewPointValueX = gtk_adjustment_new ((gdouble) image_.VIEWM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueX), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   ViewPointValueY = gtk_adjustment_new ((gdouble) image_.VIEWM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueY), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   ViewPointValueZ = gtk_adjustment_new ((gdouble) image_.VIEWM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueZ), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   gtk_container_add (GTK_CONTAINER (vbox),hbox);
+
+   /* create view bound dialog (radio buttons with spinner box) */
+   hbox = gtk_hbox_new (FALSE, 1);
+   label = gtk_label_new ("View bounds:");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   ViewBoundOptimum = gtk_check_button_new_with_label ("optimum");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewBoundOptimum);
+   if (ray2_.ITBND == 1 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ViewBoundOptimum), TRUE);
+   }
+   label = gtk_label_new ("angle (deg):");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   ViewAngleValue = gtk_adjustment_new ((gdouble) image_.ANG, 0.001, 90., 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewAngleValue), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   gtk_container_add (GTK_CONTAINER (vbox),hbox);
+   gtk_container_add (GTK_CONTAINER (frame),vbox);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
+
+   /* create a table of display toggles */
+   frame = gtk_frame_new ("Display information toggles");
+   gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
+   /* set number of rows and columns */
+   table = gtk_table_new (2, 3, TRUE);
+   gtk_container_add (GTK_CONTAINER (frame), table);
+   DisplayZoneName = gtk_check_button_new_with_label ("Zone names");
+   /* attach to column and row (note different order to above!) */
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplayZoneName, 0, 1, 0, 1);
+   if (ray2_.ITZNM == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplayZoneName), TRUE);
+   }
+   DisplaySurfaceName = gtk_check_button_new_with_label ("Surface names");
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplaySurfaceName, 0, 1, 1, 2);
+   if (ray2_.ITSNM == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySurfaceName), TRUE);
+   }
+   DisplayVertexNumbers = gtk_check_button_new_with_label ("Vertex numbers");
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplayVertexNumbers, 1, 2, 0, 1);
+   if (ray2_.ITVNO == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplayVertexNumbers), TRUE);
+   }
+   DisplaySurfaceNormals = gtk_check_button_new_with_label ("Surface normals");
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplaySurfaceNormals, 1, 2, 1, 2);
+   if (ray2_.ITSNR == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySurfaceNormals), TRUE);
+   }
+   DisplaySiteGrid = gtk_check_button_new_with_label ("Site grid");
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplaySiteGrid, 2, 3, 0, 1);
+   if (ray2_.ITGRD == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySiteGrid), TRUE);
+   }
+   DisplaySiteOrigin = gtk_check_button_new_with_label ("Site origin");
+   gtk_table_attach_defaults (GTK_TABLE (table), DisplaySiteOrigin, 2, 3, 1, 2);
+   if (ray2_.ITORG == 0 ) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (DisplaySiteOrigin), TRUE);
+   }
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
+
+  /* create display grid dialog (radio buttons with spinner box) */
+   frame = gtk_frame_new ("Display grid");
+   gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
+   hbox = gtk_hbox_new (FALSE, 1);
+   gtk_container_add (GTK_CONTAINER (frame), hbox);
+   label = gtk_label_new ("Spacing:");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   GridSpacingOtimum = gtk_check_button_new_with_label ("optimum");
+   gtk_container_add (GTK_CONTAINER (hbox),GridSpacingOtimum);
+   label = gtk_label_new (" distance (m):");
+   gtk_container_add (GTK_CONTAINER (hbox),label);
+   GridSpacingDistance = gtk_adjustment_new ((gdouble) ray2_.GRDIS, -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (GridSpacingDistance), 1., 0);
+   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
+   gtk_container_add (GTK_CONTAINER (hbox),spinner);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
+
+   /* create zones to display list  <<pick up zone names here>>*/
+   nrows = 1 + c1_.NCOMP/4;
+   irow = 0;
+   //fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
+   //fprintf(stderr,"number of rows %d\n",nrows);
+   //fprintf(stderr,"number of rows %f\n",nrows);
+   frame = gtk_frame_new ("Zones to display");
+   gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
+   table = gtk_table_new (nrows, 4, TRUE);
+   gtk_container_add (GTK_CONTAINER (frame), table);
+   getzonenames_();
+   izone = 0;
+   while (izone < c1_.NCOMP) {
+     for(icol = 0; icol < 4; icol++) {	/* fill columns in order  <<why does the while loop not work?>>*/
+       fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
+       zone_button[izone] = gtk_check_button_new_with_label (zonenames[izone]);
+       gtk_table_attach_defaults (GTK_TABLE (table), zone_button[izone], icol, icol+1, irow, irow+1);
+       izone++;
+     }
+     irow++;
+   }
+   /* Set active zones.  Remember that C starts at 0, therefore zone number 2 is number 1 here!
+      This means that the zone referenced in the fortran
+      code is one more than in the c code (hence the -1 below).
+   */
+   for (izone = 0; izone < gzonpik_.nzg; izone++) {
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[gzonpik_.nznog[izone]-1]), TRUE);
+   }
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
+
+
+   /* create a table of display toggles */
+   frame = gtk_frame_new ("Display options");
+   gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
+   /* set number of rows and columns */
+   table = gtk_table_new (3, 2, FALSE);
+   gtk_container_add (GTK_CONTAINER (frame), table);
+   label = gtk_label_new ("View type:");
+   /* attach to column and row (note different order to above!) */
+   gtk_table_attach_defaults (GTK_TABLE (table), label, 0, 1, 0, 1);
+   hbox = gtk_hbox_new (FALSE, 1);
+/*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
+
+/* Use variable ray2_.ITPPSW = 0 for perspective, ray2_.ITPPSW = 1 for plan,
+ * ray2_.ITPPSW = 2 for south elevation, ray2_.ITPPSW = 2 for east elevation
+ * to drive gtk_toggle_button_set_active call
+ */
+   ViewPerspective = gtk_radio_button_new_with_label (NULL, "Perspective");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewPerspective);
+   if (ray2_.ITPPSW == 0) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewPerspective), TRUE);
+   }
+   ViewPlan = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "Plan");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewPlan);
+   if (ray2_.ITPPSW == 1) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewPlan), TRUE);
+   }
+   ViewEastElev = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "East elevation");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewEastElev);
+   if (ray2_.ITPPSW == 3) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewEastElev), TRUE);
+   }
+   ViewNorthElev = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "South elevation");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewNorthElev);
+   if (ray2_.ITPPSW == 2) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewNorthElev), TRUE);
+   }
+   ViewFromSun = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "View from sun");
+   gtk_container_add (GTK_CONTAINER (hbox),ViewFromSun);
+   if (ray2_.ITPPSW == 4) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewFromSun), TRUE);
+   }
+   gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 0, 1);
+   label = gtk_label_new ("Include:");
+   gtk_table_attach_defaults (GTK_TABLE (table), label, 0, 1, 1, 2);
+   hbox = gtk_hbox_new (FALSE, 1);
+/*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
+
+   IncludeAll = gtk_radio_button_new_with_label (NULL,"Surf+Obs");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeAll);
+   if (ray2_.ITDSP == 0) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeAll), TRUE);
+   }
+   IncludeSurfaces = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeSurfaces);
+   if (ray2_.ITDSP == 1) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurfaces), TRUE);
+   }
+   IncludeExternal = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Extrn");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeExternal);
+   if (ray2_.ITDSP == 2) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeExternal), TRUE);
+   }
+   IncludePartition = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Partn");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludePartition);
+   if (ray2_.ITDSP == 3) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludePartition), TRUE);
+   }
+   IncludeSimilar = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Similar");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeSimilar);
+   if (ray2_.ITDSP == 4) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSimilar), TRUE);
+   }
+   IncludeSurObsGrnd = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Surf+Obs+Grnd");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeSurObsGrnd);
+   if (ray2_.ITDSP == 5) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeSurObsGrnd), TRUE);
+   }
+   IncludeGrnd = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (IncludeAll), "Ground");
+   gtk_container_add (GTK_CONTAINER (hbox),IncludeGrnd);
+   if (ray2_.ITDSP == 6) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(IncludeGrnd), TRUE);
+   }
+
+   gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 1, 2);
+   label = gtk_label_new ("Highlight:");
+   gtk_table_attach_defaults (GTK_TABLE (table), label, 0, 1, 2, 3);
+   hbox = gtk_hbox_new (FALSE, 1);
+/*    gtk_container_add (GTK_CONTAINER (hbox),label); this causes a GTK warning about a label widget inside a table */
+   HighDefault = gtk_radio_button_new_with_label (NULL,"Default");
+   gtk_container_add (GTK_CONTAINER (hbox),HighDefault);
+   if (ray2_.ITHLS == 0) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighDefault), TRUE);
+   }
+   HighConstr = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "By construction");
+   gtk_container_add (GTK_CONTAINER (hbox),HighConstr);
+   if (ray2_.ITHLS == 1) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighConstr), TRUE);
+   }
+   HighOpaque = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Opaque");
+   gtk_container_add (GTK_CONTAINER (hbox),HighOpaque);
+   if ((ray2_.ITHLS == 2) && (ray2_.ITHLZ == 1)) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighOpaque), TRUE);
+   }
+   HighTrans = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Transparent");
+   gtk_container_add (GTK_CONTAINER (hbox),HighTrans);
+   if ((ray2_.ITHLS == 2) && (ray2_.ITHLZ == 2)) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighTrans), TRUE);
+   }
+   HighPartAtt = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (HighDefault), "Partially attributed");
+   gtk_container_add (GTK_CONTAINER (hbox),HighPartAtt);
+   if (ray2_.ITHLS == 3) {
+     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(HighPartAtt), TRUE);
+   }
+   gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 2, 3);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
+   gtk_widget_show_all (control);
+
+
+   /* Set dialog properties and wait for user response */
+   gtk_window_set_modal (GTK_WINDOW (control), TRUE);
+   gtk_window_set_transient_for(GTK_WINDOW (control), GTK_WINDOW (window));
+
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
+      example, a help dialog directly from here */
+   no_valid_event = TRUE;
+   while ( no_valid_event ) {
+     result = gtk_dialog_run (GTK_DIALOG (control));
+     switch (result) {
+       case GTK_RESPONSE_OK:
+         image_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
+         image_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
+         image_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
+         image_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
+         image_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
+         image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
+         image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
+         image_.HANG = image_.ANG/2.;
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
+           ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
+           ray2_.ITSNM = 0;} else {ray2_.ITSNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayVertexNumbers)) == TRUE) {
+           ray2_.ITVNO = 0;} else {ray2_.ITVNO = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceNormals)) == TRUE) {
+           ray2_.ITSNR = 0;} else {ray2_.ITSNR = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteGrid)) == TRUE) {
+           ray2_.ITGRD = 0;} else {ray2_.ITGRD = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteOrigin)) == TRUE) {
+           ray2_.ITORG = 0;} else {ray2_.ITORG = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (GridSpacingOtimum)) == TRUE) {
+           ray2_.GRDIS = 0.;} else {ray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
+           ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
+         /* Remember that C starts at zero, so add one to the zoneid to get the correct value
+            for the fortran code.
+         */
+         gzonpik_.nzg = 0;
+         for (izone = 0; izone < c1_.NCOMP; izone++) {
+           if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
+             gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
+         }
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
+           ray2_.ITDSP = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
+           ray2_.ITDSP = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeExternal)) == TRUE) {
+           ray2_.ITDSP = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludePartition)) == TRUE) {
+           ray2_.ITDSP = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSimilar)) == TRUE) {
+           ray2_.ITDSP = 4;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObsGrnd)) == TRUE) {
+           ray2_.ITDSP = 5;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
+           ray2_.ITDSP = 6;}
+
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
+           ray2_.ITHLS = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighConstr)) == TRUE) {
+           ray2_.ITHLS = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighOpaque)) == TRUE) {
+           ray2_.ITHLS = 2;	/* Signal opaque by setting both ITHLS and ITHLZ */
+           ray2_.ITHLZ = 1;
+         }
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighTrans)) == TRUE) {
+           ray2_.ITHLS = 2;	/* Signal transparent by setting both ITHLS and ITHLZ */
+           ray2_.ITHLZ = 2;
+         }
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighPartAtt)) == TRUE) {
+           ray2_.ITHLS = 3;}
+
+/* Set which view type */
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPerspective)) == TRUE) {
+           ray2_.ITPPSW = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPlan)) == TRUE) {
+           ray2_.ITPPSW = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewNorthElev)) == TRUE) {
+           ray2_.ITPPSW = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
+           ray2_.ITPPSW = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
+           ray2_.ITPPSW = 4;}
+
+         gdupdate_();
+         no_valid_event = FALSE;
+         break;
+       case GTK_RESPONSE_APPLY:
+         image_.EYEM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueX));
+         image_.EYEM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueY));
+         image_.EYEM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (EyePointValueZ));
+         image_.VIEWM[0] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueX));
+         image_.VIEWM[1] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueY));
+         image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
+         image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
+         image_.HANG = image_.ANG/2.;
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
+           ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
+           ray2_.ITSNM = 0;} else {ray2_.ITSNM = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayVertexNumbers)) == TRUE) {
+           ray2_.ITVNO = 0;} else {ray2_.ITVNO = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceNormals)) == TRUE) {
+           ray2_.ITSNR = 0;} else {ray2_.ITSNR = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteGrid)) == TRUE) {
+           ray2_.ITGRD = 0;} else {ray2_.ITGRD = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySiteOrigin)) == TRUE) {
+           ray2_.ITORG = 0;} else {ray2_.ITORG = 1;}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (GridSpacingOtimum)) == TRUE) {
+           ray2_.GRDIS = 0.;} else {ray2_.GRDIS = gtk_adjustment_get_value(GTK_ADJUSTMENT (GridSpacingDistance));}
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
+           ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
+         /* Remember that C starts at zero, so add one to the zoneid to get the correct value
+            for the fortran code.
+         */
+         gzonpik_.nzg = 0;
+         for (izone = 0; izone < c1_.NCOMP; izone++) {
+           if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
+             gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
+         }
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
+           ray2_.ITDSP = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
+           ray2_.ITDSP = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeExternal)) == TRUE) {
+           ray2_.ITDSP = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludePartition)) == TRUE) {
+           ray2_.ITDSP = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSimilar)) == TRUE) {
+           ray2_.ITDSP = 4;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurObsGrnd)) == TRUE) {
+           ray2_.ITDSP = 5;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeGrnd)) == TRUE) {
+           ray2_.ITDSP = 6;}
+
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighDefault)) == TRUE) {
+           ray2_.ITHLS = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighConstr)) == TRUE) {
+           ray2_.ITHLS = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighOpaque)) == TRUE) {
+           ray2_.ITHLS = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighTrans)) == TRUE) {
+           ray2_.ITHLS = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (HighPartAtt)) == TRUE) {
+           ray2_.ITHLS = 3;}
+
+/* Set which view type */
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPerspective)) == TRUE) {
+           ray2_.ITPPSW = 0;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewPlan)) == TRUE) {
+           ray2_.ITPPSW = 1;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewNorthElev)) == TRUE) {
+           ray2_.ITPPSW = 2;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
+           ray2_.ITPPSW = 3;}
+         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
+           ray2_.ITPPSW = 4;}
+
+         gdupdate_();
+         esru_ask_wire();	/* re-instanciate the help associated with this interface */
+         break;
+       case GTK_RESPONSE_HELP:
+
+/* need a mechanism for instanciating help array */
+         ibx= 0; iby= 0; more = 0;
+         egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
+         break;
+       default:
+         no_valid_event = FALSE;
+         break;
+       }
+     }
+   gtk_widget_destroy (control);
+
+}
+
 /* ******  Notify level for wireframe button ********** */
 void updwire_(avail)
   long int *avail;
@@ -726,15 +1237,23 @@ GtkWidget *create_static_menus( void )
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
                              G_CALLBACK (esru_elev_down), NULL);
 
-   menu_items = gtk_menu_item_new_with_label ("wireframe controls");
-   gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
-   g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
-                             G_CALLBACK (esru_wire_pick), NULL);
+/* disable wireframe controls and wireframe toggles
+ *  menu_items = gtk_menu_item_new_with_label ("wireframe controls");
+ *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+ *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+ *                            G_CALLBACK (esru_wire_pick), NULL);
+ *
+ *  menu_items = gtk_menu_item_new_with_label ("wireframe toggles");
+ *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+ *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+ *                            G_CALLBACK (esru_wire_tog), NULL);
+ */
 
-   menu_items = gtk_menu_item_new_with_label ("wireframe toggles");
+/* proforma for all wireframe controls and toggles */
+   menu_items = gtk_menu_item_new_with_label ("wireframe control");
    gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
-                             G_CALLBACK (esru_wire_tog), NULL);
+                             G_CALLBACK (esru_wire_ctl), NULL);
 
 
 /* setup the help (right) static menu */

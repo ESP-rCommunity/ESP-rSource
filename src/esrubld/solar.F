@@ -573,6 +573,12 @@ C No activation level.
                   IBOFOT(ICOMP,I)=1
                   ECRAT(ICOMP,I)=0.0
                   NBPONT(ICOMP,I)=K
+                ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.-99) THEN
+
+C Sensing time to swtich to alternative properties.
+                  IBOFOT(ICOMP,I)=1
+                  ECRAT(ICOMP,I)=0.0
+                  NBPONT(ICOMP,I)=K
                 ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.1) THEN
 
 C External air temperature activation.

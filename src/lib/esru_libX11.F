@@ -8659,20 +8659,22 @@ C then it represents the zone which is currently being edited.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
-C       similar = 4, surfs + obs+ ground = 5, ground only = 6
+C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
+C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
 C ITBND bounds toggle: static = 0, optimum = 1, zone focus = 2
-C ITEPT is
+C ITEPT is not yet used.
 C ITZNM zone name toggle: display = 0, hidden = 1
 C ITSNM surface name toggle: display = 0, hidden = 1
 C ITORG origin toggle: display = 0, hidden = 1
 C ITSNR surf normal toggle: display = 0, hidden = 1.
 C ITOBS obstruction toggle: not yet enabled.
 C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITHLZ additional qualifier for ITHLS.
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
+C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
@@ -8700,7 +8702,7 @@ C If not in graphic mode return.
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
       IER=0
-      idr=0
+      ITPPSW=0
       IUF=IFIL+1
 
 C Menu loop.
@@ -8710,13 +8712,13 @@ C Menu loop.
       WRITE(ITEMS(1),'(A,3F6.1)')'a eyepoint :',(EYEM(J),J=1,3)
       WRITE(ITEMS(2),'(A,3F6.1)')'b viewpoint:',(VIEWM(J),J=1,3)
       WRITE(ITEMS(3),'(A,F6.1)') 'c angle of view:',ANG
-      if(idr.eq.0)then
+      if(ITPPSW.eq.0)then
         ITEMS(4) ='d Display >> perspective     '
-      elseif(idr.eq.1)then
+      elseif(ITPPSW.eq.1)then
         ITEMS(4) ='d Display >> plan view       '
-      elseif(idr.eq.2)then
+      elseif(ITPPSW.eq.2)then
         ITEMS(4) ='d Display >> south elevation '
-      elseif(idr.eq.3)then
+      elseif(ITPPSW.eq.3)then
         ITEMS(4) ='d Display >> west elevation  '
       endif
       ITEMS(5)   =' _____________________________  '
@@ -8816,18 +8818,18 @@ C Hilight surface based on OPQ/TRAN or material.
 
 C If image info altered (viewpoint) then update display.
       IF(MODIFY)THEN
-        if(idr.eq.0)then
+        if(ITPPSW.eq.0)then
           CALL INLNST(1)
           CALL ADJVIEW(ITRC,IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
           MODIFY=.FALSE.
-        elseif(idr.eq.1)then
+        elseif(ITPPSW.eq.1)then
           if(redraw)call PLELEV(IUF,'P',ier)
-        elseif(idr.eq.2)then
+        elseif(ITPPSW.eq.2)then
           if(redraw)call PLELEV(IUF,'S',ier)
-        elseif(idr.eq.3)then
+        elseif(ITPPSW.eq.3)then
           if(redraw)call PLELEV(IUF,'E',ier)
         endif
       ENDIF
@@ -8902,11 +8904,11 @@ C Present viewpoint coords for editing then parse data from HOLD.
         H(2)='the elevations are primarily for checking. '
         CALL EASKABCD(' View choices: ',' ','Perspective',
      &    'plan view ','south elevation ','west elevation ?',IW,2)
-        if(IW-1.ne.idr)then
+        if(IW-1.ne.ITPPSW)then
           redraw =.true.
           MODIFY=.TRUE.
         endif
-        idr=IW-1
+        ITPPSW=IW-1
       ELSEIF(IVERT.EQ.6)THEN
 
 C If configuration file loaded then can filter surfaces by location.
@@ -8959,6 +8961,8 @@ C Hilight control.
           MODIFY=.TRUE.
         endif
       ELSEIF(IVERT.EQ.8)THEN
+
+C So what does ITBND=3 (focus on zone) actually mean?
         ITBND=ITBND+1
         IF(ITBND.GT.1)ITBND=0
         MODIFY=.TRUE.

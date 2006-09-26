@@ -42,7 +42,7 @@ C Revised to take in configuration file and zone focus.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
@@ -204,6 +204,7 @@ C General image option flags.
       ITSNR=0
       ITGRD=1
       GRDIS=0.0
+      ITPPSW=0
 
 c Initialise output device, assume minimal trace.
       MMOD=MODL
