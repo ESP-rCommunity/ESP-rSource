@@ -68,8 +68,16 @@ C Strings describing plant components.
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
+C Strings describing component input
+      common/hfpar/hfpdsc(mpcom,madata)
+      character hfpdsc*68
+
       character pcdesc*80, pcname*15,LPNF*72
       character*72 lpcdb, lpnam, laprob, lapres, lafres
+
+C Common controlling format of plant network file
+      common/PLNFMT/bPLN_format_long
+      logical bPLN_format_long
 
 C Open the file. 
       CALL EFOPSEQ(IFPNF,LPNF,4,IER)
@@ -104,10 +112,29 @@ C Write components definitions.
            write(IFPNF,'(i5,1x,i5)')npi(ipcomp),5
          endif
          if(npi(ipcomp).ne.0) then
-            write(IFPNF,112)
-     &               (tadata(ipcomp,jj),jj=1,npi(ipcomp))
-  112       format(12(6(g12.5,1x),/))
-            if(amod(float(npi(ipcomp)),6.0).eq.0.0) backspace IFPNF
+C Flag for inclusion of comments in .pln file.
+            if ( .not. bPLN_format_long ) then
+C Write out data in 6-column block without comments...            
+              write(IFPNF,112)
+     &                 (tadata(ipcomp,jj),jj=1,npi(ipcomp))
+  112         format(12(6(g12.5,1x),/))
+              if(amod(float(npi(ipcomp)),6.0).eq.0.0) backspace IFPNF
+            else
+C ...or optionally dump comments along with parameters
+              do jj=1, npi(ipcomp)
+                write (IFPNF, 1120)
+     &             '     ',
+     &             tadata(ipcomp,jj),
+     &             ' # ',
+     &             jj,
+     &             ' ',
+     &             hfpdsc(ipcomp,jj)(1:64)
+              enddo
+ 1120       format (A,g12.5,A,I3,A,A)              
+            endif 
+
+
+            
          endif
          if(ipcelf(ipcomp).gt.0) then
            write(IFPNF,'(a)')'# Component electrical details.'

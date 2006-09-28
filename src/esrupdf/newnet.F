@@ -92,17 +92,33 @@ C Common for the building plant link
      &IPCLINKT(MCF),IPCLINKZ(MCF)
 
       common/cctlnm/ctldoc,lctlf
-     
+
+C Common controlling format of plant network file      
+      common/PLNFMT/bPLN_format_long
+      logical bPLN_format_long
+      logical bInitialized
+      data bInitialized / .false. /
+      save bInitialized
+      
       character*20 simtyp(3)
       character*72  lpnam,laprob, lapres, lafres,LPNF
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
-      CHARACTER*44 ITEM(26)
+      CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
       CHARACTER ICDIR*72, DOIT*248,mode*1,pcdesc*80
       character*68 mscdsc, cvrdsc,hfpdsc
       LOGICAL OK,dok,XST
+
+C Initialize bPLN_format_long variable, if necessary. bPLN_format_long
+C controls the format of the plant network file --- and will always
+C be defaulted to 'short'. The user may switch it to 'long', and this
+C setting will persist for the current prj session.
+      if ( .not. bInitialized ) then
+        bPLN_format_long = .false.
+        bInitialized = .true.
+      endif 
 
       CALL EPAGE
 
@@ -215,10 +231,16 @@ C Let the user pick a menu item.
      &'(a,i3,a)')' No. of linked zones ...         ( ',nbplink,' )'
       item(22)='i Link plant to zone(s) '
       item(23)='  ---------------------    '
-      item(24)='! Update plant config file '
-      item(25)='? Help                     '
-      item(26)='- Exit                     '
-      nitms=26
+      if ( bPLN_format_long ) then
+        item(24)='j plant config file format > descriptive'
+      else
+        item(24)='j plant config file format > short'
+      endif
+      item(25)='  ---------------------    '
+      item(26)='! Update plant config file '
+      item(27)='? Help                     '
+      item(28)='- Exit                     '
+      nitms=28
 
 C If newnet is called with mode 'G' skip menu definition.
       if(mode.eq.'G') then
@@ -429,6 +451,15 @@ C Link building to plant
             CALL EDISP(IUOUT,'in the configuration file.') 
           ENDIF
         ENDIF
+
+      elseif(ino.eq.24) then
+C Toggle .pln file format
+        if ( bPLN_format_long ) then
+          bPLN_format_long = .false.
+        else
+          bPLN_format_long = .true.
+        endif  
+        
       elseif(ino.eq.nitms-2) then
 
 C Overwrite the existing plant configuration file
