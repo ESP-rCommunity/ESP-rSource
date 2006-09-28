@@ -6,7 +6,7 @@ delim ##
 .TL
 ESP-r Developers' Quality Assurance Checklist 
 .br
-Last updated: July 19, 2006
+Last updated: September 26, 2006
 .sp 2
 .\"---------------------------------------
 .NH 1
@@ -38,17 +38,14 @@ contribute your code to the common ESP-r development branch.
 This document is under versioning control, and suggestions and contributions are 
 strongly encouraged. The troff-formatted source file for the latest 
 version can be obtained at the following url:
-.nr PS 8
-.LD
-.fam C
-https://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf
-.nr PS 12
-.DE
+.IP
+\fIhttps://esp-r.net/espr/esp-r/branches/development_branch/src/archive/QA_checklist.trf\fR
 .LP
 .\"---------------------------------------
 .NH 1
 General changes to ESP-r
 .\"---------------------------------------
+.LP
 .I "Placing your code under versioning control"
 .LP
 In this section, you'll commit your code to your sub-branch, and update your 
@@ -299,8 +296,9 @@ Next, move to the esru folder corresponding to the ESP-r binary you wish to test
 instance, to test \fIprj\fR, move to the folder ``esruprj''. If you do this imediately
 after you have done an Install which you have said NO to the request to cleanup
 the temporary files you will still have all of the linked source files that the
-application requires with the exception of the source in the lib folder. For the
-most comprehensive testing you will also want to include the relevant library
+application requires with the exception of the source in the lib folder. 
+.PP
+For the most comprehensive testing you will also want to include the relevant library
 code. Invoke forcheck using one of the following two commands (the first checks
 against the X11 library code and the second against the GTK version of the libary) and
 it will place the syntax report into a file named xx.chk:
@@ -310,6 +308,14 @@ it will place the syntax report into a file named xx.chk:
 $ forchk -I ../include *.F ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libX11.F > xx.chk
 
 $ forchk -I ../include *.F ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_libGTK.F > xx.chk
+.nr PS 12
+.DE
+.PP
+For less comprehensive testing use the following command:
+.nr PS 8
+.LD
+.fam C
+$ forchk -I ../include *.F
 .nr PS 12
 .DE
 .PP
