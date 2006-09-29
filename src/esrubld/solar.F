@@ -1242,6 +1242,18 @@ C NB for default insolation distribution type 3, inssur(1)=inssur(2)=0.
           do 60 k=1,ksurs
             ks=inssur(k)
             pro=pinsur(k)
+
+C If KS<0, but TD>0 (possible if at a particular time near sunrise or sunset
+C for the date of insolation analysis, the sun is down, but at the same time of day
+C later or earlier in that month, the sun is above the horizon - i.e. resulting
+C from the fact that insolation analysis is undertaken at the mid-month)
+C If this occurs, reassign the direct transmittance to be diffuse transmittance,
+C since the distribution is unknown.
+            if (KS.LT.0.and.TD.GT.0.0) then
+               TFF=TFF+TD 
+               TD=0.0
+            endif
+
             if (KS.gt.0.and.PRO.gt.0.0001) then
 
 C Compute direct radiation incident on the surface 'KS'.

@@ -157,11 +157,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 C SHOCC: complement to 'g5' common
       character sname*12,sotf*4,smlcn*12,svfc*4,sother*15
 
-C CWEC Solar radiation interpolation if solar radiation data is half-hour centered.
-      COMMON/CWEC_SOL2/idif_next,idnr_next
-      integer  idif_next         !- diffuse radiation data for 2nd hour of next day.
-      integer  idnr_next         !- direct normal radiation data for 2nd hour of next day.
-
       dimension VAL(MBITS+2)
       logical itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
@@ -425,12 +420,6 @@ C hour of future day: future day first.
         idirf=idir(1)
         ihumf=ihum(1)
 
-C Get values for next day to determine solar radiation data
-C at hour 1 of next day (needed if solar radiation data is half-hour centered).
-        idif_next = idif(2)
-        idnr_next = idnr(2)
-
-
 C Present day.
         irec=idyp
         read(iunit,rec=irec,iostat=istat,err=1000)
@@ -588,17 +577,8 @@ C New day events in SHOCC occur when btimef first exceeds 24.0 ...
 
             if(btimef.gt.24.0)btimef=btimef-24.
 
-C Determine climatic parameters at the present and
-C future time row. If any of the temporal definition flags for
-C boundary conditions have been set then use them in place of
-C the normal climatic interpolation.
-            itdfex=IALLCLM+IDBTEXT+IWINDVL+IWINDDR+IRELHUM+IDIFHSL+
-     &         IDIRSOL+IGLOHSL+IOBJVEL
-            if(itdfex.eq.0)then
-              call mzclmp(1)
-            elseif(itdfex.ge.1)then
-              call mzclmpt(1)
-            endif
+C Determine climatic parameters at the present and future time row. 
+            call mzclmpt(1)
 
 C Determine for each component and surface, the defining
 C index and the adjacent space temperature and radiation

@@ -235,7 +235,7 @@ C Output current simulation increment, if TRACE ON.
 
 C Determine climatic parameters at the present and
 C future time row.
-      CALL MZCLMP(1)
+      CALL MZCLMPT(1)
 
 C First time step only: assign starting values of plant nodal variables
       IF(I.EQ.ISS.AND.J.EQ.1.AND.K.EQ.1)THEN
@@ -269,7 +269,7 @@ C Increment plant time-step counter.
       NSINCP=NSINCP+1
 
 C Assign climate variable values
-      CALL MZCLMP(2)
+      CALL MZCLMPT(2)
 
 C Set up and solve the plant matrix
       CALL MZPMRX(ITERA)
