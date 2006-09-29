@@ -230,15 +230,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER*72 hvacfile
 
       character sname*12,sotf*4,smlcn*12,svfc*4,sother*15
-   
-C CWEC Solar radiation fix as required for interpolation if
-C solar radiation data are half-hour centered.
-      COMMON/CWEC_SOL2/idif_next,idnr_next
-      integer  idif_next, idnr_next  !- diffuse and direct normal radiation data, respectively
-                                     !- for 2nd hour of next day.
-
-C These are temporary variables that hold climate data for two hours of future day.
-      integer ifdif(2),iftmp(2),ifdnr(2),ifvel(2),ifdir(2),ifhum(2)
 
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
@@ -754,27 +745,9 @@ C Set flag
 C Future day
         irec=idyf
       
-C       read(iClim,rec=irec,iostat=istat,err=1000)
-C     &   idiff,itmpf,idnrf,ivelf,idirf,ihumf
-
-
-C Get values for first hour of the future day. Also need solar radiation
-C data for the 2nd hour of the future day.
-        read(iClim,rec=irec,iostat=istat,err=1000)
-     &     (ifdif(j),iftmp(j),ifdnr(j),ifvel(j),ifdir(j),ifhum(j),j=1,2)
-
-        idiff = ifdif(1)
-        itmpf = iftmp(1)
-        idnrf = ifdnr(1)
-        ivelf = ifvel(1)
-        idirf = ifdir(1)
-        ihumf = ifhum(1)
-
-C Get values for next day to determine solar radiation data
-C at hour 1 of next day (needed when solar radiation data is half-hour centered).
-        idif_next = idif(2)
-        idnr_next = idnr(2)
-
+C Get values for first hour of the future day.
+       read(iClim,rec=irec,iostat=istat,err=1000)
+     &   idiff,itmpf,idnrf,ivelf,idirf,ihumf
 
 C Check for uncertainty associated with climate data.
         UAFLG=0.
@@ -962,17 +935,9 @@ C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
 
-C Determine climatic parameters at the present and
-C future time row. If any of the temporal definition flags for
-C boundary conditions have been set then use them in place of
-C the normal climatic interpolation.
-            itdfex=IALLCLM+IDBTEXT+IWINDVL+IWINDDR+IRELHUM+IDIFHSL+
-     &        IDIRSOL+IGLOHSL+IOBJVEL
-            if(itdfex.eq.0)then  
-              call mzclmp(1)
-            elseif(itdfex.ge.1)then
-              call mzclmpt(1)
-            endif
+C Determine climatic parameters at the present and future time row. 
+            call mzclmpt(1)
+            
             if(indcfg.eq.2)goto 401
 
 C Calculate the heat injections associated with plant
@@ -1286,7 +1251,7 @@ C Increment plant time-step counter.
               nsincp=nsincp+1
 
 C Assign climate variable values.
-              call mzclmp(2)
+              call mzclmpt(2)
 
 C Re-zero zone<->plant casual gain coupling arrays
               call plt_zone_gain_zero()      
