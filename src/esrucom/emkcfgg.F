@@ -1007,9 +1007,9 @@ C BASESIMP start.
         WRITE(CXSTR,7986)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
  7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
+      ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
 C CEN 13791 boundary condition start.
-      ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,9984)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
  9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical environment ')
@@ -1019,8 +1019,6 @@ C CEN 13791 boundary condition start.
  9987     FORMAT(I3,2X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
-C CEN 13791 boundary condition end.
-
       ENDIF
 
       RETURN

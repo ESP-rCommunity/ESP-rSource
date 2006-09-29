@@ -473,6 +473,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
+
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
@@ -727,7 +728,7 @@ C via tags.
           CALL USRMSG(' configuration index mismatch',OUTSTR,'W')
         ENDIF
       else
-        call usrmsg('Does not appear to be a config file:',FILE,'W')
+        call usrmsg('Does not appear to be a config file: ',FILE,'W')
         ier=1
         return
       endif
@@ -2645,8 +2646,9 @@ C BASESIMP start.
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
  7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
-C CEN 13791 boundary condition start.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
+
+C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
@@ -2657,7 +2659,6 @@ C CEN 13791 boundary condition start.
  9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
-C CEN 13791 boundary condition end.
       ENDIF
       RETURN
       END

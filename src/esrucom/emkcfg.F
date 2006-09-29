@@ -33,6 +33,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
+#include "bc_data.h"
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -259,7 +260,7 @@ C Calendar commons.
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
-
+      
       IUF=IFIL+1
       IER=0
 
@@ -424,6 +425,7 @@ C Write databases related to this model.
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
 
+
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
       IF(ITGREF.NE.1) WRITE(IFCFG,803) '*gref ',ITGREF,
@@ -445,7 +447,7 @@ C Multiyear climate database
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*myclm ',
      &    cMY_climate_db_name(1:lnblnk(cMY_climate_db_name))
       endif 
-
+     
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
 
@@ -491,6 +493,13 @@ C SHOCC: library file.
      &     SHOCCshlFile(1:lnblnk(SHOCCshlFile)),
      &     '  # SHOCC project library'
       endif
+
+C BCD (boundary condition definiton file)
+      if ( bBC_data_defined ) then
+         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*bcd  ',
+     &     cBC_data_file_name(1:lnblnk(cBC_data_file_name)),
+     &     '  # BCD file name'
+      endif 
 
 C Write control file if known.
       if(lnblnk(lctlf).eq.0)then
@@ -781,6 +790,7 @@ C dogrnd = true.
 C If ground profile for external longwave radiation calculation is
 C entered (flag=1) then write *gtmp tag to cfg file followed
 C by profile. 
+ 
       IF(iExtLgRadFlag.EQ.1) THEN
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)'*gtmp'
         WRITE(IFCFG,933,IOSTAT=IOS,ERR=2)(eGrdTp(jMon),jMon=1,12)
@@ -947,7 +957,6 @@ C Write packed string of the items associated with each anchor.
             ipos=itrunc+1
           end do
  44     continue
-
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '*End'
       endif
 
@@ -1094,8 +1103,9 @@ C BASESIMP start.
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
  7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
-C CEN 13791 boundary condition start.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
+
+C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
@@ -1106,7 +1116,6 @@ C CEN 13791 boundary condition start.
  9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
-C CEN 13791 boundary condition end.
       ENDIF
 
       RETURN

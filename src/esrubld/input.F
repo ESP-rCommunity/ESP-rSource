@@ -687,6 +687,12 @@ C         if = 0 then use compiled pattern.
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/PREC14/emarea(MCOM)
 
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero is no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero is no surface is close to horizontal facing down).
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -740,6 +746,8 @@ C Clear igarray() & iguarray()
       ILTHPS=.FALSE.
       BLDG3D=.FALSE.
       MSTROK=.FALSE.
+
+C For each zone in turn.
       DO 10 I=1,NCOMP
         IZ=I
         MNDZ(IZ)=0
@@ -857,9 +865,18 @@ C Read moisture file.
 
 C Keep track of the total surface area/emisivity for use
 C in apportioning casual and plant radiation to surfaces.
+C Also instanciate izsfloor and izsceil
         emarea(iz)=0.0
+        izsfloor(iz)=0
+        izsceil(iz)=0
         do 80 kk=1,nconst(iz)
           emarea(iz)=emarea(iz)+sna(iz,kk)*ei(iz,kk)
+          if(PELV(iz,kk).GE.89.98.AND.PELV(iz,kk).LE.90.02)then
+            izsceil(iz)=kk
+          endif
+          if(PELV(iz,kk).GE.-90.02.AND.PELV(iz,kk).LE.-89.98)then
+            izsfloor(iz)=kk
+          endif
   80    continue
 
 C Assign two nodes per layer.

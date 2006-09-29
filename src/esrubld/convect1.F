@@ -236,11 +236,14 @@ C CHEIGHT is the height of ventilated channel.
 C ******************** HTOVER ********************
 C HTOVER overrides the calculated HTC values with the user-prescribed values
 C specified in the .htc file.
-
+C This version patched to use TM33 specified up and down hc coef if
+C a manual hc has been set with floor or ceiling surface values of
+C exactly 5.0 or 0.7.
       SUBROUTINE HTOVER(ICOMP)
 
 #include "building.h"
       COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -250,6 +253,13 @@ C specified in the .htc file.
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
+
+C Commons to support TM33 upwards or downwards heat flow hc coef.
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+
+C Logical variables for close to floor or ceiling for TM33 tests.
+      logical isfloor,isceiling,isfive,ispointseven
 
 C Check whether we are within one of the time intervals with type 1 control.
       TIME=BTIMEF
@@ -268,8 +278,53 @@ C Check whether we are within one of the time intervals with type 1 control.
 C Reset internal surface coefficents.
       IF(HCFVI(ICOMP,ISUR,IP).GE.0.0)THEN
 
+C Patch for TM33 testing based on surface orientation as well
+C as the direction of heat flow. First determine if the surface
+C is a floor or ceiling.
+        isfloor=.false.
+        isceiling=.false.
+        IF(PELV(icomp,isur).GE.89.98.AND.PELV(icomp,isur).LE.90.02)
+     &    isceiling=.true.
+        IF(PELV(icomp,isur).GE.-90.02.AND.PELV(icomp,isur).LE.-89.98)
+     &  isfloor=.true.
+
+C TM33 patch - if a floor check and see if the floor surface temperature
+C is warmer than the air temperature in the zone (DT>zero is upwards heat flow)
+C and the hc value should be set to 5.0 if  HCFVI was defined in the
+C hc regime file as either 5.0 or 0.7.
+        isfive=.false.
+        ispointseven=.false.
+        call eclose(HCFVI(ICOMP,ISUR,IP),5.0,0.001,isfive)
+        call eclose(HCFVI(ICOMP,ISUR,IP),0.7,0.001,ispointseven)
+        DT=TFS(ICOMP,ISUR)-TFA(ICOMP)
+
+        if(isfloor)then
+          if(isfive.or.ispointseven)then
+            if(DT.gt.0.0)then
+              HCIF(ICOMP,ISUR)=5.0
+            else
+              HCIF(ICOMP,ISUR)=0.7
+            endif
+          else
+            HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
+          endif
+        elseif(isceiling)then
+
+C In case a ceiling then DT > zero is downwards flow.
+          if(isfive.or.ispointseven)then
+            if(DT.gt.0.0)then
+              HCIF(ICOMP,ISUR)=0.7
+            else
+              HCIF(ICOMP,ISUR)=5.0
+            endif
+          else
+            HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
+          endif
+        else
+
 C +ve, replace by given coefficient.
-         HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
+          HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
+        endif
 
 C -1, do not adjust.
       ELSEIF(ABS(HCFVI(ICOMP,ISUR,IP)+1.).LT.0.00001)then
