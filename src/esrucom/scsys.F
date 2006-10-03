@@ -203,6 +203,10 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 C H2-dep_controller: end
 
+C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg     
+
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
