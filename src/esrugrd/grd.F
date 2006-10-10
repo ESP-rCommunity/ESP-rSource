@@ -78,7 +78,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
       character dfdblbl*20,defdbfl*72
-      character inz*16,inzone*16,outs*124
+      character inz*16,inzone*16,outs*124,MODE*4
 
 C Initialize global common data.
       call ezero
@@ -255,7 +255,8 @@ C If an input file has been specified then load it.
 C Find the path and local file name.
           CALL FDROOT(LCMDFL,PATH,LCFGF)
           CALL EDISP(IUOUT,' Scanning the problem description')
-          CALL ESCSYS(LCFGF,IFCFG,IUF,IER)
+          MODE='NONE'
+          CALL ERSYS(LCFGF,IFCFG,IUF,MODE,ITRC,IER)
           IF(IER.EQ.0)THEN
             NZONES=NCOMP
             CALL ZDATA (itrc,IER,NZONES,ISFSUM)
@@ -361,7 +362,8 @@ C Find the path and local file name.
         CALL FDROOT(LCMDFL,PATH,LCFGF)
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,' Scanning the problem description')
-        CALL ESCSYS(LCFGF,IFCFG,IUF,IER)
+        MODE='NONE'
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,ITRC,IER)
         IF(IER.EQ.0)THEN
 
 C Initialize the 1D gridding variables.
@@ -508,7 +510,7 @@ C *********************************************************************
 
 C If primitive database not opened, do it now.
       IF(.NOT.CONDBOK)THEN
-	IER=0
+        IER=0
         CALL EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(IER.NE.0)RETURN
         CONDBOK=.TRUE.
