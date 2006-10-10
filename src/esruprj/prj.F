@@ -843,7 +843,8 @@ C Open an exemplar or existing model.
         elseif(iw.eq.1)then
 
 C Scan exemplars file specified in the user's .esprc file (or from
-C the standard file dinstpath'/training/exemplars'.
+C the standard file dinstpath'/training/exemplars'. If call to
+C rexmpl returns an ier=2 then the user asked to continue.
           IUF=IFIL+1
           XST=.false.
           if(exemfl(1:2).ne.'  '.and.exemfl(1:4).ne.'UNKN')then
@@ -852,6 +853,10 @@ C the standard file dinstpath'/training/exemplars'.
               call tstamp('>','PRJ: scanning exemplars enter')
               call rexmpl(IUF,exemfl,exemplar,ier)
               call tstamp('>','PRJ: scanning exemplars return')
+              if(ier.eq.2)then
+                ier=0
+                goto 3
+              endif
               if(ier.ne.0)goto 3
               if(exemplar.ne.'UNKNOWN'.and.exemplar.ne.' ')then
                 browse=.false.

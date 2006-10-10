@@ -904,7 +904,8 @@ C Present information on an exemplar.
               call edisp(iuout,exemplar)
 
 C Check to see if the configuration file exists. If it does not then
-C warn the user that the model is off-line.
+C warn the user that the model is off-line and return
+C to the list of exemplars.
                CALL ERPFREE(iexfil+1,ISTAT)
                INQUIRE (FILE=exemplar,EXIST=XST)
                if(.NOT.XST)then
@@ -914,16 +915,18 @@ C warn the user that the model is off-line.
                  exemplar='UNKNOWN'
                  CALL ERPFREE(iexfil+1,ISTAT)
                  rewind(iexfil,ERR=92)
-                 goto 42
+                 goto 41
                endif
                goto 4
             elseif(WORD(1:5).eq.'*lcfg')then
+
 C For older format file, skip past local configuration file name.
               goto 4
             elseif(WORD(1:5).eq.'*root')then
               call egetrm(outstr,K,rootp,'W','exem root dir',IER)
               goto 4
             elseif(WORD(1:5).eq.'*aide')then
+
 C For older format file, normally ignore *aide line.
               call egetrm(outstr,K,line,'W','brief description',IER)
               goto 4
@@ -939,8 +942,18 @@ C if there are zones existing, remove them from memory.
               H(3)='simulations.  If you want to modify the model'
               H(4)='then you must firstly copy it to your own'
               H(5)='folder by selecting the `own it` option.'
-              CALL EASKABC(exdescr,' ','browse',
-     &          '`own` it','cancel',IW,5)
+              H(6)=' '
+              H(7)='If you change your mind you can select a different'
+              H(8)='rxemplar model or select continue to do nothing.'
+              H(9)=' '
+              H(10)='Note: ESP-r running native on Windows sometimes'
+              H(11)='fails to copy an exemplar model to the users  '
+              H(12)='home folder if the path has spaces in it. In'
+              H(13)='this case you should use the operating system'
+              H(14)='commands (e.g. zip or xcopy) to copy the model'
+              H(15)='folders to a location where you can work on them.'
+              CALL EASKABCD(exdescr,'(see help) ','browse',
+     &          '`own` it','select another exemplar','continue',IW,15)
               if(IW.eq.1)then
                 call tstamp('>','PRJ: browse exemplar')
               elseif(IW.eq.2)then
@@ -976,9 +989,20 @@ C See if can derive the local configuration name.
                   call tstamp('>',exemplar)
                 endif
               elseif(IW.eq.3)then
+
+C User asked to select another, rewind the file and jump back to
+C the top menu to re-resent groups.
                 exemplar='UNKNOWN'
                 REWIND(iexfil,ERR=92)
-                goto 42
+                goto 41
+              elseif(IW.eq.4)then
+
+C User asked to continue, close the file set ier and return to top
+C level menu of prj.
+                exemplar='UNKNOWN'
+                CALL ERPFREE(iexfil,ISTAT)
+                ier=2
+                return
               endif
               if(IW.eq.1.or.IW.eq.2)then
                 CALL ERPFREE(iexfil,ISTAT)
