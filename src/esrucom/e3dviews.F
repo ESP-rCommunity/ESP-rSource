@@ -680,7 +680,8 @@ C If vertices are to be labeled do it in the smallest font.
 
 C-----ORIGESP -----------------------------------------------------------
 C ORIGESP returns a surface/body indicating the site origin. It is 1 
-C metre in each direction.
+C metre in each direction. Note: this does not reset any of the other
+C zone geometry common blocks or the connection based common blocks.
       SUBROUTINE ORIGESP
 #include "building.h"
 
