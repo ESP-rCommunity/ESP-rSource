@@ -8,7 +8,7 @@ convective heating to 15C at 7h and 20C at 9h with 3kW capacity, free float othe
 # actuates air point of the current zone
     0    0    0  # actuator data
     0 # No. day types
-    1  365  # valid Sun  1 Jan - Sun 31 Dec
+    1  365  # valid Sun-01-Jan - Sun-31-Dec
      4  # No. of periods in day
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
@@ -20,11 +20,11 @@ convective heating to 15C at 7h and 20C at 9h with 3kW capacity, free float othe
   3000.000 0.000 0.000 0.000 20.000 100.000
     0    2  18.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    1  365  # valid Sun  1 Jan - Sun 31 Dec
+    1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
-    1  365  # valid Sun  1 Jan - Sun 31 Dec
+    1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
