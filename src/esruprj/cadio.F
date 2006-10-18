@@ -618,7 +618,15 @@ C to quit the image browser.
       character imgfmt*4,imgfoc*4,limgfil*72,doit*248,upath*72
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
+
+C Strings for dos version of rootp and upath and a double quote.
+      character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
+      character dq*1,fs*1
       logical XST,unixok
+
+C Make up a double quote and file separator for xcopy.
+      dq = char(34)
+      fs = char(92)
 
 C Open the exemplar file.
   41  IER=0
@@ -975,8 +983,68 @@ C See if can derive the local configuration name.
                     write(doit,'(4a)') 'cp -r ',
      &                rootp(1:lnblnk(rootp)),' ',upath(1:lnblnk(upath))
                   else
-                    write(doit,'(4a)') 'xcopy /e /i /y /c ',
-     &                rootp(1:lnblnk(rootp)),' ',upath(1:lnblnk(upath))
+
+C Debug statements for native windows version.  If lnblankrp or
+C lnblankup is one then there are no spaces in the string so double quotes
+C are not required.  But in either case it is useful to change any '/'
+C in rootp and upath to '\'. 
+                    rootpdos=' '
+                    upathdos=' '
+                    lnrp=lnblnk(rootp)
+                    lnblankrp=iprevblnk(rootp,lnrp)
+
+C Debug the model source.
+C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
+C     &                ' ',rootp(1:lnrp)
+C                    call edisp(iuout,outs)
+                    call backslashit(rootp,rootpdos)
+                    write(outs,'(2a)') 'getting model from ',
+     &                rootpdos(1:lnrp)
+                    call edisp(iuout,outs)
+
+C For an xcopy command we need the destination to also include the
+C model folder so use fdroot to extract this from rootp.
+                    call fdroot(rootp,rootpath,modelroot)
+                    lnmr=lnblnk(modelroot)
+
+C Debug the model destination.
+C                    write(outs,'(2a)') 'the model folder is = ',
+C     &                modelroot(1:lnmr)
+C                    call edisp(iuout,outs)
+C                    call edisp(iuout,' ')
+                    lnup=lnblnk(upath)
+                    lnblankup=iprevblnk(upath,lnup)
+C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+C     &                ' ',upath(1:lnup)
+C                    call edisp(iuout,outs)
+                    call backslashit(upath,upathdos)
+                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+                    call edisp(iuout,outs)
+                    if(lnblankrp.gt.1.and.lnblankup.gt.1)then
+
+C There are blanks in both source or destination strings.
+                      write(doit,'(10a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),dq,' ',dq,
+     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                    elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
+
+C There are blanks in destination string.
+                      write(doit,'(8a)') 'xcopy /e /i /y /c ',
+     &                  rootpdos(1:lnrp),' ',dq,
+     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                    elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
+
+C There are blanks in source string.
+                      write(doit,'(8a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),dq,' ',
+     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                    elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
+
+C There are no blanks in either source or destination strings.
+                      write(doit,'(6a)') 'xcopy /e /i /y /c ',
+     &                  rootpdos(1:lnrp),' ',
+     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                    endif
                   endif
                   call lusrmsg('Copying exemplar to your home folder.',
      &               doit,'-')
