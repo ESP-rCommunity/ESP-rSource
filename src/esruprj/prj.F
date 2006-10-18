@@ -1907,6 +1907,7 @@ C to include the path and create a string to drive the modules.
       common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
       common/uhome/upath
+      common/exporttg/xfile,tg,delim
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -1933,8 +1934,9 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
       character ltpath*72,filen*72,ltmp*72,upath*72
-      character basefile*144,variantfile*144,outs*124
+      character basefile*144,variantfile*144,outs*124,outsd*124
       character word1*20,word2*40,word3*20,outstr*124
+      character xfile*72,tg*1,delim*1,tab*1
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
@@ -1961,6 +1963,7 @@ C the first array index is base and 2nd is variant, 3rd diff
       ibasefile=11
       ivarfile=12
       NSIGFIG=3
+      tab=CHAR(9)
 
       if(nsset.gt.0)isset=1
       write(basefile,'(a)') sipvres(1:lnblnk(sipvres))
@@ -2263,7 +2266,31 @@ C            write(6,*) ' irt2 reset tfile to ',tfile
         endif
       elseif(irs.eq.3)then
 
-C Compare two IPV reports.
+C Compare two IPV reports.  First ask for separator.
+
+C Toggle delimeter.
+        H(1) ='Tabular data can be sent to file with various '
+        H(2) ='delimiters: '
+        H(3) ='  spaces (format using spaces to lineup columns)'
+        H(4) ='  single space between columns'
+        H(5) ='  comma separator (for excel)'
+        H(6) ='  tab separator (for excel)'
+        H(7) ='  tagged - marked up data'
+        CALL EASKATOG('Delimeter to use between columns of data:',' ',
+     &    'normal spaces','single space','tab','comma','tagged',
+     &    'continue',' ',IWM,7)
+        if(iwm.eq.1)then
+          delim = '-'
+        elseif(iwm.eq.2)then
+          delim = 'S'
+        elseif(iwm.eq.3)then
+          delim = 'T'
+        elseif(iwm.eq.4)then
+          delim = 'C'
+        elseif(iwm.eq.5)then
+          delim = 'X'
+        endif
+
  41     llt=lnblnk(basefile)
         h(1)='This is the name of the IPV report for the base case'
         h(2)='model (or the model you want to reference against).'
@@ -2341,48 +2368,72 @@ C Set test logic to false.
 C We have done both passes, report differences and exit.
           call edisp(iuout,' ')
           call edisp(iuout,'For the base case model:')
-          call edisp(iuout,
+          if(delim.eq.'-')then
+            call edisp(iuout,
      &            '       Demand              Capacity')
-          call edisp(iuout,
+            call edisp(iuout,
      &            '        m2     building     m2     building')
+          elseif(delim.eq.'T')then
+            write(outs,'(7a)') 'Demand m2',tab,'Demand building',tab,
+     &        'Capacity m2',tab,'Capacity building'
+          elseif(delim.eq.'C')then
+            write(outs,'(2a)') 'Demand m2,Demand building,',
+     &        'Capacity m2,Capacity building'
+          elseif(delim.eq.'S')then
+            write(outs,'(2a)') 'Demand m2 Demand building ',
+     &        'Capacity m2 Capacity building'
+          endif
+          call edisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(1),
      &      anu_ht_bld(1),anu_ht_cap_m2(1),anu_ht_cap_bld(1)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(1),
      &      anu_ht_thrm_bld(1)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
      &      anu_tot_bld(1)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           call edisp(iuout,'For the variant model:')
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
      &      anu_ht_bld(2),anu_ht_cap_m2(2),anu_ht_cap_bld(2)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(2),
      &      anu_ht_thrm_bld(2)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
      &      anu_tot_bld(2)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           call edisp(iuout,' ')
           write(outs,'(4a)')'Diff between ',
      &      basefile(1:lnblnk(basefile)),
      &      ' & ',variantfile(1:lnblnk(variantfile))
           call edisp(iuout,outs)
-          call edisp(iuout,
-     &            '        Demand                 Capacity')
-          call edisp(iuout,
-     &            '          m2     building     m2     building')
+          if(delim.eq.'-')then
+            call edisp(iuout,
+     &            '       Demand              Capacity')
+            call edisp(iuout,
+     &            '        m2     building     m2     building')
+          elseif(delim.eq.'T')then
+            write(outs,'(7a)') 'Demand m2',tab,'Demand building',tab,
+     &        'Capacity m2',tab,'Capacity building'
+          elseif(delim.eq.'C')then
+            write(outs,'(2a)') 'Demand m2,Demand building,',
+     &        'Capacity m2,Capacity building'
+          elseif(delim.eq.'S')then
+            write(outs,'(2a)') 'Demand m2 Demand building ',
+     &        'Capacity m2 Capacity building'
+          endif
+          call edisp(iuout,outs)
           anu_ht_m2(3)=anu_ht_m2(1)-anu_ht_m2(2)
           anu_ht_bld(3)=anu_ht_bld(1)-anu_ht_bld(2)
           anu_ht_thrm_m2(3)=anu_ht_thrm_m2(1)-anu_ht_thrm_m2(2)
@@ -2398,17 +2449,28 @@ C We have done both passes, report differences and exit.
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(3),
      &      anu_ht_bld(3),anu_ht_cap_m2(3),anu_ht_cap_bld(3)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F8.2,F10.2)') 'Therm ',anu_ht_thrm_m2(3),
      &      anu_ht_thrm_bld(3)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(3),
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
           write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
      &      anu_tot_bld(3)
-          call edisp(iuout,outs)
+          call eddisp(iuout,outs)
+
+C If comma separated delimeter then also write out a single line
+C summary (Patch for IEA_Annex 46).
+          if(delim.eq.'C')then
+            call edisp(iuout,
+     & 'Location,building heating kWh/a,heating therms,cooling kWh/a')
+            write(outs,'(2a,F11.2,a,F11.2,a,F11.2)')
+     &        variantfile(1:lnblnk(variantfile)),' ',anu_ht_bld(3),
+     &        ' ',anu_ht_thrm_bld(3),' ',anu_cl_bld(3)
+            call eddisp(iuout,outs)
+          endif
 
           CALL EASKAB('comparison options:',' ','exit',
      &      'do another report',IW,1)
