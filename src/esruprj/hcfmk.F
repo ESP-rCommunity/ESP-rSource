@@ -292,7 +292,7 @@ C Determine the convective regime (A-G)..
       ITEM(23)=            'm    VAV with VV heating      '
       ITEM(24)=            'n    CV with variable temp    '
       ITEM(25)=            ' _________________________    '
-      ITEM(26)=            'o Manually edit conv. values  '
+      ITEM(26)=            'o User defined or CEN values  '
 
       ITEM(27)=            '! list                        '
       ITEM(28)=            '? help                        '
@@ -1857,7 +1857,7 @@ C EHCMAN controls manual creation/editing of convection file.
       CHARACTER*30 ITEM(12)
 
    20 INO = -2
-      ITEM(1) ='c Initialise conv. values  '
+      ITEM(1) ='c Initialise fixed values  '
       ITEM(2) ='  _______________________  '
       write(ITEM(3),'(a,I2)') '  Periods: ',IHCFP
       ITEM(4) ='1 Add a period             '
@@ -1880,27 +1880,38 @@ C Help text for this menu.
       h(6)='coefficient correlations for specified surfaces and for'
       h(7)='specified time intervals.'
       h(8)=' '
-      h(9) ='Three `convection-calculation control` methods are '
-      h(10) ='supported: '
-      h(11) =' '
-      h(12) ='Type 1 allows fixed coefficients to be specified for '
-      h(13) ='each surface (interior and exterior to the building). '
-      h(14) =' '
-      h(15) ='Type 2 allows you to specify the correlation to use for'
-      h(16) ='each surface (only applicable for surfaces interior to'
-      h(17) ='the building). This could allow, for example, the use'
-      h(18)='of the Alamdari & Hammond correlations for a wall,'
-      h(19)='while using one of the Khalifa & Marshall correlations '
-      h(20)='for a window. '
-      h(21)=' '
-      h(22)='Type 3 allows adaptive control of the calculations (only'
-      h(23)='applicable for surfaces interior to the building).'
-      h(24)=' '
-      h(25)='Note that the `outside` surface of a mlc may be interior'
-      h(26)='to the building, ie. it may face the air-point of an'
-      h(27)='adjacent zone. '
+      h(9) ='Four `convection-calculation control` methods are'
+      h(10)='supported when you add or edit a period: '
+      h(11)=' '
+      h(12)='fixed coefficients - coefficients can be specified for'
+      h(13)='each surface (interior and exterior to the building).'
+      h(14)='The initialise fixed values option creates initial '
+      h(14)='values for this option. '
+      h(15)=' '
+      h(16)='fixed correlations - specify a correlation to use'
+      h(17)='for each surface (only applicable for interior '
+      h(18)='surfaces). This could allow, for example, the use of'
+      h(19)='the Alamdari & Hammond correlations for a wall, while '
+      h(20)='using one of the Khalifa & Marshall correlations for a '
+      h(21)='window. '
+      h(22)=' '
+      h(23)='adaptive - allows adaptive control of the calculations '
+      h(24)='(only applicable for interior surfaces). '
+      h(25)=' '
+      h(26)='CEN - supports CEN standard coefficient regimes or'
+      h(27)='regimes which are similar in approach. Applicable to'
+      h(28)='both inside and outside surfaces. Note this option'
+      h(29)='includes its own method of setting default values. CEN'
+      h(30)='values are almost always imposed for the whole day'
+      h(31)='rather than mixed with other convective regimes. '
+      h(32)=' '
+      h(33)='Note that the `outside` surface of a mlc may be interior'
+      h(34)='to the building, ie. it may face the air-point of an '
+      h(35)='adjacent zone. '
+      h(36)=' '
+      h(37)='Remember to save any changes before you leave this menu.'
 
-      CALL EMENU('  Manual conv values',ITEM,NITEMS,INO)
+      CALL EMENU(' User defined or CEN values',ITEM,NITEMS,INO)
       IF(INO.EQ.1)then
 
 C Create from scratch. Initialise values to default value before
@@ -2018,7 +2029,7 @@ C List HC control data.
 C Write data to file.
         CALL EMKHTC(LHCCO(ICOMP),ICOMP,IUF,ITRU,IER)
       ELSEIF (INO .EQ. 11)then
-        CALL PHELPD('conv coef data',27,'-',0,0,IER)
+        CALL PHELPD('conv coef data',37,'-',0,0,IER)
       ELSEIF (INO .EQ.12)then
         RETURN
       else
@@ -2236,7 +2247,9 @@ C Write .htc file then return to higher level menu.
 
 C ******************** EPHCF ********************
 C EPHCF edits one period of convection-calculation control data.
-
+C IZ is the zone.
+C IN is the period index
+C NS is the number of surface in the zone << why pass this value? >>
       SUBROUTINE EPHCF(IZ,IN,NS,IER)
 #include "epara.h"
 #include "building.h"
@@ -2246,6 +2259,7 @@ C EPHCF edits one period of convection-calculation control data.
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
+      COMMON/HCCEN/CENLOC(MP,14)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2253,7 +2267,7 @@ C EPHCF edits one period of convection-calculation control data.
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER stuff*10
       character hcfpdescr*72
-      logical close
+      logical close,ok,dok
 
       NS=NZSUR(IZ)
 
@@ -2271,33 +2285,41 @@ C Get time period for control interval.
      &          V1,'F',24.,'F',0.,'start',IER,1)
       EN(IN)=V2
 
+  19  continue
+
 C Determine type of control over calculations.
-      h(1) ='Three `convection-calculation control` methods are'
+      h(1) ='Four `convection-calculation control` methods are'
       h(2) ='supported: '
       h(3) =' '
-      h(4) ='Type 1 allows fixed coefficients to be specified for each'
-      h(5) ='surface (interior and exterior to the building).'
+      h(4) ='fixed coefficients - allows coefficients to be specified '
+      h(5) ='for each surface (interior and exterior to the building).'
       h(6) =' '
-      h(7) ='Type 2 allows you to specify the correlation to use for'
-      h(8) ='each surface (only applicable for surfaces interior to'
-      h(9) ='the building). This could allow, for example, the use of'
+      h(7) ='fixed correlations - allows you to specify a correlation '
+      h(8) ='to use for each surface (only applicable for interior '
+      h(9) ='surfaces). This could allow, for example, the use of'
       h(10)='the Alamdari & Hammond correlations for a wall, while '
       h(11)='using one of the Khalifa & Marshall correlations for a '
       h(12)='window. '
       h(13)=' '
-      h(14)='Type 3 allows adaptive control of the calculations (only'
-      h(15)='applicable for surfaces interior to the building). '
+      h(14)='adaptive - allows adaptive control of the calculations '
+      h(15)='(only applicable for interior surfaces). '
       h(16)=' '
-      h(17)='Note that the `outside` surface of a mlc may be interior'
-      h(18)='to the building, ie. it may face the air-point of an '
-      h(19)='adjacent zone. '
-      CALL EASKABCD('calculation control:','(see help)','type 1',
-     &              'type 2','type 3','cancel',IW,19)
-      IF(iw.eq.4) RETURN
+      h(17)='CEN - supports CEN standard coefficient regimes or'
+      h(18)='regimes which are similar in approach. '
+      h(19)=' '
+      h(20)='Note that the `outside` surface of a mlc may be interior'
+      h(21)='to the building, ie. it may face the air-point of an '
+      h(22)='adjacent zone. '
+      CALL EASKATOG('calculation control (see help):',' ',
+     &  'fixed coefficients','fixed correlations','adaptive cor',
+     &  'CEN coef','cancel',' ',' ',IW,22)
+      IF(iw.eq.5) RETURN
       ICTL(IN) = iw
 
-C Type 1 control: fixed coefficients.
+C There is one IF ENDIF block for each of the options.
       IF(iw.eq.1) THEN
+
+C Fixed coefficients control: .
         hcfpdescr(IN) = 'User supplied hc values'
 
 C Initialise zone vertex menu size variables based on window size.
@@ -2383,7 +2405,7 @@ C Not one of the legal menu choices.
  99     continue
       ENDIF
 
-C Type 2 control: selected correlations.
+C Selected correlations control: .
       IF(iw.eq.2) THEN
         H(1) ='A number of empirical correlations and fixed values, '
         H(2) ='extracted from the following sources, are supported: '
@@ -2467,7 +2489,7 @@ C Type 2 control: selected correlations.
    72   CONTINUE
       ENDIF
 
-C Type 3 control: adaptive control.
+C Adaptive control.
       IF(iw.eq.3) THEN
         H(1) ='It is possible for the convection calculations to '
         H(2) ='`adapt` as the simulation progresses.  You must assign '
@@ -2588,6 +2610,239 @@ C Other control laws not yet supported.
    82   CONTINUE
       ENDIF
 
+C CEN (or similar) specified hc control.
+      IF(iw.eq.4) THEN
+
+C If the first two values are zero then probably nothing setup so
+C ask user if default values are to be used.
+        ibase=nint(CENLOC(IN,1))
+        itop=nint(CENLOC(IN,2))
+        if(ibase.eq.0.and.itop.eq.0)then
+          H(1) ='Default values are: '
+          H(2) =' heat flow upwards (floor/ceiling/sloped) 5.0'
+          H(3) =' heat flow downwards (floor/ceiling/sloped) 0.7'
+          H(4) =' heat flow at walls (inside/partition side/) 2.5'
+          H(5) =' heat flow at otherside exterior 8.0 (4+4v) where'
+          H(6) ='  v is assumed to be 1m/s'
+          dok=.true.
+          CALL ASKOK('This is probably your initial description for',
+     &      'this zone. Do you want to use default values (see help)?',
+     &      OK,dok,6)
+          if(ok)then
+            CENLOC(in,3)=5.0
+            CENLOC(in,4)=0.7
+            CENLOC(in,5)=8.0
+            CENLOC(in,6)=5.0
+            CENLOC(in,7)=0.7
+            CENLOC(in,8)=8.0
+            CENLOC(in,9)=5.0
+            CENLOC(in,10)=0.7
+            CENLOC(in,11)=8.0
+            CENLOC(in,12)=2.5
+            CENLOC(in,13)=2.5
+            CENLOC(in,14)=8.0
+            hcfpdescr(IN) = 'CEN default hc coefficients'
+          endif
+        endif
+
+C Initial menu entry setup.
+  21    IER=0
+        INO=-2
+        ibase=nint(CENLOC(IN,1))
+        if(ibase.ne.0)then
+          icc1=izstocn(iz,ibase) 
+          write(item(1),'(2a)') 'a base surf is ',SSNAME(icc1)
+        else
+          write(item(1),'(2a)') 'a base surf is ','not yet defined'
+        endif
+        itop=nint(CENLOC(IN,2))
+        if(itop.ne.0)then
+          icc2=izstocn(iz,itop) 
+          write(item(2),'(2a)') 'b top surf is ',SSNAME(icc2)
+        else
+          write(item(2),'(2a)') 'b top surf is ','not yet defined'
+        endif
+        write(item(3),'(a)')  ' ---floor--------      '
+        write(item(4),'(a,f7.3)') 'c upward flow hc   ',CENLOC(IN,3)
+        write(item(5),'(a,f7.3)') 'd downward flow hc ',CENLOC(IN,4)
+        write(item(6),'(a,f7.3)') 'e outside hc       ',CENLOC(IN,5)
+        write(item(7),'(a)')  ' --ceiling-------      '
+        write(item(8),'(a,f7.3)') 'f upward flow hc   ',CENLOC(IN,6)
+        write(item(9),'(a,f7.3)') 'g downward flow hc ',CENLOC(IN,7)
+        write(item(10),'(a,f7.3)')'h outside hc       ',CENLOC(IN,8)
+        write(item(11),'(a)') ' --sloped--------      '
+        write(item(12),'(a,f7.3)')'i upward flow hc   ',CENLOC(IN,9)
+        write(item(13),'(a,f7.3)')'j downward flow hc ',CENLOC(IN,10)
+        write(item(14),'(a,f7.3)')'k outside hc       ',CENLOC(IN,11)
+        write(item(15),'(a)') ' --wall----------      '
+        write(item(16),'(a,f7.3)')'l inside hc        ',CENLOC(IN,12)
+        write(item(17),'(a,f7.3)')'m partition hc     ',CENLOC(IN,13)
+        write(item(18),'(a,f7.3)')'n outside hc       ',CENLOC(IN,14)
+        write(item(19),'(a)') ' _____________________ '
+        write(item(20),'(a)') 'o (re) set defaults    '
+        write(item(21),'(a)') '? help                 '
+        write(item(22),'(a)') '- exit                 '
+
+C Number of items displayed.
+        H(1) ='CEN standards impose specific hc values for surfaces'
+        H(2) ='facing specific directions and if the surface is a '
+        H(3) ='floor or ceiling the direction of heat flow is taken'
+        H(4) ='into account. The hc at surfaces facing the outside '
+        H(5) ='tends to be a standard value. '
+        H(6) =' '
+        H(7) ='In this facility you can over-ride the standard values'
+        H(8) ='in case there are country-specific values. '
+        H(9) =' '
+        H(10)='If you want to take the standard published values then'
+        H(11)='the task is only to identify which surface in the zone'
+        H(12)='is considered the typical floor and which surface is '
+        H(13)='a typical ceiling (CEN needs to know this). '
+        H(14) =' '
+        H(15) ='Default values are: '
+        H(16) =' heat flow upwards (floor/ceiling/sloped) 5.0'
+        H(17) =' heat flow downwards (floor/ceiling/sloped) 0.7'
+        H(18) =' heat flow at walls (inside/partition side/) 2.5'
+        H(19) =' heat flow at otherside exterior 8.0 (4+4v) where'
+        H(20) ='  v is assumed to be 1m/s'
+        H(21) =' '
+        H(22) ='Sometimes CEN tests require you to lump radiant and'
+        H(23) ='convective values at the outside (typically in con-'
+        H(24) ='junction with zero emissivity at the outside) and '
+        H(25) ='in this case you would need to edit the standard '
+        H(26) ='value of 8.0. '
+        NITEMS=22
+
+        CALL EMENU('CEN coefficients',ITEM,NITEMS,INO)
+
+C Edit data or display help.
+        if (INO.eq.NITEMS) then
+
+C Exit this menu (to get back to the top level of the hc regime)
+C silently if base and top surfaces have been identified.
+          ibase=nint(CENLOC(IN,1))
+          itop=nint(CENLOC(IN,2))
+          if(ibase.eq.0.and.itop.eq.0)then
+            dok=.false.
+            CALL ASKOK('The base and top surfaces of the room have',
+     &        'not yet been defined. Exit without defining these?',
+     &        OK,dok,26)
+            if(ok)then
+              goto 19
+            else
+              goto 21
+            endif 
+          endif
+          return
+        elseif (INO.eq.NITEMS-1) then
+          CALL PHELPD('CEN conv coef data',20,'-',0,0,IER)
+        elseif (INO.eq.1) then
+          IS=nint(CENLOC(IN,1))
+          CALL EASKSUR(IZ,IS,'A','Select surface for base of room.',
+     &      '(should be roughly horizontal)',IER)
+          if(IS.ne.0)then
+            CENLOC(IN,1)=real(IS)
+          endif
+        elseif (INO.eq.2) then
+          IS=nint(CENLOC(IN,2))
+          CALL EASKSUR(IZ,IS,'A','Select surface for top of room.',
+     &      '(should be roughly horizontal)',IER)
+          if(IS.ne.0)then
+            CENLOC(IN,2)=real(IS)
+          endif
+        elseif (INO.eq.4) then
+          V1=CENLOC(IN,3)
+          CALL EASKR(V1,' ','Hc for upwards heat flow at floors?',
+     &       0.1,'F',99.,'F',5.0,'floor hc upwards',IER,26)
+          CENLOC(IN,3)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.5) then
+          V1=CENLOC(IN,4)
+          CALL EASKR(V1,' ','Hc for downwards heat flow at floors?',
+     &       0.1,'F',99.,'F',0.7,'floor hc downwards',IER,26)
+          CENLOC(IN,4)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.6) then
+          V1=CENLOC(IN,5)
+          CALL EASKR(V1,' ','Hc at outside (exterior) floors?',
+     &       0.1,'F',99.,'F',8.0,'floor hc exterior',IER,26)
+          CENLOC(IN,5)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.8) then
+          V1=CENLOC(IN,6)
+          CALL EASKR(V1,' ','Hc for upwards heat flow at ceilings?',
+     &       0.1,'F',99.,'F',5.0,'ceil hc upwards',IER,26)
+          CENLOC(IN,6)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.9) then
+          V1=CENLOC(IN,7)
+          CALL EASKR(V1,' ','Hc for downwards heat flow at ceilings?',
+     &       0.1,'F',99.,'F',0.7,'ceil hc downwards',IER,26)
+          CENLOC(IN,7)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.10) then
+          V1=CENLOC(IN,8)
+          CALL EASKR(V1,' ','Hc at outside (exterior) ceilings?',
+     &       0.1,'F',99.,'F',8.0,'ceil hc exterior',IER,26)
+          CENLOC(IN,8)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.12) then
+          V1=CENLOC(IN,9)
+          CALL EASKR(V1,' ','Hc for upwards heat flow at sloped?',
+     &       0.1,'F',99.,'F',5.0,'sloped hc upwards',IER,26)
+          CENLOC(IN,9)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.13) then
+          V1=CENLOC(IN,10)
+          CALL EASKR(V1,' ','Hc for downwards heat flow at sloped?',
+     &       0.1,'F',99.,'F',0.7,'sloped hc downwards',IER,26)
+          CENLOC(IN,10)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.14) then
+          V1=CENLOC(IN,11)
+          CALL EASKR(V1,' ','Hc at outside (exterior) sloped?',
+     &       0.1,'F',99.,'F',8.0,'sloped hc exterior',IER,26)
+          CENLOC(IN,11)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.16) then
+          V1=CENLOC(IN,12)
+          CALL EASKR(V1,' ','Hc at inside face of walls?',
+     &       0.1,'F',99.,'F',2.5,'walls hc inside',IER,26)
+          CENLOC(IN,12)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.17) then
+          V1=CENLOC(IN,13)
+          CALL EASKR(V1,' ','Hc at other (partition) face of walls?',
+     &       0.1,'F',99.,'F',2.5,'walls hc partition',IER,26)
+          CENLOC(IN,13)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.18) then
+          V1=CENLOC(IN,14)
+          CALL EASKR(V1,' ','Hc at outside (exterior) walls?',
+     &       0.1,'F',99.,'F',8.0,'walls hc exterior',IER,26)
+          CENLOC(IN,14)=V1
+          hcfpdescr(IN) = 'CEN user edited hc coefficients'
+        elseif (INO.eq.20) then
+
+C Reset hc to default values.
+          CENLOC(in,3)=5.0
+          CENLOC(in,4)=0.7
+          CENLOC(in,5)=8.0
+          CENLOC(in,6)=5.0
+          CENLOC(in,7)=0.7
+          CENLOC(in,8)=8.0
+          CENLOC(in,9)=5.0
+          CENLOC(in,10)=0.7
+          CENLOC(in,11)=8.0
+          CENLOC(in,12)=2.5
+          CENLOC(in,13)=2.5
+          CENLOC(in,14)=8.0
+          hcfpdescr(IN) = 'CEN default hc coefficients'
+        else
+          goto 21
+        endif
+        goto 21
+      endif
+
       RETURN
       END
 
@@ -2605,6 +2860,7 @@ C As well as documentation based on the last edit by the user.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
+      COMMON/HCCEN/CENLOC(MP,14)
       COMMON/Vld20/Vldtng
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       common/HCFPHI/hcfpdescr(MP)
@@ -2655,8 +2911,19 @@ C one line if necessary.
       DO 930 I = 1,IHCFP
         WRITE(IUF,'(F6.2,3X,F6.2,a)',IOSTAT=ISTAT,ERR=990)
      &          ST(I),EN(I),' # start and end time of interval'
-        WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
-     &          ICTL(I),' # calculation control type'
+        if(ICTL(I).eq.1)then
+          WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
+     &          ICTL(I),' # fixed coef. calculation control type'
+        elseif(ICTL(I).eq.2)then
+          WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
+     &          ICTL(I),' # fixed correlation calculation control type'
+        elseif(ICTL(I).eq.3)then
+          WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
+     &          ICTL(I),' # adaptive calculation control type'
+        elseif(ICTL(I).eq.4)then
+          WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
+     &          ICTL(I),' # CEN calculation control type'
+        endif
         write(iuf,'(2a)',IOSTAT=ISTAT,ERR=990) '*Doc,',
      &    hcfpdescr(i)(1:lnblnk(hcfpdescr(i)))
         if(ICTL(I).eq.1) then
@@ -2683,10 +2950,6 @@ C on as many lines as necessary.
             write(iuf,'(1x,a)',IOSTAT=ios,ERR=990) louts(1:loutln)
             ipos=itrunc+1
           end do
-C          WRITE(IUF,'(50(F6.1,1x))',IOSTAT=ISTAT,ERR=990)
-C     &            (HCI(I,J),J=1,NZSUR(ICOMP))
-C          WRITE(IUF,'(50(F6.1,1x))',IOSTAT=ISTAT,ERR=990)
-C     &            (HCE(I,J),J=1,NZSUR(ICOMP))
         elseif(ICTL(I).eq.2) then
 
 C Correlation indices. Copy to local array and then write out
@@ -2711,10 +2974,6 @@ C on as many lines as necessary.
             write(iuf,'(1x,a)',IOSTAT=ios,ERR=990) louts(1:loutln)
             ipos=itrunc+1
           end do
-C          WRITE(IUF,'(50(I3,1x))',IOSTAT=ISTAT,ERR=990)
-C     &            (IHCI(I,J),J=1,NSUR)
-C          WRITE(IUF,'(50(I3,1x))',IOSTAT=ISTAT,ERR=990)
-C     &            (IHCE(I,J),J=1,NSUR)
         elseif(ICTL(I).eq.3) then
 
 C Control laws and associated data for each surface
@@ -2727,6 +2986,24 @@ C  Additional information for air channels
           WRITE(IUF,'(I3,F6.3,F6.3,A)',IOSTAT=ISTAT,ERR=990)
      &      IAORZ,CWIDTH,CHEIGHT,
      & '# Air origin zone (+ chan. width and height if Bar-Cohen corr.)'
+        elseif(ICTL(I).eq.4) then
+
+C CEN 13791 mode sets values for specific locations.
+         WRITE(IUF,'(a,2F7.1,a)',IOSTAT=ISTAT,ERR=990)
+     &     '*basetop ',CENLOC(I,1),CENLOC(I,2),
+     &     ' #  index (within the zone) of a typcial base & top'
+         WRITE(IUF,'(a,3F7.3,a)',IOSTAT=ISTAT,ERR=990)
+     &     '*floor   ',CENLOC(I,3),CENLOC(I,4),CENLOC(I,5),
+     &     ' #  CEN floor upwd_inside, downwd_inside, external'
+         WRITE(IUF,'(a,3F7.3,a)',IOSTAT=ISTAT,ERR=990)
+     &     '*ceiling ',CENLOC(I,6),CENLOC(I,7),CENLOC(I,8),
+     &     ' #  CEN ceiling upwd_inside, downwd_inside, external'
+         WRITE(IUF,'(a,3F7.3,a)',IOSTAT=ISTAT,ERR=990)
+     &     '*slope   ',CENLOC(I,9),CENLOC(I,10),CENLOC(I,11),
+     &     ' #  CEN sloped upwd_inside, downwd_inside, external'
+         WRITE(IUF,'(a,3F7.3,a)',IOSTAT=ISTAT,ERR=990)
+     &     '*wall    ',CENLOC(I,12),CENLOC(I,13),CENLOC(I,14),
+     &     ' #  CEN wall inside, partition, external'
         endif
   930 CONTINUE
       CALL ERPFREE(IUF,ISTAT)
@@ -2748,6 +3025,15 @@ C EHTCFF reads the convection-calculation control file (usually named *.htc).
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       common/HCFPHI/hcfpdescr(MP)
+
+C CENLOC CEN specifications for each period
+C       jj=1 index of a floor surface
+C       jj=2 index of a ceiling surface
+C       jj=3-5 floor upwd_inside, downwd_inside, external
+C       jj=6-8 ceiling upwd_inside, downwd_inside, external
+C       jj=9-11 sloped upwd_inside, downwd_inside, external
+C       jj=12-14 wall inside, partition, external
+      COMMON/HCCEN/CENLOC(MP,14)
 
 C Current file (for use by low level I/O calls)
       common/curfile/currentfile
@@ -2808,7 +3094,7 @@ C if there are NS items on the line then it is an older file.
           CALL STRIPC(IUF,OUTSTR,99,num1,1,'htc ctl type',IER)
           if(num1.eq.1)then
             K=0
-            CALL EGETWI(OUTSTR,K,ICTL(I),1,3,'W','htc ctl type',IER)
+            CALL EGETWI(OUTSTR,K,ICTL(I),1,4,'W','htc ctl type',IER)
 
 C If newer format then scan for hcfpdescr.
             if(newer)then
@@ -2859,6 +3145,57 @@ C Read IAORZ,CWIDTH and CHEIGHT of ventilated channels. This line
 C may not exist in all hc files.
             READ(IUF,*,IOSTAT=ISTAT,ERR=390,END=390)
      &        IAORZ,CWIDTH,CHEIGHT
+          elseif(ICTL(I).eq.4) then
+
+C CEN mode sets values for specific conditions.
+            CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen base top',IER)
+            if(OUTSTR(1:8).eq.'*basetop')then
+              K=8
+              CALL EGETWR(OUTSTR,K,V1,1.,100.,'W','htc cen base',IER)
+              CALL EGETWR(OUTSTR,K,V2,1.,100.,'W','htc cen top',IER)
+              CENLOC(i,1)=V1
+              CENLOC(i,2)=V2
+            endif
+            CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen floor',IER)
+            if(OUTSTR(1:6).eq.'*floor')then
+              K=6
+              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CENLOC(i,3)=V1
+              CENLOC(i,4)=V2
+              CENLOC(i,5)=V3
+            endif
+            CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen ceiling',IER)
+            if(OUTSTR(1:8).eq.'*ceiling')then
+              K=8
+              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CENLOC(i,6)=V1
+              CENLOC(i,7)=V2
+              CENLOC(i,8)=V3
+            endif
+            CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen slope',IER)
+            if(OUTSTR(1:6).eq.'*slope')then
+              K=6
+              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CENLOC(i,9)=V1
+              CENLOC(i,10)=V2
+              CENLOC(i,11)=V3
+            endif
+            CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen wall',IER)
+            if(OUTSTR(1:5).eq.'*wall')then
+              K=5
+              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen inside',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen ptn',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CENLOC(i,12)=V1
+              CENLOC(i,13)=V2
+              CENLOC(i,14)=V3
+            endif
           endif
   330   CONTINUE
         CALL ERPFREE(IUF,ISTAT)
@@ -2891,6 +3228,7 @@ C held in a *.htc file.
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
+      COMMON/HCCEN/CENLOC(MP,14)
 
       character H*72,outs*124
       CHARACTER SSPARENT*12
@@ -2925,6 +3263,8 @@ C If nothing to report, return.
           write(outs,'(a)') ' User specified convection regime'
         elseif(ICTL(I).eq.3)then
           write(outs,'(a)') ' Adaptive (mixed) convection regime'
+        elseif(ICTL(I).eq.4)then
+          write(outs,'(a)') ' CEN convection regime:'
         endif
         call edisp(itru,outs)
         write(outs,'(1x,a)') hcfpdescr(I)(1:lnblnk(hcfpdescr(i)))
@@ -2964,6 +3304,42 @@ C Control laws and associated data.
  5206       FORMAT(I2,1x,4a,4(f4.0,1x),3x,4(f4.0,1x))
             call edisp(itru,outs)
   862     CONTINUE
+        elseif(ICTL(I).eq.4) then
+          ibase=nint(CENLOC(I,1))
+          itop=nint(CENLOC(I,2))
+          if(ibase.ne.0.and.itop.ne.0)then
+            icc1=izstocn(icomp,ibase) 
+            icc2=izstocn(icomp,itop)
+            lssn1=lnblnk(SSNAME(icc1)) 
+            lssn2=lnblnk(SSNAME(icc2)) 
+            write(outs,'(5a)') ' CEN regime based on typical floor ',
+     &        SSNAME(icc1)(1:lssn1),' and typcial ceiling ',
+     &        SSNAME(icc2)(1:lssn2),'.'
+          else
+            write(outs,'(2a)') ' CEN regime with undefined floor ',
+     &        ' and/or ceiling surfaces.'
+          endif
+          call edisp(itru,outs)
+          write(outs,'(a,F7.3,a,F7.3,a,F7.3,a)') 
+     &      'Floor upwards flow hc is ',CENLOC(i,3),
+     &      ' and downwards ',CENLOC(i,4),
+     &      ' and external ',CENLOC(i,5),'.'
+          call edisp(itru,outs)
+          write(outs,'(a,F7.3,a,F7.3,a,F7.3,a)') 
+     &      'Ceiling upwards flow hc is ',CENLOC(i,6),
+     &      ' and downwards ',CENLOC(i,7),
+     &      ' and external ',CENLOC(i,8),'.'
+          call edisp(itru,outs)
+          write(outs,'(a,F7.3,a,F7.3,a,F7.3,a)') 
+     &      'Sloped upwards flow hc is ',CENLOC(i,9),
+     &      ' and downwards ',CENLOC(i,10),
+     &      ' and external ',CENLOC(i,11),'.'
+          call edisp(itru,outs)
+          write(outs,'(a,F7.3,a,F7.3,a,F7.3,a)') 
+     &      'Walls inside hc is ',CENLOC(i,12),
+     &      ' and other side of partitions ',CENLOC(i,13),
+     &      ' and external ',CENLOC(i,14),'.'
+          call edisp(itru,outs)
         endif
   850 CONTINUE
 
