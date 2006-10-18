@@ -380,8 +380,7 @@ C successful then scan all the zones via ZDATA.
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
           MODE='NONE'
-          CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,ITRC,IER)
-C          call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+          CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
             call updwire(ncomp)
@@ -498,8 +497,7 @@ C Find the path and local file name.
         call edisp(iuout,' ')
         call edisp(iuout,' Scanning the model description')
         MODE='NONE'
-        CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,ITRC,IER)
-C        call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+        CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
           call updwire(ncomp)
