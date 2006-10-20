@@ -209,6 +209,10 @@ C Plant control law 11: Hydrogen demand controller
 C Plant cotrol law 12: Derive signal from boundary condition
       ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.12) THEN
          CALL Boundry_Condition_Control ()
+
+C Plant control law 13: Adsorption storage unit controller
+      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.13) THEN
+         CALL ADS_stg_controller(iterp)
          
 C New controllers inserted here!
       ELSE

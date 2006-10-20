@@ -54,7 +54,9 @@ C ******************************************************************************
 C *********************************************************************************************
 C ****************************** FC_static_template *******************************************
 C Created by: Ian Beausoleil-Morrison
+C Modified by: Maria Mottillo
 C Initial Creation Date: August 9, 2001
+C Modified on: August 17, 2006
 C Copyright CETC 2001
 
 C This subroutine is the static template for the fuel cell component. It checks
@@ -62,6 +64,14 @@ C whether the component is properly used in the user-defined plant network,
 C it assigns user-input data to module variables, it performs time-invariant
 C calculations, and it checks the integrity of the user-specified electric
 C loads data file.
+
+C This subroutine was modified to permit two connections to node 3 so that 
+C the SOFC plant component could be connected to two heat sinks. This variation of
+C the original model is used to investigate the coupling of a SOFC to an
+C adsorption storage unit for seasonal heat storage and to a hot water tank. To
+C access the modified model, the appropriate plant component (code 112) must
+C be specified in the plant network.
+
 
 C The fuel cell is represented with three nodes:
 C   node 1 represents the cell stack and ancillary devices, such as the power
@@ -170,6 +180,7 @@ C-------------------------------------------------------------------------------
       INTEGER NumADATA,Itemp,N_expect,IPCONC,iNum_DG_controller,init
       INTEGER IPCOMP
       INTEGER j
+      INTEGER iComponent_code
       LOGICAL mistake,CLOSE
    
 C---------------------------------------------------------------------------------
@@ -238,6 +249,15 @@ C-------------------------------------------------------------------------------
 
 
 C---------------------------------------------------------------------------------
+C Get component code. A component code of 80 refers to the original SOFC model
+C that allows 1 connection to node 3. A component code of 112 refers to the
+C modified SOFC model that permits 2 connections to node 3.
+C---------------------------------------------------------------------------------
+
+       iComponent_code = NPCDAT(IPCOMP,4)
+
+
+C---------------------------------------------------------------------------------
 C Write out ADATA if there is a trace output. Note that there is no BDATA
 C used with this component.
 C---------------------------------------------------------------------------------
@@ -285,11 +305,18 @@ C-----There should be no connections to node 2.
       DO IPCONC=1,MPCONC
         IF( ICONDX(IPCOMP,2,IPCONC) /= 0 ) mistake=.true.
       END DO
-C-----There should be one connection to node 3.
-      IF( ICONDX(IPCOMP,3,1) == 0 ) mistake=.true.
-      DO IPCONC=2,MPCONC
-        IF( ICONDX(IPCOMP,3,IPCONC) /= 0 ) mistake=.true.
-      END DO
+C-----There should be one connection to node 3 if component code = 80
+C-----and two connections to node 3 if component code =112.
+      if ( iComponent_code .eq. 80 ) then
+         IF( ICONDX(IPCOMP,3,1) == 0 ) mistake=.true.
+         DO IPCONC=2,MPCONC
+           IF( ICONDX(IPCOMP,3,IPCONC) /= 0 ) mistake=.true.
+         END DO
+      elseif ( iComponent_code .eq. 112 ) then
+         DO IPCONC=3,MPCONC
+           IF( ICONDX(IPCOMP,3,IPCONC) /= 0 ) mistake=.true.
+         END DO 
+      endif
 C-----Write error message if the number of connections to the nodes are incorrect.
       IF(mistake)THEN
         WRITE(IUOUT,*) ' FC_static_template: incorrect number of'
@@ -299,7 +326,7 @@ C-----Write error message if the number of connections to the nodes are incorrec
 
 
 C---------------------------------------------------------------------------------
-C Check that the connection to node 3 is of the correct type. The one connection to node 3
+C Check that the connection(s) to node 3 is of the correct type. The connection(s) to node 3
 C should be of type ISV=20 so that the fuel cell component can be used in networks in which
 C both first and second phase mass balances are formed.
 C Variables used:
@@ -314,6 +341,9 @@ C               20<=ISV<30  model suitable for energy + two phase mass balances
 C---------------------------------------------------------------------------------
       mistake = .false.
       IF( ICONTP( ICONDX(IPCOMP,3,1) ) /= 20 ) mistake=.true.
+      if ( iComponent_code .eq. 112 ) then
+        if( icontp( icondx(ipcomp,3,2) ) .ne. 20 ) mistake = .true.
+      endif
       IF(mistake)THEN
         WRITE(IUOUT,*) ' FC_static_template: incorrect connection type'
         WRITE(IUOUT,*) ' to node 3 for component ',IPCOMP
@@ -516,6 +546,8 @@ C ******************************************************************************
 C ****************************** FC_coeff_generator ******************************
 C Created by: Ian Beausoleil-Morrison
 C Initial Creation Date: August 14, 2001
+C Modified by: Maria Mottillo
+C Modified on: August 17, 2006
 C Copyright CETC 2001
 
 C This subroutine is the coefficient generator for the fuel cell component.
@@ -530,6 +562,13 @@ C          conditioning system, circulating fans, etc.
 C   Node 2 represents the gas within the exhaust-to-water heat exchanger.
 C   Node 3 represents the water within and the solid portion of the exhaust-to-water
 C          heat exchanger.
+
+C This subroutine was modified to permit two connections to node 3 so that 
+C the SOFC plant component could be connected to two heat sinks. This variation of
+C the original model is used to investigate the coupling of a SOFC to an
+C adsorption storage unit for seasonal heat storage and to a hot water tank. To
+C access the modified model, the appropriate plant component (code 112) must
+C be specified in the plant network.
 
 C INPUTS:
 C    IPCOMP              index number of the component under consideration
@@ -664,6 +703,17 @@ C ------------------------------------------------------------------------------
       CHARACTER*72 ENTFLNAM  ! Electrical networks filename.
       INTEGER IENTXIST       ! Elec netowrks flag. True if > 0
 
+C The COMMON variables below are used by the modified fuel cell model when
+C it is connected to an adsorption storage unit.
+
+      COMMON/Stgdata/iCharge_signal,iDischarge_signal
+      INTEGER iCharge_signal    ! charging signal for adsorption storage unit (on/off)
+      INTEGER iDischarge_signal ! discharge signal for adsorption storage unit (on/off)
+
+      COMMON/FCSignal/iFC_opr_signal   ! fuel cell operating signal required by
+                                       ! adsorption storage controller.
+      INTEGER iFC_opr_signal
+
 
 C---------------------------------------------------------------------------------
 C Declare local variables.
@@ -690,6 +740,29 @@ C-------------------------------------------------------------------------------
       REAL T_exit_previous      ! exhaust temperature @ HE outlet for previous timestep
       REAL Twater_enter_previous ! water temperature @ HE inlet for previous timestep
 
+      INTEGER  iComponent_code        ! Plant component code
+
+C The following variables are used for the case where the SOFC is connected to two
+C heat sinks, a hot water tank and an adsorption storage unit. This code is project-specific
+C and should be replaced with a more generalized code in the future.
+
+      REAL Twater_enter_tank_previous ! water temperature @ HE inlet from tank for previous timestep
+      REAL Twater_enter_adsorber_previous  ! water temperature @ HE inlet from adsorber
+                                           ! for previous timestep
+
+      REAL beta1, beta2         ! variables used to identify whether fuel cell exhaust heat
+                                ! is directed to tank or adsorber
+                                ! if heat is directed to tank, beta1 = 1, beta2 = 0
+                                ! if heat is directed to adsorber, beta1 = 0, beta2 = 1
+
+
+C---------------------------------------------------------------------------------
+C Get component code. A component code of 80 refers to the original SOFC model
+C that has 1 connection to node 3. A component code of 112 refers to the
+C modified SOFC model that has 2 connections to node 3.
+C---------------------------------------------------------------------------------
+
+       iComponent_code = NPCDAT(IPCOMP,4)
 
 C---------------------------------------------------------------------------------
 C Start trace if trace output requested.
@@ -711,11 +784,16 @@ C    INOD1          global matrix node number for fuel cell component node 1
 C    INOD2          global matrix node number for fuel cell component node 2
 C    INOD3          global matrix node number for fuel cell component node 3
 C    ICON3          connection number to node 3 (water in heat exchanger)
+C    ICON3b         number of 2nd connection to node 3 represents connection to 
+C                   adsorber (node 1 of adsorption storage unit model), if applicable
 C---------------------------------------------------------------------------------
       INOD1 = NPCDAT(IPCOMP,9)
       INOD2 = NPCDAT(IPCOMP,9)+1
       INOD3 = NPCDAT(IPCOMP,9)+2
       ICON3 = ICONDX(IPCOMP,3,1)
+      if ( iComponent_code .eq. 112 ) then
+         ICON3b = icondx(ipcomp,3,2)
+      endif
 
 C---------------------------------------------------------------------------------
 C Mark the temperatures of the cell stack and the gas within the exhaust-to-water
@@ -777,6 +855,16 @@ C-------------------------------------------------------------------------------
         FC_onoff = .false.
       ENDIF
 
+C---------------------------------------------------------------------------------
+C Determine operating signal for adsorption storage controller. A more elegant
+C generalized controller law should replace this code in the future.
+C---------------------------------------------------------------------------------
+
+      if ( FC_onoff ) then
+         iFC_opr_signal = 1
+      else
+         iFC_opr_signal = 0
+      endif
 
 C---------------------------------------------------------------------------------
 C Generate coefficients for the appropriate equation set. This subroutine was
@@ -1159,11 +1247,45 @@ C     PCONDR(i)    ratio of flow rate leaving sending note that reaches receivin
 C                  node for connection `i'. It will equal one here, but will be
 C                  less than one in the case of a diverging connection.
 C---------------------------------------------------------------------------------
-        Twater_enter = CONVAR(ICON3,1)
-        Twater_enter_previous = PCTP(ICON3)
-        mdotCp_water = PCONDR(ICON3) * CONVAR(ICON3,2)
-     &               * SHTFLD(3,Twater_enter)
 
+        if ( iComponent_code .eq. 80 ) then
+C Original SOFC model, 1 connection to node 3
+            Twater_enter = CONVAR(ICON3,1)
+            Twater_enter_previous = PCTP(ICON3)
+            mdotCp_water = PCONDR(ICON3) * CONVAR(ICON3,2)
+     &                     * SHTFLD(3,Twater_enter)
+        elseif ( iComponent_code .eq. 112 ) then
+C Modified SOFC model, 2 connections to node 3
+C It is assumed that the first connection to node 3 is to the water tank
+C and the second connection is to the adsorption storage unit.
+
+            Twater_enter_tank = CONVAR(ICON3,1)
+            Twater_enter_tank_previous = PCTP(ICON3)
+            mdotCp_water_tank = PCONDR(ICON3) * CONVAR(ICON3,2)
+     &                          * SHTFLD(3,Twater_enter_tank)
+
+            Twater_enter_adsorber = CONVAR(ICON3b,1)
+            Twater_enter_adsorber_previous = PCTP(ICON3b)
+            mdotCp_water_adsorber = PCONDR(ICON3b) * CONVAR(ICON3b,2)
+     &                              * SHTFLD(3,Twater_enter_adsorber)
+                            !may need to use other function for pressurized loop?
+
+C The entering water is either from the water tank or from the 
+C adsorption storage unit (adsorber node 1). The latter occurs if the storage unit
+C is in the charging phase only.
+
+            if ( iCharge_signal .eq. 1 ) then  ! fuel cell sends exhaust heat to adsorption storage unit
+                                          ! the adsorption storage unit is in charging mode
+                Twater_enter = Twater_enter_adsorber
+                beta1 = 0.
+                beta2 = 1.
+            else                          ! fuel cell sends exhaust heat to tank
+                Twater_enter = Twater_enter_tank
+                beta1 = 1.
+                beta2 = 0.
+            endif
+
+        endif
         
 C---------------------------------------------------------------------------------
 C Ensure that the value of `UA_exh' is realistic. Otherwise, the temperatures
@@ -1194,6 +1316,8 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Preparation for forming matrix coefficients for energy balances is now complete.
 C Establish matrix equation self-coupling, cross-coupling, and RHS coefficients.
+
+C Original SOFC model (1 connection to node 3)
 C Node coefficient transport for COUT (refer to Beausoleil-Morrison p13):
 C       <--self-->|<cross>
 C  node   1  2  3 |   m      RHS
@@ -1201,31 +1325,65 @@ C       ---------------------------
 C         1  0  0 |   0       7
 C         2  3  0 |   0   =   8
 C         4  0  5 |   6       9
-C---------------------------------------------------------------------------------
-C-------Node 1 energy balance give by Beausoleil-Morrison eq 27.
-        COUT(1) = m_dot_exh_kmol * Cp_exh              ! self-coupling to itself (W/oC)
-        COUT(7) = m_dot_fuel_kmol * H_fuel    * 1000.  ! RHS (W)
-     &          + m_dot_air_kmol  * H_air     * 1000.
-     &          + m_dot_liqwater_kg * H_water * 1000.
-     &          + m_dot_fuel_kmol * LHV_fuel * 1000. * (1.-eta_fc)
-     &          - q_heatleak
-     &          + m_dot_exh_kmol * Cp_exh * T_refCp
-     &          - m_dot_exh_kmol * Href * 1000.
 
-C-------Node 2 energy balance given Beausoleil-Morrison by eq 32.
+C Modified SOFC model (2 connections to node 3)
+C Node coefficient transport for COUT (refer to Mottillo,p92):
+C       <--self-->|<cross>
+C  node   1  2  3 |   tank  ads     RHS
+C       --------------------------------
+C         1  0  0 |   0     0        8
+C         2  3  0 |   0     0   =    9
+C         4  0  5 |   6     7        10
+C---------------------------------------------------------------------------------
+
+C-------Node 1 energy balance
+        COUT(1) = m_dot_exh_kmol * Cp_exh              ! self-coupling to itself (W/oC)
+
+        if ( iComponent_code .eq. 80 ) then
+           COUT(7) = m_dot_fuel_kmol * H_fuel    * 1000.  ! RHS (W)
+     &             + m_dot_air_kmol  * H_air     * 1000.
+     &             + m_dot_liqwater_kg * H_water * 1000.
+     &             + m_dot_fuel_kmol * LHV_fuel * 1000. * (1.-eta_fc)
+     &             - q_heatleak
+     &             + m_dot_exh_kmol * Cp_exh * T_refCp
+     &             - m_dot_exh_kmol * Href * 1000.
+        elseif ( iComponent_code .eq. 112 ) then
+           COUT(8) = m_dot_fuel_kmol * H_fuel    * 1000.  ! RHS (W)
+     &             + m_dot_air_kmol  * H_air     * 1000.
+     &             + m_dot_liqwater_kg * H_water * 1000.
+     &             + m_dot_fuel_kmol * LHV_fuel * 1000. * (1.-eta_fc)
+     &             - q_heatleak
+     &             + m_dot_exh_kmol * Cp_exh * T_refCp
+     &             - m_dot_exh_kmol * Href * 1000.
+        endif
+
+C-------Node 2 energy balance
         COUT(2) = m_dot_exh_kmol * Cp_exh - UA_exh  ! self-coupling to node 1 (W/oC)
         COUT(3) = - m_dot_exh_kmol * Cp_exit        ! self-coupling to itself (W/oC)
                                                     ! (assumes no leakage of exhaust gases)
-        COUT(8) = - UA_exh * Twater_enter           ! RHS (W)
-     &          + m_dot_exh_kmol * Cp_exh * T_refCp
-     &          - m_dot_exh_kmol * Cp_exit * T_refCp
+        if ( iComponent_code .eq. 80 ) then
+           COUT(8) = - UA_exh * Twater_enter           ! RHS (W)
+     &             + m_dot_exh_kmol * Cp_exh * T_refCp
+     &             - m_dot_exh_kmol * Cp_exit * T_refCp
+        elseif ( iComponent_code .eq. 112) then
+           COUT(9) = - UA_exh * Twater_enter           ! RHS (W)
+     &             + m_dot_exh_kmol * Cp_exh * T_refCp
+     &             - m_dot_exh_kmol * Cp_exit * T_refCp
+        endif
 
-C-------Node 3 energy balance given by Beausoleil-Morrison eq 34.
-        COUT(4) = UA_exh                 ! self-coupling to node 1 (W/oC)
-        COUT(5) = - mdotCp_water         ! self-coupling to itself (W/oC)
-        COUT(6) = mdotCp_water - UA_exh  ! cross-coupling to node m (W/oC)
-        COUT(9) = 0.                     ! RHS (W)
-
+C-------Node 3 energy balance
+        if ( iComponent_code .eq. 80 ) then
+           COUT(4) = UA_exh                 ! self-coupling to node 1 (W/oC)
+           COUT(5) = - mdotCp_water         ! self-coupling to itself (W/oC)
+           COUT(6) = mdotCp_water - UA_exh  ! cross-coupling to node m (W/oC)
+           COUT(9) = 0.                     ! RHS (W)
+        elseif ( iComponent_code .eq. 112) then
+           COUT(4) = UA_exh * (beta1 + beta2)
+           COUT(5) = - mdotCp_water_tank - mdotCp_water_adsorber
+           COUT(6) = mdotCp_water_tank - (beta1*UA_exh)
+           COUT(7) = mdotCp_water_adsorber - (beta2*UA_exh)
+           COUT(10) = 0.
+        endif
 
 C---------------------------------------------------------------------------------
 C       Store heat leakage for injection into containing zone 
@@ -1252,18 +1410,31 @@ C-------Node 1
           T_room = PCNTMF(IPCOMP)
         END IF
         COUT(1) = 1.      ! self-coupling to itself (-)
-        COUT(7) = T_room  ! RHS (oC)
+        if ( iComponent_code .eq. 80 ) then
+           COUT(7) = T_room  ! RHS (oC)
+        elseif ( iComponent_code .eq. 112) then
+           COUT(8) = T_room  ! RHS (oC)
+        endif
 
 C-------Node 2
         COUT(2) = -1.     ! self-coupling to node 1 (-)
         COUT(3) = 1.      ! self-coupling to itself (-)
-        COUT(8) = 0.      ! RHS (oC)
+        if ( iComponent_code .eq. 80 ) then
+           COUT(8) = 0.      ! RHS (oC)
+        elseif ( iComponent_code .eq. 112) then
+           COUT(9) = 0.      ! RHS (oC)
+        endif
 
 C-------Node 3
         COUT(4) = 0.      ! self-coupling to node 1 (oC)
         COUT(5) = 1.      ! self-coupling to itself (-)
         COUT(6) = -1.     ! cross-coupling to node m (-)
-        COUT(9) = 0.      ! RHS (oC)
+        if ( iComponent_code .eq. 80 ) then
+           COUT(9) = 0.      ! RHS (oC)
+        elseif ( iComponent_code .eq. 112) then
+           COUT(7) = 0.      ! cross-coupling to node m2 - adsorber(-)
+           COUT(10) = 0.     ! RHS (oC)
+        endif
 
 C-------Set additional outputs to appropriate values for inoperative fuel cell.
         eta_fc         = 0.              ! electrical efficiency
@@ -1280,9 +1451,17 @@ C-------Set additional outputs to appropriate values for inoperative fuel cell.
         T_exh          = T_room          ! temp of exhaust gases into HX (oC)
         T_exit         = T_room          ! temp of gases at outlet of HX (oC)
         UA_exh         = 0.              ! UA-value of heat exchanger (W)
-        Twater_enter   = CONVAR(ICON3,1) ! temp of water entering heat exchanger (oC)
         phi_source     = 0.              ! heating value of fuel used (W)
-        
+
+        if ( iComponent_code .eq. 80 ) then
+            Twater_enter   = CONVAR(ICON3,1) ! temp of water entering heat exchanger (oC)
+         elseif ( iComponent_code .eq. 112) then
+            Twater_enter_tank =
+     &                 CONVAR(ICON3,1)   ! temp of water entering heat exchanger from tank(oC)
+            Twater_enter_adsorber=
+     &                 CONVAR(ICON3b,1)  ! temp of water entering heat exchanger from adsorber (oC)
+        endif       
+
 C---------------------------------------------------------------------------------
 C       Set heat leakage for injection into containing zone to zero.
 C       '1' indicates that gain is convective. 
@@ -1295,17 +1474,39 @@ C*******************************************************************************
       ELSE IF(ISTATS==2) THEN
 C--------Node 1: no balance required so make flow zero.
          COUT(1) = 1.
-         COUT(7) = 0.
+         if ( iComponent_code .eq. 80 ) then
+            COUT(7) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            COUT(8) = 0.
+         endif
 C--------Node 2: no balance required so make flow zero.
          COUT(2) = 0.
          COUT(3) = 1.
-         COUT(8) = 0.
+         if ( iComponent_code .eq. 80 ) then
+            COUT(8) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            COUT(9) = 0.
+         endif
 C--------Node 3: flow in equals flow out.
          COUT(4) = 0.
          COUT(5) = 1.
-         COUT(6) = - PCONDR(ICON3) ! (dimensionless)
-         COUT(9) = 0.
-
+         if ( iComponent_code .eq. 80 ) then
+            COUT(6) = - PCONDR(ICON3) ! (dimensionless)
+            COUT(9) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            if ( iCharge_signal .ne. 1 .and.
+     &        iDischarge_signal .ne. 1 ) then
+               COUT(6) = - PCONDR(ICON3) * 2.                  ! (dimensionless)
+               COUT(7) = 0.
+            elseif ( iCharge_signal .eq. 1 ) then
+               COUT(6) = 0.
+               COUT(7) = -PCONDR(ICON3b) * 2.
+            elseif ( iDischarge_signal .eq. 1 ) then
+               COUT(6) = -1. * PCONDR(ICON3b) * 2.
+               COUT(7) = 0.
+            endif
+            COUT(10) = 0.
+         endif
 
 C*********************************************************************************
 C End of energy 1st phase mass balances / Beginning of 2nd phase mass balances ***
@@ -1313,16 +1514,29 @@ C*******************************************************************************
       ELSE IF(ISTATS==3) THEN
 C--------Node 1: no balance required so make flow zero.
          COUT(1) = 1.
-         COUT(7) = 0.
+         if ( iComponent_code .eq. 80 ) then
+            COUT(7) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            COUT(8) = 0.
+         endif
 C--------Node 2: no balance required so make flow zero.
          COUT(2) = 0.
          COUT(3) = 1.
-         COUT(8) = 0.
+         if ( iComponent_code .eq. 80 ) then
+            COUT(8) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            COUT(9) = 0.
+         endif
 C--------Node 3: no balance required so make flow zero.
          COUT(4) = 0.
          COUT(5) = 1.
          COUT(6) = 0.
-         COUT(9) = 0.
+         if ( iComponent_code .eq. 80 ) then
+            COUT(9) = 0.
+         elseif ( iComponent_code .eq. 112) then
+            COUT(7) = 0.
+            COUT(10) = 0.
+         endif
       END IF
 
       
@@ -1369,7 +1583,15 @@ C-------------------------------------------------------------------------------
       PCAOUT(IPCOMP,12) = Vdot_exh_STP                ! exhaust flow (slpm)
       PCAOUT(IPCOMP,13) = T_exh                       ! temp of exhaust gases into HX (oC)
       PCAOUT(IPCOMP,14) = T_exit                      ! temp of gases at outlet of HX (oC)
-      PCAOUT(IPCOMP,15) = UA_exh*(T_exh-Twater_enter) ! heat exchange to water (W)
+
+      if ( iComponent_code .eq. 80 ) then
+         PCAOUT(IPCOMP,15) = UA_exh*(T_exh-Twater_enter) ! heat exchange to water (W)
+      elseif ( iComponent_code .eq. 112) then   
+         PCAOUT(IPCOMP,15) = UA_exh*(T_exh-
+     &             Twater_enter_tank)*beta1 +            ! heat exchange to water (W)
+     &                    UA_exh*(T_exh-
+     &             Twater_enter_adsorber) * beta2
+      endif
 
 
 C Debug and testing (begin).
@@ -1429,10 +1651,21 @@ C-------------------------------------------------------------------------------
         WRITE(ITU,*) ' Component      ',IPCOMP,':'
         WRITE(ITU,*) ' 3 node fuel cell'
         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2,INOD3
-        WRITE(ITU,*) ' Connection(s)  ',ICON3
-        WRITE(ITU,*) ' Connection data:'
-        WRITE(ITU,*) '  - Temp.      = ', Twater_enter,' (oC)'
-        WRITE(ITU,*) '  - Heat cap.  = ', mdotCp_water,' (oC)'
+
+        if ( iComponent_code .eq. 80 ) then
+           WRITE(ITU,*) ' Connection(s)  ',ICON3
+           WRITE(ITU,*) ' Connection data:'
+           WRITE(ITU,*) '  - Temp.      = ', Twater_enter,' (oC)'
+           WRITE(ITU,*) '  - Heat cap.  = ', mdotCp_water,' (oC)'
+        elseif ( iComponent_code .eq. 112) then  
+           WRITE(ITU,*) '  - Temp.      = ', Twater_enter_tank,' (oC)'
+           WRITE(ITU,*) '  - Heat cap.  = ', mdotCp_water_tank,' W/K'
+           WRITE(ITU,*) '  - Temp       = ', Twater_enter_adsorber,
+     &                                       '  (oC)'
+           WRITE(ITU,*) '  - Heat cap   = ', mdotCp_water_adsorber,
+     &                                       ' W/K'
+        endif
+
         IF(ISTATS==1) THEN
            WRITE(ITU,*) ' CDATA         = ',CDATA(IPCOMP,1),' (-)'
            WRITE(ITU,*) ' eta_fc        = ',eta_fc,' (-)'
@@ -1447,7 +1680,12 @@ C-------------------------------------------------------------------------------
            WRITE(ITU,*) ' T_water       = ',T_water,' (oC)'
         END IF
         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
-        WRITE(ITU,*) (COUT(I),I=1,9)
+        if ( iComponent_code .eq. 80 ) then
+           WRITE(ITU,*) (COUT(I),I=1,9)
+        elseif ( iComponent_code .eq. 112) then  
+           WRITE(ITU,*) (COUT(I),I=1,10)
+        endif 
+
         IF(ITU==IUOUT) THEN  ! trace output going to screen, not file
           itemp=(IPCOMP/4)*4
           IF(itemp==IPCOMP .OR. IPCOMP==NPCOMP) call epagew ! write 4 lines at a time.
@@ -2325,7 +2563,7 @@ C ******************************************************************************
 C ***************************** FC_pump_fan_comp_number ***************************************
 C Created by: Julia Purdy
 C Initial Creation Date: February 27, 2002
-C Modified by Maria Mottillo: March 12, 2003
+C Modified by Maria Mottillo: March 12, 2003 and September 8, 2006
 C Copyright CETC 2001
 
 C This subroutine associates any pumps and fans with their respective component number - IPCOMP,
@@ -2394,10 +2632,10 @@ C component number array.
               END IF     
 
 C Count the number of pumps specified in the plant network.
-c If a pump has been specified in the explicit plant model (NPCDAT(I, 4) == 24), then
-c save the component number NPCOMP (where the pump is located) to the pump-specific 
-C component number array.     
-              IF (NPCDAT(I, 4) == 24) THEN
+c If a pump has been specified in the explicit plant model (NPCDAT(I, 4) == 24 or 
+C NPCDAT(I, 4) = 117), then save the component number NPCOMP (where the pump
+C is located) to the pump-specific component number array.     
+              IF (NPCDAT(I, 4) == 24 .or. NPCDAT(I, 4) == 117) THEN
                 Num_pumps = Num_pumps + 1
                 pump_IPCOMP(Num_pumps) = I
               END IF
@@ -2435,6 +2673,14 @@ C.....Passed variables
 C.....ESP-r Commons
       common/pcnam/pcname(mpcom)        ! Plant component names
       character*15 pcname
+
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+
+      COMMON/Stgdata/iCharge_signal,iDischarge_signal
+      INTEGER iCharge_signal    ! charging signal for adsorption storage unit (on/off)
+      INTEGER iDischarge_signal ! discharge signal for adsorption storage unit (on/off)
+
 
 C.....Local Variables
       CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
@@ -2476,7 +2722,13 @@ C     Get most recent data:
 C------------------------------------------------------------------------
       T_exh_recent = CSVF(inod1,iTemperature)
       T_exit_recent = CSVF(inod2,iTemperature)
-      TWater_recent =  h3k_connect_property(icon3,iTemperature) 
+      if ( NPCDAT(iComponentIndex,4).eq. 112 .and.
+     &     iCharge_signal .eq. 1 ) then       ! for fuel cell coupled with adsorption storage unit
+         Twater_recent = h3k_connect_property(icon3b,iTemperature)
+      else
+         TWater_recent =  h3k_connect_property(icon3,iTemperature) 
+      endif
+
 
 C.....Set future connection temperature, for incommoming water connection
       pctf(icon3) = TWater_recent ! oC

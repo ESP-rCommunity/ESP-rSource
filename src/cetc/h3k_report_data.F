@@ -1571,7 +1571,8 @@ C     ESRU 3-node heating coil
             CALL H3K_HeatingCoil_PostPro(iComponent_index)
 
 C     SOFC Fuel cell
-         elseif ( iComponent_type .eq. 80 ) then
+         elseif ( iComponent_type .eq. 80 .or.
+     &            iComponent_type .eq. 112 ) then
 
             CALL FC_data_transport(iComponent_index)
 
