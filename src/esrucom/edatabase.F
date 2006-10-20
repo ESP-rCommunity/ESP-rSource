@@ -439,11 +439,6 @@ C Reporting.
         ENDIF
   15  CONTINUE
 
-C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
-C flow internal hc of 0.123.
-C      RT=RT+0.055+0.123
-C      UVALUE=1.0/RT
-
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow.
       CLAMDA(IFOC)=1./RT
@@ -473,7 +468,6 @@ C QPAQ.
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
-
         endif
       endif
 
@@ -524,11 +518,6 @@ C Also report on thermal resistance (m^2K/W) of the layer.
 
 C Calculate and (optionally) report.
   15  CONTINUE
-
-C Historic ESP-r assumptions of outside hc of 0.055 and horizontal
-C flow internal hc of 0.123.
-C      RT=RT+0.055+0.123
-C      UV=1.0/RT
 
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow as well as

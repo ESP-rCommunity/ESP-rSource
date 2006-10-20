@@ -897,6 +897,7 @@ fi
    ./bin/materials_db_conv training/cellular_shd/dbs cellular.materials.a cellular.materials
    ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materials.a cellular_pv.materials
    ./bin/materials_db_conv training/cellular_hvac/dbs cellular.materials.a cellular.materials
+   ./bin/materials_db_conv training/cellular_flh/dbs cellular.materials.a cellular.materials
    ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
    ./bin/materials_db_conv training/glenview/databases constr.asc constr.db1
    ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
@@ -1370,6 +1371,7 @@ if [ "$A" = "y" ] || [ "$A" = "" ] ; then
   rm -f training/cellular_hires/dbs/cellular.materials
   rm -f training/cellular_contam/dbs/cellular.materials
   rm -f training/cellular_hvac/dbs/cellular.materials
+  rm -f training/cellular_flh/dbs/cellular.materials
   rm -f training/cellular_bc/dbs/cellular.materials
   rm -f training/house/svph/dbs/linford.materialdb
   rm -f training/cellular_shd/dbs/cellular.materials

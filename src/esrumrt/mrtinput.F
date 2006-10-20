@@ -154,7 +154,7 @@ C Use previous viewfactors to perform MRT calc.
         endif
 
 C (re)Calculate relative surfaces for rectangular body.
-	do 990 icube=1,NCUB
+        do 990 icube=1,NCUB
           if(IVFOK(icube).ne.1)then
             write(outs,'(A,A,A)')' Sensor ',CUBN(icube),
      &           ' has no previous viewfactors so skipping... '

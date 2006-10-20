@@ -87,7 +87,7 @@ c surface-area.
           SAREA = SAREA + VECPROD(I)**2
 110     CONTINUE
       ELSE
-	SAREA = VECPROD(3)**2
+        SAREA = VECPROD(3)**2
       ENDIF
 
 c The surface area of the triangles is half that of the diamonds.

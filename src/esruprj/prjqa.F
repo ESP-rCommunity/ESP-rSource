@@ -165,6 +165,10 @@ C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
+C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg     
+
       logical CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Remember if each zone is fully attributed.
@@ -849,9 +853,19 @@ C Site information.
         CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
-        WRITE(outs248,'(5A)')'The climate used is: ',
-     &    CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
-     &    LCLIM(1:lnblnk(LCLIM)),'.'
+
+C Tell about climate taking note of timing of solar data.
+        if(iSlr_half_hr_flg.eq.0)then
+          WRITE(outs248,'(5A)')'The climate used is: ',
+     &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &      LCLIM(1:lnblnk(LCLIM)),
+     &      ' and uses hour centred solar data.'
+        else
+          WRITE(outs248,'(5A)')'The climate used is: ',
+     &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
+     &      LCLIM(1:lnblnk(LCLIM)),
+     &      ' and uses half hour centred solar data.'
+        endif
         call edisp248(itu,outs248,80)
 
         if(NGRDP.gt.0.and.siteinfo.ge.1)then

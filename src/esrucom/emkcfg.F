@@ -208,6 +208,9 @@ C GSHP
        INTEGER igshp  
        character gshpfile*72 
 
+C Wind-generated electricity
+      common/H2wind/LWndSupp,iWndSupp
+
 C GCEP
        common/gcepinfo/igcep
        common/gcepfile/gcepfile
@@ -221,6 +224,10 @@ C Bidirectional raw optical data file.
 C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+
+C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg     
 
       
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
@@ -248,6 +255,7 @@ C Calendar commons.
       character selres*72,spfdescr*8,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
+      character LWndSupp*72
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
 
       dimension iav(60)
@@ -485,6 +493,21 @@ C GCEP
       IF (igcep.EQ.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*gcep  ',
      &    gcepfile(1:lnblnk(gcepfile))
+      endif
+
+C Wind-generated electricity.
+      if (iWndSupp.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*wnd  ',
+     &    LWndSupp(1:lnblnk(LWndSupp))
+      endif
+
+C Solar radiation (half hour data) flag.
+      if(iSlr_half_hr_flg.eq.0)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*slr_half_hr  ',
+     &    iSlr_half_hr_flg,'  # solar timing hour centred'
+      else
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*slr_half_hr  ',
+     &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
       endif
 
 C SHOCC: library file.
@@ -1103,6 +1126,19 @@ C BASESIMP start.
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
  7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
+      ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
+
+C CEN 13791 boundary condition.
+        if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
+          WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
+     &      ZST1(1:LNBLNK(ZST1))
+ 9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical CEN 13791   ')
+        else
+          WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
+     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
+ 9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
+     &      I4,' W rad')
+        endif
       ENDIF
 
       RETURN

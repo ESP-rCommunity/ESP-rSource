@@ -28,10 +28,11 @@ C been checked elsewhere.
 #include "tdf2.h"
 #include "cfd.h"
 #include "uncertainty.h"
-
 #include "dhw_common.h"
+#include "MultiYear_simulations.h"
+#include "bc_data.h"
 
-      PARAMETER (MSTMC=1,MSGAL=1)
+      PARAMETER (MSTMC=1)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -146,9 +147,19 @@ C Mechanical Ventilation systems
       Character LMech*72
       common/mechvdef/iMech,LMech
 
+C External Longwave Radiation 
+      common/LongRad/iExtLgRadFlag,eGrdTp
+      REAL      eGrdTp(12)
+      REAL      getVal(12)
+      INTEGER   iExtLgRadFlag
+      INTEGER   jMon
+
 C GSHP
       common/gshpinfo/igshp
       common/gshpfile/gshpfile
+
+C Wind-generated electricity
+      common/H2wind/LWndSupp,iWndSupp
 
 C GCEP
       common/gcepinfo/igcep
@@ -183,28 +194,40 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
+C H2-dep_controller: start
+C Residential hydrogen cogen: control file
+      common/resh2ctl/iresh2ctl,resh2flnam
+      integer iresh2ctl         !- flag indicating that file required by residential hydrogen
+                                !- cogen controller is specified
+      character*72 resh2flnam   !- name of file containing residential hydrogen cogen
+                                !- controller inputs
+C H2-dep_controller: end
+
+C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg     
+
+      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      character*72 LAPROB,LAFRES,LAPRES,LPNF,LPCDB,LTDF,LTDFA
+      character*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB,LTDF,LTDFA
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,zname*12,zdesc*64,CTYPE*3,ZN*12,phrase*64
-      character imgfmt*4,imgfoc*4,limgfil*72,WORD2*20,msgl2*48
-      character zmfn1*124,zmfn2*124
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15
+      CHARACTER WORD*20,CTYPE*3,ZN*12
+      character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
+      character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,currentfile*72
-      CHARACTER ctldoc*248,LCTLF*72,LOCUTIL*72
-      CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
-      character dfdblbl*20,defdbfl*72
-      character GTGEOM*72,ectime*24
-      character*10 wkd1, wkd2
+      CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
+      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
+      character dfdblbl*20,defdbfl*72,GTGEOM*72
+      character ectime*24,wkd1*10,wkd2*10
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -215,13 +238,17 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72,gshpfile*72
-     & ,gcepfile*72
+      character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
+      character gshpfile*72,gcepfile*72
       character dllsubr*12,dllmesg*124
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72,bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32,HDR*12
+      character LWndSupp*72
+
+C Flag for multi-year simulation definition
+      logical bMY_sim_sps
 
       DIMENSION GVA(12),IVA(60)
       dimension IRVC(mcon),IRCC(365)
@@ -230,6 +257,9 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
 C Check if running in dll mode.
       call isadll(dll)
+
+      iSet_start = 1
+      bBC_data_defined = .false.
 
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
@@ -250,6 +280,8 @@ C Clear the model common blocks.
       MCMPDBFL='UNKNOWN'
       bidirfile='UNKNOWN'
 
+      iSlr_half_hr_flg = 0
+
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
       ihvacflag=0
@@ -269,13 +301,16 @@ c Mechanical ventilation
 
 C Initialize GSHP flag to indicate no gshp models active. This
 C will be reset if `*gshp' included in .cfg.
+      gshpfile = ' '
       igshp=0
-      hvacfile=' '
 
 C Initialize GCEP flag to indicate no gcep models active. This
 C will be reset if `*gcep' included in .cfg.
+      gcepfile = ' '
       igcep=0
-      hvacfile=' '
+
+      iWndSupp = 0
+      LWndSupp =' '
 
 C Assume older version of configuration file.
       icfgv=1
@@ -378,7 +413,7 @@ C via tags.
           CALL USRMSG(' configuration index mismatch',OUTSTR,'W')
         ENDIF
       else
-        call usrmsg('Does not appear to be a config file: ',FILE,'W')
+        call usrmsg('Does not appear to be a config file:',FILE,'W')
         ier=1
         return
       endif
@@ -440,12 +475,19 @@ C Read databases until '* PROJ LOG' found.
         CALL EGETRM(OUTSTR,K,LPRFDB,'W','profiles db',IER)
       elseif(WORD(1:4).eq.'*clm')then
         CALL EGETRM(OUTSTR,K,LCLIM,'W','climate db',IER)
+        bSY_climate_defined = .true.        
+      elseif(WORD(1:6).eq.'*myclm') then
+        CALL EGETRM(OUTSTR,K,cTemp,
+     &    'W','Multi-year climate db',IER)
+        cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
+        bMY_climates_defined = .true.
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,LPCDB,'W','plant comp db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(OUTSTR,K,LCTLF,'W','config control',IER)
 
       elseif(WORD(1:5).eq.'*gref')then
+
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
         CALL EGETWI(OUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
         DO 441 I=1,12
@@ -455,15 +497,22 @@ C Ground reflectivity model, no-snow monthly albedos, snow albedo
         CALL EGETWR(OUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
 
       elseif(WORD(1:5).eq.'*snow')then
+
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
           CALL EGETWI(OUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
   442   CONTINUE
 
       elseif(WORD(1:5).eq.'*sndf')then
+
 C Snow depth file (if ground refl. model 3)
         CALL EGETRM(OUTSTR,K,SNFNAM,'W','snow depth file',IER)
+      elseif(WORD(1:4).eq.'*bcd')then
 
+C Flexible boundry condition data definition      
+        call EGETRM(OUTSTR,K,cTemp,'W','BC data file', IER)
+        cBC_data_file_name = cTemp(1:lnblnk(cTemp))
+        bBC_data_defined = .true.
       elseif(WORD(1:4).eq.'*shl')then
 
 C SHOCC library is associated with this model.
@@ -505,6 +554,19 @@ c GSHP
 c GCEP
         CALL EGETRM(OUTSTR,K,gcepfile,'W','GCEP config data',IER)
         igcep=1
+      elseif(WORD(1:4).eq.'*wnd')then
+
+C Wind-generated electricity
+C If a file holding the time history of wind-generated electricity exists,
+C then get the name of the file and test for its existence.
+        CALL EGETRM(OUTSTR,K,LWndSupp,'W',
+     &    'Wind-gen elec supply file',IER )
+        iWndSupp=1
+      elseif(WORD(1:12).eq.'*slr_half_hr')then
+
+C Solar radiation (half hour data) flag.
+        call egetwi(outstr,k,iSlr_half_hr_flg,0,1,'W',
+     &    'solar half-hour flag',IER)
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(OUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
         CALL EGETWR(OUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
@@ -642,6 +704,11 @@ C Special materials and electrical bus description files.
       elseif(WORD(1:4).eq.'*pnt')then
         CALL EGETRM(OUTSTR,K,entflnam,'W','power netwk',IER)
         ientxist=2
+      elseif(WORD(1:6).eq.'*resh2')then
+
+C H2-dep_controller:
+        CALL EGETRM(OUTSTR,K,resh2flnam,'W','res h2 ctl',IER)
+        iresh2ctl = 1
       elseif(WORD(1:4).eq.'*tdf')then
 
 C If marked for Temporal Database read associations until *end tdf
@@ -736,26 +803,47 @@ C The temporal file was not found, but keep reading until * end tdf found.
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
 
 C Check for simulation setup data and save level.
-        CALL EGETWI(OUTSTR,K,nsset,1,5,'W','no. of sets',IER)
+        CALL EGETWI(OUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
         CALL EGETWI(OUTSTR,K,isstup,0,300,'W','startup',IER)
         CALL EGETWI(OUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(OUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
         CALL EGETWI(OUTSTR,K,issave,0,5,'W','save_lv',IER)
 
 C If 6 items on line also read whether to save only 1stph.
-        if(ND.eq.6)then
+        if(ND.eq.7)then
           CALL EGETWI(OUTSTR,K,isavgh,0,1,'W','save_hourly',IER)
         else
           isavgh=0
         endif
+        bMY_sim_sps = .false. 
         do 333 iss=1,nsset
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+
+          if (OUTSTR(1:14) .eq. '*start_my_sets' ) then
+            bMY_sim_sps = .true.
+            CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+          elseif ( OUTSTR(1:12) .eq. '*end_my_sets') then
+            bMY_sim_sps = .false.
+            CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
+          endif
+          
+C Set flag indicating if set describes a multi-year period
+          bMY_period_support (iss) = bMY_sim_sps
+
           K=0
-          CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
-          CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start',IER)
-          CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end',IER)
-          CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end',IER)
+          CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start day',IER)
+          CALL EGETWI(OUTSTR,K,isstmon(iss),1,12,'W','start month',IER)
+          if ( bMY_sim_sps )
+     &      CALL EGETWI(OUTSTR,K,iMY_Period_Start_years(iss),
+     &                 1800,2100,'W','start year',IER)
+          CALL EGETWI(OUTSTR,K,isfnday(iss),1,31,'W','end day',IER)
+          CALL EGETWI(OUTSTR,K,isfnmon(iss),1,12,'W','end month',IER)
+          if ( bMY_sim_sps )
+     &      CALL EGETWI(OUTSTR,K,iMY_Period_end_years(iss),
+     &                 1800,2100,'W','end year',IER)
+
           CALL EGETRM(OUTSTR,K,spfdescr(iss),'W','set name',IER)
+
  334      CALL STRIPC(IUC,OUTSTR,0,ND,1,'res names',IER)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','res tags',IFLAG)
@@ -778,7 +866,8 @@ C If 6 items on line also read whether to save only 1stph.
           endif
           goto 334
  333    continue
-      elseif(WORD(1:8).eq.'*end_sps')then
+      elseif(WORD(1:8).eq.'*end_sps' .or.
+     &       WORD(1:12).eq.'*end_my_sets' )then
         goto 44
       elseif(WORD(1:7).eq.'*intipv')then
         CALL EGETRM(OUTSTR,K,sipvres,'W','ipv report',IER)
@@ -806,15 +895,22 @@ C If building or building & plant then read in the building info.
 
 C At this point there may be ground information, if abscent then
 C this is the `* Building` section.
-      CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
+      CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
       IF(IER.NE.0)goto 1
       if(OUTSTR(1:8).eq.'* Ground'.or.OUTSTR(1:8).eq.'* GROUND')then
  344    CALL STRIPC(IUC,OUTSTR,0,ND,1,'ground info',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','ground tags',IFLAG)
+        IF(WORD(1:5).EQ.'*gtmp')THEN
+          CALL EGETWRA(IUC,getVal,12,-9.0,99.0,'W','Ex lg rad',IER)
+          iExtLgRadFlag = 1
+          DO 27 jMon=1,12
+            eGrdTp(jMon)=getVal(jMon)
+  27      CONTINUE
+
+        elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
-        if(WORD(1:4).eq.'*cvs')then
           IGDCVS=.TRUE.
           CALL EGETRM(OUTSTR,K,LGDCVS,'W','3d ground vols',IER)
 
@@ -857,7 +953,7 @@ C Read more ground related information.
         goto 344
       elseif(OUTSTR(1:10).eq.'* Building'.or.
      &       OUTSTR(1:10).eq.'* BUILDING')then
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
+        CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
         IF(IER.NE.0)goto 1
         LSNAM=OUTSTR(1:72)
       else
@@ -1141,7 +1237,7 @@ C Read in the building connectivity information.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),0,6,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),0,7,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -1230,7 +1326,7 @@ C Check if there is an fluid (1=text, 2=grphic) air flow network available: 0 = 
 C If there is an fluid (=air) flow network available then:
       IF(IAIRN.ge.1)THEN
 
-C Read name of flow network or graphic network flow file.
+C Read name of flow network file or graphic network flow file.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'leakage file',IER)
         LAPROB=OUTSTR(1:72)
         IF(IER.NE.0)goto 1

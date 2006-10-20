@@ -2473,7 +2473,8 @@ C anyway.
 
          Zone_temperature = TFA(icomp)
 
-         T_average     = ( TNPN + Zone_temperature ) / 2.0
+C T_average not currently used.
+C         T_average     = ( TMPN + Zone_temperature ) / 2.0
 
          C_air_flow    = AMFR 
      &        * SHTFLD ( 1, ( TMPN + Zone_temperature ) / 2.0)

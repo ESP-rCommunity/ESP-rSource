@@ -1093,6 +1093,16 @@ C BASESIMP begin.
           ELSEIF(ICT(ICON).EQ.6)THEN
             WRITE(OTHSTR,'(a,i3)') '||< BASESIMP config type ',IC2(ICON)
 C BASESIMP end.
+
+C CEN 13791 partition start.
+          ELSEIF(ICT(ICON).EQ.7)THEN
+            if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
+              WRITE(OTHSTR,'(a)') '||< Identical CEN 13791 '
+            else
+              WRITE(OTHSTR,'(a,i3,a,i4,a)') '||< CEN13791+- ',IC2(ICON),
+     &        'dC &',IE2(ICON),'W rad'
+            endif
+C CEN 13791 partition end.
           ENDIF
         endif
       endif

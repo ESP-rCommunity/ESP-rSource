@@ -22,6 +22,8 @@ C This file contains the routines for calculating surface convection.
 
 C     MZCONV  Controlling routine for calculating surface convection.
 C     HTOVER  Overrides the calculated HC values with the user-prescribed values.
+C     HTOVERCEN overrides the calculated HTC values with the user-prescribed values
+C       specified in the .htc file which conform to CEN standards.
 C     INTERR  Interrogates configuration and selects surface-convection approach.
 C     SELCOR2 Selects convection approach for `type 2' convection control.
 C     SELCOR3 Selects convection approach for `type 3' convection control.
@@ -169,15 +171,19 @@ C Consider next mlc in zone.
   101   CONTINUE
 
 C Override the calculated values if user has specified a convection file
-C with fixed coefficients (ie. `type 1' control over convection calculations).
+C with fixed coefficients (ie. `type 1' control over convection calculations
+C or type 4 CEN specified hc).
 C-------Does a convection file exist?
         IF( IHC(ICOMP).EQ.1 ) THEN
-C---------Has the user specified fixed coefficients in the convection file?
+C---------Has the user specified fixed coefficients in the convection file
+C---------for any of the defined periods? 
           Ltype1 = 0
           DO 22 k=1,NHCFP(ICOMP)
             if( iCTLTP(ICOMP,k).eq.1 ) Ltype1=1
+            if( iCTLTP(ICOMP,k).eq.4 ) Ltype1=4
    22     CONTINUE
           IF(Ltype1.eq.1) CALL HTOVER(ICOMP)
+          IF(Ltype1.eq.4) CALL HTOVERCEN(ICOMP)
         ENDIF
 
 C Consider next zone.
@@ -266,35 +272,242 @@ C Check whether we are within one of the time intervals with type 1 control.
       DO 40 ISUR=1,NC
 
 C Reset internal surface coefficents.
-      IF(HCFVI(ICOMP,ISUR,IP).GE.0.0)THEN
+        IF(HCFVI(ICOMP,ISUR,IP).GE.0.0)THEN
 
 C +ve, replace by given coefficient.
-         HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
+          HCIF(ICOMP,ISUR)=HCFVI(ICOMP,ISUR,IP)
 
 C -1, do not adjust.
-      ELSEIF(ABS(HCFVI(ICOMP,ISUR,IP)+1.).LT.0.00001)then
-         goto 321
+        ELSEIF(ABS(HCFVI(ICOMP,ISUR,IP)+1.).LT.0.00001)then
+          goto 321
 
 C =-99, add 5.7 to calculated value.
-      ELSEIF(ABS(HCFVI(ICOMP,ISUR,IP)+99.).LT.0.00001)then
-         HCIF(ICOMP,ISUR)=HCIF(ICOMP,ISUR)+5.7
-      ENDIF
+        ELSEIF(ABS(HCFVI(ICOMP,ISUR,IP)+99.).LT.0.00001)then
+          HCIF(ICOMP,ISUR)=HCIF(ICOMP,ISUR)+5.7
+        ENDIF
 
 C Reset "outside" surface coefficents.
-  321 IF(HCFVE(ICOMP,ISUR,IP).GE.0.0)THEN
+  321   IF(HCFVE(ICOMP,ISUR,IP).GE.0.0)THEN
 
 C +ve, replace by given coefficient.
-         HCOF(ICOMP,ISUR)=HCFVE(ICOMP,ISUR,IP)
+          HCOF(ICOMP,ISUR)=HCFVE(ICOMP,ISUR,IP)
 
 C -1, do not adjust.
-      ELSEIF(ABS(HCFVE(ICOMP,ISUR,IP)+1.).LT.0.00001)then
-            goto 40
+        ELSEIF(ABS(HCFVE(ICOMP,ISUR,IP)+1.).LT.0.00001)then
+          goto 40
 
 C =-99, add 5.7 to calculated value.
-      ELSEIF(ABS(HCFVE(ICOMP,ISUR,IP)+99.).LT.0.00001)then
-         HCOF(ICOMP,ISUR)=HCOF(ICOMP,ISUR)+5.7
-      ENDIF
+        ELSEIF(ABS(HCFVE(ICOMP,ISUR,IP)+99.).LT.0.00001)then
+          HCOF(ICOMP,ISUR)=HCOF(ICOMP,ISUR)+5.7
+        ENDIF
 
+   40 CONTINUE
+
+      RETURN
+      END
+
+C ******************** HTOVERCEN ********************
+C HTOVERCEN overrides the calculated HTC values with the user-prescribed values
+C specified in the .htc file which conform to CEN standards specified up and down
+C hc coef for ceilings/floors and wall surfaces.
+
+C The approach is based on defining hc regimes by topology rather than one for
+C each surface. The interface typically writes standard values to this file
+C but the file can hold alternative values.
+      SUBROUTINE HTOVERCEN(ICOMP)
+
+#include "building.h"
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/TC/ITC,ICNT
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
+     &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &             NPGAP(MCOM,MS,MGP)
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
+     &            ARF(MCOM,MS)
+      COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
+     &              HCOF(MCOM,MS)
+      common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
+     &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
+     &            CVdat(MS*MBP,8)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+C Commons to support CEN upwards or downwards heat flow hc coef.
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+
+C   CENLOC(i,k,jj) hc values for zone 'i', time interval 'k':
+C       jj=1 index of a floor surface
+C       jj=2 index of a ceiling surface
+C       jj=3-5 floor upwd_inside, downwd_inside, external
+C       jj=6-8 ceiling upwd_inside, downwd_inside, external
+C       jj=9-11 sloped upwd_inside, downwd_inside, external
+C       jj=12-14 wall inside, partition, external
+      COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
+
+C Logical variables for close to floor, ceiling, wall, other for CEN tests.
+      logical isfloor,isceiling,iswall,isother
+      logical dotrace
+      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      character outs*124
+
+C Check whether we are within one of the time intervals with type 4 control.
+      TIME=BTIMEF
+      NP=NHCFP(ICOMP)
+      DO 30 I=1,NP
+        IP=I
+        IF( TIME.LE.HCFPFT(ICOMP,I) .AND. TIME.GT.HCFPST(ICOMP,I) )then
+          if( iCTLTP(ICOMP,I).eq.4 ) goto 32
+        ENDIF
+   30 CONTINUE
+      return
+
+C Trace output. If there is a zone htc file note that data may
+C be superceeded by user specifications.
+   32 dotrace=.false.
+      IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
+      IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
+      write(outs,'(A,I4,a,i2)')
+     &  ' Subroutine HTOVERCEN  Trace output',ICNT,
+     &  ' for zone ',icomp
+      call edisp(itu,outs)
+      CALL DAYCLK(IDYP,BTIMEF,ITU)
+      dotrace=.true.
+ 9999 continue
+
+C Check the direction of heat flow for the typical floor surface.
+      ifloor = nint(CENLOC(ICOMP,IP,1))
+      DTF=TFS(ICOMP,ifloor)-TFA(ICOMP)
+
+C Check the direction of heat flow for the typical ceiling surface.
+      iceil= nint(CENLOC(ICOMP,IP,2))
+      DTC=TFS(ICOMP,iceil)-TFA(ICOMP)
+      if(dotrace)then
+        write(outs,'(a,i2,a,F7.3,a,i2,a,F7.3)') 
+     &    ' CEN base surface is ',ifloor,' with DTF',DTF,
+     &    ' and top surface is ',iceil,' with DTC',DTC
+        call edisp(itu,outs)
+        call edisp(itu,' Surface convection coefficients')
+        call edisp(itu,' Surface    Inside      `Outside`')
+        call edisp(itu,'            Future       Future')
+      endif
+
+      NC=NCONST(ICOMP)
+      DO 40 ISUR=1,NC
+
+C CEN standards are based on surface orientation as well
+C as the direction of heat flow. First determine if the surface
+C is a floor or ceiling. A 30 degree tollerence assumed e.g. a 
+C sloped surface within 30deg of a ceiling is counted as a ceiling.
+        isfloor=.false.
+        isceiling=.false.
+        iswall=.false.
+        isother=.false.
+        if(PELV(icomp,isur).GE.60.0.AND.
+     &     PELV(icomp,isur).LE.90.0)then
+          isceiling=.true.
+        elseif(PELV(icomp,isur).GE.-90.0.AND.
+     &         PELV(icomp,isur).LE.-60.0)then
+          isfloor=.true.
+        elseif(PELV(icomp,isur).GE.-30.0.AND.
+     &         PELV(icomp,isur).LE.30.0) then
+          iswall=.true.
+        else
+          isother=.true.
+        endif
+
+C Get the Delta T for the current surface.
+        DT=TFS(ICOMP,isur)-TFA(ICOMP)
+        if(dotrace)then
+          write(itu,*) 'CEN isur,isfloor,isceiling,iswall,isother',
+     &      isur,isfloor,isceiling,iswall,isother,' current DT is ',DT
+        endif
+
+        if(isfloor)then
+
+C For CEN if a floor check and the floor surface temperature
+C is warmer than the air temperature in the zone (DT>zero is upwards heat flow)
+          if(DT.gt.0.0)then
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,3)
+          else
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,4)
+          endif
+        elseif(isceiling)then
+
+C In case a ceiling then DT > zero is downwards flow.
+          if(DT.gt.0.0)then
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,7)
+          else
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,6)
+          endif
+        elseif(iswall)then
+
+C Typical wall is hc 2.5 for inside coefficient..
+          HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,12)
+        elseif(isother)then
+
+C In case sloped then DT > zero is downwards flow.
+          if(DT.gt.0.0)then
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,10)
+          else
+            HCIF(ICOMP,ISUR)=CENLOC(ICOMP,IP,9)
+          endif
+        endif
+
+C Reset "outside" surface coefficents depending on the topology.
+  321   if( IE(ICOMP,ISUR).eq.0 )then
+          if(isfloor)then
+            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,5)
+          elseif(isceiling)then
+            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,8)
+          elseif(iswall)then
+            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,14)
+          elseif(isother)then
+            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,11)
+          endif
+        else
+
+C Does not face the outside so follow the CEN rules.
+          if(isfloor)then
+
+C The other side of a floor is assumed to have the same flow direction
+C as the typical ceiling in the room so use DTC for this. DTC > zero is downwards flow
+            if(DTC.gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,7)
+            else
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,6)
+            endif
+          elseif(isceiling)then
+
+C The other side of a ceiling is assumed to have the same flow direction
+C as the typical floor in the room so use DTF for this. DTF>zero is upwards heat flow
+            if(DTF.gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,3)
+            else
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,4)
+            endif
+          elseif(isother)then
+
+C The other side of a surface which is not classed as a floor or ceiling or
+C a wall is treated as a ceiling.
+            if(DTF.gt.0.0)then
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,3)
+            else
+              HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,4)
+            endif
+          elseif(iswall)then
+            HCOF(ICOMP,ISUR)=CENLOC(ICOMP,IP,13)
+          endif
+        endif
+        if(dotrace)then
+          write(outs,9991)SNAME(ICOMP,ISUR),
+     &      HCIF(ICOMP,ISUR),HCOF(ICOMP,ISUR)
+ 9991     format(1x,a12,F8.2,F8.2)
+          call edisp(itu,outs)
+        endif
    40 CONTINUE
 
       RETURN

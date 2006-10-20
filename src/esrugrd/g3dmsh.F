@@ -606,7 +606,7 @@ C Create a binary file for saving the nodes initial temperatures.
 
 C If primitive database not opened, do it now.
       IF(.NOT.CONDBOK)THEN
-	IER=0
+        IER=0
         CALL EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(IER.NE.0)RETURN
         CONDBOK=.TRUE.

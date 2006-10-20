@@ -353,6 +353,18 @@ C BASESIMP begin.
      &      ZST1(1:lzn1),' >|< BASESIMP'
         endif
 C BASESIMP end.
+
+C CEN 13791 boundary condition start.
+      ELSEIF(ICT(ICON).EQ.7)THEN
+        if((lsn10+lzn10+19).lt.43)then
+          WRITE(CXITM,'(I3,1x,4a)') ICON,SST1(1:lsn10),':',
+     &      ZST1(1:lzn10),' >|< IDENT_CEN'
+        else
+          WRITE(CXITM,'(I3,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< IDENT_CEN'
+        endif
+C CEN 13791 boundary condition end.
+
       ENDIF
 
       RETURN
@@ -1679,7 +1691,7 @@ C Anchor point substitution.
               if(ins1.eq.1.and.SOTF(i)(1:4).ne.'OPAQ')apply=.false.
               if(ins1.eq.2.and.SOTF(i)(1:4).ne.'TRAN')apply=.false.
 
-C Determine the match in the system topology.		 
+C Determine the match in the system topology. 
               CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
               if(ins2.eq.1.and.IE.ne.0)then
                 apply=.false.

@@ -388,9 +388,14 @@ C Couple zone/plant & mass flow calculation trace output channels.
 C Assign user-specified library.
       CALL MZLIBF
 
-C Set period if not already done. 
-      
-      IF ( .not. perok ) CALL MZSPER
+C Set period if not already done. However if there is a CFD domain
+C in the model then we need to ask about when to include it (as this
+C information is not yet included in the simulation parameter set). 
+      IF ( .not. perok )then
+        CALL MZSPER
+      ELSE
+        call askaboutcfd
+      ENDIF
       
 C Display menu of alternatives.
       if(.not.saveok)ISAVE=2
@@ -1497,7 +1502,6 @@ C TIMSEC       - length of time increment in seconds
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/PCTIME/TIMSEC
       COMMON/PCTSTP/NTSTPP
-      COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
       COMMON/PREC7/ITCNST
@@ -1505,20 +1509,16 @@ C TIMSEC       - length of time increment in seconds
 C Active domain common.
       common/ACTDOM/CFDOK
 
-C CFD commons.
-      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
-
 C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      character outs*124,H*72,LCFD*72
+      character outs*124,H*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical hri,defok,OK,dok
+      logical hri,defok,OK
       logical CFDOK
 
 C Request simulation period in user defined format of d-o-y
@@ -1632,51 +1632,7 @@ C Calculate the length of the time increment in seconds.
 
 C CFD simulation period.
       if (CFDOK) then
-        dok=.false.
-        h(1)='Including CFD in the startup period as well as during'
-        h(2)='the whole simulation will be SLOW! '
-        CALL ASKOK(' Do you want activate the CFD model during the',
-     &             'whole simulation ?',OK,dok,2)
-        IF (OK) RETURN
-
-        dok=.false.
-        h(1)='Including CFD in the startup period may cause delay'
-        h(2)='with only a limited affect on predictions. '
-        CALL ASKOK(' Do you want activate the CFD model during the',
-     &             'start-up period ?',OK,dok,2)
-        IF (.not.OK) then
-          do 20 IC=1,NCOMP
-            IFCFD(IC)=-IFCFD(IC)
- 20       continue
-        endif
-
-        IFDAY=1
-        ICFDYS=ISDS
-        ICFDYF=ISDF
-  40    call EASKPER('Period when CFD is active:',
-     &                                       ICFDYS,ICFDYF,IFDAY,IER)
-        if (ICFDYF.lt.ICFDYS) then
-          call edisp(iuout,' Start/Finish days out of order.')
-          goto 40
-        endif
-
-        CFTIMS=0.0
-        CFTIMF=24.0
-  50    write(outs,'(a)')'For the first day CFD is active specify'
-       CALL EASKR(CFTIMS,outs,'starting hour ',
-     &             0.0,'F',24.,'F',0.0,'Decimal fraction',IER,1)
-        write(outs,'(a)')'For the last day CFD is active specify'
-        CALL EASKR(CFTIMF,outs,'finishing hour ',
-     &            0.0,'F',24.,'F',24.0,'Decimal fraction',IER,1)
-        if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
-          call edisp(iuout,' Start/Finish hours out of order.')
-          goto 50
-        endif
-      
-        DO 30 IC=1,NCOMP
-          ICFAUX(IC)=IFCFD(IC)
-          IFCFD(IC)=0
- 30     CONTINUE
+        call askaboutcfd
       endif
 
 C Set, once per hour storage of results, averaged over that hour.
@@ -1719,6 +1675,87 @@ C      write(6,*) 'in mzper irdact & isavgh are ',irdact,isavgh
 
       RETURN
       END
+
+C ******************* askaboutcfd ****************
+C askaboutcfd confirms simulation periods for CFD assessments.
+      subroutine askaboutcfd
+
+#include "building.h"
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      COMMON/C1/NCOMP,NCON
+      
+C Active domain common.
+      common/ACTDOM/CFDOK
+
+C CFD commons.
+      COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
+      character outs*124,H*72,LCFD*72
+      logical OK,dok
+      logical CFDOK
+
+C CFD simulation period.
+      if (CFDOK) then
+        dok=.false.
+        h(1)='Including CFD in the startup period as well as during'
+        h(2)='the whole simulation will be SLOW! '
+        CALL ASKOK(' Do you want activate the CFD model during the',
+     &             'whole simulation ?',OK,dok,2)
+        IF (OK) RETURN
+
+        dok=.false.
+        h(1)='Including CFD in the startup period may cause delay'
+        h(2)='with only a limited affect on predictions. '
+        CALL ASKOK(' Do you want activate the CFD model during the',
+     &             'start-up period ?',OK,dok,2)
+        IF (.not.OK) then
+          do 20 IC=1,NCOMP
+            IFCFD(IC)=-IFCFD(IC)
+ 20       continue
+        endif
+
+C Period has been defined get start & end days, but since isds and isdf
+C would have been defined in a separate call to MZPER make sure these
+C values have been set.
+        CALL EDAY(isd1,ism1,isds)
+        CALL EDAY(isd2,ism2,isdf)
+
+        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
+
+        IFDAY=1
+        ICFDYS=ISDS
+        ICFDYF=ISDF
+  40    call EASKPER('Period when CFD is active:',
+     &                                       ICFDYS,ICFDYF,IFDAY,IER)
+        if (ICFDYF.lt.ICFDYS) then
+          call edisp(iuout,' Start/Finish days out of order.')
+          goto 40
+        endif
+
+        CFTIMS=0.0
+        CFTIMF=24.0
+  50    write(outs,'(a)')'For the first day CFD is active specify'
+       CALL EASKR(CFTIMS,outs,'starting hour ',
+     &             0.0,'F',24.,'F',0.0,'Decimal fraction',IER,1)
+        write(outs,'(a)')'For the last day CFD is active specify'
+        CALL EASKR(CFTIMF,outs,'finishing hour ',
+     &            0.0,'F',24.,'F',24.0,'Decimal fraction',IER,1)
+        if ((ICFDYF.eq.ICFDYS).and.(CFTIMF.lt.CFTIMS)) then
+          call edisp(iuout,' Start/Finish hours out of order.')
+          goto 50
+        endif
+      
+        DO 30 IC=1,NCOMP
+          ICFAUX(IC)=IFCFD(IC)
+          IFCFD(IC)=0
+ 30     CONTINUE
+      endif
+      return
+      end
+
 
 C ******************** MZSIMH ********************
 C MZSIMH outputs simulation period and wait time information

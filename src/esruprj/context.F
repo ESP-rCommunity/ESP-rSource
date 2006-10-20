@@ -77,6 +77,10 @@ C Images.
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
+C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg
+
       logical MODSIT,browse,XST,modish,OK,DOK,concat
       logical closea,closeb,closec,closed,defview,FOUND
       dimension SALT(8),IVALS(8)
@@ -85,7 +89,7 @@ C Calendar.
       character zname*12,zdesc*64,SEXP*31,SALT*31,hold*72,ZN*12
 
 C ITEMS is menu for site/context items.
-      character*33 ITEMS(27)
+      character*33 ITEMS(28)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character doit*248,tmode*8,cfgroot*24,LCFGF*72
@@ -127,61 +131,69 @@ C Begin with high level menu.
       IER=0
       WRITE(ITEMS(1),'(A,F6.2)')'a site latitude: ',XLAT
       WRITE(ITEMS(2),'(A,F6.2)')'b longitude difference:',XLON
-      WRITE(ITEMS(3),'(A,A)')   'c exposure: ',SEXP(1:21)
+      if(iSlr_half_hr_flg.eq.0)then
+        WRITE(ITEMS(3),'(A)')   'c solar timing: hour centred'
+      elseif(iSlr_half_hr_flg.eq.1)then
+        WRITE(ITEMS(3),'(A)')   'c solar timing: half-hour centred'
+      else
+        WRITE(ITEMS(3),'(A)')   'c solar timing: not defined'
+      endif
+
+      WRITE(ITEMS(4),'(A,A)')   'c exposure: ',SEXP(1:21)
       IF(ITGREF.EQ.1) THEN
-        WRITE(ITEMS(4),'(a,f5.3,a)') 'd ground albedo: constant (',
+        WRITE(ITEMS(5),'(a,f5.3,a)') 'd ground albedo: constant (',
      &    GREF,')'
       ELSEIF(ITGREF.EQ.2) THEN
-        ITEMS(4) =              'd ground albedo: simple model  '
+        ITEMS(5) =              'd ground albedo: simple model  '
       ELSEIF(ITGREF.EQ.3) THEN
-        ITEMS(4) =              'd ground albedo: advanced model'
+        ITEMS(5) =              'd ground albedo: advanced model'
       ENDIF
-      WRITE(ITEMS(5),'(4a)')    'e weekends: ',wkd1,' ',wkd2
-      WRITE(ITEMS(6),'(a,I4)')  'f year: ',IYEAR
+      WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,' ',wkd2
+      WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
       IF(IFDAY.EQ.0)THEN
-        ITEMS(7) =              'g date format >> DOY 10          '
+        ITEMS(8) =              'g date format >> DOY 10          '
       ELSEIF(IFDAY.EQ.1)THEN
-        ITEMS(7) =              'g date format >> 10 Jan          '
+        ITEMS(8) =              'g date format >> 10 Jan          '
       ELSEIF(IFDAY.EQ.2)THEN
-        ITEMS(7) =              'g date format >> Fri 10 Jan      '
+        ITEMS(8) =              'g date format >> Fri 10 Jan      '
       ENDIF
 
 C Display of time of day.
       IF(IFTIME.EQ.0)THEN
-        ITEMS(8) =              'h time format >> 10h30           '
+        ITEMS(9) =              'h time format >> 10h30           '
       ELSEIF(IFTIME.EQ.1)THEN
-        ITEMS(8) =              'h time format >> 10.50           '
+        ITEMS(9) =              'h time format >> 10.50           '
       ELSEIF(IFTIME.EQ.2)THEN
-        ITEMS(8) =              'h time format >> 0.4166 (day)    '
+        ITEMS(9) =              'h time format >> 0.4166 (day)    '
       ENDIF
       if(defview)then
-        WRITE(ITEMS(9),'(A)')   'i view: default                  '
+        WRITE(ITEMS(10),'(A)')   'i view: default                  '
       else
-        WRITE(ITEMS(9),'(A)')   'i view: user defined             '
+        WRITE(ITEMS(10),'(A)')   'i view: user defined             '
       endif
-      ITEMS(10)=                '  ___________________________    '
+      ITEMS(11)=                '  ___________________________    '
       if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
-        ITEMS(11)=              'j ground topology                '
+        ITEMS(12)=              'j ground topology                '
       else
-        WRITE(ITEMS(11),'(2A)') 'j ground topology:',GTNAME(1:13)
+        WRITE(ITEMS(12),'(2A)') 'j ground topology:',GTNAME(1:13)
       endif
-      WRITE(ITEMS(12),'(A,i2)') 'k ground temperature profiles:',NGRDP
-      ITEMS(13)=                'l 3-D ground representations     '
-      ITEMS(14)=                '  ___________________________    '
-      ITEMS(15)=                'm primary energy conversions     '
-      ITEMS(16)=                'n dispersed fan/lift/DHW demands '
-      ITEMS(17)=                'o integrated performance view    '
-      ITEMS(18)=                '  ___________________________    '
-      ITEMS(19)=                'p Pressure coef calcs. (CpCalc)  '
-      ITEMS(20)=                'q Short timestep (temporal) data '
-      ITEMS(21)=                '  ___________________________    '
-      WRITE(ITEMS(22),'(a,i3,a)')'r images ... (',noimg,')'
-      ITEMS(23)=                ' _____________________________ '
-      ITEMS(24)=                ' s calendar (work in progress) '
-      ITEMS(25)=                ' _____________________________ '
-      ITEMS(26)=                '? help                           '
-      ITEMS(27)=                '- exit this menu                 '
-      nitms=27
+      WRITE(ITEMS(13),'(A,i2)') 'k ground temperature profiles:',NGRDP
+      ITEMS(14)=                'l 3-D ground representations     '
+      ITEMS(15)=                '  ___________________________    '
+      ITEMS(16)=                'm primary energy conversions     '
+      ITEMS(17)=                'n dispersed fan/lift/DHW demands '
+      ITEMS(18)=                'o integrated performance view    '
+      ITEMS(19)=                '  ___________________________    '
+      ITEMS(20)=                'p Pressure coef calcs. (CpCalc)  '
+      ITEMS(21)=                'q Short timestep (temporal) data '
+      ITEMS(22)=                '  ___________________________    '
+      WRITE(ITEMS(23),'(a,i3,a)')'r images ... (',noimg,')'
+      ITEMS(24)=                ' _____________________________ '
+      ITEMS(25)=                ' s calendar (work in progress) '
+      ITEMS(26)=                ' _____________________________ '
+      ITEMS(27)=                '? help                           '
+      ITEMS(28)=                '- exit this menu                 '
+      nitms=28
 
 C Help text for this menu.
       H(1)='The site portion of a system configuration file is'
@@ -208,6 +220,10 @@ C Help text for this menu.
       H(22)='Images are normally in GIF format although other'
       H(23)='formats may be used if the appropriate display tool'
       H(24)='exists.'
+      H(25)=' '
+      H(26)='If you know that your climate data has solar data '
+      H(27)='recorded as an average over the previous hour (half-'
+      H(28)='hour centred) then toggle the solar time option. '
 
       CALL EMENU('Project context',ITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
@@ -313,7 +329,7 @@ C an offset from prj start position.
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('Model context',24,'-',0,0,IER)
+        CALL PHELPD('Model context',28,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
         H(1)='Site latitude is degrees, north +ve, e.g. 55.9 for'
         H(2)='Glasgow.'
@@ -332,6 +348,15 @@ C Produce help text for the menu.
         MODSIT=.true.
         modish=.true.
       ELSEIF(INO.EQ.3)THEN
+
+C Solar radiation timing toggle.
+        if(iSlr_half_hr_flg.eq.1)then
+          iSlr_half_hr_flg=0
+        elseif(iSlr_half_hr_flg.eq.0)then
+          iSlr_half_hr_flg=1
+        endif
+        MODSIT=.true.
+      ELSEIF(INO.EQ.4)THEN
         WRITE(SALT(8),53)SKYR,GRDR,BLDR
   53    FORMAT('sky=',F4.2,' grnd=',F4.2,' bld=',F4.2)
 
@@ -365,7 +390,7 @@ C Produce help text for the menu.
           ENDIF
         ENDIF
         MODSIT=.true.
-      ELSEIF(INO.EQ.4)THEN
+      ELSEIF(INO.EQ.5)THEN
 
 C Ground reflectance type
         h(1)='Ground albedo (reflectance) can be calculated'
@@ -499,7 +524,7 @@ C
           endif
         endif
 
-      ELSEIF(INO.EQ.5)THEN
+      ELSEIF(INO.EQ.6)THEN
 
 C Weekends def.
         call edisp(iuout,'Please define weekend days.')
@@ -516,7 +541,7 @@ C Weekends def.
      &        1,'F',7,'F',7,'2nd weekend index',IER,4)
         wkd2=wkday(idwe2)
         MODSIT=.true.
-      ELSEIF(INO.EQ.6)THEN
+      ELSEIF(INO.EQ.7)THEN
 
 C Change the year and if calendar has not been setup initialise
 C and then list the months of the year.
@@ -539,19 +564,19 @@ C and then list the months of the year.
           loopst=1
           call calenprint(iuout,'t',iyear,loopst,loop,ier)
         endif
-      ELSEIF(INO.EQ.7)THEN
+      ELSEIF(INO.EQ.8)THEN
 
 C Allow user to toggle between 'Fri 10 Jan'/'10 Jan'/'DOY 124' format.
         IFDAY=IFDAY+1
         IF(IFDAY.GT.2)IFDAY=0
-      ELSEIF(INO.EQ.8)THEN
+      ELSEIF(INO.EQ.9)THEN
 
 C Allow user to toggle between '10h00'/'10.00'/'0.41666' format. Only
 C allow decimal day representation if day format is DOY
         IFTIME=IFTIME+1
         IF(IFDAY.EQ.0.AND.IFTIME.GT.2)IFTIME=0
         IF(IFDAY.GE.1.AND.IFTIME.GT.1)IFTIME=0
-      ELSEIF(INO.EQ.9)THEN
+      ELSEIF(INO.EQ.10)THEN
 
 C Wire frame view point.
         if(browse)goto 3
@@ -613,7 +638,7 @@ C Set eye point at standard place and viewed point at cog.
           initvt=1
           MODSIT=.true.
         endif
-      ELSEIF(INO.EQ.11)THEN
+      ELSEIF(INO.EQ.12)THEN
 
 C Ground topology.
         h(1)='If there is an existing ground toplogy you can browse or'
@@ -645,7 +670,7 @@ C Ground topology.
      &      'bitmap facility to define ground toplogy. ','W')
           endif
         endif
-      ELSEIF(INO.EQ.12)THEN
+      ELSEIF(INO.EQ.13)THEN
 
 C Ground temperature profiles....
         call edisp(iuout,' ')  
@@ -713,12 +738,12 @@ C Ground temperature profiles....
           UGRDTP(J,IFOC)=GV
    96   CONTINUE
         MODSIT=.true.
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.14)THEN
 
 C 3-D Ground representations....
         call usrmsg('Please use program grd to define',
      &              '3D ground representations.','-')
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Primary energy conversions.
         h(1)='Energy demands can be converted in to primary energy '
@@ -732,11 +757,11 @@ C Primary energy conversions.
         elseif(IR.eq.2)then
           call peconv('-')
         endif
-      ELSEIF(INO.EQ.16)THEN
+      ELSEIF(INO.EQ.17)THEN
 
 C Dispersed fan/pump/lift/DHW demands.
         call prjdmds(itrc,itru,iuo,ier)
-      ELSEIF(INO.EQ.17)THEN
+      ELSEIF(INO.EQ.18)THEN
 
 C IPV data. 
         h(1)='This file holds a description of an Integrated '
@@ -760,21 +785,21 @@ C IPV data.
           call usrmsg('Please re-enter the file name. ',' ','W')
           goto 142
         endif
-      ELSEIF(INO.EQ.19)THEN
+      ELSEIF(INO.EQ.20)THEN
 
 C Position specific pressure coef.
         call cpcdat
-      ELSEIF(INO.EQ.20)THEN
+      ELSEIF(INO.EQ.21)THEN
 
 C Temporal definitions.
         call setuptemporal(ITRC,MODSIT,IER)
 C          MODSIT=.true.
 C        endif
-      ELSEIF(INO.EQ.22)THEN
+      ELSEIF(INO.EQ.23)THEN
 
 C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
-      ELSEIF(INO.eq.24)then
+      ELSEIF(INO.eq.25)then
 
 C Calendar functions. If number of daytypes is zero then
 C initialise. Then enter interactive facility.

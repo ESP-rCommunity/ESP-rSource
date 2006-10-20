@@ -88,7 +88,7 @@ C the floor area (one) or it was calculated (zero).
       LOGICAL DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
-      DIMENSION SALT(9)
+      DIMENSION SALT(10)
       CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*32
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48,DESCRC*25
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -697,8 +697,9 @@ C Remind user of current surface boundary attributes.
               SALT(6)='Ground (no user defined profiles)'
             endif
             SALT(7)='Adiabatic                        '
-            SALT(8)=' - - BASESIMP - see help) '
-            SALT(9)='Unknown (at this time)           '
+            SALT(8)=' - - BASESIMP - (see help) '
+            SALT(9)='CEN 13791 partition '
+            SALT(10)='Unknown (at this time)           '
 
             H(1)='The boundary conditions at the other face of this'
             H(2)='surface is specified via the selection of one of '
@@ -988,7 +989,12 @@ C Determine the match in the system topology and update it.
                 SOTHER(ISS)='BASESIMP'
                 SSOTHER(IC)='BASESIMP'
               ELSEIF(IOS.EQ.9)THEN
-
+                SOTHER(ISS)='IDENT_CEN'
+                SSOTHER(IC)='IDENT_CEN'
+                ICT(IC)=7
+                IC2(IC)=INT(VALT)
+                IE2(IC)=INT(VALW)
+              ELSEIF(IOS.EQ.10)THEN
 C Reset to zeros << actually should have a different ict
 C to represent UNKNOWN >>
                 SOTHER(ISS)='UNKNOWN'
@@ -1731,7 +1737,7 @@ C Optical and geometric properties.
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
 
-      DIMENSION SALT(10),IVAL(MCOM),bl(144)
+      DIMENSION SALT(11),IVAL(MCOM),bl(144)
       CHARACTER*33 ISD(21)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
@@ -2137,7 +2143,8 @@ C Specify the environment of the 'other' face of the surface.
         SALT(7)='Ground (3D conduction model)     '
         SALT(8)='Adiabatic (no heat flux)         '
         SALT(9)='BASESIMP foundation configuration'
-        SALT(10)='Unknown (at this time)           '
+        SALT(10)='CEN 13791 partition              '
+        SALT(11)='Unknown (at this time)           '
 
         H(1)='The boundary conditions at the other face of this sur-'
         H(2)='face is specified via the selection of one of these'
@@ -2149,7 +2156,7 @@ C Specify the environment of the 'other' face of the surface.
         H(8)='mation for the system level connection analysis.'
         IX=1
         CALL EPICKS(IX,IVAL,' ',' The other side of surface faces:',
-     &    33,10,SALT,'surface boundary ',IER,8)
+     &    33,11,SALT,'surface boundary ',IER,8)
 
         IF(IX.EQ.0)GOTO 13
 
@@ -2417,7 +2424,26 @@ C attribute to the surface under consideration.
      &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
           IE2(IC)=Ifrac
 C BASESIMP end.
+
         ELSEIF(IVAL(1).EQ.10)THEN
+          SOTHER(IS)='IDENT_CEN'
+          SSOTHER(IC)='IDENT_CEN'
+          ICT(IC)=7
+
+C          H(1)='This is like the SIMILAR but for CEN 13791 test'
+C          H(2)='A similar (type 1) connection can include an offset'
+C          H(3)='temperature and radiation (W/m^2) from that of the'
+C          H(4)='current zone. This is not available for the CEN'
+C          H(5)='13791 partition where these values are 0. '
+C          H(6)='For details see section 4.4.2 CEN 13791 standard. '
+          VALT=0.0
+          VALW=0.0
+          IC2(IC)=INT(VALT)
+          IE2(IC)=INT(VALW)
+          showother=.false.
+
+
+        ELSEIF(IVAL(1).EQ.11)THEN
 
 C Reset to zeros << actually should have a different ict
 C to represent UNKNOWN >>
@@ -3860,8 +3886,15 @@ C Add/insert a surface.
         H(19)='turn (anticlockwise looking from the outside or clock-'
         H(20)='wise looking from the inside). '
         H(21)=' '
-        H(22)='If you are working in a graphics display you can use'
-        H(23)='mouse clicks on the existing vertices.'
+        H(22)='NOTE: it is suggested that the first surface edge be'
+        H(23)='horizontal (or close to horizontal) if at all possible.'
+        H(24)='The shading analysis application gets confused if the'
+        H(25)='first edge of a surface is vertical. Nothing in esp-r'
+        H(26)='warns you of this - so get into a consistent habit of'
+        H(27)='avoiding vertical first edges in surfaces! '
+        H(28)=' '
+        H(29)='If you are working in a graphics display you can use'
+        H(30)='mouse clicks on the existing vertices.'
 
         irt=0
         ilrt=irt
@@ -3874,7 +3907,7 @@ C Add/insert a surface.
      &   'e copy surface(s) from another zone ',
      &   'f vertical rectangle (origin&azim)',
      &   'g horizontal rectangle (origin&rot)',' ',
-     &   ' ',' ',' ',' ',irt,idrt,23)
+     &   ' ',' ',' ',' ',irt,idrt,30)
         call usrmsg(' ',' ','-')
         IF(ilrt.eq.irt)GOTO 92
         IF(irt.eq.0.or.irt.eq.8)GOTO 92

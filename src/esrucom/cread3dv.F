@@ -39,6 +39,7 @@ C converts into viewing coords, clips the image and draws it.
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
@@ -122,13 +123,16 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Beginning of loop to read in several ESP compatible geometry files.
+C The first task is to set iz to zero and istok to true to force the
+C code to draw the site origin symbol.
       IZ=0
       ISTOK=.TRUE.
 
   100 CONTINUE
 
 C If the origin of the site is to be shown include this in the image
-C and then go on to the normal objects in subsequent passes.
+C and then go on to the normal objects in subsequent passes. ORIGESP
+C fills the common block G1 with a surface representing the site origin.
       if(ITORG.EQ.0.and.ISTOK)then
         CALL ORIGESP
         goto 205
@@ -225,9 +229,28 @@ C of the vertex symbols.
         call forceflush()
       ENDIF
 
-C Continue on with any surfaces in the zone.
-  205 DO 1000 I=1,NZSUR(nznog(IZ))
-        icc=IZSTOCN(nznog(IZ),I)
+C Continue on with any surfaces in the zone. For the case of
+C drawing the site origin set loopsurf to one rather than to
+C the normal value NZSUR(nznog(IZ)). Also need to set icc and
+C NAP for the two cases ( perhaps consider a different way to
+C do this in the future).
+  205 continue
+      if(ISTOK)then
+        loopsurf=1
+      else
+        loopsurf=NZSUR(nznog(IZ))
+      endif
+      DO 1000 I=1,loopsurf
+
+C NAP   = Number of vertex points on surface
+C icc is the connection related to the current surface.
+        if(ISTOK)then
+          icc=1
+          NAP= 12
+        else
+          icc=IZSTOCN(nznog(IZ),I)
+          NAP = NZNVER(icc)
+        endif
 
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
@@ -240,21 +263,31 @@ C connection (IC) which relates to this surface.
         ENDIF
 
 C Copy polygon for Surface I into structure A for compatibility with
-C viewer format 'holes' in surfaces.
-C NAP   = Number of vertex points on surface
+C viewer format 'holes' in surfaces. For the case of site origin
+C use G1 common block variables rather than ZNDATA.
 C IANXT = Index of 'next' point
 C IAPNT = Pointer to first vertex of polygon
         IAPNT = 1
-        NAP = NZNVER(icc)
-        DO 1100 J = 1,NZNVER(icc)
-          K = NZJVN(icc,J)
-          AX(J) = VCOORD(nznog(IZ),K,1)
-          AY(J) = VCOORD(nznog(IZ),K,2)
-          AZ(J) = VCOORD(nznog(IZ),K,3)
+        DO 1100 J = 1,NAP
+          if(ISTOK)then
+            K = JVN(1,J)
+            AX(J) = X(K)
+            AY(J) = Y(K)
+            AZ(J) = Z(K)
+          else
+            K = NZJVN(icc,J)
+            AX(J) = VCOORD(nznog(IZ),K,1)
+            AY(J) = VCOORD(nznog(IZ),K,2)
+            AZ(J) = VCOORD(nznog(IZ),K,3)
+          endif
           IANXT(J) = J + 1
  1100   CONTINUE
 
-        IANXT(NZNVER(icc)) = IAPNT
+        if(ISTOK)then
+          IANXT(NAP) = IAPNT
+        else
+          IANXT(NZNVER(icc)) = IAPNT
+        endif
 
 C-----------------------------------------------------------------------
 C Transform surface polygon to EYE co-ordinates

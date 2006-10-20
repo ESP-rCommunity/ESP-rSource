@@ -96,7 +96,7 @@ C Significant figure reporting limit (NSIGFIG).
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
-      character outs*124,outs248*248
+      character outs*124,outs248*248,MODE*4
       CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -379,7 +379,8 @@ C successful then scan all the zones via ZDATA.
           call fdroot(LCMDFL,path,LCFGF)
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
-          call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+          MODE='NONE'
+          CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
             call updwire(ncomp)
@@ -495,7 +496,8 @@ C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
         call edisp(iuout,' ')
         call edisp(iuout,' Scanning the model description')
-        call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+        MODE='NONE'
+        CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
           call updwire(ncomp)
