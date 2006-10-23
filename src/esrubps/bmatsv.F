@@ -1416,7 +1416,12 @@ C.....Check to see present time is close to midnight
             endif
 
 C.....Update reports.
-            call REP_UPDATE(nsinc,btimep,myday, bInStartup()) ! <- store logged data
+            if ( bInStartup() ) then
+              iStartupFlag = 1
+            else
+              iStartupFlag = 0
+            endif
+            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
 C IF NSINC=1, turn off initialization of h3kreports meta data
             if (nsinc .eq. 1 ) call  H3K_init_set_meta(.false.)

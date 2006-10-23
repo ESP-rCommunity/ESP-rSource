@@ -71,16 +71,16 @@ public:
     double RetrieveValue ( unsigned int i );
 
     // Query search status
-    bool TVariableData::QuerySearchStatus(int& i);
+    bool QuerySearchStatus(int& i);
 
     // Update the status of variable's searches
-    void TVariableData::UpdateSearchStatus(int& i, bool bStatus);
+    void UpdateSearchStatus(int& i, bool bStatus);
 
     // Query search results
-    bool TVariableData::QuerySearchResult(int& i);
+    bool QuerySearchResult(int& i);
 
     // Update past search result
-    void TVariableData::UpdateSearchResult(int& i, bool bResult);
+    void UpdateSearchResult(int& i, bool bResult);
 
     // Recover data from meta array
     std::string RetrieveMeta(const std::string&  RequestMeta );

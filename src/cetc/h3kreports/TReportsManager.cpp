@@ -54,12 +54,12 @@ extern "C"
   /**
    *  Perform binning operations and move to next timestep
    */
-   
-  void rep_update__(long* step, float* hour, long* day, bool* bStartup)
+
+  void rep_update__(long* step, float* hour, long* day, int* iStartup)
   {
     if(DEBUG) cout << "rep_update_: " << *step << "\t"
                    << *hour << "\t" << *day << endl;
-    TReportsManager::Instance()->Update( *step, *hour, *day, *bStartup );
+    TReportsManager::Instance()->Update( *step, *hour, *day, *iStartup );
   }
 
   /**
@@ -300,6 +300,126 @@ void add_to_xml_reporting__(float* value,
 
   }
 
+  /**
+    These interfaces to the above functions are needed to deal with
+    dissimilar name mangling between GNU and sun compilers. (gcc
+    adds two underscores to fortran function names containing
+    embedded undescrores, while cc adds only one)
+
+  **/
+
+  void rep_update_(long* step, float* hour, long* day, int* iStartup)
+  {
+    rep_update__(step, hour, day, iStartup);
+  }
+
+  void rep_report_(float *value, char *name, int sPassedName_length)
+  {
+     rep_report__(value, name, sPassedName_length);
+  }
+
+  void rep_summary_(  )
+  {
+    rep_summary__();
+  }
+
+  void rep_xml_summary_( )
+  {
+    rep_xml_summary__();
+  }
+
+  void rep_set_meta_(char *sVarName, char *sMetaName, char *sMetaValue,
+                      int sVarNameLength, int sMetaNameLength, int sMetaValueLength)
+  {
+       rep_set_meta__(sVarName, sMetaName, sMetaValue,
+                      sVarNameLength, sMetaNameLength, sMetaValueLength);
+  }
+
+
+  void rep_set_config_file_(char *sFilePath, int sPathLength)
+  {
+     rep_set_config_file__(sFilePath, sPathLength);
+  }
+
+
+   void rep_set_parameter_(char *sParamName,
+                           char *sParamValue,
+                           int sNameLength,
+                           int sValueLength)
+  {
+      rep_set_parameter__(sParamName, sParamValue, sNameLength, sValueLength);
+  
+  }
+
+  bool bh3k_rep_enabled_(){
+    return bh3k_rep_enabled__();
+  }
+
+
+  void h3k_enable_reports_( bool& bNewStatus )
+  {
+    h3k_enable_reports__( bNewStatus );
+  }
+  
+
+  bool rep_xmlstatus_()
+  {
+    return rep_xmlstatus__();
+  }
+
+
+   void rep_report_config_(char* sValue, int iValLength, char *sParam, int iNameLength)
+   {
+      rep_report_config__(sValue, iValLength, sParam, iNameLength);
+   }
+
+   bool rep_report_list_(char *sType, char *sSheet,
+                          int iTypeLength, int iSheetLength)
+   {
+      rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
+   }
+   
+   
+    void rep_update_config_(char* sParam, char* sValue, int iNameLength, int iValLength)
+    {
+       rep_update_config__(sParam, sValue, iNameLength, iValLength);
+    }
+
+    bool rep_toggle_config_(char* sParam, int iNameLength)
+    {
+      return rep_toggle_config__(sParam, iNameLength);
+    }
+
+
+
+     
+    void rep_update_config_file_()
+    {
+      rep_update_config_file__();
+    }
+    
+  
+    void add_to_xml_reporting_(float* value,
+                          char* sVarName,
+                          char* sMetaName,
+                          char* sMetaValue,
+                          char* sDescription,
+                          int sVarNameLength,
+                          int sMetaNameLength,
+                          int sMetaValueLength,
+                          int sDescriptionLength)
+    {
+       add_to_xml_reporting__(value,
+                              sVarName,
+                              sMetaName,
+                              sMetaValue,
+                              sDescription,
+                              sVarNameLength,
+                              sMetaNameLength,
+                              sMetaValueLength,
+                              sDescriptionLength);
+    }
+
 }
 
 // Prototypes
@@ -382,7 +502,7 @@ TReportsManager::TReportsManager(  )
    operations as necessary
  */
  
-bool TReportsManager::Update(long step, float hour, long day, bool bStartup)
+bool TReportsManager::Update(long step, float hour, long day, int iStartup)
 {
 
   if ( ! bReports_Enabled ) return false;
@@ -392,7 +512,7 @@ bool TReportsManager::Update(long step, float hour, long day, bool bStartup)
   VariableDataMap::iterator pos;
   // if simulation is still in start-up, and output of
   // start-up data not requested, return without doing anything.
-  if ( bStartup && ! bReportStartup){return true;}
+  if ( iStartup == 1  && ! bReportStartup){return true;}
 
   if(DEBUG) cout << "Update step: " << step << "  hour: " << hour << "  day: "
                  << day << endl;
