@@ -64,18 +64,11 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC14/emarea(MCOM)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero is no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero is no surface is close to horizontal facing down).
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       COMMON/GROUND/GRDTMP(12,MGRDP)
 
@@ -157,7 +150,7 @@ C     if(init.eq.1)read(26,*)
 C      read(26,*)idum,tdum,tdum,tsurm(1),tdum,tsurm(2),tdum,tsurm(3)
 C END SPECIAL mod for PASSYS
 
-C Zone-by-zone.
+C Component-by-component.
       DO 101 ICOMP=1,NCOMP
         NC=NCONST(ICOMP)
         if(ATRACE)then
@@ -174,7 +167,7 @@ C Zone-by-zone.
         endif
 
 
-C Surface-by-surface.
+C Construction-by-construction.
         IC=ICASCF(ICOMP)
         IF(IC.NE.0)THEN
 C debug...
@@ -210,7 +203,7 @@ C Units below seems to be W/m^2.
               qpltri(I)=(QPLTP(ICOMP)+QPLTF(ICOMP))*0.5*
      &                  (1.-CONV(ICOMP))*ei(icomp,I)/emarea(icomp)
             ENDIF
-          ENDIF
+         ENDIF
 
 C Connection-by-connection.
           DO 20 J=1,NCON
@@ -265,6 +258,7 @@ C
 C              qradcas(I)=
 C     &         Cas_Rad_dat(icomp) * ei(icomp,I)/emarea(icomp)
 C
+
 
               ARF(ICOMP,I)=qlwsum(I)+qradcas(I)
               APf(ICOMP,I)=Pfair(ICOMP)
@@ -375,14 +369,11 @@ c Next line only needed for MZCONV.
 
 C BASESIMP connection.
             ELSEIF(ICT(J).EQ.6)THEN
-
 C Set adjacent temperature same as zone temperature.
               ATF(ICOMP,I)=TFA(ICOMP)
-
 C Calculate the basement air temperature to use as the driving force
 C for the BASESIMP-calculated heat loss to the soil and outdoor air.
               call BSTEMP(ICOMP,TBSAVG)
-
 C Set radiation to adjacent surface equal to the negative of the heat
 C flow from the foundation to the soil, as calculated by BASESIMP.
 C This is multiplied by `surface weighting factor' (IE2) which indicates
@@ -392,20 +383,19 @@ C is 100%.
               call BSHEAT(ICOMP,J,TBSAVG,QBS)
               call H3KSTORE_FNDTN_LOSSES(ICOMP,idyp,QBS)
               ARF(ICOMP,I) = -0.01*FLOAT(IE2(J)) * QBS/SNA(ICOMP,I)
-
 C APf is undocumented, but has something to do with moisture.
 C Psat01 is a function that returns the saturation vapour pressure
 C as a function of temperature. Treated the same here as for connection
 C type 2.
               APf(ICOMP,I)=0.6*Psat01(ATF(ICOMP,I))
 
+
             ELSEIF(ICT(J).EQ.7)THEN
 
 C Connection 7: CEN partition case - This is as the "similar" but
-C there is the same shortwave solar radiation for both sides and
-C the adjacent zone air temperature set to the temperature of the
-C other face of the surface. Note that this is an exact treatment
-C as specified in the CEN standard.
+C there is the same shortwave solar radiation for both sides
+C(adjacent zone air temperature set to
+C external surface temperature). Note that this is an exact treatment.
 C The following parameters assume a corresponding action in MZSETU.
 
 C Plant radiant energy at other face same as inside face.
@@ -418,38 +408,9 @@ C Plant radiant energy at other face same as inside face.
      &                  (TFS(ICOMP,K)-TFS(ICOMP,I)))
  1802         CONTINUE
 
-C If floor, then add the sw rad. of the other face of the ceiling
-C If ceiling, then add the sw rad. of the other face of the floor
-              if(PELV(icomp,i).GE.89.98.AND.
-     &           PELV(icomp,i).LE.90.02)then
-
-C Current surface is a ceiling so assign qswsum = of a typical floor.
-C But if izsfloor is zero then assume surface 6 of the zone is a floor.
-                if(izsfloor(icomp).ne.0)then
-                  qswsum(I)=QSLIF(ICOMP,izsfloor(icomp))
-                else
-                  qswsum(I)=QSLIF(ICOMP,6)
-                endif
-              elseif(PELV(icomp,i).GE.-90.02.AND.
-     &               PELV(icomp,i).LE.-89.98)then
-
-C Current surface is a floor so assign qswsum = of a typical ceiling.
-C But if izsceil is zero then assume surface 5 of the zone is a ceiling.
-                if(izsceil(icomp).ne.0)then
-                  qswsum(I)=QSLIF(ICOMP,izsceil(icomp))
-                else
-                  qswsum(I)=QSLIF(ICOMP,5)
-                endif
-              else
-
-C Orientation is not a floor or ceiling so assume it is a wall
-C in which case the solar on the other face is the same as on
-C the inside of the wall (CEN is in a universe where this happens).
-                qswsum(I)=QSLIF(ICOMP,I)
-              endif
+              qswsum(I)=QSLIF(ICOMP,I)
 
               ATF(ICOMP,I)=TFA(ICOMP)+FLOAT(IC2(J))
-
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
@@ -463,6 +424,7 @@ C
 C              qradcas(I)=
 C     &         Cas_Rad_dat(icomp) * ei(icomp,I)/emarea(icomp)
 C
+
 
               ARF(ICOMP,I)=qlwsum(I)+qradcas(I)+qswsum(I)
               APf(ICOMP,I)=Pfair(ICOMP)

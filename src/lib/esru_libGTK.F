@@ -6219,8 +6219,13 @@ C If there is a journal file append the current message to it and close.
 
 C ****** Define ectime function as fixed length character*24
       character*24 FUNCTION ECTIME(ICTIME)
+      integer ICTIME
+#ifdef GCC4
+      call CTIME(ICTIME,ECTIME)
+#else
       character*24 CTIME
       ECTIME = CTIME(ICTIME)
+#endif
       return
       end
 

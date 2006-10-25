@@ -261,9 +261,11 @@ C in the tdf file.
               elseif(TTYPE(ifoc)(1:6).EQ.'OBJROT')then
                 IOBJDIR=ifoc
               endif
-              WRITE(OUTS,'(A,I2,1X,A,4A,3A,I2,A)') ' Tdf item:',M,':',
-     &    DBTAG(M),' of type: ',TTYPE(ifoc),' associated with ',DBZN(M),
-     &    ' temporal index ',IFOC,' referenced.'
+              WRITE(OUTS,'(A,I2,7A,I2,A)')
+     &            ' Tdf item:',M,' :',DBTAG(M),
+     &            ' of type: ',TTYPE(ifoc),
+     &            ' associated with ',DBZN(M),
+     &            ' temporal index ',IFOC,' referenced.'
               IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
   4         continue
             WRITE(OUTS,'(A,8I2)')' Simul tags:',IALLCLM,IDBTEXT,IWINDVL,

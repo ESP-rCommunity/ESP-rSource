@@ -1351,6 +1351,24 @@ C Simple plant temperature/flow source
          ELSE IF (ITYPE.EQ.111) THEN
 C IEA/ECBCS Annex 42 SOFC-cogeneration device.
             CALL SOFC_A42_coeffgen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE.EQ.112) THEN
+C 3-node description of a residential SOFC
+            CALL FC_coeff_generator(IPCOMP,OUT,ISTATS)
+         ELSE IF ( ITYPE .EQ. 113) THEN
+C 3 node gas-fired water tank for coupling to fuel cell & adsorption storage
+            CALL ADS_tank_fuel_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF ( ITYPE .EQ. 114) THEN
+C 3 node electric water tank for coupling to fuel cell & adsorption storage
+            CALL ADS_tank_elec_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF ( ITYPE .EQ. 115 ) THEN
+C 3-node adsorption storage unit
+            CALL ADS_stg_coeff_gen(IPCOMP, OUT, ISTATS)
+         ELSE IF ( ITYPE .EQ. 116 ) THEN
+C Pressurized WCH pipe
+            CALL Press_WCH_pipe_coeff_gen(IPCOMP, OUT, ISTATS)
+         ELSE IF ( ITYPE .EQ. 117 ) THEN
+C Pressurized WCH pump
+            CALL Press_WCH_pump_coeff_gen(IPCOMP, OUT, ISTATS)
 
 C New component equation generators inserted here
 

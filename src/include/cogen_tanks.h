@@ -22,15 +22,16 @@ C ******************************************************************************
      &     tank_space_heat,FC_DHW_CSA_Lperhour,
      &     FC_DHW_CSA_Lperday,FC_DHW_CSA_fraction,
      &     FC_DHW_nominal_Lperday,Href_tank,  
-     &     node1,node2,node3,con1a,con1b,              !  Node & Connection indexes
+     &     node1,node2,node3,con1a,con1b,
+     &     con1c,              !  Node & Connection indexes
      &     m_dot_fuel_kmol_t,m_dot_fuel_kg_t,          ! <--
      &     Vdot_fuel_STP_t,q_burner, q_capture_future, ! <--
      &     m_dot_air_kg_t,m_dot_exh_kg_t,              ! Calculated data for post-processor
      &     Troom_future,        ! <----- Containment temperature           
      &     q_heatdump_future,   ! <----- Enviromment heat rejection
      &     mdot_conn1a_present,mdot_conn1a_future,
-     &     mdot_conn1b_present,mdot_conn1b_future  ! <-- connection mass flow rates
-  
+     &     mdot_conn1b_present,mdot_conn1b_future,  ! <-- connection mass flow rates
+     &     mdot_conn1c_present,mdot_conn1c_future
 
       common/FC_tanks_DHWdraw/DHW_draw_present,
      &  DHW_draw_future,T_makeup_present,T_makeup_future,
@@ -40,7 +41,7 @@ C-------------------------------------------------------------------------------
 C Model parameters 
 C--------------------------------------------------------------------------------- 
       integer node1,node2, node3 ! node index
-      integer con1a, con1b      ! connection index
+      integer con1a, con1b, con1c      ! connection index
 
 
 C--------------------------------------------------------------------------------- 
@@ -102,9 +103,10 @@ C Connection mass flow storage rates
 C---------------------------------------------------------------------------------
 C-----1. present time-step storage variables
       real mdot_conn1a_present, mdot_conn1b_present ! (kg/s)
+      real mdot_conn1c_present
 C-----2. future time-step storage variables
       real mdot_conn1a_future, mdot_conn1b_future ! (kg/s)
-
+      real mdot_conn1c_future
 
 C---------------------------------------------------------------------------------
 C Electric resistance heater element heat output (W) for on and off states.
@@ -243,3 +245,6 @@ C-------used FC_heatdump_max = 65. and FC_heatdump_min = 60.
 C-------Ferguson BS2005 paper (Modeling of Building-integrated Stirling CHP systems)
 C-------used FC_heatdump_max = 100. and FC_heatdump_min = 0.
 
+C-------Mottillo (2006) Thesis: Investigation of an Adsorption System for the
+C-------Seasonal Storage of Heat Applied to Residential Buildings
+C-------used FC_heatdump_max = 90. and FC_heatdump_min = 85.

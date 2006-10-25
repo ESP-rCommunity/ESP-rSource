@@ -4641,3 +4641,433 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
  Mass flow components data
  
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     78
+ 
+ Component Description
+    Generic type     : 3-node residential SOFC with 2 connections
+    Description      : three node description of a residential fuel cell
+    Insertion date   : 8 Aug 01 11:37
+    Type: Single component                    Component code :   1120
+ 
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      5
+    Matrix positions :   1,   4,   5,   7,   9,
+    Node connections :   0,   0,   2,
+    Variable type    :  29,  29,  20,
+ 
+ Miscellaneous Data
+    Adata items   :  27    Bdata items   :   0    Cdata items   :   1
+ ADATA variables:
+    1 fuel cell electrical efficiency polynomial coefficient (n0)
+      Value =   0.39496        Range (Min Max):    -1000.0        1000.0
+    2 fuel cell electrical efficiency polynomial coefficient (n1)
+      Value =   0.49989E-01    Range (Min Max):    -1000.0        1000.0
+    3 fuel cell electrical efficiency polynomial coefficient (n2)
+      Value =  -0.10430E-01    Range (Min Max):    -1000.0        1000.0
+    4 heat leakage from fuel cell to containing room (W)
+      Value =    100.00        Range (Min Max):     0.0000        5000.0
+    5 parasitic electrical loads polynomial coefficient (p0)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+    6 parasitic electrical loads polynomial coefficient (p1)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+    7 parasitic electrical loads polynomial coefficient (p2)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+    8 parasitic electrical loads polynomial coefficient (p3)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+    9 molar fraction of N2 in fuel
+      Value =   0.17600E-01    Range (Min Max):     0.0000        1.0000
+   10 molar fraction of CO2 in fuel
+      Value =   0.55000E-02    Range (Min Max):     0.0000        1.0000
+   11 molar fraction of H2 in fuel
+      Value =    0.0000        Range (Min Max):     0.0000        1.0000
+   12 molar fraction of CH4 in fuel
+      Value =   0.94760        Range (Min Max):     0.0000        1.0000
+   13 molar fraction of C2H6 in fuel
+      Value =   0.27000E-01    Range (Min Max):     0.0000        1.0000
+   14 molar fraction of C3H8 in fuel
+      Value =   0.23000E-02    Range (Min Max):     0.0000        1.0000
+   15 air supply polynomial coefficient (w0)
+      Value =    50.000        Range (Min Max):    -1000.0        1000.0
+   16 air supply polynomial coefficient (w1)
+      Value =    130.00        Range (Min Max):    -1000.0        1000.0
+   17 air supply polynomial coefficient (w2)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+   18 exhaust-to-water heat exchanger U-value poly coeff (q0)
+      Value =    3.0000        Range (Min Max):    -1000.0        1000.0
+   19 exhaust-to-water heat exchanger U-value poly coeff (q1)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+   20 exhaust-to-water heat exchanger U-value poly coeff (q2)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+   21 liquid water supply polynomial coefficient (f0)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+   22 liquid water supply polynomial coefficient (f1)
+      Value =   0.23800E-02    Range (Min Max):    -1000.0        1000.0
+   23 liquid water supply polynomial coefficient (f2)
+      Value =    0.0000        Range (Min Max):    -1000.0        1000.0
+   24 fuel cell control method (elec,thermal,constant)
+      Value =    1.0000        Range (Min Max):     0.0000        3.0000
+   25 min net elec output (W)
+      Value =    500.00        Range (Min Max):     0.0000        10000.
+   26 max net elec output (W)
+      Value =    5000.0        Range (Min Max):     0.0000        10000.
+   27 flag indicating ASCII time-step output (0=no; 1=yes)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+ CDATA variables:
+    1 fuel cell stack operating signal (on/off)
+ 
+ Number of additional output parameters:    15
+ Additional output variables:
+    1 on/off signal                  Type :    1
+    2 electrical efficiency (-)      Type :    1
+    3 net electrical output (W)      Type :    1
+    4 parasitic elec losses (W)      Type :    1
+    5 fuel consumption (kg/s)        Type :    1
+    6 fuel consumption (slpm)        Type :    1
+    7 air supply (kg/s)              Type :    1
+    8 air supply (slpm)              Type :    1
+    9 air supply (stoichs)           Type :    1
+   10 water supply (L/min)           Type :    1
+   11 exhaust flow (kg/s)            Type :    1
+   12 exhaust flow (slpm)            Type :    1
+   13 temp exh gases into HE (oC)    Type :    1
+   14 temp exh gases exit HE (oC)    Type :    1
+   15 heat recovery to water (W)     Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     79
+ 
+ Component Description
+    Generic type     : gas-fired water tank with 3 connections
+    Description      : 3-node tank for charging by fuel cell and adsorption storage
+    Insertion date   : 20 Oct 04 17:20
+    Type: Single component                    Component code :   1130
+ 
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      4
+    Matrix positions :   1,   5,   8,   9,
+    Node connections :   3,   0,   0,
+    Variable type    :  20,  21,  21,
+
+ Miscellaneous Data
+    Adata items   :  14    Bdata items   :   0    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    300.00        Range (Min Max):     1.0000        1000.0
+    2 Average specific heat of water and casing (J/kgK)
+      Value =    4180.0        Range (Min Max):     500.00        10000.
+    3 UA modulus (node 1 to surroundings) (W/K)
+      Value =    1.1750        Range (Min Max):    0.10000        3.5000
+    4 Nominal burner capacity when ON (W)
+      Value =    23000.        Range (Min Max):     0.0000       0.10000E+06
+    5 Nominal burner capacity when OFF (standby) (W)
+      Value =    0.0000        Range (Min Max):     0.0000        1000.0
+    6 Combustion + flue efficiency (%)
+      Value =    85.000        Range (Min Max):     0.0000        100.00
+    7 Excess air (%)
+      Value =    165.00        Range (Min Max):     0.0000        300.00
+    8 molar fraction of N2 in fuel
+      Value =   0.17600E-01    Range (Min Max):     0.0000        1.0000
+    9 molar fraction of CO2 in fuel
+      Value =   0.55000E-02    Range (Min Max):     0.0000        1.0000
+   10 molar fraction of CH4 in fuel
+      Value =   0.94760        Range (Min Max):     0.0000        1.0000
+   11 molar fraction of C2H6 in fuel
+      Value =   0.27000E-01    Range (Min Max):     0.0000        1.0000
+   12 molar fraction of C3H8 in fuel
+      Value =   0.23000E-02    Range (Min Max):     0.0000        1.0000
+   13 DHW draw profile (0=no DHW; 1=CSA)
+      Value =    0.0000        Range (Min Max):     0.0000        4.0000
+   14 Space-heating flag (0=no fan-coil; 1=fan-coil)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+ CDATA variables:
+    1 Firing signal (on/off)
+ 
+ Number of additional output parameters:     8
+ Additional output variables:
+    1 burner output (W)              Type :    1
+    2 burner energy -> water (W)     Type :    1
+    3 fuel consumption (kg/s)        Type :    1
+    4 fuel consumption (slpm)        Type :    1
+    5 air flow (kg/s)                Type :    1
+    6 air flow (slpm)                Type :    1
+    7 temp of comb gases (oC)        Type :    1
+    8 temp of exh gases (oC)         Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     80
+ 
+ Component Description
+    Generic type     : electrically heated water tank with 3 co
+    Description      : 1-node tank for charging by fuel cell and adsorption storage
+    Insertion date   : 20 Oct 04 17:26
+    Type: Single component                    Component code :   1140
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   3,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :   7    Bdata items   :   0    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    300.00        Range (Min Max):     1.0000        1000.0
+    2 Average specific heat of water and casing (J/kgK)
+      Value =    4180.0        Range (Min Max):     500.00        10000.
+    3 UA modulus (node 1 to surroundings) (W/K)
+      Value =    1.1750        Range (Min Max):    0.10000        3.5000
+    4 Heater element capacity when ON (W)
+
+    5 Heater element capacity when OFF(standby) (W)
+      Value =    0.0000        Range (Min Max):     0.0000       0.10000E+06
+    6 DHW draw profile (0=no DHW; 1=CSA)
+      Value =    0.0000        Range (Min Max):     0.0000        4.0000
+    7 Space-heating flag (0=no fan-coil; 1=fan-coil)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+ CDATA variables:
+    1 Heater signal (on/off)
+ 
+ Number of additional output parameters:     1
+ Additional output variables:
+    1 Heater element output (W)      Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     81
+
+ Component Description
+    Generic type     : Adsorption storage unit
+    Description      : 3-node adsorption storage unit
+    Insertion date   : 25 Oct 04 20:32
+    Type: Single component                    Component code :   1150
+
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      4
+    Matrix positions :   1,   4,   5,   9,
+    Node connections :   2,   1,   2,
+    Variable type    :  20,  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  33    Bdata items   :   0    Cdata items   :   2
+ ADATA variables:
+    1 Mass of adsorbent (kg)
+      Value =    10.000        Range (Min Max):     1.0000      0.1000E+10
+    2 Specific heat of adsorbent (J/kgK)
+      Value =    800.00        Range (Min Max):     1.0000        5000.0
+    3 Coefficient Wo of D-A equation (m3/kg adsorbent)
+      Value =   0.31100E-03    Range (Min Max):    0.10000E-07    1.0000
+    4 Coefficient D of D-A equation (-)
+      Value =   0.18023E-06    Range (Min Max):    0.10000E-12    1.0000
+    5 Coefficient n of D-A equation (-)
+      Value =    2.0000        Range (Min Max):     0.0000        5.0000
+    6 Mass of adsorber vessel (kg)
+      Value =    20.000        Range (Min Max):     0.0000        1000.0
+    7 Specific heat of adsorber vessel (kg)
+      Value =    540.00        Range (Min Max):     0.0000        1000.0
+    8 Mass of adsorber heat exchanger (kg)
+      Value =    50.000        Range (Min Max):     0.0000        1000.0
+    9 Specific heat of adsorber heat exchanger (J/kgK)
+      Value =    540.00        Range (Min Max):     0.0000        1000.0
+   10 Enthalpy of adsorption (J/kg)
+      Value =   0.32000E+07    Range (Min Max):     0.0000       0.10000E+10
+   11 Delta T for determining dX/dT (C)
+      Value =   0.50000E-01    Range (Min Max):    0.10000E-07    1.0000
+   12 Surface area of adsorber (m2) 
+      Value =    60.000        Range (Min Max):     0.0000        1000.0
+   13 Thickness of adsorber insulation layer (m) 
+      Value =    0.0250        Range (Min Max):     0.0000        1.0000
+   14 Thermal conductivity of adsorber insulation (W/mK) 
+      Value =    0.0400        Range (Min Max):     0.0001        1000.0
+   15 Overall heat transfer coefficient adsorber-surroundings (W/m2K) 
+      Value =    10.000        Range (Min Max):     0.0001        1000.0
+   16 Adsorber-fuel cell heat exchanger effectiveness (-) 
+      Value =    0.5000        Range (Min Max):     0.0001        1.0000
+   17 Pressure of adsorber-fc heat exchange loop (kPa) 
+      Value =    100.00        Range (Min Max):     1.0000        1000.0
+   18 Adsorber-water tank heat exchanger effectiveness (-) 
+      Value =    0.5000        Range (Min Max):     0.0001        1.0000
+   19 Pressure of adsorber-water tank h/x loop (kPa) 
+      Value =    100.00        Range (Min Max):     1.0000        1000.0
+   20 Minimum temperature difference adsorber - heat sink/source 
+      Value =    5.0000        Range (Min Max):     0.0000        100.00
+   21 Minimum temperature of heat source for charging unit
+      Value =    200.00        Range (Min Max):     10.000        1000.0
+   22 Condenser pressure (kPa) 
+      Value =    10.000        Range (Min Max):     1.0000        100.00
+   23 Condenser heat exchanger effectiveness (-) 
+      Value =    0.5000        Range (Min Max):     0.0001        1.0000
+   24 Mass flow rate of air entering condenser (kg/s) 
+      Value =    0.0001        Range (Min Max):     0.0000        1000.0
+   25 Surface area of condenser (m2) 
+      Value =    2.0000        Range (Min Max):     0.0000        1000.0
+   26 Overall heat transfer coeff condenser-surroundings (W/m2K) 
+      Value =    10.000        Range (Min Max):     0.0001        1000.0
+   27 Condenser fan power rating (W) 
+      Value =    200.00        Range (Min Max):     0.0000        1000.0
+   28 Evaporator pressure (kPa)
+      Value =    1.0000        Range (Min Max):     1.0000        100.00
+   29 Evaporator heat exchanger effectiveness (-) 
+      Value =    0.5000        Range (Min Max):     0.0001        1.0000
+   30 Surface area of evaporator (m2) 
+      Value =    30.000        Range (Min Max):     0.0000        1000.0
+   31 Overall heat transfer coeff evaporator-surroundings (W/m2K) 
+      Value =    10.000        Range (Min Max):     0.0001        1000.0
+   32 Initial adsorber temperature (C) 
+      Value =    100.000       Range (Min Max):     0.0000        1000.0
+   33 Initial adsorber pressure (kPa) 
+      Value =    1.0000        Range (Min Max):     0.0000        1000.0
+ CDATA variables:
+    1 Charging signal (on/off)
+    2 Discharge signal (on/off)
+ 
+ Number of additional output parameters:     9
+ Additional output variables:
+    1 max adsorber temp (oC)         Type :    1
+    2 min adsorber temp (oC)         Type :    1
+    3 adsorber pressure (kPa)        Type :    1
+    4 phase of cycle (-)             Type :    1
+    5 vapour flow rate (kg/s)        Type :    1
+    6 condenser power (W)            Type :    1
+    7 ads heat source/sink (W)       Type :    1
+    8 heat transfer to ads (W)       Type :    1
+    9 ads ambient heat loss (W)      Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     82
+ 
+ Component Description
+    Generic type     : Pressurized WCH pipe
+    Description      : Pressurized WCH pipe; 1 node model
+    Insertion date   : 11 Mar 92 21:46
+    Type: Single component                    Component code :   1160
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :   7    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    2.0000        Range (Min Max):     2.0000        2.0000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    2250.0        Range (Min Max):     2250.0        2250.0
+    3 UA modulus from wall to environment (W/K)
+      Value =    2.0000        Range (Min Max):     2.0000        2.0000
+    4 Hydraulic diameter of pipe (m)
+      Value =   0.15000E-01    Range (Min Max):    0.15000E-01   0.15000E-01
+    5 Length of pipe section (m)
+      Value =    5.0000        Range (Min Max):     5.0000        5.0000
+    6 Cross sectional face area (m^2)
+      Value =   0.17670E-03    Range (Min Max):    0.17670E-03   0.17670E-03
+    7 Pressure (kPa)
+      Value =    100.00        Range (Min Max):     1.0000        1000.0
+ 
+ Number of additional output parameters:     0
+ 
+ Mass flow components data
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     83
+ 
+ Component Description
+    Generic type     : Pressurized WCH pump
+    Description      : Pressurized domestic WCH pump
+    Insertion date   : 11 Mar 92 21:50
+    Type: Single component                    Component code :   1170
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   4    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    5.0000        Range (Min Max):     5.0000        5.0000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    2250.0        Range (Min Max):     2250.0        2250.0
+    3 UA modulus from wall to environment (W/K)
+      Value =   0.20000        Range (Min Max):    0.20000       0.20000
+ BDATA variables:
+    1 Rated total absorbed power (W)
+      Value =    150.00        Range (Min Max):     150.00        150.00
+    2 Rated volume flow rate (m^3/s)
+      Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
+    3 Overall efficiency (-)
+      Value =   0.70000        Range (Min Max):    0.70000       0.70000
+    4 Pressure (kPa)
+      Value =    100.00        Range (Min Max):     1.0000        1000.0
+ CDATA variables:
+    1  Water volume flow rate (m^3/s)
+ 
+ Number of additional output parameters:     2
+ Additional output variables:
+    1 Real power comsump             Type :    1
+    2 Reac power comsump             Type :    1
+ 
+ Mass flow components data
+General flow inducer component      dP= a0+Sai(m/rho)^i
+Type : 310    Init suppl dat :   7    Tot suppl dat :   7    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+lower polynomial validity limit (m^3/s)                              0.10000
+upper polynomial validity limit (m^3/s)                              0.40000
+fit coefficient a0 (Pa/(m^3/s)^0)                                    0.50000
+fit coefficient a1 (Pa/(m^3/s)^1)                                    0.60000
+fit coefficient a2 (Pa/(m^3/s)^2)                                    0.50000
+fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000

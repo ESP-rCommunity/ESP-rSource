@@ -275,7 +275,7 @@ C Calculated variables for the fuel cell component model.
 C (Formerly MODULE FC_calculated)
 C (JWH continuation lines removed based on syntax warning)
 C ************************************************************************************
-      COMMON/FC_calculated/INOD1,INOD2,INOD3,ICON3,
+      COMMON/FC_calculated/INOD1,INOD2,INOD3,ICON3,ICON3b,
      &  molW_fuel,molW_exh,m_dot_fuel_kmol,m_dot_fuel_kg,Vdot_fuel_STP,
      &  m_dot_H2_kmol,m_dot_CH4_kmol,m_dot_C2H6_kmol,m_dot_C3H8_kmol,
      &  fuel_molefrac_total,T_fuel,phi_source,
@@ -292,6 +292,8 @@ C ******************************************************************************
      &  eta_fc,eta_fc_elec_bop,eta_fc_cogen,
      &  q_par_elec,q_net_elec,q_net_elec_kW,q_total_elec,
      &  q_heatrecovery,UA_exh,mdotCp_water,
+     &  mdotCp_water_tank, mdotCp_water_adsorber,
+     &  Twater_enter_tank, Twater_enter_adsorber,
      &  Twater_enter,T_room,H_gas_at_Tm,UA_exh_max,FC_onoff_previous
 
 C---------------------------------------------------------------------------------
@@ -301,6 +303,7 @@ C-------------------------------------------------------------------------------
       INTEGER INOD2  ! node 2
       INTEGER INOD3  ! node 3
       INTEGER ICON3  ! connection to node 3
+      INTEGER ICON3b ! second connection to node 3 (for MM thesis work)
 
 C---------------------------------------------------------------------------------
 C Molecular weights.
@@ -418,6 +421,19 @@ C Water side of exhaust-to-water heat exchanger.
 C---------------------------------------------------------------------------------
       REAL mdotCp_water ! product of mass flow and Cp of water in HE (W/K)
       REAL Twater_enter ! temp of water entering HE (oC)
+
+
+C--The following are used by the modified version of the SOFC model
+C--used for coupling with an adsorption storage unit.
+      REAL mdotCp_water_tank ! product of mass flow and Cp of water in HE (W/K)
+                             ! coming from tank
+      REAL Twater_enter_tank ! temp of water entering HE (oC) from tank
+
+      REAL mdotCp_water_adsorber ! product of mass flow and Cp of water in HE
+                                 ! coming from adsorber (W/K)
+      REAL Twater_enter_adsorber ! temp of water entering HE
+                                 ! from adsorber (oC)
+
 
 C---------------------------------------------------------------------------------
 C Temperature of room containing fuel cell.

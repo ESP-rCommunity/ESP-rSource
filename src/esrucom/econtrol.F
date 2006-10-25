@@ -315,6 +315,10 @@ C and error details for dll mode.
 
 C Initialization flag for distributed generation controller.
       common/DgCont/first_run_done
+
+C Initialization flag for adsorption storage unit controller.
+      COMMON/ADSCont/bAds_ctl_init
+      LOGICAL bADS_ctl_init   
       
       bfngn=.false.     
       pcfngn=.false.
@@ -852,6 +856,15 @@ C...........to be re-implemented as a vector, along with
 C...........other modifications to the conroller.
             if ( ipclaw(ii,jj,kk) .eq. 10 ) then
                first_run_done = .FALSE.
+            endif
+
+
+C.......... Check to see of adsorption storage unit controller has
+C ..........been specified (ipclaw = 13). If so, initialize 
+C ..........bAds_ctl_init flag, which indicates whether or not
+C ..........the controller's intialization has been done.
+            if ( ipclaw(ii,jj,kk) .eq. 13 ) then
+               bADS_ctl_init = .false.
             endif
 
 

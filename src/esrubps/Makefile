@@ -53,15 +53,15 @@ FOBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
-	  SOFC_Annex42.o shocc_dummy.o
+	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o
 ## for Solaris comment out the ifeq lines, for GNU compilers and make ifeq is ok to use.
-ifeq ($(xml_support),yes)
+## ifeq ($(xml_support),yes)
  	COBJECTS=TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
  	FOBJECTS += ConfigureH3kReports.o
-else
-	COBJECTS= 
-	FOBJECTS += TReports_dummy.o 
-endif
+##else
+##	COBJECTS= 
+##	FOBJECTS += TReports_dummy.o 
+## endif
 
 $(PROG): $(FOBJECTS) $(COBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(FOBJECTS) $(COBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -627,6 +627,15 @@ timeout.cpp:
 ##timeout.c:
 ##	rm -f timeout.c
 ##	ln -s $(LIBdir)/timeout.c .
+ADS_storage_tanks.F:
+	rm -f ADS_storage_tanks.F
+	ln -s $(PLTdir)/ADS_storage_tanks.F .
+ADS_storage_unit.F:
+	rm -f ADS_storage_unit.F
+	ln -s $(PLTdir)/ADS_storage_unit.F .
+ADS_controller.F:
+	rm -f ADS_controller.F
+	ln -s $(PLTdir)/ADS_controller.F .
 
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
@@ -666,6 +675,7 @@ clean:
 	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
+	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F
 
 
 

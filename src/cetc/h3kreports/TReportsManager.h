@@ -59,7 +59,7 @@ class TReportsManager
    * the months of the year values   into the appropriate Annual object.
    * (UpdateAnnually())  
    */
-  bool Update( long step, float hour, long day, bool bStartup );
+  bool Update( long step, float hour, long day, int iStartup );
 	
   /**
    * 
