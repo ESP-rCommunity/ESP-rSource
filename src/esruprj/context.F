@@ -287,6 +287,7 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
      &            ' has been recalculated.'
                   call edisp(iuout,outs)
                 else
+                  DOK=.TRUE.
                   h(1)='Each zone is calculated sequentially... '
                   h(2)='If you do one then you should do all. '
                   write(outs,'(3a)') 'Proceed with shading for ',
@@ -1058,7 +1059,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 
-      logical MODSIT,browse,OK,concat,unixok
+      logical MODSIT,browse,OK,dok,concat,unixok
       logical FOUND,XST
 
       character H*72,outs*124,ltmp*72,hold*40,longtfile*144
@@ -1730,7 +1731,10 @@ C Update the control file and link the control loop to the correct zone.
             DBZN(ITE)='ALL'
           endif
           if(itro.eq.2)then
-            CALL EASKOK(' ',' Use another temporal item?',OK)
+            dok=.false.
+            h(1)='If you want to continue adding temporal refences '
+            h(2)='then answer yes. '
+            CALL ASKOK(' ',' Use another temporal item?',OK,DOK,2)
             if(OK)then
               IRT=4
               goto 27
@@ -2951,6 +2955,7 @@ C rather than starting up a new xterm.
      &            ' has been recalculated.'
             call edisp(iuout,outs)
           else
+            DOK=.true.
             h(1)='Each zone is calculated sequentially... '
             h(2)='If you do one then you should do all. '
             write(outs,'(3a)') 'Proceed with shading for ',

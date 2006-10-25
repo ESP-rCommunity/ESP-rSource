@@ -4594,7 +4594,11 @@ C contaminants network
 C << There is some problem with this section because the ctm file is
 C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
-        CALL CTREAD
+        CALL CTREAD(iier)
+        if(iier.ne.0)then
+          outs='There was a problem scanning contaminates file.'
+          call edisp(iuout,outs)
+        endif
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
         CNTMFIL=NNAME
         IUNIT=72

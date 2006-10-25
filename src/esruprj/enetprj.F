@@ -1509,7 +1509,7 @@ C Ask the user how many nodes they want to add.
         H(5)='2 - a two phase point in the network                '
         H(6)='3 - a three phase point in the network              '
         H(7)='Points of more than one phase in an a.c. system are '
-        H(8)='described by a "multi-phase set" of 2-3 nodes, each  '
+        H(8)='described by a "multi-phase set" of 2-3 nodes, each '
         H(9)='of the form: root_name_phase_extension.             '
         H(10)='For example: generator_1, generator_2, generator_3 '
         H(11)='or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
@@ -1623,19 +1623,22 @@ C Check that the special material chosen is a PV model that calculates the
 C voltage - i.e. of type 1 (ESP-r's original PV model)or type 5 (WATSUN-PV).
                   if ( (ispmtyp(ispm,1) .ne. 1) .and.
      &                 (ispmtyp(ispm,1) .ne. 5) ) then
-                    WRITE(OUTS,'(A)')
-     &                'The selected item is not a valid PV component.'
-                    CALL EDISP(IUOUT,OUTS)
-                    CALL EASKOK('Try again?',' ',ok)
+                    h(1)='Only the original esp-r PV model or a type 5'
+                    h(2)='WATSUN-PV can be used. '
+                    dok=.true.
+                    CALL ASKOK(
+     &                'The selected item is not a valid PV component.',
+     &                'Try again?',ok,dok,2)
                   else
                     iPV_calcV_LOC(IENOD) = ISPM
                     ok = .false.
                   endif
                 else
-                  WRITE(OUTS,'(A)')
-     &              'No special material component picked'
-                  CALL EDISP(IUOUT,OUTS)
-                  CALL EASKOK('Try again?',' ',ok)
+                  dok=.true.
+                  h(1)='Please select a valid component. If you say no'
+                  h(2)='then it get you out of the question loop.'
+                  CALL ASKOK('No special material component picked.',
+     &              'Try again?',ok,dok,2)
                 endif
               end do          
             ELSEIF(ENODTYP(IENOD).EQ.4)THEN
@@ -1660,13 +1663,13 @@ C-------------Ensure that plant component has electrical data.
                     iplant_calcV_LOC(IENOD) = IPCOMP ! Plant comp that calcs V.
                     OK = .false.
                   ELSE
-                    WRITE(OUTS,'(A)')
-     &                'No elec info associated with this plant comp'
-                    CALL EDISP(IUOUT,OUTS)
-                    WRITE(OUTS,'(A)')
-     &                'so it cannot calc a nodal voltage.'
-                    CALL EDISP(IUOUT,OUTS)
-                    CALL EASKOK('Try another component?',' ',OK)
+                    dok=.true.
+                    h(1)='Please select a valid component. If you say'
+                    h(2)='no then it get you out of the question loop.'
+                    CALL ASKOK(
+     &      'No elec info associated with this plant component so it',
+     &      'cannot calc a nodal voltage. Try another component?',
+     &                OK,DOK,2)
                   ENDIF
                 ENDIF
               END DO
@@ -1686,9 +1689,9 @@ C Phase type for this node also set string length for naming conventions
             ISTRL=12
             STR='Node_name'
             WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not '
-            H(2)='duplicate names. If the node is one of a multi-phase'
-            H(3)='set then the name will be the root name.'
+     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
+            H(2)='duplicate names. If the node is one of a multi'
+            H(3)='-phase set then the name will be the root name.'
             SHSTR=ENODNAM(IENOD)
             CALL EASKS(SHSTR,
      &        'The name or root name of this node (see help) ?',
@@ -1702,9 +1705,9 @@ C Allow the root to be set for the first node only.
               ROOT='Root_name'
               ENODNAM(IENOD)=ROOT
               WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not '
-              H(2)='duplicate names. If the node is one of a multiphase'
-              H(3)='set then this name will be the root name.          '
+     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
+              H(2)='duplicate names. If the node is one of a multi'
+              H(3)='-phase set then this name will be the root name.'
               SHSTR=ENODNAM(IENOD)
               CALL EASKS(SHSTR(1:10),
      &          'The name or root name of this node (see help) ?',
@@ -1718,9 +1721,9 @@ C Allow the root to be set for the first node only.
 C Determine which phase the node is connected to.
           ENODPH(IENOD)=IADD
           H(1)='Specify which phase of the electrical network the node'
-          H(2)='is associated with. Note, for balanced and d.c. nodes '
+          H(2)='is associated with. Note, for balanced and d.c. nodes'
           H(3)='simply specify 1.'
-          H(4)='NOTE: two nodes in a multi-phase set cannot have the '
+          H(4)='NOTE: two nodes in a multi-phase set cannot have the'
           H(5)='same phase! ' 
           CALL USRMSG(' ',' ','-')   
           IF(NANOD.GT.1)THEN                             
@@ -1746,7 +1749,8 @@ Check for duplicate names
           DO 30 IND=1,NND
             IF(LNBLNK(ENODNAM(IND)).EQ.LNBLNK(ENODNAM(IENOD)))THEN
               JLEN=LNBLNK(ENODNAM(IENOD))
-              IF((ENODNAM(IND)(1:JLEN)).EQ.(ENODNAM(IENOD)(1:JLEN)))THEN
+              IF((ENODNAM(IND)(1:JLEN)).EQ.
+     &           (ENODNAM(IENOD)(1:JLEN)))THEN
                 IF(IENOD.NE.IND) THEN
                   WRITE(OUTS,'(3A)') ENODNAM(IND),' & ',
      &              ENODNAM(IENOD)
@@ -1769,9 +1773,9 @@ C Ask if it is OK to delete associated connections and nodes, if not then return
         STR=' '
         ISTRL=0
         IENOD=INOD
-        H(1)='When deleting a node any connections assoctated with that'
-        H(2)='node must also be deleted. Also if the node is part     '
-        H(3)='of a multi-phase set then the other members of that set  ' 
+        H(1)='When deleting a node any connections assoctated with'
+        H(2)='that node must also be deleted. Also if the node is part'
+        H(3)='of a multi-phase set then the other members of that set' 
         H(4)='must also be deleted. These deletions are done  '
         H(5)='automatically. Any linkages to power only components or'
         H(6)='hybrid components are nulled.'
@@ -1783,7 +1787,8 @@ C Ask if it is OK to delete associated connections and nodes, if not then return
 C Firstly check for connections incorporating the node and delete 
         DO 40 ICON=NECON,1,-1
           DO 50 IPH=1,MPHAS
-            IF(SENOD(ICON,IPH).EQ.IENOD.OR.EENOD(ICON,IPH).EQ.IENOD)THEN
+            IF(SENOD(ICON,IPH).EQ.IENOD.OR.
+     &         EENOD(ICON,IPH).EQ.IENOD)THEN
               CALL EDECON('DEL',ICON)
               WRITE(OUTS,'(A,I3)') 'Deleted connection ... ',ICON
               CALL EDISP(IUOUT,OUTS)
@@ -1862,10 +1867,10 @@ C Delete connections associated with this node
                 DO 120 ICON=NECON,1,-1
                   DO 130 IPH=1,MPHAS
                     IF(SENOD(ICON,IPH).EQ.IENOD.OR.EENOD(ICON,IPH).EQ.
-     &                IENOD)THEN
+     &                 IENOD)THEN
                       CALL EDECON('DEL',ICON)
                       WRITE(OUTS,'(A,I3)') 
-     &                'Deleted connection ... ',ICON
+     &                  'Deleted connection ... ',ICON
                       CALL EDISP(IUOUT,OUTS)
                     ENDIF
 
@@ -1942,7 +1947,7 @@ C To be added
         ISTRL=12
         IF(ENODPHTYP(IENOD).EQ.3.OR.ENODPHTYP(IENOD).EQ.4) ISTRL=10
         WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not '
+     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
         H(2)='duplicate names. If the node is one of a multi-phase'
         H(3)='set then this name will be the root name.           '
         H(4)=' '
@@ -1968,15 +1973,15 @@ C Save the old node name
 
 
 C Ask for the new node type. 
-        H(1)='The voltage type specifies whether the nodal voltage '
-        H(2)='is fixed by the user or calculated during the        '
-        H(3)='simulation. Generally nodal voltages should be       '
-        H(4)='calculated; however, those connected to the grid or  '
-        H(5)='a large power source can be considered as fixed.     '
-        H(6)='Three methods are available for calculating nodal    '
-        H(7)='voltages:                                            '
-        H(8)='  - `Variable` means that the voltage is determined  '
-        H(9)='    by the solution of the power flow matrix of eqs. '
+        H(1) ='The voltage type specifies whether the nodal voltage '
+        H(2) ='is fixed by the user or calculated during the        '
+        H(3) ='simulation. Generally nodal voltages should be       '
+        H(4) ='calculated; however, those connected to the grid or  '
+        H(5) ='a large power source can be considered as fixed.     '
+        H(6) ='Three methods are available for calculating nodal    '
+        H(7) ='voltages:                                            '
+        H(8) ='  - `Variable` means that the voltage is determined  '
+        H(9) ='    by the solution of the power flow matrix of eqs. '
         H(10)='  - `PV` means that the voltage is calculated by     '
         H(11)='     the buiding domain`s PV model.                  '
         H(12)='  - `Plant` means that the voltage is calculated by  '
@@ -2014,21 +2019,24 @@ C Display list of special materials
              if ( ispm .gt. 0 ) then
 C Check that the special material chosen is a PV model that calculates the
 C voltage - i.e. of type 1 (ESP-r's original PV model)or type 5 (WATSUN-PV).
-                  if ( (ispmtyp(ispm,1) .ne. 1) .and.
-     &                   (ispmtyp(ispm,1) .ne. 5) ) then
-                    WRITE(OUTS,'(A)')
-     &              'The selected item is not a valid PV component.'
-                    CALL EDISP(IUOUT,OUTS)
-                    CALL EASKOK('Try again?',' ',ok)
-                 else
-                    iPV_calcV_LOC(IENOD) = ISPM
-                    ok = .false.
-                 endif
+                if ( (ispmtyp(ispm,1) .ne. 1) .and.
+     &               (ispmtyp(ispm,1) .ne. 5) ) then
+                  h(1)='Only the original esp-r PV model or a type 5 '
+                  h(2)='WATSUN-PV can be used. '
+                  dok=.true.
+                  CALL ASKOK(
+     &              'The selected item is not a valid PV component.',
+     &              'Try again?',ok,dok,2)
+                else
+                  iPV_calcV_LOC(IENOD) = ISPM
+                  ok = .false.
+                endif
              else
-                 WRITE(OUTS,'(A)')
-     &                 'No special material component picked'
-                 CALL EDISP(IUOUT,OUTS)
-                 CALL EASKOK('Try again?',' ',ok)
+               dok=.true.
+               h(1)='Please select a valid component. If you say no'
+               h(2)='then it get you out of the question loop.'
+               CALL ASKOK('No special material component picked.',
+     &           'Try again',ok,dok,2)
              endif
           end do          
         ELSEIF(ENODTYP(IENOD).EQ.4)THEN
@@ -2053,13 +2061,13 @@ C---------Ensure that plant component has electrical data.
                 iplant_calcV_LOC(IENOD) = IPCOMP ! Plant comp that calcs V.
                 OK = .false.
               ELSE
-                WRITE(OUTS,'(A)')
-     &                'No elec info associated with this plant comp'
-                CALL EDISP(IUOUT,OUTS)
-                WRITE(OUTS,'(A)')
-     &                'so it cannot calc a nodal voltage.'
-                CALL EDISP(IUOUT,OUTS)
-                CALL EASKOK('Try another component?',' ',OK)
+                dok=.true.
+                h(1)='Please select a valid component. If you say no'
+                h(2)='then it get you out of the question loop.'
+                CALL ASKOK(
+     &   'No elec info associated with this plant component so it',
+     &   'cannot calc a nodal voltage. Try another component?',
+     &            OK,DOK,2)
               ENDIF
             ENDIF
           END DO
@@ -2606,10 +2614,12 @@ C Ensure that the AC node selected is not the same as the DC node
               iplt_acnode_id(iehyb) = INOD
               ok = .false.
             else
-              WRITE(OUTS,'(A)')
-     &          'The AC node and DC node cannot be the same.'
-              call edisp(IUOUT,OUTS)
-              call easkok(OUTS,'Try again?',OK)
+              dok=.true.
+              h(1)='Please select a different nodes for AC and DC. Say'
+              h(2)='no to get you out of the question loop.'
+              call askok(
+     &          'The AC node and DC node cannot be the same.',
+     &          'Try again?',OK,dok,2)
             endif
           enddo
 
@@ -3039,9 +3049,9 @@ Check the same node hasn't been picked twice
               dok=.false.
               h(1)='Here is your chance to continue without over- '
               h(2)='writing the node already referencing this phase.'
-              WRITE(OUTS,'(A)')
-     &'A node has already been picked which occupies this phase'
-              CALL ASKOK(OUTS,'Overwrite it?',OK,dok,2)
+              CALL ASKOK(
+     &   'A node has already been picked which occupies this phase',
+     &   'Overwrite it?',OK,dok,2)
               IF(.NOT.OK) GOTO 55
               POWCONEN(IEPOW,ENODPH(INOD))=INOD
               WRITE(OUTS,'(A)') 'Node has been overwritten ....'
@@ -3098,10 +3108,12 @@ C Set phase type to d.c. - variable not used in power-only component model
               pcunode(IEPOW,2) = INOD
               ok = .false.
             else
-              WRITE(OUTS,'(A)')
-     &  'The PCU receiving node cannot be the same as the sending node'
-              CALL EDISP(IUOUT,OUTS)
-              CALL EASKOK(OUTS,'Try again?',OK)
+              dok=.true.
+              h(1)='Please select different nodes for sending and'
+              h(2)='receiving. Say no to get out of the question loop.'
+              CALL ASKOK(
+     &          'The PCU receiving node cannot be the same as the ',
+     &          'sending node. Try again?',OK,DOK,2)
             endif
           enddo
 
@@ -3451,8 +3463,8 @@ C Ask if it is OK to delete associated connections, if not then return
         dok=.false.
         H(1)='If a conecting component is deleted, the connections '
         H(2)='containing this component must also be deleted.      '
-        WRITE(OUTS,'(A)')'Delete connections containing this component?'
-        CALL ASKOK(OUTS,' ',OK,dok,2)
+        CALL ASKOK('Delete connections containing this component?',
+     &    ' ',OK,dok,2)
         IF(.NOT.OK) RETURN
         DO 50 ICON=NECON,1,-1
           IF(CCNO(ICON).EQ.IECNC) THEN
@@ -3620,8 +3632,8 @@ C First balanced type components to balanced type nodes.
      &(CONECOMPHTYP(ICNC).NE.5.AND.ENODPHTYP(INOD1).EQ.5)) THEN
           dok=.true.
           h(1)='This is your chance to correct this error.'
-          CALL ASKOK('You can only connect a BALANCED connector',
-     &      'to BALANCED-type node or vice-versa. Try again?',OK,dok,1)
+          CALL ASKOK('You can only connect a BALANCED connector to',
+     &      'BALANCED-type node or vice-versa. Try again?',OK,dok,1)
           IF(OK) THEN
             GOTO 20
           ELSE
@@ -3640,8 +3652,8 @@ C Exception for AC/DC of DC/AC conversion components
           ELSE
             dok=.true.
             h(1)='This is your chance to correct this error. '
-            CALL ASKOK('You can only connect a DC connector',
-     &        'to DC-type nodes or vice-versa. Try again?',OK,dok,1)
+            CALL ASKOK('You can only connect a DC connector to',
+     &        'DC-type nodes or vice-versa. Try again?',OK,dok,1)
             IF(OK) THEN
               GOTO 20
             ELSE
@@ -3920,7 +3932,7 @@ C Check the node type and issue a warning if it is not fixed.
         dok=.true.
         h(1)='This is your chance to correct this error. '
         CALL ASKOK('Warning: this is NOT a node with a fixed ',
-     &'voltage. Select another node?',OK,dok,1)
+     &    'voltage. Select another node?',OK,dok,1)
         IF(OK) GOTO 3
       ENDIF
 
