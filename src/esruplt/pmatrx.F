@@ -1369,6 +1369,9 @@ C Pressurized WCH pipe
          ELSE IF ( ITYPE .EQ. 117 ) THEN
 C Pressurized WCH pump
             CALL Press_WCH_pump_coeff_gen(IPCOMP, OUT, ISTATS)
+         ELSE IF (ITYPE .EQ. 118) THEN
+C 1 node simple solar collector model
+            CALL simple_solar_coll_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 

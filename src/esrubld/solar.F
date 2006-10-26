@@ -1825,17 +1825,39 @@ C IANGBI1 and IANGBI2 are the angles corresponding to the IND1,IND2 array elemen
  9999 RETURN
       END
 
-C ******************** MZSRAD ********************
+C ******************** MZSRAD *********************
+C  SOLAR PROCESSING: Subroutine that sets slope of 
+C surface then calls appropriate subroutine to determine
+C direct and diffuse components solar radiation. This 
+C subroutine was part of MZSRAD0. It was separated to
+C accomodate call for MZSRAD0 from subroutine 
+C "simple_solar_coll_coeff_gen".
+
+      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF)
+#include "building.h"
+
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+
+C Slope of surface
+      BETA=90.0-PELV(ICOMP,II)
+
+C Call subroutine to determine direct and diffuse solar
+C radiation
+      CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF)
+
+      RETURN
+      END
+
+C ******************** MZSRAD0 ********************
 C  SOLAR PROCESSING: incident comprises direct, sky diffuse
 C  and ground reflected components.
 
-      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF)
+      SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF)
 #include "building.h"
 
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER SNFNAM*72
 
-      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
       COMMON/SKYFLG/ISKYFL
@@ -1868,9 +1890,12 @@ C Coefficients (Perez 1990):
 
 C END Perez definitions.
 
+C Set Beta equal to slope
+      BETA=SLOPE
+
+C Useful constants
       PI = 4.0 * ATAN(1.0)
       R = PI / 180.
-      BETA=90.0-PELV(ICOMP,II)
 
 C Sky diffuse radiation is model dependent (Perez 1990 is the default).
       IF(ISKYFL.EQ.-1)THEN
@@ -1939,7 +1964,7 @@ C and absorption.
          SRADDO=QD*CAI
          IF( SRADDO .LT. 0.0 ) SRADDO = 0.0
 
-         s9=(90.-pelv(icomp,ii))*r
+         s9=beta*r
          e=1353.*(1.+0.033*cos(0.017203*idyp))*sin(salt*r)
          if(cai.le.0.0)goto 1005
 

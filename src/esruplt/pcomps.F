@@ -91,6 +91,7 @@ C      AIMS_tank1_fuel_static_temp  3 node (ISV=20) gas-fired water tank for fir
 C      TAC_1_static_template  3 node (ISV=20) first phase thermally activated cooling component
 C      TAC_coldtank_static_temp  1 node (ISV=20) cold water storage tank for TAC
 C      SOFC_A42_static 7-node (ISV=20) IEA/ECBCS Annex 42 SOFC-cogeneration device
+C      simple_solar_coll_static 1 node (ISV=20) simple solar collector 
 
 C ******************** MZSDAT ********************
 
@@ -277,7 +278,9 @@ C Pressurized WCH pipe
 C Pressurized WCH pump
       ELSE IF(ITYPE.EQ.117) THEN
          CALL Press_WCH_pump_static_temp(IPCOMP)
-
+C 1 node simple solar collector model
+      ELSE IF(ITYPE.EQ.118) THEN
+         CALL simple_solar_coll_static(IPCOMP)
       ELSE
 
         call elinc(1)

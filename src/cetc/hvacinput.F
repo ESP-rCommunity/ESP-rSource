@@ -475,7 +475,7 @@ c Logical variable associated with version 1.3 of file hvacinput.F
 
 c Other local variables
       INTEGER num_out_air_day_types(max_sys),
-     &        itotal_num_day_periods(i),
+     &        itotal_num_day_periods,
      &        num_outside_air_day_periods(max_sys,10),
      &        iend_hour_out_air_daytype(max_sys,8760),
      &        iend_hour_out_air_dayperiod(max_sys,100),
@@ -729,12 +729,12 @@ c two dimensional array num_outside_air_day_periods(i,icounter). The first
 c index is the system number and the second is a number designating the day 
 c type among all the day types of the year. The total number of day types in 
 c the year is contained in num_out_air_day_types(i) read above.
-            itotal_num_day_periods(i) = 0
+            itotal_num_day_periods = 0
             do 20 icounter = 1,num_out_air_day_types(i)
               CALL EGETWI(OUTSTR,K,ival,1,10,'F',
      &        'hvac input: num_outside_air_day_periods',IER)
               num_outside_air_day_periods(i,icounter) = ival
-              itotal_num_day_periods(i) = itotal_num_day_periods(i) + 
+              itotal_num_day_periods = itotal_num_day_periods + 
      &        ival
               CALL EGETWI(OUTSTR,K,ival,1,8760,'F',
      &        'hvac input: iend_hour_out_air_daytype',IER)

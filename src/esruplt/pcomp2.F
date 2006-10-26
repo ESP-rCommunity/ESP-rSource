@@ -526,7 +526,7 @@ C     CDATA: none
 
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
-      logical closea
+      logical closea,closeb
 
       PI = 4.0 * ATAN(1.0)
 
@@ -551,11 +551,14 @@ C First initialize UA modulus (for calculation of containment heat loss)
             PL=ADATA(IPCOMP,5)
             TW=CONVAR(ICON1,1)
             WMFR=PCONDR(ICON1)*CONVAR(ICON1,2)
-            VW=WMFR/(RHOFLD(3,TW)*ADATA(IPCOMP,6))
-            HW=1400.*(1.+0.015*TW)*VW**0.8*DH**(-0.2)
-            UA=1./(1./(HW*PI*DH*PL)+1./UA)
-            WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
-            UA=WMCP*(EXP(UA/WMCP)-1.)
+            call eclose(WMFR,0.00,0.0000001,closeb)
+            IF(.NOT.closeb) THEN
+              VW=WMFR/(RHOFLD(3,TW)*ADATA(IPCOMP,6))
+              HW=1400.*(1.+0.015*TW)*VW**0.8*DH**(-0.2)
+              UA=1./(1./(HW*PI*DH*PL)+1./UA)
+              WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
+              UA=WMCP*(EXP(UA/WMCP)-1.)
+            ENDIF
          END IF
 
 C Establish heat capacity of component mass CM (J/K) and

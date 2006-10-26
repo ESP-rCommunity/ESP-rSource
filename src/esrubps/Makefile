@@ -53,7 +53,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
-	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o
+	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
+	  solar_collectors.o
 
 
 
@@ -638,6 +639,9 @@ ADS_storage_unit.F:
 ADS_controller.F:
 	rm -f ADS_controller.F
 	ln -s $(PLTdir)/ADS_controller.F .
+solar_collectors.F:
+	rm -f solar_collectors.F
+	ln -s $(PLTdir)/solar_collectors.F .
 
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
@@ -678,7 +682,7 @@ clean:
 	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
-	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F
+	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F
 
 
 
