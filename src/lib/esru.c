@@ -25,6 +25,16 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <esp-r.h>
+
+
+/* circa Dec. 2005, MinGW apparently no longer offers 'sleep'.
+   Alias to MS windows Sleep, which takes milliseconds 
+   instead of seconds */
+#ifdef MINGW
+#include <windows.h>
+#define sleep(s) Sleep(s*1000)
+#endif 
+
 extern FILE *wwc;
 
 /* *************** tchild_() return child process terminal info. ******** */
@@ -542,4 +552,11 @@ long int *ifs,*itfs,*imfs;
  return;
 }
 
+/*********** xavail_ *************************************** *
+ * Function indicating if X libraries are available (GTK/X11)
+ */
+int ixavail_()
+{
+  return 1;
+}
 

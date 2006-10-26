@@ -23,7 +23,7 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-FOBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -38,7 +38,7 @@ FOBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
-	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o timeout.o trstyp.o \
+	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
@@ -55,20 +55,23 @@ FOBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o
 
-ifeq ($(xml_support),yes)
- 	COBJECTS=TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
- 	FOBJECTS += ConfigureH3kReports.o
-else
-	COBJECTS= 
-	FOBJECTS += TReports_dummy.o 
-endif
 
-$(PROG): $(FOBJECTS) $(COBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(FOBJECTS) $(COBJECTS) $(ULIBS) $(F_to_C_flags)
 
-cpp : $(COBJECTS)
-	$(MC++) ${CFLAGS} main.cpp
-	$(MC++) ${CFLAGS} -o h3kReports $(COBJECTS) main.o
+# Additional C and Fortran objectives needed for H3Kreports
+XML_COBJECTS =TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
+XML_FOBJECTS = ConfigureH3kReports.o
+
+# C and Fortran stubs used to build bps without H3Kreports
+NO_XML_C_STUBS =
+NO_XML_F_STUBS = TReports_dummy.o
+
+# Target to build bps with h3kreports
+include_XML: $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS) $(ULIBS) $(F_to_C_flags)
+
+# Target to build bps without h3kreports
+exclude_XML: $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) $(ULIBS) $(F_to_C_flags)
 
 TReportsManager.cpp:
 	rm -f TReportsManager.cpp
@@ -95,9 +98,6 @@ TReports_dummy.F:
 ConfigureH3kReports.F:
 	rm -f ConfigureH3kReports.F
 	ln -s $(CETCdir)/h3kreports/ConfigureH3kReports.F .
-main.cpp:
-	rm -f main.cpp
-	ln -s $(CETCdir)/h3kreports/main.cpp .
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -621,10 +621,12 @@ SOFC_Annex42.F:
 shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
-timeout.cpp:
-	rm -f timeout.cpp
-	ln -s $(LIBdir)/timeout.cpp .
-##timeout.c:
+
+##Unused 'time-out' code.
+##timeout.cpp:
+##	rm -f timeout.cpp
+##	ln -s $(LIBdir)/timeout.cpp .
+## timeout.c:
 ##	rm -f timeout.c
 ##	ln -s $(LIBdir)/timeout.c .
 ADS_storage_tanks.F:
@@ -641,7 +643,8 @@ install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
 
 clean:
-	rm -f core $(PROG) $(FOBJECTS) $(COBJECTS) \
+	rm -f core $(PROG) $(BPS_OBJECTS) $(XML_COBJECTS)    \
+	$(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)  \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
 	ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -665,7 +668,7 @@ clean:
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	SOFC_Annex42.F spmatl.F \
-	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F timeout.cpp tscon.F \
+	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \

@@ -260,8 +260,13 @@ C Indicies of start, end, current & future indicies
       integer iMY_start_yr_index, iMY_end_yr_index,
      &        iMY_current_yr_index, iMY_future_yr_index
 
+
+C SUN F90 has spotty support for cpu_time intrinsic
+#ifdef F90
+#else
 C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
+#endif
 
 C H3Kreporting object - save the frequency of
 C building timesteps. Note: simulations with
@@ -1549,6 +1554,10 @@ C Delete binary files used for numerical calculations
         CALL EFDELET(NumUNIT,ISTAT)
       END DO
 
+
+C SUN F90 has spotty support for cpu_time intrinsic
+#ifdef F90
+#else      
 C write out simulation runtime - useful for investating the impact
 C of modifications on simulation times.
       CALL cpu_time(sec_b)
@@ -1556,6 +1565,7 @@ C of modifications on simulation times.
      &     'Simulation cpu runtime: ',sec_b-sec_a,' seconds'
       CALL EDISP(IOUTS,' ')
       CALL EDISP(IUOUT,outs)
+#endif
 
 C H3Kreports.(SUMMARY).start......................
 C The following code is used to process and export
@@ -1568,7 +1578,11 @@ C the H3Kreports demarcaration comments
 
 C........H3Kreports.(SUMMARY).end........................
 
-C HOT3000: begin
+
+
+C SUN F90 has spotty support for cpu_time intrinsic
+#ifdef F90
+#else
 C Use function rep_xmlstatus() to report if h3k reports is available.
 C If so, write out xml processing runtime - useful for investating
 C the impact of modifications on simulation times.
@@ -1579,7 +1593,8 @@ C the impact of modifications on simulation times.
          CALL EDISP(IUOUT,outs)
          CALL EDISP(IOUTS,'')
       endif
-C HOT3000: end
+#endif 
+
 
 C Delete temporary file created for boundary conditions, if one exists.        
       if ( bBC_data_defined ) call cleanup_BC_data()

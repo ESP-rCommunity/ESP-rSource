@@ -1,5 +1,5 @@
 
-//SHOCC Dummy stub to allow ESP-r to compile without SHOCC.
+/* SHOCC Dummy stub to allow ESP-r to compile without SHOCC. */
 void initprj_( int* nbzones ){}
 void loadlib_( char* filename, int* filelngth ){}
 void loadzone_( char* filename, int* filelngth, int* icomp ){}

@@ -228,3 +228,4 @@ void	fprofma_(char* sstr, long int* nstr, char* title, char* list, long int* nli
 		 long int* ino, long int* nhelp, int lensstr, int lentitle, int lenlist);
 
 void	ipset(int flag);
+void ixavail();

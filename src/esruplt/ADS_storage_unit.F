@@ -772,6 +772,8 @@ C-------------------------------------------------------------------------------
 
        real       fPhaseCycle        !- phase of cycle in real number format, required for XML reporting
 
+       integer    lnblnk             ! implicit function returning the length of a string
+
 
 C------------------------------------------------------------------------------------
 C Start trace if trace output requested.
@@ -1749,10 +1751,10 @@ C Node 1 energy balance
         COUT(6) = -1. * alpha * part4
      
         COUT(9) = ( part1 +
-     &            -1. * (1. - alpha) * part2 +
-     &            -1. * (1. - alpha) * part5 +
-     &            -1. * (1. - alpha) * part6  ) *  fTemp_node1_present +
-     &            (1. - alpha) * part5 * fTemp_con1a_present +
+     &            (-1.) * (1. - alpha) * part2 +
+     &            (-1.) * (1. - alpha) * part5 +
+     &            (-1.) * (1. - alpha) * part6  ) *  fTemp_node1_present 
+     &            + (1. - alpha) * part5 * fTemp_con1a_present +
      &            (1. - alpha) * part6 * fTemp_con1b_present +
      &            (1. - alpha) * part2 * fTamb_present +
      &            alpha * part2 * fTamb_future             
@@ -1767,8 +1769,8 @@ C Only applicable during desorption phase
      &                        fMdotVap * fCpLiq )
            COUT(10) = fMdotVap * ( fCpVap * fTemp_ref - fHvap_ref ) +
      &                fMdotVap * ( fHliq_ref - fCpLiq * fTemp_ref ) +
-     &              -1. * ( fCondEffec * fMdotCp_air * fTemp_outdoor ) +
-     &              -1. * ( fCondOverallHamb * fSurfAreaCond *
+     &              (-1.) * ( fCondEffec * fMdotCp_air * fTemp_outdoor ) 
+     &              + (-1.) * ( fCondOverallHamb * fSurfAreaCond *
      &                                               fTamb_future )
        else
           COUT(2) = 0.
@@ -1787,7 +1789,7 @@ C Only applicable during adsorption phase
             COUT(8)  = fMdotVap * fCpLiq
             COUT(11) = fMdotVap * ( fHvap_ref - fCpVap * fTemp_ref ) +
      &             fMdotVap * ( fCpLiq * fTemp_ref - fHliq_ref ) +
-     &             -1. * ( fEvapOverallHamb * fSurfAreaEvap *
+     &             (-1.) * ( fEvapOverallHamb * fSurfAreaEvap *
      &                                               fTamb_future )
        else
            COUT(4) = 1.

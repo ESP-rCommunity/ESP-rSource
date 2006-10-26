@@ -8888,4 +8888,11 @@ int iwth = *impcwth;	/* character width of proforma */
   return;
 }
 
+/*********** xavail_ *************************************** *
+ * Function indicating if X libraries are available (GTK/X11)
+ */
+int ixavail_()
+{
+  return 1;
+}
 

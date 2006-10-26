@@ -136,6 +136,7 @@ void	capextf_(char* cmd,int len_cmd);
 void	capexall_(char* cmd,int len_cmd);
 void	captut_(char* cmd,int len_cmd);
 void	userfonts_(long int* ifs,long int* itfs,long int* imfs);
+int ixavail(); 
 
 /* Shared functions in esp_draw.c */
 void	wstxpt_(long int* x,long int* y,char* buff,int len);

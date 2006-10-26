@@ -1974,7 +1974,7 @@ C........-> set name
          WRITE(H3K_rep_NAME,'(A,A)')
      &        node_name(1:LNBLNK(node_name)), '/voltage/angle'
          call add_to_xml_reporting (
-     &          IMAG(ENODVLT(iElec_node)),
+     &          AIMAG(ENODVLT(iElec_node)),
      &          H3K_rep_NAME,
      &          'units', '(radians)',
      &          'Electrical network node: V angle')

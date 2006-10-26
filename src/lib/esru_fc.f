@@ -523,6 +523,29 @@ C      end
       return
       end
 
+      subroutine curmodule(fcmodule)
+      character*(*) fcmodule
+      return
+      end
+
+      subroutine textpixwidth(buff,ipixw)
+      character*(*) buff
+      integer ipixw
+      return
+      end
+
+      subroutine openask2altbox(prom1,prom2,msg1, msg2,istr)
+      character*(*) prom1,prom2,msg1, msg2
+      integer istr
+      return
+      end
+
+      subroutine ask2altdialog(STRVAL,CMD,CMD2,idef,iquery)
+      character*(*) STRVAL,CMD,CMD2
+      integer idef, iquery
+      return
+      end
+
       subroutine nwkgflg(ngf)
       return
       end
@@ -535,6 +558,47 @@ C      end
       return
       end
 
+
+      subroutine popupimage(head,topic,act,longtfile)
+      character*(*) head,topic,act,longtfile
+      return
+      end
+
+      subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+     &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
+      character*(*) fname
+      integer ixoffset,iyoffset,iwidth,ihight,
+     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
+      return
+      end
+
+      subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+     &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
+      character*(*) fname
+      integer ixoffset,iyoffset,iwidth,ihight,
+     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
+      return
+      end
+
+      subroutine findviewtext(icx,line,isize,ix,iy)
+      integer icx,line,isize,ix,iy
+      return
+      end 
+
+      subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
+      character*(*) subpath, action, listf
+      integer nwlistf(50),nlistf
+      return
+      end
+      
+      integer function iXavail()
+      iXavail = 0
+      return
+      end
+
+      
+      
+      
 C      function lnblnk(string)
 C      character*(*) string
 C      character a*1,sl*1

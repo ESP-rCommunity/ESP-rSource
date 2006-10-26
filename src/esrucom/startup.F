@@ -581,11 +581,12 @@ C  to be passed to the program from the invocation line.
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
+      integer iXavail
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -600,14 +601,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+
       iappw = 0
       iappx = 0
       iappy = 0
@@ -689,9 +683,10 @@ C  to be passed to the program from the invocation line.
       character argument*72,mode*8,infa*72,infb*72,appn*24,outs*124
 
 C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -706,14 +701,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -984,10 +972,11 @@ C Timeout information
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,sps*8,aut*12,actf*72,browse*4
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1002,14 +991,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1117,10 +1099,11 @@ C  to be passed to res from the invocation line.
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,actf*72,act*16,aut*12
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1135,14 +1118,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1237,10 +1213,11 @@ C  and output (converted) file to be passed to clm from the invocation line.
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,ascif*72,act*16,aut*12
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1255,14 +1232,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1362,10 +1332,11 @@ C  to be passed to the program from the invocation line.
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,zone*16,act*16
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1380,14 +1351,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1481,10 +1445,11 @@ C  to be passed to the program from the invocation line.
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1499,14 +1464,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1592,10 +1550,11 @@ C  to be passed to the program from the invocation line.
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1610,14 +1569,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       inf  = 'UNKNOWN'
       argument = ' '
 
@@ -1682,10 +1634,11 @@ C  to be passed to the program from the invocation line.
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,aim*12,act*72,zone*16
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1700,14 +1653,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+!       
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1809,10 +1755,11 @@ C  to be passed to the program from the invocation line.
       character argument*72,mode*8,inf*144,actf*72,appn*24
       character outs*248,act*16
 
-C NT or Unix version.
-#ifdef X11
-      call isunix(unixok)
-      if(unixok)then
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
         m = iargc()
@@ -1827,14 +1774,7 @@ C NT or Unix version.
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-#else
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-#endif
+      
       iappw = 0
       iappx = 0
       iappy = 0

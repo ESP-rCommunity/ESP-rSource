@@ -4,11 +4,14 @@
 #include <fstream>
 #include <sstream>
 
+#include <libxml/parserInternals.h>
+
+#ifdef XSL
 #include <libxslt/xslt.h>
 #include <libxslt/xsltInternals.h>
-#include <libxml/parserInternals.h>
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
+#endif
 
 using namespace std;
 
@@ -186,6 +189,9 @@ void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile,
                                       std::string  sXSLT_Output_File_Name,
                                       std::vector<std::string> m_stylesheet_list)
 {       
+
+#ifdef XSL  
+  
   //Pointer to stylsheet
   xsltStylesheetPtr cur = NULL;
   
@@ -227,7 +233,7 @@ void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile,
      xsltFreeStylesheet(cur);
      xmlFreeDoc(doc); 
   
-
+#endif 
   
 }
 
