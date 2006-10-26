@@ -1,0 +1,10 @@
+*HC_CTL for zone ceiling_slb
+*Date,Tue Sep  5 12:28:47 2006
+   1 # number control intervals
+   9 # number of surfaces
+# (edge_s edge_e edge_n edge_w upper floor_ma floor_mb floor_cor filler)
+  0.00    24.00 # start and end time of interval
+   1 # calculation control type
+*Doc,User supplied hc values
+ 15.000,15.000,15.000,15.000,-1.0000,50.000,50.000,50.000,-1.0000
+ -1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000
