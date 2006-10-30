@@ -1522,6 +1522,7 @@ if [ "$install_training" = "yes" ]; then
      ./bin/materials_db_conv training/cellular_shd/dbs cellular.materials.a cellular.materials
      ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
      ./bin/materials_db_conv training/cellular_hvac/dbs cellular.materials.a cellular.materials
+     ./bin/materials_db_conv training/cellular_natv/dbs cellular.materials.a cellular.materials 
      ./bin/materials_db_conv training/cellular_flh/dbs cellular.materials.a cellular.materials 
      ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
      ./bin/materials_db_conv training/glenview/databases constr.asc constr.db1
@@ -2018,6 +2019,7 @@ if [ "$delete_temp_files" = "yes" ]; then
   rm -f training/cellular_contam/dbs/cellular.materials
   rm -f training/cellular_hvac/dbs/cellular.materials
   rm -f training/cellular_flh/dbs/cellular.materials
+  rm -f training/cellular_natv/dbs/cellular.materials
   rm -f training/cellular_bc/dbs/cellular.materials
   rm -f training/house/svph/dbs/linford.materialdb
   rm -f training/cellular_shd/dbs/cellular.materials
