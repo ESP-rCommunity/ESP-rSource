@@ -283,7 +283,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
     #
     # This code has only been tested with GNU ld.
     #
-    ld_output=`ld -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
+    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
     case $ld_output in
       "") xsl_libs_available="no";;
       *)  xsl_libs_available="yes";;
