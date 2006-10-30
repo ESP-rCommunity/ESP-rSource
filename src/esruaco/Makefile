@@ -100,4 +100,4 @@ clean:
 	arrow.F blcond.F c2fdum.F common3dv.F cread3dv.F ctread.F e3dviews.F \
 	ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F inside.F \
-	item.F mfcdat.F nwkrewr.F plelev.F sort.F startup.F tdfile.F
+	item.F mfcdat.F nwkrewr.F plelev.F sort.F startup.F tdfile.F pltcfg.F

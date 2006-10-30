@@ -2350,6 +2350,8 @@ C     &     T_makeup_future,mdotCp_DHW_present,mdotCp_DHW_future
       REAL RHOFLD
       INTEGER I
 
+      INTEGER lnblnk                ! implicit function returning the length of a string
+
       CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
       character*128 root_name       ! root name of component node 
       character*128 hold_name       ! temporary variable for string manipulation      

@@ -5071,3 +5071,106 @@ fit coefficient a0 (Pa/(m^3/s)^0)                                    0.50000
 fit coefficient a1 (Pa/(m^3/s)^1)                                    0.60000
 fit coefficient a2 (Pa/(m^3/s)^2)                                    0.50000
 fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     84
+
+ Component Description
+    Generic type     : Solar collector
+    Description      : Simplified flat plate solar collector, 1 node model
+    Insertion date   : 6 Jan 2006
+    Type: Single component                    Component code :   1180
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+
+ Miscellaneous Data
+    Adata items   :  36    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Collector area (m2)
+      Value =    2.865         Range (Min Max):         0.1       9999.0
+    2 Type of efficiency equ. (1=North-American,2=European)
+      Value =    1.0000        Range (Min Max):         1.        2.
+    3 Constant coef. of efficiency equ. (-)
+      Value =   0.694          Range (Min Max):         0.        1.000
+    4 Linear coef. of efficiency equ. (W/m2/C)
+      Value =   4.85           Range (Min Max):         0.        50.000
+    5 Quadratic coef. of efficiency equ. (W/m2/C2)
+      Value =   0.000          Range (Min Max):         -9999.0   9999.0
+    6 Collector test flow rate (kg/s)
+      Value =   0.038          Range (Min Max):         0.00001   50.000
+    7 Heat capacitance of fluid used for test (J/kg/C)
+      Value =   4200.          Range (Min Max):         0.        9999.0
+    8 Inc. angle correction (=1 Fit,=2 Interpolation)
+      Value =   1.             Range (Min Max):         1.        2.000
+    9 Inc. angle equation linear term coef. (-)                           
+      Value =   0.20           Range (Min Max):         0.        50.000
+   10 Inc. angle equation quadratic term coef. (-)                           
+      Value =   0.             Range (Min Max):         -9999.0   9999.0
+   11 Number of data pairs for inc angle correction (-)
+      Value =   5.             Range (Min Max):         1.        10.0
+   12 1st inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   13 1st inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   14 2nd inc. angle correction data pair angle (Deg)
+      Value =   30.            Range (Min Max):         0.        90.0
+   15 2nd inc. angle correction data pair factor (-)
+      Value =   0.994          Range (Min Max):         0.        1.0
+   16 3rd inc. angle correction data pair angle (Deg)
+      Value =   45.            Range (Min Max):         0.        90.0
+   17 3rd inc. angle correction data pair factor
+      Value =   0.964          Range (Min Max):         0.        1.0
+   18 4th inc. angle correction data pair angle (Deg)
+      Value =   60.            Range (Min Max):         0.        90.0
+   19 4th inc. angle correction data pair factor (-)
+      Value =   0.828          Range (Min Max):         0.        1.0
+   20 5th inc. angle correction data pair angle (Deg)
+      Value =   70.            Range (Min Max):         0.        90.0
+   21 5th inc. angle correction data pair factor (-)
+      Value =   0.74           Range (Min Max):         0.        1.0
+   22 6th inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   23 6th inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   24 7th inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   25 7th inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   26 8th inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   27 8th inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   28 9th inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   29 9th inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   30 10th inc. angle correction data pair angle (Deg)
+      Value =   0.             Range (Min Max):         0.        90.0
+   31 10th inc. angle correction data pair factor (-)
+      Value =   1.             Range (Min Max):         0.        1.0
+   32 Collector slope (deg. from horizontal)
+      Value =   45.            Range (Min Max):         0.        90.000
+   33 Collector azimuth (deg., N=0, E=90)
+      Value =   180.           Range (Min Max):      -180.       180.
+   34 Mass fraction of propylene glycol (%)
+      Value =   50.            Range (Min Max):         0.       100.
+   35 Mass of collector (kg)
+      Value =   5.             Range (Min Max):         0.      1000.
+   36 Collector average capacitance (J/kg-C)
+      Value =   4200.          Range (Min Max):         0.     10000.
+   
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 Solar rad. on coll.            Type :    1
+    2 Cos of incidence angle         Type :    1
+    3 Environment temperature        Type :    1
+    4 Heat gain                      Type :    1
+    5 Heat loss                      Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
