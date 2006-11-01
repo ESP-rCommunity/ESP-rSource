@@ -3,72 +3,85 @@
 
 SRCdir=`pwd`
 
-LIBRARIES= esru
 PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt net pdb prj pro res tdf vew
+	   mld mrt pdb prj pro res tdf vew
 
-all: $(LIBRARIES) $(PROGRAMS)
+allX11: libX11 $(PROGRAMS)
+allGTK: libGTK $(PROGRAMS)
+allnoX: libnoX $(PROGRAMS)
 
 # LIBRARIES:
 
-esru:
+libX11:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sources ; \
-	$(MAKE) the_lib
+	$(MAKE) sourcesX11 ; \
+	$(MAKE) the_libX11
+
+libGTK:
+	cd $(SRCdir)/lib; \
+	$(MAKE) sourcesGTK ; \
+	$(MAKE) the_libGTK
+
+libnoX:
+	cd $(SRCdir)/lib; \
+	$(MAKE) sourcesnoX ; \
+	$(MAKE) the_libnoX
 
 # PROGRAMS:
 
-aco: esru
+aco: 
 	cd $(SRCdir)/esruaco; $(MAKE)
-b2e: esru
+b2e: 
 	cd $(SRCdir)/esrub2e; $(MAKE)
-bld: esru
+bld: 
 	cd $(SRCdir)/esrubld; $(MAKE)
-bps: esru
-	cd $(SRCdir)/esrubps; $(MAKE) XMLstatus="noXML"
-dbm: esru
+# pass the target 'include_XML/exclude_XML' to build
+# bps with/without H3Kreports.
+bps: 
+	cd $(SRCdir)/esrubps; $(MAKE) $(xml_status)
+dbm: 
 	cd $(SRCdir)/esrudbm; $(MAKE)
-dfs: esru
+dfs: 
 	cd $(SRCdir)/esrudfs; $(MAKE)
-c2e: esru
+c2e: 
 	cd $(SRCdir)/esruc2e; $(MAKE)
-cfg: esru
+cfg: 
 	cd $(SRCdir)/esrucfg; $(MAKE)
-clm: esru
+clm: 
 	cd $(SRCdir)/esruclm; $(MAKE)
-e2r: esru
+e2r: 
 	cd $(SRCdir)/esrue2r; $(MAKE)
-ecnv: esru
+ecnv:
 	cd $(SRCdir)/esrucnv; $(MAKE)
-eco: esru
+eco: 
 	cd $(SRCdir)/esrueco; $(MAKE)
-grd: esru
+grd: 
 	cd $(SRCdir)/esrugrd; $(MAKE)
-ish: esru
+ish: 
 	cd $(SRCdir)/esruish; $(MAKE)
-mfs: esru
+mfs: 
 	cd $(SRCdir)/esrumfs; $(MAKE)
-mld: esru
+mld: 
 	cd $(SRCdir)/esrumld; $(MAKE)
-mrt: esru
+mrt: 
 	cd $(SRCdir)/esrumrt; $(MAKE)
-net: esru
+net: 
 	cd $(SRCdir)/esrunet; $(MAKE)
-pdb: esru
+pdb: 
 	cd $(SRCdir)/esrupdb; $(MAKE)
-plt: esru
+plt: 
 	cd $(SRCdir)/esruplt; $(MAKE)
-prj: esru
+prj: 
 	cd $(SRCdir)/esruprj; $(MAKE)
-pro: esru
+pro: 
 	cd $(SRCdir)/esrupro; $(MAKE)
-res: esru
+res: 
 	cd $(SRCdir)/esrures; $(MAKE)
-tdf: esru
+tdf: 
 	cd $(SRCdir)/esrutdf; $(MAKE)
-vew: esru
+vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
-vww: esru
+vww: 
 	cd $(SRCdir)/esruvww; $(MAKE)
 
 .PHONY: install
@@ -78,7 +91,6 @@ install:
 	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then strip ./esrub2e/b2e$(EXE); cp ./esrub2e/b2e$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrubld/bld$(EXE) ]; then strip ./esrubld/bld$(EXE); cp ./esrubld/bld$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then strip ./esrubps/bps$(EXE); cp ./esrubps/bps$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip ./esrudbm/dbm$(EXE); cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip ./esrudbm/dbm$(EXE); cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then strip ./esrudfs/dfs$(EXE); cp ./esrudfs/dfs$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruc2e/c2e$(EXE) ]; then strip ./esruc2e/c2e$(EXE); cp ./esruc2e/c2e$(EXE) $(ESPdir)/bin; fi
@@ -134,7 +146,7 @@ clean:
 
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz
-	tar cvf - esru* archive bitmaps lib cetc Install* Makefile* Readme bin \
+	tar cvf - esru* archive bitmaps lib cetc Install* Makefile* Readme* bin \
 	 climate databases GPL.txt Version env include manual tutorial \
-	 validation common_list src2html > esp-r.tar 2> esp-r.list; gzip -9 esp-r.tar
+	 validation common_list shocc src2html > esp-r.tar 2> esp-r.list; gzip -9 esp-r.tar
 	tar cvf - training/[a-z]* training/3* > esp-r_training.tar 2>> esp-r.list; gzip -9 esp-r_training.tar

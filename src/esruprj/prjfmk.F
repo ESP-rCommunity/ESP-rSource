@@ -25,6 +25,8 @@ C EDAIR: Edits air flow portion of a zone operations file.
 C EDAIRFL - edit scheduled air flow data.
 C ADDAFP add air flow period in correct location (time based).
 C CDAIRFL - copy/ delete air flow data.
+C COPYAIRFL - import an air flow regime from zone isource to
+C             zone idest based on afact, iflow, vflow
 C CHKAIRFL - check air flow data for overlapping periods.
 C PLTAIR - plot air flow data.
 C EDCAS: Edits casual gains portion of a zone operations file.
@@ -78,7 +80,7 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-C Flag noting whether casual gain periods are currently sorted.
+C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
 
 C Flag noting whether file was browsed for (so that cfg can be
@@ -92,7 +94,8 @@ C updated when the user exits).
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character sfile*72,snpfile*72,fs*1,hold*48
+      character sfile*72,snpfile*72,fs*1,hold*48,outs*124
+      character act*8,iwatt*8,afact*8,iflow*8,vflow*8
       LOGICAL OK,DOK,XST,MODOPR,browse,clkok,unixok,needtoask
 
 C Set folder separator (fs) to \ or / as required.
@@ -134,8 +137,7 @@ C GFILE is the default file name for any operations file.
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
       endif
 
-C LPROJ() might already have a name, but not yet exist. Check for
-C this. 
+C LPROJ() might already have a name, but not yet exist. Check for this. 
       if(LPROJ(ICOMP)(1:4).eq.'UNKN'.or.LPROJ(ICOMP)(1:2).eq.'  ')then
         needtoask=.true.
         LTMP=GFILE
@@ -228,7 +230,7 @@ C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
       LPROJ(ICOMP)=LTMP
       write(6,*) 'lproj is ',lproj(icomp)
 
-      MODOPR=.FALSE.
+  5   MODOPR=.FALSE.
 
       NAC1=0
       NAC2=0
@@ -284,39 +286,163 @@ C Do cursory check to see if the file is sorted.
 
 C File does not exist so find out how many periods for each
 C casual gain type on each day and fill in initial period info.
-        ip3ver=1
-        h(1)='New operations for this zone. Please check your notes'
-        h(2)='and provide initial casual gain period start times'
-        h(3)='for each day type (weekday, Saturday & Sunday)'
-        h(4)='and for each casual gain type (occupants, lighting'
-        h(5)='and small power). Do not include periods to be '
-        h(6)='imported from events profiles. '
-        h(7)=' '
-        h(8)='Of course you already have notes on what you want ;-)'
-        h(9)='Example: '
-        H(10)='       |       ________               '
-        H(11)=' Watts |       |      |___            '
-        H(12)='       |    ___|         |____        '
-        H(13)='       |   |   schedule       |       '
-        H(14)='       |___|____:_____________|_______'
-        H(15)='       0   7  10:    13  14  18    24 '
-        H(16)=' '
-        H(17)='The above schedule includes 6 periods. '
-        CALL PHELPD('operation setup',17,'-',0,0,IER)
 
-        call edisp(iuout,' ')
-        call edisp(iuout,'For Weekdays....')
-        call initcasday('wk',ier)
-        call edisp(iuout,'For Saturdays....')
-        call initcasday('sa',ier)
-        call edisp(iuout,'For Sundays....')
-        call initcasday('su',ier)
-        call edisp(iuout,'Sorting...')
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
-        call edisp(iuout,'Sorting...completed.')
-        call edisp(iuout,'You can now modify the casual gain details.')
-        MODOPR=.true.
-        sorted=.true.
+C << place for offering a choice to the user - sometimes they   >>
+C << want to skip all of this definition because they will want >>
+C << to use the definition already defined in another zone.     >>
+        h(1)='Options: '
+        h(2)=' define from scratch - you are asked for to define all'
+        h(3)='   casual gain periods for each day type as well as'
+        h(4)='   schedules of infiltration and ventilation.'
+        h(5)=' '
+        h(6)=' import air schedules - you select a zone with an air'
+        h(7)='   flow schedule pattern and it is copied into this'
+        h(8)='   zone, optionally with adjustments if the zone'
+        h(9)='   volumes are different. You can then define the'
+        h(10)='   casual gains.'
+        h(11)=' '
+        h(12)=' import casul gains - you select a zone with casual'
+        h(13)='   gains patterns and they are copied into this zone,'
+        h(14)='   optionally with adjustments if the zone base areas'
+        h(15)='   differ.'
+        h(16)=' '
+        h(17)=' import air & gains - essentially both of the above'
+        h(18)=' '
+        h(19)='After the initial actions you can then edit the data'
+        h(20)='ss required. '
+        call EASKATOG('Initial options:',' ','define from scratch',
+     &    'import air schedules','import casual gains',
+     &    'import air & gains','cancel',' ',' ',IGU,20)
+        if(igu.eq.2.or.igu.eq.4)then
+
+C Import flow schedules from another zone. Ask which zone, then
+C confirm how muchy to copy and whether infiltration and ventilation
+C flows are to preserve ach or volume of flow.
+
+C << note this only allows a selection from files within the
+C << current model. It would be better if the user could
+C << browse any opeation file in the zones folder.
+
+ 38       isource=0
+          izdef=0
+          call askzone(isource,izdef,' Air pattern from which zone?',
+     &      'Source zone','-','Ventilation import requires a zone.',
+     &      ier)
+          if (IER.ne.0.or.isource.eq.ICOMP) then
+            write (OUTS,'(3a)')  'the current (',
+     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+            call USRMSG('The selected zone should be different from',
+     &        outs,'W')
+            goto 38
+          endif
+          CALL EASKABC('Import:',' ','all flow schedules & ctl',
+     &     'infiltration only','continue',ivopt,21)
+          if(ivopt.eq.1) afact='all  '
+          if(ivopt.eq.2) afact='infil'
+          if(ivopt.eq.3) goto 5
+          CALL EASKABC('Infiltration import:',' ','preserve ac/h',
+     &     'preserved volume flow','continue',infv,21)
+          if(infv.eq.1) iflow='ach-ach '
+          if(infv.eq.2) iflow='vol-vol '
+          if(infv.eq.3) goto 5
+          if(ivopt.eq.1)then
+            CALL EASKABC('Ventilation import:',' ','preserve ac/h',
+     &       'preserved volume flow','continue',ivntv,21)
+            if(ivntv.eq.1) vflow='ach-ach '
+            if(ivntv.eq.2) vflow='vol-vol '
+            if(ivntv.eq.3) goto 5
+          else
+            vflow='ach-ach '
+          endif
+          idest=icomp
+          itrc=1
+
+C We have all of the directives, do the import.
+          call COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
+        endif
+        if(igu.eq.1.or.igu.eq.2)then
+          ip3ver=1
+          h(1)='New operations for this zone. Please check your notes'
+          h(2)='and provide initial casual gain period start times'
+          h(3)='for each day type (weekday, Saturday & Sunday)'
+          h(4)='and for each casual gain type (occupants, lighting'
+          h(5)='and small power). Do not include periods to be '
+          h(6)='imported from events profiles. '
+          h(7)=' '
+          h(8)='Of course you already have notes on what you want ;-)'
+          h(9)='Example: '
+          H(10)='       |       ________               '
+          H(11)=' Watts |       |      |___            '
+          H(12)='       |    ___|         |____        '
+          H(13)='       |   |   schedule       |       '
+          H(14)='       |___|____:_____________|_______'
+          H(15)='       0   7  10:    13  14  18    24 '
+          H(16)=' '
+          H(17)='The above schedule includes 6 periods. '
+          CALL PHELPD('operation setup',17,'-',0,0,IER)
+
+          call edisp(iuout,' ')
+          call edisp(iuout,'For Weekdays....')
+          call initcasday('wk',ier)
+          call edisp(iuout,'For Saturdays....')
+          call initcasday('sa',ier)
+          call edisp(iuout,'For Sundays....')
+          call initcasday('su',ier)
+          call edisp(iuout,'Sorting...')
+          call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+          call edisp(iuout,'Sorting...completed.')
+          call edisp(iuout,'Casual gain details ready for editing.')
+          MODOPR=.true.
+          sorted=.true.
+        elseif(igu.eq.3.or.igu.eq.4)then
+
+C Import casual gains from another zone. Ask which zone, then
+C confirm whether absolute W values are to be scaled.
+
+C << note this only allows a selection from files within the
+C << current model. It would be better if the user could
+C << browse any opeation file in the zones folder.
+
+ 39       isource=0
+          izdef=0
+          call askzone(isource,izdef,' Casual gains from which zone?',
+     &      'Source zone','-','Casual import requires a zone.',
+     &      ier)
+          if (IER.ne.0.or.isource.eq.ICOMP) then
+            write (OUTS,'(3a)')  'the current (',
+     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+            call USRMSG('The selected zone should be different from',
+     &        outs,'W')
+            goto 39
+          endif
+
+          CALL EASKABC('Casual import:',' ','preserve absolute W',
+     &       'convert abs W for base area','continue',ivntv,21)
+          if(ivntv.eq.1) iwatt='W-W    '
+          if(ivntv.eq.2) iwatt='W-m2-W '
+          if(ivntv.eq.3) goto 5
+          idest=icomp
+          act='allcas'
+          itrc=1
+          call IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+
+C Remind users to check their data.
+      h(1)='An automated process has been used to manage the imported'
+      h(2)='schedules. It usually does it as intended and, as with all'
+      h(3)='automated processes it is recommended that you confirm '
+      h(4)='that the resulting file is correct. '
+      h(5)=' '
+      h(6)='One approach is to generate a new QA report and check this'
+      h(7)='against the previous model and then run a short assessment'
+      h(8)='to confirm that the predictions are as expected. '
+      CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+
+        elseif(igu.eq.5)then
+
+C User said to continue so return from the subroutine without
+C doing anything.
+          return
+        endif
       ENDIF
 
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
@@ -860,6 +986,7 @@ C IER=0 is OK.
 
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
       character oprdesc*248,ctlstr*24
+      character afact*8,iflow*8,vflow*8,outs*124
 
 C Initial menu entry setup.
  5    MHEAD=4
@@ -870,7 +997,7 @@ C Initial menu entry setup.
       IER=0
       IVERT=-3
 
-C Check and lot air flows. 
+C Check and plot air flows. 
       call CHKAIRFL
       if (MMOD.eq.8) call PLTAIR(ICOMP)
 
@@ -965,10 +1092,10 @@ C If a long list include page facility text.
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT             ('0 Page --- Part: ',I2,' of ',I2,' ---')
       ENDIF
-      VERT(M+2)  =           '+ add/ delete/ copy air flows '
-      VERT(M+3)  =           '! list current information    '
-      VERT(M+4)  =           '? help                        '
-      VERT(M+5)  =           '- exit this menu              '
+      VERT(M+2) = '+ add delete copy import flows '
+      VERT(M+3) = '! list current information     '
+      VERT(M+4) = '? help                         '
+      VERT(M+5) = '- exit this menu               '
 
 C Help text for this menu.
       H(1)='Air flows are defined via one or more sequential '
@@ -983,6 +1110,20 @@ C Help text for this menu.
       H(10)='Please note that changes in flows such as 2000 to 0'
       H(11)='may cause interpolation errors - use an intermediate'
       H(12)='step to say 1.0 ac/h '
+      H(13)=' '
+      H(14)='The option add delete copy options: '
+      H(15)=' add - adds a period to one or all day types'
+      H(16)=' delete - deletes one or more periods (within a list'
+      H(17)='   of all periods in all days).'
+      H(18)=' copy - copies weekdays -> saturdays or weekdays -> '
+      H(19)='   sundays or saturdays -> sundays'
+      H(20)=' import - copies infiltration, ventilation and control'
+      H(21)='   (or a subset of data) from another zone.'
+      H(22)='   You can either preserve the ac/h being imported'
+      H(22)='   (irregardless of any differences in the volume of'
+      H(23)='   the source and destination zones or preserve the'
+      H(24)='   volume of air implied by the ac/h in the source'
+      H(25)='   zone.'
 
 C Now display the menu.
       if(mmod.eq.8)then
@@ -997,19 +1138,42 @@ C Now display the menu.
       if (IVERT.EQ.MVERT) then
         return
       elseif (IVERT.EQ.(MVERT-1)) then
-        CALL PHELPD('flows menu',16,'-',0,0,IER)
+        CALL PHELPD('flows menu',25,'-',0,0,IER)
       elseif (IVERT.EQ.(MVERT-2)) then
 
 C List current.
         call VENTINF(ICOMP,IUOUT)
       elseif (IVERT.EQ.(MVERT-3)) then
 
-C Add/ delete/ copy period.
-        CALL EASKABCD(' ','Air flow periods:',
-     &                           'add','delete','copy','cancel',IW,0)
+C Add delete copy period or import from another zone.
+        H(1) ='The options: '
+        H(2) =' add - adds a period to one or all day types'
+        H(3) =' '
+        H(4) =' delete - deletes one or more periods (within a list'
+        H(5) ='   of all periods in all days).'
+        H(6) =' '
+        H(7) =' copy - copies weekdays -> saturdays or weekdays -> '
+        H(8) ='   sundays or saturdays -> sundays. Currently it'
+        H(9) ='   adds the copied periods to the desination in'
+        H(10)='   addition to existing periods.'
+        H(11)=' '
+        H(12)=' import - copies infiltration, ventilation and control'
+        H(13)='   (or a subset of data) from another zone.'
+        H(14)=' '
+        H(15)='When importing you can specify (for infiltration and'
+        H(16)='ventilation) whether to:'
+        H(17)=' a) preserve the ac/h being imported e.g. 1.5 ach'
+        H(18)='    in the source zone is 1.5 ach in the destination'
+        H(19)=' b) preserve the volume of air implied by the ac/h in'
+        H(20)='    the source zone e.g. 1.5ach in a 50m^3 zone becomes'
+        H(21)='    1.0714 ach in a 70m^3 zone.'
+        CALL EASKATOG('Air flow period options:','(see help)',
+     &    'add period','delete period','copy period',
+     &    'import from other zone','cancel',' ',' ',IW,21)
         if (IW.EQ.1) then 
-          call EASKATOG('New air flow for day type:','  ','Weekdays',
-     &      'Saturdays','Sundays','All day types','Cancel',' ',' ',IW,0)
+          call EASKATOG('New air flow period for day type:','  ',
+     &      'Weekdays','Saturdays','Sundays','All day types','Cancel',
+     &      ' ',' ',IW,21)
           if (IW.ne.5) then
             if (IW.eq.1) then
               if(NAC1.eq.MA)then
@@ -1047,12 +1211,55 @@ C Add/ delete/ copy period.
                 IPER=0
                 call EDAIRFL(ICOMP,IDT,IPER)
               endif
+            elseif (IW.eq.5) then
+              continue
             endif
           endif
         elseif (IW.EQ.2) then 
-          call CDAIRFL(1)
+          call CDAIRFL(1)    ! delete one or more periods
         elseif (IW.EQ.3) then
-          call CDAIRFL(2)
+          call CDAIRFL(2)    ! copy a period
+        elseif (IW.EQ.4) then
+
+C Import flow schedules from another zone. Ask which zone, then
+C confirm how muchy to copy and whether infiltration and ventilation
+C flows are to preserve ach or volume of flow.
+ 38       isource=0
+          izdef=0
+          call askzone(isource,izdef,' Air pattern from which zone?',
+     &      'Source zone','-','Ventilation import requires a zone.',
+     &      ier)
+          if (IER.ne.0.or.isource.eq.ICOMP) then
+            write (OUTS,'(3a)')  'the current (',
+     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+            call USRMSG('The selected zone should be different from',
+     &        outs,'W')
+            goto 38
+          endif
+          CALL EASKABC('Import:',' ','all flow schedules & ctl',
+     &     'infiltration only','continue',ivopt,21)
+          if(ivopt.eq.1) afact='all  '
+          if(ivopt.eq.2) afact='infil'
+          if(ivopt.eq.3) goto 5
+          CALL EASKABC('Infiltration import:',' ','preserve ac/h',
+     &     'preserved volume flow','continue',infv,21)
+          if(infv.eq.1) iflow='ach-ach '
+          if(infv.eq.2) iflow='vol-vol '
+          if(infv.eq.3) goto 5
+          if(ivopt.eq.1)then
+            CALL EASKABC('Ventilation import:',' ','preserve ac/h',
+     &       'preserved volume flow','continue',ivntv,21)
+            if(ivntv.eq.1) vflow='ach-ach '
+            if(ivntv.eq.2) vflow='vol-vol '
+            if(ivntv.eq.3) goto 5
+          else
+            vflow='ach-ach '
+          endif
+          idest=icomp
+          itrc=1
+
+C We have all of the directives, do the import.
+          call COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
         endif
       elseif (IVERT.EQ.(MVERT-4)) then
 
@@ -1608,6 +1815,313 @@ C Copy periods.
  230      continue
         endif
       endif
+
+      return
+      end
+
+C ********************* COPYAIRFL *********************
+C COPYAIRFL - copy an air flow regime from zone isource to
+C zone idest based on afact, iflow , vflow
+C afact (8 char) = 'all' copies both infiltration and ventilation
+C       descriptions as well as any control actions (this
+C       will need a QA by the user in case of conflicts).
+C afact = 'infil' copies only the infiltration data to the
+C       destination zone file.
+C iflow (8 char) = 'ach-ach' preserves infiltration air change rates
+C   e.g. 1.5 ach in source zone is also 1.5 ach in destination zone.
+C iflow = 'vol-vol' preserves volume represented by the infiltration
+C   air change rate in the source to an ach in the destination that
+C   represents the same volume flow rate.
+C vflow (8 char) = 'ach-ach' preserves ventialtoin air change rates
+C   e.g. 1.5 ach in source zone is also 1.5 ach in destination zone.
+C vflow = 'vol-vol' preserves volume represented by the ventilation
+C   air change rate in the source to an ach in the destination that
+C   represents the same volume flow rate.
+C itrc - if zero then work silently.
+
+C << issue to be resolved later...if the user copies a pattern and
+C << later on revises the zone geometry this might imply that a
+C << different flow rate is required. Do we need to remember the
+C << initial intent to guide later revisions?
+
+      subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+
+C LPROJ   - zone scheduling (operation file)
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/PREC2/VOL(MCOM)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+      common/p3ver/ip3ver
+      COMMON/P1/oprdesc,ctlstr
+      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
+     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
+     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
+     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
+     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
+     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
+     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C Descriptive label for a zone load or casual gain types.
+      common/loadlabel/lodlabel(mcom,7)
+
+      dimension IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
+     &   IPT1C(MA),TA1C(MA),IACS2C(MA),IACF2C(MA),ACI2C(MA),
+     &   ACV2C(MA),IPT2C(MA),TA2C(MA),IACS3C(MA),IACF3C(MA),
+     &   ACI3C(MA),ACV3C(MA),IPT3C(MA),TA3C(MA)
+
+      character zname*12,zdesc*64,h*72
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER oprdesc*248,ctlstr*24
+      CHARACTER*6 lodlabel
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      character fs*1,GFILE*72,afact*8,iflow*8,vflow*8,ctlstrc*24
+      LOGICAL XST,unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Clear the operations data structures prior to reading in source.
+      IER=0
+      NAC1=0
+      NAC2=0
+      NAC3=0
+      NCAS1=0
+      NCAS2=0
+      NCAS3=0
+
+C First scan the source zone operation file if there is a problem
+C reading or it does not exist then return an error state.
+C If the user has asked for a verbosity list out the details of
+C the source zones air flows.
+      IUO=IFIL+1
+      call FINDFIL(LPROJ(isource),XST)
+      if(XST)then
+        CALL ERPFREE(IUO,ISTAT)
+        if(itrc.gt.0)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'Source zone data.... ')
+        endif
+        CALL EROPER(ITRC,iuout,IUO,isource,IER)
+        if(ier.ne.0)then
+          call edisp(iuout,'Source operation file not clean...')
+          ier=1
+          return
+        endif
+      else
+        call edisp(iuout,'Source operation file not found...')
+        ier=1
+        return
+      endif
+
+C Copy the air flow and controlsinformation into the local arrays
+C for weekdays, saturdays, sundays.
+      NAC1C=NAC1
+      if(NAC1.gt.0)then
+        do 10 L=1,NAC1
+          IACS1C(L)=IACS1(L)
+          IACF1C(L)=IACF1(L)
+          ACI1C(L)=ACI1(L)
+          ACV1C(L)=ACV1(L)
+          IPT1C(L)=IPT1(L)
+          TA1C(L)=TA1(L)
+  10    continue
+      endif
+      NAC2C=NAC2
+      if(NAC2.gt.0)then
+        do 20 L=1,NAC2
+          IACS2C(L)=IACS2(L)
+          IACF2C(L)=IACF2(L)
+          ACI2C(L)=ACI2(L)
+          ACV2C(L)=ACV2(L)
+          IPT2C(L)=IPT2(L)
+          TA2C(L)=TA2(L)
+  20    continue
+      endif
+      NAC3C=NAC3
+      if(NAC3.gt.0)then
+        do 30 L=1,NAC3
+          IACS3C(L)=IACS3(L)
+          IACF3C(L)=IACF3(L)
+          ACI3C(L)=ACI3(L)
+          ACV3C(L)=ACV3(L)
+          IPT3C(L)=IPT3(L)
+          TA3C(L)=TA3(L)
+  30    continue
+      endif
+
+C Copy air flow control into local variables.
+      ctlstrc=ctlstr
+      ITCTLC=ITCTL(isource)
+      TLOC=TLO(isource)
+      TUPC=TUP(isource)
+      THIC=THI(isource)
+      ACILC=ACIL(isource)
+      ACVLC=ACVL(isource)
+      IVLC=IVL(isource)
+      TALC=TAL(isource)
+      ACIUC=ACIU(isource)
+      ACVUC=ACVU(isource)
+      IVUC=IVU(isource)
+      TAUC=TAU(isource)
+      ACIHC=ACIH(isource)
+      ACVHC=ACVH(isource)
+      IVHC=IVH(isource)
+      TAHC=TAH(isource)
+
+C Scan in the destination operations file, if it does not exist
+C then clear casual gain data structure and create a new file.
+      call FINDFIL(LPROJ(idest),XST)
+      if(XST)then
+        CALL ERPFREE(IUO,ISTAT)
+        CALL EROPER(ITRC,iuout,IUO,idest,IER)
+        if(ier.ne.0)then
+          call edisp(iuout,'Destination operation file not clean...')
+          ier=1
+          return
+        endif
+      else
+        call edisp(iuout,'Destination operation file not found...')
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(GFILE,'(2a)') 
+     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+        else
+          WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+        endif
+        h(1)='This is the suggested name for the file that will'
+        h(2)='hold the imported air flow schedules data. '
+        CALL EASKS(GFILE,' New zone operations file: (confirm) ',
+     &    ' ',72,'new.opr','new operations file',IER,2)
+        LPROJ(idest)=GFILE
+
+C Clear the 'new' destination operations casual gain data structures
+C and assign the new file name to that zone.
+C << later this might be disabled. >>
+        NCAS1=0
+        NCAS2=0
+        NCAS3=0
+        ctlstr='no control of air flow  '
+        oprdesc='no operations notes (yet)'
+        lodlabel(idest,1)='Occupt'
+        lodlabel(idest,2)='Lights'
+        lodlabel(idest,3)='Equipt'  
+        lodlabel(idest,4)='NA    '  
+        lodlabel(idest,5)='AnnEl '  
+        lodlabel(idest,6)='NA    ' 
+        lodlabel(idest,7)='NA    '      
+
+C And any new file will be in the sorted format.
+        ip3ver=1
+      endif
+
+C Copy the local array data into the common blocks overwriting
+C the data implied by 'afact'. Also act on the iflow vflow directives.
+      if(iflow(1:7).eq.'ach-ach')then
+        ratioif=1.0
+      elseif(iflow(1:7).eq.'vol-vol')then
+        ratioif=VOL(isource)/VOL(idest)
+      endif
+      if(vflow(1:7).eq.'ach-ach')then
+        ratiovf=1.0
+      elseif(vflow(1:7).eq.'vol-vol')then
+        ratiovf=VOL(isource)/VOL(idest)
+      endif
+      if(afact(1:5).eq.'all  '.or.afact(1:5).eq.'infil')then
+        if(NAC1C.gt.0)then
+          do 11 L=1,NAC1C
+            NAC1=NAC1C
+            IACS1(L)=IACS1C(L)
+            IACF1(L)=IACF1C(L)
+            ACI1(L)=ACI1C(L)/ratioif
+            ACV1(L)=ACV1C(L)/ratiovf
+            IPT1(L)=IPT1C(L)
+            TA1(L)=TA1C(L)
+  11      continue
+        endif
+        if(NAC2C.gt.0)then
+          do 21 L=1,NAC2C
+            NAC2=NAC2C
+            IACS2(L)=IACS2C(L)
+            IACF2(L)=IACF2C(L)
+            ACI2(L)=ACI2C(L)/ratioif
+            ACV2(L)=ACV2C(L)/ratiovf
+            IPT2(L)=IPT2C(L)
+            TA2(L)=TA2C(L)
+  21      continue
+        endif
+        if(NAC3C.gt.0)then
+          do 31 L=1,NAC3C
+            NAC3=NAC3C
+            IACS3(L)=IACS3C(L)
+            IACF3(L)=IACF3C(L)
+            ACI3(L)=ACI3C(L)/ratioif
+            ACV3(L)=ACV3C(L)/ratiovf
+            IPT3(L)=IPT3C(L)
+            TA3(L)=TA3C(L)
+  31      continue
+        endif
+        if(afact(1:5).eq.'all  ')then
+
+C Apply ach or vol conversion to controls as well.
+          ctlstr=ctlstrc
+          ITCTL(idest)=ITCTLC
+          TLO(idest)=TLOC
+          TUP(idest)=TUPC
+          THI(idest)=THIC
+          ACIL(idest)=ACILC/ratioif
+          ACVL(idest)=ACVLC/ratiovf
+          IVL(idest)=IVLC
+          TAL(idest)=TALC
+          ACIU(idest)=ACIUC/ratioif
+          ACVU(idest)=ACVUC/ratiovf
+          IVU(idest)=IVUC
+          TAU(idest)=TAUC
+          ACIH(idest)=ACIHC/ratioif
+          ACVH(idest)=ACVHC/ratiovf
+          IVH(idest)=IVHC
+          TAH(idest)=TAHC
+        endif
+      endif
+
+C If the user has asked for verbosity list out the result.
+      if(itrc.gt.0)then
+        call edisp(iuout,' ')
+        call edisp(iuout,'Updated data.... ')
+        call edisp(iuout,' ')
+        CALL VENTINF(idest,iuout)
+        call edisp(iuout,' ')
+      endif
+
+C Save the destination operation file.
+      call usrmsg(
+     &  'Updating model to reflect changes',
+     &  'in destination operation data or file name...','-')
+      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
+      CALL EMKCFG('-',ier)
+      call usrmsg(
+     &  'Updating model to reflect changes',
+     &  'in destination operation data or file name...done.','-')
 
       return
       end
@@ -2347,6 +2861,14 @@ C How many of each gain type is there each zone/gaintype/daytype.
       character lodlabel*6, typstr*6,H*72
       character zname*12,zdesc*64,title*28
 
+C iwatt (8 char) = 'W-W' for absolute W values preserves value
+C   e.g. 123W in source zone is also 123W in destination zone.
+C iwatt= 'W-m2-W' preserves implied W/m^2 base area implied by
+C   absolute W in source zone in destination zone which has a
+C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
+C   267W in a 5.0m^2 base zone.
+      character act*8,iwatt*8
+
 C If not browsing, take the information from loadcnt
 C and decide if the periods need to be updated.
       if(.NOT.browse)then
@@ -2600,7 +3122,7 @@ C If a long list include page facility text.
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
       ENDIF
       VERT(M+2)  ='@ edit type labels            '
-      VERT(M+3)  ='+ add/ delete/ copy gains     '
+      VERT(M+3)  ='+ add delete copy import gains'
       VERT(M+4)  ='* scale existing gains        '
       VERT(M+5)  ='# check/remove overlaps       '
       VERT(M+6)  ='! list current information    '
@@ -2621,6 +3143,11 @@ C Help text for this menu.
       H(11)='show the power consumption of the load and the power'
       H(12)='factor.  The graphs will continue to show the casual'
       H(13)='gains to the zone.'
+      H(14)='  '
+      h(15)='Import casul gains - you select a zone with casual'
+      h(16)='gains patterns and they are copied into this zone,'
+      h(17)='optionally with adjustments if the zone base areas'
+      h(18)='differ.'
 
 C Now display the menu.
       title = ' '
@@ -2706,7 +3233,7 @@ C Increment the daytype focus.
       ELSEIF(IVERT.EQ.MVERT)THEN
         return
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('gains menu',13,'-',0,0,IER)
+        CALL PHELPD('gains menu',18,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List current.
@@ -2812,9 +3339,31 @@ C If different period, update the menu length.
         goto 5
       elseif (IVERT.eq.(MVERT-5)) then
 
-C Add/ delete/ copy period.
-        call EASKABCD('Casual gain periods:',' ','add',
-     &                'delete','copy','cancel',IW,0)
+C Add delete copy period or import full set of casual gains.
+        H(1) ='The options: '
+        H(2) =' add - adds a period to one or all day types'
+        H(3) =' '
+        H(4) =' delete - deletes one or more periods (within a list'
+        H(5) ='   of all periods in all days).'
+        H(6) =' '
+        H(7) =' copy - copies weekdays -> saturdays or weekdays -> '
+        H(8) ='   sundays or saturdays -> sundays. Currently it'
+        H(9) ='   adds the copied periods to the desination in'
+        H(10)='   addition to existing periods.'
+        H(11)=' '
+        H(12)=' import - imports casual gain patterns for all gains'
+        H(13)='   and day types from another zone (overwrites).'
+        H(14)=' '
+        H(15)='When importing you can specify whether to:'
+        H(16)=' a) preserve the absolute W being imported e.g. 123W'
+        H(17)='    in the source zone is is also 123W in destination'
+        H(18)=' b) preserves W/m^2 implied by the source zone and'
+        H(19)='    destination zone base areas e.g. 123W in source'
+        H(20)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
+        H(21)='    zone.'
+        CALL EASKATOG('Casual gain period options:','(see help)',
+     &    'add period','delete period','copy period',
+     &    'import from other zone','cancel',' ',' ',IW,21)
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
@@ -2921,6 +3470,49 @@ C If there are no sunday loads of this type make a default one.
           sorted=.false.
           modopr=.true.
           goto 5
+        elseif (IW.EQ.4) then
+
+C Import casual gains from another zone. Ask which zone, then
+C confirm whether absolute W values are to be scaled.
+
+C << note this only allows a selection from files within the
+C << current model. It would be better if the user could
+C << browse any opeation file in the zones folder.
+
+ 39       isource=0
+          izdef=0
+          call askzone(isource,izdef,' Casual gains from which zone?',
+     &      'Source zone','-','Casual import requires a zone.',
+     &      ier)
+          if (IER.ne.0.or.isource.eq.ICOMP) then
+            write (OUTS,'(3a)')  'the current (',
+     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+            call USRMSG('The selected zone should be different from',
+     &        outs,'W')
+            goto 39
+          endif
+
+          CALL EASKABC('Casual import:',' ','preserve absolute W',
+     &       'convert abs W for base area','continue',ivntv,21)
+          if(ivntv.eq.1) iwatt='W-W    '
+          if(ivntv.eq.2) iwatt='W-m2-W '
+          if(ivntv.eq.3) goto 5
+          idest=icomp
+          act='allcas'
+          itrc=1
+          call IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+
+C Remind users to check their data.
+      h(1)='An automated process has been used to manage the imported'
+      h(2)='schedules. It usually does it as intended and, as with all'
+      h(3)='automated processes it is recommended that you confirm '
+      h(4)='that the resulting file is correct. '
+      h(5)=' '
+      h(6)='One approach is to generate a new QA report and check this'
+      h(7)='against the previous model and then run a short assessment'
+      h(8)='to confirm that the predictions are as expected. '
+      CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
         dok=.false.
@@ -3257,7 +3849,7 @@ C Electrical data flag and elctrical data.
      &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
      &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
 
-C Descriptive label for a zone load or casual gain.
+C Base area for zones.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
 
       logical OK,DOK,CLOSE,silent
@@ -3777,6 +4369,371 @@ C Copy periods.
  230      continue
         endif
       endif
+
+      return
+      end
+
+C ********************* IMPORTZCASG *********************
+C IMPORTZCASG - import a casual gain regime from zone isource to
+C zone idest based on act and iwatt
+C act (8 char) = 'allcas' copies all casual gain types
+C       descriptions (this will need a QA by the user in case of conflicts).
+C act = ??
+
+C iwatt (8 char) = 'W-W' for absolute W values preserves value
+C   e.g. 123W in source zone is also 123W in destination zone.
+C iwatt= 'W-m2-W' preserves implied W/m^2 base area implied by
+C   absolute W in source zone in destination zone which has a
+C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
+C   267W in a 5.0m^2 base zone.
+C itrc - if zero then work silently.
+
+C This subroutine does not alter the air flow schedules in the
+C destination zone, only the casual gains.
+
+C << issue to be resolved later...if the user copies a pattern and
+C << later on revises the zone geometry this might imply that a
+C << different flow rate is required. Do we need to remember the
+C << initial intent to guide later revisions?
+
+      subroutine IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+
+C LPROJ   - zone scheduling (operation file)
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+      common/p3ver/ip3ver
+      COMMON/P1/oprdesc,ctlstr
+      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
+     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
+     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
+     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
+     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
+     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
+     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
+      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      common/elecflg/ielf(mcom)
+      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
+     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
+     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+
+C Descriptive label for a zone load or casual gain.
+      common/loadlabel/lodlabel(mcom,7)
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C Base area for zones.
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+
+C Local storage arrays for weekdays, saturdays, sundays
+      dimension ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
+     &          RADC1C(MC),CONC1C(MC)
+      dimension ICGS2C(MC),ICGF2C(MC),CMGS2C(MC),CMGL2C(MC),
+     &          RADC2C(MC),CONC2C(MC)
+      dimension ICGS3C(MC),ICGF3C(MC),CMGS3C(MC),CMGL3C(MC),
+     &          RADC3C(MC),CONC3C(MC)
+      dimension ICGT1C(MC),ICGT2C(MC),ICGT3C(MC)
+      dimension pf1c(mc),ipf1c(mc),pwr1c(mc),bvolt1c(mc),iphas1c(mc)
+      dimension pf2c(mc),ipf2c(mc),pwr2c(mc),bvolt2c(mc),iphas2c(mc)
+      dimension pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),iphas3c(mc)
+
+      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,h*72
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      character lodlabel*6
+      character zname*12,zdesc*64,fs*1,GFILE*72,act*8,iwatt*8
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      LOGICAL XST,unixok
+
+C Flags noting whether casual gain periods are currently sorted.
+      logical problem,MODOPR
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Clear the operations data structures prior to reading in source.
+      IER=0
+      NAC1=0
+      NAC2=0
+      NAC3=0
+      NCAS1=0
+      NCAS2=0
+      NCAS3=0
+      MODOPR=.FALSE.
+
+C First scan the source zone operation file if there is a problem
+C reading or it does not exist then return an error state.
+C If the user has asked for a verbosity list out the details of
+C the source zones air flows.
+      IUO=IFIL+1
+      call FINDFIL(LPROJ(isource),XST)
+      if(XST)then
+        CALL ERPFREE(IUO,ISTAT)
+        if(itrc.gt.0)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'Source zone data.... ')
+        endif
+        CALL EROPER(ITRC,ITRU,IUO,isource,IER)
+        if(ier.ne.0)then
+          call edisp(iuout,'Source operation file not clean...')
+          ier=1
+          return
+        endif
+      else
+        call edisp(iuout,'Source operation file not found...')
+        ier=1
+        return
+      endif
+
+C Copy the casual gains into the local arrays for weekdays, saturdays, sundays.
+      ielfc=ielf(isource)
+      NCAS1C=NCAS1
+      nel1c=nel1
+      if(NCAS1.gt.0)then
+        do 10 L=1,NCAS1
+          ICGS1C(L)=ICGS1(L)
+          ICGF1C(L)=ICGF1(L)
+          CMGS1C(L)=CMGS1(L)
+          CMGL1C(L)=CMGL1(L)
+          RADC1C(L)=RADC1(L)
+          CONC1C(L)=CONC1(L)
+          ICGT1C(L)=ICGT1(L)
+          if(ielfc.ne.0)then
+            pf1c(L)=pf1(L)
+            ipf1c(L)=ipf1(L)
+            pwr1c(L)=pwr1(L)
+            bvolt1c(L)=bvolt1(L)
+            iphas1c(L)=iphas1(L)
+          endif
+  10    continue
+      endif
+      NCAS2C=NCAS2
+      nel2c=nel2
+      if(NCAS2.gt.0)then
+        do 20 L=1,NCAS2
+          ICGS2C(L)=ICGS2(L)
+          ICGF2C(L)=ICGF2(L)
+          CMGS2C(L)=CMGS2(L)
+          CMGL2C(L)=CMGL2(L)
+          RADC2C(L)=RADC2(L)
+          CONC2C(L)=CONC2(L)
+          ICGT2C(L)=ICGT2(L)
+          if(ielfc.ne.0)then
+            pf2c(L)=pf2(L)
+            ipf2c(L)=ipf2(L)
+            pwr2c(L)=pwr2(L)
+            bvolt2c(L)=bvolt2(L)
+            iphas2c(L)=iphas2(L)
+          endif
+  20    continue
+      endif
+      NCAS3C=NCAS3
+      nel3c=nel3
+      if(NCAS3.gt.0)then
+        do 30 L=1,NCAS3
+          ICGS3C(L)=ICGS3(L)
+          ICGF3C(L)=ICGF3(L)
+          CMGS3C(L)=CMGS3(L)
+          CMGL3C(L)=CMGL3(L)
+          RADC3C(L)=RADC3(L)
+          CONC3C(L)=CONC3(L)
+          ICGT3C(L)=ICGT3(L)
+          if(ielfc.ne.0)then
+            pf3c(L)=pf3(L)
+            ipf3c(L)=ipf3(L)
+            pwr3c(L)=pwr3(L)
+            bvolt3c(L)=bvolt3(L)
+            iphas3c(L)=iphas3(L)
+          endif
+  30    continue
+      endif
+      oprdescc=oprdesc
+
+C Scan in the destination operations file, if it does not exist
+C then clear casual gain data structure and create a new file.
+      call FINDFIL(LPROJ(idest),XST)
+      if(XST)then
+        CALL ERPFREE(IUO,ISTAT)
+        CALL EROPER(ITRC,ITRU,IUO,idest,IER)
+        if(ier.ne.0)then
+          call edisp(iuout,'Destination operation file not clean...')
+          ier=1
+          return
+        endif
+      else
+        call edisp(iuout,'Destination operation file not found...')
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(GFILE,'(2a)') 
+     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+        else
+          WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
+     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+        endif
+        h(1)='This is the suggested name for the file that will'
+        h(2)='hold the imported casual gain data. '
+        CALL EASKS(GFILE,' New zone operations file: (confirm) ',
+     &    ' ',72,'new.opr','new operations file',IER,2)
+        LPROJ(idest)=GFILE
+
+C This subroutine does not deal with importing air schedules or
+C controls so, in the case of a new file ensure nothing but a default
+C initial setup is done for these topics.
+        ITCTL(idest)=0
+        THI(idest)=100.
+        TUP(idest)=0.
+        TLO(idest)=0.
+        ctlstr='no control of air flow  '
+        NAC1=0
+        NAC2=0
+        NAC3=0
+
+C And any new file will be in the sorted format.
+        ip3ver=1
+      endif
+
+C Copy the local array data into the common blocks overwriting
+C the data implied by 'act'. Also act on the iwatt directive.
+C Note: if the casual gain type is negative then the units are
+C already per m2 so no need for conversion.
+      if(iwatt(1:6).eq.'W-m2-W')then
+        ratioarea=ZBASEA(isource)/ZBASEA(idest)
+      else
+        ratioarea=1.0
+      endif
+      if(act(1:7).eq.'allcas ')then
+        ielf(idest)=ielfc
+        NCAS1=NCAS1C
+        nel1=nel1c
+        if(NCAS1C.gt.0)then
+          do 11 L=1,NCAS1C
+            ICGS1(L)=ICGS1C(L)
+            ICGF1(L)=ICGF1C(L)
+            if(ICGT1C(L).lt.0)then
+              CMGS1(L)=CMGS1C(L)
+              CMGL1(L)=CMGL1C(L)
+            else
+              CMGS1(L)=CMGS1C(L)/ratioarea
+              CMGL1(L)=CMGL1C(L)/ratioarea
+            endif
+            RADC1(L)=RADC1C(L)
+            CONC1(L)=CONC1C(L)
+            ICGT1(L)=ICGT1C(L)
+            if(ielfc.ne.0)then
+              pf1(L)=pf1c(L)
+              ipf1(L)=ipf1c(L)
+              pwr1(L)=pwr1c(L)
+              bvolt1(L)=bvolt1c(L)
+              iphas1(L)=iphas1c(L)
+            endif
+  11      continue
+        endif
+        NCAS2=NCAS2C
+        nel2=nel2c
+        if(NCAS2C.gt.0)then
+          do 21 L=1,NCAS2C
+            ICGS2(L)=ICGS2C(L)
+            ICGF2(L)=ICGF2C(L)
+            if(ICGT2C(L).lt.0)then
+              CMGS2(L)=CMGS2C(L)
+              CMGL2(L)=CMGL2C(L)
+            else
+              CMGS2(L)=CMGS2C(L)/ratioarea
+              CMGL2(L)=CMGL2C(L)/ratioarea
+            endif
+            RADC2(L)=RADC2C(L)
+            CONC2(L)=CONC2C(L)
+            ICGT2(L)=ICGT2C(L)
+            if(ielfc.ne.0)then
+              pf2(L)=pf2c(L)
+              ipf2(L)=ipf2c(L)
+              pwr2(L)=pwr2c(L)
+              bvolt2(L)=bvolt2c(L)
+              iphas2(L)=iphas2c(L)
+            endif
+  21      continue
+        endif
+        NCAS3=NCAS3C
+        nel3=nel3c
+        if(NCAS3C.gt.0)then
+          do 31 L=1,NCAS3C
+            ICGS3(L)=ICGS3C(L)
+            ICGF3(L)=ICGF3C(L)
+            if(ICGT3C(L).lt.0)then
+              CMGS3(L)=CMGS3C(L)
+              CMGL3(L)=CMGL3C(L)
+            else
+              CMGS3(L)=CMGS3C(L)/ratioarea
+              CMGL3(L)=CMGL3C(L)/ratioarea
+            endif
+            RADC3(L)=RADC3C(L)
+            CONC3(L)=CONC3C(L)
+            ICGT3(L)=ICGT3C(L)
+            if(ielfc.ne.0)then
+              pf3(L)=pf3c(L)
+              ipf3(L)=ipf3c(L)
+              pwr3(L)=pwr3c(L)
+              bvolt3(L)=bvolt3c(L)
+              iphas3(L)=iphas3c(L)
+            endif
+  31      continue
+        endif
+        H(1)='Notes (<248 char) for schedules of zone air flow and' 
+        H(2)='casual gains can be included in the model. Use this'
+        H(3)='facility to clarify what is happening in the zone.'
+        CALL EASKS248(oprdescc,'Operations notes (please edit):',
+     &    ' ',72,'base_case','operation notes',IER,3)
+        if(oprdescc(1:2).ne.'  ')oprdesc=oprdescc
+        lodlabel(idest,1)=lodlabel(isource,1)
+        lodlabel(idest,2)=lodlabel(isource,2)
+        lodlabel(idest,3)=lodlabel(isource,3)
+        lodlabel(idest,4)=lodlabel(isource,4)
+        lodlabel(idest,5)=lodlabel(isource,5)
+        lodlabel(idest,6)=lodlabel(isource,6)
+        lodlabel(idest,7)=lodlabel(isource,7)
+      endif
+
+C If the user has asked for verbosity list out the result.
+      if(itrc.gt.0)then
+        call edisp(iuout,' ')
+        call edisp(iuout,'Updated data.... ')
+        call edisp(iuout,' ')
+        CALL CASINF(idest,iuout)
+        call edisp(iuout,' ')
+      endif
+
+C Because there is a small chance that the source file lacked fully
+C sorted casual gains (e.g. was an older file) force a sorting.
+      call edisp(iuout,'Sorting imported casual gains...')
+      call PROCESSOLDCAS(idest,0,iuout,IER)
+      call edisp(iuout,'Sorting imported casual gains...completed.')
+
+C Save the destination operation file.
+      call usrmsg(
+     &  'Updating model to reflect changes',
+     &  'in destination operation data or file name...','-')
+      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
+      CALL EMKCFG('-',ier)
+      call usrmsg(
+     &  'Updating model to reflect changes',
+     &  'in destination operation data or file name...done.','-')
 
       return
       end

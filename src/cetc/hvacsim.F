@@ -30,7 +30,7 @@ c 	PLR	   determine the part-load ratio of the hvac equipment
 c *********************************************************************
 
 
-      CHARACTER*128 FUNCTION HVAC_STRING(iHVAC_Num)
+      CHARACTER*16 FUNCTION HVAC_STRING(iHVAC_Num)
    
       IMPLICIT NONE
       INTEGER    FURNACE
@@ -237,7 +237,7 @@ C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*12  H3K_format
       
-      CHARACTER*128 HVAC_STRING
+      CHARACTER*16 HVAC_STRING
       CHARACTER*128 xmlHeat_Energy
       CHARACTER*128 xmlCool_Energy
       CHARACTER*128 xmlPilot_Energy
@@ -853,7 +853,8 @@ C     fPPLR is the Part load ratio of the primary hvac system.
      
 
 
-C XML reports.         
+C XML reports.
+
          WRITE(H3K_rep_NAME,'(A,A)') 
      & 		'plant/CETC_HVAC/Primary_System/',
      &        	HVAC_STRING(ihvac_type(i))
@@ -952,7 +953,7 @@ C     HVAC system.
 C     fPPLR is the Part load ratio of the backup hvac system.
      &        fbPLR)
 c     Stores fan energy, Heating and cooling loads.
-C XML reports.         
+C XML reports.
          WRITE(H3K_rep_NAME,'(A,A)') 
      & 		'plant/CETC_HVAC/Secondary_System/',
      &        	HVAC_STRING(ihvac_type(ibackup_sys_num(i)))
@@ -1079,7 +1080,7 @@ C........-> Set format depending on number of zones
 C........-> Set name
 C << icomp may not have been defined >>
          WRITE(H3K_rep_NAME,H3K_FORMAT) 'plant/CETC_HVAC/Component_',
-     &        char(icomp),
+     &        i,
      &        '/elec_load'        
 C.,......-> update meta-data
          call REP_SET_META(

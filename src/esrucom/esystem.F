@@ -86,6 +86,7 @@ C           2 ; connection to constant and known environmental conditions
 C           3 ; connection to another zone (as defined by IC2 & IE2 
 C           4 ; connected to ground
 c           5 ; surface is adiabatic
+c           7 ; surface partition according to the CEN 13791
 C IC2 &   - connection description where IC2 & IE2:
 C IE2       - are unused if corresponding ICT=0
 C           - contain relative temp and absolute incident radiation 
@@ -531,7 +532,7 @@ C Initalizing starting point for parsing simulation presets (*sps)
 
 C Initialize flag for boundary condition data 
       bBC_data_defined = .false.
-      
+
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
 C Note: escdef must come after scan of .esprc file.
@@ -782,7 +783,7 @@ C Index of exposure has user defined data associated with it.
         IF(IER.NE.0) GOTO 1
 
 C Range checking.
-        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001)CALL USRMSG(
+        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001) CALL USRMSG(
      &    ' Total exposure out of range in',OUTSTR,'W')
       ENDIF
 
@@ -1508,19 +1509,17 @@ C this is the `* Building` section.
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','ground tags',IFLAG)
 
-C External longwave radiation (begin)
-C if gtmp tag present in cfg file, get profile.
+C External longwave radiation: if gtmp tag present in cfg file, get profile.
         IF(WORD(1:5).EQ.'*gtmp')THEN
-            CALL EGETWRA(IUC,getVal,12,-9.0,99.0,'W','Ex lg rad',IER)
-            iExtLgRadFlag = 1
+          CALL EGETWRA(IUC,getVal,12,-9.0,99.0,'W','Ex lg rad',IER)
+          iExtLgRadFlag = 1
 C Store profile in array.
-            DO 27 jMon=1,12
-              eGrdTp(jMon)=getVal(jMon)
-  27        CONTINUE
-C External Longwave Radiation (end)
+          DO 27 jMon=1,12
+            eGrdTp(jMon)=getVal(jMon)
+  27      CONTINUE
+        elseif(WORD(1:4).eq.'*cvs')then
 
 C 3D ground control volumes file.
-        elseif(WORD(1:4).eq.'*cvs')then
           IGDCVS=.TRUE.
           CALL EGETRM(OUTSTR,K,LGDCVS,'W','3d ground vols',IER)
 
@@ -2051,7 +2050,7 @@ C Read from either the connections file or configuration file.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),0,6,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),0,7,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -2548,8 +2547,8 @@ C Get lat:long description.
         WRITE(OUTSTR,'(a)')
      &    ' Ground reflectivity: variable (advanced model).'
       ENDIF
-
       CALL EDISP(ITRU,OUTSTR)
+
       WRITE(OUTSTR,'(2a)')' Site exposure ',POS(1:LNBLNK(POS))
       CALL EDISP(ITRU,OUTSTR)
 
@@ -2647,8 +2646,20 @@ C BASESIMP start.
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
  7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
-      ENDIF
+      ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
+C CEN 13791 boundary condition.
+        if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
+          WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
+     &      ZST1(1:LNBLNK(ZST1))
+ 9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical CEN 13791 ')
+        else
+          WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
+     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
+ 9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
+     &      I4,' W rad')
+        endif
+      ENDIF
       RETURN
       END
 

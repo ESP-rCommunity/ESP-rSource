@@ -124,7 +124,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       CHARACTER BCFName*72,DBCFNam*72,LFCON*72,LFMUL*72
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
-      CHARACTER H*72,outs*210,ITEM*35
+      CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144,LOPTDB*72
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path,upath,esprc
@@ -358,7 +358,9 @@ C set for wireframe drawing.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        call ESCSYS(LCFGF,IFCFG,IUF,IER)
+        MODE='NONE'
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,0,IER)
+        call usrmsg('Scanning supplied problem...done.',' ','-')
         if(IER.eq.0)then
           NZONES=NCOMP
           CALL ZDATA (ITRC,IER,NZONES,ISFSUM)

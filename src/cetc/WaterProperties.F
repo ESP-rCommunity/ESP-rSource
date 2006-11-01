@@ -186,6 +186,10 @@ C*******************************************************************************
 C **********************************IsInLiquidPhase***************************************
 C     Created by: Phylroy Lopez
 C     Initial Creation Date: November, 2002
+C     Modified by: Maria Mottillo
+C     Modified on: August 2006
+C     Extended range of temperatures that function is applicable. Data obtained from
+C     Fundamentals of Classical Thermodynamics, 3rd Ed. (Van Wylen and Sonntag, 1985)
 C     Copyright CETC 2001
       
 C     This function will determine if the water is in liquid phase. This is determined by
@@ -219,8 +223,8 @@ c     Minimun Pressure required for liquid phase.
 c     SLope of interpolation line.
       REAL SLOPE 
 c     Saturation curve data array.
-      REAL T(29) 
-      REAL P(29)
+      REAL T(37) 
+      REAL P(37)
       
 c     Water saturation curve..kelvin vs pa.
 c     Obtained from Engineering Thermodynamics (Reynolds, Perkins 1977) 
@@ -253,13 +257,21 @@ c     Obtained from Engineering Thermodynamics (Reynolds, Perkins 1977)
       DATA T(27)/423.0 /,    P(27)/475800.0 /   
       DATA T(28)/433.0 /,    P(28)/617800.0 /
       DATA T(29)/443.0 /,    P(29)/791600.0 /
+      DATA T(30)/448.0 /,    P(30)/892000.0 /
+      DATA T(31)/453.0 /,    P(31)/1002100.0 /
+      DATA T(32)/458.0 /,    P(32)/1122700.0 /
+      DATA T(33)/463.0 /,    P(33)/1254400.0 /
+      DATA T(34)/468.0 /,    P(34)/1397800.0 /
+      DATA T(35)/473.0 /,    P(35)/1553800.0 /
+      DATA T(36)/478.0 /,    P(36)/1723000.0 /
+      DATA T(37)/483.0 /,    P(37)/1906200.0 /
 c     set current interval to zero. 
       iInterval = 0
 c     check if within range (curve is define only as above, since usuing linear 
 c     interpolation, must be bound between two points. 
-      IF (Temp .lt.443 
+      IF (Temp .lt.483 
      &     .or. Temp .gt. 273.010
-     &     .or. Pressure .lt. 791600.0
+     &     .or. Pressure .lt. 1906200.0
      &     .or. Pressure .gt. 611.3 ) 
      &     THEN
 
@@ -293,8 +305,8 @@ c     Then it is gas phase.
       ELSE
 c     Tell user that the pressure or/and temperature they entered is out of range,
          write (*,*)'Water temp and Pressure must be within limits'
-         write (*,*)'273.01 K < Temp< 443.0 K     : T = ',Temp
-         write (*,*)'611.3 pa < Temp< 791600.0 pa : P = ',Pressure        
+         write (*,*)'273.01 K < Temp< 483.0 K     : T = ',Temp
+         write (*,*)'611.3 pa < Temp< 1906200.0 pa : P = ',Pressure        
          STOP
       ENDIF
       RETURN
@@ -398,7 +410,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       
       
       if (.not.IsInLiquidPhase(Temp, Pressure)) THEN
-         call UNWRAPDENL(Temp,Pressure,H20GasDensity,nit,limit)
+         call UNWRAPDEN(Temp,Pressure,H20GasDensity,nit,limit)
       ELSE
          write (*,*)' Steam has Condensed!'
          STOP

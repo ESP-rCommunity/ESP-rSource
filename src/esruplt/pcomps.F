@@ -91,6 +91,7 @@ C      AIMS_tank1_fuel_static_temp  3 node (ISV=20) gas-fired water tank for fir
 C      TAC_1_static_template  3 node (ISV=20) first phase thermally activated cooling component
 C      TAC_coldtank_static_temp  1 node (ISV=20) cold water storage tank for TAC
 C      SOFC_A42_static 7-node (ISV=20) IEA/ECBCS Annex 42 SOFC-cogeneration device
+C      simple_solar_coll_static 1 node (ISV=20) simple solar collector 
 
 C ******************** MZSDAT ********************
 
@@ -259,7 +260,27 @@ C 3 node electrolyser_model
          CALL H2_electrolyser_static_temp(IPCOMP)
       ELSE IF(ITYPE.EQ.111) THEN
          CALL SOFC_A42_static(IPCOMP)
-
+      ELSE IF(ITYPE.EQ.112) THEN
+C 3-node residential SOFC
+         CALL FC_static_template(IPCOMP)
+C Gas-fired storage tank with 3 connections
+      ELSE IF(ITYPE.EQ.113) THEN
+         CALL ADS_tank_fuel_static_temp(IPCOMP)
+C Electric storage tank with 3 connections
+      ELSE IF(ITYPE.EQ.114) THEN
+         CALL ADS_tank_elec_static_temp(IPCOMP)
+C Adsorption storage unit
+      ELSE IF(ITYPE.EQ.115) THEN
+         CALL ADS_stg_static_template(IPCOMP)
+C Pressurized WCH pipe
+      ELSE IF(ITYPE.EQ.116) THEN
+         CALL Press_WCH_pipe_static_temp(IPCOMP)
+C Pressurized WCH pump
+      ELSE IF(ITYPE.EQ.117) THEN
+         CALL Press_WCH_pump_static_temp(IPCOMP)
+C 1 node simple solar collector model
+      ELSE IF(ITYPE.EQ.118) THEN
+         CALL simple_solar_coll_static(IPCOMP)
       ELSE
 
         call elinc(1)

@@ -34,6 +34,7 @@ C Scan list of climate databases and present selection to user.
       subroutine rdblist(idblfil,cdblfil,clmdb,ier)
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
       common/curfile/currentfile
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -78,7 +79,11 @@ C Default season definitions.
       CALL EDAY(1,5,is1sums)
       CALL EDAY(31,8,is1sumf)
 
-C Open the list of climate databases.
+C Open the list of climate databases. If we got here with a zero
+C file unit number then reset it to something safe.
+      if(idblfil.eq.0)then
+        idblfil=ifil+1
+      endif
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
       if(ier.ne.0)return
 

@@ -6,7 +6,7 @@ delim $$
 .TL
 An Overview of Subversion for ESP-r Central Users
 .br
-Version of June 2, 2006
+Version of September 28, 2006
 .sp 2
 .LP
 ESP-r's source code was placed under a version control system in April 2006 to
@@ -220,7 +220,7 @@ with changes in the development branch for the first time:
 Determine the revision number at which your branch was created:
 .LD
 .fam C
-svn log --verbose --stop-on-copy http://esp-r.net/espr/esp-r/branches/my_branch
+svn log --verbose --stop-on-copy https://esp-r.net/espr/esp-r/branches/my_branch
 
 ---------------------- (OUTPUT) ----------------------------------------
 r12 | author | 2006-04-25 10:31:38 -0400 (Tue, 25 Apr 2006) | 3 lines
@@ -246,13 +246,13 @@ Note revision r10. This is the revision number at which branch "my_branch" was c
 Check out a clean copy of your work:
 .LD
 .fam C
-svn  checkout http://esp-r.net/espr/esp-r/branches/my_branch
+svn  checkout https://esp-r.net/espr/esp-r/branches/my_branch
 .DE
 .IP 3. 4
 Determine the most recent revision (i.e. the highest number) on the development_branch.
 .LD
 .fam C
-svn info http://esp-r.net/espr/esp-r/branches/development_branch
+svn info https://esp-r.net/espr/esp-r/branches/development_branch
 ---------------------- (OUTPUT) ----------------------------------------
 Path: development_branch
 URL: https://esp-r.net/espr/esp-r/branches/development_branch
@@ -271,7 +271,7 @@ Merge the changes that have occurred on development_branch from r10
 .LD
 .fam C
 cd <your_working_copy_from_step_3>
-svn merge -r 34:56 http://esp-r.net/espr/esp-r/branches/development_branch
+svn merge -r 10:385 https://esp-r.net/espr/esp-r/branches/development_branch
 ---------------------- (OUTPUT) ----------------------------------------
 U integer.c
 U button.c

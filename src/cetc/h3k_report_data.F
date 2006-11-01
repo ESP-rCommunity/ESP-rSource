@@ -1571,7 +1571,8 @@ C     ESRU 3-node heating coil
             CALL H3K_HeatingCoil_PostPro(iComponent_index)
 
 C     SOFC Fuel cell
-         elseif ( iComponent_type .eq. 80 ) then
+         elseif ( iComponent_type .eq. 80 .or.
+     &            iComponent_type .eq. 112 ) then
 
             CALL FC_data_transport(iComponent_index)
 
@@ -1973,7 +1974,7 @@ C........-> set name
          WRITE(H3K_rep_NAME,'(A,A)')
      &        node_name(1:LNBLNK(node_name)), '/voltage/angle'
          call add_to_xml_reporting (
-     &          IMAG(ENODVLT(iElec_node)),
+     &          AIMAG(ENODVLT(iElec_node)),
      &          H3K_rep_NAME,
      &          'units', '(radians)',
      &          'Electrical network node: V angle')

@@ -81,6 +81,8 @@ C Room Surfaces', Energy and Buildings, 30 233-244.
       COMMON/Fisher/Vdot(MCOM),SAT(MCOM),ADJREF(MCOM,MS),DELTAR(MCOM)
       COMMON/HCcomb/iAandH,iassist
       COMMON/adaptHC/HCctl5
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Commons to support vertical channel hc regime.
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -92,13 +94,21 @@ C Commons to support vertical channel hc regime.
       logical dotrace
 
 
-C Trace output ?
+C Trace output. If there is a zone htc file note that data may
+C be superceeded by user specifications.
       dotrace=.false.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
-      write(outs,'(A,I4,a,i2,a,i2)')
-     &  ' Subroutine HTBUOY  Trace output',ICNT,
-     &  ' for zone ',icomp,' & surface ',isur
+      IF( IHC(ICOMP).EQ.1 ) THEN
+        write(outs,'(A,I4,a,i2,a,i2,a)')
+     &    ' Subroutine HTBUOY  Trace output',ICNT,
+     &    ' for zone ',icomp,' & surface ',isur,
+     &    ' (data may be superceeded by the zone convective regime).'
+      else
+        write(outs,'(A,I4,a,i2,a,i2)')
+     &    ' Subroutine HTBUOY  Trace output',ICNT,
+     &    ' for zone ',icomp,' & surface ',isur
+      endif
       call edisp(itu,outs)
       CALL DAYCLK(IDYP,BTIMEF,ITU)
       dotrace=.true.

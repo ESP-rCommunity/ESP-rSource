@@ -362,7 +362,7 @@ C Close fluid flow problem description file
       elseif(INO.EQ.NITMS-1)then
 
 C Help via the askabout facility in esru_ask.F The zero requests display
-        call askabout('mfs',0)
+        call askabout('mfs ',0)
       elseif(INO.EQ.NITMS-2)then
         CALL SETUP(ITRC,iuout,IER)
       elseif(INO.EQ.1)then

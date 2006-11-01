@@ -32,6 +32,7 @@ C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
 C  st2name: Given `string' swap blanks & wildcards to _ return as `name'.
 C  st2file: Given `string' strip blanks & wildcards and return as `name'.
+C backslashit: Given `string' swap / to \ : return as `name'.
 C iprevblnk: Given a string, return position of blank just before ipos.
 C inextblnk: Given a string, return position of blank just after ipos.
 C  icutstr: Given a string, cuts icut characters from position ipos.
@@ -1882,6 +1883,44 @@ C        write(6,'(a,I4)')string(I:I),ichar(string(I:I))
         else
           phrase(K:K)=string(I:I)
         endif
+ 99   CONTINUE
+100   continue
+      LN=max(1,lnblnk(phrase))
+      write(name,'(a)') phrase(1:LN)
+
+      return
+      end
+
+C ************** backslashit
+C backslashit: given `string' swap / to \ : return as `name'.
+      SUBROUTINE backslashit(string,name)
+      CHARACTER*(*) string,name
+      character phrase*144,bs*1
+
+C Clear variables and get string lengths.
+      name = ' '
+      phrase = ' '
+      ilname = LEN(name)
+      illstr = max(1,lnblnk(string))
+
+C Make up a \ character.
+      bs = char(92)
+
+C Strip off any leading blanks from string, substitute \ for /
+C between words and dtop copying if end of name reached.
+      K=0
+      DO 99 I=1,illstr
+        IF(string(I:I).NE.' '.OR.K.GE.1)THEN
+C          write(6,'(a,I4)')string(I:I),ichar(string(I:I))
+          if(ichar(string(I:I)).lt.32)goto 100
+          if(I.gt.ilname)goto 100
+          K=K+1
+          if(string(I:I).eq.'/')then
+            phrase(K:K)=bs
+          else
+            phrase(K:K)=string(I:I)
+          endif
+        ENDIF
  99   CONTINUE
 100   continue
       LN=max(1,lnblnk(phrase))
@@ -5825,8 +5864,13 @@ C If there is a journal file append the current message to it and close.
 
 C ****** Define ectime function as fixed length character*24
       character*24 FUNCTION ECTIME(ICTIME)
+      integer ICTIME
+#ifdef GCC4
+      call CTIME(ICTIME,ECTIME)
+#else
       character*24 CTIME
       ECTIME = CTIME(ICTIME)
+#endif
       return
       end
 

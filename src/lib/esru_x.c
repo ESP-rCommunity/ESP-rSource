@@ -91,6 +91,8 @@ intialisation and graphics, using ww. The routines are :-
 */
 #include 	<stdio.h>
 #include 	<math.h>
+#include <string.h>
+#include <stdlib.h>
 #include	<ctype.h>
 #include	"wwcut.h"
 #include <sys/types.h>
@@ -5215,17 +5217,30 @@ void egdisp_(msg,line,len)
   char msg2[125];
   box backing;		/* area under text to clear */
 
-  if( len <= 1 )return;	/* don`t bother if no characters */
 
+  if( len <= 1 )return; /* don`t bother if no characters */
+
+  /* move msg to msg2, and null-terminate --- otherwise strcpy may
+     do weird and not-so-wonderful things.
+     Note:
+       - strncpy can deal with non-null-terminated strings.
+       - len <= 124 in all cases
+  */
+  // strncpy(msg2,msg,len);  /* this method is troublesome on gcc4 */
+  // msg2[len+1] = '\0';
+  
 /* add message to the queue */
   if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
-    strcpy(edisp_list[edisp_index],msg);	/* copy to static array */
+    strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
+    //strcpy(edisp_list[edisp_index],msg2);   /* alternate method for null-term. strings */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-      strcpy(edisp_list[i],edisp_list[i+1]);	/* shift array down one */
+      strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
+      //strcpy(edisp_list[i],edisp_list[i+1]);  /* alternate method for null-term. strings */
     }
-    strcpy(edisp_list[EDISP_LIST_LEN-1],msg);	/* copy to last position */
+    strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
+    //strcpy(edisp_list[EDISP_LIST_LEN-1],msg2);/*alternate method for null-term. strings */
   }
   scroll_index = edisp_index;		/* force scroll bar to bottom, so new line is visible */
   disptext();
@@ -8873,4 +8888,11 @@ int iwth = *impcwth;	/* character width of proforma */
   return;
 }
 
+/*********** xavail_ *************************************** *
+ * Function indicating if X libraries are available (GTK/X11)
+ */
+int ixavail_()
+{
+  return 1;
+}
 

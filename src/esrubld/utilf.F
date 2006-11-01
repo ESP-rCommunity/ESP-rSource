@@ -26,7 +26,7 @@ C    MZVFIN:  reads geometric view factor between surface pairs from file
 
 C ******************** MZHCFV ********************
 
-C MZHCFV reads the convection-calculation control file.
+C MZHCFV reads the convection regime file.
 
       SUBROUTINE MZHCFV(ICOMP)
 #include "building.h"
@@ -49,6 +49,7 @@ C MZHCFV reads the convection-calculation control file.
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
+      COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -74,7 +75,14 @@ C       jj=1:   control law for interior surface
 C       jj=2-4: data items associated with control law for interior
 C       jj=5:   control law for exterior surface
 C       jj=6-8: data items associated with control law for exterior
-
+C Variables used for `type 4' control:
+C   CENLOC(i,k,jj) hc values for zone 'i', time interval 'k':
+C       jj=1 index of a floor surface
+C       jj=2 index of a ceiling surface
+C       jj=3-5 floor upwd_inside, downwd_inside, external
+C       jj=6-8 ceiling upwd_inside, downwd_inside, external
+C       jj=9-11 sloped upwd_inside, downwd_inside, external
+C       jj=12-14 wall inside, partition, external
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -82,19 +90,19 @@ C Initialize data.
       IUNIT=IFIL+1
 
 C Check for old format.
-        CALL EFOPSEQ(IUNIT,LHCCO(ICOMP),1,IER)
-        IF(ier.eq.0)THEN
-C---------Does the 4th line contain a control `type' or HC data?
-          READ(IUNIT,'(//)',IOSTAT=ISTAT,ERR=1001)
-          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc line 4',IER)
-          if(num.ne.1)then
-            call edisp(iuout,
-     &                ' HTC file in old format: file must be updated.')
-            CALL ERPFREE(IUNIT,ISTAT)
-            stop ' HTC file in old format: file must be updated.'
-          endif
-        ENDIF
-        CALL ERPFREE(IUNIT,ISTAT)
+      CALL EFOPSEQ(IUNIT,LHCCO(ICOMP),1,IER)
+      IF(ier.eq.0)THEN
+C-------Does the 4th line contain a control `type' or HC data?
+        READ(IUNIT,'(//)',IOSTAT=ISTAT,ERR=1001)
+        CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc line 4',IER)
+        if(num.ne.1)then
+          call edisp(iuout,
+     &      ' HTC file in old format: file must be updated.')
+          CALL ERPFREE(IUNIT,ISTAT)
+          stop ' HTC file in old format: file must be updated.'
+        endif
+      ENDIF
+      CALL ERPFREE(IUNIT,ISTAT)
 
 C Open convection file.
       CALL EFOPSEQ(IUNIT,LHCCO(ICOMP),1,IER)
@@ -124,10 +132,11 @@ C Read start and end times of interval.
 C Read control `type' for interval.  This controls how the remaining
 C data is read in.
         READ(IUNIT,*,IOSTAT=ISTAT,ERR=1001,END=1002) Itype
-        if(Itype.lt.1 .or. Itype.gt.3) goto 1010
+        if(Itype.lt.1 .or. Itype.gt.4) goto 1010
         iCTLTP(ICOMP,I) = Itype
 
         if(Itype.eq.1) then
+
 C User specifies coefficients for each surface.
 C Read in convection coefficients for interior and exterior surfaces.
           READ(IUNIT,*,IOSTAT=ISTAT,ERR=1001,END=1002)(HIV(J),J=1,NS)
@@ -164,6 +173,68 @@ C Read IAORZ,CWIDTH and CHEIGHT of ventilated channels. Close
 C the file if this line was not found.
           READ(IUNIT,*,IOSTAT=ISTAT,ERR=1002,END=2003)
      &      IAORZ,CWIDTH,CHEIGHT
+
+        elseif(Itype.eq.4) then
+
+C CEN mode sets values for specific conditions.
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen base top',IER)
+          if(OUTSTR(1:8).eq.'*basetop')then
+            K=8
+            CALL EGETWR(OUTSTR,K,V1,1.,100.,'W','htc cen base',IER)
+            CALL EGETWR(OUTSTR,K,V2,1.,100.,'W','htc cen top',IER)
+            CENLOC(icomp,i,1)=V1
+            CENLOC(icomp,i,2)=V2
+          else
+            goto 1011
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen floor',IER)
+          if(OUTSTR(1:6).eq.'*floor')then
+            K=6
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,3)=V1
+            CENLOC(icomp,i,4)=V2
+            CENLOC(icomp,i,5)=V3
+          else
+            goto 1011
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen ceiling',IER)
+          if(OUTSTR(1:8).eq.'*ceiling')then
+            K=8
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,6)=V1
+            CENLOC(icomp,i,7)=V2
+            CENLOC(icomp,i,8)=V3
+          else
+            goto 1012
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen slope',IER)
+          if(OUTSTR(1:6).eq.'*slope')then
+            K=6
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,9)=V1
+            CENLOC(icomp,i,10)=V2
+            CENLOC(icomp,i,11)=V3
+          else
+            goto 1013
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen wall',IER)
+          if(OUTSTR(1:5).eq.'*wall')then
+            K=5
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen inside',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen ptn',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,12)=V1
+            CENLOC(icomp,i,13)=V2
+            CENLOC(icomp,i,14)=V3
+          else
+            goto 1014
+          endif
         else
 
 C Invalid control type specified.
@@ -206,6 +277,14 @@ C Trace output ?
       call epagend
       STOP
  1010 call edisp(iuout,' Invalid HTC control type specified')
+      goto 1000
+ 1011 call edisp(iuout,' Expecting *floor in htc file.')
+      goto 1000
+ 1012 call edisp(iuout,' Expecting *ceil in htc file.')
+      goto 1000
+ 1013 call edisp(iuout,' Expecting *slope in htc file.')
+      goto 1000
+ 1014 call edisp(iuout,' Expecting *wall in htc file.')
       goto 1000
 
 C Trace output follows.
@@ -266,6 +345,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
      &            CVdat(MS*MBP,8)
       common/HCFPHI/hcfpdescr(MBP)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
+      COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
       common/curfile/currentfile
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -292,6 +372,14 @@ C       jj=1:   control law for interior surface
 C       jj=2-4: data items associated with control law for interior
 C       jj=5:   control law for exterior surface
 C       jj=6-8: data items associated with control law for exterior
+C Variables used for `type 4' control:
+C   CENLOC(i,k,jj) hc values for zone 'i', time interval 'k':
+C       jj=1 index of a floor surface
+C       jj=2 index of a ceiling surface
+C       jj=3-5 floor upwd_inside, downwd_inside, external
+C       jj=6-8 ceiling upwd_inside, downwd_inside, external
+C       jj=9-11 sloped upwd_inside, downwd_inside, external
+C       jj=12-14 wall inside, partition, external
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -359,7 +447,7 @@ C Read control `type' for interval.  This controls how the remaining
 C data is read in.
         CALL STRIPC(iunit,OUTSTR,1,num1,1,'htc ctl type',IER)
         K=0
-        CALL EGETWI(OUTSTR,K,Itype,1,3,'F','htc ctl type',IER)
+        CALL EGETWI(OUTSTR,K,Itype,1,4,'F','htc ctl type',IER)
         if(ier.ne.0) goto 390
         iCTLTP(ICOMP,I) = Itype
 
@@ -414,6 +502,67 @@ C Read IAORZ,CWIDTH and CHEIGHT of ventilated channels. Close
 C the file if this line was not found.
           READ(IUNIT,*,IOSTAT=ISTAT,ERR=1002,END=2003)
      &      IAORZ,CWIDTH,CHEIGHT
+        elseif(Itype.eq.4) then
+
+C CEN mode sets values for specific conditions.
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen base top',IER)
+          if(OUTSTR(1:8).eq.'*basetop')then
+            K=8
+            CALL EGETWR(OUTSTR,K,V1,1.,100.,'W','htc cen base',IER)
+            CALL EGETWR(OUTSTR,K,V2,1.,100.,'W','htc cen top',IER)
+            CENLOC(icomp,i,1)=V1
+            CENLOC(icomp,i,2)=V2
+          else
+            goto 1011
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen floor',IER)
+          if(OUTSTR(1:6).eq.'*floor')then
+            K=6
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,3)=V1
+            CENLOC(icomp,i,4)=V2
+            CENLOC(icomp,i,5)=V3
+          else
+            goto 1011
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen ceiling',IER)
+          if(OUTSTR(1:8).eq.'*ceiling')then
+            K=8
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,6)=V1
+            CENLOC(icomp,i,7)=V2
+            CENLOC(icomp,i,8)=V3
+          else
+            goto 1012
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen slope',IER)
+          if(OUTSTR(1:6).eq.'*slope')then
+            K=6
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,9)=V1
+            CENLOC(icomp,i,10)=V2
+            CENLOC(icomp,i,11)=V3
+          else
+            goto 1013
+          endif
+          CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen wall',IER)
+          if(OUTSTR(1:5).eq.'*wall')then
+            K=5
+            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen inside',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen ptn',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CENLOC(icomp,i,12)=V1
+            CENLOC(icomp,i,13)=V2
+            CENLOC(icomp,i,14)=V3
+          else
+            goto 1014
+          endif
         else
 
 C Invalid control type specified.
@@ -452,6 +601,14 @@ C Trace output ?
       call epagend
       STOP
  1010 call edisp(iuout,' Invalid HTC control type specified')
+      goto 1000
+ 1011 call edisp(iuout,' Expecting *floor in htc file.')
+      goto 1000
+ 1012 call edisp(iuout,' Expecting *ceil in htc file.')
+      goto 1000
+ 1013 call edisp(iuout,' Expecting *slope in htc file.')
+      goto 1000
+ 1014 call edisp(iuout,' Expecting *wall in htc file.')
       goto 1000
 
 C Error messages.

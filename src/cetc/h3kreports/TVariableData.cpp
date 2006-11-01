@@ -411,7 +411,7 @@ void TVariableData::OutputXML(TXMLAdapter *doc,
 
 
   if(params["minutes_per_step"] != ""){
-    minsPerStep = strtof(params["minutes_per_step"].c_str(), NULL);
+    minsPerStep = float( strtod(params["minutes_per_step"].c_str(), NULL) );
   }
   else{
     minsPerStep = 5; //default 5 mins per step
@@ -617,7 +617,7 @@ std::string TVariableData::OutputTXT( const std::string& prefex, map<std::string
   TMetadataMap::iterator pos;
 
   if(params["minutes_per_step"] != ""){
-    minsPerStep = strtof(params["minutes_per_step"].c_str(), NULL);
+    minsPerStep = float(strtod(params["minutes_per_step"].c_str(), NULL));
   }
   else{
     minsPerStep = 5.0; //default 5 mins per step

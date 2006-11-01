@@ -2353,17 +2353,8 @@ C Set the future time-row hour value.
           btimef=float(ihrp)+float(its)/float(ntstep)
           if(btimef.gt.24.0)btimef=btimef-24.
 
-C Determine climatic parameters at the present and
-C future time row. If any of the temporal definition flags for
-C boundary conditions have been set then use them in place of
-C the normal climatic interpolation.
-          itdfex=IALLCLM+IDBTEXT+IWINDVL+IWINDDR+IRELHUM+IDIFHSL+
-     &       IDIRSOL+IGLOHSL+IOBJVEL
-          if(itdfex.eq.0)then
-            call mzclmp(1)
-          elseif(itdfex.ge.1)then
-            call mzclmpt(1)
-          endif
+C Determine climatic parameters at the present and future time row. 
+          call mzclmpt(1)
 
 C Determine for each component and surface, the defining
 C index and the adjacent space temperature and radiation

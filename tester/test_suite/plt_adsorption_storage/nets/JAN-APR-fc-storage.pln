@@ -1,0 +1,224 @@
+# Plant component data base:
+../databases/plantc.db1                                           
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+   26    3
+#->   1, three node description of a residential fuel cell                       
+  fuel-cell         78
+    1        # Component has   1 control variable(s).
+  1.
+   27
+ 0.39496      0.49989E-01 -0.10430E-01   100.00       0.0000       0.0000    
+  0.0000       0.0000      0.17600E-01  0.55000E-02   0.0000      0.94760    
+ 0.27000E-01  0.23000E-02   130.18       33.551       26.105      0.0000    
+ 0.153E-01   -0.2000E-05   0.0000       0.0000       0.0000       1.000    
+  500.00       5000.0       0.0000    
+#->   2, 3-node adsorption storage unit                                          
+  ads-storage       81
+    2        # Component has   2 control variable(s).
+  0.  0.
+   33
+  7500.0      800.00      0.31100E-03  0.18023E-06   2.0000       20.000    
+  540.00       50.000       540.00      0.32000E+07  0.50000E-01   0.0000    
+ 0.25000E-01  0.40000E-01   10.000      0.50000       2000.0      0.50000    
+  2000.0       5.0000       60.000       10.000      0.50000      0.1000    
+  0.0000       10.000       200.00       1.0000      0.50000       0.0000    
+  10.000       200.00       10.000    
+#->   3, 3-node tank for charging by fuel cell and adsorption storage            
+  main-water-tank   79
+    1        # Component has   1 control variable(s).
+  1.
+   14
+  300.00       4180.0       1.1750       29300.       0.0000       80.000    
+  165.00      0.17600E-01  0.55000E-02  0.94760      0.27000E-01  0.23000E-02
+  1.0000       1.0000    
+#->   4, air heating coil fed by WCH system; 3 node model                        
+  heat-coil         21
+    0        # Component has   0 control variable(s).
+    9
+  15.000       500.00       3.5000       2.0000       15.000      0.33000    
+ 0.25000      0.10000E-02  0.15000E-01
+#->   5, centrifugal fan, 1 node model ; flow control                            
+  ahu-fan            3
+    1        # Component has   1 control variable(s).
+  0.310000002
+    6
+  10.000       500.00       7.0000       200.00      0.31000      0.70000    
+#->   6, air duct; 1 node model                                                  
+  air-duct           6
+    0        # Component has   0 control variable(s).
+    6
+  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+#->   7, WCH pipe; 1 node model                                                  
+  pipe-FC-A-out     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->   8, WCH pipe; 1 node model                                                  
+  pipe-FC-A-in      82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->   9, variable speed domestic WCH pump; 1 node model                          
+  pump-FC-A         83
+    1        # Component has   1 control variable(s).
+  0.000126
+    7
+  5.0000       2250.0      0.20000       150.00      0.126E-03  0.70000    
+  2000.0    
+#->  10, WCH pipe; 1 node model                                                  
+  pipe-FC-B-out     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  11, WCH pipe; 1 node model                                                  
+  pipe-FC-B-in      82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  12, variable speed domestic WCH pump; 1 node model                          
+  pump-FC-B         83
+    1        # Component has   1 control variable(s).
+  0.00003
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+#->  13, WCH pipe; 1 node model                                                  
+  pipe-ADS-C-out    82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  14, WCH pipe; 1 node model                                                  
+  pipe-ADS-C-in     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  15, variable speed domestic WCH pump; 1 node model                          
+  pump-ADS-C        83
+    1        # Component has   1 control variable(s).
+  0.00001
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+#->  16, WCH pipe; 1 node model                                                  
+  pipe-aux-D-out    82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  17, WCH pipe; 1 node model                                                  
+  pipe-aux-D-in     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  18, variable speed domestic WCH pump; 1 node model                          
+  pump-aux-D        83
+    1        # Component has   1 control variable(s).
+  0.00003
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+#->  19, WCH pipe; 1 node model                                                  
+  pipe-tank-E-out   82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  20, WCH pipe; 1 node model                                                  
+  pipe-tank-E-in    82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  21, variable speed domestic WCH pump; 1 node model                          
+  pump-tank-E       83
+    1        # Component has   1 control variable(s).
+  0.0003
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+#->  22, non-condensing domestic WCH boiler; 1 node model                        
+  aux-tank          11
+    1        # Component has   1 control variable(s).
+  1000.
+    3
+  50.000       600.00       20.000    
+#->  23, WCH pipe; 1 node model                                                  
+  pipe-cond-out     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  24, variable speed domestic WCH pump; 1 node model                          
+  pump-cond-out     83
+    1        # Component has   1 control variable(s).
+  0.000
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+#->  25, WCH pipe; 1 node model                                                  
+  pipe-evap-out     82
+    0        # Component has   0 control variable(s).
+    7
+  2.0000       2250.0       2.0000      0.15000E-01   5.0000      0.17670E-03
+  2000.0    
+#->  26, variable speed domestic WCH pump; 1 node model                          
+  pump-evap         83
+    1        # Component has   1 control variable(s).
+  0.
+    7
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+  2000.0    
+# The following is a list of component connections.
+ 33          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  pipe-FC-A-out     1     3     fuel-cell         3    0.500                 #  1
+  main-water-tank   1     3     pipe-FC-A-out     1    1.000                 #  2
+  pump-FC-A         1     3     main-water-tank   1    0.300                 #  3
+  pipe-FC-A-in      1     3     pump-FC-A         1    1.000                 #  4
+  fuel-cell         3     3     pipe-FC-A-in      1    1.000                 #  5
+  pipe-FC-B-out     1     3     fuel-cell         3    0.500                 #  6
+  ads-storage       1     3     pipe-FC-B-out     1    1.000                 #  7
+  pump-FC-B         1     3     ads-storage       1    0.500                 #  8
+  pipe-FC-B-in      1     3     pump-FC-B         1    1.000                 #  9
+  fuel-cell         3     3     pipe-FC-B-in      1    1.000                 # 10
+  pipe-tank-E-out   1     3     main-water-tank   1    0.400                 # 11
+  heat-coil         2     3     ahu-fan           1    1.000                 # 12
+  pipe-tank-E-in    1     3     heat-coil         3    1.000                 # 13
+  heat-coil         3     3     pump-tank-E       1    1.000                 # 14
+  main-water-tank   1     3     pipe-tank-E-in    1    1.000                 # 15
+  pump-tank-E       1     3     pipe-tank-E-out   1    1.000                 # 16
+  ahu-fan           1     4     air-duct          1    1.000     2.00        # 17
+  air-duct          1     3     heat-coil         2    1.000                 # 18
+  pipe-ADS-C-out    1     3     ads-storage       1    0.500                 # 19
+  main-water-tank   1     3     pipe-ADS-C-out    1    1.000                 # 20
+  pump-ADS-C        1     3     main-water-tank   1    0.300                 # 21
+  pipe-ADS-C-in     1     3     pump-ADS-C        1    1.000                 # 22
+  ads-storage       1     3     pipe-ADS-C-in     1    1.000                 # 23
+  pipe-aux-D-out    1     3     aux-tank          1    1.000                 # 24
+  pump-aux-D        1     3     pipe-aux-D-out    1    1.000                 # 25
+  ads-storage       3     3     pump-aux-D        1    1.000                 # 26 
+  pipe-aux-D-in     1     3     ads-storage       3    0.500                 # 27
+  aux-tank          1     3     pipe-aux-D-in     1    1.000                 # 28
+  pipe-evap-out     1     3     ads-storage       3    0.500                 # 29
+  pump-evap         1     3     pipe-evap-out     1    1.000                 # 30
+  ads-storage       3     2     pump-evap         1    1.000    20.00   0.00 # 31
+  pipe-cond-out     1     3     ads-storage       2    1.000                 # 32
+  pump-cond-out     1     3     pipe-cond-out     1    1.000                 # 33
+# The following is a list of containment temperatures.
+  3          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  ads-storage         3            1.00000   0.00000   0.00000
+  main-water-tank     3            1.00000   0.00000   0.00000
+  fuel-cell           3            1.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

@@ -56,6 +56,12 @@ C silent is a logical toggle, if .true. then do not interact with user.
       CHARACTER H*72,LCLIM*72,LASCI*72,outs*124,OUTSTR*124
 
 C Open the ASCII file for reading.
+      if(iunit.eq.0)then
+        call usrmsg(' Problem with file unit for...',LASCI,'W')
+        ier = 1
+        return
+      endif
+
       CALL EFOPSEQ(IUNIT,LASCI,1,IER)
       if(ier.ne.0)then
         call usrmsg(' Problem opening...',LASCI,'W')
@@ -230,6 +236,13 @@ C if the radiation flag set was set to GH in the binary climate file.
       character act*1,tab*1,msg*19
 
       tab = CHAR(9)
+
+C Error if file unit is corrupt.
+      if(iaf.eq.0)then
+        call usrmsg('MKACLM: Problem with file unit for...',LASCI,'W')
+        ier=1
+        return
+      endif
 
 C Create file explicitly (not relative to problem configuration path).
       CALL ERPFREE(IAF,ISTAT)
@@ -459,6 +472,9 @@ C from a list so might as well exit the program.
 
 C rdblist returns typper common block for the selected
 C climate file.
+          if(IUF.eq.0)then
+            IUF=ifil+1
+          endif
           call usrmsg('Please select a climate set from the ',
      &                'list provided... ','-')
           call rdblist(IUF,cdblfil,clmdb,ier)
@@ -548,6 +564,9 @@ C name with the full path.
 C Create file explicitly (not relative to problem configuration path).
 C First check if it exists: if so open, otherwise create with 0 length.
 C << consider if LCLIM needs to be > 72 char >>
+      if(ICLIM.eq.0)then
+        ICLIM=IFIL
+      endif
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCMDFL)
       if(ISTAT.eq.-301)then
@@ -594,6 +613,7 @@ C If no documentation and periods know scan the climatelist
 C file for this information. If no climatelist then the defaults
 C set in clm.F will be used.
       if(rescan)then
+        IUF=ifil+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           call scancdblist(IUF,cdblfil,LCMDFL,ok,ier)
@@ -896,6 +916,14 @@ C Clear the ICLMEPW array.
    7      continue
    6    continue
    5  continue
+
+C Check that the file unit is non-zero.
+      if(iunit.eq.0)then
+        call usrmsg('EPWTOBCLM: Problem with zero file unit for...',
+     &    LASCI,'W')
+        ier = 1
+        return
+      endif
 
 C Open the ASCII file for reading.
       CALL EFOPSEQ(IUNIT,LASCI,1,IER)

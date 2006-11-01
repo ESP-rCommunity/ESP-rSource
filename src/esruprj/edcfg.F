@@ -2367,17 +2367,27 @@ C Global tasks.
             call edisp(itru,'be saved!')
             call edisp(itru,' ')
           endif
-          h(1)='Can upgrade older unsorted operations files if'
+
+C << consider an additional global task of imposing a new infiltration
+C << rate on more than one zone either via a search and replace or
+C << by asking some questions.
+C << one idea would be to take an infiltration pattern from one zone
+C << and apply it to one or more other zones.
+C << one idea would be to take a casual gain pattern from one zone
+C << and apply it to another zone.
+          h(1)='You can upgrade older unsorted operations files if'
           h(2)='they exist in the current model.'
           h(3)=' '
-          h(3)='This will also look at current operations files'
-          h(3)='to see if the casual gains periods are still sorted.'
-          h(4)='Note this upgrade is an automated process which'
-          h(5)='should be checked for validity. '
+          h(4)='You can also check current operations files to see'
+          h(5)='if the casual gains periods are still sorted.'
+          h(6)='Note this upgrade is an automated process which'
+          h(7)='should be checked for validity. '
+          h(8)=' '
+          h(9)=' '
           CALL EASKABC(
      &      'Zone operations options for multiple zones:',' ',
      &      'update all older files','check ordering in files',
-     &      'continue',IW,17)
+     &      'continue',IW,9)
           if(IW.eq.1.or.IW.eq.2)then
             inpic=NCOMP
             if(inpic.gt.0)then

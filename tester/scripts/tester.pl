@@ -8,6 +8,8 @@
 # tester.pl
 # Author: Alex Ferguson
 # Date: Jan 31, 2006
+# Modified Phylroy Lopez
+# Date: Sept 10,2006
 #
 # Copyright: Natural Resources Canada 2005/2006
 #
@@ -41,7 +43,7 @@ use Cwd;
 use Cwd 'chdir';
 use File::Find;
 use Math::Trig;
-
+use Net::SMTP;
 # Load Simple package --- needed to parse xml output.
 # Simple.pm is not part of the standard perl distribution,
 # and must be shipped with tester.pl. It can be
@@ -69,6 +71,8 @@ sub parse_hash_recursively();
 sub create_historical_archive();
 sub process_historical_archive(); 
 sub create_report();
+sub mail_message($$$$$);
+sub ESPR_Results_mailer();
 #-------------------------------------------------------------------
 # Scope global variables. All variables beginning with a 'g' are
 # considered global, and may be used in subordinate routines.
@@ -92,6 +96,8 @@ my %gElements;             #   quickly
 my %gXML_Compare_Vars;     # Variables suitable for numerical
                            #   comparison in xml output .
 
+my %gMax_difference;       # array containing maximum differences
+
 my %gTolerance;            # Tolerance(s) for comparisons
 my $gSmall;                # Tolerance for close-to-zero comparisons
                            #   (used in div/0 error trap)
@@ -105,6 +111,10 @@ my $gXML_Report_needed=0;  # Flag indicating differences were found
                            #    created.
 
 my %gRun_Times;            # Run times for simulation
+                                                      
+my $gAll_tests_pass = 1;   # Flag indicating result of all tests.
+                           #   (defaulted to 'pass', set to 'fail'
+                           #    on first failure).
                                                       
 #-------------------------------------------------------------------
 # Help text. Dumped if help requested, or if no arguements supplied.
@@ -199,6 +209,11 @@ my $Help_msg = "
 
     --echo: Report test configuration and quit.
 
+    --mailto <address>: This will email the results to the list given. This
+         is dependant on the unix 'mail' program. Will not work on windows.
+
+    --smtp_server <address>: This is required if you wish to use option '--mail_to'.
+         Ask your system administrator for your smtp server name.'
 
     
  SYNOPSIS:
@@ -366,6 +381,36 @@ $gSys_params{'username'} = $ENV{USER};
 $gSys_params{'hostname'} = $ENV{HOSTNAME};
 
 #-------------------------------------------------------------------
+# Convert uname ouptut to a managable keyword.
+#  - do case insensitive pattern match on 'os
+#-------------------------------------------------------------------
+
+for ( $gSys_params{"os_type"} ){
+  SWITCH:{
+    if (/linux/i)   { $gSys_params{'os_keyword'} = "linux";   last SWITCH; }
+    if (/cygwin/i)  { $gSys_params{'os_keyword'} = "cygwin";  last SWITCH; }
+    if (/sunos/i)   { $gSys_params{'os_keyword'} = "sun";     last SWITCH; }
+    if (/darwin/i)  { $gSys_params{'os_keyword'} = "osx";     last SWITCH; }
+    if (/mingw/i)   { $gSys_params{'os_keyword'} = "mingw";   last SWITCH; }
+  }
+}
+
+#-------------------------------------------------------------------
+# Assign system specific commands as necessary
+#-------------------------------------------------------------------
+
+# commands for compressing/decompressing files
+# Assume GNU zip
+$gSys_params{'zip_command'}   = "gzip ";
+$gSys_params{'unzip_command'} = "gunzip -c";
+
+
+
+# Assume posix tar is available.
+$gSys_params{'tar_command'}    = "tar cf";
+$gSys_params{'untar_command'}  = "tar xf";
+
+#-------------------------------------------------------------------
 # Set default paths
 #-------------------------------------------------------------------
 $gTest_paths{'master'} = getcwd();
@@ -524,6 +569,8 @@ $cmd_arguements =~ s/--historical_archive;/--historical_archive:/g;
 $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g;
 $cmd_arguements =~ s/--ref_res;/--ref_res:/g;
 $cmd_arguements =~ s/--test_res;/--test_res:/g;
+$cmd_arguements =~ s/--mailto;/--mailto:/g;
+$cmd_arguements =~ s/--smtp_server;/--smtp_server:/g;
 
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
@@ -695,6 +742,22 @@ foreach $arg (@processed_args){
       last SWITCH;
     }
     
+    if ( $arg =~ /^--mailto:/ ){
+      # Path to res for test bps
+      $arg =~ s/--mailto://g;
+      $gTest_params{"mailto_address"} = $arg ;
+    
+      last SWITCH;
+    }
+
+    if ( $arg =~ /^--smtp_server:/ ){
+      # Path to res for test bps
+      $arg =~ s/--smtp_server://g;
+      $gTest_params{"smtp_server_address"} = $arg ;
+    
+      last SWITCH;
+    }
+
     if ( $arg =~ /^-/ ){
       #arguement is unsupported. Quit.
       fatalerror("Option $arg is unsupported!");
@@ -781,17 +844,33 @@ if ( $gTest_params{"compare_versions"} ){
 }
 
 # get modification dates & md5 checksums for test file
-$gTest_params{"test_bin_mod_date"} = `stat --format=%y $gTest_params{'test_binary'}`;
-$gTest_params{"test_bin_md5sum"} = `md5sum $gTest_params{'test_binary'}`;
-$gTest_params{"test_bin_md5sum"} =~ s/\s+.*$//g;
+if ( `which stat ` !~ /no stat/ ){
+  $gTest_params{"test_bin_mod_date"} = `stat --format=%y $gTest_params{'test_binary'}`;
+}else{
+  $gTest_params{"test_bin_mod_date"} = "unknown";
+}
+if ( `which md5sum ` !~ /no md5sum/ ){
+  $gTest_params{"test_bin_md5sum"} = `md5sum $gTest_params{'test_binary'}`;
+  $gTest_params{"test_bin_md5sum"} =~ s/\s+.*$//g;
+}else{
+  $gTest_params{"test_bin_md5sum"} = "unknown";
+}
 
 if ( $gRef_Test_params{"test_binary"} && $gTest_params{"compare_versions"} ){
   # get modification dates & md5 checksums for reference file.
   # Note: if we"re comparing against a historical archive, these values will
   # be read from the configuration.txt file.
-  $gRef_Test_params{"test_bin_mod_date"} = `stat --format=%y $gRef_Test_params{'test_binary'}`;
-  $gRef_Test_params{"test_bin_md5sum"} = `md5sum $gRef_Test_params{'test_binary'}`;
-  $gRef_Test_params{"test_bin_md5sum"} =~ s/\s+.*$//g;
+  if ( `which stat ` !~ /no stat/ ){
+    $gRef_Test_params{"test_bin_mod_date"} = `stat --format=%y $gRef_Test_params{'test_binary'}`;
+  }else{
+    $gRef_Test_params{"test_bin_mod_date"} = "unknown";
+  }
+  if ( `which md5sum ` !~ /no md5sum/ ){
+    $gRef_Test_params{"test_bin_md5sum"} = `md5sum $gRef_Test_params{'test_binary'}`;
+    $gRef_Test_params{"test_bin_md5sum"} =~ s/\s+.*$//g;
+  }else{
+    $gRef_Test_params{"test_bin_md5sum"} = "unknown";
+  }
   
   # make a copy of the hostname for reporting purposes
   $gRef_Sys_params{"hostname"} = $gSys_params{"hostname"};
@@ -1377,10 +1456,10 @@ sub create_report(){
     
     # Create horizontal rule. 
     $current_rule = " ";
-    for ( my $ii = 0; $ii<442; $ii++){
+    for ( my $ii = 0; $ii<407; $ii++){
          $current_rule .= "^";
     }
-    
+   
     foreach my $failure ( sort keys %gXML_Failures ){
       my ($model,$folder,$element_path) = split /;/, $failure;
 
@@ -1404,22 +1483,26 @@ sub create_report(){
                                    "Elements exhibiting differences", "Units");
         $current_line .= sprintf  ("%\-43s<>%\-1s<>%\-1s<>%\-15s<>%\-20s[]",
                                    "Absolute difference", "", "", "", "", "", "" );
-        $current_line .= sprintf  ("%\-43s<>%\-1s<>%\-1s<>%\-15s<>%\-20s[]",
-                                   "Relative difference", "", "", "", "", "", "" );
-        $current_line .= sprintf  ("%\-43s<>%\-1s<>%\-1s<>%\-15s<>%\-20s[]",
-                                   "Absoulute difference from tolerance", "", "", "", "", "", "" );
-        $current_line .= sprintf  ("%\-43s<>%\-1s<>%\-1s<>%\-15s<>%\-20s[]",
-                                   "Relative difference from tolerance", "", "", "", "", "" );
+        $current_line .= sprintf  ("%\-58s<>%\-1s<>%\-1s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
+                                   "Reference | Test values", "", "", "", "", "", "","", "", "", "", "", "", ""  );
         push @output, $current_line;
+        
         $current_line  = sprintf  (" %\-80s<>%\-20s[]"," ", " ");
         $current_line .= sprintf  ("%\-15s<>%\-15s<>%\-15s<>%\-15s<>%\-20s[]",
-                                   "Total Average", "Active Average", "Max", "Min", "Integrated to GJ" );
-        $current_line .= sprintf  ("%\-15s<>%\-15s<>%\-15s<>%\-15s<>%\-20s[]",
-                                   "Total Average", "Active Average", "Max", "Min", "Integrated to GJ" );
-        $current_line .= sprintf  ("%\-15s<>%\-15s<>%\-15s<>%\-15s<>%\-20s[]",
-                                   "Total Average", "Active Average", "Max", "Min", "Integrated to GJ" );
-        $current_line .= sprintf  ("%\-15s<>%\-15s<>%\-15s<>%\-15s<>%\-20s[]",
-                                   "Total Average", "Active Average", "Max", "Min", "Integrated to GJ" );
+                                   "Total avg.", "Active avg.", "Max", "Min", "Integrated to GJ" );
+       
+        $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
+                                   "Total avg. (ref)",
+                                   "Total avg. (test)",
+                                   "Active avg. (ref)",
+                                   "Active avg. (test)",
+                                   "Max (ref)",
+                                   "Max (test)",
+                                   "Min (ref)",
+                                   "Min (test)",
+                                   "Integrated to GJ (ref)",
+                                   "Integrated to GJ (test)" );
+
         push @output, $current_line;
         push @output, $current_rule;        
       }
@@ -1438,44 +1521,28 @@ sub create_report(){
                                    defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"absolute"}) ?
                                            format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"absolute"},20,"%10.5g") : "        ---         " ,);
 
-      $current_line .= sprintf  ("%15s<>%15s<>%15s<>%15s<>%20s[]",
-                                   defined($gXML_Failures{$failure}{"total_average"}{"relative"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"relative"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"relative"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"relative"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"relative"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"relative"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"relative"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"relative"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"relative"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"relative"},20,"%10.5g") : "        ---         " ,);
+      $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
+                                   defined($gXML_Failures{$failure}{"total_average"}{"reference_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"reference_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"total_average"}{"test_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"test_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"active_average"}{"reference_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"reference_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"active_average"}{"test_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"test_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"max"}{"reference_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"max"}{"reference_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"max"}{"test_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"max"}{"test_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"min"}{"reference_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"min"}{"reference_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"min"}{"test_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"min"}{"test_value"},15,"%10.5g") : "      ---      " ,
+                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"reference_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"reference_value"},20,"%10.5g") : "        ---         ",
+                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"test_value"}) ?
+                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"test_value"},20,"%10.5g") : "        ---         ");
 
-      $current_line .= sprintf  ("%15s<>%15s<>%15s<>%15s<>%20s[]",
-                                   defined($gXML_Failures{$failure}{"total_average"}{"diff_to_abs_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"diff_to_abs_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"diff_to_abs_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"diff_to_abs_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"diff_to_abs_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"diff_to_abs_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"diff_to_abs_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"diff_to_abs_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"diff_to_abs_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"diff_to_abs_tolerance"},20,"%10.5g") : "        ---         " ,);
-
-      $current_line .= sprintf  ("%15s<>%15s<>%15s<>%15s<>%20s[]",
-                                   defined($gXML_Failures{$failure}{"total_average"}{"diff_to_rel_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"diff_to_rel_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"diff_to_rel_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"diff_to_rel_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"diff_to_rel_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"diff_to_rel_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"diff_to_rel_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"diff_to_rel_tolerance"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"diff_to_rel_tolerance"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"diff_to_rel_tolerance"},20,"%10.5g") : "        ---         " ,);
-
-                                           
-                                           
       push @output, $current_line;
 
       
@@ -1572,6 +1639,8 @@ sub process_historical_archive(){
       $gTest_paths{"old_archive"} .= ".tar.gz";
     }
   }
+
+  
   
   # Get historical archive folder and root name
   $gTest_paths{"old_archive_folder"} = $gTest_paths{"old_archive"};
@@ -1583,8 +1652,8 @@ sub process_historical_archive(){
   # Move to achive directory
   chdir $gTest_paths{"old_archive_folder"};
   
-  # Decompress file.
-  my $decompression_failure = `tar -xzf $gTest_paths{'old_archive_file'}`;
+  # Decompress and explode tarball.
+  my $decompression_failure = `$gSys_params{"unzip_command"} $gTest_paths{"old_archive_file"} | $gSys_params{"untar_command"} -`;
   if ( $decompression_failure ){
     print ">>>>>> $decompression_failure ";
     fatalerror("Could not decompress $gTest_paths{\"old_archive\"}");
@@ -1647,6 +1716,8 @@ sub process_historical_archive(){
       if ( $values[0] eq "*sys_param" ){
         if ( $values[1] && $values[2] ){
           $gRef_Sys_params{$values[1]} = $values[2];
+        }elsif ( $values[1] ) {
+          $gRef_Sys_params{$values[1]} = "unknown";  
         }else{
           $error_msgs .= "      - System parameter ($values[1]=$values[2])".
                          " not understood (line: $line_number)\n";
@@ -1883,7 +1954,7 @@ sub process_case($){
       my @file_contents = ();
       my @file_lines=();
   
-      read GEO_FILE, my $file_string, 16384;
+      read GEO_FILE, my ($file_string), 16384;
       
       # Condense double spaces.
       $file_string =~ s/ +/ /g;
@@ -1957,7 +2028,15 @@ sub process_case($){
 
     # run bps in model"s cfg directory
     chdir "$gTest_paths{\"local_models\"}/$model_root_name/cfg/";
+
+    # disable h3kreports for save-level-4.
+    if ( $save_level =~ /4/ ){
+      execute ( "mv input.xml input_bak.xml" );
+    }
     invoke_tests($model_name,$model_root_name,"$model_name\_temp.cfg",$save_level);
+    if ( $save_level =~ /4/ ){
+      execute ( "mv input_bak.xml input.xml" );
+    }
     chdir "$gTest_paths{\"master\"}";
     
   }
@@ -2076,7 +2155,7 @@ sub create_historical_archive(){
 
   # move to parent folder and tar archive
   chdir $parent_dir;
-  execute("tar -cvf $archive_file_name.tar $archive_file_name $gTest_params{\"configuration_file\"}");
+  execute("$gSys_params{\"tar_command\"} $archive_file_name.tar $archive_file_name $gTest_params{\"configuration_file\"}");
 
   # delete configuration text file
   execute("rm -fr $gTest_params{\"configuration_file\"}");
@@ -2085,7 +2164,7 @@ sub create_historical_archive(){
   chdir $gTest_paths{"master"};
 
   # Compress archive
-  execute("gzip $gTmp_Test_archive\.tar");
+  execute("$gSys_params{\"zip_command\"} $gTmp_Test_archive\.tar");
 
   # move archive to desired name
   execute("mv $gTmp_Test_archive\.tar.gz $gTest_paths{\"new_archive\"}.tar.gz");
@@ -2117,49 +2196,22 @@ sub invoke_tests($$$$){
     # run reference binary, and capture results
     stream_out( "   running: $gRef_Test_params{\"test_binary\"} (reference case, save level $save_level) ...");
     $cmd = "$gRef_Test_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
-    
-    if ( $gTest_params{"test_efficiency"} ){
 
-      # use time command to record CPU time. Note: we use
-      # the -p option to invoke the 'portable' version of time.
-      $sim_msgs =`time -p $cmd 2>&1`;
-  
-      # Split simulation messages into array & pop last three elements
-      # which contain the output from 'time'.
+    my ( $time_start ) = (times)[2];
       
-      @msg_buffer = split /\n/, $sim_msgs;
-    
-      $system_time = pop @msg_buffer;
-      $user_time = pop @msg_buffer;
-      $real_time = pop @msg_buffer;
-
-      # Get numerical data.
-      $real_time =~ s/real//g;
-      $real_time =~ s/\s//g;
-      $user_time =~ s/user//g;
-      $user_time =~ s/\s//g;
-
-      # Save data
-      $gRun_Times{"$folder/$model"}{$save_level}{"reference"} = $user_time;
-
-      # Prep message 
-      $run_time = "($user_time seconds on CPU)";
-
-      # Empty buffer
-      @msg_buffer = ();
-
-      # Log simulation messages. Disabled to supress warnings.
-      #log_msg($sim_msgs);
-  
-    }else{
-      # Display messages in real time to assist with diagnosis
-      execute($cmd);
-      $run_time="";
-    }
-  
+    execute($cmd);
     # archive output
     move_simulation_results($model_path,$model,$folder,$save_level,"reference",);
- 
+      
+    my ( $time_end ) = (times)[2];
+      
+    # Save runtime data
+    $user_time = $time_end-$time_start;
+    $gRun_Times{"$folder/$model"}{$save_level}{"reference"} = $user_time;
+
+    # Prep message
+    $run_time = "($user_time seconds on CPU)";
+
     stream_out("done. $run_time\n");
   }
   
@@ -2171,50 +2223,24 @@ sub invoke_tests($$$$){
   delete_old_files();
 
   $cmd = "$gTest_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
-  
-  if ( $gTest_params{"test_efficiency"} ){
 
-    # use time command to record CPU time. Note: we use
-    # the -p option to invoke the 'portable' version of time.
-  
-    $sim_msgs =`time -p $cmd 2>&1`;
+  my ( $time_start ) = (times)[2];
 
-    # Split simulation messages into array & pop last three elements,
-    # which contain the output from 'time'.
-    @msg_buffer = split /\n/, $sim_msgs;
-  
-    $system_time = pop @msg_buffer;
-    $user_time = pop @msg_buffer;
-    $real_time = pop @msg_buffer;
-
-    # Get numerical data
-    $real_time =~ s/real//g;
-    $real_time =~ s/\s//g;
-    $user_time =~ s/user//g;
-    $user_time =~ s/\s//g;
-
-    # Save run time
-    $gRun_Times{"$folder/$model"}{$save_level}{"test"} = $user_time;
-
-    # Prep message for reporting to screen.    
-    $run_time = "($user_time seconds on CPU)";
-
-    # Empty buffer.
-    @msg_buffer = ();
-  
-    # Log simulation messages. Disabled to suppress warnings.
-    # log_msg($sim_msgs);
-
-  }else{
-    # Display messages in real time to assist with diagnosis. Time
-    # will not be available
-    execute($cmd);
-    $run_time = "";
-  }
-  
+  execute($cmd);
+   
   # archive output
-  move_simulation_results($model_path,$model,$folder,$save_level,"test");  
+  move_simulation_results($model_path,$model,$folder,$save_level,"test");
+  
+  my ( $time_end ) = (times)[2];
+ 
+  # Save run-time data
+  $user_time = $time_end-$time_start;
+  $gRun_Times{"$folder/$model"}{$save_level}{"test"} = $user_time;
+
+  # Prep message for reporting to screen.
+  $run_time = "($user_time seconds on CPU)";
   stream_out("done. $run_time\n");
+  
 }
 
 #--------------------------------------------------------------------
@@ -2269,20 +2295,20 @@ sub move_simulation_results($$$$$){
       execute("mv $model.bres.data $model.data");
 
       # Move files to destination folder
-      execute ("cp -f $path/$model.data $Destination/$folder/$model/$folder\_$model\_SL4\_$version.data");
+      execute ("cp -f $path/$model.data $Destination/$folder/$model/SL4\_$version.data");
       # Get names of files that were actually copied.
       @copied_files = split (/\s/, `ls $Destination/$folder/$model/*SL4\_$version.data`);
     }
 
   }elsif ( $save_level == 5 ){
     # copy files to archive folder.
-    execute ("cp -f $path/out.csv $Destination/$folder/$model/$folder\_$model\_SL5\_$version.csv");
-    execute ("cp -f $path/out.xml $Destination/$folder/$model/$folder\_$model\_SL5\_$version.xml");
-    execute ("cp -f $path/*.h3k   $Destination/$folder/$model/$folder\_$model\_SL5\_$version.h3k");
-    execute ("cp -f $path/*.fcts1 $Destination/$folder/$model/$folder\_$model\_SL5\_$version.fcts1");
-    execute ("cp -f $path/*.fcts2 $Destination/$folder/$model/$folder\_$model\_SL5\_$version.fcts2");
-    execute ("cp -f $path/*.fcts3 $Destination/$folder/$model/$folder\_$model\_SL5\_$version.fcts3");
-    execute ("cp -f $path/*.fcts4 $Destination/$folder/$model/$folder\_$model\_SL5\_$version.fcts4");
+    execute ("cp -f $path/out.csv $Destination/$folder/$model/SL5\_$version.csv");
+    execute ("cp -f $path/out.xml $Destination/$folder/$model/SL5\_$version.xml");
+    execute ("cp -f $path/*.h3k   $Destination/$folder/$model/SL5\_$version.h3k");
+    execute ("cp -f $path/*.fcts1 $Destination/$folder/$model/SL5\_$version.fcts1");
+    execute ("cp -f $path/*.fcts2 $Destination/$folder/$model/SL5\_$version.fcts2");
+    execute ("cp -f $path/*.fcts3 $Destination/$folder/$model/SL5\_$version.fcts3");
+    execute ("cp -f $path/*.fcts4 $Destination/$folder/$model/SL5\_$version.fcts4");
     # Get names of files that were actually copied.
     @copied_files = split (/\s/, `ls $Destination/$folder/$model/*SL5\_$version.*`);
   }
@@ -2449,10 +2475,22 @@ sub compare_results($$){
             $gTest_Results{"$folder/$model"}{$extention} = "pass";
           }
         }
-        
+
+        # If comparison is to historical archive, copy reference files
+        if ( $gTest_params{"compare_to_archive"} ) {
+          my $copied_reference_file = $reference_file;
+          $copied_reference_file =~ s/test/reference/g;
+          $copied_reference_file =~ s/^.*\///g;
+          execute("cp $reference_file $gTmp_Test_archive/$folder/$model/$copied_reference_file");
+        }
         # Report test result to buffer
         stream_out ($gTest_Results{"$folder/$model"}{$extention}."\n");
       }
+    }
+
+    # update global pass flag upon failure.
+    if ( $gTest_Results{"$folder/$model"}{"overall"} =~ /fail/ ){
+      $gAll_tests_pass = 0;
     }
 
     # Compute average CPU runtimes for all save-levels
@@ -2682,9 +2720,19 @@ sub CompareXMLResults($){
           if ( ! $difference{"pass"} ) {
 
             $global_fail = 1;
-            
+
+            if ( ! defined ( $gMax_difference{$units}{$attribute}{"value"} ) ||
+                   $difference{"absolute"} >= $gMax_difference{$units}{$attribute}{"absolute"} ){
+              $gMax_difference{$units}{$attribute}{"absolute"} = $difference{"absolute"};
+              $gMax_difference{$units}{$attribute}{"folder"} = $folder;
+              $gMax_difference{$units}{$attribute}{"model"} = $model;
+              $gMax_difference{$units}{$attribute}{"element_path"} = $element_path;
+              
+            } 
             %{$gXML_Failures{"$folder;$model;$element_path"}{"$attribute"}} = %difference;
             $gXML_Failures{"$folder;$model;$element_path"}{"units"} = $units;
+
+
 
           }else{
           }
@@ -2996,6 +3044,8 @@ sub number_cruncher($$$){
   $difference{"relative"} = $relative_difference;
   $difference{"diff_to_abs_tolerance"} = abs ( $absolute_difference ) - $gTolerance{$units};
   $difference{"diff_to_rel_tolerance"} = abs ( $relative_difference ) - $gTolerance{"relative"};
+  $difference{"reference_value"} = $ref;
+  $difference{"test_value"}      = $test;
   
   return %difference;
   
@@ -3133,17 +3183,20 @@ sub get_model_root_name($){
 sub resolve_path ($){
 
   my ( $path ) = @_;
-  # if path is not absolute, prepend master path.
-  if ( $path !~ /^\// ){
-    $path = "$gTest_paths{\"master\"}/$path";
-  }
   
-  # Nuke extraneous characters
-  $path =~ s/\/\//\//g;             # elimates double slashes
-  $path =~ s/\/\.\//\//g;           # eliminates /./ characters
-  while ( $path =~ /\.\./ ){
-    $path =~ s/\/[^\/]+\/..\//\//;  # resolves /path/to/../file paths
-    $path =~ s/^\/..\//\//;         # resolves /../ error 
+  if ( $path !~ /^c:/ ){
+    # if path is not absolute, prepend master path.
+    if ( $path !~ /^\// ){
+      $path = "$gTest_paths{\"master\"}/$path";
+    }
+    
+    # Nuke extraneous characters
+    $path =~ s/\/\//\//g;             # elimates double slashes
+    $path =~ s/\/\.\//\//g;           # eliminates /./ characters
+    while ( $path =~ /\.\./ ){
+      $path =~ s/\/[^\/]+\/..\//\//;  # resolves /path/to/../file paths
+      $path =~ s/^\/..\//\//;         # resolves /../ error 
+    }
   }
   return $path;
 }
@@ -3193,4 +3246,91 @@ sub format_my_number($$$){
   return $value;
 }
 
-  
+sub mail_message($$$$$){
+
+my ($smtp_server,$To,$From,$Subject,$Message) = @_;
+my $smtp;
+my $worked;
+if ( $smtp = Net::SMTP->new($smtp_server) )
+  {
+    # use the sender's address here
+    $smtp->mail($From);
+    # recipient's address	
+    $smtp->to($To);        # recipient's address
+    # Start the mail
+    $smtp->data();
+    	
+    # Send the header.
+    $smtp->datasend("To: $To\n");
+    $smtp->datasend("From: $From\n");
+    $smtp->datasend("Subject: $Subject\n");
+    
+    # Send the body.
+    $smtp->datasend("$Message\n");
+    
+    # Finish sending the mail
+    $smtp->dataend();
+    # Close the SMTP connection.
+    $smtp->quit();
+    #Set return status.
+    $worked = 1;            
+    # A successful message.	
+    print "Mail sent to $To via $smtp_server.\n"
+      }
+else
+  {
+    #E-mail failed. Tell user.
+    print "Socket Connection to SMTP server $smtp_server failed!\n";
+    print "Mail send failed!\n";
+    print "Verify the following.\n";
+    print "SMTP server = $smtp_server \n";
+    print "Email list = $To \n";
+    #Set return status.
+    $worked = 0 ;
+  }
+
+#Return status. 
+return $worked;
+ }
+
+#This adds e-mail facility to the tester.
+
+sub ESPR_Results_mailer()
+  {
+    
+    if ( defined( $gTest_params{"mailto_address"} and  defined( $gTest_params{"smtp_server_address"} ) ) )
+      {
+	my $smtp_server =$gTest_params{"smtp_server_address"};
+	my $subject = "";
+	my $email_list = $gTest_params{"mailto_address"};
+	
+	#read in bps test_report
+	open INPUT, "<bps_test_report.txt";
+	#Ensure end of file variable is unset.
+	undef $/;
+	#Get the data from the file.
+	#Close data input.
+	my $content = <INPUT>;
+	close INPUT;
+	$/ = "\n";    
+	#Restore for normal behaviour later in script
+	
+	
+	if ( $gAll_tests_pass == 1 )
+	  {
+	    
+	    $subject = "ESP-r Testing Results Pass\n"
+	      
+	  }
+	else
+	  {
+	    $subject = "ESP-r Testing Results Fail\n"
+	  }
+	
+	print "Sending mail to $email_list using the smtp server $smtp_server.\n";
+	my $From = $ENV{USER}.'@esp-r.net';
+	mail_message( $smtp_server, $email_list, $From, $subject, $content);
+    
+
+      }
+  } 

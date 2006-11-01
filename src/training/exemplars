@@ -108,6 +108,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_hvac/cfg/cellular_hvac.cfg
 *root	/usr/esru/esp-r/training/cellular_hvac
 *item
+*name	two offices with abstract floor heating & chilled ceiling
+*cfg	/usr/esru/esp-r/training/cellular_flh/cfg/cellular_flh.cfg
+*root	/usr/esru/esp-r/training/cellular_flh
+*item
 *group	realistic models
 *help	A set of models demonstrating ESP-r's basic modelling features.
 *item

@@ -262,11 +262,7 @@ C.....-> update meta-data
      &        'units',
      &        '(W)'
      &        )
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &        'WattsToGJ',
-     &        ''
-     &        )
+
 C.......-> update data 
          call REP_REPORT(
      &        fHeat_Xfer_to_air,
@@ -301,11 +297,7 @@ C.....-> update meta-data
      &        'units',
      &        '(W)'
      &        )
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &        'WattsToGJ',
-     &        ''
-     &        )
+
 C.......-> update data 
          call REP_REPORT(
      &        fHeat_Xfer_to_water,

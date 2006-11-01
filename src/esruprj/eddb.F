@@ -84,7 +84,7 @@ C Climate related.
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
-      character cfgroot*24,LCFGF*72,fs*1,DESCP*40
+      character cfgroot*24,LCFGF*72,dq*1,fs*1,DESCP*40,message*48
       character*72 ITEMS(15)
       character doit*248,tmode*8,tfile*72,longtfile*144
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
@@ -95,6 +95,9 @@ C Climate related.
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48
 
+C Strings for dos version of source and destination of db file.
+C      character rootpdos*72,upathdos*72
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -102,6 +105,9 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C Make up a double quote for dos copy command.
+      dq = char(34)
 
       moddb=.false.
       modcon=.false.
@@ -448,8 +454,13 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DAPRES(1:lnblnk(DAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DAPRES(1:lnblnk(DAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Debug statements for native windows version. If lnblankrp or
+C lnblankup is one then there are no spaces in the string so double quotes
+C are not required.  But in either case it is useful to change any '/'
+C in rootp and upath to '\'. 
+                message='getting pressure coef file from '
+                call dbdoscopy(DAPRES,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -460,8 +471,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LAPRES(1:lnblnk(LAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LAPRES(1:lnblnk(LAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using LAPRES.
+                message='getting pressure coef file from '
+                call dbdoscopy(LAPRES,lcopy,message,doit,ier)
               endif
               call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
@@ -861,8 +874,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DFCON(1:lnblnk(DFCON)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DFCON(1:lnblnk(DFCON)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Use similar logic as DAPRES to setup for copy command.
+                message='getting materials db file from '
+                call dbdoscopy(DFCON,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -873,8 +888,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LFCON(1:lnblnk(LFCON)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LFCON(1:lnblnk(LFCON)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using LFCON.
+                message='getting materials db file from '
+                call dbdoscopy(LFCON,lcopy,message,doit,ier)
               endif
               call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
@@ -1239,8 +1256,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DFMUL(1:lnblnk(DFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DFMUL(1:lnblnk(DFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic as in materials database copy command.
+                message='getting constructions db file from '
+                call dbdoscopy(DFMUL,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -1251,8 +1270,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LFMUL(1:lnblnk(LFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LFMUL(1:lnblnk(LFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic as in materials database copy command.
+                message='getting constructions db file from '
+                call dbdoscopy(LFMUL,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -1581,8 +1602,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DPCDB(1:lnblnk(DPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DPCDB(1:lnblnk(DPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic same as other copy database commands.
+                message='getting constructions db file from '
+                call dbdoscopy(DPCDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -1593,8 +1616,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic as other copy database.
+                message='getting constructions db file from '
+                call dbdoscopy(LPCDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -1880,8 +1905,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DPRFDB(1:lnblnk(DPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DPRFDB(1:lnblnk(DPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic for copy similar to the pattern established above.
+                message='getting events db file from '
+                call dbdoscopy(DPRFDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -1892,8 +1919,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Logic for copy similar to the pattern established above.
+                message='getting events db file from '
+                call dbdoscopy(LPRFDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
@@ -2169,8 +2198,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            DOPTDB(1:lnblnk(DOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            DOPTDB(1:lnblnk(DOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using DOPTDB.
+                message='getting optics db file from '
+                call dbdoscopy(DOPTDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
@@ -2181,8 +2212,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
      &            LOPTDB(1:lnblnk(LOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
               else
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'copy /y ',
-     &            LOPTDB(1:lnblnk(LOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using LOPTDB.
+                message='getting optics db file from '
+                call dbdoscopy(LOPTDB,lcopy,message,doit,ier)
               endif
               call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
@@ -2490,15 +2523,14 @@ C from version manager
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/CLMDT1/CLMLOC
       COMMON/C4/XLAT,XLON
-      COMMON/PREC8/SLAT,SLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
-      CHARACTER*72 H,LCLIM,CDBLFIL,DFILE,LASCI,LTMP,TAFILE,TFILE
-      character longtfile*144,longtafile*144
-      CHARACTER CDBLBL*20,DOIT*248,FS*1,TMODE*8,CLMLOC*30,LCOPY*72
+      CHARACTER*72 H,LCLIM,CDBLFIL,DFILE,LASCI,LTMP
+      character longtfile*144,longtafile*144,message*48
+      CHARACTER CDBLBL*20,DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
@@ -2556,6 +2588,11 @@ C Set folder separator (fs) to \ or / as required.
       H(34)='g) convert an EPW file (which has already been edited'
       H(35)='   as per EPW_readme instructions) to an esp-r binary'
       H(36)='   climate file'
+
+C Just in case we got this far and ICLIM was not instanciated do it now.
+      if(ICLIM.eq.0)then
+        ICLIM=IFIL
+      endif
       CALL ERPFREE(ICLIM,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
@@ -2628,17 +2665,19 @@ C name to include the path and create a string to drive clm.
         call termode(ICPMOD,tmode)
         call addpath(LCLIM,longtfile,concat)
         if(iappw.gt.0.and.iappw.le.200)then
-          write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
+          write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
+     &        longtfile(1:lnblnk(longtfile))
         else
-          write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' & '
+          write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &        longtfile(1:lnblnk(longtfile))
         endif
-        call edisp(iuout,' Invoking climate analysis facility.')
-        call edisp(iuout,doit)
         CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
-        if(ok) call runit(doit,tmode)
+        if(ok)then
+          call edisp(iuout,' Invoking climate analysis facility.')
+          call edisp(iuout,doit)
+          call runit(doit,tmode)
+        endif
       elseif(isw.eq.2)then
         H(1)='Climate databases are hourly sets of values from '
         H(2)='1h00 on 1 Jan to 24h00 on 31 December. Please' 
@@ -2686,19 +2725,19 @@ C use the editing facility.
             call termode(ICPMOD,tmode)
             call addpath(LCLIM,longtfile,concat)
             if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
+              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            longtfile(1:lnblnk(longtfile)),' &'
+     &            longtfile(1:lnblnk(longtfile))
             else
-              write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &            longtfile(1:lnblnk(longtfile)),' & '
+              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &            longtfile(1:lnblnk(longtfile))
             endif
             CALL ASKOK(' ','Browse/edit selected climate data?',
      &                  OK,dok,3)
             if(ok)then
-              call runit(doit,tmode)
               call edisp(iuout,' Invoking climate analysis facility.')
               call edisp(iuout,doit)
+              call runit(doit,tmode)
             endif
           else
             call usrmsg('Problem encountered with climate data!',
@@ -2794,18 +2833,18 @@ C name to include the path and create a string to drive clm.
           call termode(ICPMOD,tmode)
           call addpath(LCLIM,longtfile,concat)
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
+            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' &'
+     &          longtfile(1:lnblnk(longtfile))
           else
-            write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' & '
+            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &          longtfile(1:lnblnk(longtfile))
           endif
           CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
           if(ok)then
-            call runit(doit,tmode)
             call edisp(iuout,' Invoking climate analysis facility.')
             call edisp(iuout,doit)
+            call runit(doit,tmode)
           endif
         endif
       elseif(isw.eq.4)then
@@ -2843,8 +2882,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
               write(doit,'(4a)',IOSTAT=IOS) 'cp ',
      &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
-              write(doit,'(4a)',IOSTAT=IOS) 'copy /y ',
-     &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using DCLIM.
+              message='getting climate file from '
+              call dbdoscopy(DCLIM,lcopy,message,doit,ier)
             endif
             call usrmsg('copying default file via',doit,'-')
             call runit(doit,'-')
@@ -2855,8 +2896,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
               write(doit,'(4a)',IOSTAT=IOS) 'cp ',
      &          LCLIM(1:lnblnk(LCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
-              write(doit,'(4a)',IOSTAT=IOS) 'copy /y ',
-     &          LCLIM(1:lnblnk(LCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
+
+C Similar logic but using LCLIM.
+              message='getting climate file from '
+              call dbdoscopy(LCLIM,lcopy,message,doit,ier)
             endif
             call usrmsg('copying file via',doit,'-')
             call runit(doit,'-')
@@ -2871,19 +2914,23 @@ C the file name as known to esp-r and LCOPY for the system cp call.
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
           call addpath(LCLIM,longtfile,concat)
+
+C Clm is started up in forground mode because when it was starting
+C up in background mode the questions about whether to use its
+C latitude & longitude and year pop-up over the climate module.
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,3a)') 'clm -mode ',tmode,
+            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' &'
+     &          longtfile(1:lnblnk(longtfile))
           else
-            write(doit,'(5a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' & '
+            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &          longtfile(1:lnblnk(longtfile))
           endif
           CALL ASKOK(' ','Browse/edit copied climate data?',OK,dok,3)
           if(ok)then
-            call runit(doit,tmode)
             call edisp(iuout,' Invoking climate analysis facility.')
             call edisp(iuout,doit)
+            call runit(doit,tmode)
             call edisp(iuout,' Climate analysis facility complete.')
           endif
         else
@@ -2921,9 +2968,9 @@ C to asking clm to do the conversion.
      &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
-            call runit(doit,tmode)
             call edisp(iuout,' Invoking climate analysis facility.')
             call edisp(iuout,doit)
+            call runit(doit,tmode)
             call edisp(iuout,' Climate conversion complete.')
           endif
         endif
@@ -2966,9 +3013,9 @@ C to asking clm to do the conversion.
      &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
-            call runit(doit,tmode)
             call edisp(iuout,' Invoking climate analysis facility.')
             call edisp(iuout,doit)
+            call runit(doit,tmode)
             call edisp(iuout,' Climate conversion complete.')
           endif
         endif
@@ -3013,16 +3060,17 @@ C to asking clm to do the conversion.
           dok=.false.
           CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
           if(ok)then
-            call runit(doit,tmode)
             call edisp(iuout,' Invoking climate analysis facility.')
             call edisp(iuout,doit)
+            call runit(doit,tmode)
             call edisp(iuout,' Climate conversion complete.')
           endif
         endif
       endif
 
-C Update Site latitude and longitude, recover clat and clong.
-C First check if it exists: if so open, otherwise create with 0 length.
+C Confirm with user about update Site latitude and longitude, recover
+C clat and clong. First check if climate file exists: if so open,
+C otherwise create with 0 length.
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
@@ -3035,46 +3083,43 @@ C First check if it exists: if so open, otherwise create with 0 length.
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
         CALL ERPFREE(ICLIM,ISTAT)
       endif
-      write(outs,'(A,F7.3,A,F7.3)')'Climate set latitude ',clat,
-     &   ' and longitude difference of ',clong
+      write(outs,'(A,F7.3,A,F7.3,a,2F7.3,a)')
+     &   'The climate lat is ',clat,
+     &   ' and longitude diff is ',clong,
+     &   '. The model currently uses ',xlat,xlon,'.'
       dok=.false.
       h(1)='Normally the project location should not deviate much'
       h(2)='from the location of climate data. '
-      CALL ASKOK(outs,'can be used. Is this ok?',OK,DOK,2)
-      IF(.NOT.OK)THEN
-        WRITE(OUTS,'(F7.3,A,F7.3)')CLAT,' ',CLONG
-        CALL EASKS(OUTS,'Confirm latitude and longitude',
-     &     ' ',24,' ','lat and long',IER,0)
-        K=0
-        CALL EGETWR(OUTS,K,XLAT,-90.,90.,'W','Latitude',IER)
-        CALL EGETWR(OUTS,K,XLON,-15.,15.,'W','Longitude dif',IER)
-        SLAT=XLAT
-        SLON=XLON
-      ELSE
+      h(3)=' '
+      h(4)='IF YOU CHANGE the model location remember to save '
+      h(5)='your model before you exit the project manager. '
+      CALL ASKOK(outs,
+     &  'Update your model with climate data? (see help)',OK,DOK,5)
+      IF(OK)THEN
         XLAT=CLAT
         XLON=CLONG
+        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',xlat,
+     &    ' and longitude diff of ',xlon,
+     &    ' is associated with the model.'
+        CALL EDISP(IUOUT,OUTS)
       ENDIF
-      WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'latitude of ',xlat,
-     &      ' and longitude of ',xlon,' will be used'
-      CALL EDISP(IUOUT,OUTS)
 
 C Update year 
       h(1)='The year associated with a model primarily tells the'
       h(2)='simulator what day of the week is 1 January. '
+      h(3)=' '
+      h(4)='IF YOU CHANGE the model year remember to save '
+      h(5)='your model before you exit the project manager. '
       dok=.false.
-      WRITE(OUTS,'(A,I4)')'The climate year ',ICYEAR      
-      CALL ASKOK(OUTS,' can be used. Is this ok?',OK,DOK,2)
-      IF(.NOT.OK)THEN
-        WRITE(OUTS,'(I4)')ICYEAR
-        CALL EASKS(OUTS,'Confirm year...',' ',
-     &  4,' ','year associated with model',IER,0)
-        K=0
-        CALL EGETWI(OUTS,K,IYEAR,1000,3000,'W','year of simulation',IER)
-      ELSE
+      WRITE(OUTS,'(A,I4,a,I4,a)')'The climate year is ',ICYEAR,
+     &  '. and the model year is ',IYEAR,'.'      
+      CALL ASKOK(OUTS,
+     &  'Use climate year in your model? (see help)',OK,DOK,5)
+      IF(OK)THEN
         IYEAR=ICYEAR
+        WRITE(OUTS,'(I4,A)')IYEAR,' will be used as year of simulation'
+        CALL EDISP(IUOUT,OUTS)
       ENDIF        
-      WRITE(OUTS,'(I4,A)')IYEAR,' will be used as year of simulation'
-      CALL EDISP(IUOUT,OUTS)
 
 C Change name of shading files in common block if present only if called
 C from version manager
@@ -3109,4 +3154,89 @@ C from version manager
       
       RETURN
       END
+
+C ********** dbdoscopy *********
+C dbdoscopy takes a source file and a destination file (with
+C   path) and converts any forward slashes to backwards slashes and detects
+C   spaces and creates and returns the doit command.
+C source (72 char) source file (with path).
+C lcopy (72 char) destination file (with path)
+C message (48 char) feedback to echo when preparing doit
+C doit (248 char) the command to execute
+C ier is zero if ok.
+      subroutine dbdoscopy(source,lcopy,message,doit,ier)
+      common/OUTIN/IUOUT,IUIN
+
+C Strings for dos version of source and destination of db file.
+      character rootpdos*72,upathdos*72,dq*1,outs*124
+      character source*72,lcopy*72,message*48,doit*248
+      logical unixok
+      integer lnrp  ! length of source file name
+      integer lnblankrp ! position of blank in source file
+      integer lnup  ! length of destination file name
+      integer lnblankup ! position of blank in source file
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        call usrmsg('dbdoscopy is being called on a Unix/Linux/OSX',
+     &    'computer environment - which could cause errors.','W')
+      endif
+
+C Make up a double quote for dos copy command, reset ier to zero
+C and clear the doit return string buffer.
+      dq = char(34)
+      ier=0
+      doit=' '
+
+C Debug statements for native windows version. If lnblankrp or
+C lnblankup is one then there are no spaces in the string so double quotes
+C are not required.  But in either case it is useful to change any '/'
+C in rootp and upath to '\'. 
+      rootpdos=' '
+      upathdos=' '
+      lnrp=lnblnk(source)
+      lnblankrp=iprevblnk(source,lnrp)
+      call backslashit(source,rootpdos) ! change / to \
+      write(outs,'(3a)') message,' ',rootpdos(1:lnrp)
+      call edisp(iuout,outs)
+
+      lnup=lnblnk(LCOPY)
+      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
+      call backslashit(LCOPY,upathdos)
+      write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+      call edisp(iuout,outs)
+
+C Create the doit command based on where there are blanks in the strings.
+      if(lnblankrp.gt.1.and.lnblankup.gt.1)then
+
+C There are blanks in both source or destination strings.
+        write(doit,'(8a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
+
+C There are blanks in destination string.
+        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
+
+C There are blanks in source string.
+        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lnup)
+      elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
+
+C There are no blanks in either source or destination strings.
+        write(doit,'(4a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',upathdos(1:lnup)
+      endif
+
+      return
+
+C Errors.
+ 552  call usrmsg(
+     &  'Error creating the dos copy command (might not work)',
+     &  doit,'W')
+      ier=1
+      return
+      end
 

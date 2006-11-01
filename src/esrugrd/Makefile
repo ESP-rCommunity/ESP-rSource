@@ -1,8 +1,10 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
+MFSdir = $(SRCdir)/esrumfs
 ISHdir = $(SRCdir)/esruish
 PRJdir = $(SRCdir)/esruprj
+TDFdir = $(SRCdir)/esrutdf
 PROG = grd$(EXE)
 
 .SUFFIXES: .o .F
@@ -10,10 +12,11 @@ PROG = grd$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = grd.o arrow.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o \
-	  common3dv.o cread3dv.o e3dviews.o econstr.o edatabase.o edcondb.o \
-	  egeometry.o egrid.o emkcfg.o emoist.o esgrid.o eroper.o esru_misc.o \
-	  g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o grd_misc.o grnd3d.o \
-          plelev.o scsys.o sort.o startup.o trnsf.o
+	 common3dv.o cread3dv.o ctread.o e3dviews.o econstr.o edatabase.o edcondb.o \
+	 egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
+	 esgrid.o esru_misc.o esystem.o item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
+         grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o sort.o startup.o \
+	 tdfile.o trnsf.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -30,6 +33,9 @@ common3dv.F:
 cread3dv.F:
 	rm -f cread3dv.F
 	ln -s $(COMdir)/cread3dv.F .
+ctread.F:
+	rm -f ctread.F
+	ln -s $(COMdir)/ctread.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
@@ -48,12 +54,18 @@ egeometry.F:
 egrid.F:
 	rm -f egrid.F
 	ln -s $(COMdir)/egrid.F .
+emfnetw.F:
+	rm -f emfnetw.F
+	ln -s $(COMdir)/emfnetw.F .
 emkcfg.F:
 	rm -f emkcfg.F
 	ln -s $(COMdir)/emkcfg.F .
 emoist.F:
 	rm -f emoist.F
 	ln -s $(COMdir)/emoist.F .
+enetmisc.F:
+	rm -f enetmisc.F
+	ln -s $(COMdir)/enetmisc.F .
 esgrid.F:
 	rm -f esgrid.F
 	ln -s $(COMdir)/esgrid.F .
@@ -63,18 +75,33 @@ eroper.F:
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
+esystem.F:
+	rm -f esystem.F
+	ln -s $(COMdir)/esystem.F .
+item.F:
+	rm -f item.F
+	ln -s $(TDFdir)/item.F .
+mfcdat.F:
+	rm -f mfcdat.F
+	ln -s $(MFSdir)/mfcdat.F .
+nwkrewr.F:
+	rm -f nwkrewr.F
+	ln -s $(COMdir)/nwkrewr.F .
 plelev.F:
 	rm -f plelev.F
 	ln -s $(COMdir)/plelev.F .
-scsys.F:
-	rm -f scsys.F
-	ln -s $(COMdir)/scsys.F .
+pltcfg.F:
+	rm -f pltcfg.F
+	ln -s $(COMdir)/pltcfg.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
+tdfile.F:
+	rm -f tdfile.F
+	ln -s $(TDFdir)/tdfile.F .
 trnsf.F:
 	rm -f trnsf.F
 	ln -s $(ISHdir)/trnsf.F .
@@ -84,6 +111,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F common3dv.F cread3dv.F e3dviews.F econstr.F edatabase.F edcondb.F \
-	egeometry.F egrid.F emkcfg.F emoist.F esgrid.F eroper.F esru_misc.F plelev.F \
-	scsys.F sort.F startup.F trnsf.F 
+	arrow.F c2fdum.F common3dv.F cread3dv.F ctread.F e3dviews.F econstr.F edatabase.F \
+	edcondb.F egeometry.F egrid.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F emoist.F \
+	esgrid.F eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
+	plelev.F pltcfg.F sort.F startup.F tdfile.F trnsf.F 

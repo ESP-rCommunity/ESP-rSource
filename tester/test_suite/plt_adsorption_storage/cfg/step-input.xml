@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<hierarchy>flat</hierarchy>
+        <report_startup_period_data>true</report_startup_period_data>
+	<dump_all_data>false</dump_all_data>
+        <output_dictionary>true</output_dictionary>
+	<time_step_averaging>false</time_step_averaging>
+        <enable_xml_wildcards>true</enable_xml_wildcards>
+
+<step_variable>building/day/*</step_variable>
+<step_variable>building/day_number/*</step_variable>
+<step_variable>building/hour/*</step_variable>
+<step_variable>building/month</step_variable>
+<step_variable>building/time/*</step_variable>
+<step_variable>building/time_step</step_variable>
+<step_variable>building/zone_*/air_point/temperature</step_variable>
+<step_variable>plant/fuel-cell/*</step_variable>
+<step_variable>plant/main-water-tank/*</step_variable>
+<step_variable>plant/ads-storage/*</step_variable>
+<step_variable>plant/aux-tank/*</step_variable>
+<step_variable>plant/pump-ADS-C/node_1/water_flow</step_variable>
+<step_variable>plant/pump-ADS-C/misc_data/*</step_variable>
+<step_variable>plant/pump-FC-B/node_1/water_flow</step_variable>
+<step_variable>plant/pump-FC-B/misc_data/*</step_variable>
+<step_variable>plant/pump-aux-D/node_1/water_flow</step_variable>
+<step_variable>plant/pump-aux-D/misc_data/*</step_variable>
+<step_variable>plant/CETC_HVAC/HRV/elec_load</step_variable>
+
+<summary_variable>plant/fuel-cell/misc_data/Q_thermal_net</summary_variable>
+<summary_variable>plant/fuel-cell/misc_data/Q_electric_net</summary_variable>
+<summary_variable>plant/main-water-tank/misc_data/burner_output</summary_variable>
+<summary_variable>plant/main-water-tank/misc_data/heatdump_future</summary_variable>
+<summary_variable>plant/ads-storage/misc_data/ads_heat_transfer_ch</summary_variable>
+<summary_variable>plant/ads-storage/misc_data/ads_heat_transfer_dis</summary_variable>
+<summary_variable>plant/aux-tank/misc_data/*</summary_variable>
+<summary_variable>plant/pump-ADS-C/misc_data/*</summary_variable>
+<summary_variable>plant/pump-FC-B/misc_data/*</summary_variable>
+<summary_variable>plant/pump-aux-D/misc_data/*</summary_variable>
+<summary_variable>plant/CETC_HVAC/HRV/elec_load</summary_variable>
+<summary_variable>plant/fuel-cell/misc_data/fuel_flow/volume</summary_variable>
+<summary_variable>plant/main-water-tank/misc_data/fuel_consumption_slpm</summary_variable>
+
+<apply_style_sheet>true</apply_style_sheet>
+<style_sheet>generic_summary.xsl</style_sheet>
+<transform_destination_file>summary_out.csv</transform_destination_file>
+
+<log_variable>plant/fuel-cell/misc_data/Q_thermal_net</log_variable>
+<log_variable>plant/fuel-cell/misc_data/Q_electric_net</log_variable>
+<log_variable>plant/main-water-tank/misc_data/burner_output</log_variable>
+<log_variable>plant/main-water-tank/misc_data/heatdump_future</log_variable>
+<log_variable>plant/ads-storage/misc_data/ads_heat_transfer_ch</log_variable>
+<log_variable>plant/ads-storage/misc_data/ads_heat_transfer_dis</log_variable>
+<log_variable>plant/aux-tank/misc_data/*</log_variable>
+<log_variable>plant/pump-ADS-C/misc_data/*</log_variable>
+<log_variable>plant/pump-FC-B/misc_data/*</log_variable>
+<log_variable>plant/pump-aux-D/misc_data/*</log_variable>
+<log_variable>plant/CETC_HVAC/HRV/elec_load</log_variable>
+<log_variable>plant/fuel-cell/misc_data/fuel_flow/volume</log_variable>
+<log_variable>plant/main-water-tank/misc_data/fuel_consumption_slpm</log_variable>
+
+</configuration>

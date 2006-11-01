@@ -469,7 +469,7 @@ C If current pass=NMAX1 then exit.
 C Determine climatic parameters at the present and
 C future time row.
       ITS = 1
-      CALL MZCLMP(1)
+      CALL MZCLMPT(1)
 
 C Loop over control variables
 

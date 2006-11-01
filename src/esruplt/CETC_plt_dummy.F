@@ -370,3 +370,117 @@ C ESP-r binaries without CETC files
 
       return
       end       
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_stg_static_template(dummy_1)
+      implicit none
+      integer dummy_1
+
+      return
+      end 
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_stg_coeff_gen(dummy_1,dummy_2,dummy_3)
+      implicit none
+#include "plant.h"
+      integer dummy_1
+      real dummy_2(mpcoe)
+      integer dummy_3
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_tank_fuel_static_temp(dummy_1)
+      implicit none
+      integer dummy_1
+
+      return
+      end 
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_tank_fuel_coeff_gen(dummy_1,dummy_2,dummy_3)
+      implicit none
+#include "plant.h"
+      integer dummy_1
+      real    dummy_2(mpcoe)
+      integer dummy_3
+
+      return 
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_tank_elec_static_temp(dummy_1)
+      implicit none
+      integer  dummy_1
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine ADS_tank_elec_coeff_gen(dummy_1,dummy_2,dummy_3)
+      implicit none
+#include "plant.h"
+      integer  dummy_1
+      real     dummy_2(mpcoe)
+      integer  dummy_3
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation
+C of ESP-r binaries without CETC files
+      subroutine ADS_stg_controller(dummy_1)
+      implicit none
+      integer  dummy_1
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine Press_WCH_pipe_static_temp(dummy_1)
+      implicit none
+      integer  dummy_1
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine Press_WCH_pipe_coeff_gen(dummy_1,dummy_2,dummy_3)
+      implicit none
+#include "plant.h"
+      integer  dummy_1
+      real     dummy_2(mpcoe)
+      integer  dummy_3
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine Press_WCH_pump_static_temp(dummy_1)
+      implicit none
+      integer  dummy_1
+
+      return
+      end
+
+C This is a dummy routine used to permit compilation of
+C ESP-r binaries without CETC files
+      subroutine Press_WCH_pump_coeff_gen(dummy_1,dummy_2,dummy_3)
+      implicit none
+#include "plant.h"
+      integer  dummy_1
+      real     dummy_2(mpcoe)
+      integer  dummy_3
+
+      return
+      end

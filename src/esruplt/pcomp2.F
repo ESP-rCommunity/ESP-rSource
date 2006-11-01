@@ -87,9 +87,17 @@ C
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
+      common/pcnam/pcname(mpcom)       ! Plant component names
+      character*15 pcname
+
+
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
       character outs*124
+      character*128  H3K_rep_NAME      ! H3Kreporting object name
+      character*128  root_name         ! root name of component node
+      character*128  hold_name         ! temporary variable for string manipulation
+
       logical closea
 
 C Trace output
@@ -204,6 +212,29 @@ C Trace output
 
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP20C'
+
+C------------------------------------------------------
+C XML output
+C------------------------------------------------------
+
+C.....Get component name
+      hold_name = pcname(IPCOMP) 
+C.....Format string as: 'plant/NAME/misc_data'
+
+       WRITE(root_name,'(A,A,A)') 
+     &     'plant/',
+     &     hold_name(1:lnblnk(hold_name)),
+     &     '/misc_data'
+
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/Q_added_heat'
+
+       call add_to_xml_reporting(
+     &                   Q,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'Heat added to boiler' )
 
 
       RETURN
@@ -495,7 +526,7 @@ C     CDATA: none
 
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
-      logical closea
+      logical closea,closeb
 
       PI = 4.0 * ATAN(1.0)
 
@@ -520,11 +551,14 @@ C First initialize UA modulus (for calculation of containment heat loss)
             PL=ADATA(IPCOMP,5)
             TW=CONVAR(ICON1,1)
             WMFR=PCONDR(ICON1)*CONVAR(ICON1,2)
-            VW=WMFR/(RHOFLD(3,TW)*ADATA(IPCOMP,6))
-            HW=1400.*(1.+0.015*TW)*VW**0.8*DH**(-0.2)
-            UA=1./(1./(HW*PI*DH*PL)+1./UA)
-            WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
-            UA=WMCP*(EXP(UA/WMCP)-1.)
+            call eclose(WMFR,0.00,0.0000001,closeb)
+            IF(.NOT.closeb) THEN
+              VW=WMFR/(RHOFLD(3,TW)*ADATA(IPCOMP,6))
+              HW=1400.*(1.+0.015*TW)*VW**0.8*DH**(-0.2)
+              UA=1./(1./(HW*PI*DH*PL)+1./UA)
+              WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
+              UA=WMCP*(EXP(UA/WMCP)-1.)
+            ENDIF
          END IF
 
 C Establish heat capacity of component mass CM (J/K) and

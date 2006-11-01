@@ -3345,6 +3345,7 @@ C IE=3 : internal where IZC,ISC defines other zone & surface.
 C IE=4 : ground connection, both TMP=0.0/ISC=0
 C IE=5 : adiabatic, both TMP=0.0/ISC=0
 C IE=6 : BASESIMP foundation
+C IE=7 : CEN 13791 partition
 C DESCR: descriptive string 25 characters wide
 C IC   : connection number.
 
@@ -3398,6 +3399,12 @@ C Knowing IE establish TMP, IZC,ISC.
         DESCR=' adiabatic               '
       ELSEIF(IE.EQ.6)THEN
         DESCR=' BASESIMP foundation     '
+      ELSEIF(IE.EQ.7)THEN
+        if(IC2(I).eq.0.and.IE2(I).eq.0)then
+          DESCR=' an similar CEN 17391 env'
+        else
+          DESCR=' a similar CEN +- env    '
+        endif
       ENDIF
 
       RETURN
