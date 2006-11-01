@@ -377,8 +377,8 @@ $gSys_params{'time'} = "$Hour:$Min:$Sec";
 
 $gSys_params{'sys_type'} = `uname -m`;
 $gSys_params{'os_type'}  = `uname -s`.":".`uname -r`;
-$gSys_params{'username'} = $ENV{USER};
-$gSys_params{'hostname'} = $ENV{HOSTNAME};
+$gSys_params{'username'} = $ENV{'USER'};
+$gSys_params{'hostname'} = `uname -n`;
 
 #-------------------------------------------------------------------
 # Convert uname ouptut to a managable keyword.
@@ -3194,8 +3194,8 @@ sub resolve_path ($){
     $path =~ s/\/\//\//g;             # elimates double slashes
     $path =~ s/\/\.\//\//g;           # eliminates /./ characters
     while ( $path =~ /\.\./ ){
-      $path =~ s/\/[^\/]+\/..\//\//;  # resolves /path/to/../file paths
-      $path =~ s/^\/..\//\//;         # resolves /../ error 
+      $path =~ s/\/[^\/]+\/\.\.\//\//;  # resolves /path/to/../file paths
+      $path =~ s/^\/\.\.\//\//;         # resolves /../ error 
     }
   }
   return $path;
