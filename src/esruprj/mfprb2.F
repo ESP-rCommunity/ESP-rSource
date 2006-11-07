@@ -534,7 +534,7 @@ C Flow m^3/s (zero flow allowed).
 
 C ***************** MF040I 
 C Fluid flow component supplementary data input or check for
-C common orifice volume flow rate component (m = rho Cd A (2/rho dP)**.5)
+C common orifice flow component (m = rho Cd A (2/rho dP)**.5)
       SUBROUTINE MF040I(ICMP,IER)
 
 #include "net_flow.h"
