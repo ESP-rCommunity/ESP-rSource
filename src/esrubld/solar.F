@@ -2855,7 +2855,7 @@ C ESP-r Commons
       
 C Local variables      
       CHARACTER OUTS*124
-      LOGICAL FOUND,OK,FEXIST
+      LOGICAL FOUND,OK,DOK,FEXIST
       REAL SNDEP        ! snow depth (cm)
       INTEGER ICOUNT    ! number of data items into snow depth file
       INTEGER IER       ! flag indicating if snow depth file was read successfully
@@ -2872,14 +2872,15 @@ C ERROR IF CANNOT BE FOUND
       CALL FINDFIL(SNFNAM,FOUND)
       IF (.NOT.FOUND) THEN
         DO WHILE(.NOT.FOUND)
+          dok=.true.
           WRITE(OUTS,'(A,A)') 'Could not find snow depth file: ',SNFNAM
-          CALL EASKOK(OUTS, 
-     &    ' Respecify? (simulator will exit if [no]!)',OK)
+          H(1)='The snow depth file contains hourly values '
+          H(2)='of snow depth. Data should be in a one-column '
+          H(3)='ASCII file, containing snow depth expressed in '
+          H(4)='cm for all 8760 hours of the year. '
+          CALL ASKOK(OUTS, 
+     &    ' Respecify? (simulator will exit if [no]!)',OK,DOK,4)
           IF (OK) THEN
-            H(1)='The snow depth file contains hourly values '
-            H(2)='of snow depth. Data should be in a one-column '
-            H(3)='ASCII file, containing snow depth expressed in '
-            H(4)='cm for all 8760 hours of the year. '
             CALL EASKS(SNFNAM,'Enter name of snow depth file',
      &        ' ',72,' ','Snow depth file',IER,4)
             CALL FINDFIL(SNFNAM,FOUND)
