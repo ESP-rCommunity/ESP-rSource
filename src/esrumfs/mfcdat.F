@@ -52,7 +52,7 @@ C      123456789 123456789 123456789 123456789 123456789 1234567890
      &'Constant mass flow rate component   m = a                   '
       IVALCM(8)=40
       LVALCM(8)=
-     &'Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  '
+     &'Common orifice flow component m = rho.f(Cd,A,rho,dP)        '
       IVALCM(9)=50
       LVALCM(9)=
      &'Laminar pipe vol. flow rate comp.   m = rho.f(L,R,mu,dP)    '

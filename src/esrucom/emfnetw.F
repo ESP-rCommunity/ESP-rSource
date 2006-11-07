@@ -574,7 +574,7 @@ C Type 35 constant mass flow rate component.
      &    call MFERR(ICMP,' Fluid type must be 1 or 2. ',IER)
       ELSE IF(ITPCMP(ICMP).EQ. 40) THEN
 
-C Type 40 common orifice volume flow rate component.
+C Type 40 common orifice flow component.
         if(NSDC.EQ.4.OR.NSDC.EQ.10)CALL CNTERR(ICMP,3)
         if((NSDC.NE.3).OR.ISDCNN(ICMP).NE.0)then
           call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
