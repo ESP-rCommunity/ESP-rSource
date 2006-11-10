@@ -2287,11 +2287,25 @@ C Ideal Control law.
           cm(5)=bmiscd(II,JJ,KK,5)
           cm(6)=bmiscd(II,JJ,KK,6)
           cm(7)=bmiscd(II,JJ,KK,7)
-          if(nint(cm(1)).eq.7)then
+
+C << nothing yet done with cm(8) value when making up report >>
+          cm(8)=bmiscd(II,JJ,KK,8)
+          if(nint(cm(1)).eq.6)then
+
+C Older control files might only have 6 items for basic controller.
             write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
      &        msg1,' max heating capacity ',cm(2),
      &        'W min heating capacity ',cm(3),'W max cooling capacity ',
-     &        cm(4),'W min heaing capacity ',cm(5),
+     &        cm(4),'W min cooling capacity ',cm(5),
+     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &        cm(7),'C. (missing 7th item)'
+          elseif(nint(cm(1)).eq.7)then
+
+C Newer control files have an extra item related to humidity control.
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &        msg1,' max heating capacity ',cm(2),
+     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
+     &        cm(4),'W min cooling capacity ',cm(5),
      &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
      &        cm(7),'C.'
           elseif(nint(cm(1)).eq.11)then
@@ -2301,7 +2315,7 @@ C Ideal Control law.
      &          msg1,' max heating capacity ',cm(2),
      &          'W min heating capacity ',cm(3),
      &          'W max cooling capacity ',cm(4),
-     &          'W min heaing capacity ',cm(5),
+     &          'W min cooling capacity ',cm(5),
      &          'W. Heating setpoint ',cm(6),
      &          'C cooling setpoint ',cm(7),
      &          'C and moisture inj humidity control with upper sp',
