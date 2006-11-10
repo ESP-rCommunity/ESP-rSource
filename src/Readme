@@ -431,7 +431,7 @@ components:
 
   a) Regression testing, which compares the predictions
      from two successive versions of ESP-r and determines
-     of differences exist in the results.
+     if differences exist in the results.
 
   b) Cross-platform testing, which compares the predictions
      from the most recent version of ESP-r running on
