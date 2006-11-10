@@ -38,7 +38,6 @@ C inextblnk: Given a string, return position of blank just after ipos.
 C  icutstr: Given a string, cuts icut characters from position ipos.
 C  EPICKS:  Allows several selections to be made from an array of strings.
 C  MENUATOL Single item menu pick with items passed via parameters.
-C  EASKOK:  Generic yes/no facility returning OK as a logical parameter.
 C  ASKOK:   Generic yes/no/default facility returning OK as a logical parameter.
 C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
@@ -275,8 +274,9 @@ C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic faciltiies to edit the number.
-        idef=0
-        iquery=0
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
         iwidth=10
         WORD=' '
         if(NHELP.GT.0)then
@@ -520,8 +520,9 @@ C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic facilities to edit the number.
-        idef=0
-        iquery=0
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
         iwidth=16
         WORD=' '
         if(NHELP.GT.0)then
@@ -744,8 +745,10 @@ C Begin with prompts.
 C If in terminal type 8 (dialogue box) use graphic facilities to get the
 C string to convert.
       IF(MMOD.EQ.8)THEN
-        idef=0
-        iquery=0
+
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
         iwidth=16
         WORD=' '
         if(NHELP.GT.0)then
@@ -952,8 +955,10 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-        idef=0
-        iquery=0
+
+C idef and iquery are not used in GTK version (yet).
+C        idef=0
+C        iquery=0
         WORD144=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -970,7 +975,7 @@ C If in terminal type 8 use dialogue box.
 C << There are potentially several things that need updating >>
 C << to this call and to askf (within esp_file.c). >>
         CALL askf(PROMPT,FILEN)
-        write (6,*) 'askdialog FILEN:',FILEN,' iflg ',IFLG
+        write (6,*) 'askdialog FILEN:',FILEN
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -979,20 +984,22 @@ C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(FILEN,WORD144)
 
-        IF(IFLG.EQ.-2)THEN
-          LN=max(1,LNBLNK(DSTR))
-          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
-     &      DSTR(1:LN),'.'
-          DOK=.true.
-          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
-          IF(OK)THEN
-            FILEN=DSTR(1:LN)
-            RETURN
-          ELSE
-            GOTO 20
-          ENDIF
-        ENDIF
-        IF(WORD144.EQ.' '.or.IFLG.eq.-1)THEN
+C << there is no default signal returned from the askf call so
+C << comment out this section of the code for now.
+C        IF(IFLG.EQ.-2)THEN
+C          LN=max(1,LNBLNK(DSTR))
+C          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
+C     &      DSTR(1:LN),'.'
+C          DOK=.true.
+C          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
+C          IF(OK)THEN
+C            FILEN=DSTR(1:LN)
+C            RETURN
+C          ELSE
+C            GOTO 20
+C          ENDIF
+C        ENDIF
+        IF(WORD144(1:2).EQ.'  ')THEN
 
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
@@ -1149,8 +1156,10 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-        idef=0
-        iquery=0
+
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -1549,8 +1558,10 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-        idef=0
-        iquery=0
+
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -2719,22 +2730,6 @@ C Not one of the legal menu choices.
 
       END
 
-c ******************** EASKOK
-c EASKOK ** depreciated ** use ASKOK.
-
-      SUBROUTINE EASKOK(MSG1,MSG2,OK)
-
-      CHARACTER*(*) MSG1,MSG2
-      logical OK,DOK
-
-C Set NH=-1 so that no default option given in ASKOK.
-      NH=-1
-      DOK=.false.
-
-      call ASKOK(MSG1,MSG2,OK,DOK,NH)
-      return
-
-      END
 
 C ******************** ASKOK
 C ASKOK Generic choice facility returning logical variable
@@ -3507,83 +3502,85 @@ C ******* FDROOT
 C Given a file name (fstring) see if it contains a (path) and a (filen).
 C Note: mingw compilers require fstring to be declaired length (not *(*).
       SUBROUTINE fdroot(fstring,path,filen)
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) path,filen,fstring
 C      character fstring*72
-      character fs*1,fs1*1,lpath*72
+      character fs*1,fs1*1
       logical unixok
+      integer ilbfstr  ! last actual char in fstring
+      integer ipos     ! the leftward moving character position
+      integer ilstr    ! declaired length of fstring
+      integer ilenfilen ! declaired length of filen to be returned
+      integer ilenpath ! declaired length of path to be returned
 
-C Clear variables and get string lengths.
-      ilpath = LEN(path)
-      ilbpath = lnblnk(path)
-      lpath=' '
-      write(lpath,'(a)') path(1:ilbpath)
-C      path = ' '
-      filen = ' '
-      ilfilen = LEN(filen)
-      ilstr = LEN(fstring)
-
-C Scan for last position of a `/' (UNIX) or '\' (NT).
-C Under mingw separators can be either.
+C Set fileseparator depending on OS.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
       else
         fs = char(92)
-        fs1 = char(47)
       endif
-      ipslash = 0
-      DO 99 I=1,ilpath
 
-C UNIX or NT version as required.
-        if(path(I:I).eq.fs)ipslash=I
-        if(.NOT.unixok)then
-          if(path(I:I).eq.fs1)islash=I
-        endif
-        if(ichar(path(I:I)).lt.32)goto 98
-C        WRITE(iuout,'(a,I4,I4)')path(I:I),ichar(path(I:I)),ipslash
- 99   CONTINUE
- 98   continue
-      islash = 0
-      DO 97 I=1,ilstr
+C Clear variables and get string lengths.
+      filen = ' '
+      ilbfstr = lnblnk(fstring)
+      ipos = ilbfstr
+      ilstr = LEN(fstring)
+      ilenfilen = LEN(filen)
+      ilenpath = LEN(path)
 
-C UNIX or NT version as required.
-        if(fstring(I:I).eq.fs)islash=I
-        if(.NOT.unixok)then
-          if(fstring(I:I).eq.fs1)islash=I
-        endif
-        if(ichar(fstring(I:I)).lt.32)goto 100
-C        WRITE(iuout,'(a,I4,I4)')fstring(I:I),ichar(fstring(I:I)),islash
- 97   CONTINUE
-
-C If islash = 0 then no root in fstring
-100   if(islash.eq.0)then
-        if(ilstr.ge.ilfilen)then
-          write(filen,'(a)')fstring(1:ilfilen)
-        elseif(ilstr.lt.ilfilen)then
-          write(filen,'(a)')fstring(1:lnblnk(fstring))
-        endif
-
-C If no root in path reset to ./, otherwise reinstate initial path string.
-        if(ipslash.eq.0)then
-          write(path,'(a1,a1)')'.',fs
+C Loop backwards from last non-blank character until a separator is found.
+ 344  continue
+      ipos=ipos-1
+      if(fstring(ipos:ipos).eq.fs)then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        path = ' '
+        if(ipos.gt.ilenpath)then
+          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
         else
-          path = lpath
+          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
         endif
+        return
+      elseif(fstring(ipos:ipos).eq.'/')then
+        filen = ' '
+        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
+        path = ' '
+        if(ipos.gt.ilenpath)then
+          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
+        else
+          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        endif
+        return
       else
 
-C If islash > 0 then root and file name
-        if(islash.ge.ilpath)then
-          write(path,'(a)')fstring(1:ilpath)
-        elseif(islash.lt.ilpath)then
-          write(path,'(a)')fstring(1:islash)
+C Arrived at the first character. There have been no file separators
+C so filen is fstring (truncated if necessary) and the path becomes
+C the equivalent of where-i-am-now.
+        if(ipos.eq.1)then
+C          call edisp(iuout,' No folder separator found.')
+          if(ilstr.ge.ilenfilen)then
+            filen = ' '
+            write(filen,'(a)',IOSTAT=IOS,ERR=1)fstring(1:ilenfilen)
+            write(path,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            return
+          elseif(ilstr.lt.ilenfilen)then
+            write(filen,'(a)')fstring(1:lnblnk(fstring))
+            write(path,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
+            return
+          endif
+        elseif(ipos.gt.1)then
+          goto 344
         endif
-        is=islash+1
-        write(filen,'(a)') fstring(is:lnblnk(fstring))
       endif
 
-      RETURN
-      END
+      return
+
+   1  call edisp(iuout,
+     &  'fdroot: error composing path or file from string.')
+      call edisp(iuout,fstring)
+      return
+      end
 
 C ******************** EFOPSEQ
 C EFOPSEQ: Open a sequential ASCII file and return appropriate
@@ -3876,6 +3873,7 @@ C blank or UNKNOWN then return XST=.FALSE.
 
       LOGICAL xst,concat
       CHARACTER SFILE*72,longtfile*144
+      integer ltf   ! position of last character in the string.
 
       xst=.false.
       if(SFILE(1:2).eq.'  ')return
@@ -3884,7 +3882,8 @@ C blank or UNKNOWN then return XST=.FALSE.
       call addpath(SFILE,longtfile,concat)
 
 C Does the file exist?
-      INQUIRE (FILE=longtfile,EXIST=xst)
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
       RETURN
       END
@@ -5269,6 +5268,7 @@ C Path to model and command line file (if any).
       character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dispbuf*124,dh*72
       logical unixok,there
+      integer ltf  ! position of last character in string.
 
       if(MMOD.ne.8)return
 
@@ -5611,6 +5611,7 @@ C terminal type 8.
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
       character tut_path*25,ltut*72,IA*3
       logical extra,XST
+      integer ltf  ! position of last character in the string.
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
@@ -5621,7 +5622,8 @@ C exh is 'show me more' text array read in from external file.
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
         XST=.FALSE.
-        INQUIRE (FILE=ltut,EXIST=XST)
+        ltf=max(1,LNBLNK(ltut))
+        INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
         if(XST)then
           open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
      &      STATUS='OLD',IOSTAT=ISTAT)
@@ -5905,13 +5907,15 @@ C number of lines (nhi) and their maximum width (ihw).
       CHARACTER*(*) OTHER
       CHARACTER exh*72,ltut*72,TOPIK*17,outstr*124
       logical XST
+      integer ltf  ! position of last character in the string.
 
 C Regenerate the topic string to match.
       TOPIK=' '
       WRITE(TOPIK,'(A5,A)')'*tut_',OTHER(1:12)
       if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
       XST=.FALSE.
-      INQUIRE (FILE=ltut,EXIST=XST)
+      ltf=max(1,LNBLNK(ltut))
+      INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
       if(XST)then
         open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
      &    STATUS='OLD',IOSTAT=IOS)
@@ -6036,11 +6040,15 @@ C General read of an ascii file.
       COMMON/OUTIN/IUOUT,IUIN
       character LFIL*72,outstr*124
       logical XST
+      integer ltf   ! position of last character in the string.
 
 C List out an ASCII file, if file name begins with "/" open
 C it directly.
+
+C << does not yet test for Windows path >>
       if(LFIL(1:1).eq.'/')then
-        INQUIRE (FILE=LFIL,EXIST=XST)
+        ltf=max(1,LNBLNK(LFIL))
+        INQUIRE (FILE=LFIL(1:ltf),EXIST=XST)
         IF (XST) THEN
           LN=max(1,lnblnk(LFIL))
           OPEN (IUNIT,FILE=LFIL(1:LN),ACCESS='SEQUENTIAL',
