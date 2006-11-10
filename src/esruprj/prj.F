@@ -147,7 +147,8 @@ C Dispersed demands notes and file name.
       character*72 LFMUL,LFCON,LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character inf*144,inz*16,inzone*16,LCMDFL*144,outs*124,outstr*124
+      character inf*144,inz*16,inzone*16,LCMDFL*144
+      character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
       character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
       character ITEMS(27)*33
@@ -156,7 +157,7 @@ C Dispersed demands notes and file name.
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
-      character GTGEOM*72,lipvdatf*72,longtfile*124
+      character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
@@ -851,6 +852,10 @@ C rexmpl returns an ier=2 then the user asked to continue.
             INQUIRE (FILE=exemfl,EXIST=XST)
             if(XST)then
               call tstamp('>','PRJ: scanning exemplars enter')
+
+C << An idea - rexmpl could return in addition the path and the cfg file  >>
+C << name parts of exemplar (because it already knows this so it need not >>
+C << be resolved again. >>
               call rexmpl(IUF,exemfl,exemplar,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
@@ -858,25 +863,52 @@ C rexmpl returns an ier=2 then the user asked to continue.
                 goto 3
               endif
               if(ier.ne.0)goto 3
-              if(exemplar.ne.'UNKNOWN'.and.exemplar.ne.' ')then
+              if(exemplar(1:7).ne.'UNKNOWN'.and.
+     &           exemplar(1:2).ne.'  ')then
                 browse=.false.
 
 C Copy the exemplar configuration file (with full path) to LCMDFL.
                 write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
                 ltcmdfl=exemplar
                 call fdroot(ltcmdfl,path,LCFGF)
+
+C Debug...
+                write(outs248,'(2a)') 'LCMDFL is ',LCMDFL
+                call edisp248(iuout,outs248,110)
+                write(outs248,'(2a)') 'model path is ',path
+                call edisp248(iuout,outs248,110)
+                write(outs248,'(2a)') 'model cfg is ',LCFGF
+                call edisp248(iuout,outs248,110)
+                call edisp(iuout,' ')
+
+C If the path of the model indicates it is one of the standard
+C exemplars then flag browse to true.
                 call isunix(unixok)
-                write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &            '/training'
+                if(unixok)then
+                  write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &              fs,'training'
+                else
+                  write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &              fs,'training'
+                endif
+
                 ldirpath=lnblnk(dirpath)
                 if(path(1:ldirpath).eq.dirpath(1:ldirpath))browse=.true.
+                write(outs,*) ' browse status is ',browse
+                call edisp(iuout,outs)
+
+C If running on a Windows machine the the file browser would have been
+C used and there is no need to check the path.
+C << Actually if GTK was used then there is no need to check for a path >>
                 confirm=.false.
-                ckpath=.true.
+                if(unixok)then
+                  ckpath=.true.
+                else
+                  ckpath=.false.
+                endif
                 call NEWPRB(ITRC,confirm,ckpath,IER)
                 call tstamp('>','PRJ: continuing with exemplar')
               endif
-C Debug.
-C              write(6,*) ' browse status is ',browse
             endif
           else
             call edisp(iuout,' No `exemplars` list available')
@@ -1186,7 +1218,7 @@ C level).
 
       character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spflnam*72,longtfile*124
+      character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,ENTFLNAM,lipvdatf
       character cfgroot*24,cr*24,spfdescr*8
 
@@ -1194,11 +1226,11 @@ C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
       character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      character brw*8,outs*124
+      character brw*8,outs*124,dq*1,fs*1
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat,hri,defok
+      logical browse,concat,hri,defok,unixok
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
 
       modparms=.false.
@@ -1206,6 +1238,17 @@ C dd is character array for selecting simulation parameter sets.
       cr=cfgroot
       if(nsset.gt.0)isset=1
       t72='  '
+
+C When invoking doit commands we need to have a file separator
+C and a double quote character available in case of spaces in name.
+      call isunix(unixok)
+      if(unixok)then
+        dq = char(34)
+        fs = char(47)
+      else
+        dq = char(34)
+        fs = char(92)
+      endif
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -1377,7 +1420,22 @@ C Invoke simulator.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+
+C Debug the patched file name.
+            write(outs,'(2a)') 'corrected file ',
+     &        longtfiledos(1:lnblnk(longtfiledos))
+            call edisp248(iuout,outs,100)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C If browsing pass this information to bps.
           if(browse)then
@@ -1406,7 +1464,22 @@ C an offset from prj start position.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+
+C Debug the patched file name.
+            write(outs,'(2a)') 'corrected file ',
+     &        longtfiledos(1:lnblnk(longtfiledos))
+            call edisp(iuout,outs)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C If browsing pass this information to bps.
           if(browse)then
@@ -1485,12 +1558,24 @@ C an offset from prj start position.
         ENDIF
       elseif(INO.EQ.MITEM-4)then
 
-C Visual simulation.  Starts e2r with configuration file.
+C Visual simulation.  Starts e2r with configuration file. Depending on
+C if Unix or Windows setup the appropriate path.
         call tstamp('>','PRJ: beginning e2r')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCFGF,longtfile,concat)
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LCFGF,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LCFGF,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'e2r -mode ',tmode,
      &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
@@ -1895,6 +1980,10 @@ C There is temporal data so must save at each timestep.
 
 C ********** ipvactions
 C ipvactions commissions ipv assessments and recovery and comparisons.
+
+C << noticed that the results file passed to res is 72 char rather than
+C << the longer string used when commissioning a simulation.
+
       subroutine ipvactions(ier)
 #include "building.h"
 
@@ -1927,7 +2016,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       character doit*248,tmode*8,tfile*72,H*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,longtfile*124
+      character selres*72,longtfile*144,longtfiledos*144
       CHARACTER LCFGF*72,lipvdatf*72
       character cfgroot*24,aut*12
 
@@ -1936,7 +2025,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character ltpath*72,filen*72,ltmp*72,upath*72
       character basefile*144,variantfile*144,outs*124,outsd*124
       character word1*20,word2*40,word3*20,outstr*124
-      character xfile*72,tg*1,delim*1,tab*1
+      character xfile*72,tg*1,delim*1,tab*1,fs*1
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
@@ -1968,6 +2057,14 @@ C the first array index is base and 2nd is variant, 3rd diff
       if(nsset.gt.0)isset=1
       write(basefile,'(a)') sipvres(1:lnblnk(sipvres))
       write(variantfile,'(a)') sipvres(1:lnblnk(sipvres))
+
+C Set file separator
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Clear values.
       anu_ht_m2(1)=0.; anu_ht_m2(2)=0.; anu_ht_m2(3)=0.
@@ -2063,7 +2160,17 @@ C Temporarily assume no browsing if in ipv mode.
           brw = ' -b no '
         endif
 
-        call addpath(LCFGF,longtfile,concat)
+        if(unixok)then
+          call addpath(LCFGF,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LCFGF,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
 
 C Run only the number of assessments required.
         if(nipvassmt.eq.1)then
@@ -2161,12 +2268,12 @@ C        write(6,*) 'status of browse and remote ',browse,remote
               call isunix(unixok)
               if(unixok)then
                 if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &              filen(1:lnblnk(filen))
                 endif
               else
                 if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &              filen(1:lnblnk(filen))
                 endif
               endif
@@ -2202,12 +2309,12 @@ C              write(6,*) 'reset tfile to ',tfile
               call isunix(unixok)
               if(unixok)then
                 if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &              filen(1:lnblnk(filen))
                 endif
               else
                 if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &              filen(1:lnblnk(filen))
                 endif
               endif
@@ -2237,12 +2344,12 @@ C              write(6,*) 'itr3 reset tfile to ',tfile
             call isunix(unixok)
             if(unixok)then
               if (ICHAR(ltpath(1:1)).ne.47) then
-                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &            filen(1:lnblnk(filen))
               endif
             else
               if (ltpath(2:2).ne.':') then
-                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &            filen(1:lnblnk(filen))
               endif
             endif
@@ -3073,10 +3180,14 @@ C    and iton=1 images have been displayed.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4,longtfile*124
+      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
 
-      logical concat,show
+      logical concat,show,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Loop through the images and display those which match the 'focus'
 C and can be displayed with a known utility. Iforce, if set to 1,
@@ -3106,7 +3217,24 @@ C attempt to match the focus with the image.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
                 longtfile=' '
-                call addpath(limgfil(img),longtfile,concat)
+                if(unixok)then
+                  call addpath(limgfil(img),longtfile,concat)
+                else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.  If X11 then an external application is used
+C an double quoting is useful. If GTK then internal function used and
+C quotes are not required.
+                  call addpath(limgfil(img),longtfile,concat)
+#ifdef X11
+                  call cmdfiledos(longtfile,longtfiledos,ier)
+#endif
+#ifdef GTK
+                  call imgfiledos(longtfile,longtfiledos,ier)
+#endif
+                  longtfile=' '
+                  longtfile=longtfiledos
+                endif
                 ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then
@@ -3164,7 +3292,17 @@ C << tag for editing ?? >>
             if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
             if(show)then
               longtfile=' '
-              call addpath(limgfil(img),longtfile,concat)
+              if(unixok)then
+                call addpath(limgfil(img),longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(limgfil(img),longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
               ixl=lnblnk(longtfile)
               if(focus(1:4).eq.'****')then
                 write(topic,'(3a)') ' Image ',longtfile(1:ixl),
@@ -3215,8 +3353,11 @@ C info being saved.
 
       character*(*) msg,xfile
       character H*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*144
-      logical concat
+      character longtfile*144,longtfiledos*144
+      logical concat,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Each call is a toggle. If open then close text or graphics command
 C file. For the graphics ask if file should be further converted.
@@ -3230,7 +3371,17 @@ C file. For the graphics ask if file should be further converted.
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
             longtfile=' '
-            call addpath(xfile,longtfile,concat)
+            if(unixok)then
+              call addpath(xfile,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(xfile,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
           else
             write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
@@ -3267,9 +3418,19 @@ C file. For the graphics ask if file should be further converted.
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             longtfile=' '
-            call addpath(xfile,longtfile,concat)
-C            write(6,*)'longtfile ',longtfile
-C            write(6,*)'xfile ',xfile
+            if(unixok)then
+              call addpath(xfile,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(xfile,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            call edisp248(iuout,longtfile,100)
+            call edisp248(iuout,xfile,100)
             call wwcopen(longtfile)
             call wwcsetstart
           endif
@@ -4594,7 +4755,11 @@ C contaminants network
 C << There is some problem with this section because the ctm file is
 C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
-        CALL CTREAD
+        CALL CTREAD(iier)
+        if(iier.ne.0)then
+          outs='There was a problem scanning contaminates file.'
+          call edisp(iuout,outs)
+        endif
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
         CNTMFIL=NNAME
         IUNIT=72

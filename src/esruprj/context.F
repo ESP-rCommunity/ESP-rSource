@@ -81,7 +81,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg
 
-      logical MODSIT,browse,XST,modish,OK,DOK,concat
+      logical MODSIT,browse,XST,modish,OK,DOK,concat,unixok
       logical closea,closeb,closec,closed,defview,FOUND
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
@@ -93,7 +93,7 @@ C ITEMS is menu for site/context items.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character doit*248,tmode*8,cfgroot*24,LCFGF*72
-      character longtfile*144
+      character longtfile*144,longtfiledos*144
       character imgfmt*4,imgfoc*4,limgfil*72
       character hold24*24,act*1,GTNAME*15
 
@@ -104,6 +104,9 @@ C Set initial states to false.
       MODSIT=.false.
       modish=.false.
       call tstamp('>','PRJ: model context')
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check default view point.
       defview=.false.
@@ -277,7 +280,18 @@ C as the command line. For silent do the runit via
 C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
-                  call addpath(LCFGF,longtfile,concat)
+                  if(unixok)then
+                    call addpath(LCFGF,longtfile,concat)
+                  else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                    call addpath(LCFGF,longtfile,concat)
+                    call cmdfiledos(longtfile,longtfiledos,ier)
+                    longtfile=' '
+                    longtfile=longtfiledos
+                  endif
+
                   write(doit,'(5a)') 'ish -mode text -file ',
      &              longtfile(1:lnblnk(longtfile)),' -zone ',
      &              ZN(1:lnz),' -act update_silent'
@@ -298,7 +312,14 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                     doit = ' '
                     call tchild(ICPMOD)
                     call termode(ICPMOD,tmode)
-                    call addpath(LCFGF,longtfile,concat)
+                    if(unixok)then
+                      call addpath(LCFGF,longtfile,concat)
+                    else
+                      call addpath(LCFGF,longtfile,concat)
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                      longtfile=' '
+                      longtfile=longtfiledos
+                    endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1062,7 +1083,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       logical MODSIT,browse,OK,dok,concat,unixok
       logical FOUND,XST
 
-      character H*72,outs*124,ltmp*72,hold*40,longtfile*144
+      character H*72,outs*124,ltmp*72,hold*40
       character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
@@ -1070,6 +1091,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character DBTAG*12,DBTASK*12,DBZN*15,FOCUS*8
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
+      character longtfile*144,longtfiledos*144
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1249,7 +1271,17 @@ C name to include the path and create a string to drive tdf.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LTDFA,longtfile,concat)
+        if(unixok)then
+          call addpath(LTDFA,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LTDFA,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
      &    longtfile(:lnblnk(longtfile)),' &'
         call usrmsg('starting temporal module via',doit,'-')
@@ -2900,13 +2932,17 @@ C EDDGTP Sets up shading and insolation files
       common/appw/iappw,iappx,iappy
 
       character*72 TFILE,LTHRM,H,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
-      CHARACTER ZNAME*12,ZN*12,longtfile*144
+      CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
-      logical XST,OK,DOK,concat
+      logical XST,OK,DOK,concat,unixok
 
       if(ncomp.eq.0)then
         return
       endif
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
+
       do 42 iz=1,ncomp
         if(ISI(iz).eq.1)then
           call FINDFIL(LSHAD(iz),XST)
@@ -2942,7 +2978,17 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
           if(IRT.eq.1)then
-            call addpath(LCFGF,longtfile,concat)
+            if(unixok)then
+              call addpath(LCFGF,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LCFGF,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
             write(doit,'(5a)') 'ish -mode text -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act update_silent'
@@ -2966,7 +3012,14 @@ C rather than starting up a new xterm.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

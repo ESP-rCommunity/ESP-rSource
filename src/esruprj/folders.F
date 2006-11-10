@@ -77,7 +77,7 @@ C Calendar.
       character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
       character LCFGF*72,H*72,cfgroot*24
       character*72 DFCFG
-      character doit*248,tfile*72,longtfile*144
+      character doit*248,tfile*72,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*1
@@ -344,7 +344,20 @@ C << which uses GTK facilities.
       h(6)='is to provide documentation on the model. '
       CALL ASKOK(' ',' Edit the log file?',OK,dok,6)
       IF(OK)then
-        call addpath(LPRJLG,longtfile,concat)
+
+C Check if Unix-based or DOS based.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LPRJLG,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LPRJLG,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
@@ -482,7 +495,8 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character doit*248,tfile*72,sfile*72,snpfile*72,longtfile*144
+      character doit*248,tfile*72,sfile*72,snpfile*72
+      character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
       character*33 ITEMS(19)
@@ -808,7 +822,18 @@ C If vi then spawn a new window to do the editing in.
         H(2)='defined text editor.'
         CALL EASKS(LFIL,' ASCII file to edit ? ',
      &    ' ',72,' ','ASCII file',IER,2)
-        call addpath(LFIL,longtfile,concat)
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LFIL,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LFIL,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),

@@ -173,7 +173,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
-      logical allattribok,changedit,ok,dok,concat
+      logical allattribok,changedit,ok,dok,concat,unixok
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
@@ -187,7 +187,7 @@ C Remember if each zone is fully attributed.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
-      character longtfile*144
+      character longtfile*144,longtfiledos*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -219,6 +219,9 @@ C in the current model. A -1 means not applicable
       integer destination
 
       character*10 wkd1, wkd2
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
       changedit=.false.
       IUF=IFIL+2
@@ -478,7 +481,17 @@ C necessary.  If vi then spawn a new window to do the editing.
           h(2)='use it to edit this file.  '
           CALL ASKOK(' ',' Edit this file?',OK,dok,2)
           IF(OK)then
-            call addpath(LPRJLG,longtfile,concat)
+            if(unixok)then
+              call addpath(LPRJLG,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LPRJLG,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
             tmode='graph'
             if(teditor(1:2).eq.'  ')then
               call usrmsg(
@@ -1837,8 +1850,11 @@ C not browsing.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
       character zname*12,zdesc*64,ZN*12,doit*248,tmode*8
-      character longtfile*144
-      logical ok,dok,ddok,found,XST,concat,anyish
+      character longtfile*144,longtfiledos*144
+      logical ok,dok,ddok,found,XST,concat,anyish,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check to see if version of configuration file requires updating.
       if(icfgv.lt.3)then
@@ -1964,7 +1980,17 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
               write(doit,'(5a)') 'ish -mode text -file ',
      &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act update_silent'
@@ -1978,7 +2004,17 @@ C as the command line.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
