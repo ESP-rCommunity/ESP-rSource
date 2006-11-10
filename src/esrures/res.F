@@ -299,7 +299,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
       write(outs,'(2a)')
-     & ' ESP-r Results Analysis Tool: Version 7.40a of July 2006.',
+     & ' ESP-r Results Analysis Tool: Version 7.41 of November 2006.',
      & ' Copyright 2001-6 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')

@@ -1,5 +1,5 @@
-# composite construction db defined in ../dbs/linford.mdb
-# based on materials db ../dbs/linford.pdb
+# composite construction db defined in ../dbs/linford.constrdb
+# based on materials db ../dbs/linford.materialdb
    15     # no of composites 
 # layers  description   optics name   symmetry tag
     4    ext_wall      OPAQ  OPAQUE        ext_wall_rev  

@@ -228,7 +228,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.NE.-6)ICOUT=IUOUT
       call edisp(IUOUT,' ')
       write(outs,'(2a)')
-     &  ' ESP-r Stand-alone plant: Version 2.22a of July 2006.' ,
+     &  ' ESP-r Stand-alone plant: Version 2.3 of November 2006.' ,
      &  ' Copyright 2001-6 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')

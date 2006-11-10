@@ -352,10 +352,10 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.1')
+      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.2')
       call edisp(IUOUT,' ')
-      call edisp(IUOUT,' (ESP-r Project Manager Version 5.7b of')
-      call edisp(IUOUT,' July 2006, Copyright 2001-6 Energy ')
+      call edisp(IUOUT,' (ESP-r Project Manager Version 5.8 of')
+      call edisp(IUOUT,' November 2006, Copyright 2001-6 Energy ')
       call edisp(IUOUT,' Systems Research Unit, University of ')
       call edisp(IUOUT,' Strathclyde, Glasgow, Scotland.)')
       call edisp(IUOUT,' ')
