@@ -352,10 +352,10 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.1')
+      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.2')
       call edisp(IUOUT,' ')
-      call edisp(IUOUT,' (ESP-r Project Manager Version 5.7b of')
-      call edisp(IUOUT,' July 2006, Copyright 2001-6 Energy ')
+      call edisp(IUOUT,' (ESP-r Project Manager Version 5.8 of')
+      call edisp(IUOUT,' November 2006, Copyright 2001-6 Energy ')
       call edisp(IUOUT,' Systems Research Unit, University of ')
       call edisp(IUOUT,' Strathclyde, Glasgow, Scotland.)')
       call edisp(IUOUT,' ')
@@ -4594,11 +4594,7 @@ C contaminants network
 C << There is some problem with this section because the ctm file is
 C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
-        CALL CTREAD(iier)
-        if(iier.ne.0)then
-          outs='There was a problem scanning contaminates file.'
-          call edisp(iuout,outs)
-        endif
+        CALL CTREAD
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
         CNTMFIL=NNAME
         IUNIT=72
