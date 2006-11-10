@@ -16,7 +16,8 @@ Contents
    7. Post-installation configuration
    8. Documentation
    9. Validation
-  10. Support
+  10. Release testing 
+  11. Support
 
 ===========================================================
 1. ACKNOWLEDGMENTS
@@ -76,7 +77,7 @@ the community.
 
 Precompiled binaries
 ---------------------
-Precompiled binaries for Linux, CYGWIN, Mac OSX and
+Precompiled binaries for Linux, Cygwin, Mac OSX and
 Microsoft Windows are available at:
 
    ftp://ftp.strath.ac.uk/Esru_public/
@@ -111,19 +112,37 @@ Ian.Beausoleil-Morrison@nrcan.gc.ca) to arrange one.
 ===========================================================
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Unix, Linux, CYGWIN, MINGW and
+ESP-r has been installed Unix, Linux, Cygwin, MinGW and
 MAC OS X systems, using a variety of compiler and graphics
 library combinations. Some of these configurations have been
 thoroughly tested and are regarded as 'stable', while
-others remain in beta testing. 
+others remain in beta testing.
+
+While ESP-r has been built on all of the supported platforms
+and configurations, it is most routinely used on Linux. 
+Installation on common Linux distributions (including
+Mandrake, Redhat/Fedora and Gentoo) has proven robust, and 
+you can use it with confidence on these systems. 
+
+ESP-r is used less often on UNIX, Cygwin, MinGW and OS X. 
+systems. These systems are not be available to some ESP-r 
+developers, and some (such as MinGW) provide no standard 
+environment on which ESP-r developers can rely to ensure the 
+software functions correctly. While every effort is made to 
+assure the quality of ESP-r on these platforms, it may not 
+perform as expected on a particular system. Should you wish 
+to use ESP-r on a non-Linux platform, please review Section 
+10: "QUALITY ASSURANCE AND RELEASE TESTING", below. There,
+you will find an up-to-date description of the status of ESP-r 
+on each platform.
 
 Architectures
 -------------
 ESP-r is presently only supported on 32 bit systems.
-Installations on MINGW and OS X are regarded as 'beta'.
+Installations on MinGW and OS X are regarded as 'beta'.
 
                       +------+------+------+------+------+
-                      | UNIX |Linux |CYGWIN|MINGW | OS X |
+                      | UNIX |Linux |Cygwin|MinGW | OS X |
 +---------------------+------+------+------+------+------+
 | 32-bit              |  S   |  S   |  S   |  B   |  S   |
 | 64-bit              |  X   |  X   |  X   |  X   |  X   |
@@ -145,9 +164,9 @@ are resolved, use of GCC4 builds are recommended only for
 testing purposes.
 
                       +------+------+------+------+------+
-                      | UNIX |Linux |CYGWIN|MINGW | OS X |
+                      | UNIX |Linux |Cygwin|MinGW | OS X |
 +---------------------+------+------+------+------+------+
-| SUN cc  / f90       |  S   |  -   |  -   |  -   |  -   |
+| Sun cc  / f90       |  S   |  -   |  -   |  -   |  -   |
 | gcc 3.X / g77       |  S   |  S   |  S   |  B   |  S   |
 | gcc 4.X / gFrotran  |  X   |  B   |  X   |  X   |  X   |
 +---------------------+------+------+------+------+------+
@@ -178,7 +197,7 @@ of ESP-r can be installed on all platforms provided the
 GTK libraries are available.  
 
                       +------+------+------+------+------+
-                      | UNIX |Linux |CYGWIN|MINGW | OS X |
+                      | UNIX |Linux |Cygwin|MinGW | OS X |
 +---------------------+------+------+------+------+------+
 | X11                 |  S   |  S   |  S   |  -   |  S   |
 | GTK                 |  B   |  B   |  B   |  B   |  B   |
@@ -249,7 +268,7 @@ environment variable as described below.
 ===========================================================
 7. POST INSTALLATION CONFIGURATION
 
-On most Linux and CYGWIN systems, the only post-installation
+On most Linux and Cygwin systems, the only post-installation
 configuration required is updating the path environment
 variable to include the location of ESP-r binaries. 
 
@@ -291,7 +310,7 @@ sh, zsh, ksh) is available on the Internet.
 
 Setting EFONTS environment variable
 -----------------------------------
-On most Linux and CYGWIN systems, acceptable fonts are
+On most Linux and Cygwin systems, acceptable fonts are
 located automatically at runtime. However, if you find
 ESP-r crashes after invocation, you may need to set the
 EFONTS environment variable. Include the following lines
@@ -390,9 +409,87 @@ QA tools to go here.
    - CEN test suite
    - tester.pl 
 
+===========================================================
+10. QUALITY ASSURANCE AND RELEASE TESTING
+
+Development of ESP-r continues, and its predictions are
+subject to change as new features are added and existing
+facilities improved. To guarantee the reliability of ESP-r
+results, a quality assurance procedure is performed prior
+to each release.
+
+The quality assurance procedure is designed to assure
+that no differences in ESP-r functionality or simulation
+results are introduced between releases. If modifications
+to ESP-r have caused differences in simulation results,
+the release testing assures that the differences are 
+attributable to the changes introduced by the developer, 
+and not the result of an unintended bug.
+
+The quality assurance procedure contains two principle
+components:
+
+  a) Regression testing, which compares the predictions
+     from two successive versions of ESP-r and determines
+     if differences exist in the results.
+
+  b) Cross-platform testing, which compares the predictions
+     from the most recent version of ESP-r running on
+     different platforms and determines if differences
+     exist in the results.
+
+Since ESP-r is most commonly used on Linux systems and
+has proven robust on this platform, regression testing is
+performed on linux systems.  When possible, cross-platform
+testing is performed using each of the other supported
+platforms (UNIX, Cygwin, MinGW and OS X). However,
+limited access to these platforms and the greater variety
+of configurations exhibited by these systems limits the
+amount of testing that can be performed, and ESP-r may
+not install or function correctly on some machines.
+
+The following table summarizes the most recent test results
+on each of ESP-r's supported platforms:
+
+  ======================================================================
+  Platform  Last test date     Notes
+  ---------------------------------------------------------------------
+  Linux     2006-11-10 (r626)  A complete regression test was performed
+                               against last release (2006-07-28, r356), 
+                               with no observed numerical differences.
+  ---------------------------------------------------------------------
+  Unix      2006-11-10 (r625)  A cross platform test was performed
+                               comparing Unix output to linux results.
+                               Trivial numerical differences were
+                               observed in all test cases, while some
+                               non-trivial numerical differences were
+                               observed in in the temperatures of
+                               exterior surfaces in some test cases.
+  ---------------------------------------------------------------------
+  Cygwin    2006-11-10 (r626)  A cross platform test was performed
+                               comparing Cygwin output to linux
+                               results. No numerical differences were
+                               observed.
+  ---------------------------------------------------------------------
+  MinGW     2006-11-10 (r626)  A cross platform test was performed
+                               comparing results from MinGW
+                               to linux.  Trivial numerical
+                               differences were observed in some
+                               test cases. Installation of ESP-r
+                               has also failed on some MinGW systems
+                               --- non-standard locations of MinGW
+                               libraries are thought to be the
+                               cause. Additionally, MinGW may not
+                               be compatible with scripts written
+                               for Unix or Linux versions of ESP-r.
+  ---------------------------------------------------------------------
+  OS X      ----               No comprehensive comparison between 
+                               Linux and OSX results has been 
+                               undertaken.
+  ======================================================================
 
 ===========================================================
-10. SUPPORT
+11. SUPPORT
 
 The quickest route to a remedy for an ESP-r installation or
 modelling problem is to ask for help on the ESP-r mailing
