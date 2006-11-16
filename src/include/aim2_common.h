@@ -33,7 +33,9 @@ C-------------------------------------------------------------------------------
 C Variable declarations.
 C---------------------------------------------------------------------------------
       COMMON/AIM2_INPUT_DATA/
-     & airtight_type,ACH_50Pa,ELA_given,ELA_cm,ELA_deltaP,
+     & airtight_type,
+     & blower_door_input_option,ACH_50Pa,ELA_given,
+     & ELA_cm,ELA_deltaP,ELA_Cd,
      & userspec_leakage,
      & AIM2_ceil_frac,AIM2_wall_frac,AIM2_floor_frac,
      & AIM2_terrain_weather,AIM2_terrain_building,
@@ -49,18 +51,38 @@ C 1=blower door test; 2=quick blower door test;
 C 3=loose; 4=average; 5=present; 6=energy tight.
         INTEGER  airtight_type
 
-C Air change rate @ 50Pa. Only used if blower door inputs given.
+C Three options are available for the blower-door results inputs
+C Option 1: flow coefficient C0 [m^3/(s Pa^n)]
+C           flow exponent n
+C Option 2: Air change rate @ 50Pa
+C           Pressure difference in Pa
+C Option 3: Air change rate @ 50Pa
+C           Pressure difference in Pa
+C           Equivalent leakage area in cm^2
+C           Discharge coefficient Cd used to calculate leakage area
+            
+        INTEGER blower_door_input_option
+
+C Both flow coefficient and flow exponent can be either user inputs or
+C derived variables, depending on the blower door input option.
+C Since they are already declared as derived variables in
+C COMMON/AIM2_CALC_DATA/, no change is made in this respect.
+
+C Air change rate @ 50Pa. Used for blower_door_input_option equal to 2 and 3
         REAL  ACH_50Pa
-
-C Flag indicating whether user input ELA: 0=no input; 1=input given.
-        INTEGER ELA_given
-
-C Equivalent leakage area in cm^2. Only used if blower door inputs given.
-        REAL  ELA_cm
 
 C Pressure difference in Pa for ELA_cm.
         REAL  ELA_deltaP
+        
+C Flag indicating whether user input ELA: 0=no input; 1=input given.
+        INTEGER ELA_given
 
+C Equivalent leakage area in cm^2. Only used for blower_door_input_option equal to 3
+        REAL  ELA_cm
+
+C Discharge coefficient. Only used for blower_door_input_option equal to 3
+        REAL  ELA_Cd
+              
 C Flag indicating whether user has specified leakage fractions for ceiling,
 C wall, and floor: 0 indicates user input not given; 1 indicates user input given.
         INTEGER  userspec_leakage
@@ -276,7 +298,7 @@ C     foundation number under consideration.
         
 C     Foundation floor area (see H2K rFndatn). The index indicates the
 C     foundation number under consideration.
-        REAL  H2K_found_area(1) 
+        REAL  H2K_found_area(6) 
         
         
 C     Flags indicating whether "fireplace #1" and "fireplace #2" exist.
