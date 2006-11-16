@@ -201,6 +201,15 @@ my $Help_msg = "
     --csv_output: Output report in comma-separated-variable format
          for compatability with spreadsheet software.          
 
+    --diff_data: Pause testing and perform a diff of .data files
+         when reference and test .data files are found to differ.
+         This option causes tester.pl to behave like the legacy
+         ESP-r 'TEST' QA tool.
+         
+    --diff_tool: Command-line arguement specifiying the third-party
+         tool that should be used when comparing .data files. 
+         Default: 'diff -iw'
+
     -v, --verbose: Report progress and results to the buffer.
 
     -vv, --very_verbose: Report simulation messages and low-level
@@ -480,6 +489,12 @@ $gTest_params{'test_eff_arch_version'} = "1.1"; # Earliest historical archive
                                           
 $gTest_params{"report_format"} = "ascii";    # Format for report.
                                                       
+$gTest_params{"diff_data_files"} = 0;        # Optionally perform a diff of 
+                                             # data files 
+                                             
+$gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
+
+                                                      
 # list of parameters that should be dumped into the configuration file
 @gDumped_parameters = ( "abbreviated_runs",
                         "abbreviated_run_period",
@@ -571,7 +586,7 @@ $cmd_arguements =~ s/--ref_res;/--ref_res:/g;
 $cmd_arguements =~ s/--test_res;/--test_res:/g;
 $cmd_arguements =~ s/--mailto;/--mailto:/g;
 $cmd_arguements =~ s/--smtp_server;/--smtp_server:/g;
-
+$cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
 $cmd_arguements =~ s/:-/:;-/;
@@ -757,7 +772,21 @@ foreach $arg (@processed_args){
     
       last SWITCH;
     }
+    if ( $arg =~ /^--diff_data/ ){
+      # invoke a thrid party diff to compare differning data files...
+      $gTest_params{"diff_data_files"} = 1;
 
+      last SWITCH;
+    }
+    
+    if ( $arg =~ /^--diff_tool/){
+      # use custom thrid-party for .data file comparisons
+      $arg =~ s/--diff_tool://g;
+      $gTest_params{"third_party_diff_cmd"} = $arg;
+
+      last SWITCH; 
+
+    }
     if ( $arg =~ /^-/ ){
       #arguement is unsupported. Quit.
       fatalerror("Option $arg is unsupported!");
@@ -2461,6 +2490,28 @@ sub compare_results($$){
               
           }
 
+        }elsif ( $extention =~/data/ ){
+          
+          # Diff files. compare returns 1 if files differ.
+          if ( compare( $reference_file, $test_file ) ){
+            # Files differ
+            $gTest_Results{"$folder/$model"}{$extention} = "fail";
+            $gTest_Results{"$folder/$model"}{"overall"}  = "fail";
+            
+            # If 'diff data' has been specified, invoke a semi-interactive
+            # diff. We'll use the raw 'system' command instead of our
+            # custom 'execute' wrapper, as we don't want diff's output to 
+            # be filtered according to verbosity.
+            
+            if ( $gTest_params{"diff_data_files"} ){
+              system ("$gTest_params{\"third_party_diff_cmd\"} $reference_file $test_file");
+            }
+            
+          }else{
+            # Files are the same
+            $gTest_Results{"$folder/$model"}{$extention} = "pass";
+          }
+    
         }elsif ( $extention =~/XXX/ ){
           # Add new extention-specific analsis here
     
