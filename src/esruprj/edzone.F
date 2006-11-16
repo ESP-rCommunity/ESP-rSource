@@ -487,17 +487,19 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      H(1)='You may read in an existing geometry file or use the '
-      H(2)='inbuilt facilities to create a zone from dimensional '
-      H(3)='data (starting with a prisim, extrusion or set of '
-      H(4)='vertices). '
-      H(5)=' '
-      H(6)='Importing CAD descriptions must currently be done for'
-      H(7)='a whole model. '
-      CALL EASKABC(' New zone choices:',' ','loading existing',
-     &     'create via dimension input','cancel',INZOPT,7)
+      H(1)='You may read in an existing ESP-r format geometry file'
+      H(2)='or convert a cflow3/IES zip file into one or more zones'
+      H(3)='or use the inbuilt facilities to create a zone from '
+      H(4)='dimensional data (starting with a prisim, extrusion or '
+      H(5)='set of vertices). '
+      H(6)=' '
+      H(7)='Importing CAD descriptions must currently be done for'
+      H(8)='a whole model. '
+      CALL EASKABCD(' New zone choices:',' ','loading existing esp-r',
+     &  'load existing zip','create via dimension input','cancel',
+     &  INZOPT,8)
 
-      if(INZOPT.eq.1)then
+ 293  if(INZOPT.eq.1)then
 
 C Find out if there are geometry files in the model ../zones folder.
         sfile=' '
@@ -525,9 +527,9 @@ C Existing ESP-r geom file.
         h(2)='../zones folder then you must supply a file name. '
         h(3)='It should be relative to the cfg folder. '
         DFILE=' '
-        WRITE(OUTSTR,292)IC
- 292    FORMAT(' For zone ',I2,' the geometry is defined in:')
- 293    CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,3)
+        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+     &   ' the geometry is defined in:'
+        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,3)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
@@ -676,8 +678,8 @@ C Find out if there are operation files in the model ../zones folder.
           h(1)='If there was not existing operations file found in the'
           h(2)='../zones folder then you must supply a file name. '
           h(3)='It should be relative to the cfg folder. '
-          WRITE(OUTSTR,294)IC
- 294      FORMAT(' For zone ',I2,' the operations are defined in:')
+          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+     &      ' the operations are defined in:'
  295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,3)
           IF(LTMP(1:2).EQ.'  ')GOTO 295
           call FINDFIL(LTMP,XST)
@@ -734,8 +736,8 @@ C Find out if there are construction files in the model ../zones folder.
           h(1)='If there was not existing constructions file found in '
           h(2)='the ../zones folder then you must supply a file name.'
           h(3)='It should be relative to the cfg folder. '
-          WRITE(OUTSTR,296)IC
- 296      FORMAT(' For zone ',I2,' the constructions are defined in:')
+          WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+     &      ' the constructions are defined in:'
  297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,3)
           IF(LTMP(1:2).EQ.'  ')GOTO 297
           call FINDFIL(LTMP,XST)
@@ -754,13 +756,64 @@ C << still to do are asking for any other optional files for this zone.>>
         return
       elseif(INZOPT.eq.2)then
 
+C Find out if there are zip files in the model ../zones folder.
+        sfile=' '
+        snpfile=' '
+        call edisp(iuout,' ')
+        call browsefilelist('?','zon','zip',sfile,snpfile,nfile,iier)
+        if(nfile.gt.0)then
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('b','zon','zip',sfile,snpfile,nfile,iier)
+
+          if(snpfile(1:2).ne.'  ')then
+            write(ltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &        snpfile(1:lnblnk(snpfile))
+            write(6,*) ltmp
+          else
+            write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+          endif
+        else
+          write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+        endif
+
+C Existing zip geom file.
+        h(1)='If there was not existing geometry file found in the'
+        h(2)='../zones folder then you must supply a file name. '
+        h(3)='It should be relative to the cfg folder. '
+        DFILE=' '
+        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+     &    ' the geometry is to be scanned from:'
+ 396    CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'zip file',IER,3)
+        IF(LTMP(1:2).EQ.'  ')GOTO 293
+        call FINDFIL(LTMP,XST)
+        IF(.NOT.XST)THEN
+          dok=.true.
+          CALL ASKOK(' ','Zip file not found, try again?',OK,
+     &      dok,3)
+          IF(OK)GOTO 396
+        ENDIF
+
+C Scan zip file and update control and connections.
+        CALL EZIPIN(IFIL+1,ltmp,IC,1,ITRC,iuout,IER)
+        IF(IER.NE.0)THEN
+          dok=.true.
+          h(1)='While scanning the geometry file a problem was'
+          h(2)='encountered. Check that the file is of the correct'
+          h(3)='type and that it has not been corrupted. '
+          CALL ASKOK(OUTSTR,
+     &      'Problem scanning zip file...try again?',OK,dok,3)
+          IF(OK)GOTO 396
+        ENDIF
+      elseif(INZOPT.eq.3)then
+
 C Provide scratch description and the
 C default assumptions for other zone files.
         CALL SCRZONE(IC,IER)
         CALL EDZONE(ITRC,IC,IER)
         ZBFLG(IC)=0
         return
-      elseif(INZOPT.EQ.3)then
+      elseif(INZOPT.EQ.4)then
         return
       endif
       end
@@ -1475,9 +1528,10 @@ C IER=0 OK.
       common/appw/iappw,iappx,iappy
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER H*72,zname*12,zdesc*64,act*1,ZN*12,longtfile*144
+      CHARACTER H*72,zname*12,zdesc*64,act*1,ZN*12
+      character longtfile*144,longtfiledos*144
       character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
-      logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET,XST
+      logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET
 
       nh = 0
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then

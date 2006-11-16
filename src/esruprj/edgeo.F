@@ -25,6 +25,8 @@ C PICKSSUR  Selects surfaces for shading & insolation or copying.
 C  EDSURA:  Edit zone surface attributes in common block G5
 C  EDVERT:  Edit vertex attributes in common block G1.
 C  EDVLIST: Edit surface-vertex list attributes in common block G1.
+C  EZIPIN:  Reads zip format geometry data into esp-r geometry common
+C           blocks.
 
 C ************* EDZONE
 C Control editing of zone attributes and allow this to be saved to a
@@ -709,7 +711,7 @@ C Remind user of current surface boundary attributes.
             H(6)='by surface. '
             IX=1
             CALL EPICKS(IX,IVALSS,' ','The other side faces:',
-     &        33,9,SALT,'surface boundary options',IER,6)
+     &        33,10,SALT,'surface boundary options',IER,6)
             IOS=IVALSS(1)
             if(IOS.EQ.2)then
               H(1)='A similar (type 1) connection can include an offset'
@@ -1843,11 +1845,17 @@ C Produce help text for the menu.
       ELSEIF(INODA.EQ.ISDN-2)THEN
 
 C Add/insert a surface, return to higher level menu when done.
+C The 'ii' request an interactive insertion, the parameters
+C XO,ZO,XW,ZH are not used in an interactive insert.
         H(1)='Insertion into an existing surface is a common way '
         H(2)='to create a door or window opening. '
         LASTS=NSUR
         call tstamp('>','PRJ: insert surface into another')
-        CALL INSREC(ITRC,ITRU,ICOMP,IS,IER)
+        XO=0.
+        ZO=0.
+        XW=0.
+        ZH=0.
+        CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,IER)
         if(LASTS.ne.NSUR)then
           CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           CALL EMKCFG('-',IER)
@@ -3927,7 +3935,15 @@ C Add/insert a surface.
      &        ' ',IER)
           CALL EPMENRC
           IF(IS.EQ.0)RETURN
-          CALL INSREC(ITRC,ITRU,ICOMP,IS,IER)
+
+C Add/insert a surface, return to higher level menu when done.
+C The 'ii' request an interactive insertion, the parameters
+C XO,ZO,XW,ZH are not used in an interactive insert.
+          XO=0.
+          ZO=0.
+          XW=0.
+          ZH=0.
+          CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
           iopt=2
@@ -4537,3 +4553,710 @@ C Link back to start vertex
       endif
       return
       end
+ 
+C ******************** EZIPIN 
+C EZIPIN reads zip format geometry data from a text file into standard
+C esp-r common blocks. If possible it converts default windows and doors
+C into surfaces.
+C There are three levels of geometry data input corresponding
+C to RECtangular (REC), REGular (REG) and GENeral (GEN) shaped zones
+C using essentially the same logic as in EGOMIN (see notes in EGOMIN).
+C If IR=1 then range checking is enabled, otherwise only minimal checking
+C is performed on the data as read in.
+
+C << For GEN type input the 'G1' common block is filled immediately.
+C << With REC and REG type input the simpler input data is read and
+C << passed to subroutines ERECC and EREGC respectively where
+C << conversion to the 'G1' format takes place.
+ 
+      SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
+#include "building.h"
+
+      common/FILEP/IFIL
+
+C CTYPE (3 char) - zone shape type (REC, REG or GEN)
+      COMMON/G0/CTYPE
+
+C X,Y & Z   - coordinates of the vertices defining the zone
+C NSUR      - Number of faces comprising zone
+C JVN       - contains an ordered description (anticlockwise) of the
+C             vertices in each face
+C NTV       - total number of vertices in zone
+C NVER      - contains the number of vertices in each face
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+C NGL       - contains the number of windows in each face (set to zero)
+C             this is depreciated as the default window data structure is no
+C             longer used.        
+      COMMON/G2/NGL(MS)
+
+C Default solar distribution and shading directives.
+      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
+
+C SNAME (12 char) - surface name attribute
+C ZBASEA    - area of base (m^2)
+C IBASES    - surfaces (up to 6) associated with base area. If all 0 then
+C             base area has been supplied by the user.
+C SOTF (4 char) - surface attribute indicating OPAQ or TRAN.
+C SVFC (4 char) - string indicating whether the surface is to be
+C     counted as a FLOR (floor), VERT (wall), CEIL (ceiling),
+C     SLOP (not vertical) for purposes of floor area and daylighting.
+C SMLCN (12 char) surface construction attribute.
+C SOTHER (15 char) surface attribute for `other` side. UNKNOWN indicates
+C     that no attribute has been set. EXTERIOR or SIMILAR or ADIABATIC or
+C     BASESIMP or GROUND or a zone name are allowed.
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON),SSPARENT(MCON)
+
+C ZNAME (12 char) - the zone name.
+C ZDESC ( char) - zone notes.
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
+C which make up the floor, IUZBASEA signals that the user selected
+C specific surfaces (two), has edited the floor area (one) or it was
+C calculated based on FLOR orientations (zero).
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      COMMON/C1/NCOMP,NCON
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+C Current file (for use by low level I/O calls). Error subroutine
+C and error details for dll mode.
+      common/curfile/currentfile
+      common/dllerr/dllsubr,dllmesg
+
+      DIMENSION XX(MS),YY(MS),IVA(MS)
+      DIMENSION SNA(MS),PAZI(MS),PELV(MS)
+
+C For each possible default window and default door the relevant data.
+      DIMENSION VALX(MS),VALZ(MS),VALW(MS),VALH(MS)
+      DIMENSION VALDX(MS),VALDW(MS),VALDH(MS)
+
+C Pointer from default window or door to the parent surface it is to
+C be inserted.
+      dimension iwhichsurfw(MS), iwhichsurfd(MS)
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character SSPARENT*12
+      CHARACTER OUTSTR*124,WORD*20,CTYPE*3,zname*12,SOTHER*15
+      character lzip*72,dfile*72
+      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4 
+      character ZN*12,phrasea*64,phraseb*64,zdesc*64,outs*124
+      character currentfile*72,dllsubr*12,dllmesg*124,act*2
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,msg*48
+      logical dll,checkbase
+
+      IER=0
+      ZN=' '
+      phrasea=' '
+      phraseb=' '
+      checkbase=.false.
+
+C Check if running in dll mode.
+      call isadll(dll)
+
+C Initialise geometry data file. and set currentfile.
+      CALL EFOPSEQ(IUNIT,LZIP,1,IER)
+      IF(IER.LT.0)THEN
+        write(outs,'(3a)') 'Zip format file ',lzip(1:lnblnk(lzip)),
+     &      ' could not be opened.'
+        goto 1002
+      ENDIF
+      currentfile=lzip
+
+C First line of a zip file starts with 'COM'. If so the 2nd line
+C of the file is the tag 'NAME' followed by the name of the file
+C on the 3rd line.
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'line 1',IER)
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','COM',IFLAG)
+      if(WORD(1:3).ne.'COM')then
+        write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &      ' is not in zip format.'
+        goto 1002
+      endif
+
+C Recover the remainder of the line.
+      call egetrm(outstr,K,phraseb,'W','Z comment',IER)
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'zip NAME',IER)
+      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'zip file name',IER)
+      write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &  ' NAME or file name was misunderstood.'
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','COM',IFLAG)
+      write(6,*) 'the overall file name is ',WORD
+      lwd=lnblnk(WORD)
+      write(6,*) 'the file name is ',WORD(2:lwd-1)
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'zip date',IER)
+      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'blank line',IER)
+
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'file type',IER)
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','ESP',IFLAG)
+      if(WORD(1:3).ne.'ESP')then
+        write(outs,'(3a)') 'In file ',lzip(1:lnblnk(lzip)),
+     &      ' expected an `ESP` line.'
+        goto 1002
+      endif
+
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'edge ordering',IER)
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','ANT',IFLAG)
+      if(WORD(1:3).ne.'ANT')then
+        write(outs,'(3a)') 'In file ',lzip(1:lnblnk(lzip)),
+     &      ' expected an `ANT` line.'
+        goto 1002
+      endif
+
+C At this point the header of the file will have been written.
+C Read a line and look for COLOUR, VISIB, LAYER or GEN.
+ 96   CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'edge colour',IER)
+      write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &  ' COLOUR, VISIB, LAYER or GENNAME  was misunderstood.'
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W',
+     &  'tag COLOUR VISIB LAYER or GEN',IFLAG)
+      if(WORD(1:6).eq.'COLOUR')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'colour index',IER)
+        goto 96
+      elseif(WORD(1:5).eq.'VISIB')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'visib index',IER)
+        goto 96
+      elseif(WORD(1:5).eq.'LAYER')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'layer index',IER)
+        goto 96
+      elseif(WORD(1:3).eq.'GEN')then
+        continue
+      else
+        write(outs,'(3a)') 'In file ',lzip(1:lnblnk(lzip)),
+     &    ' expected a `COLOUR, VISIB, LAYER or GEN` line.'
+        goto 1002
+      endif
+
+C Read lines from file, if one item then assumed to 
+C be CTYPE, if 2 then the second is the zone name which
+C is tested for illegal characters.
+ 97   IF(IER.NE.0)goto 1001
+      K=0
+      IF(ND.EQ.1)THEN
+        CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+        CTYPE=WORD(1:3)
+        zname(ICOMP)=' '
+        zdesc(ICOMP)=' '
+      ELSEIF(ND.EQ.2)THEN
+        CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+        CTYPE=WORD(1:3)
+        call egetrm(outstr,K,phrasea,'W','Z description',IER)
+        zdesc(ICOMP)=' '
+      ELSEIF(ND.gt.2)THEN
+        CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+        CTYPE=WORD(1:3)
+        call egetrm(outstr,K,phrasea,'W','Z description',IER)
+
+C Combine the comment from the first line with the one after the zone CTYPE.
+        ipra=lnblnk(phrasea)
+        iprb=lnblnk(phraseb)
+        iprc= 63 - ipra
+        iwidth=ipra + iprb + 1
+        if(iwidth.lt.64)then
+          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+     &      phraseb(1:iprb)
+        else
+          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+     &      phraseb(1:iprc)
+        endif
+      ENDIF
+      write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &  ' Comment lines or CTYPE was misunderstood.'
+      IF(IFLAG.NE.0)GOTO 1001
+
+C Fill in a default zone name and description if blank.
+      if(zname(ICOMP)(1:2).EQ.'  '.OR.
+     &     zname(ICOMP)(1:7).EQ.'UNKNOWN')then
+        IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+        IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+      endif
+      if(zdesc(ICOMP)(1:1).EQ.' ')then
+        write(zdesc(ICOMP),'(a,a)') 
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+      endif
+
+C Zone is of type REC, look for 7 items on one or two lines.
+      IF(CTYPE.EQ.'REC')THEN
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'line 2',IER)
+        write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &    ' REC line origin was misunderstood.'
+        IF(IER.NE.0)goto 1001
+        K=0
+        CALL EGETWR(OUTSTR,K,XO,0.,0.,'-','X origin',IER)
+        CALL EGETWR(OUTSTR,K,YO,0.,0.,'-','Y origin',IER)
+        CALL EGETWR(OUTSTR,K,ZO,0.,0.,'-','Z origin',IER)
+
+C If only 3 items on first line read another OUTSTR and try to continue.
+        IF(ND.EQ.3) THEN
+          K=0
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 3',IER)
+          IF(IER.NE.0)goto 1001
+        ENDIF
+        CALL EGETWR(OUTSTR,K,DX,0.,0.,'-','length',IER)
+        CALL EGETWR(OUTSTR,K,DY,0.,0.,'-','width',IER)
+        CALL EGETWR(OUTSTR,K,DZ,0.,0.,'-','height',IER)
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rotation angle',IER)
+
+C Now convert to a gen description.
+        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
+        NZSUR(ICOMP)=NSUR
+        NZTV(ICOMP)=NTV
+        CTYPE='GEN'
+
+C Zone is of type REG.
+      ELSEIF(CTYPE.EQ.'REG')THEN
+        CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'line 2',IER)
+        write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &    ' REG line data was misunderstood.'
+        IF(IER.NE.0)goto 1001
+        K=0
+        CALL EGETWI(OUTSTR,K,NW,3,MS-2,'W','no of walls',IER)
+        CALL EGETWR(OUTSTR,K,Z1,0.,1000.,'W','floor height',IER)
+        CALL EGETWR(OUTSTR,K,Z2,Z1,1000.,'F','ceiling ht',IER)
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+
+C Read base vertex data.
+        DO 60 IW=1,NW
+          CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'vertex data',IER)
+          IF(IER.NE.0)goto 1001
+          K=0
+          CALL EGETWR(OUTSTR,K,XX(IW),0.,0.,'-','Base X',IER)
+          CALL EGETWR(OUTSTR,K,YY(IW),0.,0.,'-','Base Y',IER)
+   60   CONTINUE
+
+C Now convert to GEN body type and place into in common block.
+        CALL EREGC(NW,Z1,Z2,XX,YY)
+        IF(AR.LT.-.01.OR.AR.GT..01)then
+          x1=X(1)
+          y1=Y(1)
+          CALL ESCROT(AR,x1,y1)
+        endif
+        NZSUR(ICOMP)=NSUR
+        NZTV(ICOMP)=NTV
+        CTYPE='GEN'
+
+C Zone is of type GEN.
+      ELSEIF(CTYPE.EQ.'GEN')THEN
+        CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'NTV NSUR AR',IER)
+        write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &    ' GEN line NTV NSUR AR was misunderstood.'
+        IF(IER.NE.0)goto 1001
+        K=0
+        CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no of vertices',IER)
+        CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no of surfaces',IER)
+        NZSUR(ICOMP)=NSUR
+        NZTV(ICOMP)=NTV
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+
+C Read each vertex data line, strip any comments, see if 3 items and
+C place in X(),Y(),Z().
+        DO 62 I=1,NTV
+          CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'vertex data',IER)
+          write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &    ' GEN line vertex data was misunderstood.'
+          IF(IER.NE.0)goto 1001
+          K=0
+          CALL EGETWR(OUTSTR,K,X(I),0.,0.,'-','X coord',IER)
+          CALL EGETWR(OUTSTR,K,Y(I),0.,0.,'-','Y coord',IER)
+          CALL EGETWR(OUTSTR,K,Z(I),0.,0.,'-','Z coord',IER)
+   62   CONTINUE
+
+C Read vertex list for each surface, strip comments, begin by finding
+C the number of expected vertices (first item on list).
+        DO 10 I=1,NSUR
+          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'vertex list',IER)
+          write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &    ' GEN line vertex list was misunderstood.'
+          IF(IER.NE.0)goto 1001
+          IF(ND.GE.4)THEN
+            K=0
+            CALL EGETWI(OUTSTR,K,J,3,MV,'F','nb assoc vertices',IERV)
+            NVER(I)=J
+
+C Now proceed to read vertices on one or more lines.
+            DO 12 KV=1,NVER(I)
+              CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+              IF(IERV.NE.0) THEN
+                call edisp(ITRU,' reading continuation line...')
+                CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
+                IF(IER.NE.0)goto 1001
+                K=0
+                CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+              ENDIF
+              IF(IERV.NE.0) GOTO 1001
+              JVN(I,KV)=IVAL
+   12       CONTINUE
+          ENDIF
+   10   CONTINUE
+
+C Rotate if required.
+        if(AR.LT.-.01.OR.AR.GT..01)then
+          x1=X(1)
+          y1=Y(1)
+          CALL ESCROT(AR,x1,y1)
+        endif
+      ELSE
+        write(outs,'(2a)') ' Geometry shape type illegal in ',
+     &    lzip(1:lnblnk(lzip))
+        goto 1002
+      ENDIF
+
+C Read line of default indices (one per surface) if any index is
+C non zero then it represents a depreciated default window, we can
+C handle (easily if one per surface) and convert it to a transparent
+C surface later on in the subroutine. 
+      IRVA=NSUR
+      CALL EGETWIA(IUNIT,IVA,IRVA,0,3,'F','def window list',IER)
+      DO 14 KS=1,NSUR
+        NGL(KS)=0
+   14 CONTINUE
+
+C Read the window dimension details and advise user (if IVA non-zero).
+      nbdef=0
+      DO 16 KS=1,NSUR
+        IF(IVA(KS).GT.0)THEN
+          DO 18 KW=1,IVA(KS)
+            CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'window data',IER)
+            write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &      ' Def win data was misunderstood.'
+            IF(IER.NE.0)goto 1001
+            IF(ND.GE.4)THEN
+              nbdef=nbdef + 1
+              VALX(nbdef)=0.0
+              VALZ(nbdef)=0.0
+              VALW(nbdef)=0.0
+              VALH(nbdef)=0.0
+              iwhichsurfw(nbdef)=KS
+              K=0
+              CALL EGETWR(OUTSTR,K,VALX(nbdef),0.,0.,'-',
+     &          'win X off',IER)
+              CALL EGETWR(OUTSTR,K,VALZ(nbdef),0.,0.,'-',
+     &          'win Z off',IER)
+              CALL EGETWR(OUTSTR,K,VALW(nbdef),0.,100.,'W',
+     &          'win width',IER)
+              CALL EGETWR(OUTSTR,K,VALH(nbdef),0.,100.,'W',
+     &          'win ht',IER)
+              write(outs,'(a,i2,a,f6.3,a,f6.3,a,f6.3,a,f6.3)') 
+     &          'Window for surface',ks,': X off ',VALX(nbdef),
+     &          ' Z off ',VALZ(nbdef),' width ',VALW(nbdef),
+     &          ' height ',VALH(nbdef) 
+              call edisp(itru,outs)
+            ENDIF
+   18     CONTINUE
+        ENDIF 
+   16 CONTINUE
+
+C Read default doors index (one per surface).
+      IRVA=NSUR
+      CALL EGETWIA(IUNIT,IVA,IRVA,0,2,'F','def door list',IER)
+      nbdor=0
+      DO 22 KS=1,NSUR
+        IF(IVA(KS).GT.0)THEN
+          DO 23 KW=1,IVA(KS)
+            CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'door data',IER)
+            write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &      ' Def door data was misunderstood.'
+            IF(IER.NE.0)goto 1001
+            IF(ND.GE.3)THEN
+              nbdor=nbdor + 1
+              VALDX(nbdor)=0.0
+              VALDW(nbdor)=0.0
+              VALDH(nbdor)=0.0
+              iwhichsurfd(nbdor)=KS
+              K=0
+              CALL EGETWR(OUTSTR,K,VALDX(nbdor),0.,0.,'-',
+     &          'door X off',IER)
+              CALL EGETWR(OUTSTR,K,VALDW(nbdor),0.,100.,'W',
+     &          'door width',IER)
+              CALL EGETWR(OUTSTR,K,VALDH(nbdor),0.,100.,'W',
+     &          'door ht',IER)
+              write(outs,'(a,i2,a,f6.3,a,f6.3,a,f6.3)') 
+     &          'Door for surface',ks,': X off ',VALDX(nbdor),
+     &          ' width ',VALDW(nbdor),
+     &          ' height ',VALDH(nbdor) 
+              call edisp(itru,outs)
+            ENDIF
+   23     CONTINUE
+        ENDIF 
+   22 CONTINUE
+
+C Read default insolation surface numbers. NN = insolation defining 
+C index:  1; one plane, 2; two planes, 3; all planes (diffuse).
+C IDPN defines the default plane numbers.
+      CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'insolation data',IER)
+      write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &  ' insolation data was misunderstood.'
+      IF(IER.NE.0)goto 1001
+      K=0
+      CALL EGETWI(OUTSTR,K,IV,1,3,'W','Def insol index',IER)
+      NDP(ICOMP)=IV
+      CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','1st recv surf',IER)
+      IDPN(ICOMP,1)=IV
+      CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','2nd recv surf',IER)
+      IDPN(ICOMP,2)=IV
+      CALL EGETWI(OUTSTR,K,IV,-1,NSUR,'W','3rd insol data',IER)
+      IDPN(ICOMP,3)=IV
+      IF(IR.EQ.1)THEN
+        DO 40 I=1,3
+          IX=0
+          IF(NDP(ICOMP).EQ.1.AND.I.EQ.1)IX=1
+          IF(NDP(ICOMP).EQ.2.AND.I.LE.2)IX=1
+          if(IDPN(ICOMP,I).NE.-1.AND.IDPN(ICOMP,I).NE.0)then
+            if(IDPN(ICOMP,I).LT.IX.OR.IDPN(ICOMP,I).GT.NSUR)then
+              CALL USRMSG(' Nonexistent insolation plane!',OUTSTR,'W')
+            endif
+          endif
+   40   CONTINUE
+      ENDIF
+
+C Surface attributes:
+C Begin with default assumptions for each surface then overwrite
+C this if user supplied information exists.
+      CALL FILSUR(itru,ICOMP,0)
+
+C Estimate base area.
+      checkbase=.true.
+      lastlist=0
+      IBASES(ICOMP,1)=0
+      IBASES(ICOMP,2)=0
+      IBASES(ICOMP,3)=0
+      IBASES(ICOMP,4)=0
+      IBASES(ICOMP,5)=0
+      IBASES(ICOMP,6)=0
+      ZBASEA(ICOMP)=0.00
+      IER=0
+
+C If base area has not yet been calculated, do this now and
+C get surface areas via call to zinfo.
+      if(checkbase)then
+        call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+        do 43 ijj=1,NSUR
+          if(SVFC(ijj).eq.'FLOR')then
+
+C If surface `flor` not included in the list add it.
+            lastlist=lastlist+1
+            if(lastlist.le.6)then
+              IBASES(ICOMP,lastlist)=ijj
+              ZBASEA(ICOMP)=ZBASEA(ICOMP)+SNA(ijj)
+            endif
+          endif
+  43    continue
+        write(outs,'(a,f6.2,3a)') 'Base area estimated at ',
+     &     ZBASEA(ICOMP),'m^2 for ',zname(icomp),
+     &    ' (probably an older file).'
+        call edisp(itru,outs)
+        if(lastlist.gt.0)iuzbasea(icomp)=0
+      endif
+
+C Update the connection list and then the model configuration.
+      NCOMP=NCOMP+1
+      NZSUR(NCOMP)=NSUR
+      NZTV(NCOMP)=NTV
+      NCCODE(NCOMP)=NCOMP
+      INDUTL(NCOMP)=0
+      LUTIL(NCOMP)=' '
+      ICCC=NCON
+
+C If surface attributes are adaibetic or similar then use these in
+C the connections list, then remind user to double check topology. 
+      DO 132 ICC=1,NSUR
+        ICCC=ICCC+1
+        IC1(ICCC)=icomp
+        IE1(ICCC)=ICC
+        if(SOTHER(icc)(1:8).eq.'EXTERIOR')then
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        elseif(SOTHER(icc)(1:7).eq.'SIMILAR')then
+          ICT(ICCC)=1
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        elseif(SOTHER(icc)(1:9).eq.'ADIABATIC')then
+          ICT(ICCC)=5
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        elseif(SOTHER(icc)(1:8).eq.'CONSTANT')then
+          write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &      ' is a CONSTANT connection. Use the'
+          call usrmsg(outs,
+     &      'surface attribute facility to confirm its details.','W')
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        elseif(SOTHER(icc)(1:6).eq.'GROUND')then
+          write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &      ' is a GROUND connection. Use the'
+          call usrmsg(outs,
+     &     'surface attribute facility to confirm its details.','W')
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        elseif(SOTHER(icc)(1:7).eq.'UNKNOWN')then
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        else
+          write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &      ' is a possible partition. Confirm its'
+          call usrmsg(outs,
+     &      'surface attributes or use topology tool.','W')
+          ICT(ICCC)=0
+          IC2(ICCC)=0
+          IE2(ICCC)=0
+        endif
+        SSNAME(iccc)=SNAME(NCOMP,icc)
+        SSOTF(iccc)=SOTF(icc)
+        SSMLCN(iccc)=SMLCN(icc)
+        SSVFC(iccc)=SVFC(icc)
+        SSOTHER(iccc)=SOTHER(icc)
+        IZSTOCN(ncomp,icc)=iccc
+  132 CONTINUE
+      NCON=ICCC
+
+C Update the G7 common blocks and then write out configuration file.
+      call zgupdate(0,NCOMP,ier)
+
+C Make up a zone geometry file name for this new zone.
+      if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+        WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+      else
+        WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+      endif
+      LGEOM(icomp)= DFILE
+      write(outs,'(A,A)') ' updating initial surfaces in ',zname(icomp)
+      call usrmsg('  ',outs,'-')
+      CALL EMKGEO(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
+
+C If there are default windows then attempt to insert them as
+C transparent surfaces.
+      if(nbdef.gt.0)then
+        do 66 idw=1,nbdef
+          isurf=iwhichsurfw(idw)
+          act='sw'
+          XO=VALX(idw)
+          ZO=VALZ(idw)
+          XW=VALW(idw)
+          ZH=VALH(idw)
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,IER)
+  66    continue
+      endif
+
+C If there are default doors, attempt to insert them as surfaces.
+      if(nbdor.gt.0)then
+        do 67 idd=1,nbdor
+          isurf=iwhichsurfd(idd)
+          act='sd'
+          XO=VALDX(idd)
+          ZO=0.0
+          XW=VALDW(idd)
+          ZH=VALDH(idd)
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,IER)
+  67    continue
+      endif
+
+C Save zone if more surfaces have been added.
+      if(nbdef.gt.0.or.nbdor.gt.0)then
+        CALL EMKGEO(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
+      endif
+
+C And there might be more than one room in a zip file. If we
+C ever come across a GEN this signals a new zone.
+C Read a line and look for COLOUR, VISIB, LAYER or GEN (in
+C case there is more than one zone in the zip file). If an
+C error at this point we have probably reached the end.
+  196 CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'edge colour',IER)
+      IF(IER.NE.0)then
+        write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
+     &  ' possible next zone was misunderstood or EOF reached.'
+        CALL ERPFREE(IUNIT,ios)
+        CALL EMKCFG('-',IER)
+        RETURN
+      endif
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W',
+     &  'tag COLOUR VISIB LAYER or GEN',IFLAG)
+      if(WORD(1:6).eq.'COLOUR')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'colour index',IER)
+        goto 196
+      elseif(WORD(1:5).eq.'VISIB')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'visib index',IER)
+        goto 196
+      elseif(WORD(1:5).eq.'LAYER')then
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'layer index',IER)
+        goto 196
+      elseif(WORD(1:3).eq.'GEN')then
+
+C We have reached another GEN so increment ICOMP and loop back
+C to 97 to read in further details.
+         call edisp(iuout,'Scanning in another zone...')
+         ICOMP=ICOMP+1
+         NZSUR(ICOMP)=0
+         NZTV(ICOMP)=0
+         NSUR=0
+         NTV=0
+         ZN=' '
+         phrasea=' '
+         checkbase=.false.
+         goto 97
+      else
+        write(outs,'(3a)') 'In file ',lzip(1:lnblnk(lzip)),
+     &    ' expected a `COLOUR, VISIB, LAYER or GEN` line.'
+        goto 196
+      endif
+
+C Close zip data file as the end of the file has been reached
+      CALL ERPFREE(IUNIT,ios)
+      CALL EMKCFG('-',IER)
+
+      RETURN
+
+C 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1001 continue
+      if(dll)then
+        dllsubr='EGOMIN'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUNIT,ios)
+        return
+      else
+        call edisp(iuout,outs)
+        call edisp(iuout,OUTSTR)
+        IER=1
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
+      endif
+
+C Found unexpected item.
+ 1002 if(dll)then
+        dllsubr='EZIPIN'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call edisp(itru,outs)
+        IER=1
+        RETURN
+      endif
+
+      END
+
