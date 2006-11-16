@@ -278,7 +278,13 @@ U button.c
 U Makefile
 .DE
 .IP 6. 4
- Check to see if there are any conflicts and check the changes that have been merged
+Check to see if there are any conflicts and check the changes that have been merged.
+In the case that there are conflicts between the local changes and those on the development
+branch, an "svn revert" command needs to be executed. Then the files in conflict during 
+the merge should be modified sperately to resolve the reported conflicts. Once all the 
+conflicts are resolved, then the previous "svn merge" command needs to be executed once more.
+Make sure again that there are no conflicts reported. Otherwise the previous process
+needs to be repeated.   
 .LD
 .fam C
 svn status

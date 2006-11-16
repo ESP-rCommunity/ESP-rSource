@@ -203,7 +203,25 @@ Be patient\(emthe regression test may take several hours, depending on your hard
 Review the tester report (bps_test_report.txt) and ensure that
 there are no differences reported in the test results, or if
 differences are exhibited, they can be attributed to your source
-code modifications.
+code modifications. Note that some of the test cases take a long time 
+to finish execution. To view the progress of the simulations on the 
+screen, you can invoke the tester with the following command:
+.nr PS 8
+.LD
+.fam C
+$ ./tester.pl /path/to/reference/bps /path/to/test/bps -vv
+.nr PS 12
+.DE
+In the case that the tester does not generate results for a particular
+test case, the tester should then be executed for that particular case 
+only. In some cases this will generate results for the test case or help
+identify what the problem is. The command to use in this case is:
+.nr PS 8
+.LD
+.fam C
+$ ./tester.pl /path/to/reference/bps /path/to/test/bps /path/to/test/case -v
+.nr PS 12
+.DE
 .IP 19. 4 
 If any differences are reported, document them. Your
 documentation should include:
@@ -233,9 +251,12 @@ Prepare an annotated list of the files you've modified and the
 reasons for your changes.
 .IP 21. 4
 Prepare a list of the revisions on your sub-branch that comprise
-the changes you wish to include in the development branch. You can 
-review the complete set of revisions made on your sub-branch using
-the subversion command:
+the changes you wish to include in the development branch. The list
+of svn revisions should not include revisions associated with full
+branch merges with development branch and the subsequent full branch 
+commit. Usually then the relevant revision numbers on the branch will 
+be specified as a set of intervals. You can review the complete set 
+of revisions made on your sub-branch using the subversion command:
 .nr PS 8
 .LD
 .fam C
