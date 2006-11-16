@@ -205,6 +205,10 @@ my $Help_msg = "
          when reference and test .data files are found to differ.
          This option causes tester.pl to behave like the legacy
          ESP-r 'TEST' QA tool.
+         
+    --diff_tool: Command-line arguement specifiying the third-party
+         tool that should be used when comparing .data files. 
+         Default: 'diff -iw'
 
     -v, --verbose: Report progress and results to the buffer.
 
@@ -582,7 +586,7 @@ $cmd_arguements =~ s/--ref_res;/--ref_res:/g;
 $cmd_arguements =~ s/--test_res;/--test_res:/g;
 $cmd_arguements =~ s/--mailto;/--mailto:/g;
 $cmd_arguements =~ s/--smtp_server;/--smtp_server:/g;
-
+$cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
 $cmd_arguements =~ s/:-/:;-/;
@@ -773,6 +777,15 @@ foreach $arg (@processed_args){
       $gTest_params{"diff_data_files"} = 1;
 
       last SWITCH;
+    }
+    
+    if ( $arg =~ /^--diff_tool/){
+      # use custom thrid-party for .data file comparisons
+      $arg =~ s/--diff_tool://g;
+      $gTest_params{"third_party_diff_cmd"} = $arg;
+
+      last SWITCH; 
+
     }
     if ( $arg =~ /^-/ ){
       #arguement is unsupported. Quit.
@@ -2491,7 +2504,7 @@ sub compare_results($$){
             # be filtered according to verbosity.
             
             if ( $gTest_params{"diff_data_files"} ){
-              system ("$gTest_params{\"third_party_diff_cmd\"} $reference_file $test_file | less");
+              system ("$gTest_params{\"third_party_diff_cmd\"} $reference_file $test_file");
             }
             
           }else{
