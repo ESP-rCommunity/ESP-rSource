@@ -161,6 +161,10 @@ C ------------------------------------------------------------------------------
       REAL fWindowLowSetpoint
       CHARACTER WORD*128
 
+C Current file name (for use by low level I/O calls).
+      common/curfile/currentfile
+      character*72 currentfile
+
 C Declarations for local variables and variables passed in common blocks.
       CHARACTER outs*124,OUTSTR*124
       INTEGER IUNIT,ISTAT,IER,ND,k,ival
@@ -262,6 +266,7 @@ C occur as this file unit is already in use.
       CALL ERPFREE(IUNIT,ISTAT)
       CALL EFOPSEQ(IUNIT,LAIM2,1,IER)
       IF(ier.ne.0)goto 1000
+      currentfile = LAIM2
 
 C Get first line.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'AIM-2 Data',IER)
@@ -576,6 +581,7 @@ C Error handling.
       write(outs,7)
     7 format(' AIM-2 input file error.')
       call edisp(iuout,outs)
+      stop ' Error in AIM-2 input file.'
 
  1001 Continue
       RETURN
