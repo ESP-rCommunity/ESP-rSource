@@ -2383,8 +2383,17 @@ C Determine coupled supply plant component and node.
         IN=NPCDAT(IPCMP,9)+IPNOD-1
       ELSEIF(ISIND.EQ.4) THEN
 
-C Set the embedded flag to zero.
-        IPALLOC(IPCMP)=0
+C Set the embedded flag to zero after finding ipcmp.
+        IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
+        if(ipcmp.ne.0) then
+          IPALLOC(IPCMP)=0
+        else
+          call edisp(itu,
+     &     ' BCL06: fatal error (zero index) of control data item.')
+          call epwait
+          call epagend
+          STOP   
+        endif
 
 C Determine the number of supply and extracting components.
         NCPL=IFIX(BMISCD(ICF,IDTYP,IPER,2))

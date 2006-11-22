@@ -1273,7 +1273,7 @@ C data, permitting the simulation to be re-wound to to the state at
 C which plant iteration is ajourned, if inter-domain iteration is active.
 
 C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
-              if ( itsct == 7 ) then
+              if ( itsct.eq.7 ) then
                 call Plt_TimeRow_Manipulate(iSaving)
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
@@ -1426,6 +1426,8 @@ C.....Update reports.
             else
               iStartupFlag = 0
             endif
+
+C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
             call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
 C IF NSINC=1, turn off initialization of h3kreports meta data
@@ -1591,7 +1593,7 @@ C the impact of modifications on simulation times.
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'
          CALL EDISP(IUOUT,outs)
-         CALL EDISP(IOUTS,'')
+         CALL EDISP(IOUTS,' ')
       endif
 #endif 
 
