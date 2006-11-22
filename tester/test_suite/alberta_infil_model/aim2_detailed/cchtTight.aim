@@ -2,8 +2,8 @@
 # AIM-2 input file for CCHT house from HOT2000 inputs
 #
 #---Leakage description-------------------------------------------------------------------------
-6                           # blower door input; 3 ac/h @50Pa; ELA dP=10Pa; 0=ELA not given; ELA cm^2.
-#                           # Set first number to 6 (and no other data) for energy tight house
+6                           # Air tightness type (6 implies energy tight)
+#
 #---Leakage distribution------------------------------------------------------------------------
 1  0.20  0.65  0.15         # Use default leakage distribution.
 #                           # Set `1  0.1 0.6 0.2' for user input leakage distribution.

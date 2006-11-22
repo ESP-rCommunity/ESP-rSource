@@ -172,6 +172,8 @@ C Declarations for local variables and variables passed in common blocks.
       INTEGER ICOMP
       REAL FAIM2VERSIONNUMBER
       REAL val
+      LOGICAL CLOSE
+      
 C **Begin H2K Defaults.** 
 C This module declares and initialzes generic house data that is required by
 C the AIM-2 model. These data are "hard-wired" here for the purposes of testing
@@ -274,13 +276,15 @@ C Get first line.
 C Obtain version number of AIM file.
       CALL EGETW(OUTSTR,K,WORD,'W','Aim File Version',IFLAG)
       if(WORD(1:11).eq.'FileVersion')then
-         CALL EGETWR(OUTSTR,K,fAIM2VersionNumber,0.01,100.00,'F',
+         CALL EGETWR(OUTSTR,K,fAIM2VersionNumber,0.,100.00,'F',
      &        'Version Number',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read AIM-2 Version Number.')
             goto 1000
          endif
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
+      else
+         fAIM2VersionNumber = 0. ! the old version
       ENDIF
 
 
@@ -296,35 +300,107 @@ C Read air tightness type.
 
 C Read in supplementary data if blower door or quick blower door input given.
       if(airtight_type.le.2)then
-        CALL EGETWR(OUTSTR,K,VAL,0.1,30.,'F',' ac/h at 50Pa',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read ac/h at 50Pa.')
-          goto 1000
-        endif
-        ACH_50Pa = VAL
-        CALL EGETWR(OUTSTR,K,VAL,4.0,10.,'F',' ELA deltaP',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read ELA press diff.')
-          goto 1000
-        endif
-        ELA_deltaP = VAL
-        CALL EGETWI(OUTSTR,K,IVAL,0,1,'F',' ELA given flag ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read ELA given flag')
-          goto 1000
-        endif
-        ELA_given = IVAL
-        if(ELA_given.eq.0)then  ! ELA not input by user.
-          ELA_cm = 0. 
-        else  ! Read ELA input by user.
-          CALL EGETWR(OUTSTR,K,VAL,0.1,7999.,'F',' ELA',IER)
+      
+        CALL ECLOSE(fAIM2VersionNumber, 0., 0.001, CLOSE)
+        
+        if (CLOSE) then ! the old version
+          CALL EGETWR(OUTSTR,K,VAL,0.1,30.,'F',' ac/h at 50Pa',IER)
           if(IER.NE.0)then
-            call edisp(IUOUT,' Cannot read ELA.')
+            call edisp(IUOUT,' Cannot read ac/h at 50Pa.')
             goto 1000
           endif
-          ELA_cm = VAL
-        endif
-      endif
+          ACH_50Pa = VAL
+          CALL EGETWR(OUTSTR,K,VAL,4.0,10.,'F',' ELA deltaP',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read ELA press diff.')
+            goto 1000
+          endif
+          ELA_deltaP = VAL
+          CALL EGETWI(OUTSTR,K,IVAL,0,1,'F',' ELA given flag ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read ELA given flag')
+            goto 1000
+          endif
+          ELA_given = IVAL
+          ! the case "ELA_given =0" in old version corresponds to
+          ! the case "blower_door_input_option=2" in new version
+
+          ! the case "ELA_given =1" in old version corresponds to
+          ! the case "blower_door_input_option=3" and "ELA_Cd=0.611"
+          ! in new version
+
+          if(ELA_given.eq.0)then  ! ELA not input by user.
+            ELA_cm = 0.
+            blower_door_input_option = 2
+          else  ! Read ELA input by user.
+            CALL EGETWR(OUTSTR,K,VAL,0.1,7999.,'F',' ELA',IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read ELA.')
+              goto 1000
+            endif
+            ELA_cm = VAL
+            blower_door_input_option = 3
+            ELA_Cd = 0.611
+          endif
+          
+        else ! the new version
+        
+          CALL EGETWI(OUTSTR,K,IVAL,1,3,'F',
+     &                ' blower door input option ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read blower door input option.')
+            goto 1000
+          endif
+  
+          blower_door_input_option = IVAL
+  
+          if (blower_door_input_option .eq. 1) then
+            CALL EGETWR(OUTSTR,K,VAL,0.,10.,'F',
+     &                ' flow coefficient C0 ',IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read flow coefficient C0.')
+              goto 1000
+            endif
+            AIM2_CO = VAL
+            CALL EGETWR(OUTSTR,K,VAL,0.5,1.,'F',' flow exponent n',IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read flow exponent n.')
+              goto 1000
+            endif
+            AIM2_n = VAL
+          else  ! blower_door_input_option equal to 2 or 3
+            !ACH_50Pa and ELA_deltaP are needed for both option 2 and 3
+            CALL EGETWR(OUTSTR,K,VAL,0.1,30.,'F','ac/h at 50Pa',IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read ac/h at 50Pa.')
+              goto 1000
+            endif
+            ACH_50Pa = VAL
+            CALL EGETWR(OUTSTR,K,VAL,4.0,10.,'F',' ELA deltaP',IER)
+            if(IER.NE.0)then
+              call edisp(IUOUT,' Cannot read ELA press diff.')
+              goto 1000
+            endif
+            ELA_deltaP = VAL
+  
+            !ELA and ELA_Cd are needed for option 3 only
+            if(blower_door_input_option .eq. 3) then
+              CALL EGETWR(OUTSTR,K,VAL,0.1,7999.,'F','ELA',IER)
+              if(IER.NE.0)then
+                call edisp(IUOUT,' Cannot read ELA.')
+                goto 1000
+              endif
+              ELA_cm = VAL
+              CALL EGETWR(OUTSTR,K,VAL,0.,1.,'F',' Cd for ELA ',IER)
+              if(IER.NE.0)then
+                call edisp(IUOUT,' Cannot read Cd for ELA.')
+                goto 1000
+              endif
+              ELA_Cd = VAL
+            endif
+          endif ! -> if (blower_door_input_option .eq. 1)
+        endif   ! -> if (CLOSE) 
+      endif     ! -> if (airtight_type .le. 2)
 
 C Determine whether user has specified leakage distribution.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
@@ -514,7 +590,7 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
          endif
       Endif
       AIM2_attic_zone = IVAL
-      IF (fAIM2VersionNumber .ge. 1.00 ) THEN
+      IF (fAIM2VersionNumber .ge. 2.00 ) THEN
 
 C Read Blind control and Window control and Zone which temperature  controls the windows.
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
@@ -809,7 +885,7 @@ C-------apartment, row house) is treated the same and is not a function of
 C-------foundation type or number of storeys.
         i = H2K_house_type              ! H2K_house_type (as defined in H2K list 62).
         if (H2K_house_type.eq.7) i=1    ! Treat mobile homes like single-detached.
-        IF ( H2K_house_type.gt.2 ) THEN ! Duplex, triplex, apt, or row house.
+        IF ( i.gt.2 ) THEN              ! Duplex, triplex, apt, or row house.
           AIM2_ceil_frac = 0.3          ! Set fractions.
           AIM2_wall_frac = 0.5
           AIM2_floor_frac = 0.2
@@ -997,24 +1073,35 @@ C (dimensionless).
 
         CASE (BLOWER_DOOR:QUICK_BLOWER_DOOR)
 
-          ELA_const1 = 12699.148  ! Constant from eq 35 of Bradley (p10)
-          ELA_const2 = 11570. * sqrt(1.205)  ! From eq 32 of Bradley (p9)
+          IF (blower_door_input_option .ne. 1) THEN
+        ! ELA_const2 modified from eq 35 of Bradley (p10), considering the
+        ! case that different discharge coeffients may be used to calculate ELA
+        ! Note that the Constants From eq 32 of Bradley (p9)
+        ! and eq 35 of Bradley (p10) are actually the same
+        
+            ELA_const1 = sqrt(1.204097/2.)*10000.
 
-          if (ELA_given.eq.0) then  ! User did not enter ELA: use BeauMo (2000b)
-            AIM2_n = 0.68
-            part1 = ELA_const2 * ACH_50Pa * AIM2_house_vol
-     &              * ELA_deltaP**(AIM2_n-0.5)
-            part2 = 3600. * 50.**AIM2_n
-            ELA_cm = part1 / part2  ! Eq 3 of Beausoleil-Morrison (2000b)
-          else  ! User specified ELA: use BeauMo (2000a)
-            part1 = ACH_50Pa * AIM2_house_vol * ELA_const1
-            part2 = ELA_cm * sqrt(ELA_deltaP) * 3600.
-            part3 = 50. / ELA_deltaP
-            AIM2_n = ( log(part1/part2) ) / log(part3) ! Eq 5 of BeauMo (2000a)
-          endif
-
-          AIM2_CO = ELA_cm /      ! Eq 6 of Beausoleil-Morrison (2000a)
-     &                  (ELA_const1 * ELA_deltaP**(AIM2_n-0.5))
+            if (blower_door_input_option .eq. 2) then
+            ! User did not enter ELA: use BeauMo (2000b)
+            ! Cd=0.611 is used to calculate ELA
+              ELA_const2 = ELA_const1/0.611
+              AIM2_n = 0.68
+              part1 = ELA_const2 * ACH_50Pa * AIM2_house_vol
+     &                * ELA_deltaP**(AIM2_n-0.5)
+              part2 = 3600. * 50.**AIM2_n
+              ELA_cm = part1 / part2  ! Eq 3 of Beausoleil-Morrison (2000b)
+            else ! blower_door_input_option .eq. 3
+              ! User specified ELA: use BeauMo (2000a)
+              ELA_const2 = ELA_const1/ELA_Cd
+              part1 = ACH_50Pa * AIM2_house_vol * ELA_const2
+              part2 = ELA_cm * sqrt(ELA_deltaP) * 3600.
+              part3 = 50. / ELA_deltaP
+              AIM2_n = ( log(part1/part2) ) / log(part3) ! Eq 5 of BeauMo (2000a)
+            endif
+  
+            AIM2_CO = ELA_cm /      ! Eq 6 of Beausoleil-Morrison (2000a)
+     &                    (ELA_const2 * ELA_deltaP**(AIM2_n-0.5))
+          ENDIF
 
         CASE (LOOSE)
 
@@ -1416,7 +1503,8 @@ C flat terrain" is given incorrectly in Bradley (1993).
           Zmet = 2.0  ! Not given in Wieringa (1986), but rather Bradley (1993).
 
         CASE DEFAULT
-          call edisp(IUOUT,' Error in AIM2_COandN: incorrect airtight.')
+          call edisp(IUOUT, ' Error in AIM2_wind_correct:'
+     &                     // 'incorrect weather station terrain type.')
 
       END SELECT
 
@@ -1449,7 +1537,8 @@ C and values as used as for the weather site.
           Zsite = 2.0
 
         CASE DEFAULT
-          call edisp(IUOUT,' Error in AIM2_COandN: incorrect airtight.')
+          call edisp(IUOUT,' Error in AIM2_wind_correct:'
+     &                  //  'incorrect on-site terrain type.')
 
       END SELECT
 

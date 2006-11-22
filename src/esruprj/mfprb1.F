@@ -306,23 +306,29 @@ C give warnings to the user.
           H(16)='It creates a source boundary wind pressure node'
           H(17)='and a sink boundary wind pressure node as well'
           H(18)='as a set of orifices from each zone to the sink'
-          H(19)='to allow exfiltration. '
-          H(20)=' '
-          H(21)='This is only a rough network, it will need to '
-          H(22)='be checked. '
-          H(23)=' '
-          H(24)='Many zone operation files where ventilation and/or'
-          H(25)='infiltration rates change during the day will'
-          H(26)='require flow controls to be created. This is not'
-          H(27)='yet done automatically. '
+          H(19)='to allow exfiltration. Note that because the'
+          H(20)='flow into the zone via infiltration is represented'
+          H(21)='as a volume flow rate component the orientation '
+          H(22)='of the boundary node is a guess as wind pressures '
+          H(23)='are not taken into account in such components. '
+          H(24)=' '
+          H(25)=' '
+          H(26)='This is only a rough network, it will need to '
+          H(27)='be checked. '
           H(28)=' '
-          H(29)='Zone operation control of infiltration & ventilation'
-          H(30)='are not yet supported.  '
-          CALL PHELPD('create oper net',30,'-',0,0,IER)
+          H(29)='Many zone operation files where ventilation and/or'
+          H(30)='infiltration rates change during the day will'
+          H(31)='require flow controls to be created. This is not'
+          H(32)='yet done automatically. '
+          H(33)=' '
+          H(34)='Zone operation control of infiltration & ventilation'
+          H(35)='are not yet supported.  '
+          CALL PHELPD('create oper net',35,'-',0,0,IER)
 
+C << also should provide user dialog to create flow controls >>
           dok=.true.
           CALL ASKOK('Do you want to auto-generate flow nodes?',
-     &      '(see help)',OK,dok,30)
+     &      'from zone operation file data (see help)',OK,dok,35)
           IF(OK)THEN
             CALL MFNAUTO('Z',IER)
           ENDIF
@@ -432,6 +438,12 @@ C Help text for this menu.
       H(50)='Local WIND speed REDUCTION factor : '
       H(51)='  (= ratio of local wind speed at roof height'
       H(52)='     and measured wind speed) '
+      H(53)=' '
+      H(54)='Converting zone infiltration and ventilation schedules'
+      H(55)='into a (roughly) equivalent flow network is also an'
+      H(56)='option. This is useful when you started a model with'
+      H(57)='schedules and want to increase resolution/complexity'
+      H(58)='or better track flow rates. '
 
    12 CALL EMENU('Fluid Flow Network',ITEM1,NITMS1,INO)
       IF(INO.EQ.1)THEN
@@ -588,7 +600,7 @@ C << to a graphic network flow file.
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')
       ELSEIF(INO.EQ.22)THEN
-        CALL PHELPD('network data summary',52,'-',0,0,IER)
+        CALL PHELPD('network data summary',58,'-',0,0,IER)
       ELSEIF(INO.EQ.24)THEN
 
 C Ask if changes need to be saved
@@ -2019,6 +2031,17 @@ C LBL model wind profile.
 
 C ********************* MFNAUTO 
 C This routine auto-generates elements of the fluid-flow network.
+C MODE = 'N' to generate internal nodes based on zone names and volumes.
+C      = 'L' to generate flow connections (between zones) list
+C      = 'Z' Autogenerate nodes, components and connections based on
+C            information in zone operation files. It assumes this will
+C            be a new network
+C << test whether it might deal with additions to an existing network >>
+C << code required to also create relevant flow controls in the case  >>
+C << infiltration and/or ventilation schedules require a profile e.g. >>
+C << fans run at a given fraction at different periods of the day.    >>
+
+C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
@@ -2087,7 +2110,7 @@ C components needed for a network equivalent of zone operations.
 
       IF(MODE.EQ.'N')THEN
 
-C Auto generate internal nodes.
+C Auto generate internal nodes based on zone names and volumes.
         WRITE(OUTS,'(A)') 
      &    'Which zones to include in the fluid flow network?'
         IZN=NCOMP
@@ -2142,8 +2165,16 @@ C Auto generate boundary nodes
 C Auto generate components
       ELSEIF(MODE.EQ.'L')THEN
 
-C Auto generate connections.
-C Scan through the internal connections list. 
+C Auto generate connections between zones which have surfaces
+C detected as partition type connections. First scan through
+C the internal connections list. 
+
+C << ?? option to look at transparent surfaces facing the outside
+C << and ask if they should be cracks?
+
+C << ?? option to look at doors facing the outside and asking if they
+C << should have cracks
+
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,'Scanning internal connections ...')
 
@@ -2241,7 +2272,8 @@ C reverse of the connection they have just dealt with.
 C Autogenerate based on information in zone operation files.
 C Auto generate source and sink boundary nodes, make them
 C wind-pressure nodes at 1m height and with flat sheltered
-C roof pressure coef set facing south.
+C roof pressure coef set facing south.  This method assumes that
+C there are no existing nodes, components and connections.
         NNOD=NNOD+1
         write(NDNAM(NNOD),'(a)') 'inf_source'
         NDTYP(NNOD)=3

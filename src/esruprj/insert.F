@@ -1276,9 +1276,9 @@ C Transform ends of edge.
 C ************* INSREC
 C Add a rectanguular surface within or at bottom of existing surface.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-C << upgrade logic to ensure new points are checked for closeness
-C << to existing surfaces and edges
-      SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,IER)
+C act is 'ii' insert interactive, 'sw' insert window silently, or
+C act = 'sd' insert door silently or 'sp' insert window percentage silently.
+      SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO,ZO,XW,ZH,IER)
 #include "building.h"
       PARAMETER  (MPL = 200 )
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -1316,8 +1316,68 @@ C << to existing surfaces and edges
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character SSPARENT*12
+      character SSPARENT*12,act*2
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+
+C Depending on act.
+      if(act(1:2).eq.'ii')then
+        continue
+      elseif(act(1:2).eq.'sw')then
+        IRT=1
+        IF((NSUR+1.GT.MS).OR.(NTV+4.GT.MTV).OR.(NVER(IS)+6.GT.MV).OR.
+     &     (NCON+1.GT.MCON))THEN
+          CALL USRMSG(' A new surface could not be added as it',
+     &      ' will make the model/zone/surface too complex!','W')
+          RETURN
+        ENDIF
+      elseif(act(1:2).eq.'sd')then
+        IRT=2
+        IF((NSUR+1.GT.MS).OR.(NTV+4.GT.MTV).OR.(NVER(IS)+6.GT.MV).OR.
+     &     (NCON+1.GT.MCON))THEN
+          CALL USRMSG(' A new surface could not be added as it',
+     &      ' will make the model/zone/surface too complex!','W')
+          RETURN
+        ENDIF
+      elseif(act(1:2).eq.'sp')then
+        IRT=3
+        IF((NSUR+1.GT.MS).OR.(NTV+4.GT.MTV).OR.(NVER(IS)+6.GT.MV).OR.
+     &     (NCON+1.GT.MCON))THEN
+          CALL USRMSG(' A new surface could not be added as it',
+     &      ' will make the model/zone/surface too complex!','W')
+          RETURN
+        ENDIF
+        PERC = XO
+
+C Determine surface length and height.
+        CALL SURLEHI(IS,XYMAX,ZMAX)
+        Write(outs,'(a,f4.1,a,f4.1,a)') 'Surface lenght = ',XYMAX,
+     &      ' m, surface height = ',ZMAX,' m.'
+        call edisp(itru,outs)
+
+C Determine opening width, height, X offset and z offset.
+        XW=(XYMAX*SQRT(PERC))/10
+        ZH=(ZMAX*SQRT(PERC))/10
+        XO=((XYMAX-XW)/2)
+        ZO=((ZMAX-ZH)/2)
+      endif
+      if(act(1:2).ne.'ii')then
+
+C Set all surfaces to standard line width and surface being 
+C edited to a thick line if currently in graphics mode.
+        ITVNO=0
+        ITSNM=0
+        MODIFY=.TRUE.
+        if(MMOD.EQ.8)then
+          CALL INLNST(1)
+          CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
+          LINSTY(IC)=2
+          nzg=1
+          nznog(1)=ICOMP
+          izgfoc=ICOMP
+          CALL ADJVIEW(ITRC,IER)
+        endif
+        goto 72
+      endif
 
 C Insert within surface or at bottom edge (as in a door).
 C First detect the orientation of the surface, if vertical
@@ -1467,7 +1527,7 @@ C Determine opening width, height, X offset and z offset.
 C Transform existing surface into into site coordinates in the
 C surface of the plane. Make up XX,YY,ZZ to pass across to the
 C transform routine.
-      N = NVER(IS)
+  72  N = NVER(IS)
       DO 150 J = 1,N
         XX(J) = X(JVN(IS,J))
         YY(J) = Y(JVN(IS,J))

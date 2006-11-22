@@ -70,6 +70,9 @@ C    Toronto Canada, 467-472.
 C
 C    Wray C. (1997), Letter to Brian Bradley dated March 17.
 C
+C    Walker I.S. and Wilson D.J. (1998), "Field validation of algebraic equations for
+C    stack and wind driven air infiltration calculations", HVAC & R Research, 4(2):119-139.
+C
 C *******************************************************************************
 
 
@@ -699,19 +702,57 @@ C Type declarations for variables passed in calling statement.
       REAL AIM2_Y,AIM2_R,AIM2_X,AIM2_Fw
 
 C Type declarations for local variables.
-      REAL S,part1,part2,part3
+      REAL     S,part1,part2,part3
+      INTEGER  foundation_type, i, largest
+      REAL     area_temp, X_S
+
+C Determine predominant foundation type 
+C If the user has input multiple foundations, then use the one with the largest area
+
+      IF (H2K_found_num.eq.0) THEN        ! No foundation input by user.
+        foundation_type = 3               ! Assume slab-on-grade for purposes of calculating infiltration.
+      ELSEIF (H2K_found_num.eq.1) THEN    ! One foundation input by user.
+        foundation_type= H2K_found_type(1)! Set `foundation_type'.
+      ELSE                                ! User has input multiple foundations: find largest.
+        area_temp = 0.
+        do i=1,H2K_found_num
+          if( H2K_found_area(i).gt.area_temp ) then
+            largest = i
+            area_temp = H2K_found_area(i)
+          endif
+        enddo
+        foundation_type=H2K_found_type(largest)
+
+      ENDIF
 
 
-C Calculate the `S' factor. This is the bottom part of eq 26 from
-C Walker & Wilson (1990, p13).
-      S = ( AIM2_X+AIM2_R+2.*AIM2_Y ) / 2.
+C  Calculate the wind flow factor depending on the foundation type
 
-C Calculate the wind flow factor using eq 26 from Walker & Wilson (1990, p13).
-C Note that this reduces to Walker & Wilson eq 16 when there is no flue.
-      part1 = 0.19 * (2.-AIM2_n)                        ! Term preceding large bracks in eq26.
-      part2 = 1. - ( (AIM2_X+AIM2_R)/2. )**(1.5-AIM2_Y) ! Term in large bracks in eq26.
-      part3 = AIM2_Y * ( S-2.*AIM2_Y*S**4. ) / 4.       ! Last term in eq26.
-      AIM2_Fw = part1*part2 - part3
+      IF ( foundation_type .ge.4 .and. foundation_type .le.6 ) THEN  ! Crawl spaces
+      
+C       Calculate X_S according to Equation 24 from Walker & Wilson (1998)
+        X_S = (1-AIM2_R)/5. - 1.5*AIM2_Y
+        
+C       Calculate the wind flow factor using Equation 20 from Walker & Wilson (1998)
+        part1 = 1. - ( (AIM2_X-X_S)/(2.-AIM2_R) )**1.5  ! Term X_star
+        part2 = 1. - AIM2_R*(AIM2_n/2. +0.2)            ! Term R_star
+        part3 = 1. - AIM2_Y/4.                          ! Term Y_star
+
+        AIM2_Fw=0.19*(2.-AIM2_n)*part1*part2*part3
+        
+      ELSE    ! Basements or slab-on-grade 
+C       Calculate the `S' factor. This is the bottom part of eq 26 from
+C       Walker & Wilson (1990, p13).
+        S = ( AIM2_X+AIM2_R+2.*AIM2_Y ) / 2.
+
+C       Calculate the wind flow factor using eq 26 from Walker & Wilson (1990, p13).
+C       Note that this reduces to Walker & Wilson eq 16 when there is no flue.
+        part1 = 0.19 * (2.-AIM2_n)                        ! Term preceding large bracks in eq26.
+        part2 = 1. - ( (AIM2_X+AIM2_R)/2. )**(1.5-AIM2_Y) ! Term in large bracks in eq26.
+        part3 = AIM2_Y * ( S-2.*AIM2_Y*S**4. ) / 4.       ! Last term in eq26.
+        AIM2_Fw = part1*part2 - part3
+
+      ENDIF
 
 
       RETURN

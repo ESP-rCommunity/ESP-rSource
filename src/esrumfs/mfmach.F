@@ -945,7 +945,7 @@ C Because FLOW already expressed as mass flow, direction is unimportant.
 
 C ***************** MF040C 
 C Fluid mass flow calculation routine for flow component type:
-C common orifice volume flow rate (m = rho.Cd.A(2/rho.dP)**.5)
+C common orifice flow component (m = rho.Cd.A(2/rho.dP)**.5)
 C            SUPCMP(ICMP,1) - fluid type (1=air, 2=water)
 C     AREA = SUPCMP(ICMP,2) - opening area (m^2)
 C     CDIS = SUPCMP(ICMP,3) - discharge factor (-)
