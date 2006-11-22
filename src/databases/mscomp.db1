@@ -725,18 +725,18 @@ Power-sonic battery (CETC battery model)
 47 0
 1        Number of battery cells in parallel in a pack (-)
 6        Number of packs in series in a battery (-)
-10.      Capacity at operating temperature (Ah/cell)
+1.66     Capacity at operating temperature (Ah/cell)
 20.      Operating temperature recommended by manufacturer (oC)
 2.15     Maximum manufacturer voltage of a battery cell (V)
 1.94     Minimum manufacturer voltage of a battery cell (V)
 1.5      Maximum recommended charge current of a battery cell (A)
 2.2      Maximum recommended charge voltage of a battery cell (V)
-60.      Initial battery temperature (oC)
+30.      Initial battery temperature (oC)
 0.       Initial battery depth of discharge (-)
-10000.   Thermal mass of the battery (J/oC)
-20.      Battery heat loss coefficient (W/oC)
-100.     Resistance of the heating elements (ohms)
-50.      Temperature below which the thermal management system takes priority (oC)
+1666.    Thermal mass of one battery cell (J/oC)
+0.01     Battery heat loss coefficient of one battery cell (W/oC)
+600.     Resistance of the heating elements for one battery cell (ohms)
+15.      Temperature below which the thermal management system takes priority (oC)
 2.15     Coefficient A for battery free voltage correlation (V)
 -0.21    Coefficient B for battery free voltage correlation (V)
 0.       Coefficient C for battery free voltage correlation (V)
@@ -771,7 +771,7 @@ Power-sonic battery (CETC battery model)
 0.       Exponential coefficient EH3 for cell internal resistance correlation in discharge mode
 1        Index number of zone containing battery
 *TEXT
-Battery model developed by CETC (Patrice Pinel).
+Battery model developed by CETC (Patrice Pinel, modified Hajo Ribberink).
 *ENDTEXT
 *END
 *POWOCOMP
