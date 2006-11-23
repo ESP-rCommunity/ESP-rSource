@@ -1266,17 +1266,6 @@ C-------------------------------------------------------------------------------
       real    powcdat        !- power-only component numerical data item
 
 
-C The electrical nodes
-      common/enod/nenod,enodno(menod),enodphtyp(menod),
-     &   enodph(menod),enodtyp(menod),enodbasev(menod),
-     &   enodbasep 
-     
-      integer nenod, enodno, enodphtyp        ! - not used in current context 
-      integer enodph,enodtyp                  !
-     
-      real enodbasev           !- base voltage of nodes.
-      real enodbasep           ! - not used in current context
-      
       COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
      &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
       real    penodl         !- real power load on node
@@ -1325,16 +1314,12 @@ C-------------------------------------------------------------------------------
 C..... Operating mode of power conditioning unit:
 C..... 1 = connected to power source (input power known)
 C..... 2 = connected to power load (output power known)
-C..... 3 = two way flow: power will flow to meet load on recieving 
-C.....     node, unless a surplus exists on that node. Then power 
-C.....     will flow backwards.
 
       integer iOpMode        
 
-      integer iConnPwrSource, iConnPwrLoad, iTwoWayFlow
+      integer iConnPwrSource, iConnPwrLoad
       parameter( iConnPwrSource = 1,
-     &           iConnPwrLoad   = 2, 
-     &           iTwoWayFlow    = 3  )
+     &           iConnPwrLoad   = 2 )
 
 C.....Nominal power (W)
       real    fNomPower
@@ -1367,11 +1352,6 @@ C.....Power input to the power conditioning unit (W)
 C.....Power output from the power conditioning unit (W)
       real    fPwrOutput    
 
-C.....Balance on recieving node
-      real fPwrBalance
-C.....Flag indicating surplus on recieving node 
-      logical bSurplus
-
 C.....Efficiency of power conditioning unit (-)
       real    fPCUEff        
 
@@ -1385,7 +1365,7 @@ C.....power source, iOpMode = 1)
       real    fVarA, fVarB, fVarC, fXSolve     
 
 C.....Variable used to compare two real numbers
-      logical bPower_Zero, bClose
+      logical close    
 
 C.....Index of the next power-only component defined in network
       integer next_comp
@@ -1399,9 +1379,6 @@ C.....Boolean to flag error
 C.....Database index number for PCU power-only-component
       integer PCU_id         
       parameter( PCU_id = 20 )
-C.....Database index number for battery
-      integer Bat_Id         
-      parameter( Bat_Id = 17 )
 
 C.....Strings used for XML output reporting
       CHARACTER*128  hold_name, root_name, H3K_rep_NAME
@@ -1417,16 +1394,13 @@ C.....Power-only component index
 C----------------------------------------------------------------------------------------------------
 
 
-C Ensure that PCU power-only component models or batteries are 
-C the last defined. This is necessary to ensure these models 
-C can correctly determine the power balances on the nodes
-C they are connected to.
-
+C Ensure that PCU power-only component models are the last defined.
+C This is necessary to get correct power balance at nodes to which the PCU
+C is connected.
       ok = .true.
       next_comp = IPWC + 1
       do 10 i = next_comp, npowcom
-         if ( powcomid(i) .ne. PCU_id .and. 
-     &        powcomid(i) .ne. Bat_Id ) then
+         if ( powcomid(i) .ne. PCU_id ) then
             ok = .false.
          endif
  10   continue
@@ -1442,10 +1416,6 @@ C they are connected to.
 C Inputs from electric network file
 
 C There are 6 data items for the PCU power-only component; See full definitions in the subroutine header.
-
-C.....Calculate balance on receiving node.
-      fPwrBalance = (penodl(pcunode(IPWC,2)) +
-     &                 penodg(pcunode(IPWC,2)))
 
 C.....Operating mode of PCU 
       iOpMode = POWCDAT(IPWC,1)          
@@ -1467,46 +1437,27 @@ C.... This input is currently not taken into account.
       fPwrAux = POWCDAT(IPWC,6)
 
 
-C.....Obtain voltages from connected nodes (take real part), 
-C.....and use each node's 'base voltage' if they're found 
-C.....to be zero.
+C.....Obtain voltages from connected nodes (take real part)
 
 C sending node
       fUin = real(enodvlt(pcunode(IPWC,1)))
-      call eclose ( fUin, 0.0, 0.001, bClose) 
-      if ( bClose ) fUin = enodbasev (pcunode(IPWC,1))
 
 C receiving node
       fUout = real(enodvlt(pcunode(IPWC,2)))
-      call eclose ( fUout, 0.0, 0.001, bClose) 
-      if ( bClose ) fUout = enodbasev (pcunode(IPWC,2))
-      
 
-C.....Calculate balance on receiving node.
-      fPwrBalance = (penodl(pcunode(IPWC,2)) +
-     &                 penodg(pcunode(IPWC,2)))
-
-C.....If there's a surplus of electricity on the recieving node,
-C.....set flag.
-      if ( fPwrBalance .ge. 0.0 ) then
-        bSurplus = .true.
-      else 
-        bSurplus = .false.
-      endif 
 
 C.....Power conditioning unit connected to power load (power output is known):
 
-      if (  iOpMode .eq. iConnPwrLoad .or.
-     &    ( iOpMode .eq. iTwoWayFlow .and. .not. bSurplus ) ) then
+      if ( iOpMode .eq. iConnPwrLoad ) then
 
 C get net power at receiving  node
           fPwrOutput = ABS(penodl(pcunode(IPWC,2)) +
      &                 penodg(pcunode(IPWC,2)))      
 
-          call eclose( fPwrOutput, 0.,0.001,bPower_Zero )
+          call eclose( fPwrOutput, 0.,0.001,close )
                                                                  
 C no power output
-          if ( bPower_Zero ) then 
+          if ( close ) then 
 
              fPwrInput = fIdleConst * fNomPower
 
@@ -1528,35 +1479,15 @@ C TRNSYS type 175 (PCU) description and subroutine
 
 C Power conditioning unit connected to power source (power input is known):
 
-      elseif (  iOpMode .eq. iConnPwrSource .or. 
-     &        ( iOpMode .eq. iTwoWayFlow .and. bSurplus ) ) then
+      elseif ( iOpMode .eq. iConnPwrSource ) then
 
-
-C get net power at sending node: 
-          if ( iOpMode .eq. iConnPwrSource ) then 
-C Case 1: Power always flows from the sending mode to the recieving node       
-            fPwrInput =  penodl(pcunode(IPWC,1)) +
-     &                   penodg(pcunode(IPWC,1))                
-          elseif ( iOpMode .eq. iTwoWayFlow ) then
-C Case 2: Power can flow both ways, but now happens to be flowing 
-C         backwards.
-            fPwrInput =  penodl(pcunode(IPWC,2)) +
-     &                   penodg(pcunode(IPWC,2))                
-        
-          else
-            ! Can't happen
-          endif           
+C get net power at sending node  
+          fPwrInput =  penodl(pcunode(IPWC,1)) +
+     &                 penodg(pcunode(IPWC,1))                
                                                         
+          call eclose( fPwrInput, 0.,0.001,close )
 
-          if ( fPwrInput .lt. 0. ) then
-             fPwrInput = 0.
-          endif
-
-
-          call eclose( fPwrInput, 0.,0.001,bPower_Zero )
-
-
-          if ( bPower_Zero ) then         
+          if ( close ) then         
 
 C no power input, calculate idling losses
              fPwrOutput = -1. * fIdleConst * fNomPower      ! losses are a load, -ve
@@ -1584,13 +1515,6 @@ C  x  = fPwrOutput/fNomPower
 
              fPwrOutput = fXSolve * fNomPower 
 
-             if ( fPwrOutput .gt. fPwrInput ) then    ! Ensures that PCU efficiency is not > 100%
-                                                      ! and that power losses are not negative!
-               fPwrOutput = fPwrInput
-
-             endif
-
-
           endif
 
 
@@ -1609,7 +1533,7 @@ C Calculate power loss
 
 C Calculate efficiency (only applicable if PCU is operating)
 
-          if ( bPower_Zero ) then
+          if ( fPwrInput .eq. 0. ) then
 
              fPCUEff = 0.            !- to avoid divide by zero error in controller subroutine.
 
@@ -1621,10 +1545,7 @@ C Calculate efficiency (only applicable if PCU is operating)
 
 C Place load/generated power on appropriate node:
 
-          if ( iOpMode .eq. iConnPwrSource .or.
-     &         iOpMode .eq. iConnPwrLoad   .or.
-     &         ( iOpMode .eq. iTwoWayFlow .and..not. bSurplus ) ) then
-C Forwards flow:
+
 C power load on sending node (only real power taken into account)
 C loads are negative
           penodl(pcunode(IPWC,1)) =  penodl(pcunode(IPWC,1)) -       
@@ -1634,20 +1555,7 @@ C loads are negative
 C power source on receiving node (only real power taken into account)
           penodg(pcunode(IPWC,2)) =  penodg(pcunode(IPWC,2)) +
      &                               fPwrOutput     
-          elseif ( iOpMode .eq. iTwoWayFlow .and. bSurplus ) then
-C Backwards flow: 
-C power load on sending node (only real power taken into account)
-C loads are negative
-            penodl(pcunode(IPWC,2)) =  penodl(pcunode(IPWC,2)) -       
-     &                               fPwrInput                      
 
-
-C power source on receiving node (only real power taken into account)
-            penodg(pcunode(IPWC,1)) =  penodg(pcunode(IPWC,1)) +
-     &                               fPwrOutput    
-     
-     
-          endif 
 
 C Save variables that may be required by control sensors.
           iPow_Time_Row_Count(IPWC)    = 3           ! # of additional data.
@@ -1690,8 +1598,6 @@ C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
      &                       '(W)',
      &                       'Power loss from PCU' )
 
-C.....Only report efficiency if unit is on
-      if ( .not. bPower_Zero ) then
 
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:lnblnk(root_name)),
@@ -1704,8 +1610,6 @@ C.....Only report efficiency if unit is on
      &                       'units',
      &                       '(-)',
      &                       'Efficiency of PCU' )
-
-      endif
 
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:lnblnk(root_name)),
@@ -1831,7 +1735,6 @@ C-------------------------------------------------------------------------------
       real fDay                           ! real representing day of year
                                           !   (& fraction thereof)
       real fE_Load                        ! Electric loads (W)
-      real fE_Load_profile                ! Electric load from original profile (W)
       character*248 cName_buffer          ! Buffer for passing BCD name
       character*72  cFCL_name             ! Buffer for passing .fcl name 
       character*124 cContext              ! Contextual buffer
@@ -1869,9 +1772,6 @@ C.....Named constants
       logical bWarned
       save bWarned
       data bWarned /.false./
-
-      CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
-      integer ilength                      ! non-blank length of string
      
 C---------------------------------------------------------------------------------
 C     References
@@ -1919,10 +1819,6 @@ C........Get electric loads
 
       endif 
 
-C....... Multiply electric load by scale factor
-
-         fE_Load = fE_load * fScale_Factor
-
 
 C Initialise
          fH2_app_load_TOTAL = 0.0
@@ -1936,7 +1832,6 @@ C........Get appliance loads
             enddo
          endif 
 
-         fE_Load_profile = fE_Load                    ! Save value for XML reporting
 
          fE_Load = fE_Load - fH2_app_load_TOTAL
 
@@ -1961,63 +1856,9 @@ C................Issue warning to user.
          endif
          
                      
-      PPOWOC(iComponent) = -1.0 * fE_Load
+      PPOWOC(iComponent) = -1.0 * fE_Load * fScale_Factor
       QPOWOC(iComponent) = 0.
 
-
-C-------------------------------------------------------
-C XML output
-C-------------------------------------------------------
-           
-      
-C.... Get component name
-      hold_name = powcomnam(iComponent)
-C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
-
-      write(root_name, '(A,A,A)')
-     &     'electrical_net/',
-     &     'power_only_components/',
-C     &     hold_name(1:lnblnk(hold_name)),
-C     &     '/elec_load'
-     &     'elec_load'
-
-      ilength = lnblnk(root_name)
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_load_profile'
-
-      call add_to_xml_reporting(
-     &                       fE_Load_profile,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Original E-load' )
-
-      
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_H2_loads'
-
-      call add_to_xml_reporting(
-     &                       fH2_app_load_TOTAL,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Total H2 loads' )
-
-     
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_load_adjusted'
-
-      call add_to_xml_reporting(
-     &                       fE_Load,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Adjusted E-load' ) 
-      
       
       RETURN
       END
