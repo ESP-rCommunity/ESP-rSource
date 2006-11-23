@@ -709,9 +709,7 @@ DC-AC_inverter
 1.227E07  Internal resistance constant (V^2)
 0.        Auxiliary power (W)
 *TEXT
-This component determines the power sink term for the
-node sending current to the PCU and the power source term
-for the node receiving current from the PCU.
+This component couples two nodes and transmit
 *ENDTEXT
 *END
 *POWOCOMP
@@ -722,7 +720,7 @@ for the node receiving current from the PCU.
 *DESC
 Power-sonic battery (CETC battery model)
 *SPECDATA
-47 0
+48 0
 1        Number of battery cells in parallel in a pack (-)
 6        Number of packs in series in a battery (-)
 1.66     Capacity at operating temperature (Ah/cell)
@@ -770,6 +768,7 @@ Power-sonic battery (CETC battery model)
 0.       Exponential coefficient EH2 for cell internal resistance correlation in discharge mode
 0.       Exponential coefficient EH3 for cell internal resistance correlation in discharge mode
 1        Index number of zone containing battery
+2        Battery control method
 *TEXT
 Battery model developed by CETC (Patrice Pinel, modified Hajo Ribberink).
 *ENDTEXT

@@ -116,6 +116,16 @@ C Node and component names
       character POWCDATS*72       !-string data item for a power-only component 
       character CONECOMNAM*12     !-string containing connecting component name
 
+C Electrical network generation, load.
+      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
+     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
+      real    penodl         !- real power load on node
+      real    qenodl         !- reactive power load on node
+      real    penodg         !- real power generation at node
+      real    qenodg         !- reactive power generation at node
+      real    penodt         !- real transmitted power at node
+      real    qenodt         !- reactive transmitted power at node
+
 C Common block holding information on the battery's current operation.
 C This will be used by the RE-H2 controller for the time being.  A more
 C general structure of transporting data regarding the battery will be
@@ -167,12 +177,18 @@ C-------------------------------------------------------------------------
          
       CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
 
+      INTEGER iCtrlType            !-control type
+      INTEGER iConn_node           !- Index of node connected to battery
+      
+      INTEGER iResH2Ctrl, iBalanceNode, iElecDomainCtrl
+      PARAMETER ( iResH2Ctrl=1, iBalanceNode=2, iElecDomainCtrl=3)
+
 C-------- For debugging only ----------------------------------------------------------------
-      DumTime = 0
-      StopTime = 2427
-      IF ( NSINC .EQ. StopTime ) THEN
-         DumTime = 1
-      ENDIF
+C      DumTime = 0
+C      StopTime = 2427
+C      IF ( NSINC .EQ. StopTime ) THEN
+C         DumTime = 1
+C      ENDIF
 C--------------------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------
@@ -180,9 +196,79 @@ C---------------------------------------------------------------------------
       nTimeStep = NSINC
       dtTStep = TIMSEC / 3600.           ! convert to hour
       iZoneIndex = INT(powcdat(IPWC,47))
-      zoneT = tfa(iZoneIndex)
+      
+C.....Check if valid zone was specified, and assume 20oC ambinent
+C.....temperature otherwise.      
+      if ( iZoneIndex .gt. 0 ) then
+        zoneT = tfa(iZoneIndex)
+      else 
+        zoneT = 20.0
+      endif
       pBatSysCharge = 0
       pBatSysDischarge = 0
+
+C     Note: The original CETC_Battery model provided 47 inputs, and 
+C     assumed the battery demand would always be specified using the 
+C     BATTERY_STATE/...,batDemandP common variable (which is set 
+C     by the res-h2-control model.) More recent versions of the model
+C     provide a 48'th input allowing the type of control to be specified.
+C     With this input, the battery model is no longer dependent on the 
+C     res-h2-controller, and can be used in practical electrical networks.
+C
+C     Check if 48 inputs have been specified, and if not, assume the 
+C     control is managed by res-h2-control model through the 
+C     batDemandP variable. 
+
+      if ( npowcdat(IPWC) == 47 ) then
+C........Control type has not been specified. Therefore, assume 
+C........res-h2-control will provide control, for compatability 
+C........with legacy implementations of the battery model.
+         iCtrlType = iResH2Ctrl
+      elseif ( npowcdat(IPWC) == 48 ) then 
+C........Collect control type from 48th input
+         iCtrlType = int ( powcdat(IPWC,48) )
+      else 
+C........Incorrect number of inputs has been specified, but,
+C........we should error-trap all the inputs elsewhere.
+         STOP "POWOC_CETC_BATTERY: Could not determine control type."
+      endif
+
+      if ( iCtrlType == iResH2Ctrl ) then
+C........The Res-h2-controller has determined the electrical demand, 
+C........and assigned the value to varaible batDemandP. Do nothing.
+         
+      elseif ( iCtrlType == iBalanceNode ) then
+C........The battery will 'self-regulate' to manage the node it's 
+C........connected to. If possible, surplus electricity on that node
+C........will be absorbed by the battery while deficits on the node 
+C........will be met by the battery. 
+
+C........Set battery demand to the balance on the node the battery 
+C........is connected to 
+
+C........Is the battery connected to a node?
+         if ( POWCONEN(IPWC,1) .gt. 0 ) then
+
+C...........Yes. Get node number
+            iConn_node = POWCONEN(IPWC,1)
+
+C...........Set demand to balance on connected node.
+            batDemandP = -1.0 * (   penodl(iConn_node)
+     &                            + penodg(iConn_node) )
+
+         else 
+           STOP 
+     &       "POWOC_CETC_BATTERY: battery must be connected to a node!"
+         endif  
+         
+         
+         
+      elseif ( iCtrlType == iElecDomainCtrl ) then
+C........Place holder for interface to the as-yet unimplemented 
+C........electrcical domain contoller.        
+         STOP 
+     &    "POWOC_CETC_BATTERY: electrical domain control not supported!"
+      endif ! <- matches 'if ( iCtrlType == ...'
 
 C************** Get mode (charge/discharge)
       IF (batDemandP .EQ. 0. ) THEN
@@ -281,7 +367,6 @@ C power returned/taken to meet the demand
           ppowoc(ipwc) = -1. * pBatSystem             ! load is negative
       ENDIF
       qpowoc(ipwc) = 0.                               ! reactive power
-
 
 C-------------------------------------------------------
 C XML output
@@ -1622,6 +1707,8 @@ C PARAMETERS FROM SIGNATURE
       REAL batTIni,dtTStep,batTFin,zoneT
       INTEGER IPWC
 
+      logical close_to_zero 
+      
 C Battery Parameters (technology and configuration)
       REAL thermalMass  ! Thermal mass of the battery-mass*Cp (J/°C)
       REAL heatLossFact ! Heat loss factor h*A (W/°C)
@@ -1644,13 +1731,17 @@ C      expValue = EXP(thermalMass/heatLossFact*dtTStep)
 C      neededHeat = ((batTFin - batTIni*expValue)/(1.0-expValue)-zoneT)
 C     &              *heatLossFact
 
-
 C correction
       expValue = EXP(-1. * heatlossFact*dtTStep*3600/thermalMass)
-      neededHeat = ((batTIni - zoneT)*expValue +
+C.Test for possible zero denominator      
+      call eclose ( expValue, 1.0, 1E-05, close_to_zero )
+      if ( .not. close_to_zero ) then
+        neededHeat = ((batTIni - zoneT)*expValue +
      &              (zoneT - batTfin)) /
      &             (1. - expValue) * (-1.) * heatLossFact
-
+      else 
+        neededHeat = 0.0
+      endif
 
 C     Make sure no values lower than 0 are returned.
       IF(neededHeat .LE. 0.0) THEN
