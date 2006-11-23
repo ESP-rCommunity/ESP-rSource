@@ -43,7 +43,7 @@ C Only NPMTYP is used.
 
 C Mass flow network.
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Components variables.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -73,7 +73,7 @@ C Strings describing component input
       character hfpdsc*68
 
       character pcdesc*80, pcname*15,LPNF*72
-      character*72 lpcdb, lpnam, laprob, lapres, lafres
+      character lpcdb*72, lpnam*72, laprob*72
 
 C Common controlling format of plant network file
       common/PLNFMT/bPLN_format_long

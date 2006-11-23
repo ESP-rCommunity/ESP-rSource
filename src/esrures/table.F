@@ -224,7 +224,7 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
@@ -239,7 +239,8 @@ C  = 1 is human readable text, 2 is tab separated, 3 is java
       character outs*124,act*1,sq*1,unit*7,t20*20
       character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*72
-      CHARACTER PDESCR*60,SDESCR*44,RFILE*72,RSNAME*40,DESCR*7,DESCR1*10
+      CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -562,15 +563,15 @@ C gains and losses.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
       character outs*124,zname*12,zdesc*64,prompt*124,outsl*144
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character SSPARENT*12
-      character RFILE*72,RSNAME*40
+      character SSPARENT*12,RSNAME*40
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character SLABEL*32,GLABEL*20
 
       DIMENSION VAL(12),TVAL(12,12)

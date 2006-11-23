@@ -100,7 +100,8 @@ C Controls.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
@@ -132,7 +133,7 @@ C Controls.
       dimension ITEMS(29)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
-      character*72 LAPROB,LAPRES,LAFRES,DFILE,LPNF,tfile
+      character*72 LAPROB,LAPRES,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72,LPRFDB*72
@@ -1200,7 +1201,8 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
@@ -1235,7 +1237,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character HOLD*32,zdesc*64,zd*64
       CHARACTER ETEXT*82,CUBN*6
       character sfile*72,snpfile*72,fs*1,lodlabel*6
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER LAPROB*72,LAPRES*72
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

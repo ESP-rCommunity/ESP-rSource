@@ -256,11 +256,14 @@ C Ask user for related mass flow network files.
 #include "plant.h"
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      common/APRES/LAPRES,IFPRE
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       LOGICAL OK,dok
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72,LAPRES*72
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character H*72,ltmp*72
 
       h(1)='This file is assumed to exist. '

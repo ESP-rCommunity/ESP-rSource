@@ -98,7 +98,6 @@ C ICFFS   - fluid flow network node associated with each plant component.
 C           NB fluid flow network & plant energy network need not be matched.
 C LAPROB  - fluid flow model description file.
 C LAPRES  - wind pressure coefficients distribution database.
-C LAFRES  - fluid flow network results file.
 
 C ICFFS   - fluid flow network node associated with each plant
 C           component. NB fluid flow network and plant energy
@@ -177,7 +176,10 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/PREC8/SLAT,SLON
       COMMON/G0/CTYPE
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
+C Pressure database.
+      common/APRES/LAPRES,IFPRE
 
 C ZMFN1 (124 char) holds first line of flow node->zone links
 C ZMFN2 (124 char) holds second line of flow node->zone links
@@ -421,7 +423,7 @@ C Generic databases.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LAPRES,LPNF,LPCDB,LTDF,LTDFA
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

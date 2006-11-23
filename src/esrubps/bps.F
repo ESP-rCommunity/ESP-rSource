@@ -178,8 +178,9 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
      &              sTNOD(MNOD)

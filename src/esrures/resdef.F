@@ -42,7 +42,7 @@ C routines.
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -58,7 +58,8 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
-      character LTMP*72,RFILE*72,H*72,outs*124
+      character LTMP*72,H*72,outs*124
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok

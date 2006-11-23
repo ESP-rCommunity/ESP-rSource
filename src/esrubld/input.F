@@ -97,8 +97,6 @@ C icffs   - fluid flow network node associated with each plant component.
 C           NB fluid flow network and plant energy network need not be matched
 
 C laprob  - fluid flow description file
-C lapres  - wind pressure coefficients distribution database
-C lafres  - fluid flow network results file
 
       subroutine mzinpt(IREP,IER)
 
@@ -124,7 +122,7 @@ C Path to model and command line file name.
       common/c6/indcfg
       common/CFGV/icfgv
 
-      common/afn/iairn,laprob,lapres,lafres,icaas(mcom)
+      common/afn/iairn,laprob,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
 
       common/prec7/itcnst
@@ -187,7 +185,7 @@ C For reading in of bi-directional data.
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144
       CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
-      character*72 laprob,lapres,lafres,path,ENTFLNAM
+      character*72 laprob,path,ENTFLNAM
       character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
@@ -1321,16 +1319,17 @@ C USESPS uses configuration presimuilation data.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+C lafres  - fluid flow network results file
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical dll,match
 
-      character RFILE*72,PFILE*72,MSTRFILE*72
-      character*72 LAPROB,LAPRES,LAFRES
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72
       character outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8

@@ -40,7 +40,8 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
       common/pophelp/h(60)
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/OUTIN/IUOUT,IUIN
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -79,7 +80,7 @@ C Climate related.
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character*72 LFMUL,LFCON,LCLIM,LAPROB,LAPRES,LAFRES,LPRFDB,LPCDB
+      character*72 LFMUL,LFCON,LCLIM,LAPROB,LAPRES,LPRFDB,LPCDB
       character H*72,LTMP*72,LOPTDB*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -2347,14 +2348,15 @@ C optical properties databases.
       common/OUTIN/IUOUT,IUIN
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       character H*72,LFCON*72,LFMUL*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER LAPROB*72,LAPRES*72
 
       IER=0
 

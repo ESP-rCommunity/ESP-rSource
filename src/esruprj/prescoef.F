@@ -795,7 +795,8 @@ C and calculate the pressure coeffcients
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
@@ -804,7 +805,7 @@ C and calculate the pressure coeffcients
       common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
       CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER LAPROB*72,LAPRES*72
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character doit*248
 
@@ -1332,12 +1333,13 @@ C current contents of pc-data in common block.
 #include "building.h"
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/MFLDOC/DEPRE(MPRD)
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      character*72 LAPRES,LAPROB,LAFRES,FINA
+      character LAPRES*72,LAPROB*72,FINA*72
       character DEPRE*40
 
 C Check the number of pressure coefficients and give a warning 
@@ -1381,7 +1383,8 @@ C IER=0 OK, IER=1 problem.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/MFLDOC/DEPRE(MPRD)
       common/pophelp/h(60)
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -1391,7 +1394,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER PCITM(35)*42
       character DEPRE*40,KEY*1,outwin*72,H*72,COMPS*40
       character*72 ITEMS(14)
-      character*72 LAPRES,LAPROB,LAFRES
+      character LAPRES*72,LAPROB*72
       LOGICAL OK,dok,moddb
 
       IER=0

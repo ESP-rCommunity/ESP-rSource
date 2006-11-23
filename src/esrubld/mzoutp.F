@@ -46,12 +46,12 @@ C tzph,tzpc are zone heating/cooling use over time.
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       character LTMP*72,h*72,zname*12,zdesc*64,outs*124
-      character PFILE*72,MSTRFILE*72
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lsnam,lproj,lgeom
-      character*72 lshad,lthrm,lutil,lclim,lcfgf,rfile
+      character*72 lshad,lthrm,lutil,lclim,lcfgf
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK,dok

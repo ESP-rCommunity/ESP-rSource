@@ -35,7 +35,7 @@ C Definitions of most variables is given in ctread.F
 #include "net_flow.h"
 #include "building.h"
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -53,7 +53,7 @@ C Definitions of most variables is given in ctread.F
 
       CHARACTER*10 SOUTS
       CHARACTER*124 CNTMDESC,LOUTS,TOUTS
-      CHARACTER*72 CNTMFIL,LAPROB,LAPRES,LAFRES
+      CHARACTER CNTMFIL*72,LAPROB*72
       CHARACTER*12 CONTMNAM,SSNAME,NDNAM,CMNAM
       CHARACTER LTPCMP*60,MOUTS*12
       INTEGER SPMTYP,SSLINK1,SSLINK2
@@ -101,7 +101,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        SOUTS(1:lnblnk(SOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK1(ISPMNO,ICONTM).NE.0)GOTO 501
@@ -227,7 +226,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        MOUTS(1:lnblnk(MOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//MOUTS
           ENDIF
  513    CONTINUE
       WRITE(IFCTM,1027,IOSTAT=ISTAT,ERR=99)
@@ -260,7 +258,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        SOUTS(1:lnblnk(SOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK2(ISPMNO,INOD).NE.0)GOTO 515

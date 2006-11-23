@@ -1330,7 +1330,8 @@ C << to be done - then name file generated is never cleaned up >>
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/LOG/LPRJLG
       common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
@@ -1373,7 +1374,7 @@ C << to be done - then name file generated is never cleaned up >>
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
-      character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
+      character*72 LCLIM,LAPROB,LAPRES,LPCDB,LPRFDB,LOPTDB
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72

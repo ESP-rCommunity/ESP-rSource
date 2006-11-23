@@ -1187,7 +1187,8 @@ C file so that output file can be written from commons.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
@@ -1202,7 +1203,7 @@ C file so that output file can be written from commons.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB
+      CHARACTER*72 LAPROB,LAPRES,LPNF,LPCDB
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
@@ -1295,7 +1296,8 @@ C file (up to where the zone information starts).
       COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -1318,7 +1320,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPRJLG,LCLIM,LOUT
+      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPRJLG,LCLIM,LOUT
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

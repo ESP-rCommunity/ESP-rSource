@@ -61,7 +61,7 @@ C     simtyp - holds description of simulation type.
 
 C Mass flow network.
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -101,7 +101,7 @@ C Common controlling format of plant network file
       save bInitialized
       
       character*20 simtyp(3)
-      character*72  lpnam,laprob, lapres, lafres,LPNF
+      character lpnam*72,laprob*72,LPNF*72
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)

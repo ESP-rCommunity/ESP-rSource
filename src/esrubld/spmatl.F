@@ -641,7 +641,8 @@ C Special materials
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
 
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -652,7 +653,7 @@ C Special materials
 
 
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72,LAPRES*72
       logical close
 
 C Read in the component data.

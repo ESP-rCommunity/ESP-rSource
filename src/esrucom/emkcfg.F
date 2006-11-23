@@ -92,7 +92,8 @@ C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
@@ -233,7 +234,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPRJLG,LCLIM
+      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

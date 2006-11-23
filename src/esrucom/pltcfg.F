@@ -166,7 +166,11 @@ C  itrc the level of reporting (zero is quiet).
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
       common /datdsc/ mscdsc(madata), cvrdsc(mconvr)
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+
+C Pressure database.
+      common/APRES/LAPRES,IFPRE
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
@@ -177,7 +181,8 @@ C Electrical details for specified plant components
 
       LOGICAL close
       CHARACTER OUTSTR*124,OUTS*124,word*20,LTMP*72,cmsg*24
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPNAM
+      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPNAM
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      
       CHARACTER ZNAME*12,ZDESC*64

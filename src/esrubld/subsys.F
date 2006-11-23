@@ -1063,7 +1063,8 @@ C Save present values for possible iterations at this time step.
       COMMON/FVALG/GFA(MCOM)
       COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/ZCVNT/ZCVENT(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
       COMMON/MFSINC/MFBSNC
 
       common/ts4/itsitr(msch),itrpas
@@ -1084,7 +1085,7 @@ C mechanical ventilation and infiltration.
       PARAMETER    (SMALL=1.0E-15)
       DIMENSION VAL(MBITS+2)
 
-      CHARACTER LAPROB*72,LAPRES*72,LAFRES*72,zname*12,zdesc*64
+      CHARACTER LAPROB*72,zname*12,zdesc*64
       character outs*124
       logical close
 

@@ -363,7 +363,9 @@ C Data items.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/APRES/LAPRES,IFPRE
+
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
@@ -377,7 +379,7 @@ C Special materials file flag
       LOGICAL MODIFY,MODLEN,MODBND,XST
       integer header,footer
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72,LAPRES*72
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER TITL*72,SNAME*12,LFCON*72,LFMUL*72,DADESC*72,spitem2*32
