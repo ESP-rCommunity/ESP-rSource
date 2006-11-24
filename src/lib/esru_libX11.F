@@ -5258,7 +5258,6 @@ C exh is 'show me more' text array read in from external file.
       if(OTHER(1:1).ne.'-')then
         write(LTUT,'(A,A)') instpath(1:lnblnk(instpath)), 
      &                      '/tutorial/esp-r.tut'
-         print*, LTUT
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
         XST=.FALSE.
