@@ -85,34 +85,63 @@ vww:
 	cd $(SRCdir)/esruvww; $(MAKE)
 
 .PHONY: install
+
+strip: 
+	@if [ -f $(SRCdir)/esruaco/aco$(EXE) ]; then strip $(SRCdir)/esruaco/aco$(EXE);  fi
+	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then strip $(SRCdir)/esrub2e/b2e$(EXE);  fi
+	@if [ -f $(SRCdir)/esrubld/bld$(EXE) ]; then strip $(SRCdir)/esrubld/bld$(EXE);  fi
+	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then strip $(SRCdir)/esrubps/bps$(EXE);  fi
+	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip $(SRCdir)/esrudbm/dbm$(EXE);  fi
+	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then strip $(SRCdir)/esrudfs/dfs$(EXE);  fi
+	@if [ -f $(SRCdir)/esruc2e/c2e$(EXE) ]; then strip $(SRCdir)/esruc2e/c2e$(EXE);  fi
+	@if [ -f $(SRCdir)/esrucfg/cfg$(EXE) ]; then strip $(SRCdir)/esrucfg/cfg$(EXE);  fi
+	@if [ -f $(SRCdir)/esruclm/clm$(EXE) ]; then strip $(SRCdir)/esruclm/clm$(EXE);  fi
+	@if [ -f $(SRCdir)/esrue2r/e2r$(EXE) ]; then strip $(SRCdir)/esrue2r/e2r$(EXE);  fi
+	@if [ -f $(SRCdir)/esrucnv/ecnv$(EXE) ]; then strip $(SRCdir)/esrucnv/ecnv$(EXE); fi
+	@if [ -f $(SRCdir)/esrueco/eco$(EXE) ]; then strip $(SRCdir)/esrueco/eco$(EXE);  fi
+	@if [ -f $(SRCdir)/esrugrd/grd$(EXE) ]; then strip $(SRCdir)/esrugrd/grd$(EXE);  fi
+	@if [ -f $(SRCdir)/esruish/ish$(EXE) ]; then strip $(SRCdir)/esruish/ish$(EXE);  fi
+	@if [ -f $(SRCdir)/esrumfs/mfs$(EXE) ]; then strip $(SRCdir)/esrumfs/mfs$(EXE);  fi
+	@if [ -f $(SRCdir)/esrumld/mld$(EXE) ]; then strip $(SRCdir)/esrumld/mld$(EXE);  fi
+	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip $(SRCdir)/esrumrt/mrt$(EXE);  fi
+	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then strip $(SRCdir)/esrunet/net$(EXE);  fi
+	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip $(SRCdir)/esrupdb/pdb$(EXE);  fi
+	@if [ -f $(SRCdir)/esruplt/plt$(EXE) ]; then strip $(SRCdir)/esruplt/plt$(EXE);  fi
+	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip $(SRCdir)/esruprj/prj$(EXE);  fi
+	@if [ -f $(SRCdir)/esrupro/pro$(EXE) ]; then strip $(SRCdir)/esrupro/pro$(EXE);  fi
+	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then strip $(SRCdir)/esrures/res$(EXE);  fi
+	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then strip $(SRCdir)/esrutdf/tdf$(EXE);  fi
+	@if [ -f $(SRCdir)/esruvew/viewer$(EXE) ]; then strip $(SRCdir)/esruvew/viewer$(EXE);  fi
+	@if [ -f $(SRCdir)/esruvww/vww$(EXE) ]; then strip $(SRCdir)/esruvww/vww$(EXE);  fi
+
+
 install:
-	@cd $(SRCdir)
-	@if [ -f $(SRCdir)/esruaco/aco$(EXE) ]; then strip ./esruaco/aco$(EXE); cp ./esruaco/aco$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then strip ./esrub2e/b2e$(EXE); cp ./esrub2e/b2e$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrubld/bld$(EXE) ]; then strip ./esrubld/bld$(EXE); cp ./esrubld/bld$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then strip ./esrubps/bps$(EXE); cp ./esrubps/bps$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip ./esrudbm/dbm$(EXE); cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then strip ./esrudfs/dfs$(EXE); cp ./esrudfs/dfs$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruc2e/c2e$(EXE) ]; then strip ./esruc2e/c2e$(EXE); cp ./esruc2e/c2e$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrucfg/cfg$(EXE) ]; then strip ./esrucfg/cfg$(EXE); cp ./esrucfg/cfg$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruclm/clm$(EXE) ]; then strip ./esruclm/clm$(EXE); cp ./esruclm/clm$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrue2r/e2r$(EXE) ]; then strip ./esrue2r/e2r$(EXE); cp ./esrue2r/e2r$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrucnv/ecnv$(EXE) ]; then strip ./esrucnv/ecnv$(EXE); cp ./esrucnv/ecnv$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrueco/eco$(EXE) ]; then strip ./esrueco/eco$(EXE); cp ./esrueco/eco$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrugrd/grd$(EXE) ]; then strip ./esrugrd/grd$(EXE); cp ./esrugrd/grd$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruish/ish$(EXE) ]; then strip ./esruish/ish$(EXE); cp ./esruish/ish$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumfs/mfs$(EXE) ]; then strip ./esrumfs/mfs$(EXE); cp ./esrumfs/mfs$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumld/mld$(EXE) ]; then strip ./esrumld/mld$(EXE); cp ./esrumld/mld$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip ./esrumrt/mrt$(EXE); cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then strip ./esrunet/net$(EXE); cp ./esrunet/net$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip ./esrupdb/pdb$(EXE); cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruplt/plt$(EXE) ]; then strip ./esruplt/plt$(EXE); cp ./esruplt/plt$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip ./esruprj/prj$(EXE); cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrupro/pro$(EXE) ]; then strip ./esrupro/pro$(EXE); cp ./esrupro/pro$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then strip ./esrures/res$(EXE); cp ./esrures/res$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then strip ./esrutdf/tdf$(EXE); cp ./esrutdf/tdf$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruvew/viewer$(EXE) ]; then strip ./esruvew/viewer$(EXE); cp ./esruvew/viewer$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruvww/vww$(EXE) ]; then strip ./esruvww/vww$(EXE); cp ./esruvww/vww$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruaco/aco$(EXE) ]; then cp ./esruaco/aco$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then cp ./esrub2e/b2e$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrubld/bld$(EXE) ]; then cp ./esrubld/bld$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then cp ./esrubps/bps$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then cp ./esrudfs/dfs$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruc2e/c2e$(EXE) ]; then cp ./esruc2e/c2e$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrucfg/cfg$(EXE) ]; then cp ./esrucfg/cfg$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruclm/clm$(EXE) ]; then cp ./esruclm/clm$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrue2r/e2r$(EXE) ]; then cp ./esrue2r/e2r$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrucnv/ecnv$(EXE) ]; then cp ./esrucnv/ecnv$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrueco/eco$(EXE) ]; then cp ./esrueco/eco$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrugrd/grd$(EXE) ]; then cp ./esrugrd/grd$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruish/ish$(EXE) ]; then cp ./esruish/ish$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrumfs/mfs$(EXE) ]; then cp ./esrumfs/mfs$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrumld/mld$(EXE) ]; then cp ./esrumld/mld$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then cp ./esrunet/net$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruplt/plt$(EXE) ]; then cp ./esruplt/plt$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrupro/pro$(EXE) ]; then cp ./esrupro/pro$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then cp ./esrures/res$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then cp ./esrutdf/tdf$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruvew/viewer$(EXE) ]; then cp ./esruvew/viewer$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esruvww/vww$(EXE) ]; then cp ./esruvww/vww$(EXE) $(ESPdir)/bin; fi
 
 .PHONY: clean
 clean:
