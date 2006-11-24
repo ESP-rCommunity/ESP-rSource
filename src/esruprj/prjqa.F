@@ -32,6 +32,9 @@ C the current model.
 #include "control.h"
 #include "plant.h"
 #include "tdf2.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -91,7 +94,6 @@ C LPNF (72 char) plant network file name.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
@@ -199,7 +201,7 @@ C Remember if each zone is fully attributed.
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
       character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
-      CHARACTER*72 LAPROB,LAPRES,LPNF,LOPTDB,LPCDB,LPRFDB
+      CHARACTER*72 LAPROB,LPNF,LOPTDB,LPCDB,LPRFDB
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24

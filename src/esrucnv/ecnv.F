@@ -1174,6 +1174,9 @@ C Fill common blocks for a minimal standard systems configuration
 C file so that output file can be written from commons.
       subroutine blnksys
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1188,7 +1191,6 @@ C file so that output file can be written from commons.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
@@ -1203,7 +1205,7 @@ C file so that output file can be written from commons.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LAPROB,LAPRES,LPNF,LPCDB
+      CHARACTER*72 LAPROB,LPNF,LPCDB
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
@@ -1275,6 +1277,7 @@ C mksyshd - write out the initial portion of the system configuration
 C file (up to where the zone information starts).
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1297,7 +1300,6 @@ C file (up to where the zone information starts).
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -1320,7 +1322,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPRJLG,LCLIM,LOUT
+      CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM,LOUT
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

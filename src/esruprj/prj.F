@@ -33,6 +33,9 @@ C ********** MAIN
       program prj
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -44,7 +47,6 @@ C ********** MAIN
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -151,7 +153,7 @@ C Dispersed demands notes and file name.
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
-      character*72 LCLIM,LAPROB,LAPRES,LPCDB,LPRFDB,LOPTDB
+      character*72 LCLIM,LAPROB,LPCDB,LPRFDB,LOPTDB
       character ITEMS(27)*33
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
@@ -1176,6 +1178,7 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
+#include "esprdbfile.h"
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -1187,7 +1190,6 @@ C to include the path and create a string to drive the modules.
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -1221,7 +1223,7 @@ C level).
       character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LAPRES,LCFGF,ENTFLNAM,lipvdatf
+      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
       character cfgroot*24,cr*24,spfdescr*8
 
 C dd is character array for selecting simulation parameter sets.
@@ -3817,6 +3819,7 @@ C << message to user that such a file does not exist
 
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
+#include "esprdbfile.h"
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
@@ -3839,7 +3842,6 @@ C Path to model and command line file (if any).
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -3862,7 +3864,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       character CNTMFIL*72,LCNN*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFCON,LFMUL
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCTLF,LCFD
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB,LAPRES
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
       CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,CTLDOC*248,OUTSTR*124

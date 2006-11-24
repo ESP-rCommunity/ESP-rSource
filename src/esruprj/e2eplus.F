@@ -99,7 +99,6 @@ C Simulation parameter presets.
      &               isfnmon(MSPS)
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -112,7 +111,7 @@ C Simulation parameter presets.
       character ctldoc*248,LCTLF*72,BLKNAME*8,BLKMAT*12
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
-      CHARACTER LAPROB*72,LAPRES*72
+      CHARACTER LAPROB*72
       CHARACTER*6 lodlabel
       character oprdesc*248,ctlstr*24
 

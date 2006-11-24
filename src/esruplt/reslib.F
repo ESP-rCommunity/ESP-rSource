@@ -51,11 +51,10 @@ c simulation results will be transferred.
       common/reclen/nzrl,nprl,nerl
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      common/APRES/LAPRES,IFPRE
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
 
-      character LAPROB*72,LAPRES*72
+      character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outs*124,ltmp*72,H*72
       logical OK,dok

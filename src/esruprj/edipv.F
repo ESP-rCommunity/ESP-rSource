@@ -1748,9 +1748,6 @@ C IPV description.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C Pressure database.
-      common/APRES/LAPRES,IFPRE
-
 C Simulation parameter sets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -1763,7 +1760,7 @@ C Simulation parameter sets.
       character act*1,lipvdatf*72,LCFGF*72,cfgroot*24,cr*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      CHARACTER*72 LAPROB,LAPRES,ENTFLNAM
+      CHARACTER LAPROB*72,ENTFLNAM*72
       logical MSTROK,MSTRZN
 
       if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then

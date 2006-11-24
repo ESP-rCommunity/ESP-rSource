@@ -105,7 +105,6 @@ C IFLWN   - plant fluid flow simulation index (1 = on).
 C ICFFS   - fluid flow network node associated with each plant component. 
 C           NB fluid flow network & plant energy network need not be matched.
 C LAPROB  - fluid flow model description file.
-C LAPRES  - wind pressure coefficients distribution database.
 
 C ICFFS   - fluid flow network node associated with each plant
 C           component. NB fluid flow network and plant energy
@@ -115,6 +114,10 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+
 #include "net_flow.h"
 #include "tdf2.h"
 #include "cfd.h"
@@ -187,9 +190,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/G0/CTYPE
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
-C Pressure database.
-      common/APRES/LAPRES,IFPRE
 
 C ZMFN1 (124 char) holds first line of flow node->zone links
 C ZMFN2 (124 char) holds second line of flow node->zone links
@@ -483,7 +483,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      CHARACTER*72 LAPROB,LAPRES,LPNF,LPCDB,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LPNF,LPCDB,LTDF,LTDFA
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

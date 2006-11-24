@@ -48,7 +48,6 @@ C     ICFFS  - fluid flow network node associated with each plant
 C              component. NB fluid flow network and plant energy
 C              network need not be matched
 C     LAPROB - fluid flow problem description file
-C     LAPRES - wind pressure coefficients distribution database
 C     NCOMP  - total number of building zones
 C     NCON   - total number of building intra-zone connections
 C     IER1   - input error index which ensures that ESRUbps menu picks
@@ -88,6 +87,9 @@ C Sets known constant pressure nodes pressures and reset other nodes
 #include "building.h"
 #include "net_flow.h"
 #include "plant.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -98,7 +100,6 @@ C Sets known constant pressure nodes pressures and reset other nodes
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
 
@@ -112,7 +113,7 @@ C Sets known constant pressure nodes pressures and reset other nodes
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
-      CHARACTER*72 LAPROB,LAPRES
+      CHARACTER*72 LAPROB
       character outs*124
 
       PARAMETER (SMALL=1.0E-15)
@@ -301,7 +302,6 @@ C temperatures saved in MZLS3.
 
 C Fluid flow network data.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -340,7 +340,7 @@ C Activation of connections
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       LOGICAL MFSAVE,dotrace
-      CHARACTER LAPROB*72,LAPRES*72,LCFD*72
+      CHARACTER LAPROB*72,LCFD*72
       character outs*124
       logical bInStartup
 

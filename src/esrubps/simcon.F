@@ -649,7 +649,6 @@ C Set simulation toggles.
       COMMON/SKYFLG/ISKYFL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
@@ -700,7 +699,7 @@ C 'simulation toggles' menu.
       dimension SALT(7),IVALS(5),IVAL(MCOM),HCALT(15),IHCVAL(15)
 
 
-      CHARACTER*72 LAPROB,LAPRES,H,vsnam,lfil,entflnam
+      CHARACTER*72 LAPROB,H,vsnam,lfil,entflnam
       CHARACTER*40 ITEMG(33)
       character SALT*51,zname*12,zdesc*64,spflnam*72,outs*124
       character HCALT*42

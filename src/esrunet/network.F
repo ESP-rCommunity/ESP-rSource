@@ -152,9 +152,6 @@ C Path to problem and command line file (if any).
 C Legacy flow file commons.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C Pressure database.
-      common/APRES/LAPRES,IFPRE
-
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
@@ -224,7 +221,7 @@ C Significant figure reporting limit (NSIGFIG).
       character dtagatr*12,dmenuatr*32,datrib*12
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      CHARACTER*72 LAPROB*72,LAPRES*72
+      CHARACTER*72 LAPROB*72
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
 C Initialize global common data. IUEX is file unit for the

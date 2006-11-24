@@ -31,6 +31,9 @@ C been checked elsewhere.
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
       PARAMETER (MSTMC=1)
 
@@ -67,8 +70,6 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
 
-C Pressure database.
-      common/APRES/LAPRES,IFPRE
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -217,7 +218,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      character*72 LAPROB,LAPRES,LPNF,LPCDB,LTDF,LTDFA
+      character*72 LAPROB,LPNF,LPCDB,LTDF,LTDFA
       character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

@@ -36,7 +36,6 @@ C ICFFS       - fluid flow network node associated with each plant
 C               component. NB fluid flow network and plant energy
 C               network need not be matched
 C LAPROB      - fluid flow problem description file
-C LAPRES      - wind pressure coefficients distribution database
 C LAFRES      - fluid flow network results file
 
 C LPCDB       - the name of the plant component database
@@ -147,6 +146,9 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
@@ -169,8 +171,6 @@ C  itrc the level of reporting (zero is quiet).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
-C Pressure database.
-      common/APRES/LAPRES,IFPRE
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
@@ -181,7 +181,7 @@ C Electrical details for specified plant components
 
       LOGICAL close
       CHARACTER OUTSTR*124,OUTS*124,word*20,LTMP*72,cmsg*24
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPNAM
+      CHARACTER*72 LPCDB,LAPROB,LPNAM
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      

@@ -110,7 +110,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       COMMON/C22/ICLIM,LCLIM
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
 
       COMMON/VTHP18/LNLTHP
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
@@ -180,7 +179,7 @@ C Significant figure reporting limit (NSIGFIG).
       character path*72,upath*72,esprc*72,bresfil*72
       character dfdblbl*20,defdbfl*72
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character LAPROB*72,LAPRES*72
+      character LAPROB*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
 

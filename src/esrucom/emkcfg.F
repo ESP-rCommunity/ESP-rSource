@@ -34,6 +34,9 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -93,7 +96,6 @@ C Special materials file flag
       common/entfile/entflnam,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
@@ -234,7 +236,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPRJLG,LCLIM
+      CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

@@ -33,6 +33,9 @@ C This version uses generic databases.
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C espprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
       PARAMETER (MSTMC=1,MSGAL=1)
 
       common/FILEP/IFIL
@@ -90,7 +93,6 @@ C Special materials file flag
       common/entfile/entflnam,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/APRES/LAPRES,IFPRE
       COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
@@ -214,7 +216,7 @@ C Generic databases.
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LPRJLG,LCLIM
+      CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
