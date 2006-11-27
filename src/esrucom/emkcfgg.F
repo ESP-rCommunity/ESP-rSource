@@ -36,6 +36,7 @@ C This version uses generic databases.
 #include "esprdbfile.h"
 C espprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
       PARAMETER (MSTMC=1,MSGAL=1)
 
       common/FILEP/IFIL
@@ -74,8 +75,7 @@ C Project log file, paths to standard file locations.
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
-C Optical, profile and construction db.
-      COMMON/GOPTDB/LOPTDB,IOPTDB
+C Profile and construction db.
       COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
@@ -218,7 +218,7 @@ C Generic databases.
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
-      CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
+      CHARACTER*72 LFMUL,LFCON,LPRFDB,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

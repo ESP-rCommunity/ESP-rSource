@@ -35,6 +35,7 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
 
       PARAMETER  (MCP=35)
 
@@ -59,7 +60,6 @@ C Profile databases.
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
       common/C7/LPCDB
-      common/GOPTDB/LOPTDB,IOPTDB
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/rpath/path
@@ -83,7 +83,7 @@ C Climate related.
       logical unixok,copydef,haveconstr,clkok
 
       character*72 LFMUL,LFCON,LCLIM,LAPROB,LPRFDB,LPCDB
-      character H*72,LTMP*72,LOPTDB*72,SOPT*12
+      character H*72,LTMP*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60

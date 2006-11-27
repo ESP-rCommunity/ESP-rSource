@@ -36,6 +36,7 @@ C ********** MAIN
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -68,9 +69,6 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Profiles database.
       common/PRODB/LPRFDB,IPRODB
-
-C Optical db.
-      common/GOPTDB/LOPTDB,IOPTDB
 
 C Project log file, journal on/off, unit number, cmd, file name.
       common/LOG/LPRJLG
@@ -153,7 +151,7 @@ C Dispersed demands notes and file name.
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
-      character*72 LCLIM,LAPROB,LPCDB,LPRFDB,LOPTDB
+      character*72 LCLIM,LAPROB,LPCDB,LPRFDB
       character ITEMS(27)*33
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144

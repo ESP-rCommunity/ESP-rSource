@@ -37,11 +37,15 @@ C file to manage the reading and saving of this db.
       SUBROUTINE EDOPT(IER)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/GPICK/GS(MGOPT),nopt
       COMMON/PRODB/LPRFDB,IPRODB
       common/user/browse
@@ -50,7 +54,7 @@ C file to manage the reading and saving of this db.
       CHARACTER GS*52
       DIMENSION OPTITM(35),SALT(9),IVALSS(9),IGSET(MGOPT)
       CHARACTER H*72,OPTITM*54,DSOPT*12,LPRFDB*72
-      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,LOPTDB*72,KEY*1,loptdbl*72
+      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*72
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*72,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24

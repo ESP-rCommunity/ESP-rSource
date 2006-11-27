@@ -26,6 +26,10 @@ C E2eplus: Inside and outside materials and composition and schedules generation
 C ******* Translate esp data to EnergyPlus file geom and materials.
       SUBROUTINE e2eplus(itrc,ioout,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -51,7 +55,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -102,7 +105,7 @@ C Simulation parameter presets.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character GDESCR*36,LOPTDB*72,LFCON*72,LFMUL*72
+      character GDESCR*36,LFCON*72,LFMUL*72
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12

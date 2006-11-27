@@ -1316,6 +1316,7 @@ C << to be done - then name file generated is never cleaned up >>
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
@@ -1341,7 +1342,6 @@ C LAPRES,IFPRE (for window pressure databases)
       COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1376,7 +1376,7 @@ C LAPRES,IFPRE (for window pressure databases)
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
-      character*72 LCLIM,LAPROB,LPCDB,LPRFDB,LOPTDB
+      character*72 LCLIM,LAPROB,LPCDB,LPRFDB
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72

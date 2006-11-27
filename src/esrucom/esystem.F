@@ -117,6 +117,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
 
 #include "net_flow.h"
 #include "tdf2.h"
@@ -233,11 +234,6 @@ C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
-
-C Optical db.
-C LOPTDB (72 char) optical database name.
-C IOPTDB file unit number for optical database.
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C LPRJLG (72 char) model log file.
       COMMON/LOG/LPRJLG
@@ -484,7 +480,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LPCDB,LTDF,LTDFA
-      character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      character*72 LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12

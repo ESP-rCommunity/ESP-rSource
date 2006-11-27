@@ -754,8 +754,12 @@ C already been opened). If user has requested a listing of the
 C database then use itopt (which may be text feedback or a file unit).
       SUBROUTINE EROPTDB(ITRC,ITOPT,SOPT,GDESCR,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C DG Direct trans at 5 angles.
 C HG Solar heat gain at 5 angles (for documentation purposes only).
@@ -774,7 +778,7 @@ C GS (52 char) list of optical database items to select from.
 
       LOGICAL FOUND
       CHARACTER GS*52,WORD*20,topt*72,outs*124,currentfile*72
-      CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36,LOPTDB*72
+      CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
 
 C Open the optical database, if scanning all items reset the
 C counters for the number of single and double items before scan.

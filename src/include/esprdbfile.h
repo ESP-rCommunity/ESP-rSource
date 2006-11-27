@@ -9,4 +9,9 @@ C ifpre  - file unit for wind pressure coef database
       common/APRES/LAPRES,IFPRE
       character LAPRES*72
 
+C LOPTDB - (72 char) optical database file name
+C IOPTDB - unit number of optical database
+      COMMON/GOPTDB/LOPTDB,IOPTDB
+      character LOPTDB*72
+
 C end of esp-r_dbfile.h
