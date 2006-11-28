@@ -39,6 +39,7 @@ C output; IER=0 indicates no error.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LPRFDB,IPRODB (for event profile database)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
@@ -63,7 +64,6 @@ C LAPRES,IFPRE (for window pressure databases)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PREC2/VOL(MCOM)
       common/user/browse
       common/uhome/upath
@@ -138,7 +138,7 @@ C Controls.
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
-      character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72,LPRFDB*72
+      character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
@@ -3235,10 +3235,10 @@ C the path to it (should be false for CAD use as the file and its
 C location is already known).
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/FILEP/IFIL
       common/pophelp/h(60)
-      common/PRODB/LPRFDB,IPRODB
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       common/cctlnm/ctldoc,lctlf
@@ -3269,7 +3269,7 @@ C Defaults.
       character*70 listfc70(50)
       character*32 WORDS(12)
 
-      character LPRFDB*72,path*72,LCMDFL*144,LTMP*144,GTGEOM*72
+      character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82

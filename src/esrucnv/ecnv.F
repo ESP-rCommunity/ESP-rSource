@@ -1182,6 +1182,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1196,7 +1197,6 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       COMMON/LOG/LPRJLG
@@ -1209,7 +1209,7 @@ C LPCDB/IPCDB (for plant template database)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LAPROB*72,LPNF*72
-      character*72 LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      character*72 LFCON,LFMUL,LPRJLG,LCLIM
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
@@ -1297,7 +1297,6 @@ C file (up to where the zone information starts).
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1322,7 +1321,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LFMUL,LFCON,LPRFDB,LCNN
+      CHARACTER*72 LFMUL,LFCON,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LCLIM,LOUT
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24

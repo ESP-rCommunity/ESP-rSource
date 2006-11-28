@@ -36,10 +36,10 @@ C    mode = 2 : Read data pointers only.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -49,7 +49,7 @@ C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
-      CHARACTER ZDESC*25,h*72,buffer*72,LPRFDB*72,ltmp*72
+      CHARACTER ZDESC*25,h*72,buffer*72,ltmp*72
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       
 C      if(mode.eq.1) then

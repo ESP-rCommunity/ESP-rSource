@@ -37,6 +37,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
 
       PARAMETER  (MCP=35)
 
@@ -49,8 +50,6 @@ C LPCDB/IPCDB (for plant template database)
       common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-C Profile databases.
-      common/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
@@ -82,7 +81,7 @@ C Climate related.
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character*72 LFMUL,LFCON,LCLIM,LAPROB,LPRFDB
+      character*72 LFMUL,LFCON,LCLIM,LAPROB
       character H*72,LTMP*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

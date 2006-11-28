@@ -119,6 +119,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
 
 #include "net_flow.h"
 #include "tdf2.h"
@@ -218,9 +219,6 @@ C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
-
-C Profiles database.
-      COMMON/PRODB/LPRFDB,IPRODB
 
 C Material and construction databases.
 C LFCON (72 char) materials database name.
@@ -480,7 +478,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
-      character*72 LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      character*72 LFCON,LFMUL,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12

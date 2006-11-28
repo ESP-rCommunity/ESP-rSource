@@ -40,10 +40,13 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
@@ -64,7 +67,7 @@ C fluid flow model description file.
      &  smstres(MSPS),selres(MSPS),sipvres
 
       CHARACTER*33 ITEM1(24)
-      CHARACTER LAPROB*72,LPRFDB*72,LCFGF*72
+      CHARACTER LAPROB*72,LCFGF*72
       CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
       character zmfn1*124,zmfn2*124,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

@@ -38,6 +38,7 @@ C espprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
       PARAMETER (MSTMC=1,MSGAL=1)
 
       common/FILEP/IFIL
@@ -75,8 +76,7 @@ C Project log file, paths to standard file locations.
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
-C Profile and construction db.
-      COMMON/PRODB/LPRFDB,IPRODB
+C Construction db.
       COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Images.
@@ -218,7 +218,7 @@ C Generic databases.
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
-      CHARACTER*72 LFMUL,LFCON,LPRFDB,LPNF,LTDF,LTDFA
+      CHARACTER*72 LFMUL,LFCON,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

@@ -22,6 +22,10 @@ C PRO
 C ESRU event profiles database manager.
 
       program pro
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -30,7 +34,6 @@ C ESRU event profiles database manager.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       COMMON/FILEP/IFIL
-      COMMON/PRODB/LPRFDB,IPRODB
 
 C Path to problem
       common/rpath/path
@@ -52,7 +55,7 @@ C Defaults.
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      character LPRFDB*72,LCMDFL*144,inf*144,H*72,outs248*248
+      character LCMDFL*144,inf*144,H*72,outs248*248
       character outs*124,path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
@@ -230,6 +233,7 @@ C   air flow patterns to the operations file,
 C   control information to the configuration control file.
       SUBROUTINE  CASFMK
 #include "epara.h"
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -237,7 +241,6 @@ C   control information to the configuration control file.
       COMMON/FILEP/IFIL
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
@@ -250,7 +253,7 @@ C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
       DIMENSION ITEM(35)
-      CHARACTER LPRFDB*72,LASCI*72,DFILE*72,DESC*40,outs*124,KEY*1
+      CHARACTER LASCI*72,DFILE*72,DESC*40,outs*124,KEY*1
       character H*72,ITEM*38,LCMDFL*144,LTMP*72,path*72,L144*144
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -585,19 +588,19 @@ C dummy data is displayed first. NFLAG='N' new profile, NFLAG='E'
 C existing profile.
       SUBROUTINE  EDPROF(ITM,NFLAG,IER)
 #include "epara.h"
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(30)
       character NFLAG*1
-      CHARACTER LPRFDB*72,DESC*40,outs*124,KEY*1,TMP*40
+      CHARACTER DESC*40,outs*124,KEY*1,TMP*40
       character ITEM*33,H*72,cstr*72
 
 C If existing - read data for the profile and display.

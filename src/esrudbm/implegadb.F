@@ -1204,10 +1204,12 @@ C File errors.
 C **************** TROPRO (copied from eprfilec.F)
 C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
-      COMMON/PRODB/LPRFDB,IPRODB
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
-      CHARACTER DESC*40,OUTSTR*124,LPRFDB*72,LASCI*72
+      CHARACTER DESC*40,OUTSTR*124,LASCI*72
 
       IER =0
 

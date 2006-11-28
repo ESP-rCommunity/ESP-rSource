@@ -1205,11 +1205,10 @@ C    mode = 2 : Read data pointers only.
 
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/PRODB/LPRFDB,IPRODB
 
       LOGICAL OK,dok
       CHARACTER*25 ZDESC
-      character h*72,buffer*72,ltmp*72,LPRFDB*72
+      character h*72,buffer*72,ltmp*72
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       
 C      if(mode.eq.1) then

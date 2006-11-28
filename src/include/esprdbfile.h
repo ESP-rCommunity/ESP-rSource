@@ -19,4 +19,9 @@ C IPCDB - unit number of plant template database
       common/C7/LPCDB,IPCDB
       character lpcdb*72
 
+C LPRFDB - (72 char) event profile database file name
+C IPRODB - unit number of event profile database
+      COMMON/PRODB/LPRFDB,IPRODB
+      CHARACTER LPRFDB*72
+
 C end of esp-r_dbfile.h

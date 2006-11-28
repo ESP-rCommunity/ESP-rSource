@@ -994,11 +994,13 @@ C    most dependant
 C ier returned as non-zero if a problem in scanning files.
 
       subroutine dealwithgdb(act,ier)
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/PRODB/LPRFDB,IPRODB
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -1020,7 +1022,7 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       character H*72,outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
-      character LFCON*72,LFMUL*72,LPRFDB*72
+      character LFCON*72,LFMUL*72
       logical unixok,gendbok
 
 C Set folder separator (fs) to \ or / as required.
@@ -1602,11 +1604,11 @@ C browse restricts user options, moddb is returned as true
 C if database names have changed.
 
       subroutine modifygdb(act,db,jdbhash,browse,moddb,ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/PRODB/LPRFDB,IPRODB
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/rpath/path
@@ -1630,7 +1632,7 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72,path*72,longtfile*144
-      character LFCON*72,LFMUL*72,LPRFDB*72
+      character LFCON*72,LFMUL*72
       logical unixok,gendbok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
 
