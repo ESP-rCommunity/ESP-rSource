@@ -34,6 +34,7 @@ C to code from ABACUS, Department of Architecture & Building Science.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -72,7 +73,6 @@ C Where default db list are kept.
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -108,7 +108,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character cfgroot*24,dstmp*24
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
-      character*72 LFCON,LFMUL,htmlfile
+      character htmlfile*72
       character ltobs*72,outs*124
       logical OPND,match,doobs,unixok
 
@@ -1178,11 +1178,6 @@ C file so that output file can be written from commons.
       subroutine blnksys
 #include "building.h"
 #include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1197,7 +1192,6 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       COMMON/LOG/LPRJLG
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
@@ -1209,7 +1203,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LAPROB*72,LPNF*72
-      character*72 LFCON,LFMUL,LPRJLG,LCLIM
+      character LPRJLG*72,LCLIM*72
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
@@ -1297,7 +1291,6 @@ C file (up to where the zone information starts).
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
@@ -1321,7 +1314,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LFMUL,LFCON,LCNN
+      CHARACTER LCNN*72
       CHARACTER*72 LAPROB,LPRJLG,LCLIM,LOUT
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24

@@ -125,6 +125,9 @@ C attributes are known.
 
       SUBROUTINE GZPDBE(ICOMP,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -136,11 +139,10 @@ C IPRZ is primitive db ref for each layer.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      CHARACTER LFCON*72,LFMUL*72,outs*124,DESC*48,NAM*72,TITL*72
+      CHARACTER outs*124,DESC*48,NAM*72,TITL*72
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
 
 C Open the primitive construction db if not already done.

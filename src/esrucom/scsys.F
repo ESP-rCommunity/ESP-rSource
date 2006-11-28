@@ -37,6 +37,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       PARAMETER (MSTMC=1)
 
@@ -80,7 +81,6 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -219,7 +219,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       character*72 LAPROB,LPNF,LTDF,LTDFA
-      character*72 LFCON,LFMUL,LPRJLG,LCLIM
+      character LPRJLG*72,LCLIM*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,CTYPE*3,ZN*12

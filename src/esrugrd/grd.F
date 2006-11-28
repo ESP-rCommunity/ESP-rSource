@@ -33,6 +33,9 @@ C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
       program grd
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -48,7 +51,6 @@ C << file names can be in place.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -74,7 +76,7 @@ C Significant figure reporting limit (NSIGFIG).
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
-      CHARACTER*72 H,LFILE,LCFGF,LFCON,LFMUL
+      CHARACTER H*72,LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
       character dfdblbl*20,defdbfl*72
@@ -462,13 +464,13 @@ C coefficients.
 C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
@@ -479,7 +481,7 @@ C *********************************************************************
 
       LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL GRDOK
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LFCON,LFMUL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       CHARACTER VERTX*2
 
       GRDOK=.true.

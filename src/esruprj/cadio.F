@@ -1319,6 +1319,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
@@ -1340,7 +1341,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
@@ -1371,7 +1371,7 @@ C LPRFDB,IPRODB (for event profile database)
       common/aim2def/iAIM2,LAIM2
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character*72 LFMUL,LFCON,LPRJLG,LPNF,LMOIST
+      character LPRJLG*72,LPNF*72,LMOIST*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248

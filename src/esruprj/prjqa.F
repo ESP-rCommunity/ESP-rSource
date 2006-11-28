@@ -38,6 +38,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -69,7 +70,6 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -200,7 +200,7 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
-      character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
+      character dstmp*24,mlcname*12,currentfile*72
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40

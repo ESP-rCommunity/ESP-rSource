@@ -29,6 +29,7 @@ C blank or NONE not required and not yet defined.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -61,7 +62,6 @@ C Where default db list are kept.
       common/rcmd/LCMDFL
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Radiance based commons.
 C rofil = `outside` objects, rzfil = is the zone (inside) composition.
@@ -102,7 +102,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       CHARACTER H*72,outs*124,ITEM*30
-      CHARACTER*72 LFMUL,LFCON,LDFGRID
+      CHARACTER LDFGRID*72
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
@@ -854,11 +854,10 @@ C *************** opendb ***************
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      CHARACTER LFCON*72,LFMUL*72
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 

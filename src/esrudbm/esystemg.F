@@ -118,6 +118,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       PARAMETER (MSTMC=1)
 
@@ -208,13 +209,6 @@ C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
-
-C Material and construction databases.
-C LFCON (72 char) materials database name.
-C IFCON file unit number for materials database.
-C LFMUL (72 char) constructions database name.
-C IFMUL file unit number for constructions database.
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
@@ -417,7 +411,7 @@ C Generic databases.
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
-      character*72 LFCON,LFMUL,LPRJLG,LCLIM
+      character LPRJLG*72,LCLIM*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12

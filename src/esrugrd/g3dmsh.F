@@ -535,10 +535,10 @@ C and connections.
 C *********************************************************************
       SUBROUTINE CZCNVS(IZ,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -556,7 +556,7 @@ C *********************************************************************
       LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       CHARACTER MSG*72,FLTYP*25
-      CHARACTER*72 LFCON,LFMUL,L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
+      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
 

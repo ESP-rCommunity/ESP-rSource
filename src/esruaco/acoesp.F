@@ -33,14 +33,13 @@ C ********** opendb (copy of code from eddb.F)
 C Open materials constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      character LFCON*72,LFMUL*72
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0

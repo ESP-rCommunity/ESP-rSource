@@ -1707,6 +1707,7 @@ C saved to a geometry file ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1727,7 +1728,6 @@ C Optical and geometric properties.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/ground/grdtmp(12,mgrdp)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1746,7 +1746,7 @@ C Optical and geometric properties.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
-      CHARACTER SALT*33,H*72,SN*12,SN2*12,LFMUL*72,LFCON*72
+      CHARACTER SALT*33,H*72,SN*12,SN2*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SSPARENT*12
 

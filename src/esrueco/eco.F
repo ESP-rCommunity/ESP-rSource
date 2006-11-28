@@ -45,6 +45,7 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -102,7 +103,6 @@ C For exporting to file
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C ECO specific commons 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -148,7 +148,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
-      CHARACTER LFCON*72,LFMUL*72,inf*144,LCMDFL*144
+      CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,esprc*72,L144*144

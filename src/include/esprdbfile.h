@@ -24,4 +24,14 @@ C IPRODB - unit number of event profile database
       COMMON/PRODB/LPRFDB,IPRODB
       CHARACTER LPRFDB*72
 
+C LFCON - (72 char) materials db file name
+C LFMUL - (72 char) constructions db file name
+C IFCON - unit number of materials database
+C IFMUL - unit number of constructions database
+      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      CHARACTER LFCON*72,LFMUL*72
+
+C Define as integers.
+      integer ifpre,ioptdb,ipcdb,iprodb,ifcon,ifmul
+
 C end of esp-r_dbfile.h

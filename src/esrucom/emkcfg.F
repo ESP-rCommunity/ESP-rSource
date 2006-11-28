@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -40,6 +40,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -78,9 +79,6 @@ C Project log file, paths to standard file locations.
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
-
-C Construction db.
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -238,7 +236,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
-      CHARACTER*72 LFMUL,LFCON,LPNF,LTDF,LTDFA
+      CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

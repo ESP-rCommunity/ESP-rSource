@@ -39,6 +39,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -62,7 +63,6 @@ C LPRFDB,IPRODB (for event profile database)
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       
 C Significant figure reporting limit (NSIGFIG).
@@ -143,7 +143,7 @@ C Dispersed demands notes and file name.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LFMUL,LFCON,LCFGF,H,LPRJLG
+      character*72 LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,LCMDFL*144
@@ -3845,7 +3845,6 @@ C Path to model and command line file (if any).
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -3858,7 +3857,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72,LCNN*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFCON,LFMUL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCTLF,LCFD
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth

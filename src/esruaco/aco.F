@@ -51,6 +51,7 @@ C                           furniture
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -94,7 +95,6 @@ C Defaults and paths
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
@@ -125,7 +125,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(26) 
 
-      CHARACTER BCFName*72,DBCFNam*72,LFCON*72,LFMUL*72
+      CHARACTER BCFName*72,DBCFNam*72
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144

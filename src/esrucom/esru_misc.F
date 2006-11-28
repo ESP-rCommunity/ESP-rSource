@@ -3226,6 +3226,7 @@ C databases have been opened.
 
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3235,13 +3236,12 @@ C databases have been opened.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32,DESC*48,NAM*72,PNAM*20,H*72,outs*124
-      CHARACTER LFCON*72,LFMUL*72,SSPARENT*12
+      CHARACTER SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
 
 C Check name of surface with construction name in MLC common.

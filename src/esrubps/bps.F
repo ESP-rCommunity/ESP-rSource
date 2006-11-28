@@ -135,6 +135,7 @@ C a subroutine rather than as an application.
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "cfd.h"
+#include "esprdbfile.h"
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.
@@ -174,7 +175,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
@@ -269,7 +269,7 @@ C Timeout information
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
-      character h*72,LFCON*72,LFMUL*72,LTMP*72,OUTS*124,spsname*8
+      character h*72,LTMP*72,OUTS*124,spsname*8
       character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB

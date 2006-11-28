@@ -451,6 +451,7 @@ C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -459,14 +460,13 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,DESC*48,TITL*72,LFMUL*72,LFCON*72,GDESCR*36
+      character iprtext*4,DESC*48,TITL*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then

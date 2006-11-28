@@ -172,6 +172,7 @@ C                         use the inside surface node temperature
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
 #include "plant.h"
 #include "tdf2.h"
@@ -207,9 +208,6 @@ C Path to model and command line file name.
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
-
-C MLC commons.
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
@@ -258,7 +256,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144
-      CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
+      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12

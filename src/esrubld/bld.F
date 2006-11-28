@@ -76,6 +76,7 @@ C           and determines the device type attached to current job.
       program bld
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
 
       common/outin/iuout,iuin
       common/shout/icout
@@ -104,7 +105,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
@@ -170,7 +170,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(11)
-      character h*72,LFCON*72,LFMUL*72,LTMP*72,OUTS*124,spsname*8
+      character h*72,LTMP*72,OUTS*124,spsname*8
       character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4,outs248*248
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB

@@ -38,6 +38,7 @@ C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       PARAMETER  (MCP=35)
 
@@ -60,7 +61,6 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/rpath/path
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -81,7 +81,7 @@ C Climate related.
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character*72 LFMUL,LFCON,LCLIM,LAPROB
+      character LCLIM*72,LAPROB*72
       character H*72,LTMP*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -2350,14 +2350,13 @@ C optical properties databases.
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      character H*72,LFCON*72,LFMUL*72,LASCI*72,DFILE*72
+      character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
       CHARACTER LAPROB*72
 
