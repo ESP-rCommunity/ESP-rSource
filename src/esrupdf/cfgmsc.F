@@ -28,10 +28,11 @@ C file.
       subroutine pcwrt
 #include "plant.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPCDB/IPCDB (for plant template database)
 
-C Plant component database filename.
       common/OUTIN/IUOUT,IUIN
-      COMMON/C7/LPCDB
 
 C Plant network description.
       COMMON/C8/LPNAM
@@ -73,7 +74,7 @@ C Strings describing component input
       character hfpdsc*68
 
       character pcdesc*80, pcname*15,LPNF*72
-      character lpcdb*72, lpnam*72, laprob*72
+      character lpnam*72, laprob*72
 
 C Common controlling format of plant network file
       common/PLNFMT/bPLN_format_long

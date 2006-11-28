@@ -38,6 +38,7 @@ C common blocks into the file and unit specified in COMMON/C21.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -60,7 +61,6 @@ C LOPTDB,IOPTDB (for optical database)
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
@@ -236,7 +236,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM
+      CHARACTER*72 LAPROB,LPRJLG,LCLIM
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER*72 LFMUL,LFCON,LPRFDB,LPNF,LTDF,LTDFA
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

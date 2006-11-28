@@ -700,6 +700,11 @@ C simulation related information. It is passed npc the
 C number of plant components used in the network.
       subroutine opnplt(npc,imode,ier)
 #include "plant.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -713,7 +718,6 @@ C number of plant components used in the network.
       common/cctlnm/ctldoc,lctlf
       COMMON/CLIM/LCLIM
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/c7/lpcdb
       common/pcdbdt/ipcrec(mpcom)
       common/rcmd/LCMDFL
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
@@ -724,7 +728,7 @@ C Defaults.
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
       character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
-      character lpcdb*72,lclim*72,lctlf*72,ctldoc*248,scname*12,h*72
+      character lclim*72,lctlf*72,ctldoc*248,scname*12,h*72
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       logical XST,ok,dok
 
@@ -959,22 +963,23 @@ C nnode (??) is returned
 C naout (number of additional output data) is returned.
       subroutine dbdat(ipc,irec,nnode,naout)
 #include "plant.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/c7/lpcdb
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
       LOGICAL OK,dok
-      CHARACTER ZDESC*25,cdate*16,lpcdb*72,buffer*80,adopdsc*30
+      CHARACTER ZDESC*25,cdate*16,buffer*80,adopdsc*30
       character h*72
 
-      iupdb=ifil+11
+C If unit for plant component db not yet set, do it.
+      if(ipcdb.eq.0)ipcdb=ifil+11
 
 C 'irecln' is defined in 'plantdb.h'.
       irecln=20
-  100 call EFOPRAN(iupdb,lpcdb,IRECLN,1,IER)
+  100 call EFOPRAN(ipcdb,lpcdb,IRECLN,1,IER)
 
 C Check for error on openening.
       if(ier.gt.0) then
@@ -1002,7 +1007,7 @@ C File doesn't exist.
 
 C Old file, so check header.
       iorec = 1
-      READ (iupdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) ZDESC
+      READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) ZDESC
       IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
          ok=.false.
          dok=.false.
@@ -1015,13 +1020,13 @@ C Old file, so check header.
          if(ok) goto 100
       endif
 
-      read(iupdb,rec=irec,iostat=istat,err=99999)
+      read(ipcdb,rec=irec,iostat=istat,err=99999)
      &     idum,idum,cdate,nnode,nmatx,nmisc
       irec=irec+1
-      read(iupdb,rec=irec,iostat=istat,err=99999)
+      read(ipcdb,rec=irec,iostat=istat,err=99999)
      &     idum,idum,idum,idum,idum,ncdata,naout
       irec=irec+3
-      read(iupdb,rec=irec,iostat=istat,err=99999)
+      read(ipcdb,rec=irec,iostat=istat,err=99999)
      &     (ISV(ipc,INOD),INOD=1,NNODE)
 
 
@@ -1030,7 +1035,7 @@ C Read additional output description and type
         irec=irec + 1 + (NMATX-1)/IRECLN + NMISC + ncdata
         do 160 i=1, naout
           irec=irec+1
-          read(iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)adopdsc(ipc,i)
+          read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)adopdsc(ipc,i)
   160   continue
       endif
 

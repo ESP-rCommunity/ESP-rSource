@@ -38,8 +38,6 @@ C               network need not be matched
 C LAPROB      - fluid flow problem description file
 C LAFRES      - fluid flow network results file
 
-C LPCDB       - the name of the plant component database
-
 C LPNAM       - the name of the plant system
 
 C NPCOMP      - number of plant components
@@ -149,12 +147,12 @@ C  itrc the level of reporting (zero is quiet).
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/C7/LPCDB
       COMMON/C8/LPNAM
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
@@ -181,7 +179,7 @@ C Electrical details for specified plant components
 
       LOGICAL close
       CHARACTER OUTSTR*124,OUTS*124,word*20,LTMP*72,cmsg*24
-      CHARACTER*72 LPCDB,LAPROB,LPNAM
+      CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      

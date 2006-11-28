@@ -98,7 +98,6 @@ C           NB fluid flow network and plant energy network need not be matched
 
 C laprob  - fluid flow description file
 
-C lpcdb   - the name of the plant component database
 C lpnam   - the name of the plant system
 C npcomp  - number of plant components
 
@@ -170,6 +169,10 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPCDB/IPCDB (for plant template database)
+
 #include "plant.h"
 #include "tdf2.h"
 #include "dhw_common.h"
@@ -192,7 +195,6 @@ C Path to model and command line file name.
       CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
-      COMMON/C7/LPCDB
 
       common/afn/iairn,laprob,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
@@ -257,7 +259,7 @@ C For reading in of bi-directional data.
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144
       CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
-      character*72 laprob,LPCDB,path,ENTFLNAM
+      character*72 laprob,path,ENTFLNAM
       character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
@@ -446,11 +448,12 @@ C Fluid flow simulation parameters if fluid flow network defined.
       if(iairn.ge.1.or.iflwn.eq.1) call mflwsu
 
 C Unless building only, plant matrix template setup & checks.
+C If plant component db file unit not set use iaprob
 C <<< width of plant db 20???? >>>
       if(indcfg.ne.1) then
-        IUNIT1=IAPROB
-        call EFOPRAN(IUNIT1,LPCDB,20,1,IER)
-        call mzpmxt(iunit1)
+        if(ipcdb.eq.0)ipcdb=IAPROB
+        call EFOPRAN(ipcdb,LPCDB,20,1,IER)
+        call mzpmxt(ipcdb)
 
 C Default flag for plant<->electrical network interdomain iteration
 C to false. Plant coponents requiring this facility will set flag
@@ -512,7 +515,7 @@ C Specify ground simulation start-up period.
       ENDIF
 
 C Free plant components database if opened.
-      if(iunit1.ne.0) call erpfree(iunit1,istat)
+      if(ipcdb.ne.0) call erpfree(ipcdb,istat)
 
 C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFCON=IFIL+5 for this via common condb.

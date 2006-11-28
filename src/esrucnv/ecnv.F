@@ -1181,6 +1181,7 @@ C file so that output file can be written from commons.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1188,7 +1189,6 @@ C LOPTDB,IOPTDB (for optical database)
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1208,7 +1208,7 @@ C LOPTDB,IOPTDB (for optical database)
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LAPROB,LPNF,LPCDB
+      CHARACTER LAPROB*72,LPNF*72
       character*72 LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
@@ -1291,7 +1291,6 @@ C file (up to where the zone information starts).
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C22/ICLIM,LCLIM
       common/CFGV/icfgv
@@ -1324,7 +1323,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LFMUL,LFCON,LPRFDB,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LPRJLG,LCLIM,LOUT
+      CHARACTER*72 LAPROB,LPRJLG,LCLIM,LOUT
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

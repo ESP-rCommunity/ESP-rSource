@@ -36,6 +36,7 @@ C the current model.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -49,7 +50,6 @@ C LOPTDB,IOPTDB (for optical database)
       CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
-      common/C7/LPCDB
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/C22/ICLIM,LCLIM
@@ -201,7 +201,7 @@ C Remember if each zone is fully attributed.
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
       character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
-      CHARACTER*72 LAPROB,LPNF,LPCDB,LPRFDB
+      CHARACTER*72 LAPROB,LPNF,LPRFDB
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24

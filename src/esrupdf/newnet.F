@@ -165,7 +165,7 @@ C Read in the configuration file.
       if(lctlf(1:3).NE.'UNK'.AND.lctlf(1:2).NE.'  ') CALL SCANBPLINK
 
 C Open plant component data base.
-      call opnpdb(iupdb,1)
+      call opnpdb(1)
       CALL USRMSG(' ',' ','-')
 
 C Read components data from database

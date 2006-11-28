@@ -14,4 +14,9 @@ C IOPTDB - unit number of optical database
       COMMON/GOPTDB/LOPTDB,IOPTDB
       character LOPTDB*72
 
+C LPCDB - (72 char) plant template database file name
+C IPCDB - unit number of plant template database
+      common/C7/LPCDB,IPCDB
+      character lpcdb*72
+
 C end of esp-r_dbfile.h

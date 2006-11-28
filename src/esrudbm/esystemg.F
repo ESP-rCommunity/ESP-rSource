@@ -116,6 +116,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
 
       PARAMETER (MSTMC=1)
 
@@ -150,7 +151,6 @@ C GRDR viewfactor from external surfaces to the ground
 C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
 C NZSUR is the number of surfaces in each zone.
@@ -418,7 +418,7 @@ C Generic databases.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      CHARACTER*72 LAPROB,LPNF,LPCDB,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character*72 LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt

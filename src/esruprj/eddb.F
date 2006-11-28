@@ -36,6 +36,7 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
 
       PARAMETER  (MCP=35)
 
@@ -59,7 +60,6 @@ C Profile databases.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
-      common/C7/LPCDB
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/rpath/path
@@ -82,7 +82,7 @@ C Climate related.
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character*72 LFMUL,LFCON,LCLIM,LAPROB,LPRFDB,LPCDB
+      character*72 LFMUL,LFCON,LCLIM,LAPROB,LPRFDB
       character H*72,LTMP*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1348,9 +1348,11 @@ C Plant template database.
         H(23)='  chance to rename it.'
 
 C Use the profile database unit for testing plant db.
-        CALL ERPFREE(IPRODB,ISTAT)
+        if(ipcdb.eq.0)ipcdb=iprodb
+        CALL ERPFREE(ipcdb,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
+C << note a hard coded / found that needs to be a fs >>
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
@@ -1393,21 +1395,21 @@ C Act on the users choice. If no choice retrun to main menu.
 C If file exists open it, test file type, get number of items and close.
           if(XST)then
             IER=0
-            call EFOPRAN(IPRODB,LTMP,IRECLN,1,IER)
+            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
             IF(ier.eq.0)THEN
               IREC = 1
-              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
               IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
                 call usrmsg('File is not a plant component database,',
      &            'please supply the file name again.','W')
                 goto 60
               endif
               IREC = 2
-              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
               write(outs,'(a,i3,2a)') 'There are ',NPC,
      &          ' components in ',LTMP(1:lnblnk(LTMP))
               call edisp(iuout,outs)
-              CALL ERPFREE(IPRODB,ISTAT)
+              CALL ERPFREE(ipcdb,ISTAT)
 
 C Get logical name of child process terminal type, expand model 
 C name to include the path and create a string to drive pdb.
@@ -1449,28 +1451,28 @@ C name to include the path and create a string to drive pdb.
           else
             goto 60
           endif
-          CALL ERPFREE(IPRODB,ISTAT)
+          CALL ERPFREE(ipcdb,ISTAT)
           call FINDFIL(LPCDB,XST)
           IF(XST)THEN
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
             IER=0
-            call EFOPRAN(IPRODB,LTMP,IRECLN,1,IER)
+            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
             IF(ier.eq.0)THEN
               IREC = 1
-              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
               IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
                 call usrmsg('File is not a plant component database,',
      &            'please supply the file name again.','W')
                 goto 60
               endif
               IREC = 2
-              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
               write(outs,'(a,i3,2a)') 'There are ',NPC,
      &          ' components in ',LTMP(1:lnblnk(LTMP))
               call edisp(iuout,outs)
-              CALL ERPFREE(IPRODB,ISTAT)
+              CALL ERPFREE(ipcdb,ISTAT)
             else
               call usrmsg('Sorry, error opening the file.',
      &          'Please use one of the other options.','W')
@@ -1536,10 +1538,10 @@ C a new db, populate it and present editing facility.
 
 C Create a minimal plant databases (code similar to pdb.F).
           moddb=.true.
-          CALL ERPFREE(IPRODB,ISTAT)
-          call EFOPRAN(IPRODB,LPCDB,IRECLN,3,IER)
-          CALL PCUPDT (IPRODB,0)
-          CALL ERPFREE(IPRODB,ISTAT)
+          CALL ERPFREE(ipcdb,ISTAT)
+          call EFOPRAN(ipcdb,LPCDB,IRECLN,3,IER)
+          CALL PCUPDT (ipcdb,0)
+          CALL ERPFREE(ipcdb,ISTAT)
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
