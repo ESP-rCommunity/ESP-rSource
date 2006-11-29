@@ -705,6 +705,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1402,10 +1403,37 @@ C For each requested item.
           do 40 jstat=1,npget
             ipc =IPGETNO(jstat,2)
             nsnd=IPGETNO(jstat,3)
-            call fnddat(ii,ipc,ier)
-            if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,ipc,ier
-              goto 40
+            if(IPGETNO(jstat,1).eq.9)then
+
+C Asking for ambient db. Recover via call to mfclim
+C Current timestep ii to a iday and hour (MINH).
+C IPAR is one to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=1
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            elseif(IPGETNO(jstat,1).eq.12)then
+
+C Asking for ambient rh.
+C IPAR is four to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=4
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            else
+              call fnddat(ii,ipc,ier)
+              if(ier.ne.0)then
+                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                goto 40
+              endif
             endif
 
 C Node temperature (C)
@@ -1507,10 +1535,37 @@ C Case when averaging is required
           do 60 jstat=1,npget
             ipc =IPGETNO(jstat,2)
             nsnd=IPGETNO(jstat,3)
-            call fnddat(ii,ipc,ier)
-            if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,ipc,ier
-              goto 60
+            if(IPGETNO(jstat,1).eq.9)then
+
+C Asking for ambient db. Recover via call to mfclim
+C Current timestep ii to a iday and hour (MINH).
+C IPAR is one to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=1
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            elseif(IPGETNO(jstat,1).eq.12)then
+
+C Asking for ambient rh.
+C IPAR is four to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=4
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            else
+              call fnddat(ii,ipc,ier)
+              if(ier.ne.0)then
+                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                goto 60
+              endif
             endif
 
 C Node temperature (C)
@@ -1853,10 +1908,37 @@ C For each requested item.
           do 240 jstat=1,npget
             ipc =IPGETNO(jstat,2)
             nsnd=IPGETNO(jstat,3)
-            call fnddat(ii,ipc,ier)
-            if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,ipc,ier
-              goto 240
+            if(IPGETNO(jstat,1).eq.9)then
+
+C Asking for ambient db. Recover via call to mfclim
+C Current timestep ii to a iday and hour (MINH).
+C IPAR is one to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=1
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            elseif(IPGETNO(jstat,1).eq.12)then
+
+C Asking for ambient rh.
+C IPAR is four to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=4
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            else
+              call fnddat(ii,ipc,ier)
+              if(ier.ne.0)then
+                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                goto 240
+              endif
             endif
 
 C Node temperature (C), first phase, 2nd phase.
@@ -2053,10 +2135,37 @@ C Case when averaging IS required
           do 260 jstat=1,npget
             ipc =IPGETNO(jstat,2)
             nsnd=IPGETNO(jstat,3)
-            call fnddat(ii,ipc,ier)
-            if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,ipc,ier
-              goto 260
+            if(IPGETNO(jstat,1).eq.9)then
+
+C Asking for ambient db. Recover via call to mfclim
+C Current timestep ii to a iday and hour (MINH).
+C IPAR is one to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=1
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            elseif(IPGETNO(jstat,1).eq.12)then
+
+C Asking for ambient rh.
+C IPAR is four to get ambient db. Set ITS to 1 to get
+C start of the hour.
+              iday=INT(ctime)
+              call DASYSTIME(II,TIME)
+              MINH=INT(time)+1
+              IPAR=4
+              ITS=1
+              call MFCLIM(IDAY,MINH,ITS,IPAR,VALC)
+              val(jstat)=VALC
+            else
+              call fnddat(ii,ipc,ier)
+              if(ier.ne.0)then
+                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                goto 260
+              endif
             endif
 
 C Node temperature (C), first phase, 2nd phase.
