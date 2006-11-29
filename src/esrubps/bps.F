@@ -177,7 +177,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/hcthry/ihct,icorexhct
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/rdcgen/irdact
@@ -267,7 +266,7 @@ C Timeout information
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
       character h*72,LTMP*72,OUTS*124,spsname*8
-      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar

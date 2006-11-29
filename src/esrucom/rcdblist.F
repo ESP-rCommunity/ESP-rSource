@@ -746,12 +746,12 @@ C five seasons and typical assessment periods, documentation
 C strings.
       subroutine editemclimatelist()
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
-      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -772,7 +772,7 @@ C ITM is main item editing menu.
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
       character clmlhelp*72,ltfil*72,DFILE*72,outs*124
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
-      CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72,LCLIM*72
+      CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
       
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/

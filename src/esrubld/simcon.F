@@ -1387,6 +1387,7 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1416,7 +1417,6 @@ C prior to each simulation commencing.
       COMMON/AVRAGE/IDAVER
       COMMON/BEFORM/IBEQNF
       COMMON/SOLOFF/ISOLAR
-      COMMON/C22/ICLIM,LCLIM
 
       COMMON/WARN/IWARN
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1446,7 +1446,7 @@ C Simulator parameters.
 
       CHARACTER ctldoc*248
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM
-      CHARACTER*72 LSHAD,LTHRM,LCTLF,LCLIM,LUTIL
+      CHARACTER*72 LSHAD,LTHRM,LCTLF,LUTIL
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,cfgroot*24,h*72
 
@@ -1963,6 +1963,7 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
@@ -1971,7 +1972,6 @@ C if itru=33 then works as a header to the trace.
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
       common/cctlnm/ctldoc,lctlf
@@ -1982,7 +1982,7 @@ C if itru=33 then works as a header to the trace.
      &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       character*72 lsnam,lproj,lgeom
-      character*72 lshad,lthrm,lutil,lctlf,lclim,lcfgf
+      character*72 lshad,lthrm,lutil,lctlf,lcfgf
       character ctldoc*248,outs*124,cfgroot*24
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 

@@ -36,6 +36,7 @@ C At present this data is cursory.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+C ICLIM,LCLIM (for climate file)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -44,10 +45,6 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-
-      COMMON/C22/ICLIM,LCLIM
-
-      CHARACTER LCLIM*72
 
       IUNIT=IFIL+3
 

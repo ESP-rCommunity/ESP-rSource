@@ -1119,6 +1119,7 @@ C << Note: this procedure is somewhat out of date. Its function
 C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1128,7 +1129,6 @@ C << should be reviewed for current simulation demands
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
@@ -1147,7 +1147,7 @@ C IDST tool commands.
 
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12,cdblbl*20,cdblfil*72
-      character LCFGF*72,cfgroot*24,h*72,LCLIM*72
+      character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,DESC*48,outs*124,LTMP*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,clmdb
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SSPARENT*12

@@ -40,6 +40,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
       PARAMETER (MSTMC=1)
 
@@ -58,7 +59,6 @@ C default file names for databases
       common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
       common/CFGV/icfgv
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -149,7 +149,7 @@ C Dispersed demands notes and file name.
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
-      character LCLIM*72,LAPROB*72
+      character LAPROB*72
       character ITEMS(27)*33
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72

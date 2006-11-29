@@ -173,6 +173,7 @@ C                         use the inside surface node temperature
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
 #include "plant.h"
@@ -203,7 +204,6 @@ C Path to model and command line file name.
 
       common/prec7/itcnst
       COMMON/DNORGH/IRTYPE
-      COMMON/C22/ICLIM,LCLIM
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
@@ -257,7 +257,6 @@ C For reading in of bi-directional data.
       CHARACTER outs*124,h*72,spsname*8,L144*144
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
-      character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2

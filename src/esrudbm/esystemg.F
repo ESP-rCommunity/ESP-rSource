@@ -119,6 +119,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
       PARAMETER (MSTMC=1)
@@ -165,10 +166,6 @@ C cfgroot (24 char) root name for the model (used when generating
 C   system files.
 C LCFGF (72 char) model configuration file name.
       common/C21/IFCFG,cfgroot,LCFGF
-
-C ICLIM is the file unit for the climate database.
-C LCLIM (72 char) climate file associated with model.
-      COMMON/C22/ICLIM,LCLIM
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -402,7 +399,7 @@ C Generic databases.
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
-      character LPRJLG*72,LCLIM*72
+      character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12

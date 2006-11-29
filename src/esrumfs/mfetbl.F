@@ -32,11 +32,11 @@ C     NDONAM - name of node(s) corresponding to column contents
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C ICLIM,LCLIM (for climate file)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
-      COMMON/C22/ICLIM,LCLIM
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
@@ -49,7 +49,7 @@ C LAPRES,IFPRE (for window pressure databases)
 
       DOUBLE PRECISION SFLW1,SFLW2
 
-      CHARACTER LCLIM*72,H*72,LAPROB*72
+      CHARACTER H*72,LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER*23     ITEM(10)
       character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124

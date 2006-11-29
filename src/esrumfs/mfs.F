@@ -591,9 +591,9 @@ C Indicate start of simulation and show iteration parameters
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C ICLIM,LCLIM (for climate file)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
-      COMMON/C22/ICLIM,LCLIM
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -608,7 +608,6 @@ C LAPRES,IFPRE (for window pressure databases)
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
 
-      CHARACTER*72 LCLIM
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outs*124

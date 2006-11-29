@@ -32,9 +32,9 @@ C climate (IFCLM) and results (IFRES) files
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C22/ICLIM,LCLIM
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/pophelp/h(60)
@@ -53,7 +53,7 @@ C and error details for dll mode.
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      CHARACTER*72 LCLIM,H,DFILE,LTMP
+      CHARACTER H*72,DFILE*72,LTMP*72
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER OUTSTR*124,currentfile*72

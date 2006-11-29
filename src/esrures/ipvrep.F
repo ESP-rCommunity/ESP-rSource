@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
@@ -42,7 +43,6 @@ C Write IPV report based on description held in common.
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
-      COMMON/RECV6/LCLIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
@@ -135,7 +135,7 @@ C Pre calculated data (filtered).
       CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
-      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30,LCLIM*72
+      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok

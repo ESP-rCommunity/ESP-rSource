@@ -1320,6 +1320,8 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
@@ -1329,7 +1331,6 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       common/C3F/LCNN
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1376,7 +1377,7 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
-      character LCLIM*72,LAPROB*72
+      character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72

@@ -39,6 +39,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -54,7 +55,6 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       common/C6/INDCFG
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
 
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
@@ -188,7 +188,7 @@ C Remember if each zone is fully attributed.
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
-      character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
+      character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48

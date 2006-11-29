@@ -717,7 +717,6 @@ C default file names for databases
       common/prav/IDAVER
       COMMON/LIBRCP/IRCPLP,nblock
       common/cctlnm/ctldoc,lctlf
-      COMMON/CLIM/LCLIM
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/pcdbdt/ipcrec(mpcom)
       common/rcmd/LCMDFL
@@ -727,7 +726,7 @@ C default file names for databases
 
 
       character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
-      character lclim*72,lctlf*72,ctldoc*248,scname*12,h*72
+      character lctlf*72,ctldoc*248,scname*12,h*72
       logical XST,ok,dok
 
       IUNITp=ifil+10

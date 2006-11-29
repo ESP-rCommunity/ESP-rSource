@@ -800,7 +800,6 @@ C where they are first referenced.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/RECV6/LCLIM
 C      COMMON/RECV7/ZOA(MCOM)
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
@@ -822,7 +821,7 @@ C Defaults.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LCLIM,LCFGF,CHDUM
+      CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
       CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24

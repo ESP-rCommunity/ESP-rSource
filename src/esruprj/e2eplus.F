@@ -31,6 +31,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -51,7 +52,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -103,7 +103,7 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCLIM
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72

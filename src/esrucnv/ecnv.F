@@ -1185,7 +1185,6 @@ C file so that output file can be written from commons.
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C6/INDCFG
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -1201,8 +1200,7 @@ C file so that output file can be written from commons.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER LAPROB*72,LPNF*72
-      character LPRJLG*72,LCLIM*72
+      CHARACTER LAPROB*72,LPNF*72,LPRJLG*72
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
       character lradcf*72,ctldoc*248,LCTLF*72
@@ -1284,7 +1282,6 @@ C file (up to where the zone information starts).
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       common/CFGV/icfgv
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1312,8 +1309,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER LCNN*72
-      CHARACTER*72 LAPROB,LPRJLG,LCLIM,LOUT
+      CHARACTER LCNN*72,LAPROB*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

@@ -39,6 +39,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
       PARAMETER  (MCP=35)
@@ -74,15 +75,11 @@ C Default dbs.
 
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-C Climate related.
-      common/C22/ICLIM,LCLIM
-
       logical OK,DOK,XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character LCLIM*72,LAPROB*72
-      character H*72,LTMP*72,SOPT*12
+      character LAPROB*72,H*72,LTMP*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
@@ -2517,7 +2514,6 @@ C from version manager
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/C22/ICLIM,LCLIM
       common/clmlst/cdblbl,cdblfil
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -2536,7 +2532,7 @@ C from version manager
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
-      CHARACTER*72 H,LCLIM,CDBLFIL,DFILE,LASCI,LTMP
+      CHARACTER*72 H,CDBLFIL,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
       CHARACTER CDBLBL*20,DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4

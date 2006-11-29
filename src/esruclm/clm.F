@@ -39,7 +39,6 @@ C climatic data sets compatible with ESP-r.
       COMMON/OUTPCH/ICOUT
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
@@ -79,7 +78,7 @@ C Climate list common.
       common/clmlnum/nbclmlhelp
 
       dimension ITEM(22)
-      character ITEM*26,LCLIM*72,H*72,LASCI*72,outs*124,outs248*248
+      character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,pact*16,aut*12,paction*16
       character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1

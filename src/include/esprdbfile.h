@@ -22,14 +22,19 @@ C IPCDB - unit number of plant template database
 C LPRFDB - (72 char) event profile database file name
 C IPRODB - unit number of event profile database
       COMMON/PRODB/LPRFDB,IPRODB
-      CHARACTER LPRFDB*72
+      character LPRFDB*72
 
 C LFCON - (72 char) materials db file name
 C LFMUL - (72 char) constructions db file name
 C IFCON - unit number of materials database
 C IFMUL - unit number of constructions database
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      CHARACTER LFCON*72,LFMUL*72
+      character LFCON*72,LFMUL*72
+
+C LCLIM - (72 char) climate file name associated with the model
+C ICLIM - unit number of climate file
+      COMMON/C22/ICLIM,LCLIM
+      character LCLIM*72
 
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
@@ -40,6 +45,6 @@ C DPCDB - default plant components
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Define as integers.
-      integer ifpre,ioptdb,ipcdb,iprodb,ifcon,ifmul
+      integer ifpre,ioptdb,ipcdb,iprodb,ifcon,ifmul,iclim
 
 C end of esp-r_dbfile.h
