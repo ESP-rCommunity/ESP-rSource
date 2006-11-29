@@ -119,6 +119,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
       PARAMETER (MSTMC=1)
 
@@ -229,16 +230,6 @@ C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-C Defaults.
-C DCLIM (72 char) name of default climate file. Scanned from `default` file.
-C DAPRES (72 char) name of default wind pressure database.
-C DFCON (72 char) name of default materials database.
-C DFMUL (72 char) name of default constructions (MLC) database.
-C DOPTDB (72 char) name of default optical database. 
-C DPRFDB (72 char) name of default event profiles database.
-C DPCDB (72 char) name of default plant template database.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -418,7 +409,6 @@ C Generic databases.
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,currentfile*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72

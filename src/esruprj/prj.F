@@ -40,6 +40,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -97,7 +98,6 @@ C Where exemplars list and default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/deflt4/dinstpath
 
 C Images.
@@ -151,7 +151,6 @@ C Dispersed demands notes and file name.
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
       character LCLIM*72,LAPROB*72
       character ITEMS(27)*33
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72

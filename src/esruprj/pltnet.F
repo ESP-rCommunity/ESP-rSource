@@ -1201,7 +1201,6 @@ C    mode = 2 : Read data pointers only.
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1209,7 +1208,6 @@ C Common for screen control.
       LOGICAL OK,dok
       CHARACTER*25 ZDESC
       character h*72,buffer*72,ltmp*72
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.

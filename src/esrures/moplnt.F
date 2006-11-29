@@ -705,6 +705,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
+C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -724,12 +725,9 @@ C LPCDB/IPCDB (for plant template database)
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcres/ napout(mpcom),apcout(20)
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
       character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
       character lclim*72,lctlf*72,ctldoc*248,scname*12,h*72
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       logical XST,ok,dok
 
       IUNITp=ifil+10

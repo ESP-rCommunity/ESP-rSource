@@ -173,6 +173,7 @@ C                         use the inside surface node temperature
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
 #include "plant.h"
 #include "tdf2.h"
@@ -213,7 +214,6 @@ C Common for electrical file
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -250,7 +250,6 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 

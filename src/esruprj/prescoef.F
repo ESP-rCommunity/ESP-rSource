@@ -795,6 +795,7 @@ C and calculate the pressure coeffcients
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure databases)
+C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -804,11 +805,9 @@ C LAPRES,IFPRE (for window pressure databases)
      &              sbh,pad,wvpe
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
       CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
       CHARACTER LAPROB*72,LTMP*72
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character doit*248
 
       dimension Xdom(10),Ydom(10),Zdom(10),azdom(4)

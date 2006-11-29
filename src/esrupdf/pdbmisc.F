@@ -37,20 +37,19 @@ C    mode = 2 : Read data pointers only.
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
+C default file names for databases
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
       CHARACTER ZDESC*25,h*72,buffer*72,ltmp*72
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.

@@ -39,6 +39,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
       PARAMETER  (MCP=35)
 
@@ -68,7 +69,6 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       common/appw/iappw,iappx,iappy
 
 C Default dbs.
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
@@ -89,7 +89,6 @@ C Climate related.
       character cfgroot*24,LCFGF*72,dq*1,fs*1,DESCP*40,message*48
       character*72 ITEMS(15)
       character doit*248,tmode*8,tfile*72,longtfile*144
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character DEPRE*40,OUTSTR*124,LCOPY*72,LTMPFL*72,LASCI*72
       character DFILE*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -2514,6 +2513,7 @@ C     use the APP characters.
 C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
+#include "esprdbfile.h"
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
@@ -2525,7 +2525,6 @@ C from version manager
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
@@ -2543,10 +2542,9 @@ C from version manager
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,PATH
       LOGICAL CLKOK,OK,CONCAT,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
-      character dinstpath*48
+      character dinstpath*48,path*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,NNAME
       dimension ICLM(24,6)
 

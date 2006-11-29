@@ -22,6 +22,7 @@ C dbm provides access to generic esp-r database, conversions
 C and editing facilities.
 
       program dbm
+#include "esprdbfile.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
 
@@ -51,9 +52,6 @@ C Path to problem and command line file (if any).
 
 C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
-
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Generic db commons.
       common/gendb/LGENDB
@@ -87,7 +85,6 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
-      CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72,tfile*72
       character longtfile*144
       character gendbfn*72,dgendbfn*72,outs248*248,LTMP*144

@@ -24,6 +24,7 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -60,9 +61,6 @@ C Project journal on/off, unit number, cmd, file name.
 C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
-
 C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
@@ -84,7 +82,6 @@ C Climate list common.
       character ITEM*26,LCLIM*72,H*72,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,pact*16,aut*12,paction*16
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
       character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1
       character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72

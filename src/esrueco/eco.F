@@ -46,6 +46,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IFPRE (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -90,7 +91,6 @@ C Composites information
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       common/uhome/upath
@@ -149,7 +149,6 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,esprc*72,L144*144
       CHARACTER dfdblbl*20,defdbfl*72

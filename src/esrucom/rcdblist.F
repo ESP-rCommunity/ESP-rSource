@@ -33,12 +33,12 @@ C ********* rdblist
 C Scan list of climate databases and present selection to user.
       subroutine rdblist(idblfil,cdblfil,clmdb,ier)
 #include "epara.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/curfile/currentfile
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Typical periods win1|trn1|sum|trn2|win2 with start & finish
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
@@ -50,7 +50,6 @@ C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
      &              is2sprs,is2sprf,is1sums,is1sumf
 
       dimension name(60), mitem(35)
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character cdblfil*72, group*32,key*1,look*32,tlook*32
       character clmdb*72,h*72,actreturn*1,currentfile*72

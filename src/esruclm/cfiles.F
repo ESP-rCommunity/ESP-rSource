@@ -404,6 +404,7 @@ C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/INPER/INIT
@@ -420,9 +421,6 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
 C Where list of climate files is held.
       common/clmlst/cdblbl,cdblfil
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
       logical XST,ok,silent
       
 C Logical rescan = true if climatelist needs to be rescanned to

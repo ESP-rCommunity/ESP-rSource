@@ -31,6 +31,14 @@ C IFMUL - unit number of constructions database
       common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       CHARACTER LFCON*72,LFMUL*72
 
+C Default file names for databases (72 char):
+C DCLIM - default climate, DAPRES - default pressure coef
+C DFCON - default materials, DFMUL - default constructions
+C DOPTDB - default optics, DPRFDB - default events
+C DPCDB - default plant components
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+
 C Define as integers.
       integer ifpre,ioptdb,ipcdb,iprodb,ifcon,ifmul
 

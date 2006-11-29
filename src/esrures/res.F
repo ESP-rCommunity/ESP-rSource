@@ -57,6 +57,7 @@ C For operational details refer to the ESP-r program user's manual.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -82,7 +83,6 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulation period and save option.
@@ -132,7 +132,6 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER*72 H,xfile,LTMP,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248
       character outs*124,MODE*4,tg*1,delim*1
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
       character path*72,upath*72,esprc*72,spsname*8,paction*16
       character dfdblbl*20,defdbfl*72,cfgroot*24,fs*1,act*16,aut*12

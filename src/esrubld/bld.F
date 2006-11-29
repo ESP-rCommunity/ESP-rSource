@@ -139,9 +139,6 @@ C Where default db list are kept.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -173,7 +170,6 @@ C Significant figure reporting limit (NSIGFIG).
       character h*72,LTMP*72,OUTS*124,spsname*8
       character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4,outs248*248
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       character path*72,upath*72,esprc*72,bresfil*72

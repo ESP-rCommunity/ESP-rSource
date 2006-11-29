@@ -38,6 +38,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
 
       PARAMETER (MSTMC=1)
 
@@ -85,7 +86,6 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/defdb/dfdblbl,defdbfl
@@ -226,7 +226,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,currentfile*72
       CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72

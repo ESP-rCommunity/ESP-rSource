@@ -29,6 +29,9 @@ C MOTABL produces tabular output for a 24 hour period.
       SUBROUTINE MOTABL
 #include "building.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -53,14 +56,12 @@ C Special materials file flag
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG 
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(15)
       character outs*124
       character*72 xfile,H
       character tg*1,delim*1
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB 
       character spflnam*72
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.

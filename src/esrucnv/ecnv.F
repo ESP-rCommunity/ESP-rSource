@@ -1194,7 +1194,6 @@ C file so that output file can be written from commons.
       COMMON/AFNZN/zmfn1,zmfn2
       common/cctlnm/ctldoc,lctlf
       COMMON/LOG/LPRJLG
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
@@ -1206,7 +1205,6 @@ C file so that output file can be written from commons.
       character LPRJLG*72,LCLIM*72
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,ctldoc*248,LCTLF*72
       character GTGEOM*72,GTNAME*15
       character*10 wkd1, wkd2
