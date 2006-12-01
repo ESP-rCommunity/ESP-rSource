@@ -26,12 +26,12 @@ C a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edprof(IFB,idbh,ic,iit,ACT,IER)
 #include "epara.h"
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons:
@@ -57,12 +57,12 @@ C Generic db commons:
       character dbnote*72,outs*124,outs248*248,hold*60
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72,DayT*8,KEY*1,Patr*8,head*38
-      character gendbfn*72,snote*248,currentfile*72
+      character gendbfn*72,snote*248
       logical primod,OK,dok,showtags
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
@@ -445,13 +445,11 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
  
       SUBROUTINE ELSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
       CHARACTER*600 OUTSTR,STRING,TMP
       CHARACTER*124 MSG1
       CHARACTER*(*) MSG
-      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.

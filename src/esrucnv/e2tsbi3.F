@@ -100,7 +100,7 @@ C text to form its name.
       WRITE(ioout,'(a)') '#wall_lib'
       WRITE(ioout,'(a)') ' '
       do 25 iy = 1,iij
-        CALL ERPCDB(IFCON,iprndx(iy),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         ln = MIN0(lnblnk(NAM),10)
         if(iprndx(iy).gt.0.and.iprndx(iy).lt.10)then
@@ -178,7 +178,7 @@ C Write layers in reverse order.
           IL=LAYERS(ino)+1
   37      continue
           IL=IL-1
-          CALL ERPCDB(IFCON,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
 
 C Not dealing with air gap resistance directly...
@@ -382,7 +382,7 @@ C    &            ' ',q,'unknown',q
 C Calculate the window U-value
             RT = 0
             DO 201, IL=1,LAYERS(ino)
-              CALL ERPCDB(IFCON,IPR(INO,IL),ITRU,IER,DBCON,
+              CALL ERPCDB(IFMAT,IPR(INO,IL),ITRU,IER,DBCON,
      &                    DBDEN,DBSHT,E,A,DRV,TITL,NAM)
 
 C Calculate std U-value and display as well
@@ -427,7 +427,7 @@ C External obstracles - NONE
             WRITE(ioout,'(4a)') q,'unknown',q,' -1'
 
           ELSE
-            CALL ERPCDB(IFCON,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,AE,DRV,TITL,NAM)
             WRITE(ioout,'(f8.3,8a,F8.2)') sna(is),'  ',
      &        q,zsn(is)(:lnblnk(zsn(is))),q,'   ',
@@ -520,11 +520,11 @@ C and optical db.
 C Open currently named primitive construction db.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(3a)') ' No primitive constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
         CONDBOK=.FALSE.
       else
@@ -539,7 +539,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,ITRU,IER)
         IF(IER.NE.0)then
           write(outs,'(3a)') ' Problem with multilayer constr db ',
-     &     LFCON(1:lnblnk(LFCON)),'... '
+     &     LFMAT(1:lnblnk(LFMAT)),'... '
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -548,7 +548,7 @@ C Read multilayer db information into common.
         endif
       else
         write(outs,'(3a)') ' No multilayer constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
       endif
 
@@ -647,9 +647,9 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &    DBSHT,E,AE,DRV,TITL,NAM)
-        CALL ERPCDB(IFCON,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
+        CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &    DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
 
 C If a tmc then find tranmission functions.  If more transparent than
@@ -740,9 +740,9 @@ C Pick up general description of the composite.
               ENDIF
 
 C For the inside and outside layer get surface properties.
-              CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &          DBSHT,E,AE,DRV,TITL,NAM)
-              CALL ERPCDB(IFCON,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
+              CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &          DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
 
               goto 7
@@ -912,7 +912,7 @@ C Pick up general description of the composite.
               WRITE(MLCN,'(A)')DESC(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
-              CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &          DBSHT,E,AE,DRV,TITL,NAM)
               gvt=0.00
               goto 77
@@ -1026,7 +1026,7 @@ C Find the matching mlc index.
             DO 701 imm=1,NMLC
               IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
                 ifound=im
-                CALL ERPCDB(IFCON,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
+                CALL ERPCDB(IFMAT,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
      &            DBSHT,E,AE,DRV,TITL,NAM)
                 gvt=0.00
 C Debug.

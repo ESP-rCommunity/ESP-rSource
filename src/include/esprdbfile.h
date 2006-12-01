@@ -5,8 +5,8 @@ C Strathclyde, Glasgow Scotland, 2001.
 C esprdbfile.h holds common block for database file names and units.
 
 C LAPRES - (72 char) wind pressure coefficients distribution database
-C ifpre  - file unit for wind pressure coef database
-      common/APRES/LAPRES,IFPRE
+C iapres  - file unit for wind pressure coef database
+      common/APRES/LAPRES,IAPRES
       character LAPRES*72
 
 C LOPTDB - (72 char) optical database file name
@@ -24,12 +24,12 @@ C IPRODB - unit number of event profile database
       COMMON/PRODB/LPRFDB,IPRODB
       character LPRFDB*72
 
-C LFCON - (72 char) materials db file name
+C LFMAT - (72 char) materials db file name
 C LFMUL - (72 char) constructions db file name
-C IFCON - unit number of materials database
+C IFMAT - unit number of materials database
 C IFMUL - unit number of constructions database
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      character LFCON*72,LFMUL*72
+      common/CONDB/LFMAT,IFMAT,LFMUL,IFMUL
+      character LFMAT*72,LFMUL*72
 
 C LCLIM - (72 char) climate file name associated with the model
 C ICLIM - unit number of climate file
@@ -45,6 +45,6 @@ C DPCDB - default plant components
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Define as integers.
-      integer ifpre,ioptdb,ipcdb,iprodb,ifcon,ifmul,iclim
+      integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
 
 C end of esp-r_dbfile.h

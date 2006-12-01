@@ -34,12 +34,14 @@ C the current model.
 #include "tdf2.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -55,10 +57,6 @@ C ICLIM,LCLIM (for climate file)
       common/C6/INDCFG
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -200,7 +198,7 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
-      character dstmp*24,mlcname*12,currentfile*72
+      character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
@@ -1047,7 +1045,7 @@ C Databases associated with the model.
      &    LAPRES(1:lnblnk(LAPRES))
         call edisp(itu,outs)
         WRITE(outs,'(2A)')' materials              : ',
-     &    LFCON(1:lnblnk(LFCON))
+     &    LFMAT(1:lnblnk(LFMAT))
         call edisp(itu,outs)
         WRITE(outs,'(2A)')' constructions          : ',
      &    LFMUL(1:lnblnk(LFMUL))
@@ -1163,7 +1161,7 @@ C If there is a plant network, scan it and report.
           if(xst) then
             IFPNF=IFIL+3
             iunit1=IUF
-            currentfile=LPNF
+            write(currentfile,'(a)') LPNF(1:lnblnk(LPNF))
             CALL EFOPSEQ(ifpnf,LPNF,1,IER)
             IF(IER.LT.0)THEN
               IER=1
@@ -1326,7 +1324,7 @@ C flow as well as internal partition (horizontal 0.13 both sides).
 C Note: ISO 6946 advises use of horizontal hc value for surfaces where
 C heat flow direction is unknown. This assumption is used in
 C the U and UA reporting below.
-                call etmldbu(0,itu,IFCON,ii,UVH,UVU,UVD,UVI)
+                call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
 
 C Debug.
 C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
@@ -1807,7 +1805,7 @@ C MLC database reporting.
           call mlcrefs(mlcname,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,IFCON,imlc,imerr)
+              call etmldb(2,itu,IFMAT,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
@@ -2053,7 +2051,7 @@ C If a negative conductivity is supplied the abs value represents the
 C resistance of an air gap.
 C << NOTE: this routine gets close for some constructions, but
 C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRC,ITRU,IFCON,IFOC,Rsi,Rso)
+      subroutine ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -2075,7 +2073,7 @@ C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       layer=LAYERS(IFOC)+1
       do 5 IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)

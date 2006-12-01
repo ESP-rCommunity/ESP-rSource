@@ -146,7 +146,7 @@ C  itrc the level of reporting (zero is quiet).
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1

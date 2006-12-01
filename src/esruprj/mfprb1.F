@@ -686,7 +686,7 @@ C
 #include "epara.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)

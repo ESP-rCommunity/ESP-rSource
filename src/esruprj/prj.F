@@ -35,11 +35,11 @@ C ********** MAIN
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
       PARAMETER (MSTMC=1)
@@ -436,8 +436,8 @@ C Multi-layer constructions db on channel IFIL+3.
       LFMUL=DFMUL
 
 C Materials db on channel IFIL+4.
-      IFCON=IFIL+4
-      LFCON=DFCON
+      IFMAT=IFIL+4
+      LFMAT=DFCON
 
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5

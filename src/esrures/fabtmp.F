@@ -127,7 +127,7 @@ C attributes are known.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -148,7 +148,7 @@ C IPRZ is primitive db ref for each layer.
 C Open the primitive construction db if not already done.
       IF(.NOT.CONDBOK)THEN
         IER=0
-        call EFOPRAN(IFCON,LFCON,40,1,IER)
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)return
         CONDBOK=.TRUE.
       ENDIF
@@ -183,7 +183,7 @@ C the element was not found.
 
 C Gather information about each layer. Read in the primitive db info.
             DO 23 IL=1,LAYERS(IC)
-              CALL ERPCDB(IFCON,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE

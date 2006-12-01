@@ -780,6 +780,7 @@ C ***************** BNDOBJ
 C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
+#include "espriou.h"
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C XMN,YMN,ZMN are the model minimum bounds.
@@ -808,13 +809,10 @@ C Ground geometry.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       LOGICAL   ISTOK,CLOSE
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,currentfile
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER OUTSTR*124
 
       if(ITDSP.le.5.and.nzg.lt.1)then

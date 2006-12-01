@@ -40,15 +40,16 @@ C DRAIR is the air gap layer resistance for 3 orientations.
       SUBROUTINE ERMLDB(ITRC,ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      common/curfile/currentfile
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,layermatch
 
       CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72
-      CHARACTER RSTR*124,currentfile*72
+      CHARACTER RSTR*124
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Keep track of how many times materials db read fails.
@@ -57,7 +58,7 @@ C Keep track of how many times materials db read fails.
 C If materials database not opened, do it now.
       IF(.NOT.CONDBOK)THEN
         IER=0
-        call EFOPRAN(IFCON,LFCON,40,1,IER)
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)return
         CALL USRMSG(' opened materials db',' ','-')
         CONDBOK=.TRUE.
@@ -67,7 +68,7 @@ C Free unit and check if composite file exists.
       IER=0
       CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
       IF(IER.NE.0)RETURN
-      currentfile=LFMUL
+      write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
 
 C Read the number of items in the multi-layer database, followed by
 C the number of layers & construction name.
@@ -178,7 +179,7 @@ C values, otherwise get element name from materials db.
               DRAIR(I,IL,3)=VAL
             ELSE
               ier=0
-              CALL ERPCDB(IFCON,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
      &                      DBSHT,E,A,DRV,TITL,NAM)
               if(ier.eq.1) matmiss=matmiss+1
 
@@ -212,7 +213,7 @@ C not have required checking the contents of the materials
 C database. ETMLDB does ( it creates those messages about 
 C a material having all zero values). Keep track of how
 C many of these instances. If there are
-        CALL ETMLDB(ITRC,ITRU,IFCON,I,imerr)
+        CALL ETMLDB(ITRC,ITRU,IFMAT,I,imerr)
         if(imerr.eq.1) matmiss=matmiss+1
         IF(imerr.NE.0.and.matmiss.gt.5)GOTO 99
   10  CONTINUE
@@ -353,7 +354,7 @@ C If opposite matches continue otherwise set layermatch to false and exit.
 C *************** ETMLDB
 C ETMLDB provides reporting on current description of a composite
 C construction based on contents of common MLC.
-      SUBROUTINE ETMLDB(ITRC,ITRU,IFCON,IFOC,ier)
+      SUBROUTINE ETMLDB(ITRC,ITRU,IFMAT,IFOC,ier)
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -398,7 +399,7 @@ C Reporting based on report level.
       DO 15, IL=1,LAYERS(IFOC)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1)RETURN
         IF(IPR(IFOC,IL).EQ.0)THEN
@@ -459,7 +460,7 @@ C Include admittance calculations (use TM33 Table 4.5 values for admittance calc
 C << NOTE this code needs further debugging.
 C      Rsi=0.12
 C      Rso=0.06
-C      call ADMIT(ITRC,ITRU,IFCON,IFOC,Rsi,Rso)
+C      call ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
@@ -477,7 +478,7 @@ C QPAQ.
 C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
 C on contents of common MLC.
-      SUBROUTINE ETMLDBU(ITRC,ITRU,IFCON,IFOC,UVH,UVU,UVD,UVI)
+      SUBROUTINE ETMLDBU(ITRC,ITRU,IFMAT,IFOC,UVH,UVU,UVD,UVI)
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -503,7 +504,7 @@ C Reset U value reporting local variables.
       DO 15, IL=1,LAYERS(IFOC)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1)RETURN
         IF(IPR(IFOC,IL).EQ.0)THEN
@@ -603,7 +604,7 @@ C in the materials database.
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)
-      CALL ETMLDB(2,iuout,IFCON,ISEL,imerr)
+      CALL ETMLDB(2,iuout,IFMAT,ISEL,imerr)
       call edisp(iuout,
      & ' ISO 6946 U value assumes: Rso=0.04 & Rsi=0.13 (m**2deg.C/W)')
       RETURN
@@ -613,7 +614,7 @@ C in the materials database.
 C *************** ERPCDB
 C ERPCDB reads one element from a binary materials database
 C returning them via parameter list.
-C IFCON is the unit number of the database,  IEL the requested 
+C IFMAT is the unit number of the database,  IEL the requested 
 C element, ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C ITRC is the trace level.  It is assumed that the database has been
 C previously opened and other parts of the code will close it when
@@ -621,7 +622,7 @@ C appropriate.  E is the element emissivity, A is the solar absorb, DRV
 C is the diffusion resistance, TITL is the classification title, PNAM is
 C the material name.
 
-      SUBROUTINE ERPCDB(IFCON,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
+      SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
      &                  DRV,TITL,PNAM)
 
       CHARACTER PNAM*72,TITL*72,outs*124
@@ -641,9 +642,9 @@ C reference is to material db 0 (air).
       DBSHT=0.0
       IF(IEL.NE.0)THEN
         IR=((IEL-1)/20)*20+1
-        READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
         IR = IEL + 1
-        READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
      &       DRV,PNAM
 
 C If all values are still 0.0 then not an actual element.
@@ -652,7 +653,7 @@ C If all values are still 0.0 then not an actual element.
         CALL ECLOSE(DBSHT,0.0,0.001,CLOSE3)
         if(CLOSE1.and.CLOSE2.and.CLOSE3)then
           write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
-     &                           ' has no data, or all zero...',IR,IFCON
+     &                           ' has no data, or all zero...',IR,IFMAT
           call usrmsg(outs,' Please check your selection! ','W')
           ier=1
           return
@@ -669,10 +670,10 @@ C Air layer encountered so put in zeroes.
 
   99  RETURN
  105  write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' on file unit ',IFCON
+     &    ' read error @ record ',IR,' on file unit ',IFMAT
       call edisp(itru,outs)
       IER=1
-      CALL ERPFREE(IFCON,ISTAT)
+      CALL ERPFREE(IFMAT,ISTAT)
       goto 99
 
       END
@@ -707,7 +708,7 @@ C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
       
 C Write out a file header.
-      WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFCON(1:lnblnk(LFCON))
+      WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT))
   30  FORMAT('# composite construction db defined in ',A,/,
      &       '# based on materials db ',A)
 
@@ -724,7 +725,7 @@ C of DRAIR.
           IF(IPR(I,IL).EQ.0)THEN
             WRITE(PNAM(IL),'(A,1X,3F6.3)')'air',(DRAIR(I,IL,IY),IY=1,3)
           ELSE
-            CALL ERPCDB(IFCON,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
      &                      DBSHT,E,A,DRV,TITL,NAM)
             PNAM(IL)=NAM
           ENDIF
@@ -754,9 +755,10 @@ C already been opened). If user has requested a listing of the
 C database then use itopt (which may be text feedback or a file unit).
       SUBROUTINE EROPTDB(ITRC,ITOPT,SOPT,GDESCR,IER)
 #include "building.h"
+#include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -774,10 +776,9 @@ C SAB soalr abs  (for documentation purposes only)
 C NOPT number of optical database items.
 C GS (52 char) list of optical database items to select from.
       COMMON/GPICK/GS(MGOPT),nopt
-      common/curfile/currentfile
 
       LOGICAL FOUND
-      CHARACTER GS*52,WORD*20,topt*72,outs*124,currentfile*72
+      CHARACTER GS*52,WORD*20,topt*72,outs*124
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
 
 C Open the optical database, if scanning all items reset the
@@ -803,7 +804,7 @@ C Reporting.
         IER=1
         RETURN
       ENDIF
-      currentfile=LOPTDB
+      write(currentfile,'(a)') LOPTDB(1:lnblnk(LOPTDB))
 
 C Read lines from file, discarding comments. If SOPT = 'ALL' then put
 C in scan mode.  

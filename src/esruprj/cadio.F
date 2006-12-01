@@ -1315,11 +1315,11 @@ C << to be done - then name file generated is never cleaned up >>
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 
       common/OUTIN/IUOUT,IUIN
@@ -1607,7 +1607,7 @@ C Build up a list of the current files used in the model.
      &  LCNN(1:lnblnk(LCNN))
       do 41 i=1,7
         if(i.eq.1)then
-          LF=LFCON
+          LF=LFMAT
         elseif(i.eq.2)then
           LF=LFMUL
         elseif(i.eq.3)then

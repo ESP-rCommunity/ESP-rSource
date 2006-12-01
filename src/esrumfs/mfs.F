@@ -119,7 +119,7 @@ C Initialize global common data.
       LIMIT =8
       IDAYF=0
       IDAYL=0
-      IFPRE=11
+      IAPRES=11
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -141,7 +141,7 @@ C Export (grtool) file information.
 
 C File unit numbers.
       IFPRB=10
-      IFPRE=11
+      IAPRES=11
       IFCLM=12
       IFRES=13
       IUA=14
@@ -302,7 +302,7 @@ C Fill valid component type arrays
 C Set defaults for iteration parameters, Pstack calculation model,
 C                  matrix solver type and trace output flag
 C Assign and attach problem description (IFPRB), wind pressure
-C distribution (IFPRE), climate (IFCLM) and results (IFRES) files
+C distribution (IAPRES), climate (IFCLM) and results (IFRES) files
       CALL MFINIT(IFPRB,IFCLM,IFRES)
 
 C Let the user pick a menu item.
@@ -590,7 +590,7 @@ C Indicate start of simulation and show iteration parameters
 #include "net_flow.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
@@ -636,15 +636,15 @@ C Set simulation time step control variables and progress flag
       IPROG=0
 
 C Read pressure distribution file (coefficient for normal wind first)
-      REWIND(IFPRE,ERR=999)
-      READ(IFPRE,*,ERR=999) NPRE
+      REWIND(IAPRES,ERR=999)
+      READ(IAPRES,*,ERR=999) NPRE
       IF(NPRE.LE.0.OR.NPRE.GT.MPRD)then
         call usrmsg(' Number of pressure distributions out of',
      &              ' range. Could be bad pressure db.','W')
         GOTO 100
       endif
       DO 22 J=1,NPRE
-      READ(IFPRE,*,ERR=999) (FPRE(I,J),I=1,MPOS)
+      READ(IAPRES,*,ERR=999) (FPRE(I,J),I=1,MPOS)
    22 CONTINUE
 
 C Set known constant pressure nodes pressures and reset other nodes

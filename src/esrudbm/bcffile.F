@@ -27,11 +27,12 @@ C bcfwrite takes a list of constructions (clist) and builds
 C a bcf file. ilen is the number of constructions.
       subroutine bcfwrite(ifa,file,act,ilen,clist,ier)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF
-      common/curfile/currentfile
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -57,7 +58,7 @@ C Working list of constructions and materials << >>
       character outs*124,outsd*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
-      character clist*12,mlist*12,cfgroot*24,LCFGF*72,currentfile*72
+      character clist*12,mlist*12,cfgroot*24,LCFGF*72
       character gendbfn*72
 
       character symname*12,othcolr*12,incolr*12,othacou*12,inacou*12
@@ -113,7 +114,7 @@ C Setup to use the constructions db.
       idbh=1
       IFB=igendbf(1)
       call scandbhd(IFB,idbh,ier)
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)') gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
 
 C Search each construction until name match found so that a
 C list of the materials used can be built.
@@ -198,7 +199,8 @@ C through each of the materials and extract and write data.
 C Get index of material then read and parse the item. If index of
 C `conitem` not found then skip further parsing.
         conitem=mlist(ij)
-        currentfile=gendbfn(idbh2)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbh2)(1:lnblnk(gendbfn(idbh2)))
         call prsmenu(idbh2,conitem,mmatmenu,imat,imatcat)
         if(imat.eq.0)then
           write(outs,'(4a)') 'No data for (',conitem,') ',mmatmenu
@@ -218,17 +220,21 @@ C Read material item and recover associated text for its attributes.
         call PRSMAT(idbh2,imat,'g',acouitem,colormitem,lcaitem,
      &    lcatype,r1lca,r2lca,NCODE,DBCON,DBDEN,DBSHT,E,A,DRV,
      &    spec,rough,misc1,misc2,ier)
-        currentfile=gendbfn(idbh5)
+        write(currentfile,'(a)')
+     &    gendbfn(idbh5)(1:lnblnk(gendbfn(idbh5)))
         call prsmenu(idbh5,acouitem,acoumenu,iacou,iacoucat)
-        currentfile=gendbfn(idbh6)
+        write(currentfile,'(a)')
+     &    gendbfn(idbh6)(1:lnblnk(gendbfn(idbh6)))
         call prsmenu(idbh6,colormitem,colormenu,icolr,icolrcat)
-        currentfile=gendbfn(idbh8)
+        write(currentfile,'(a)')
+     &    gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
         call prsmenu(idbh8,lcaitem,lcamenu,ilca,ilcacat)
 
 C Recover category information for materials.
         IFB=igendbf(idbh2)
         call scandbhd(IFB,idbh2,ier)
-        currentfile=gendbfn(idbh2)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbh2)(1:lnblnk(gendbfn(idbh2)))
 
 C Write material attributes.
         lcm=lnblnk(catmenu(imatcat))
@@ -274,7 +280,8 @@ C Recover material effects. If none or unknown skip writing.
 
 C Index ilca known, read item, parse data and then recover menu
 C and indices of rn in dn.
-          currentfile=gendbfn(idbh8)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
           call scandbhd(IFB8,idbh8,ier)
           write(IFA,'(a)') 
      &  '# env effects: tag, nb trn, life, breakage, misc data, impacts'
@@ -295,7 +302,8 @@ C and indices of rn in dn.
 
 C For each of the transports to site ,recover and write data.
           if(ntrn.gt.0)then
-            currentfile=gendbfn(idbh9)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh9)(1:lnblnk(gendbfn(idbh9)))
             call scandbhd(IFB9,idbh9,ier)
             do 144, itr=1,ntrn
               if(itr.eq.1)write(IFA,'(a)') 
@@ -321,7 +329,8 @@ C If 'none' or not found in db then skip printing.
             continue
             ntrn=0
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             write(IFA,'(a)') 
      &        '# recycling: tag, no transports, rate, impacts'
@@ -333,7 +342,8 @@ C If 'none' or not found in db then skip printing.
             write(IFA,'(a)',iostat=ios,err=1) outsd(1:lnblnk(outsd))   
           endif
           if(ntrn.gt.0)then
-            currentfile=gendbfn(idbh9)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh9)(1:lnblnk(gendbfn(idbh9)))
             call scandbhd(IFB9,idbh9,ier)
             do 145, itr=1,ntrn
               if(itr.eq.1)write(IFA,'(a)') 
@@ -358,7 +368,8 @@ C Incineration: recover and print data if it exists.
             continue
             ntrn=0
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             write(IFA,'(a)') 
      &        '# incineration: tag, no transports, rate, impacts'
@@ -370,7 +381,8 @@ C Incineration: recover and print data if it exists.
             write(IFA,'(a)',iostat=ios,err=1) outsd(1:lnblnk(outsd)) 
           endif
           if(ntrn.gt.0)then
-            currentfile=gendbfn(idbh9)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh9)(1:lnblnk(gendbfn(idbh9)))
             call scandbhd(IFB9,idbh9,ier)
             do 146, itr=1,ntrn
               call prsmenu(idbh9,trbsn(itr),trnmenu,itrn,itrncat)
@@ -393,7 +405,8 @@ C Dump: recover and print data if it exists.
             continue
             ntrn = 0
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             write(IFA,'(a)') '# dump: tag, no transports, rate, impacts'
             call rgenitem(IFB8,idbh9,idn,ier)
@@ -404,7 +417,8 @@ C Dump: recover and print data if it exists.
             write(IFA,'(a)',iostat=ios,err=1) outsd(1:lnblnk(outsd))  
           endif
           if(ntrn.gt.0)then
-            currentfile=gendbfn(idbh9)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh9)(1:lnblnk(gendbfn(idbh9)))
             call scandbhd(IFB9,idbh9,ier)
             do 147, itr=1,ntrn
               call prsmenu(idbh9,trbsn(itr),trnmenu,itrn,itrncat)
@@ -435,7 +449,7 @@ C to calls to prsmenu because it contains a scandbhd call.
       write(IFA,'(a)') '# ----start of constructions---'
       do 32 ij=1,icd
         iit=indexc(ij)
-        currentfile=gendbfn(idbh)
+        write(currentfile,'(a)') gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
         call scandbhd(IFB,idbh,ier)
         call rgenitem(IFB,idbh,iit,ier)
         call PRSMLC(idbh,iit,'g',symname,othcolr,incolr,OTF,OPT,
@@ -443,13 +457,16 @@ C to calls to prsmenu because it contains a scandbhd call.
      &    nlay,thrmtg,gaptg,mattag,DT,IP,DRA,laydesc,ier)
         ctag=ittag(iit)
         call prsmenu(idbh,ctag,cmenu,ic,iccat)
-        currentfile=gendbfn(idbh5)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbh5)(1:lnblnk(gendbfn(idbh5)))
         call prsmenu(idbh5,othacou,oacumenu,ioacou,iacoucat)
         call prsmenu(idbh5,inacou,iacumenu,iacou,iacoucat)
-        currentfile=gendbfn(idbh6)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbh6)(1:lnblnk(gendbfn(idbh6)))
         call prsmenu(idbh6,othcolr,ocmenu,iocolr,icolrcat)
         call prsmenu(idbh6,incolr,icmenu,icolr,icolrcat)
-        currentfile=gendbfn(idbh8)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
         call prsmenu(idbh8,cnstimp,cnstm,icnstimp,icnstcat)
         IFB=igendbf(idbh)
         call scandbhd(IFB,idbh,ier)
@@ -468,7 +485,8 @@ C Recover and print other face colour data. If none or unknown skip.
         if(othcolr(1:4).eq.'none'.or.iocolr.eq.0)then
           continue
         else
-          currentfile=gendbfn(idbh6)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh6)(1:lnblnk(gendbfn(idbh6)))
           call scandbhd(IFB6,idbh6,ier)
           call rgenitem(IFB6,idbh6,iocolr,ier)
           call PRSCOLR(idbh6,iocolr,'g',IR255,IG255,IB255,greyrefl,
@@ -484,7 +502,8 @@ C Recover and print inside face colour data. If none or unknown skip.
         if(incolr(1:4).eq.'none'.or.icolr.eq.0)then
           continue
         else
-          currentfile=gendbfn(idbh6)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh6)(1:lnblnk(gendbfn(idbh6)))
           call scandbhd(IFB6,idbh6,ier)
           call rgenitem(IFB6,idbh6,icolr,ier)
           call PRSCOLR(idbh6,icolr,'g',IR255,IG255,IB255,greyrefl,
@@ -500,7 +519,8 @@ C Recover and print other face acoustics. If none or unknown skip.
         if(othacou(1:4).eq.'none'.or.ioacou.eq.0)then
           continue
         else
-          currentfile=gendbfn(idbh5)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh5)(1:lnblnk(gendbfn(idbh5)))
           call scandbhd(IFB5,idbh5,ier)
           write(IFA,'(2a)') '# other & inside face acoustic details:',
      &    ' tag, type, unit, 17 coefs.'
@@ -519,7 +539,8 @@ C Recover and print inside face acoustics. If none or unknown skip.
         if(inacou(1:4).eq.'none'.or.iacou.eq.0)then
           continue
         else
-          currentfile=gendbfn(idbh5)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh5)(1:lnblnk(gendbfn(idbh5)))
           call scandbhd(IFB5,idbh5,ier)
           call rgenitem(IFB5,idbh5,iacou,ier)
           call PRSACOU(idbh5,iacou,'g',atype,aunit,FRQ,ier)
@@ -540,7 +561,8 @@ C transports, assembly on project and maintenance data.
           continue
           ntrn=0
         else
-          currentfile=gendbfn(idbh8)
+          write(currentfile,'(a)') 
+     &      gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
           call scandbhd(IFB8,idbh8,ier)
           call rgenitem(IFB8,idbh8,icnstimp,ier)
           call prsenvci(idbh8,icnstimp,'g',lassurn,laspern,ntrn,trbsn,
@@ -575,7 +597,8 @@ C Write out constructions assembly impacts.
           if(lassurn(1:4).eq.'none'.or.iassur.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iassur,ier)
             call prsenvp(idbh8,iassur,'g',tag,brkasp,eimp,ier)
@@ -587,7 +610,8 @@ C Write out constructions assembly impacts.
           if(laspern(1:4).eq.'none'.or.iasper.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iasper,ier)
             call prsenvp(idbh8,iasper,'g',tag,brkasp,eimp,ier)
@@ -599,7 +623,8 @@ C Write out constructions assembly impacts.
 
 C If there are transports for construction write them out.
           if(ntrn.gt.0)then
-            currentfile=gendbfn(idbh9)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh9)(1:lnblnk(gendbfn(idbh9)))
             call scandbhd(IFB9,idbh9,ier)
             do 47, itr=1,ntrn
               call prsmenu(idbh9,trbsn(itr),trnmenu,itrn,itrncat)
@@ -638,7 +663,8 @@ C If there are assembly at site data write them out.
           if(assite(1)(1:4).eq.'none'.or.iasit1.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iasit1,ier)
             call prsenvp(idbh8,iasit1,'g',tag,brkasp,eimp,ier)
@@ -650,7 +676,8 @@ C If there are assembly at site data write them out.
           if(assite(2)(1:4).eq.'none'.or.iasit2.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iasit2,ier)
             call prsenvp(idbh8,iasit2,'g',tag,brkasp,eimp,ier)
@@ -682,7 +709,8 @@ C is the maint period.
           if(lasmat(1)(1:4).eq.'none'.or.iasm1.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iasm1,ier)
             call prsenvp(idbh8,iasm1,'g',tag,brkasp,eimp,ier)
@@ -694,7 +722,8 @@ C is the maint period.
           if(lasmat(2)(1:4).eq.'none'.or.iasm2.eq.0)then
             continue
           else
-            currentfile=gendbfn(idbh8)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh8)(1:lnblnk(gendbfn(idbh8)))
             call scandbhd(IFB8,idbh8,ier)
             call rgenitem(IFB8,idbh8,iasm2,ier)
             call prsenvp(idbh8,iasm2,'g',tag,brkasp,eimp,ier)
@@ -711,7 +740,8 @@ C Layer data.
      & '# layer T|S, mat category, mat tag, index, legacy index, thick'
           write(IFA,'(a)') '*Layer'
           do 29 il=1,nlay
-            currentfile=gendbfn(idbh2)
+            write(currentfile,'(a)') 
+     &        gendbfn(idbh2)(1:lnblnk(gendbfn(idbh2)))
             call scandbhd(IFB2,idbh2,ier)
             call prsmenu(idbh2,mattag(il),mmatmenu,imat,imatcat)
 

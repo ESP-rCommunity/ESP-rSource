@@ -38,7 +38,7 @@ C output; IER=0 indicates no error.
 #include "gnetwk.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

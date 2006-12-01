@@ -116,11 +116,11 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
@@ -132,6 +132,8 @@ C default file names for databases
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       PARAMETER (MSTMC=1)
 
@@ -397,10 +399,6 @@ C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
-
 C DLLSUBR (12 char) name of current subroutine, used in dll silent reporting
 C dllmesg (124 char) tells the details of the DLLSUBR error.
       common/dllerr/dllsubr,dllmesg
@@ -467,7 +465,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
-      character lradcf*72,currentfile*72
+      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
       character dfdblbl*20,defdbfl*72,GTGEOM*72
@@ -516,7 +514,7 @@ C Note: escdef must come after scan of .esprc file.
       call escdef(dfdblbl,defdbfl,IUF,IER)
       LCLIM=DCLIM
       LAPRES=DAPRES
-      LFCON=DFCON
+      LFMAT=DFCON
       LFMUL=DFMUL
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
@@ -610,7 +608,7 @@ C currentfile to the configuration file.
           RETURN
         endif
       ENDIF
-      currentfile=FILE
+      write(currentfile,'(a)') FILE(1:lnblnk(FILE))
 
 C Derive the model root name from this in case none is specified.
 C If FILE > 4 char it might have a .cfg attached, otherwise add.
@@ -788,7 +786,7 @@ C Read databases until '* PROJ LOG' found.
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
-        CALL EGETRM(OUTSTR,K,LFCON,'W','material db',IER)
+        CALL EGETRM(OUTSTR,K,LFMAT,'W','material db',IER)
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(OUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
@@ -1648,7 +1646,7 @@ C If a DFD file exists, open it and get the conflation type.
           LCFD(icomp)=text(1:72)
           call FINDFIL(LCFD(ICOMP),XST)
           if(XST)then
-            currentfile=LCFD(ICOMP)
+            write(currentfile,'(a)') LCFD(ICOMP)(1:lnblnk(LCFD(ICOMP)))
             CALL EFOPSEQ(IUF,LCFD(ICOMP),1,IER)
             IF(IER.NE.0)goto 1
             CALL STRIPC(IUF,OUTSTR,0,ND,1,'dfd line 1',IER)
@@ -1681,7 +1679,7 @@ C If a DFD file exists, open it and get the conflation type.
             CALL ERPFREE(IUF,ISTAT)
             NCONF=NCONF+1
             icfdnd(NCONF)=ICOMP
-            currentfile=FILE
+            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
           else
             call usrmsg('DFD file not found',LCFD(ICOMP),'W')
           endif
@@ -1802,7 +1800,7 @@ C Read utility file name and scan files into common.
               msgl2='  '
               CALL USRMSG(' utility file not found ',msgl2,'W')
             endif
-            currentfile=FILE
+            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
           endif
    20   CONTINUE
       endif
@@ -1815,7 +1813,7 @@ C line. Make temporary use of file unit IUF.
 
 C Quick read, get the zone name and the number of surfaces.
         IF(XST)THEN
-          currentfile=LGEOM(ICOMP)
+          write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
           IF(IER.NE.0)goto 1
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
@@ -1851,7 +1849,7 @@ C Quick read, get the zone name and the number of surfaces.
 
 C Close geometry file.
           CALL ERPFREE(IUF,ISTAT)
-          currentfile=FILE
+          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
           write(outs,'(a)')LGEOM(ICOMP)
@@ -1971,7 +1969,7 @@ C Read in the building connectivity information.
         CALL EGETRM(OUTSTR,K,LCNN,'W','connections file',IER)
         call FINDFIL(LCNN,XST)
         if(XST)then
-          currentfile=LCNN
+          write(currentfile,'(a)') LCNN(1:lnblnk(LCNN))
           CALL EFOPSEQ(IUF,LCNN,1,IER)
           IF(IER.NE.0)goto 1
           CALL STRIPC(IUF,OUTSTR,0,ND,1,'connex file header',IER)
@@ -2015,10 +2013,10 @@ C Generate header for connections. Find a variable for -1.
 
 C Read from either the connections file or configuration file.
         if(cnnok)then
-          currentfile=LCNN
+          write(currentfile,'(a)') LCNN(1:lnblnk(LCNN))
           CALL STRIPC(IUF,OUTSTR,0,ND,1,'connections',IER)
         else
-          currentfile=FILE
+          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'connections',IER)
         endif
         IF(IER.NE.0)goto 1
@@ -2111,7 +2109,7 @@ C will have been scanned in by this point and surface names known.
 
 C Read in anchors if available. For each anchor, get its name, number
 C of links and then the links.
-      currentfile=FILE
+      write(currentfile,'(a)') FILE(1:lnblnk(FILE))
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'anchors',IER)
       IF(IER.NE.0)goto 1
       if(OUTSTR(1:7).eq.'*Anchor')then
@@ -2164,7 +2162,7 @@ C Determine energy zone/fluid(=air) flow network node mapping. Flow nodes
 C may be referenced by either name or number; to be able to check whether
 C node names are valid, first read the fluid flow model file, which
 C is temporarily opened on IUF.
-        currentfile=LAPROB
+        write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
         CALL EFOPSEQ(IUF,LAPROB,1,IER)
         IF(IER.LT.0)then
           outs='Problem opening flow network file...aborting cfg scan.'
@@ -2238,7 +2236,7 @@ C into network flow common blocks.
 C Proceed with mfs/zone conct list; read one whole record into a string.
 C If there is only one word on the line then it is probably an
 C older file. Try reading another line or two to get to list.
-        currentfile=FILE
+        write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         CALL STRIPC(IUC,OUTSTR,99,ND,1,'node-zone list',IER)
         if(ND.eq.1.and.NCOMP.ne.1)then
           CALL STRIPC(IUC,OUTSTR,99,ND,1,'old pressc.db1',IER)
@@ -2394,7 +2392,7 @@ C be set to 2.
 
         IFPNF=IFIL+1
         iunit1=IUF
-        currentfile=LPNF
+        write(currentfile,'(a)') LPNF(1:lnblnk(LPNF))
         CALL EFOPSEQ(ifpnf,LPNF,1,IER)
         IF(IER.LT.0)THEN
           IER=1
@@ -2409,7 +2407,7 @@ C be set to 2.
      &        ' plant network successfully scanned')
         endif
         CALL ERPFREE(ifpnf,ISTAT)
-        currentfile=FILE
+        write(currentfile,'(a)') FILE(1:lnblnk(FILE))
 
 C Free plant components database and/or fluid flow model file).
         IF(IUNIT1.NE.0) CALL ERPFREE(IUNIT1,ISTAT)

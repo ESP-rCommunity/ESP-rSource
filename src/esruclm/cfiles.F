@@ -857,6 +857,7 @@ C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE EPWTOBCLM(LASCI,IUNIT,IER)
 #include "esprdbfile.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -874,7 +875,6 @@ C Design conditions line of text.
 
 C Comment lines.
       common/CLMCOM/clmcomment(2)
-      common/curfile/currentfile
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
@@ -882,7 +882,7 @@ C Comment lines.
 
       CHARACTER CLMLOC*30,WORD*24,uncert*44
       CHARACTER LASCI*72,outs*124,OUTSTR*248
-      character dcline*248,currentfile*72
+      character dcline*248
 
 C Initial guess on string sizes.
       character city*24,provence*24,country*24,source*24
@@ -929,7 +929,7 @@ C Open the ASCII file for reading.
         ier = 1
         return
       endif
-      currentfile=LASCI
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Read a line of text from the file, if end of file process data.
   42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'line 1',IER)

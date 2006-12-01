@@ -43,9 +43,9 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 #include "LCA.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 
 C Commons for I/O Channel, mode type and fonts.
@@ -195,7 +195,7 @@ C Temporary IFIL+1.
       IFIL = 10
       IFCFG=IFIL+5
       IUF=IFIL+6
-      IFCON=IFIL+13
+      IFMAT=IFIL+13
       IFMUL=IFIL+14
       IOPTDB=IFIL+15
       IBCF=IFIL+22
@@ -885,9 +885,9 @@ C Display Material list and allow selection of materials.
 
 C Open Materials database and allow user to select material.
           IER=0
-          CALL ERPFREE(IFCON,ISTAT)
+          CALL ERPFREE(IFMAT,ISTAT)
           
-          call EFOPRAN(IFCON,LFCON,40,0,IER)
+          call EFOPRAN(IFMAT,LFMAT,40,0,IER)
           dok=.true.
           h(1)='If you happen to know the material db index you '
           h(2)='can say no. Otherwise, say yes and then browse '
@@ -919,7 +919,7 @@ C If primitive database not opened, do it now.
           ENDIF
         endif
 
-        CALL ERPCDB(IFCON,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
+        CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
      &                                                   DRV,TITL,NAM)
         
         call edisp(iuout,' ')

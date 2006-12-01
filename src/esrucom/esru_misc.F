@@ -687,6 +687,8 @@ C ERUTIL Reads a zone utility file and fills the common blocks INDICS
 C and UDESC. ITRU unit number for user output, IER=0 OK. 
       SUBROUTINE ERUTIL(IFIL,LFIL,IZ,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -699,12 +701,9 @@ C and UDESC. ITRU unit number for user output, IER=0 OK.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,currentfile
+      character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LFIL*72,OUTSTR*124
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
 
@@ -715,7 +714,7 @@ C Open the utility file, return if not found.
         IER=1
         RETURN
       ENDIF
-      currentfile=LFIL
+      write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
 
       ZONE3D(IZ)=.TRUE.
 
@@ -933,6 +932,7 @@ C range checking and printed summary. An obstruction block name (up to
 C 12 characters) may be included as an option and is returned via BLKNAME. 
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -946,12 +946,11 @@ C BLKNAME (8 char) name of obstruction block.
 C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
+C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER LOBS*72,BLKNAME*8,BLKMAT*12,tmp*8,OUTSTR*124,WORD*20
-      character currentfile*72,dllsubr*12,dllmesg*124,outs*124
+      character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
 C Check if running in dll mode.
@@ -973,7 +972,7 @@ C Check if running in dll mode.
           RETURN
         endif
       ENDIF
-      currentfile=LOBS
+      write(currentfile,'(a)') LOBS(1:lnblnk(LOBS))
 
 C Read past site information from the file and check for range errors.
 C Read lines from file, discarding comments, check the number of items
@@ -1140,6 +1139,7 @@ C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
@@ -1148,15 +1148,13 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       common/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION VA(MSM)
 
       CHARACTER LMRT*72,LGEO*72,CUBN*6,OUTSTR*124,WORD*20,outs*124
-      character currentfile*72,dllsubr*12,dllmesg*124
+      character dllsubr*12,dllmesg*124
       integer fstgrp,fstsur,lstsur,strtgr
       logical dll
 
@@ -1178,7 +1176,7 @@ C Check if running in dll mode.
           RETURN
         endif
       ENDIF
-      currentfile=LMRT
+      write(currentfile,'(a)') LMRT(1:lnblnk(LMRT))
 
 C Read first line which must be *VIEWFACTORS
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'line 1',IER)
@@ -3274,7 +3272,7 @@ C materials db.
         ELSE
           NAM='  '
           IR = iel + 1
-          READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+          READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
      &       DRV,NAM
           PNAM(j)=NAM(1:20)
         ENDIF 
@@ -3323,12 +3321,12 @@ C Ask for the nodal location, first calculate a location at centre.
       return
 
  105  write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' in file',IFCON
+     &    ' read error @ record ',IR,' in file',IFMAT
       call edisp(iuout,outs)
       write(outs,'(A,6f9.3)') ' with data ',DBCON,DBDEN,DBSHT,E,A,DRV
       call edisp(iuout,outs)
       IER=1
-      CALL ERPFREE(IFCON,ISTAT)
+      CALL ERPFREE(IFMAT,ISTAT)
       return
       end
 

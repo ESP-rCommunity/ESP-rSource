@@ -35,7 +35,7 @@ C << file names can be in place.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -103,7 +103,7 @@ C Initialize global common data.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, updated geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
-      IFCON=IFIL+4
+      IFMAT=IFIL+4
       IFCFG=IFIL+5
       IUF=IFIL+6
       ICVS=IFIL+8
@@ -450,7 +450,7 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 
 C Exit program.
         call usrmsg(' Closing building gridding...',' ','P')
-        IF(CONDBOK)CALL ERPFREE(IFCON,ISTAT)
+        IF(CONDBOK)CALL ERPFREE(IFMAT,ISTAT)
         CALL EPAGEND
         STOP
       ENDIF
@@ -513,7 +513,7 @@ C *********************************************************************
 C If primitive database not opened, do it now.
       IF(.NOT.CONDBOK)THEN
         IER=0
-        CALL EFOPRAN(IFCON,LFCON,40,1,IER)
+        CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(IER.NE.0)RETURN
         CONDBOK=.TRUE.
       ENDIF

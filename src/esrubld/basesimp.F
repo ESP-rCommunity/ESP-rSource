@@ -34,6 +34,8 @@ C BASEREAD     Reads the data contained in the .bsm file.
 
       SUBROUTINE BASEREAD(ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 c common block for ground temperature profiles.
 c#include "ground_temp_mains_common.h"
 
@@ -47,12 +49,10 @@ c------ground temperature variables are now being calculated in
 c------/cetc/ground_temp_mains.F
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      character*72 LBSIMP,currentfile
+      character LBSIMP*72
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
@@ -106,7 +106,7 @@ C Open BASESIMP input data file.
           RETURN
         endif
       endif
-      currentfile=LBSIMP(ICOMP)
+      write(currentfile,'(a)') LBSIMP(ICOMP)(1:lnblnk(LBSIMP(ICOMP)))
 
 C Default error message.
       t60='low level I/O read error '

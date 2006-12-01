@@ -429,7 +429,7 @@ C to allow same common/reclen with bps
       nprl = nzrl
 
 C Unit for primitives constr db in case control -99 is invoked.
-      ifcon=ifil+5
+      ifmat=ifil+5
 
 C Initialise results averaging flag: 0 means
 C results will be averaged.

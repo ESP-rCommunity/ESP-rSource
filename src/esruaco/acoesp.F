@@ -47,11 +47,11 @@ C optical properties databases.
 C Open currently named materials database.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(a,a,a)') ' No construction, materials db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
         CONDBOK=.FALSE.
       else
@@ -66,7 +66,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.NE.0)then
           write(outs,'(a,a,a)') ' Problem with constr. composites db ',
-     &     LFCON(1:lnblnk(LFCON)),' !'
+     &     LFMAT(1:lnblnk(LFMAT)),' !'
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -75,7 +75,7 @@ C Read multilayer db information into common.
         endif
       else
         write(outs,'(a,a,a)') ' No constr. composites db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
       endif
 C Open optical database and read into common.

@@ -365,7 +365,7 @@ C multilayered construction at any user-specified time.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -405,7 +405,7 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for ..........')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        CALL ERPCDB(IFCON,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,A,DRVAL,TITL,NAM)
         H(1)='Diffusion resistance factors are found in the'
         H(2)='primitive construction database.'
@@ -831,7 +831,7 @@ C Determine diffusion resistance factor for each element
 C from primitive db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          CALL ERPCDB(IFCON,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,A,DRVAL,TITL,NAM)
           VDIF(I)=DRVAL
    24   CONTINUE

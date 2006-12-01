@@ -30,6 +30,7 @@ C ********************* RINTERA ****************************************
       SUBROUTINE RINTERA(INTER,IERROR,CFGSCN)
 
 #include "building.h"
+#include "espriou.h"
 
 C Open the file passed via the command line for b2e - usually "b2e_inter"
       COMMON/OUTIN/IUOUT,IUIN
@@ -45,7 +46,6 @@ C looked at in the simulation.
 C Commom for the optimim start/stop simulation. 
       COMMON/OPPSIM/NOPSSPT,OPSSPT(MCOM),NOPSSTIM,OPSSTIM(MCOM),
      &NOPSSPCP,OPSSPCP(MCOM),OPSSPST(MCOM)
-      common/curfile/currentfile
 
       CHARACTER*20 WORD
       character*72 MODELCFG*72,BFILE*72,TDFUD*72,RSFIL*72,BREPT*72
@@ -53,7 +53,7 @@ C Commom for the optimim start/stop simulation.
       CHARACTER OUTSTR*124,OUTS*124,OUTS248*248
       CHARACTER*72 TMPSTR
 
-      CHARACTER MSIM*4,currentfile*72
+      CHARACTER MSIM*4
 
       LOGICAL CFGSCN
 
@@ -68,7 +68,7 @@ C Open the named file using a temporary file unit
         call epagend
         STOP
       ENDIF
-      currentfile=INTER(1:72)
+      write(currentfile,'(a)') INTER(1:lnblnk(INTER))
 
       WRITE(OUTS248,'(A,A)') 'Opened b2e transfer file ',
      &INTER(1:LNBLNK(INTER))
@@ -275,6 +275,7 @@ C BHSTR - an array holding a descriptive string for each column of data.
 
 #include "b2e.h"
 #include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -298,10 +299,9 @@ C Simulation parameter periods.
 C Commom for the optimim start/stop simulation. 
       COMMON/OPPSIM/NOPSSPT,OPSSPT(MCOM),NOPSSTIM,OPSSTIM(MCOM),
      &NOPSSPCP,OPSSPCP(MCOM),OPSSPST(MCOM)
-      common/curfile/currentfile
 
       CHARACTER*8 BHSTR
-      CHARACTER cfgroot*24,currentfile*72
+      CHARACTER cfgroot*24
       character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT,LCFGF
       CHARACTER*124 OUTSTR,OUTS
       
@@ -324,7 +324,7 @@ C Open the named file using a temporary file unit.
         ierror=1
         STOP
       ENDIF
-      currentfile=BFILE
+      write(currentfile,'(a)') BFILE(1:lnblnk(BFILE))
 
 C Firstly clear bvar and bfvar arrays.
       DO 11 I=1,MBROW
@@ -514,6 +514,7 @@ C*end_data
       SUBROUTINE TDFUDWR(MODE,IERROR)
 
 #include "b2e.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -524,12 +525,11 @@ C*end_data
      &SENMAP(MBCOL)
 
       COMMON/RBEMDATF/NFTSTP,BFVAR(MBROW,MBCOL)
-      common/curfile/currentfile
      
       CHARACTER*1 SEP1,SEP2,MODE     
       CHARACTER*24 BHDSTR1(MBCOL),BHDSTR2(MBCOL)
       character*72 MODELCFG,TDFUD,BFILE,RSFIL,BREPT
-      CHARACTER OUTS*124,currentfile*72
+      CHARACTER OUTS*124
       
       INTEGER IBUNIT,NCOLS,NLINE,SENMAP,ISTPH,NFTSTP
 
@@ -553,7 +553,7 @@ C Open the named file using a temporary file unit
           call epagend
           STOP
         ENDIF
-        currentfile=BFILE
+        write(currentfile,'(a)') BFILE(1:lnblnk(BFILE))
 
 C Write out the header data
         WRITE(IBUNIT,'(A)')'TDF exchange'
@@ -866,6 +866,7 @@ C simulation pattern selects suitable data to return to the bems system
       SUBROUTINE SCANRES(MODE,ISIMUL,NSIMUL)
 
 # include "building.h"
+#include "espriou.h"
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -880,11 +881,10 @@ C Commons
 C Commom for the optimim start/stop simulation. 
       COMMON/OPPSIM/NOPSSPT,OPSSPT(MCOM),NOPSSTIM,OPSSTIM(MCOM),
      &NOPSSPCP,OPSSPCP(MCOM),OPSSPST(MCOM)
-      common/curfile/currentfile
 
       DIMENSION RESULT(MCOM)
 
-      CHARACTER MODE*4,MSIM*4,currentfile*72
+      CHARACTER MODE*4,MSIM*4
       CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
       CHARACTER*124 OUTSTR,OUTS
 
@@ -957,7 +957,7 @@ C then return the start time to BEMS.
           IF(RESULT(IZI)) THEN
             IE2BFIL=IFIL+1
             CALL EFOPSEQ(IE2BFIL,BREPT,3,IER)
-            currentfile=BREPT
+            write(currentfile,'(a)') BREPT(1:lnblnk(BREPT))
             WRITE(OUTS,*) 'Zone ',IZI
             CALL EDISP(IUOUT,OUTS)
             CALL EDISP(IUOUT,'Returning start time to BEMS')

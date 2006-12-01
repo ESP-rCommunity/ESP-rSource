@@ -34,11 +34,11 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
 #include "MultiYear_simulations.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
@@ -124,7 +124,7 @@ C Begin with menu of default dbs.
       WRITE(ITEMS(3),'(2A)')'a annual climate         : ',LCLIM(1:44)
       WRITE(ITEMS(4),'(2A)')'b multi-year climate     : ',cTemp(1:44)
       WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:44)
-      WRITE(ITEMS(6),'(2A)')'d materials              : ',LFCON(1:44)
+      WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:44)
       WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
       WRITE(ITEMS(8),'(2A)')'f plant components       : ',LPCDB(1:44)
       WRITE(ITEMS(9),'(2A)')'g event profiles         : ',LPRFDB(1:44)
@@ -245,7 +245,7 @@ C conjunction with save level 5.
 
 C Pressure distribution database...
   30    LTMP=LAPRES
-        IFPRE=IFIL+1
+        IAPRES=IFIL+1
         write(outs,'(2a)') 'Options for pressure distribution db: ',
      &    LTMP(1:lnblnk(LTMP))
         H(1)='To enable the calculation of wind-induced surface'
@@ -273,7 +273,7 @@ C Pressure distribution database...
         H(23)='  database will be made and you will be offered a '
         H(24)='  chance to rename it.'
         H(25)=' '
-        CALL ERPFREE(IFPRE,ISTAT)
+        CALL ERPFREE(IAPRES,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
@@ -319,19 +319,19 @@ C If file exists open it, test file type, get number of items and close.
           if(XST)then
             LAPRES=LTMP
             moddb=.true.
-            CALL EFOPSEQ(IFPRE,LAPRES,1,IER)
+            CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
             IF(IER.NE.0) GOTO 30  
-            CALL STRIPC(IFPRE,OUTSTR,0,ND,1,'pressure db',IER)
+            CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
             K=0
             CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W',
      &        'no pressure item',IER)
             IF(NPRE.LT.1.OR.NPRE.GT.MPRD) THEN
               CALL USRMSG(' The specified file may not be a',
      &                    ' pressure coef db, please try again','W')
-              CALL ERPFREE(IFPRE,ISTAT)
+              CALL ERPFREE(IAPRES,ISTAT)
               GOTO 30
             ENDIF
-            CALL ERPFREE(IFPRE,ISTAT)
+            CALL ERPFREE(IAPRES,ISTAT)
 
 C Open pressure file, read in data, if OK, display coefficients and
 C enter editing facilitiy.
@@ -362,7 +362,7 @@ C Check if name ok and if a file exists by that name.
           else
             goto 31
           endif
-          CALL ERPFREE(IFPRE,ISTAT)
+          CALL ERPFREE(IAPRES,ISTAT)
           call FINDFIL(LAPRES,XST)
           IF(XST)THEN
 
@@ -492,7 +492,7 @@ C Similar logic but using LAPRES.
       ELSEIF(INO.EQ.6)THEN
 
 C Since it may be repeatedly accessed, open materials db.  
- 138    LTMP=LFCON
+ 138    LTMP=LFMAT
         write(outs,'(2a)') 'Options for materials db: ',
      &    LTMP(1:lnblnk(LTMP))
 
@@ -526,13 +526,13 @@ C If db does not exist offer the following choices:
         H(27)=' '
         H(28)='f) import ascii constructions db file and convert it'
         H(29)='   to a binary file. '
-        CALL ERPFREE(IFCON,ISTAT)
+        CALL ERPFREE(IFMAT,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
-        call FINDFIL(LFCON,XST)
+        call FINDFIL(LFMAT,XST)
         IF(.NOT.XST)THEN
           idno=2
           isw=0
@@ -542,7 +542,7 @@ C Get length of path to where esp-r databases were installed.
      &      'e binary >> ascii export','f ascii >> binary import',
      &      ' ',' ',' ',' ',' ',' ',isw,idno,29)
             copydef=.true.
-        elseif(LFCON(1:linst).eq.linstd(1:linst))then
+        elseif(LFMAT(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
           idno=1
@@ -572,7 +572,7 @@ C Act on the users choice. If no choice return to main menu.
         elseif(isw.eq.1)then
           if(XST)then
             IER=0
-            call EFOPRAN(IFCON,LTMP,40,0,IER)
+            call EFOPRAN(IFMAT,LTMP,40,0,IER)
             if(ier.ne.0)then
               call usrmsg(' The materials database was not found or ',
      &                    ' was corrupt','W')
@@ -581,7 +581,7 @@ C Act on the users choice. If no choice return to main menu.
             CONDBOK=.TRUE.
             moddb=.true.
             modcon=.true.
-            LFCON=LTMP
+            LFMAT=LTMP
             call tstamp('>','PRJ: enter materials db')
             CALL ELISTC(iw,chgdb,'M',IER)
             if(ier.eq.1)then
@@ -605,7 +605,7 @@ C If the materials db was edited write a backup ASCII version.
               DFILE='./newmat.db1.a'
               clkok=.false.
               LASCI=' '
-              write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+              write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
               CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
      &         ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &         IER,3)
@@ -630,21 +630,21 @@ C If the materials db was edited write a backup ASCII version.
  144      CALL EASKS(LTMP,' Materials database?',
      &      ' ',72,DFCON,'materials database',IER,4)
           IF(LTMP(1:2).NE.'  ')then
-            LFCON=LTMP
+            LFMAT=LTMP
           else
             goto 144
           endif
-          CALL ERPFREE(IFCON,ISTAT)
-          call FINDFIL(LFCON,XST)
+          CALL ERPFREE(IFMAT,ISTAT)
+          call FINDFIL(LFMAT,XST)
           if(XST)then
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
             write(outs,'(2a)') 'Accessing materials db ',
-     &        LFCON(1:lnblnk(LFCON))
+     &        LFMAT(1:lnblnk(LFMAT))
             call edisp(iuout,outs)
             IER=0
-            call EFOPRAN(IFCON,LFCON,40,0,IER)
+            call EFOPRAN(IFMAT,LFMAT,40,0,IER)
             if(ier.ne.0)then
               call usrmsg(' The materials database was not found or ',
      &                    ' was corrupt','W')
@@ -673,7 +673,7 @@ C If the materials db was edited write a backup ASCII version.
               DFILE='./newmat.db1.a'
               clkok=.false.
               LASCI=' '
-              write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+              write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
               CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
      &         ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &         IER,3)
@@ -686,7 +686,7 @@ C If the materials db was edited write a backup ASCII version.
             endif
             modcon=chgdb
           else
-            write(outs,'(2a)') LFCON(1:lnblnk(LFCON)),
+            write(outs,'(2a)') LFMAT(1:lnblnk(LFMAT)),
      &       ' does not appear to exist.'
             call edisp(iuout,outs)
             goto 138
@@ -709,12 +709,12 @@ C a new db, populate it and present editing facility.
      &     ' ','cancel',clkok,72,DFCON,'new material database',IER,2)
           if(clkok) goto 3
           IF(LTMP(1:2).NE.'  ')then
-            LFCON=LTMP
+            LFMAT=LTMP
           else
             goto 145
           endif
-          CALL ERPFREE(IFCON,ISTAT)
-          call EFOPRAN(IFCON,LFCON,40,3,IER)
+          CALL ERPFREE(IFMAT,ISTAT)
+          call EFOPRAN(IFMAT,LFMAT,40,3,IER)
           if(ier.ne.0)then
             call usrmsg(' This materials database could not be created',
      &                  ' (check file permissions).','W')
@@ -736,7 +736,7 @@ C Include typical categories with one item in each.
           IAF=IFIL+1
           CALL EFOPSEQ(IAF,LTMPFL,3,IER)
           write(IAF,'(2a)',IOSTAT=ios,ERR=13)
-     &      '# materials db defined in ',LFCON(1:lnblnk(LFCON))
+     &      '# materials db defined in ',LFMAT(1:lnblnk(LFMAT))
           NCLASS=15
           write(IAF,'(i5,a)',IOSTAT=ios,ERR=13) NCLASS,
      &      '#  number of classifications'
@@ -848,7 +848,7 @@ C the file name as known to esp-r and LCOPY for the system cp call.
             call edisp(iuout,DFCON)
           else
             call edisp(iuout,'The source file is:')
-            call edisp(iuout,LFCON)
+            call edisp(iuout,LFMAT)
           endif
           h(1)='The suggested name of this database is based on the '
           h(2)='project name. '
@@ -879,28 +879,28 @@ C Use similar logic as DAPRES to setup for copy command.
               endif
               call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
-              LFCON=LTMP
+              LFMAT=LTMP
             else
               doit = ' '
               if(unixok)then
                 write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LFCON(1:lnblnk(LFCON)),' ',LCOPY(1:lnblnk(LCOPY))
+     &            LFMAT(1:lnblnk(LFMAT)),' ',LCOPY(1:lnblnk(LCOPY))
               else
 
-C Similar logic but using LFCON.
+C Similar logic but using LFMAT.
                 message='getting materials db file from '
-                call dbdoscopy(LFCON,lcopy,message,doit,ier)
+                call dbdoscopy(LFMAT,lcopy,message,doit,ier)
               endif
               call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
-              LFCON=LTMP
+              LFMAT=LTMP
             endif
             write(outs,'(2a)') 'Accessing materials db: ',
-     &        LFCON(1:lnblnk(LFCON))
+     &        LFMAT(1:lnblnk(LFMAT))
             call edisp(iuout,outs)
             IER=0
-            CALL ERPFREE(IFCON,ISTAT)
-            call EFOPRAN(IFCON,LFCON,40,0,IER)
+            CALL ERPFREE(IFMAT,ISTAT)
+            call EFOPRAN(IFMAT,LFMAT,40,0,IER)
             if(ier.ne.0)then
               call usrmsg(
      &          ' The materials database was not found or was corrupt',
@@ -935,7 +935,7 @@ C ascii version of this new project materials db.
             DFILE='./newmat.db1.a'
             clkok=.false.
             LASCI=' '
-            write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
             CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
      &     ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &      IER,7)
@@ -956,7 +956,7 @@ C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
 
 C If materials not opened do it now.
             IER=0
-            call EFOPRAN(IFCON,LFCON,40,1,IER)
+            call EFOPRAN(IFMAT,LFMAT,40,1,IER)
             if(ier.ne.0)return 
             CONDBOK=.TRUE.
           ENDIF
@@ -969,7 +969,7 @@ C Confirm suggested name and then write out asci file.
           DFILE='./newmat.db1.a'
           clkok=.false.
           LASCI=' '
-          write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
           CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
      &     ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &      IER,4)
@@ -991,18 +991,18 @@ C the same name as the binary one and is in the same location.
           clkok=.false.
           DFILE=' '
           LASCI=' '
-          write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
           CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
      &      ' ','cancel',clkok,72,DFILE,'materials db (ascii)',IER,5)
           if(clkok) goto 3
 
           DFILE='./newprim.db1'
           clkok=.false.
-          ltmp=LFCON
+          ltmp=LFMAT
  143      CALL EASKSCMD(ltmp,' Materials database (BINARY)?',
      &      ' ','cancel',clkok,72,DFILE,'Materials db (binary)',IER,5)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LFCON=ltmp
+            LFMAT=ltmp
           else
             goto 143
           endif
@@ -2361,11 +2361,11 @@ C optical properties databases.
 C Open currently named materials database.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(3a)') ' No materials db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
         CONDBOK=.FALSE.
       else
@@ -2380,7 +2380,7 @@ C Read multilayer db information into common.
         IF(IER.eq.1)then
           write(outs,'(3a)') 
      &    ' A few problems with materials used by constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' !'
+     &     LFMAT(1:lnblnk(LFMAT)),' !'
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         ELSEIF(IER.eq.2)then
@@ -2394,7 +2394,7 @@ C the ascii version and if it exists, offer to convert it.
           h(4)='of this file and convert it if you agree. '
           IAF=IFIL+1
           LASCI=' '
-          write(LASCI,'(2a)') LFCON(1:lnblnk(LFCON)),'.a'
+          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
           CALL EFOPSEQ(IAF,LASCI,1,IER)
           if(ier.eq.0)then
             CALL ERPFREE(IAF,ISTAT)

@@ -2128,7 +2128,7 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFCON,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1) THEN
            call edisp(iuout,' Found an error reading PCDB!')

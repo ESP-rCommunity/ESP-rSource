@@ -3019,6 +3019,8 @@ C EHTCFF reads the convection-calculation control file (usually named *.htc).
 
       SUBROUTINE EHTCFF(FILE,IUF,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -3035,16 +3037,14 @@ C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
       COMMON/HCCEN/CENLOC(MP,14)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-      character*72 FILE,currentfile
-      character hcfpdescr*72,outstr*124,word*24
+      character*72 FILE,hcfpdescr*72,outstr*124,word*24
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
       logical newer
         
       CALL EFOPSEQ(IUF,FILE,1,IER)
       IF(ier.eq.0)THEN
-        currentfile=FILE
+        write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+
 C Does the 1st and 2nd line have one item and the 3rd line have two items?
 C Or does the file start with '*HC_CTL'?
         CALL STRIPC(IUF,OUTSTR,99,num1,1,'htc line 1',IER)

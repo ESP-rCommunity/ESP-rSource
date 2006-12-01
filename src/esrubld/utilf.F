@@ -324,6 +324,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
 
       SUBROUTINE MZHCFV2(ICOMP)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/ER/IER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -346,11 +347,10 @@ C MZHCFV2 reads the convection-regime file (version 2)
       common/HCFPHI/hcfpdescr(MBP)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
-      common/curfile/currentfile
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,OUTSTR*124,word*24,h*72
-      character*72 currentfile,hcfpdescr
+      character hcfpdescr*72
       logical OK,dok,newer
 
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
@@ -389,7 +389,7 @@ C Initialize data.
 C Check for format.
       CALL EFOPSEQ(IUNIT,LHCCO(ICOMP),1,IER)
       IF(ier.eq.0)THEN
-        currentfile=LHCCO(ICOMP)
+        write(currentfile,'(a)') LHCCO(ICOMP)(1:lnblnk(LHCCO(ICOMP)))
 
 C Does the 1st and 2nd line have one item and the 3rd line have two items?
 C Or does the file start with '*HC_CTL'?

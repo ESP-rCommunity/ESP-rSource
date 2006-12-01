@@ -799,9 +799,9 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,AE,DRV,TITL,NAM)
-        CALL ERPCDB(IFCON,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,AI,DRV,TITL,NAM)
 
 C If a tmc then find tranmission functions.  If more transparent than

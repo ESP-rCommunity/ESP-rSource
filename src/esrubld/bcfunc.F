@@ -5645,7 +5645,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -5817,7 +5817,7 @@ C common.  Gather information about each layer. Read in the
 C primitive db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
-            call erpcdb(ifcon,ipr(ic,i),iuout,ier,dbcon,dbden,
+            call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
      &            dbsht,e,a,drv,titl,nam)
             if(ier.eq.1)return
             if(ipr(ic,i).ne.0)then

@@ -58,7 +58,7 @@ C Now find the names of the materials.
       DO 20 II=1,NPRIM
         IDB=IELM(II)
         IER=0
-        CALL ERPCDB(IFCON,IDB,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
+        CALL ERPCDB(IFMAT,IDB,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
      &                                                    DRV,TITL,NAM)
 
 C Check for errors - add to the total error counter if error has occured.
@@ -223,7 +223,7 @@ C Check for errors - add to the total error counter if error has occured.
 C Pick a material in that MLC.
         II=0
         do 10 IL=1,LAYERS(ISEL)
-          CALL ERPCDB(IFCON,IPR(ISEL,IL),iuout,IERR,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(ISEL,IL),iuout,IERR,DBCON,DBDEN,
      &                                        DBSHT,E,A,DRV,TITL,NAM)
 
 C Check for errors - add to the total error counter if error has occured.

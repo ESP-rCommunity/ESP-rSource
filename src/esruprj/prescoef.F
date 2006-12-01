@@ -794,7 +794,7 @@ C and calculate the pressure coeffcients
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

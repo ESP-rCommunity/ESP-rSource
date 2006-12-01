@@ -26,7 +26,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/H(60)
       COMMON/exporttg/xfile,tg,delim
@@ -48,7 +48,7 @@ C Assume no changes to db amd user has not entered password.
 C Check that the primitive db is not empty.
     4 IER=0
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' Materials db is empty.',' ','W')
         IER=1
@@ -63,7 +63,7 @@ C Gather the names of the various classes and present this list.
       DO 44 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         write(CLSSEL(I),'(A)') IDESC(1:36)
         IF(NE.GT.0)THEN
           M=M+1
@@ -116,12 +116,12 @@ C List one or more classifications.
           goto 40
         endif
         call edisp(itu,'In the primitive elements database: ')
-        call edisp(itu, LFCON)
+        call edisp(itu, LFMAT)
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
           IREC=IC*20-19
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
           IF(NE.GT.0)THEN
             WRITE(outs,'(a,a,a,i2,a)')' Classification: ',
      &        IDESC(1:lnblnk(IDESC)),' (',IC,')'
@@ -134,7 +134,7 @@ C List one or more classifications.
             IDB=IC*20-20
             DO 47 J=1,NE
               IDB=IDB+1
-              CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+              CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
               WRITE(outs,46)IDB,DBCON,DBDEN,DBSHT,E,A,DRV,NAM(1:36)
    46         FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
@@ -158,7 +158,7 @@ C all the information.
           NCLASS=NCLASS+1
           ICLN(NCLASS)=NCLASS
           IREC=601
-          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &          (ICLN(I),I=1,30)
           H(1)='This description may be up to 72 char. '
           CALL EASKS(IDESC,' Classification name ?',' ',
@@ -175,10 +175,10 @@ C all the information.
 
           IREC=NCLASS*20-19
           NREC=IREC
-          WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
+          WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
           DO 41 J=1,ILNE
             IREC=IREC+1
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &            EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    41     CONTINUE
           chgdb=.true.
@@ -190,12 +190,12 @@ C Loop through and read in data for this classification into local
 C arrays for manipulation.
         IC=ICO-1
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         IF(NE.GT.0)THEN
           IDB=IC*20-20
           DO 20 J=1,NE
             IDB=IDB+1
-            CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+            CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
             IDBE(J)=IDB
             EDBCON(J)=DBCON
@@ -320,17 +320,17 @@ C Display Visible properties
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 51 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    51       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -384,17 +384,17 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 50 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    50       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -543,11 +543,11 @@ C optical properties databases.
 C Open currently named materials database.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(a,a,a)') ' No construction, materials db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
         CONDBOK=.FALSE.
       else
@@ -562,7 +562,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.NE.0)then
           write(outs,'(a,a,a)') ' Problem with constr. composites db ',
-     &     LFCON(1:lnblnk(LFCON)),' !'
+     &     LFMAT(1:lnblnk(LFMAT)),' !'
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -571,7 +571,7 @@ C Read multilayer db information into common.
         endif
       else
         write(outs,'(a,a,a)') ' No constr. composites db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
       endif
 
@@ -3455,7 +3455,7 @@ C -------------
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                  CALL ERPCDB(IFCON,IPR(ICurComp,J),iuout,IER,
+                  CALL ERPCDB(IFMAT,IPR(ICurComp,J),iuout,IER,
      &                        DBCON,DBDEN,DBSHT,E,A,DRV,TITL,NAM)
 
 C Loop over the impacts

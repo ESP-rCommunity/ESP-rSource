@@ -702,7 +702,7 @@ C number of plant components used in the network.
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)

@@ -55,7 +55,7 @@ C Assume no changes to db amd user has not entered password.
 C Check that the material db is not empty.
     4 IER=0
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' Materials db is empty.',' ','W')
         IER=1
@@ -70,7 +70,7 @@ C Gather the names of the various classes and present this list.
       DO 44 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         write(CLSSEL(I),'(A)') IDESC(1:36)
         IF(NE.GT.0)THEN
           M=M+1
@@ -126,12 +126,12 @@ C List one or more classifications.
           goto 40
         endif
         call edisp(itu,'In the materials database: ')
-        call edisp(itu, LFCON)
+        call edisp(itu, LFMAT)
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
           IREC=IC*20-19
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
           IF(NE.GT.0)THEN
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        IDESC(1:lnblnk(IDESC)),' (',IC,')'
@@ -144,7 +144,7 @@ C List one or more classifications.
             IDB=IC*20-20
             DO 47 J=1,NE
               IDB=IDB+1
-              CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+              CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
               WRITE(outs,46)IDB,DBCON,DBDEN,DBSHT,E,A,DRV,NAM(1:36)
    46         FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
@@ -168,7 +168,7 @@ C all the information.
           NCLASS=NCLASS+1
           ICLN(NCLASS)=NCLASS
           IREC=601
-          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &          (ICLN(I),I=1,30)
           H(1)='This description may be up to 72 char. '
           CALL EASKS(IDESC,' Classification name ?',' ',
@@ -185,10 +185,10 @@ C all the information.
 
           IREC=NCLASS*20-19
           NREC=IREC
-          WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
+          WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
           DO 41 J=1,ILNE
             IREC=IREC+1
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &            EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    41     CONTINUE
           chgdb=.true.
@@ -200,12 +200,12 @@ C Loop through and read in data for this classification into local
 C arrays for manipulation.
         IC=ICO-1
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         IF(NE.GT.0)THEN
           IDB=IC*20-20
           DO 20 J=1,NE
             IDB=IDB+1
-            CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+            CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
             IDBE(J)=IDB
             EDBCON(J)=DBCON
@@ -285,17 +285,17 @@ C Help text for this menu.
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 51 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    51       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -323,17 +323,17 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 50 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    50       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -732,11 +732,11 @@ C List database.
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then
-            call etmldb(itrc,itu,IFCON,IM,imerr)
+            call etmldb(itrc,itu,IFMAT,IM,imerr)
           elseif(irpt.eq.2)then
-            call etmldb(1,itu,IFCON,IM,imerr)
+            call etmldb(1,itu,IFMAT,IM,imerr)
           elseif(irpt.eq.3)then
-            call etmldb(2,itu,IFCON,IM,imerr)
+            call etmldb(2,itu,IFMAT,IM,imerr)
           endif
    45   continue
         call edisp(itu,
@@ -996,7 +996,7 @@ C First check if mlc is transparent
 C Get number of non-air layers of glass
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
-            CALL ERPCDB(IFCON,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
             IF(IER.EQ.1)RETURN
             IF(IPR(IWH,ILAY).EQ.0)GOTO 501
@@ -1077,7 +1077,7 @@ C Edit block identified by KEYIND, remind user of details and then
 C bring up an editing facility.
         CALL KEYIND(NITMS,INO,IFOC,IO)
         CALL EDISP(iuout,' ')
-        call etmldb(2,iuout,IFCON,IFOC,imerr)
+        call etmldb(2,iuout,IFMAT,IFOC,imerr)
         CALL EPMENSV
         CALL EDWALL(ITRC,IFOC,moddb,IER)
         CALL EPMENRC
@@ -1094,7 +1094,7 @@ C bring up an editing facility.
 
 C ************* EDWALL 
 C EDWALL Edit a construction common block data.
-C IFCON is the unit for the associated materials db.
+C IFMAT is the unit for the associated materials db.
 C IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Information on opaque/transparent is added to DESC.
@@ -1201,7 +1201,7 @@ C Detail menu.
       M=8
       RT=0.
       DO 23, IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1)RETURN
 
@@ -1860,7 +1860,7 @@ C current contents of an ASCII file LASCI opened on unit IFA.
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
 
 C The binary file will be overwritten.
-      call EFOPRAN(IFCON,LFCON,40,4,IER)
+      call EFOPRAN(IFMAT,LFMAT,40,4,IER)
       if(ier.ne.0)return
 
 C Open the ASCII file for reading.
@@ -1884,13 +1884,13 @@ C Proceed.
         IREC=601
 
 C Write number of classifications and number of items in each.
-        WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)ICLASS,
+        WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)ICLASS,
      &        (ICLN(K),K=1,30)
         IREC=ICLASS*20-19
         NREC=IREC
 
 C Write values for classification.
-        WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,NDESC
+        WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,NDESC
         DO 20 J=1,NE
           IREC=IREC+1
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCODE,IDESC',IER)
@@ -1910,7 +1910,7 @@ C Write values for classification.
           CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','VAL 6',IER)
 
 C Write values for layer.
-          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)
      &          (VAL(IL),IL=1,6),IDESC
    20   CONTINUE
    10 CONTINUE
@@ -1919,10 +1919,10 @@ C Write values for layer.
       RETURN
 
 C File errors.
- 1001 CALL USRMSG(' NE,NDESC write error in ',LFCON,'W')
+ 1001 CALL USRMSG(' NE,NDESC write error in ',LFMAT,'W')
       IER=1
       goto 99
- 1002 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+ 1002 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
       IER=1
       goto 99
     
@@ -1939,8 +1939,8 @@ C current contents of binary file.
       CHARACTER IDESC*72,NDESC*72,LASCI*72
 
 C Open the binary materials database (in clase it was closed elsewhere).
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,1,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)return
       CONDBOK=.TRUE.
 
@@ -1953,7 +1953,7 @@ C Write out a file header.
 
 C Check binary contents.
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' binary materials database empty! ',' ','W')
         IER=1
@@ -1965,13 +1965,13 @@ C Proceed.
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         WRITE(IFA,12)IC,NE,IDESC(1:lnblnk(IDESC))
    12   FORMAT('# class|no materials|description',/,I5,I5,3X,A)
         IF(NE.LE.0)goto 10
         DO 20 J=1,NE
           IREC=IREC+1
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
      &         NDESC
           NCODE=IREC-1
           WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
@@ -1983,10 +1983,10 @@ C Proceed.
       RETURN
 
 C File errors.
- 1000 CALL USRMSG(' NE,NDESC read error in ',LFCON,'W')
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
       IER=1
       goto 99
- 1001 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+ 1001 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
       IER=1
 
       END

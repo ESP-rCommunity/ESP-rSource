@@ -31,9 +31,10 @@ C climate (IFCLM) and results (IFRES) files
 #include "net_flow.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -47,16 +48,12 @@ C Defaults.
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
-
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER H*72,DFILE*72,LTMP*72
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER OUTSTR*124,currentfile*72
+      CHARACTER OUTSTR*124
       logical XST,OK,DOK
 
 C Initiates filling of valid fluid flow component type arrays
@@ -99,7 +96,7 @@ C Do a simple check on the file to see if it is a network file.
       ENDIF
       CALL EFOPSEQ(IFPRB,LAPROB,3,IER)
       IF(IER.NE.0) GOTO 20
-      currentfile=LAPROB
+      write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
 
 C Test for legal file type
 C For the time being, when the first record does not contain valid data
@@ -114,8 +111,8 @@ C this might cause overwriting of an existing file !!
       IF(IER.EQ.1)GOTO 20
 
 C Assign wind pressure distribution file and read NPRE. If for some
-C reason IFPRE is still zero then set to 11.
-   30 if(IFPRE.eq.0)IFPRE=11
+C reason IAPRES is still zero then set to 11.
+   30 if(IAPRES.eq.0)IAPRES=11
       H(1)='A wind pressure coefficients distribution file is a'
       H(2)='database of pressure coefficients for surfaces in'
       H(3)='typical positions and within several different exposure'
@@ -123,12 +120,12 @@ C reason IFPRE is still zero then set to 11.
   288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
      &     72,DAPRES,'pressure db',IER,4)
       IF(LAPRES.EQ.' ')GOTO 288
-      CALL EFOPSEQ(IFPRE,LAPRES,1,IER)
+      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(IER.NE.0) GOTO 30
-      currentfile=LAPRES
+      write(currentfile,'(a)') LAPRES(1:lnblnk(LAPRES))
 
 C Read in the pressure db to see if it is a proper one.
-      CALL STRIPC(IFPRE,OUTSTR,0,ND,1,'pressure db',IER)
+      CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
       IF(IER.NE.0)RETURN
       K=0
       CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)
@@ -178,7 +175,7 @@ C Assign results file; make sure this is not the problem file
       LAFRES=LTMP
       CALL EFOPSEQ(IFRES,LAFRES,3,IER)
       IF(IER.NE.0) GOTO 50
-      currentfile=LAFRES
+      write(currentfile,'(a)') LAFRES(1:lnblnk(LAFRES))
       RETURN
 
 C File error trap

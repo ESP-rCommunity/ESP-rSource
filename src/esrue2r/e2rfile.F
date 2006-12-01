@@ -277,6 +277,7 @@ C RVB - reporting verbosity, 's'= silent.
 C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,file,RVB,IERR)
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad2/mono,intext,ifocz
@@ -292,7 +293,6 @@ C IERR=1 if a scene file is missing.
       common/radrp/ipicx
 
       common/expath/runpath
-      common/curfile/currentfile
 
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -301,7 +301,7 @@ C IERR=1 if a scene file is missing.
       character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character tsc*72,tword*10,file*72,RVB*1,runpath*72,currentfile*72
+      character tsc*72,tword*10,file*72,RVB*1,runpath*72
 
       IERR=0
 
@@ -332,7 +332,7 @@ C Attempt to read in rif file.
         call usrmsg(' Problem detected while opening...',file,'W')
         return
       endif
-      currentfile=file
+      write(currentfile,'(a)') file(1:lnblnk(file))
 
 C Test if e2r information structure can be recovered.
       if (RVB.ne.'s') then

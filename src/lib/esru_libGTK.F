@@ -6497,13 +6497,12 @@ C     L      - current position in WORD
 C     LW     - maximum length of WORD
 
       SUBROUTINE EGETW(STRING,K,WORD,ACT,MSG,IER)
+#include "espriou.h"
+C espriou.h provides currentfile.
       common/OUTIN/IUOUT,IUIN
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       CHARACTER*(*) WORD, STRING, MSG
-      CHARACTER ACT*1,A*1,outstr*124,currentfile*72
+      CHARACTER ACT*1,A*1,outstr*124
 
       IER=0
       WORD=' '
@@ -6575,13 +6574,11 @@ C characters. Phrases are separated by tabs or commas. Provides a warning
 C message if ACT='W', a failure message if ACT='F' and does
 C no message if ACT='-'.
       SUBROUTINE EGETP(STRING,K,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       CHARACTER*(*) PHRASE, STRING, MSG
-      CHARACTER ACT*1,A*1,outstr*124,currentfile*72
+      CHARACTER ACT*1,A*1,outstr*124
 
 C LS is th maximum length of STRING, L the current position,
 C LW the maximum length of PHRASE.
@@ -6658,13 +6655,11 @@ C no range checking if ACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWI(STRING,K,IV,MN,MX,ACT,MSG,IER)
+#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       CHARACTER*(*) STRING, MSG
-      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,OUTSTR*124,currentfile*72
+      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,OUTSTR*124
 
 C Pick up line and lenght for error messages.
       ils=max(1,lnblnk(STRING))
@@ -6786,17 +6781,14 @@ C no range checking if RACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWR(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
+#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
-
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
 
 C LOUTSTR is for messages to the user and should be long enough
 c to prevent truncation of messge contents.
 
       CHARACTER*(*) STRING, MSG
       CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,LOUTSTR*248
-      character currentfile*72
 
 C Pick up line and length for error messages.
       ils=max(1,lnblnk(STRING))
@@ -7212,13 +7204,11 @@ C ***************** EGETRM
 C EGETRM returns the remainder of a text string TSTR after position k
 C in RSTR where RSTR has no leading blanks.
       SUBROUTINE EGETRM(TSTR,K,RSTR,ACT,MSG,IER)
+#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       CHARACTER*(*) TSTR,RSTR,MSG
-      character ACT*1,A*1,OUTSTR*124,outs*124,currentfile*72
+      character ACT*1,A*1,OUTSTR*124,outs*124
 
       IER=0
 
@@ -7806,12 +7796,10 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE STRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
-      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -7900,13 +7888,11 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
       CHARACTER*248 OUTSTR,STRING,TMP
       CHARACTER*124 MSG1
       CHARACTER*(*) MSG
-      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -9405,6 +9391,7 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -9438,7 +9425,6 @@ C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-      common/curfile/currentfile
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND
@@ -9448,7 +9434,7 @@ C ITPPSW current view - perspective/plan/south/west
       CHARACTER MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*124,tmode*8,longtfile*72, hold*24,act*1
-      CHARACTER head*19,currentfile*72
+      CHARACTER head*19
       character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
       character gopt*32,hopt*32
 

@@ -34,13 +34,14 @@ C when reading the file.
       SUBROUTINE NETREAD(INUNIT,MODE,IER)
 
 #include "gnetwk.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       COMMON/POPHELP/H(60)
-      common/curfile/currentfile
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
@@ -78,7 +79,7 @@ C Grid commons
       CHARACTER OUTS*124,OUTSTR*124,WORD*24,WORD1*24,WORD2*24,WORD3*40
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE
       CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
-      character NWICNTXT*72,currentfile*72
+      character NWICNTXT*72
       CHARACTER LFIL*72,H*72,MODE*1,ectime*24,PHRASE*48
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -164,7 +165,7 @@ C Open the network graphics file.
           RETURN
         ENDIF
       ENDIF
-      currentfile=NWKFLNAM
+      write(currentfile,'(a)') NWKFLNAM(1:lnblnk(NWKFLNAM))
 
 C Read the file header and check for first-line tag.
 C << need a common block for vergnf >>

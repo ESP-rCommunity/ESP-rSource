@@ -30,6 +30,8 @@ C READUAL reads the data fron an existing UA library.
       subroutine READUAL(IUALF)
 #include "building.h"
 #include "uncertainty.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -42,11 +44,9 @@ C READUAL reads the data fron an existing UA library.
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
-
-      common/curfile/currentfile
       
       character LUALF*72,LCNG*15,LLOC*15,MATNAM*12
-      CHARACTER OUTSTR*124, WORD*20, currentfile*72,outs*124
+      CHARACTER OUTSTR*124, WORD*20,outs*124
 
 
       IER=0
@@ -54,7 +54,7 @@ C READUAL reads the data fron an existing UA library.
       if (IER.lt.0) then
         return
       endif
-      currentfile=LUALF
+      write(currentfile,'(a)') LUALF(1:lnblnk(LUALF))
 
       call STRIPC(IUALF,OUTSTR,0,ND,0,'line 1',IER)
       if (IER.NE.0) return
@@ -536,7 +536,7 @@ C List distributions.
             call edisp (iuout,outs)
             if (IDTYP(I).eq.1) then
               IDB=IDMAT(I,1)
-              CALL ERPCDB(IFCON,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
+              CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
      &                                                    DRV,TITL,NAM)
               write(outs,'(2a)')' Material: ',NAM
               call edisp (iuout,outs)
@@ -560,7 +560,7 @@ C List distributions.
                 call edisp (iuout,'Undefined')
               else
                 IDB=IDMAT(I,1)
-                CALL ERPCDB(IFCON,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
+                CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
      &                                                    DRV,TITL,NAM)
                 write(outs,'(2a)')' Thickness of material: ',NAM
                 call edisp (iuout,outs)

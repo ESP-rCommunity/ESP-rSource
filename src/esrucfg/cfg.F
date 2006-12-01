@@ -36,6 +36,8 @@ C  surbox - find bounding box and centre of a surface.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -93,7 +95,6 @@ C Project journal on/off, unit number, cmd, file name.
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      common/curfile/currentfile
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -114,7 +115,7 @@ C Significant figure reporting limit (NSIGFIG).
       character path*72,upath*72,esprc*72
       character dfdblbl*20,defdbfl*72
       character journcmd*20,jfile*72,cfgroot*24,cjfile*72,OUTSTR*124
-      character uname*24,dstmp*24,fs*1,bl*2,currentfile*72,MODE*4
+      character uname*24,dstmp*24,fs*1,bl*2,MODE*4
 
 C Initialize global common data.
       call ezero
@@ -845,7 +846,7 @@ C the connections file.  If it changes also update the configuration file.
 C If overwriting the same connections file then open it and write.
           if(LCNN.eq.LLCNN)then
             CALL EFOPSEQ(IUF,LCNN,3,IER)
-            currentfile=LCNN
+            write(currentfile,'(a)') LCNN(1:lnblnk(LCNN))
             WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=2) '*connections  for ',
      &        cfgroot(1:lnblnk(cfgroot))
             call dstamp(dstmp)
@@ -926,7 +927,7 @@ C If overwriting the same connections file then open it and write.
         if(icfgv.eq.3)then
           if(LCNN.eq.LLCNN)then
             CALL EFOPSEQ(IUF,LCNN,3,IER)
-            currentfile=LCNN
+            write(currentfile,'(a)') LCNN(1:lnblnk(LCNN))
             WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=2) '*connections  for ',
      &        cfgroot(1:lnblnk(cfgroot))
             call dstamp(dstmp)

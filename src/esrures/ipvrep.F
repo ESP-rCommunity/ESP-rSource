@@ -2552,6 +2552,8 @@ C << at some point include arrays for separate reporting of pumps and lifts. >>
      &  WPVC,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
@@ -2565,15 +2567,12 @@ C IPV description.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       dimension WHC(MSPS),WCC(MSPS),WLC(MSPS),WFC(MSPS),WSPC(MSPS)
       dimension WDHWC(MSPS),WPVC(MSPS),HCS(MSPS,11),CCS(MSPS,11)
       dimension ZLUCS(MSPS,11),ZLCS(MSPS,11),FCS(MSPS,11)
       dimension SPCS(MSPS,11),DHWCS(MSPS,11),PVC(MSPS,11)
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       character outstr*124,word*20,third*20,name*12,zedsdoc*12
       logical dmdsok,atassment,atreports
 
@@ -2583,7 +2582,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,5
@@ -2721,6 +2720,7 @@ C << at some point include additional arrays for pumps and lifts >>
      &   WPVD,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -2732,9 +2732,6 @@ C Uncomment the next line if debugging required.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
 C For each simulation which was run and type of demand, and 
 C for one more than the possible
 C number of demand sets (the extra is for distributed demands).
@@ -2745,7 +2742,7 @@ C number of demand sets (the extra is for distributed demands).
       character outstr*124,act*1,word*20
       character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2754,7 +2751,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,5
@@ -2891,6 +2888,7 @@ C << at some point include additional arrays for pumps and lifts >>
      &   SWDHWD,SWPVD,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -2902,9 +2900,6 @@ C Uncomment the next line if debugging required.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
 C For each type of demand, and for one more than the possible
 C number of demand sets (the extra is for distributed demands).
       dimension HDS(11),CDS(11)
@@ -2913,7 +2908,7 @@ C number of demand sets (the extra is for distributed demands).
       character outstr*124,act*1,word*20
       character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2922,7 +2917,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       SWHD=0.0
@@ -3048,6 +3043,7 @@ C Recover comfort data from a seasonal report.
 C Note if Java IPV because different logic required.
       subroutine ipvgcmft(ifu,NH,ier)  
 #include "building.h"
+#include "espriou.h"
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
@@ -3058,13 +3054,12 @@ C      common/OUTIN/IUOUT,IUIN
       common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
      &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
       common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-      common/curfile/currentfile
       common/IPVFORMAT/ipvform,ipvversion
 
       character outstr*124,word*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,third*20,metgroup*12
-      character msdoc*12,metrglbl*20,currentfile*72
+      character msdoc*12,metrglbl*20
       dimension nh(9,5)
       logical atassment,atreports
 
@@ -3074,7 +3069,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,nipvassmt

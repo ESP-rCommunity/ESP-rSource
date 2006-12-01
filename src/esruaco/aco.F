@@ -49,9 +49,9 @@ C                           furniture
 #include "acoustic.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -161,7 +161,7 @@ C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL +15.
       IBCF=IFIL+22
       IACO=IFIL+23
       ICLMRF = IFIL+25
-      IFCON = IFIL+26
+      IFMAT = IFIL+26
       IFMUL = IFIL+27
 
 C ECO initialiastion <<hard coded for the atrium ofd the EOS example

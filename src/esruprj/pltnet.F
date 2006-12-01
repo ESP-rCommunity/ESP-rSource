@@ -37,7 +37,7 @@ C epltnet selects how a network of plant components is defined/edited.
       subroutine epltnet(iedit,ier)
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 
