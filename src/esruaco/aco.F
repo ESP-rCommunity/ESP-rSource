@@ -91,7 +91,7 @@ C Defaults and paths
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
@@ -120,7 +120,7 @@ C ACO specific commons
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      LOGICAL OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,ACOOK
+      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
 
       DIMENSION ITEM(26) 
@@ -191,7 +191,7 @@ C Set defaults.
       OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       MODIFY=.FALSE.

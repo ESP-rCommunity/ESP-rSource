@@ -95,7 +95,7 @@ C Defaults and paths
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -138,7 +138,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(19) 
@@ -221,7 +221,7 @@ C Set defaults.
       OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       MODIFY=.FALSE.
@@ -877,7 +877,7 @@ C Display Material list and allow selection of materials.
      &                      'Select a BCF file first','W')
           goto 10
         ENDIF
-        IF (.NOT.CONDBOK) THEN
+        IF (.NOT.MATDBOK) THEN
           call usrmsg('Materials database not yet loaded,',
      &                      'unable to display list.','W')
           goto 10

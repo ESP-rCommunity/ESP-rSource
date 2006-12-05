@@ -45,8 +45,8 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,layermatch
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
 
       CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72
       CHARACTER RSTR*124
@@ -56,12 +56,12 @@ C Keep track of how many times materials db read fails.
       matmiss=0
 
 C If materials database not opened, do it now.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
         IER=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)return
         CALL USRMSG(' opened materials db',' ','-')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Free unit and check if composite file exists.
@@ -564,8 +564,8 @@ C IER=0 OK, IER=1 problem.
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
@@ -687,8 +687,8 @@ C stitute the U value for each layer.
 #include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION PNAM(ME)
       CHARACTER DESC*48,NAM*72,TITL*72,PNAM*72
 

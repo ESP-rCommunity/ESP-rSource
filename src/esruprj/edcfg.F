@@ -125,9 +125,9 @@ C Controls.
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
-      logical DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
       logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
@@ -1196,7 +1196,7 @@ C output, IER=0 indicates no error.
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -1207,7 +1207,7 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-      logical OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,context
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
@@ -3259,8 +3259,8 @@ C location is already known).
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      logical XST,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,ckpath
       logical unixok,prob
 
@@ -3728,7 +3728,7 @@ C If there is a ground topology read it.
         endif
 
 C Open core databases associated with the exemplar or new model.
-        if(MLDBOK.and.CONDBOK.and.OPTKOK)then
+        if(MLDBOK.and.MATDBOK.and.OPTKOK)then
           continue
         else
           call opendb(ier)

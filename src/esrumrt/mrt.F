@@ -87,8 +87,8 @@ C Defaults.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL     OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse

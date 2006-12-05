@@ -96,7 +96,7 @@ C Scene configuration commons.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -122,7 +122,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(13)
 
-      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
@@ -196,7 +196,7 @@ C Set defaults.
       KEEP=.false.
       CFGOK=.false.
       MLDBOK=.false.
-      CONDBOK=.false.
+      MATDBOK=.false.
       CTLOK=.false.
       OPTKOK=.false.
       MODIFY=.false.
@@ -732,14 +732,14 @@ C Path to model.
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -856,8 +856,8 @@ C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
@@ -870,10 +870,10 @@ C this to 24 words wide.
         write(outs,'(a,a,a)') ' No primitive constructions db ',
      &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
 C        CALL edisp(iuout,' opened primitive materials db.')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.

@@ -74,8 +74,8 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Backup of documentation (for editing) bkdoc is the text, 
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL OK,dok,statusok,gendbok
       LOGICAL moddb,unixok,browse,status
 
@@ -157,7 +157,7 @@ C have not been read in. Initial assumption that tool is in browse
 C mode.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       browse=.TRUE.
       statusok=.FALSE.

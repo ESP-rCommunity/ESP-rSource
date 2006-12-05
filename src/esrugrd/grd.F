@@ -70,8 +70,8 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
@@ -115,7 +115,7 @@ C Assume that the configuration and geometry files have not been read in.
       CFGOK=.FALSE.
       GRDOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       MODIFY=.FALSE.
 
@@ -450,7 +450,7 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 
 C Exit program.
         call usrmsg(' Closing building gridding...',' ','P')
-        IF(CONDBOK)CALL ERPFREE(IFMAT,ISTAT)
+        IF(MATDBOK)CALL ERPFREE(IFMAT,ISTAT)
         CALL EPAGEND
         STOP
       ENDIF
@@ -471,7 +471,7 @@ C *********************************************************************
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -479,7 +479,7 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL GRDOK
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       CHARACTER VERTX*2
@@ -511,11 +511,11 @@ C *********************************************************************
    10 CONTINUE
 
 C If primitive database not opened, do it now.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
         IER=0
         CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(IER.NE.0)RETURN
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Initialise ground coefficients.

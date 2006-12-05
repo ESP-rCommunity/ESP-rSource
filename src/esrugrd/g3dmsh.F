@@ -552,8 +552,8 @@ C *********************************************************************
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       CHARACTER MSG*72,FLTYP*25
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
@@ -605,11 +605,11 @@ C Create a binary file for saving the nodes initial temperatures.
       IF(IER.NE.0)RETURN
 
 C If primitive database not opened, do it now.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
         IER=0
         CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(IER.NE.0)RETURN
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Define the degree of boundary nodes modelling.
@@ -740,7 +740,7 @@ C Create the surface connections.
       CALL ERPFREE(ITAQ,ISTAT)
       CALL ERPFREE(IFMAT,ISTAT)
 
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       RETURN
       END
 

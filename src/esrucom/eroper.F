@@ -329,12 +329,11 @@ C Weekdays.
         IF(IACS1(I).GT.IACF1(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Weekday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Weekday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         IF(IPT1(I).EQ.ICOMP)GOTO 1009
@@ -357,12 +356,11 @@ C Saturdays.
         IF(IACS2(I).GT.IACF2(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Saturday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Saturday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
 
@@ -387,12 +385,11 @@ C Sundays.
         IF(IACS3(I).GT.IACF3(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Sunday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Sunday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         IF(IPT3(I).EQ.ICOMP)goto 1009
@@ -427,22 +424,20 @@ C Weekdays.
         IF(ICGS1(I).GT.ICGF1(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Weekday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Weekday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC1(I)+CONC1(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Weekday rad & conv fractions > 1.0 in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Weekday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
@@ -482,22 +477,20 @@ C Saturdays.
         IF(ICGS2(I).GT.ICGF2(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Saturday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Saturday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC2(I)+CONC2(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Saturday rad & conv fractions > 1.0 in..',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Saturday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
@@ -534,22 +527,20 @@ C Sundays.
         IF(ICGS3(I).GT.ICGF3(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Sunday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Sunday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC3(I)+CONC3(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Sunday rad & conv fractions > 1.0 in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',
+          write(loutstr,'(4a)')
+     &      ' Sunday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
      &      currentfile(1:lnblnk(currentfile))
-          call edisp(iuout,outs)
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,

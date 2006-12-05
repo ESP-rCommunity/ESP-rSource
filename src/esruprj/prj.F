@@ -121,7 +121,7 @@ C IPV description.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -137,7 +137,7 @@ C Dispersed demands notes and file name.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
-      logical     OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical     MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical     unixok,isdok,Vldtng,changedit,foundutl
 
@@ -262,7 +262,7 @@ C and control files have not been read in and that any files saved will
 C be atrributed.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       browse=.false.
@@ -550,7 +550,7 @@ C current number of zones if a model has been loaded.
           call edisp(iuout,' ')
 
 C Open core of databases if not already done so.
-          if(MLDBOK.and.CONDBOK.and.OPTKOK)then
+          if(MLDBOK.and.MATDBOK.and.OPTKOK)then
             continue
           else
             call opendb(ier)

@@ -62,13 +62,13 @@ C Images.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
       dimension nwlistf(50)
 
-      logical XST,OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok
 
       character dstmp*24,LCFTMP*24
@@ -482,12 +482,12 @@ C Maintain model folders.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/user/browse
 
 C Remember width of file/folder names passed back from getfilelist.
       dimension nwlistf(50)
-      logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir

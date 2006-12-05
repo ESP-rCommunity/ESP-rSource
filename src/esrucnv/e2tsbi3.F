@@ -512,8 +512,8 @@ C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
@@ -526,10 +526,10 @@ C this to 24 words wide.
         write(outs,'(3a)') ' No primitive constructions db ',
      &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
         call edisp(iuout,' Opened primitive construction db...')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.

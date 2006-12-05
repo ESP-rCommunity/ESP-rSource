@@ -814,7 +814,7 @@ C      COMMON/RECV7/ZOA(MCOM)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/hcthry/ihct,icorexhct
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -827,7 +827,7 @@ C longtmp is the model configuration file with full path.
       CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
-      logical XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       IUNIT=IFIL
       IREC=ISTREC+2
