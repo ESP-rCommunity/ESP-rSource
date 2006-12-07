@@ -33,6 +33,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "building.h"
 #include "tdf2.h"
 
+      integer igraphiclib  ! external definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -675,19 +677,18 @@ C Ground topology.
           call GTOPOL(itrc,ier)
           MODSIT=.true.
         elseif(iwgt.eq.3)then
-          if(MMOD.eq.8)then
-#ifdef X11
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
             iz=0
             call edisp(iuout,'In the bitmap facility you must toggle')
             call edisp(iuout,'to the ground topology input mode.')
             call clickonbitmap(iz,ier)
             call GTOPOL(itrc,ier)
             MODSIT=.true.
-#else
+          elseif(iglib.eq.2)then
             call usrmsg('The clickonbitmap facility is not yet',
      &        'working with new graphic library.','W')
-#endif
-          else
+          elseif(iglib.eq.3)then
             call usrmsg('Must be in graphic mode to use click on',
      &      'bitmap facility to define ground toplogy. ','W')
           endif

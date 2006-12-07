@@ -38,6 +38,8 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
+      integer igraphiclib  ! external definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1054,17 +1056,21 @@ C editing facility.
         if(iw.eq.1)then
           CALL EDOBS(ITRC,iuout,ICOMP,IER)
         elseif(iw.eq.2)then
-#ifdef X11
-          call edisp(iuout,
-     &      'Toggle to obstruction mode after you have set origin')
-          call edisp(iuout,'and scale. ')
-          call clickonbitmap(0,ier)
-          call edisp(iuout,'You may further edit the obstructions...')
-          CALL EDOBS(ITRC,iuout,ICOMP,IER)
-#else
-          call usrmsg('The clickonbitmap facility is not yet working',
-     &      'with new graphic library.','W')
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call edisp(iuout,
+     &        'Toggle to obstruction mode after you have set origin')
+            call edisp(iuout,'and scale. ')
+            call clickonbitmap(0,ier)
+            call edisp(iuout,'You may further edit the obstructions...')
+            CALL EDOBS(ITRC,iuout,ICOMP,IER)
+          elseif(iglib.eq.2)then
+            call usrmsg('The clickonbitmap facility is not yet working',
+     &        'with GTK graphic library.','W')
+          elseif(iglib.eq.3)then
+            call usrmsg('The clickonbitmap facility requires the',
+     &        'interface to be in graphic mode.','W')
+          endif
         endif
       ELSEIF(INO.EQ.ITEMC+12)THEN
 

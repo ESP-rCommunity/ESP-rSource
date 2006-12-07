@@ -181,6 +181,7 @@ C default file names for databases
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
       PARAMETER (MSTMC=1)
+      integer igraphiclib  ! external definition
 
       common/er1/ier1
       common/trc/itrc
@@ -315,24 +316,28 @@ C and return to the main menu.
         write(L144,'(a)') LCMDFL(1:lnblnk(LCMDFL))
         llt=lnblnk(LCMDFL)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &    'config file name',IER,8)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &    'config file name',IER,8)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &        'config file name',IER,8)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+     &        'config file name',IER,8)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &        'config file name',IER,8)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,8)
+     &      'config file name',IER,8)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,8)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,8)
-#endif
 
         if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
           write(LCMDFL,'(a)') L144(1:lnblnk(L144))

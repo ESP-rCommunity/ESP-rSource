@@ -92,21 +92,25 @@ C assigned database.
 C Use ifdefs because the X11 version will be returning only the
 C name of the file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
+     &      'library file',IER,7)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
+     &      'library file',IER,7)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &      'library file',IER,7)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &      'library file',IER,7)
+        else
           CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
      &    'library file',IER,7)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
-     &    'library file',IER,7)
-        elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &    'library file',IER,7)
         endif
-#else
-        CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &    'library file',IER,7)
-#endif
 
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
           LCMDFL=ltmpc
@@ -787,6 +791,8 @@ C where they are first referenced.
 #include "building.h"
 #include "esprdbfile.h"
 
+      integer igraphiclib  ! external definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -1074,15 +1080,20 @@ C        write(6,*) longtmp
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
-#ifdef X11
-        CALL EASKF(longtmp,' ',
-     &    ' Corresponding system configuration file name ? ',
-     &    96,' ','configuration file',IER,4)
-#else
-        CALL EASKF(longtmp,' ',
-     &    ' Corresponding system configuration file name ? ',
-     &    144,' ','configuration file',IER,4)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      144,' ','configuration file',IER,4)
+        else
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        endif
         if (longtmp.eq.' ') goto 45
       ENDIF
       
@@ -1123,13 +1134,17 @@ C Not found, might be in a remote folder.  Warn user first.
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
-#ifdef X11
-        CALL EASKF(longtmp,' Model configuration file ?',' ',96,DFCFG,
-     &    'config file name',IER,3)
-#else
-        CALL EASKF(longtmp,' Model configuration file ?',' ',144,DFCFG,
-     &    'config file name',IER,3)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &      DFCFG,'config file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' Model configuration file ?',' ',144,
+     &      DFCFG,'config file name',IER,3)
+        else
+          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &      DFCFG,'config file name',IER,3)
+        endif
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 

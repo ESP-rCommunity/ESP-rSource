@@ -26,6 +26,8 @@ C MOCFD
       SUBROUTINE MOCFD
 #include "cfd.h"
 
+      integer igraphiclib  ! external definition
+
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
@@ -45,24 +47,29 @@ C Ask for CFD results library.
       ltmpc='UNKNOWN'
       llt=lnblnk(ltmpc)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
-     &    'CFDresfl name',IER,4)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
-     &    'CFDresfl name',IER,4)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
+     &      'CFDresfl name',IER,4)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
+     &      'CFDresfl name',IER,4)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
+     &      'CFDresfl name',IER,4)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
      &    'CFDresfl name',IER,4)
+      else
+        CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
+     &    'CFDresfl name',IER,4)
       endif
-#else
-      CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
-     &  'CFDresfl name',IER,4)
-#endif
+
       if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
         LCMDFL=ltmpc
       else

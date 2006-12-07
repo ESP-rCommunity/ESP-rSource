@@ -48,6 +48,8 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 
+      integer igraphiclib  ! external definition
+
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -658,29 +660,34 @@ C Incllude break and loss in results
       elseif (INO.eq.1) then 
 
 C Select/change ESP-r configuration file.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   289   H(1)='The problem configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
         L144=LCMDFL
         llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
-     &      'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
-     &      'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
+     &        'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
      &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
-     &    'config file name',IER,3)
-#endif
+
         IF(L144.EQ.' ')GOTO 289
         LCMDFL=L144
         goto 42

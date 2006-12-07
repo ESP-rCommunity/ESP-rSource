@@ -30,6 +30,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -436,24 +437,28 @@ C therfore get one.
         dtmp72=DFCFG
  1289   llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,
+     &        dtmp72,'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,
+     &        dtmp72,'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
+     &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
-#endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
         call st2file(L144,LCMDFL)
@@ -626,21 +631,26 @@ C ESP-r configuration file.
         l144=LCMDFL
         dtmp72=DFCFG
         llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,
+     &        dtmp72,'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,
+     &        dtmp72,'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
+     &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
-#endif
+
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
         call usrmsg('File selected is',l144,'-')

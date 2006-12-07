@@ -405,6 +405,7 @@ C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
 #include "esprdbfile.h"
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/INPER/INIT
@@ -481,18 +482,22 @@ C climate file.
           endif
           if(clmdb(1:12).eq.'USER_DEFINED')then
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
             LCMDFL='newclim'
  291        continue
-#ifdef X11
-            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
-     &       ' ',96,DCLIM,'new climate file',IER,15)
-#else
-            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
-     &       ' ',144,DCLIM,'new climate file',IER,15)
-#endif
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1.or.iglib.eq.3)then
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new climate file',IER,15)
+            elseif(iglib.eq.2)then
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',144,DCLIM,'new climate file',IER,15)
+            else
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new climate file',IER,15)
+            endif
 
             IF(LCMDFL.EQ.' ')GOTO 291
             IER=0
@@ -513,13 +518,17 @@ C name with the full path.
      &    ' (Check with your administrator about `climatelist` file)')
           write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
  289      continue
-#ifdef X11
-          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
-     &     ' ',96,DCLIM,'climate file',IER,15)
-#else
-          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
-     &     ' ',144,DCLIM,'climate file',IER,15)
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file',IER,15)
+          elseif(iglib.eq.2)then
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'climate file',IER,15)
+          else
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file',IER,15)
+          endif
           IF(LCMDFL.EQ.' ')GOTO 289
           IER=0
           rescan=.true.
@@ -532,25 +541,29 @@ C name with the full path.
           L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   290     llt=lnblnk(L144)
-#ifdef X11
-          if(llt.lt.96)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        96,DCLIM,'climate file name',IER,15)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        124,DCLIM,'climate file name',IER,15)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        144,DCLIM,'climate file name',IER,15)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',96,DCLIM,'climate file name',IER,15)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',124,DCLIM,'climate file name',IER,15)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',144,DCLIM,'climate file name',IER,15)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'climate file name',IER,15)
+          else
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file name',IER,15)
           endif
-#else
-          CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &      144,DCLIM,'climate file name',IER,15)
-#endif
           IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 290
           call st2file(L144,LCMDFL)
           IER=0
