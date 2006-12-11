@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2006.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -22,6 +22,9 @@ C Project Manager: file eddb.f providing manipulation of
 C system databases:
 C  EDDB  : Controls specification/ browsing of databases.
 C  opendb: Standard opening of thermophysical and optical databases.
+C EDDBPROFILE Changes the events profile database current cfg file references.
+C EDDBOPT Changes the optical database current cfg file references.
+C EDDBCLM: Changes the climate database current cfg file references.
 
 C ********** EDDB 
 C Controls specification/ browsing of databases.
@@ -30,7 +33,6 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
       SUBROUTINE EDDB(ITRC,ITRU,IER)
 #include "building.h"
 #include "net_flow.h"
-#include "plantdb.h"
 #include "MultiYear_simulations.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -42,19 +44,13 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
-      PARAMETER  (MCP=35)
-
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/OUTIN/IUOUT,IUIN
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
-      COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -62,15 +58,13 @@ C default file names for databases
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
-      COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       common/rpath/path
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/appw/iappw,iappx,iappy
 
-C Default dbs.
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+C Default esp-r distribution path.
       common/deflt4/dinstpath
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -79,18 +73,15 @@ C Default dbs.
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character LAPROB*72,H*72,LTMP*72,SOPT*12
-      character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
+      character H*72,LTMP*72,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
-      character cfgroot*24,LCFGF*72,dq*1,fs*1,DESCP*40,message*48
+      character cfgroot*24,LCFGF*72,fs*1,message*48
       character*72 ITEMS(15)
-      character doit*248,tmode*8,tfile*72,longtfile*144
+      character doit*248
       character DEPRE*40,OUTSTR*124,LCOPY*72,LTMPFL*72,LASCI*72
       character DFILE*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER ZPDESC*25
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48
 
 C Strings for dos version of source and destination of db file.
@@ -103,9 +94,6 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-
-C Make up a double quote for dos copy command.
-      dq = char(34)
 
       moddb=.false.
       modcon=.false.
@@ -529,6 +517,7 @@ C If db does not exist offer the following choices:
         CALL ERPFREE(IFMAT,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
+C << hard coded / found in path - change to fs ! >>
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
@@ -716,8 +705,8 @@ C a new db, populate it and present editing facility.
           CALL ERPFREE(IFMAT,ISTAT)
           call EFOPRAN(IFMAT,LFMAT,40,3,IER)
           if(ier.ne.0)then
-            call usrmsg(' This materials database could not be created',
-     &                  ' (check file permissions).','W')
+            call usrmsg('This materials database could not be created',
+     &                  '(check file permissions).','W')
             goto 138
           endif
           MATDBOK=.TRUE.
@@ -877,7 +866,7 @@ C Use similar logic as DAPRES to setup for copy command.
                 message='getting materials db file from '
                 call dbdoscopy(DFCON,lcopy,message,doit,ier)
               endif
-              call usrmsg('copying default file via',doit,'-')
+              call lusrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
               LFMAT=LTMP
             else
@@ -891,7 +880,7 @@ C Similar logic but using LFMAT.
                 message='getting materials db file from '
                 call dbdoscopy(LFMAT,lcopy,message,doit,ier)
               endif
-              call usrmsg('copying file via',doit,'-')
+              call lusrmsg('copying file via',doit,'-')
               call runit(doit,'-')
               LFMAT=LTMP
             endif
@@ -1259,7 +1248,7 @@ C Logic as in materials database copy command.
                 message='getting constructions db file from '
                 call dbdoscopy(DFMUL,lcopy,message,doit,ier)
               endif
-              call usrmsg('copying default file via',doit,'-')
+              call lusrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
               LFMUL=LTMP
             else
@@ -1273,7 +1262,7 @@ C Logic as in materials database copy command.
                 message='getting constructions db file from '
                 call dbdoscopy(LFMUL,lcopy,message,doit,ier)
               endif
-              call usrmsg('copying default file via',doit,'-')
+              call lusrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
               LFMUL=LTMP
             endif
@@ -1287,7 +1276,7 @@ C Logic as in materials database copy command.
 C there was a minor problem scanning the constructions db.
               call usrmsg(
      &     'There were a few problems scanning the constructions db',
-     &     'and perhaps the materials db. Please double chek.','W')
+     &     'and perhaps the materials db. Please double check.','W')
               goto 38
             ELSEIF(IER.eq.2)then
 
@@ -1315,932 +1304,29 @@ C the ascii version and if it exists, offer to convert it.
       ELSEIF(INO.EQ.8)THEN
 
 C Plant template database.
-  60    LTMP=LPCDB
-        write(outs,'(2a)') 'Options for plant template db: ',
-     &    LTMP(1:lnblnk(LTMP))
-        H(1)='The plant components database is a binary, random '
-        H(2)='access file holding plant component descriptions to '
-        H(3)='enable the establishment of component state-space '
-        H(4)=' representations used by ESP-r.'
-        h(5)=' '
-        h(6)='If there is no such file then a new one will be'
-        h(7)='created to hold data for new components.'
-        h(8)=' '
-        H(9)='The following options can be selected:'
-        H(10)=' '
-        H(11)='a) If the file exists than you can browse the database '
-        H(12)='   and if you have permission to update the file you'
-        H(13)='   can edit the entities in the database.'
-        H(14)=' '
-        H(15)='b) select another file: you will asked for a file'
-        H(16)='   name and if it is found you can browse or edit it.'
-        H(17)=' '
-        H(18)='c) make a new database: a new database will be created '
-        H(19)='   based on the file name you supply.'
-        H(20)=' '
-        H(21)='d) copy default database: a project copy of the default'
-        H(22)='  database will be made and you will be offered a '
-        H(23)='  chance to rename it.'
-
-C Use the profile database unit for testing plant db.
-        if(ipcdb.eq.0)ipcdb=iprodb
-        CALL ERPFREE(ipcdb,ISTAT)
-
-C Get length of path to where esp-r databases were installed.
-C << note a hard coded / found that needs to be a fs >>
-        write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/databases'
-        linst=lnblnk(linstd)
-        call FINDFIL(LTMP,XST)
-        IF(.NOT.XST)THEN
-          idno=2
-          isw=0
-          call MENUATOL(outs,'Plant component options:',
-     &      'a browse/edit (NOT APPLICABLE)','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
-          copydef=.true.
-        elseif(LTMP(1:linst).eq.linstd(1:linst))then
-
-C If corportate database then offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Plant component options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d make project copy of database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
-          copydef=.false.
-        else
-
-C If db exists locally offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Plant component options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
-          copydef=.true.
-        endif
-
-C Act on the users choice. If no choice retrun to main menu.
-        if(isw.eq.0)then
-          goto 3
-        elseif(isw.eq.1)then
-
-C If file exists open it, test file type, get number of items and close.
-          if(XST)then
-            IER=0
-            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
-            IF(ier.eq.0)THEN
-              IREC = 1
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
-              IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
-                call usrmsg('File is not a plant component database,',
-     &            'please supply the file name again.','W')
-                goto 60
-              endif
-              IREC = 2
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
-              write(outs,'(a,i3,2a)') 'There are ',NPC,
-     &          ' components in ',LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,outs)
-              CALL ERPFREE(ipcdb,ISTAT)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive pdb.
-              call tstamp('>','PRJ: start pdb')
-              doit = ' '
-              call tchild(ICPMOD)
-              call termode(ICPMOD,tmode)
-              call addpath(LPCDB,longtfile,concat)
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &            longtfile(1:lnblnk(longtfile)),' &'
-              else
-                write(doit,'(5a)') 'pdb -mode ',tmode,
-     &            ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &            ' &'
-              endif
-              call usrmsg(' ','staring plant db module.','-')
-              call runit(doit,tmode)
-            else
-              call usrmsg('Sorry, error opening the file.',
-     &          'Please use one of the other options.','W')
-              goto 60
-            endif
-          else
-            call usrmsg('Sorry there is no file to browse/edit.',
-     &        'Please use one of the other options. ','W')
-            goto 60
-          endif
-        elseif(isw.eq.2)then
-          H(1)='The plant components database is a binary, random '
-          H(2)='access file holding plant component descriptions to '
-          H(3)='enable the establishment of component state-space '
-          H(4)=' representations used by ESP-r.'
-          CALL EASKS(ltmp,'Plant component database?',
-     &      ' ',72,DPCDB,'plant component database',IER,4)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPCDB=ltmp
-          else
-            goto 60
-          endif
-          CALL ERPFREE(ipcdb,ISTAT)
-          call FINDFIL(LPCDB,XST)
-          IF(XST)THEN
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-            IER=0
-            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
-            IF(ier.eq.0)THEN
-              IREC = 1
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
-              IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
-                call usrmsg('File is not a plant component database,',
-     &            'please supply the file name again.','W')
-                goto 60
-              endif
-              IREC = 2
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
-              write(outs,'(a,i3,2a)') 'There are ',NPC,
-     &          ' components in ',LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,outs)
-              CALL ERPFREE(ipcdb,ISTAT)
-            else
-              call usrmsg('Sorry, error opening the file.',
-     &          'Please use one of the other options.','W')
-              goto 60
-            endif
-            write(outs,'(2a)') 'Accessing plant db ',
-     &        LPCDB(1:lnblnk(LPCDB))
-            call edisp(iuout,outs)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive pdb.
-            call tstamp('>','PRJ: start pdb')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPCDB,longtfile,concat)
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' &'
-            else
-              write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
-            endif
-            call usrmsg(' ','staring plant db module.','-')
-            call runit(doit,tmode)
-          else
-            write(outs,'(2a)') LPCDB(1:lnblnk(LPCDB)),
-     &        ' does not appear to exist.'
-            call edisp(iuout,outs)
-            goto 60
-          endif
-        elseif(isw.eq.3)then
-
-C No plant component db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.plantdb'
-          endif
- 62       h(1)='The plant component database binary file holds the'
-          h(2)='description of available components. If the name'
-          h(3)='given matches an existing file, it will be read in'
-          h(4)='and the components data will be available for'
-          h(5)='listing and editing. If there is no such file then'
-          h(6)='a new one will be created to hold data for new'
-          h(7)='components.'
-          clkok=.false.
-          CALL EASKSCMD(ltmp,'Plant component database?',
-     &      ' ','cancel',clkok,72,DPCDB,'plant component database',
-     &      IER,7)
-          if(clkok) goto 3
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPCDB=ltmp
-          else
-            goto 62
-          endif
-
-C Create a minimal plant databases (code similar to pdb.F).
-          moddb=.true.
-          CALL ERPFREE(ipcdb,ISTAT)
-          call EFOPRAN(ipcdb,LPCDB,IRECLN,3,IER)
-          CALL PCUPDT (ipcdb,0)
-          CALL ERPFREE(ipcdb,ISTAT)
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          write(outs,'(2a)') LPCDB(1:lnblnk(LPCDB)),' created.'
-          dok=.true.
-          h(1)='An empty plant component database has been created'
-          h(2)='and it it useless until it has been populated with'
-          h(3)='data. If you have the information required you can'
-          h(4)='proceed with that task. '
-          CALL ASKOK(outs,' Browse or edit new database?',OK,dok,4)
-          if(OK)then
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive pdb.
-            call tstamp('>','PRJ: start pdb')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPCDB,longtfile,concat)
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' &'
-            else
-              write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
-            endif
-            call usrmsg(' ','staring plant db module.','-')
-            call runit(doit,tmode)
-          endif
-        elseif(isw.eq.4)then
-
-C Copy the standard db to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
-          if(copydef)then
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,DPCDB)
-          else
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,LPCDB)
-          endif
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.plantdb'
-          endif
-   66     CALL EASKS(LTMP,
-     &      'Database name after it is copied into the project?',
-     &      ' ',72,'plant.db','copied plant database',IER,2)
-          call isunix(unixok)
-          IF(LTMP(1:2).NE.'  ')then
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-            if(copydef)then
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            DPCDB(1:lnblnk(DPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic same as other copy database commands.
-                message='getting constructions db file from '
-                call dbdoscopy(DPCDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LPCDB=LTMP
-            else
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic as other copy database.
-                message='getting constructions db file from '
-                call dbdoscopy(LPCDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LPCDB=LTMP
-            endif
-            write(outs,'(2a)') 'Accessing plant template db: ',
-     &        LCOPY(1:lnblnk(LCOPY))
-            call edisp(iuout,outs)
-            call tstamp('>','PRJ: start pdb')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPCDB,longtfile,concat)
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' &'
-            else
-              write(doit,'(5a)') 'pdb -mode ',tmode,
-     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
-            endif
-            call usrmsg(' ','staring plant db module.','-')
-            call runit(doit,tmode)
-            moddb=.true.
-          else
-            goto 66
-          endif
+        call eddbpcdb(moddb,'    ')
+        if(moddb)then
+          call usrmsg(
+     &      'The database name or details have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
         endif
       ELSEIF(INO.EQ.9)THEN
 
 C Profiles database.
- 40     ltmp=LPRFDB
-        write(outs,'(2a)') 'Options for event profiles db: ',
-     &    LTMP(1:lnblnk(LTMP))
-        H(1)= '   Events Database '
-        H(3)= ' '
-        H(4)= 'Profiles in this database are currently used to  '
-        H(5)= 'assist in the defintion of zone operations.  The'
-        H(6)= 'standard is found in /usr/esru/esp-r/databases '
-        H(7)= ' '
-        H(8)= ' The data requirements are summarised below :- '
-        H(9)= ' '
-        H(10)=' for each profile - number of events.'
-        H(11)=' '
-        H(12)=' for each event - start and finish hours'
-        H(13)='                  percentage of first magnitude '
-        H(14)='                  percentage of second magnitude '
-        H(15)=' '
-        H(16)='The following options can be selected:'
-        H(17)=' '
-        H(18)='a) If the file exists than you can browse the database '
-        H(19)='   and if you have permission to update the file you'
-        H(20)='   can edit the entities in the database.'
-        H(21)=' '
-        H(22)='b) select another file: you will asked for a file'
-        H(23)='   name and if it is found you can browse or edit it.'
-        H(24)=' '
-        H(25)=' '
-        H(26)='c) make a new database: a new database will be created '
-        H(27)='   based on the file name you supply.'
-        H(28)=' '
-        H(29)='d) copy default database: a project copy of the default'
-        H(30)='  database will be made and you will be offered a '
-        H(31)='  chance to rename it.'
-        CALL ERPFREE(IPRODB,ISTAT)
-
-C Get length of path to where esp-r databases were installed.
-        write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/databases'
-        linst=lnblnk(linstd)
-        call FINDFIL(LTMP,XST)
-        IF(.NOT.XST)THEN
-          idno=2
-          isw=0
-          call MENUATOL(outs,'Event profile options:',
-     &      'a browse/edit (NOT APPLICABLE)','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,31)
-          copydef=.true.
-        elseif(LTMP(1:linst).eq.linstd(1:linst))then
-
-C If corportate database then offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Event profile options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d make project copy of database',
-     &      'e binary > ascii','f ascii > binary',' ',' ',' ',' ',' ',
-     &      ' ',isw,idno,31)
-          copydef=.false.
-        else
-
-C If db exists locally offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Event profile options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      'e binary > ascii','f ascii > binary',' ',' ',' ',' ',
-     &      ' ',' ',isw,idno,31)
-          copydef=.true.
-        endif
-
-C Act on the users choice. If nothing selected return to main menu.
-        if(isw.eq.0)then
-          goto 3
-        elseif(isw.eq.1)then
-
-C If file exists open it, test file type, get number of items and close.
-          if(XST)then
-            IER=0
-            call EFOPRAN(IPRODB,LTMP,10,1,IER)
-            IF(ier.eq.0)then
-              LPRFDB=LTMP
-              CALL USRMSG(' opened profiles db...',' ','-')
-              IREC=1
-              READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
-              CALL USRMSG(' opened profiles db...ok',' ','-')
-              CALL ERPFREE(IPRODB,ISTAT)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-              call tstamp('>','PRJ: start pro')
-              doit = ' '
-              call tchild(ICPMOD)
-              call termode(ICPMOD,tmode)
-              call addpath(LPRFDB,longtfile,concat)
-              write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                    longtfile(1:lnblnk(longtfile)),' &'
-              call runit(doit,tmode)
-              moddb=.true.
-            else
-              call usrmsg('Sorry, error opening the file.',
-     &          'Please use one of the other options.','W')
-              goto 40
-            endif
-          else
-            call usrmsg('Sorry there is no file to browse/edit.',
-     &        'Please use one of the other options. ','W')
-            goto 40
-          endif
-        elseif(isw.eq.2)then
-
-          H(1)='An event profiles db holds a schedule of patterns'
-          H(2)='over a day. '
-          CALL EASKS(ltmp,' Event profiles database?',
-     &      ' ',72,DPRFDB,'event profiles database',IER,1)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPRFDB=ltmp
-          else
-            goto 40
-          endif
-          CALL ERPFREE(IPRODB,ISTAT)
-          call FINDFIL(LPRFDB,XST)
-          IF(XST)THEN
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-            write(outs,'(2a)') 'Accessing profiles db ',
-     &        LPRFDB(1:lnblnk(LPRFDB))
-            call edisp(iuout,outs)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-            call tstamp('>','PRJ: start pro')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,longtfile,concat)
-            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
-            call runit(doit,tmode)
-            moddb=.true.
-          else
-            write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),
-     &        ' does not appear to exist.'
-            call edisp(iuout,outs)
-            goto 40
-          endif
-        elseif(isw.eq.3)then
-
-C No event profile db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.profiledb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.profiledb'
-          endif
-          H(1)='An event profiles db holds a schedule of patterns'
-          H(2)='over a day. '
-          clkok=.false.
- 42       CALL EASKSCMD(ltmp,' Event profiles database?',
-     &      ' ','cancel',clkok,72,DPRFDB,'event profiles database',
-     &      IER,2)
-          if(clkok) goto 3
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPRFDB=ltmp
-          else
-            goto 42
-          endif
-
-C Create a minimal events databases (code similar to pro.F).
-          moddb=.true.
-          call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
-          NITEMS = 1
-          NO(1) = 2
-          NCG(1)= 1
-          DESCP(1)='First profile'
-          ICGS1(1)=0
-          ICGF1(1)=24
-          CGS1(1)=100.0
-          CGL1(1)=100.0
-          lastrec=4
-          IREC = 1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NITEMS
-          IREC=NO(1)
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(1)
-          IREC=IREC+1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESCP(1)
-          IREC=IREC+1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
-     &          ICGS1(1),ICGF1(1),CGS1(1),CGL1(1)
-          CALL ERPFREE(IPRODB,ISTAT)
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),' created.'
-          dok=.true.
-          h(1)='An empty profiles database has been created. It'
-          h(2)='is useless unless it is populated with data. If '
-          h(3)='you have the required data, use this facility '
-          h(4)='to do this.'
-          CALL ASKOK(outs,' Browse or edit database?',OK,dok,4)
-          if(OK)then
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-            call tstamp('>','PRJ: start pro')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,longtfile,concat)
-            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                  longtfile(1:lnblnk(longtfile)),' &'
-            call runit(doit,tmode)
-          endif
-        elseif(isw.eq.4)then
-
-C Copy the standard db to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
-          if(copydef)then
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,DPRFDB)
-          else
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,LPRFDB)
-          endif
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.eventdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.eventdb'
-          endif
- 244      CALL EASKS(LTMP,
-     &      'Database name after it is copied into the project?',
-     &      ' ',72,'event.db','copied events database',IER,2)
-          call isunix(unixok)
-          IF(LTMP(1:2).NE.'  ')then
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-            if(copydef)then
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            DPRFDB(1:lnblnk(DPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic for copy similar to the pattern established above.
-                message='getting events db file from '
-                call dbdoscopy(DPRFDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LPRFDB=LTMP
-            else
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic for copy similar to the pattern established above.
-                message='getting events db file from '
-                call dbdoscopy(LPRFDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying file via',doit,'-')
-              call runit(doit,'-')
-              LPRFDB=LTMP
-            endif
-            moddb=.true.
-            write(outs,'(2a)') 'Accessing event profiles db:',
-     &        LPRFDB(1:lnblnk(LPRFDB))
-            call edisp(iuout,outs)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-            call tstamp('>','PRJ: start pro')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,longtfile,concat)
-            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
-            call runit(doit,tmode)
-          else
-            goto 244
-          endif
-        elseif(isw.eq.5)then
-
-C Profile db: BINARY > ASCII. 
-          call edisp(iuout,'Use the module pro for BINARY > ASCII...')
-        elseif(isw.eq.6)then
-
-C Profile db: ASCII > BINARY.
-          call edisp(iuout,'Use the module pro for ASCII > BINARY...')
+        call eddbprofile(moddb,'    ')
+        if(moddb)then
+          call usrmsg(
+     &      'The database name or details have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
         endif
       ELSEIF(INO.EQ.10)THEN
 
 C Optical database.
-  50    ltmp=LOPTDB
-        write(outs,'(2a)') 'Options for optical properties db: ',
-     &    LTMP(1:lnblnk(LTMP))
-        H(1)='The optical properties of multilayer constructions'
-        H(2)='are defined in an optical database.  The data include'
-        H(3)='angular (0, 40, 55, 70, 80 degrees from normal) solar' 
-        H(4)='transmission and absorption at each layer.'
-        H(5)=' '
-        H(6)='The following options can be selected:'
-        H(7)=' '
-        H(8)='a) If the file exists than you can browse the database '
-        H(9)='   and if you have permission to update the file you'
-        H(10)='   can edit the entities in the database.'
-        H(11)=' '
-        H(12)='b) select another file: you will asked for a file'
-        H(13)='   name and if it is found you can browse or edit it.'
-        H(14)=' '
-        H(15)=' '
-        H(16)='c) make a new database: a new database will be created '
-        H(17)='   based on the file name you supply.'
-        H(18)=' '
-        H(19)='d) copy default database: a project copy of the default'
-        H(20)='  database will be made and you will be offered a '
-        H(21)='  chance to rename it.'
-        CALL ERPFREE(IOPTDB,ISTAT)
-        call FINDFIL(LTMP,XST)
-        IF(.NOT.XST)THEN
-          idno=2
-          isw=0
-          call MENUATOL(outs,'Optical properties options:',
-     &      'a browse/edit (NOT APPLICABLE)','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-          copydef=.true.
-        elseif(LTMP(1:25).eq.'/usr/esru/esp-r/databases'.or.
-     &         LTMP(1:28).eq.'c:\\user\\esru\\esp-r\\databases')then
-
-C If corportate database then offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Optical properties options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d make project copy of database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-          copydef=.false.
-        else
-
-C If db exists locally offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Optical properties options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-          copydef=.true.
-        endif
-
-C Act on the users choice. If no choice, return to main menu.
-        if(isw.eq.0)then
-          goto 3
-        elseif(isw.eq.1)then
-
-C If file exists read it and enter editing facility.
-          if(XST)then
-            LOPTDB=ltmp
-            IER=0
-            SOPT='ALL'
-            call tstamp('>','PRJ: enter optical db')
-            CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-            if(ier.ne.0)then
-              call usrmsg('Problem encountered with optical database!',
-     &          'Please check database location and content.','W')
-              OPTKOK=.FALSE.
-              goto 50
-            else
-              OPTKOK=.TRUE.
-              call EDOPT(IIER)
-            endif
-          else
-            call usrmsg('Sorry there is no file to browse/edit.',
-     &                  'Please use one of the other options. ','W')
-            goto 50
-          endif
-        elseif(isw.eq.2)then
-          H(1)='An optical properties database holds information for'
-          H(2)='transparent constructions. It is closely related to'
-          H(3)='the constructions database referenced by the project.'
-
-          CALL EASKS(ltmp,' Optical properties database?',
-     &      ' ',72,DOPTDB,'optical properties database',IER,1)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LOPTDB=ltmp
-          else
-            goto 50
-          endif
-          CALL ERPFREE(IOPTDB,ISTAT)
-          call FINDFIL(LOPTDB,XST)
-          IF(XST)THEN
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-            write(outs,'(2a)') 'Accessing optics db ',
-     &        LOPTDB(1:lnblnk(LOPTDB))
-            call edisp(iuout,outs)
-            SOPT='ALL'
-            ier=0
-            call tstamp('>','PRJ: enter optical db')
-            CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-            if(ier.ne.0)then
-             call usrmsg('Problem encountered with optical database!',
-     &         'Please check database location and content.','W')
-              OPTKOK=.FALSE.
-              goto 50
-            else
-              OPTKOK=.TRUE.
-              call EDOPT(IIER)
-            endif
-          else
-            write(outs,'(2a)') LOPTDB(1:lnblnk(LOPTDB)),
-     &        ' does not appear to exist.'
-            call edisp(iuout,outs)
-            goto 50
-          endif
-        elseif(isw.eq.3)then
-
-C No optics db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.opticsdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.opticsdb'
-          endif
-          H(1)='An optics db holds properties of transparent'
-          H(2)='constructions '
-          clkok=.false.
- 352      CALL EASKSCMD(ltmp,' Optics database?',
-     &      ' ','cancel',clkok,72,'optics.db','optics database',IER,2)
-          if(clkok) goto 3
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LOPTDB=ltmp
-          else
-            goto 352
-          endif
-
-C Create a minimal optics databases (code similar to edoptic.F).
-          moddb=.true.
-          CALL EFOPSEQ(IOPTDB,LOPTDB,4,IER)
-          write(IOPTDB,'(a)')'# optical properties db for transparent,'
-          write(IOPTDB,'(a)')'# constructions and casual gain controls'
-          write(IOPTDB,'(a)')'# '
-          write(IOPTDB,'(a)')'# Glazed info follows:'
-          GTYPE='SC_fictit'
-          GDESCR='Fictitious 99/99'
-          NTL=1
-          VTRN=0.99
-          SRF=0.01
-          SAB=0.01
-          UVAL=9.0
-          DG(1)=0.998
-          DG(2)=0.987
-          DG(3)=0.986
-          DG(4)=0.985
-          DG(5)=0.984
-          HG(1)=0.980
-          HG(2)=0.970
-          HG(3)=0.960
-          HG(4)=0.950
-          HG(5)=0.940
-          RF(1)=1.52
-          AB(1,1)=0.001
-          AB(1,2)=0.001
-          AB(1,3)=0.001
-          AB(1,4)=0.001
-          AB(1,5)=0.001
-          CALL EMKOPTD(IOPTDB,GTYPE,GDESCR,IER)
-          CALL ERPFREE(IOPTDB,ISTAT)
-          OPTKOK=.TRUE.
-
-C Scan the new file and use the editing facility.
-          write(outs,'(3a)') 'Optics db ',LOPTDB(1:lnblnk(LOPTDB)),
-     &       ' created.'
-          dok=.true.
-          h(1)='An empty optics database has been created. It is'
-          h(2)='useless until it is populated with data. If you '
-          h(3)='have the relevant information you can start now.'
-          CALL ASKOK(outs,' Browse or edit it?',OK,dok,3)
-          if(OK)then
-            SOPT='ALL'
-            ier=0
-            call tstamp('>','PRJ: enter optical db')
-            CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-            if(ier.ne.0)then
-              call usrmsg(' Problem encountered with optical database!',
-     &          ' Please check database location and content.','W')
-              OPTKOK=.FALSE.
-              goto 352
-            else
-              OPTKOK=.TRUE.
-              call EDOPT(IIER)
-            endif
-          endif
-        elseif(isw.eq.4)then
-
-C Copy the standard db to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
-          if(copydef)then
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,DOPTDB)
-          else
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,LOPTDB)
-          endif
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.opticdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.opticdb'
-          endif
-  54      CALL EASKS(LTMP,
-     &      'Database name after it is copied into the project?',
-     &      ' ',72,'optics.db','copied optics database',IER,2)
-          call isunix(unixok)
-          IF(LTMP(1:2).NE.'  ')then
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-            if(copydef)then
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            DOPTDB(1:lnblnk(DOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Similar logic but using DOPTDB.
-                message='getting optics db file from '
-                call dbdoscopy(DOPTDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LOPTDB=LTMP
-            else
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LOPTDB(1:lnblnk(LOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Similar logic but using LOPTDB.
-                message='getting optics db file from '
-                call dbdoscopy(LOPTDB,lcopy,message,doit,ier)
-              endif
-              call usrmsg('copying file via',doit,'-')
-              call runit(doit,'-')
-              LOPTDB=LTMP
-            endif
-            moddb=.true.
-            write(outs,'(2a)') 'Accessing project optics db: ',
-     &        LOPTDB(1:lnblnk(LOPTDB))
-            call edisp(iuout,outs)
-            SOPT='ALL'
-            ier=0
-            call tstamp('>','PRJ: enter optical db')
-            CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-            if(ier.ne.0)then
-              call usrmsg(' Problem encountered with optical db!',
-     &          ' Please check database location and content.','W')
-              OPTKOK=.FALSE.
-              goto 50
-            else
-              OPTKOK=.TRUE.
-              call EDOPT(IIER)
-            endif
-          else
-            goto 54
-          endif
+        call eddbopt(moddb,'    ')
+        if(moddb)then
+          call usrmsg(
+     &      'The database name or details have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
         endif
       ELSEIF(INO.EQ.11)THEN
 
@@ -2329,8 +1415,8 @@ C Error messages.
       IER=1
       return
 
-450   call edisp(iuout,' Event profile file error  ')
-      goto 3
+C 450   call edisp(iuout,' Event profile file error  ')
+C      goto 3
 
       END
 
@@ -2500,8 +1586,1092 @@ C Open the pressure coef db (needed for network flow descriptions).
       return
       end
 
+
+C ********** EDDBPCDB
+C EDDBPCDB Changes the plant component database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+
+      SUBROUTINE EDDBPCDB(moddb,APP)
+#include "building.h"
+#include "esprdbfile.h"
+#include "plantdb.h"
+
+      PARAMETER  (MCP=35)
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/appw/iappw,iappx,iappy
+      common/rpath/path
+      common/deflt4/dinstpath
+      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
+      COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      CHARACTER H*72,LTMP*72
+      character longtfile*144,longtafile*144,message*48
+      CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
+      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
+      CHARACTER*24 DOCPTH,TMPPTH
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,linstd*60,tmode*8
+      CHARACTER ZPDESC*25
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      moddb=.false.
+
+  60  LTMP=LPCDB
+      write(outs,'(2a)') 'Options for plant template db: ',
+     &  LTMP(1:lnblnk(LTMP))
+      H(1)='The plant components database is a binary, random '
+      H(2)='access file holding plant component descriptions to '
+      H(3)='enable the establishment of component state-space '
+      H(4)=' representations used by ESP-r.'
+      h(5)=' '
+      h(6)='If there is no such file then a new one will be'
+      h(7)='created to hold data for new components.'
+      h(8)=' '
+      H(9)='The following options can be selected:'
+      H(10)=' '
+      H(11)='a) If the file exists than you can browse the database '
+      H(12)='   and if you have permission to update the file you'
+      H(13)='   can edit the entities in the database.'
+      H(14)=' '
+      H(15)='b) select another file: you will asked for a file'
+      H(16)='   name and if it is found you can browse or edit it.'
+      H(17)=' '
+      H(18)='c) make a new database: a new database will be created '
+      H(19)='   based on the file name you supply.'
+      H(20)=' '
+      H(21)='d) copy default database: a project copy of the default'
+      H(22)='  database will be made and you will be offered a '
+      H(23)='  chance to rename it.'
+
+C Use the profile database unit for testing plant db.
+      if(ipcdb.eq.0)ipcdb=iprodb
+      CALL ERPFREE(ipcdb,ISTAT)
+
+C Get length of path to where esp-r databases were installed.
+      write(linstd,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases'
+      linst=lnblnk(linstd)
+      call FINDFIL(LTMP,XST)
+      IF(.NOT.XST)THEN
+        idno=2
+        isw=0
+        call MENUATOL(outs,'Plant component options:',
+     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
+        copydef=.true.
+      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+
+C If corportate database then offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Plant component options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d make project copy of database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
+        copydef=.false.
+      else
+
+C If db exists locally offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Plant component options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
+        copydef=.true.
+      endif
+
+C Act on the users choice. If no choice retrun to main menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists open it, test file type, get number of items and close.
+        CALL ERPFREE(ipcdb,ISTAT)
+        call FINDFIL(LTMP,XST)
+        if(XST)then
+          IER=0
+          call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+          IF(ier.eq.0)THEN
+            IREC = 1
+            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+            IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
+              call usrmsg('File is not a plant component database,',
+     &          'please supply the file name again.','W')
+              goto 60
+            endif
+            IREC = 2
+            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+            write(outs,'(a,i3,2a)') 'There are ',NPC,
+     &        ' components in ',LTMP(1:lnblnk(LTMP))
+            call edisp(iuout,outs)
+            CALL ERPFREE(ipcdb,ISTAT)
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive pdb.
+            call tstamp('>','PRJ: start pdb')
+            doit = ' '
+            call tchild(ICPMOD)
+            call termode(ICPMOD,tmode)
+            call addpath(LPCDB,longtfile,concat)
+            if(iappw.gt.0.and.iappw.le.200)then
+              write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
+     &          ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &          longtfile(1:lnblnk(longtfile)),' &'
+            else
+              write(doit,'(5a)') 'pdb -mode ',tmode,
+     &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &          ' &'
+            endif
+            call usrmsg(' ','staring plant db module.','-')
+            call runit(doit,tmode)
+          else
+            call usrmsg('Sorry, error opening the file.',
+     &        'Please use one of the other options.','W')
+            goto 60
+          endif
+        else
+          call usrmsg('Sorry there is no file to browse/edit.',
+     &      'Please use one of the other options. ','W')
+          goto 60
+        endif
+      elseif(isw.eq.2)then
+        H(1)='The plant components database is a binary, random '
+        H(2)='access file holding plant component descriptions to '
+        H(3)='enable the establishment of component state-space '
+        H(4)=' representations used by ESP-r.'
+        CALL EASKS(ltmp,'Plant component database?',
+     &    ' ',72,DPCDB,'plant component database',IER,4)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LPCDB=ltmp
+        else
+          goto 60
+        endif
+        CALL ERPFREE(ipcdb,ISTAT)
+        call FINDFIL(LPCDB,XST)
+        IF(XST)THEN
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+          IER=0
+          call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+          IF(ier.eq.0)THEN
+            IREC = 1
+            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+            IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
+              call usrmsg('File is not a plant component database,',
+     &          'please supply the file name again.','W')
+              goto 60
+            endif
+            IREC = 2
+            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+            write(outs,'(a,i3,2a)') 'There are ',NPC,
+     &        ' components in ',LTMP(1:lnblnk(LTMP))
+            call edisp(iuout,outs)
+            CALL ERPFREE(ipcdb,ISTAT)
+          else
+            call usrmsg('Sorry, error opening the file.',
+     &        'Please use one of the other options.','W')
+            goto 60
+          endif
+          write(outs,'(2a)') 'Accessing plant db ',
+     &      LPCDB(1:lnblnk(LPCDB))
+          call edisp(iuout,outs)
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive pdb.
+          call tstamp('>','PRJ: start pdb')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPCDB,longtfile,concat)
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
+     &        ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &        longtfile(1:lnblnk(longtfile)),' &'
+          else
+            write(doit,'(5a)') 'pdb -mode ',tmode,
+     &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
+          endif
+          call usrmsg(' ','staring plant db module.','-')
+          call runit(doit,tmode)
+        else
+          write(outs,'(2a)') LPCDB(1:lnblnk(LPCDB)),
+     &      ' does not appear to exist.'
+          call edisp(iuout,outs)
+          goto 60
+        endif
+      elseif(isw.eq.3)then
+
+C No plant component db found so set-up minimal common block, create
+C a new db, populate it and present editing facility.
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.plantdb'
+        endif
+ 62     h(1)='The plant component database binary file holds the'
+        h(2)='description of available components. If the name'
+        h(3)='given matches an existing file, it will be read in'
+        h(4)='and the components data will be available for'
+        h(5)='listing and editing. If there is no such file then'
+        h(6)='a new one will be created to hold data for new'
+        h(7)='components.'
+        clkok=.false.
+        CALL EASKSCMD(ltmp,'Plant component database?',
+     &    ' ','cancel',clkok,72,DPCDB,'plant component database',
+     &    IER,7)
+        if(clkok) return
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LPCDB=ltmp
+        else
+          goto 62
+        endif
+
+C Create a minimal plant databases (code similar to pdb.F).
+        moddb=.true.
+        CALL ERPFREE(ipcdb,ISTAT)
+        call EFOPRAN(ipcdb,LPCDB,IRECLN,3,IER)
+        CALL PCUPDT (ipcdb,0)
+        CALL ERPFREE(ipcdb,ISTAT)
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+        write(outs,'(2a)') LPCDB(1:lnblnk(LPCDB)),' created.'
+        dok=.true.
+        h(1)='An empty plant component database has been created'
+        h(2)='and it it useless until it has been populated with'
+        h(3)='data. If you have the information required you can'
+        h(4)='proceed with that task. '
+        CALL ASKOK(outs,' Browse or edit new database?',OK,dok,4)
+        if(OK)then
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive pdb.
+          call tstamp('>','PRJ: start pdb')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPCDB,longtfile,concat)
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
+     &        ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &        longtfile(1:lnblnk(longtfile)),' &'
+          else
+            write(doit,'(5a)') 'pdb -mode ',tmode,
+     &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
+          endif
+          call usrmsg(' ','staring plant db module.','-')
+          call runit(doit,tmode)
+        endif
+      elseif(isw.eq.4)then
+
+C Copy the standard db to project folder. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+C If the default is to be copied ask for local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.   
+        if(copydef)then
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,DPCDB)
+        else
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,LPCDB)
+        endif
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.plantdb'
+        endif
+   66   CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'plant.db','copied plant database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &      LTMP(1:lnblnk(LTMP))
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          DPCDB(1:lnblnk(DPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic same as other copy database commands.
+              message='getting constructions db file from '
+              call dbdoscopy(DPCDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LPCDB=LTMP
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic as other copy database.
+              message='getting constructions db file from '
+              call dbdoscopy(LPCDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LPCDB=LTMP
+          endif
+          write(outs,'(2a)') 'Accessing plant template db: ',
+     &      LCOPY(1:lnblnk(LCOPY))
+          call edisp(iuout,outs)
+          call tstamp('>','PRJ: start pdb')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPCDB,longtfile,concat)
+          if(iappw.gt.0.and.iappw.le.200)then
+            write(doit,'(3a,3i4,3a)') 'pdb -mode ',tmode,
+     &        ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &        longtfile(1:lnblnk(longtfile)),' &'
+          else
+            write(doit,'(5a)') 'pdb -mode ',tmode,
+     &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
+          endif
+          call usrmsg(' ','staring plant db module.','-')
+          call runit(doit,tmode)
+          moddb=.true.
+        else
+          goto 66
+        endif
+      endif
+
+      return
+      end
+
+C ********** EDDBPROFILE
+C EDDBPROFILE Changes the events profile database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+C
+      SUBROUTINE EDDBPROFILE(moddb,APP)
+#include "building.h"
+#include "esprdbfile.h"
+
+      PARAMETER  (MCP=35)
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/appw/iappw,iappx,iappy
+      common/rpath/path
+      common/deflt4/dinstpath
+      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
+      COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      CHARACTER H*72,LTMP*72
+      character longtfile*144,longtafile*144,message*48
+      CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
+      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
+      CHARACTER*24 DOCPTH,TMPPTH
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,linstd*60,tmode*8
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      moddb=.false.
+
+ 40   ltmp=LPRFDB
+      write(outs,'(2a)') 'Options for event profiles db: ',
+     &  LTMP(1:lnblnk(LTMP))
+      H(1)= '   Events Database '
+      H(3)= ' '
+      H(4)= 'Profiles in this database are currently used to  '
+      H(5)= 'assist in the defintion of zone operations.  The'
+      H(6)= 'standard is found in /usr/esru/esp-r/databases '
+      H(7)= ' '
+      H(8)= ' The data requirements are summarised below :- '
+      H(9)= ' '
+      H(10)=' for each profile - number of events.'
+      H(11)=' '
+      H(12)=' for each event - start and finish hours'
+      H(13)='                  percentage of first magnitude '
+      H(14)='                  percentage of second magnitude '
+      H(15)=' '
+      H(16)='The following options can be selected:'
+      H(17)=' '
+      H(18)='a) If the file exists than you can browse the database '
+      H(19)='   and if you have permission to update the file you'
+      H(20)='   can edit the entities in the database.'
+      H(21)=' '
+      H(22)='b) select another file: you will asked for a file'
+      H(23)='   name and if it is found you can browse or edit it.'
+      H(24)=' '
+      H(25)=' '
+      H(26)='c) make a new database: a new database will be created '
+      H(27)='   based on the file name you supply.'
+      H(28)=' '
+      H(29)='d) copy default database: a project copy of the default'
+      H(30)='  database will be made and you will be offered a '
+      H(31)='  chance to rename it.'
+      CALL ERPFREE(IPRODB,ISTAT)
+
+C Get length of path to where esp-r databases were installed.
+C << explicit / in path - use fs instead! >>
+      write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
+     &  '/databases'
+      linst=lnblnk(linstd)
+      call FINDFIL(LTMP,XST)
+      IF(.NOT.XST)THEN
+        idno=2
+        isw=0
+        call MENUATOL(outs,'Event profile options:',
+     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,31)
+        copydef=.true.
+      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+
+C If corportate database then offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Event profile options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d make project copy of database',
+     &    'e binary > ascii','f ascii > binary',' ',' ',' ',' ',' ',
+     &    ' ',isw,idno,31)
+        copydef=.false.
+      else
+
+C If db exists locally offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Event profile options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    'e binary > ascii','f ascii > binary',' ',' ',' ',' ',
+     &    ' ',' ',isw,idno,31)
+        copydef=.true.
+      endif
+
+C Act on the users choice. If nothing selected return to main menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists open it, test file type, get number of items and close.
+        if(XST)then
+          IER=0
+          call EFOPRAN(IPRODB,LTMP,10,1,IER)
+          IF(ier.eq.0)then
+            LPRFDB=LTMP
+            CALL USRMSG(' opened profiles db...',' ','-')
+            IREC=1
+            READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
+            CALL USRMSG(' opened profiles db...ok',' ','-')
+            CALL ERPFREE(IPRODB,ISTAT)
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive viewer.
+            call tstamp('>','PRJ: start pro')
+            doit = ' '
+            call tchild(ICPMOD)
+            call termode(ICPMOD,tmode)
+            call addpath(LPRFDB,longtfile,concat)
+            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
+     &                  longtfile(1:lnblnk(longtfile)),' &'
+            call runit(doit,tmode)
+            moddb=.true.
+          else
+            call usrmsg('Sorry, error opening the file.',
+     &        'Please use one of the other options.','W')
+            goto 40
+          endif
+        else
+          call usrmsg('Sorry there is no file to browse/edit.',
+     &      'Please use one of the other options. ','W')
+          goto 40
+        endif
+      elseif(isw.eq.2)then
+
+        H(1)='An event profiles db holds a schedule of patterns'
+        H(2)='over a day. '
+        CALL EASKS(ltmp,' Event profiles database?',
+     &    ' ',72,DPRFDB,'event profiles database',IER,1)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LPRFDB=ltmp
+        else
+          goto 40
+        endif
+        CALL ERPFREE(IPRODB,ISTAT)
+        call FINDFIL(LPRFDB,XST)
+        IF(XST)THEN
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+          write(outs,'(2a)') 'Accessing profiles db ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp(iuout,outs)
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive viewer.
+          call tstamp('>','PRJ: start pro')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPRFDB,longtfile,concat)
+          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
+     &      longtfile(1:lnblnk(longtfile)),' &'
+          call runit(doit,tmode)
+          moddb=.true.
+        else
+          write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),
+     &      ' does not appear to exist.'
+          call edisp(iuout,outs)
+          goto 40
+        endif
+      elseif(isw.eq.3)then
+
+C No event profile db found so set-up minimal common block, create
+C a new db, populate it and present editing facility.
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.profiledb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.profiledb'
+        endif
+        H(1)='An event profiles db holds a schedule of patterns'
+        H(2)='over a day. '
+        clkok=.false.
+ 42     CALL EASKSCMD(ltmp,' Event profiles database?',
+     &    ' ','cancel',clkok,72,DPRFDB,'event profiles database',
+     &    IER,2)
+        if(clkok) return
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LPRFDB=ltmp
+        else
+          goto 42
+        endif
+
+C Create a minimal events databases (code similar to pro.F).
+        moddb=.true.
+        call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
+        NITEMS = 1
+        NO(1) = 2
+        NCG(1)= 1
+        DESCP(1)='First profile'
+        ICGS1(1)=0
+        ICGF1(1)=24
+        CGS1(1)=100.0
+        CGL1(1)=100.0
+        lastrec=4
+        IREC = 1
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NITEMS
+        IREC=NO(1)
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(1)
+        IREC=IREC+1
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESCP(1)
+        IREC=IREC+1
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
+     &        ICGS1(1),ICGF1(1),CGS1(1),CGL1(1)
+        CALL ERPFREE(IPRODB,ISTAT)
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+        write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),' created.'
+        dok=.true.
+        h(1)='An empty profiles database has been created. It'
+        h(2)='is useless unless it is populated with data. If '
+        h(3)='you have the required data, use this facility '
+        h(4)='to do this.'
+        CALL ASKOK(outs,' Browse or edit database?',OK,dok,4)
+        if(OK)then
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive viewer.
+          call tstamp('>','PRJ: start pro')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPRFDB,longtfile,concat)
+          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
+     &                longtfile(1:lnblnk(longtfile)),' &'
+          call runit(doit,tmode)
+        endif
+      elseif(isw.eq.4)then
+
+C Copy the standard db to project folder. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+C If the default is to be copied ask for local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.   
+        if(copydef)then
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,DPRFDB)
+        else
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,LPRFDB)
+        endif
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.eventdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.eventdb'
+        endif
+ 244    CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'event.db','copied events database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &      LTMP(1:lnblnk(LTMP))
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          DPRFDB(1:lnblnk(DPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic for copy similar to the pattern established above.
+              message='getting events db file from '
+              call dbdoscopy(DPRFDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LPRFDB=LTMP
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic for copy similar to the pattern established above.
+              message='getting events db file from '
+              call dbdoscopy(LPRFDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying file via',doit,'-')
+            call runit(doit,'-')
+            LPRFDB=LTMP
+          endif
+          moddb=.true.
+          write(outs,'(2a)') 'Accessing event profiles db:',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp(iuout,outs)
+
+C Get logical name of child process terminal type, expand model 
+C name to include the path and create a string to drive viewer.
+          call tstamp('>','PRJ: start pro')
+          doit = ' '
+          call tchild(ICPMOD)
+          call termode(ICPMOD,tmode)
+          call addpath(LPRFDB,longtfile,concat)
+          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
+     &      longtfile(1:lnblnk(longtfile)),' &'
+          call runit(doit,tmode)
+        else
+          goto 244
+        endif
+      elseif(isw.eq.5)then
+
+C Profile db: BINARY > ASCII. 
+        call edisp(iuout,'Use the module pro for BINARY > ASCII...')
+      elseif(isw.eq.6)then
+
+C Profile db: ASCII > BINARY.
+        call edisp(iuout,'Use the module pro for ASCII > BINARY...')
+      endif
+      return
+
+ 450  call edisp(iuout,' Event profile file error  ')
+      return
+
+      end
+
+C ********** EDDBOPT
+C EDDBOPT Changes the optical database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+C
+      SUBROUTINE EDDBOPT(moddb,APP)
+#include "building.h"
+#include "esprdbfile.h"
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/appw/iappw,iappx,iappy
+      common/rpath/path
+      common/deflt4/dinstpath
+      COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+      common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      CHARACTER H*72,LTMP*72
+      character longtfile*144,longtafile*144,message*48
+      CHARACTER DOIT*248,fs*1,LCOPY*72
+      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
+      CHARACTER*24 DOCPTH,TMPPTH
+      character GTYPE*12,GDESCR*36,DESC*48,SOPT*12
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      moddb=.false.
+
+  50  ltmp=LOPTDB
+      write(outs,'(2a)') 'Options for optical properties db: ',
+     &  LTMP(1:lnblnk(LTMP))
+      H(1)='The optical properties of multilayer constructions'
+      H(2)='are defined in an optical database.  The data include'
+      H(3)='angular (0, 40, 55, 70, 80 degrees from normal) solar' 
+      H(4)='transmission and absorption at each layer.'
+      H(5)=' '
+      H(6)='The following options can be selected:'
+      H(7)=' '
+      H(8)='a) If the file exists than you can browse the database '
+      H(9)='   and if you have permission to update the file you'
+      H(10)='   can edit the entities in the database.'
+      H(11)=' '
+      H(12)='b) select another file: you will asked for a file'
+      H(13)='   name and if it is found you can browse or edit it.'
+      H(14)=' '
+      H(15)=' '
+      H(16)='c) make a new database: a new database will be created '
+      H(17)='   based on the file name you supply.'
+      H(18)=' '
+      H(19)='d) copy default database: a project copy of the default'
+      H(20)='  database will be made and you will be offered a '
+      H(21)='  chance to rename it.'
+      CALL ERPFREE(IOPTDB,ISTAT)
+      call FINDFIL(LTMP,XST)
+      IF(.NOT.XST)THEN
+        idno=2
+        isw=0
+        call MENUATOL(outs,'Optical properties options:',
+     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+        copydef=.true.
+      elseif(LTMP(1:25).eq.'/usr/esru/esp-r/databases'.or.
+     &       LTMP(1:28).eq.'c:\\user\\esru\\esp-r\\databases')then
+
+C If corportate database then offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Optical properties options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d make project copy of database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+        copydef=.false.
+      else
+
+C If db exists locally offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Optical properties options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+        copydef=.true.
+      endif
+
+C Act on the users choice. If no choice, return to main menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility.
+        if(XST)then
+          LOPTDB=ltmp
+          IER=0
+          SOPT='ALL'
+          call tstamp('>','PRJ: enter optical db')
+          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
+          if(ier.ne.0)then
+            call usrmsg('Problem encountered with optical database!',
+     &        'Please check database location and content.','W')
+            OPTKOK=.FALSE.
+            goto 50
+          else
+            OPTKOK=.TRUE.
+            call EDOPT(IIER)
+          endif
+        else
+          call usrmsg('Sorry there is no file to browse/edit.',
+     &                'Please use one of the other options. ','W')
+          goto 50
+        endif
+      elseif(isw.eq.2)then
+        H(1)='An optical properties database holds information for'
+        H(2)='transparent constructions. It is closely related to'
+        H(3)='the constructions database referenced by the project.'
+
+        CALL EASKS(ltmp,' Optical properties database?',
+     &    ' ',72,DOPTDB,'optical properties database',IER,1)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LOPTDB=ltmp
+        else
+          goto 50
+        endif
+        CALL ERPFREE(IOPTDB,ISTAT)
+        call FINDFIL(LOPTDB,XST)
+        IF(XST)THEN
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+          write(outs,'(2a)') 'Accessing optics db ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp(iuout,outs)
+          SOPT='ALL'
+          ier=0
+          call tstamp('>','PRJ: enter optical db')
+          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
+          if(ier.ne.0)then
+           call usrmsg('Problem encountered with optical database!',
+     &       'Please check database location and content.','W')
+            OPTKOK=.FALSE.
+            goto 50
+          else
+            OPTKOK=.TRUE.
+            call EDOPT(IIER)
+          endif
+        else
+          write(outs,'(2a)') LOPTDB(1:lnblnk(LOPTDB)),
+     &      ' does not appear to exist.'
+          call edisp(iuout,outs)
+          goto 50
+        endif
+      elseif(isw.eq.3)then
+
+C No optics db found so set-up minimal common block, create
+C a new db, populate it and present editing facility.
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.opticsdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.opticsdb'
+        endif
+        H(1)='An optics db holds properties of transparent'
+        H(2)='constructions '
+        clkok=.false.
+ 352    CALL EASKSCMD(ltmp,' Optics database?',
+     &    ' ','cancel',clkok,72,'optics.db','optics database',IER,2)
+        if(clkok) return
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LOPTDB=ltmp
+        else
+          goto 352
+        endif
+
+C Create a minimal optics databases (code similar to edoptic.F).
+        moddb=.true.
+        CALL EFOPSEQ(IOPTDB,LOPTDB,4,IER)
+        write(IOPTDB,'(a)')'# optical properties db for transparent,'
+        write(IOPTDB,'(a)')'# constructions and casual gain controls'
+        write(IOPTDB,'(a)')'# '
+        write(IOPTDB,'(a)')'# Glazed info follows:'
+        GTYPE='SC_fictit'
+        GDESCR='Fictitious 99/99'
+        NTL=1
+        VTRN=0.99
+        SRF=0.01
+        SAB=0.01
+        UVAL=9.0
+        DG(1)=0.998
+        DG(2)=0.987
+        DG(3)=0.986
+        DG(4)=0.985
+        DG(5)=0.984
+        HG(1)=0.980
+        HG(2)=0.970
+        HG(3)=0.960
+        HG(4)=0.950
+        HG(5)=0.940
+        RF(1)=1.52
+        AB(1,1)=0.001
+        AB(1,2)=0.001
+        AB(1,3)=0.001
+        AB(1,4)=0.001
+        AB(1,5)=0.001
+        CALL EMKOPTD(IOPTDB,GTYPE,GDESCR,IER)
+        CALL ERPFREE(IOPTDB,ISTAT)
+        OPTKOK=.TRUE.
+
+C Scan the new file and use the editing facility.
+        write(outs,'(3a)') 'Optics db ',LOPTDB(1:lnblnk(LOPTDB)),
+     &     ' created.'
+        dok=.true.
+        h(1)='An empty optics database has been created. It is'
+        h(2)='useless until it is populated with data. If you '
+        h(3)='have the relevant information you can start now.'
+        CALL ASKOK(outs,' Browse or edit it?',OK,dok,3)
+        if(OK)then
+          SOPT='ALL'
+          ier=0
+          call tstamp('>','PRJ: enter optical db')
+          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
+          if(ier.ne.0)then
+            call usrmsg(' Problem encountered with optical database!',
+     &        ' Please check database location and content.','W')
+            OPTKOK=.FALSE.
+            goto 352
+          else
+            OPTKOK=.TRUE.
+            call EDOPT(IIER)
+          endif
+        endif
+      elseif(isw.eq.4)then
+
+C Copy the standard db to project folder. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+C If the default is to be copied ask for local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.   
+        if(copydef)then
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,DOPTDB)
+        else
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,LOPTDB)
+        endif
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.opticdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.opticdb'
+        endif
+  54    CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'optics.db','copied optics database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &      LTMP(1:lnblnk(LTMP))
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          DOPTDB(1:lnblnk(DOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Similar logic but using DOPTDB.
+              message='getting optics db file from '
+              call dbdoscopy(DOPTDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LOPTDB=LTMP
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          LOPTDB(1:lnblnk(LOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Similar logic but using LOPTDB.
+              message='getting optics db file from '
+              call dbdoscopy(LOPTDB,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying file via',doit,'-')
+            call runit(doit,'-')
+            LOPTDB=LTMP
+          endif
+          moddb=.true.
+          write(outs,'(2a)') 'Accessing project optics db: ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp(iuout,outs)
+          SOPT='ALL'
+          ier=0
+          call tstamp('>','PRJ: enter optical db')
+          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
+          if(ier.ne.0)then
+            call usrmsg(' Problem encountered with optical db!',
+     &        ' Please check database location and content.','W')
+            OPTKOK=.FALSE.
+            goto 50
+          else
+            OPTKOK=.TRUE.
+            call EDOPT(IIER)
+          endif
+        else
+          goto 54
+        endif
+      endif
+
+      return
+      end
+
 C ********** EDDBCLM
-C Changes the climate database current cfg file references.
+C EDDBCLM Changes the climate database current cfg file references.
 C moddb is
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.

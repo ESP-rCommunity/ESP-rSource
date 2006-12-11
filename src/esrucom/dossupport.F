@@ -24,6 +24,11 @@ C dbdoscopy - takes a source file and a destination file (with
 C   path) and converts any forward slashes to backwards slashes and detects
 C   spaces and creates and returns the doit command.
 
+C dblongdoscopy - takes a source file (up to 144 char) and a 
+C   destination file (with path up to 144 char) and converts any forward
+C   slashes to backwards slashes and detects spaces and creates and returns 
+C   an ldoit (300 char) command.
+
 C cmdfiledos - takes a source file which might have spaces in the path
 C as well as forward slashes and it modifies the file name to use
 C backslashes and to bracket it in double quotes if there are spaces.
@@ -119,6 +124,94 @@ C Errors.
  552  call usrmsg(
      &  'Error creating the dos copy command (might not work)',
      &  doit,'W')
+      ier=1
+      return
+      end
+
+C ********** dblongdoscopy *********
+C dblongdoscopy - takes a source file (up to 144 char) and a 
+C   destination file (with path up to 144 char) and converts any forward
+C   slashes to backwards slashes and detects spaces and creates and returns 
+C   an ldoit (300 char) command.
+C source (144 char) source file (with path).
+C lcopy (144 char) destination file (with path)
+C message (48 char) feedback to echo when preparing doit
+C ldoit (300 char) the command to execute
+C ier is zero if ok.
+
+      subroutine dblongdoscopy(source,lcopy,message,ldoit,ier)
+      common/OUTIN/IUOUT,IUIN
+
+C Strings for dos version of source and destination of db file.
+      character rootpdos*144,upathdos*144,dq*1,louts*248
+      character source*144,lcopy*144,message*48,ldoit*300
+      logical unixok
+      integer lnrp  ! length of source file name
+      integer lnblankrp ! position of blank in source file
+      integer lnup  ! length of destination file name
+      integer lnblankup ! position of blank in source file
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        call usrmsg('dbdoscopy is being called on a Unix/Linux/OSX',
+     &    'computer environment - which could cause errors.','W')
+      endif
+
+C Make up a double quote for dos copy command, reset ier to zero
+C and clear the ldoit return string buffer.
+      dq = char(34)
+      ier=0
+      ldoit=' '
+
+C Debug statements for native windows version. If lnblankrp or
+C lnblankup is one then there are no spaces in the string so double quotes
+C are not required.  But in either case it is useful to change any '/'
+C in rootp and upath to '\'. 
+      rootpdos=' '
+      upathdos=' '
+      lnrp=lnblnk(source)
+      lnblankrp=iprevblnk(source,lnrp)
+      call backslashit(source,rootpdos) ! change / to \
+      write(louts,'(3a)') message,' ',rootpdos(1:lnrp)
+      call edisp248(iuout,louts,100)
+
+      lnup=lnblnk(LCOPY)
+      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
+      call backslashit(LCOPY,upathdos)
+      write(louts,'(2a)') 'destination = ',upathdos(1:lnup)
+      call edisp248(iuout,louts,100)
+
+C Create the ldoit command based on where there are blanks in the strings.
+      if(lnblankrp.gt.1.and.lnblankup.gt.1)then
+
+C There are blanks in both source or destination strings.
+        write(ldoit,'(8a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
+
+C There are blanks in destination string.
+        write(ldoit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
+
+C There are blanks in source string.
+        write(ldoit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lnup)
+      elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
+
+C There are no blanks in either source or destination strings.
+        write(ldoit,'(4a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',upathdos(1:lnup)
+      endif
+
+      return
+
+C Errors.
+ 552  lsn=MIN0(lnblnk(ldoit),248)
+      call lusrmsg(
+     &  'Error creating the dos copy command (might not work)',
+     &  ldoit(1:lsn),'W')
       ier=1
       return
       end
