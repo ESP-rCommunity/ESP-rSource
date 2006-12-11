@@ -1004,302 +1004,16 @@ C the same name as the binary one and is in the same location.
       ELSEIF(INO.EQ.7)THEN
 
 C Deal with construction databases.
-  38    LTMP=LFMUL
-        write(outs,'(2a)') 'Options for constructions db: ',
-     &    LTMP(1:lnblnk(LTMP))
-
-C If db does not exist offer the following choices:
-        CALL ERPFREE(IFMUL,ISTAT)
-        call FINDFIL(LFMUL,XST)
-        H(1)='A (multilayer) construction database defines the com-'
-        H(2)='position of constructions such as walls and glazing'
-        H(3)='systems in terms of layers of materials of particular'
-        H(4)='thickness in a particular order and, where appropriate,' 
-        H(5)='with a named set of optical properties. '
-        H(6)=' '
-        H(7)='The following options can be selected:'
-        H(8)=' '
-        H(9)='a) If the file exists than you can browse the database'
-        H(10)='   and if you have permission to update the file you'
-        H(11)='   can edit the entities in the database.'
-        H(12)=' '
-        H(13)='b) select another file: you will asked for a file'
-        H(14)='   name and if it is found you can browse or edit it.'
-        H(15)=' '
-        H(16)='c) make a new database: a new database will be created '
-        H(17)='   based on the file name you supply.'
-        H(18)=' '
-        H(19)='d) copy default database: a project copy of the default'
-        H(20)='  database will be made and you will be offered a '
-        H(21)='  chance to rename it.'
-
-C Get length of path to where esp-r databases were installed.
-        write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/databases'
-        linst=lnblnk(linstd)
-        IF(.NOT.XST)THEN
-          idno=2
-          isw=0
-          call MENUATOL(outs,'Constructions options:',
-     &      'a browse/edit (NOT APPLICABLE)','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-            copydef=.true.
-        elseif(LFMUL(1:linst).eq.linstd(1:linst))then
-
-C If corportate database then offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Constructions options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d make project copy of database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-            copydef=.false.
-        else
-
-C If db exists locally offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL(outs,'Constructions options:',
-     &      'a browse or edit this file','b select another file',
-     &      'c make a new database','d copy the default database',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
-          copydef=.true.
+        call eddbmlc(moddb,modcon,'    ')
+        if(moddb)then
+          call usrmsg(
+     &      'The database name might have changed. Suggest',
+     &      'using the `save model` option to record this.','W')
         endif
-
-C Act on the users choice.
-        if(isw.eq.0)then
-          goto 38
-        elseif(isw.eq.1)then
-          if(XST)then
-            CALL ERMLDB(0,IUOUT,IER)
-            IF(IER.eq.1)then
-
-C there was a minor problem scanning the constructions db.
-              call usrmsg(
-     &     'There were a few problems scanning the constructions db',
-     &     'and perhaps the materials db. Please double chek.','W')
-              goto 38
-            ELSEIF(IER.eq.2)then
-
-C There were lots of undefined materials so likely the materials
-C database is for the wrong machine type. Guess the name of
-C the ascii version and if it exists, offer to convert it.
-              call usrmsg(
-     &          ' The materials database probably needs to be',
-     &          ' restored from archival ASCII version.','W')
-              goto 3
-            endif
-            MLDBOK=.TRUE.
-            call tstamp('>','PRJ: enter construction db')
-            CALL EDMLDB(ITRC,modmlc,IER,ISEL)
-            if(IER.EQ.1)then
-              CALL USRMSG(' ','Problem accessing constructions db','W')
-              goto 38
-            endif
-            moddb=modmlc
-            modcon=modmlc
-          else
-            call usrmsg('Sorry there is no file to browse/edit.',
-     &                  'Please use one of the other options. ','W')
-            goto 38
-          endif
-        elseif(isw.eq.2)then
-          h(1)='Please supply and confirm constructions database file'
-          h(2)='name. If it exists you will be able to browse it. If '
-          h(3)='you want this to be a new database the next task is to'
-          h(4)='select the `make new database` option. '
-  44      CALL EASKS(LTMP,' Constructions database?',
-     &     ' ',72,DFMUL,'constructions database',IER,4)
-          IF(LTMP(1:2).NE.'  ')then
-            LFMUL=LTMP
-          else
-            goto 44
-          endif
-          CALL ERPFREE(IFMUL,ISTAT)
-          call FINDFIL(LFMUL,XST)
-          if(XST)then
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-            write(outs,'(2a)') 'Accessing constructions db ',
-     &         LFMUL(1:lnblnk(LFMUL))
-            call edisp(iuout,outs)
-            CALL ERMLDB(0,ITRU,IER)
-            IF(IER.eq.1)then
-
-C there was a minor problem scanning the constructions db.
-              call usrmsg(
-     &   'There were a few problems scanning the constructions db',
-     &   'and perhaps the materials db. Please double chek.','W')
-              goto 38
-            ELSEIF(IER.eq.2)then
-
-C There were lots of undefined materials so likely the materials
-C database is for the wrong machine type. Guess the name of
-C the ascii version and if it exists, offer to convert it.
-              call usrmsg(
-     &          ' The materials database probably needs to be',
-     &          ' restored from archival ASCII version.','W')
-              goto 3
-            endif
-            MLDBOK=.TRUE.
-            call tstamp('>','PRJ: enter construction db')
-            CALL EDMLDB(ITRC,modmlc,IER,ISEL)
-            if(IER.EQ.1)then
-              CALL USRMSG(' ','Problem accessing construction db','W')
-              goto 38
-            endif
-            moddb=modmlc
-            modcon=modmlc
-          else
-            write(outs,'(2a)') LFMUL(1:lnblnk(LFMUL)),
-     &       ' does not appear to exist.'
-            call edisp(iuout,outs)
-            goto 38
-          endif
-        elseif(isw.eq.3)then
-
-C No Constructions db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.constrdb'
-          endif
-          clkok=.false.
-   45     CALL EASKSCMD(LTMP,' New constructions database?',
-     &     ' ','cancel',clkok,72,DFMUL,'constructions database',IER,2)
-          if(clkok) goto 3
-          IF(LTMP(1:2).NE.'  ')then
-            LFMUL=LTMP
-          else
-            goto 45
-          endif
-          NMLC=1
-          DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
-          DTHK(1,1)=0.100
-          IPR(1,1)=1
-          LAYERS(1)=1
-          DRAIR(1,1,1)=0.0
-          DRAIR(1,1,2)=0.0
-          DRAIR(1,1,3)=0.0
-          MLDBOK=.TRUE.
-          moddb=.true.
-          CALL EMKAMLD(iuout,IER)
-          IF(IER.NE.0)THEN
-            CALL USRMSG(' ',' Unable to create database!','W')
-            RETURN
-          ENDIF
-          ISEL=1
-          CALL ERMLDB(0,ITRU,IER)
-          IF(IER.NE.0)goto 45
-          MLDBOK=.TRUE.
-          call tstamp('>','PRJ: enter construction db')
-          CALL EDMLDB(ITRC,modmlc,IER,ISEL)
-          if(IER.EQ.1)then
-            CALL USRMSG(' ','Problem accessing constructions db','W')
-            goto 38
-          endif
-          moddb=modmlc
-          modcon=modmlc
-        elseif(isw.eq.4)then
-
-C Copy the standard db to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
-          if(copydef)then
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,DFMUL)
-          else
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,LFMUL)
-          endif
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
-          else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.constrdb'
-          endif
-   46     CALL EASKS(LTMP,
-     &      'Database name after it is copied into the project?',
-     &      ' ',72,'multicon.db','copied constructions database',IER,2)
-          call isunix(unixok)
-          IF(LTMP(1:2).NE.'  ')then
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-            if(copydef)then
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            DFMUL(1:lnblnk(DFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic as in materials database copy command.
-                message='getting constructions db file from '
-                call dbdoscopy(DFMUL,lcopy,message,doit,ier)
-              endif
-              call lusrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LFMUL=LTMP
-            else
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LFMUL(1:lnblnk(LFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
-
-C Logic as in materials database copy command.
-                message='getting constructions db file from '
-                call dbdoscopy(LFMUL,lcopy,message,doit,ier)
-              endif
-              call lusrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LFMUL=LTMP
-            endif
-            write(outs,'(2a)') 'Accessing constructions db: ',
-     &        LCOPY(1:lnblnk(LCOPY))
-            call edisp(iuout,outs)
-            call tstamp('>','PRJ: enter construction db')
-            CALL ERMLDB(0,IUOUT,IER)
-            IF(IER.eq.1)then
-
-C there was a minor problem scanning the constructions db.
-              call usrmsg(
-     &     'There were a few problems scanning the constructions db',
-     &     'and perhaps the materials db. Please double check.','W')
-              goto 38
-            ELSEIF(IER.eq.2)then
-
-C There were lots of undefined materials so likely the materials
-C database is for the wrong machine type. Guess the name of
-C the ascii version and if it exists, offer to convert it.
-              call usrmsg(
-     &          ' The materials database probably needs to be',
-     &          ' restored from archival ASCII version.','W')
-              goto 3
-            endif
-            MLDBOK=.TRUE.
-            call tstamp('>','PRJ: enter construction db')
-            CALL EDMLDB(ITRC,modmlc,IER,ISEL)
-            if(IER.EQ.1)then
-              CALL USRMSG(' ','Problem accessing construction db','W')
-              goto 38
-            endif
-            moddb=modmlc
-            modcon=modmlc
-          else
-            goto 46
-          endif
+        if(modcon)then
+          call usrmsg(
+     &      'The database details might have changed. In a moment',
+     &      'you will be offered the option to update zone files.','W')
         endif
       ELSEIF(INO.EQ.8)THEN
 
@@ -1586,6 +1300,352 @@ C Open the pressure coef db (needed for network flow descriptions).
       return
       end
 
+C ********** EDDBMLC
+C EDDBMLC Changes the constructions database current cfg file references.
+C moddb is from version manager
+C modcon signals change in constructions.
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+
+      SUBROUTINE EDDBMLC(moddb,modcon,APP)
+#include "building.h"
+#include "esprdbfile.h"
+
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C Default esp-r distribution path.
+      common/deflt4/dinstpath
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical moddb,modcon,modmlc,unixok,copydef,clkok
+
+      character H*72,LTMP*72,DESC*48,path*72,outs*124
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,linstd*60
+      character cfgroot*24,LCFGF*72,fs*1,message*48
+      character doit*248,LCOPY*72,dinstpath*48,APP*4
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      moddb=.false.
+      modcon=.false.
+
+  38  LTMP=LFMUL
+      write(outs,'(2a)') 'Options for constructions db: ',
+     &  LTMP(1:lnblnk(LTMP))
+
+C If db does not exist offer the following choices:
+      CALL ERPFREE(IFMUL,ISTAT)
+      call FINDFIL(LFMUL,XST)
+      H(1)='A (multilayer) construction database defines the com-'
+      H(2)='position of constructions such as walls and glazing'
+      H(3)='systems in terms of layers of materials of particular'
+      H(4)='thickness in a particular order and, where appropriate,' 
+      H(5)='with a named set of optical properties. '
+      H(6)=' '
+      H(7)='The following options can be selected:'
+      H(8)=' '
+      H(9)='a) If the file exists than you can browse the database'
+      H(10)='   and if you have permission to update the file you'
+      H(11)='   can edit the entities in the database.'
+      H(12)=' '
+      H(13)='b) select another file: you will asked for a file'
+      H(14)='   name and if it is found you can browse or edit it.'
+      H(15)=' '
+      H(16)='c) make a new database: a new database will be created '
+      H(17)='   based on the file name you supply.'
+      H(18)=' '
+      H(19)='d) copy default database: a project copy of the default'
+      H(20)='  database will be made and you will be offered a '
+      H(21)='  chance to rename it.'
+
+C Get length of path to where esp-r databases were installed.
+      write(linstd,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &    fs,'databases'
+      linst=lnblnk(linstd)
+      IF(.NOT.XST)THEN
+        idno=2
+        isw=0
+        call MENUATOL(outs,'Constructions options:',
+     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+          copydef=.true.
+      elseif(LFMUL(1:linst).eq.linstd(1:linst))then
+
+C If corportate database then offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Constructions options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d make project copy of database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+          copydef=.false.
+      else
+
+C If db exists locally offer the following choices:
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Constructions options:',
+     &    'a browse or edit this file','b select another file',
+     &    'c make a new database','d copy the default database',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
+        copydef=.true.
+      endif
+
+C Act on the users choice.
+      if(isw.eq.0)then
+        goto 38
+      elseif(isw.eq.1)then
+        if(XST)then
+          CALL ERMLDB(0,IUOUT,IER)
+          IF(IER.eq.1)then
+
+C there was a minor problem scanning the constructions db.
+            call usrmsg(
+     &     'There were a few problems scanning the constructions db',
+     &     'and perhaps the materials db. Please double chek.','W')
+            goto 38
+          ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it.
+            call usrmsg(
+     &        ' The materials database probably needs to be',
+     &        ' restored from archival ASCII version.','W')
+            return
+          endif
+          MLDBOK=.TRUE.
+          call tstamp('>','PRJ: enter construction db')
+          CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+          if(IER.EQ.1)then
+            CALL USRMSG(' ','Problem accessing constructions db','W')
+            goto 38
+          endif
+          moddb=modmlc
+          modcon=modmlc
+        else
+          call usrmsg('Sorry there is no file to browse/edit.',
+     &                'Please use one of the other options. ','W')
+          goto 38
+        endif
+      elseif(isw.eq.2)then
+        h(1)='Please supply and confirm constructions database file'
+        h(2)='name. If it exists you will be able to browse it. If '
+        h(3)='you want this to be a new database the next task is to'
+        h(4)='select the `make new database` option. '
+  44    CALL EASKS(LTMP,' Constructions database?',
+     &   ' ',72,DFMUL,'constructions database',IER,4)
+        IF(LTMP(1:2).NE.'  ')then
+          LFMUL=LTMP
+        else
+          goto 44
+        endif
+        CALL ERPFREE(IFMUL,ISTAT)
+        call FINDFIL(LFMUL,XST)
+        if(XST)then
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+          write(outs,'(2a)') 'Accessing constructions db ',
+     &       LFMUL(1:lnblnk(LFMUL))
+          call edisp(iuout,outs)
+          CALL ERMLDB(0,ITRU,IER)
+          IF(IER.eq.1)then
+
+C there was a minor problem scanning the constructions db.
+            call usrmsg(
+     &   'There were a few problems scanning the constructions db',
+     &   'and perhaps the materials db. Please double chek.','W')
+            goto 38
+          ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it.
+            call usrmsg(
+     &        ' The materials database probably needs to be',
+     &        ' restored from archival ASCII version.','W')
+            return
+          endif
+          MLDBOK=.TRUE.
+          call tstamp('>','PRJ: enter construction db')
+          CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+          if(IER.EQ.1)then
+            CALL USRMSG(' ','Problem accessing construction db','W')
+            goto 38
+          endif
+          moddb=modmlc
+          modcon=modmlc
+        else
+          write(outs,'(2a)') LFMUL(1:lnblnk(LFMUL)),
+     &     ' does not appear to exist.'
+          call edisp(iuout,outs)
+          goto 38
+        endif
+      elseif(isw.eq.3)then
+
+C No Constructions db found so set-up minimal common block, create
+C a new db, populate it and present editing facility.
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.constrdb'
+        endif
+        clkok=.false.
+   45   CALL EASKSCMD(LTMP,' New constructions database?',
+     &    ' ','cancel',clkok,72,DFMUL,'constructions database',IER,2)
+        if(clkok) return
+        IF(LTMP(1:2).NE.'  ')then
+          LFMUL=LTMP
+        else
+          goto 45
+        endif
+        NMLC=1
+        DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
+        DTHK(1,1)=0.100
+        IPR(1,1)=1
+        LAYERS(1)=1
+        DRAIR(1,1,1)=0.0
+        DRAIR(1,1,2)=0.0
+        DRAIR(1,1,3)=0.0
+        MLDBOK=.TRUE.
+        moddb=.true.
+        CALL EMKAMLD(iuout,IER)
+        IF(IER.NE.0)THEN
+          CALL USRMSG(' ',' Unable to create database!','W')
+          RETURN
+        ENDIF
+        ISEL=1
+        CALL ERMLDB(0,ITRU,IER)
+        IF(IER.NE.0)goto 45
+        MLDBOK=.TRUE.
+        call tstamp('>','PRJ: enter construction db')
+        CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+        if(IER.EQ.1)then
+          CALL USRMSG(' ','Problem accessing constructions db','W')
+          goto 38
+        endif
+        moddb=modmlc
+        modcon=modmlc
+      elseif(isw.eq.4)then
+
+C Copy the standard db to project folder. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+
+C If the default is to be copied ask for local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.   
+        if(copydef)then
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,DFMUL)
+        else
+          call edisp(iuout,'The source file is:')
+          call edisp(iuout,LFMUL)
+        endif
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.constrdb'
+        endif
+   46   CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'multicon.db','copied constructions database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &      LTMP(1:lnblnk(LTMP))
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          DFMUL(1:lnblnk(DFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic as in materials database copy command.
+              message='getting constructions db file from '
+              call dbdoscopy(DFMUL,lcopy,message,doit,ier)
+            endif
+            call lusrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LFMUL=LTMP
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          LFMUL(1:lnblnk(LFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Logic as in materials database copy command.
+              message='getting constructions db file from '
+              call dbdoscopy(LFMUL,lcopy,message,doit,ier)
+            endif
+            call lusrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+            LFMUL=LTMP
+          endif
+          write(outs,'(2a)') 'Accessing constructions db: ',
+     &      LCOPY(1:lnblnk(LCOPY))
+          call edisp(iuout,outs)
+          call tstamp('>','PRJ: enter construction db')
+          CALL ERMLDB(0,IUOUT,IER)
+          IF(IER.eq.1)then
+
+C there was a minor problem scanning the constructions db.
+            call usrmsg(
+     &     'There were a few problems scanning the constructions db',
+     &     'and perhaps the materials db. Please double check.','W')
+            goto 38
+          ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it.
+            call usrmsg(
+     &        ' The materials database probably needs to be',
+     &        ' restored from archival ASCII version.','W')
+            return
+          endif
+          MLDBOK=.TRUE.
+          call tstamp('>','PRJ: enter construction db')
+          CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+          if(IER.EQ.1)then
+            CALL USRMSG(' ','Problem accessing construction db','W')
+            goto 38
+          endif
+          moddb=modmlc
+          modcon=modmlc
+        else
+          goto 46
+        endif
+      endif
+
+      return
+      end
 
 C ********** EDDBPCDB
 C EDDBPCDB Changes the plant component database current cfg file references.
