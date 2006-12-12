@@ -1056,9 +1056,9 @@ C Databases associated with the model.
         WRITE(outs,'(2A)')' event profiles         : ',
      &    LPRFDB(1:lnblnk(LPRFDB))
         call edisp(itu,outs)
-        WRITE(outs,'(2A)')' optical properties     : ',
+        WRITE(outs248,'(2A)')' optical properties     : ',
      &    LOPTDB(1:lnblnk(LOPTDB))
-        call edisp(itu,outs)   
+        call edisp248(itu,outs248,100)   
       endif
 
 C Control in the model

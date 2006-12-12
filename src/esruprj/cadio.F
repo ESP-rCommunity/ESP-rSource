@@ -1277,7 +1277,8 @@ C wtarentry: write entry in tar names file taking into account case where file
 C name begins with ../ .
       subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf,ier)
       logical pathome,unixok
-      character tp*32,tr*32,lf*72,fs*1
+      character*(*) lf
+      character tp*32,tr*32,fs*1
 
       call isunix(unixok)
       if(unixok)then
@@ -1392,7 +1393,8 @@ C ICLIM,LCLIM (for climate file)
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character LTDF*72,LTDFA*72,GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72,LF*72
+      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
+      character LF*72,LFL*144
       CHARACTER dmdsdesc*248,bdmds*72,spflnam*72,entflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LASCI
       character hvacfile*72,LAIM2*72,LBSIMP*72
@@ -1620,7 +1622,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.2)then
           LF=LFMUL
         elseif(i.eq.3)then
-          LF=LOPTDB
+          LFL=LOPTDB
         elseif(i.eq.4)then
           LF=LAPRES
         elseif(i.eq.5)then
@@ -1630,16 +1632,22 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LF=LPCDB
         endif
-        if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+        if(i.eq.3)then
+          if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
+          endif
+        else
+          if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
 
 C Place to write out ascii version of constructions db if a local
 C file exists.
-          if(i.eq.1)then
-            IUF=IFIL+2
-            write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
-            CALL MKAPRC(IUOUT,LASCI,IUF,IER)
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI,ier)
+            if(i.eq.1)then
+              IUF=IFIL+2
+              write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
+              CALL MKAPRC(IUOUT,LASCI,IUF,IER)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI,ier)
+            endif
           endif
         endif
   41  continue

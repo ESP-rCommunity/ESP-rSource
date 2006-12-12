@@ -4,8 +4,8 @@ C Strathclyde, Glasgow Scotland, 2001-2006.
 
 C espriou.h holds common block for file units and file I/O.
 
-C currentfile (72 char) remembers the name of the file currently being read.
+C currentfile (144 char) remembers the name of the file currently being read.
       common/curfile/currentfile
-      character currentfile*72
+      character currentfile*144
 
 C end of espriou.h

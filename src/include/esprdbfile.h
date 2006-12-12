@@ -9,10 +9,10 @@ C iapres  - file unit for wind pressure coef database
       common/APRES/LAPRES,IAPRES
       character LAPRES*72
 
-C LOPTDB - (72 char) optical database file name
+C LOPTDB - (144 char) optical database file name
 C IOPTDB - unit number of optical database
       COMMON/GOPTDB/LOPTDB,IOPTDB
-      character LOPTDB*72
+      character LOPTDB*144
 
 C LPCDB - (72 char) plant template database file name
 C IPCDB - unit number of plant template database
@@ -42,7 +42,8 @@ C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics, DPRFDB - default events
 C DPCDB - default plant components
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPRFDB,DPCDB
+      character DOPTDB*144
 
 C Define as integers.
       integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
