@@ -148,6 +148,7 @@ C then set iclkok variable and jump to browse functions.
       else
         LASCI=LCTLF
         if(browse)then
+          ICTLF=IFIL+1
           CALL ERPFREE(ICTLF,ISTAT)
           call FINDFIL(LCTLF,XST)
           if(XST)then
