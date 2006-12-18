@@ -1,0 +1,47 @@
+# composite construction db defined in ../databases/Cond.mlc
+# based on materials db ../databases/prim.db
+    7     # no of composites 
+# layers  description   optics name   symmetry tag
+    4    Surf_type_1   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+# layers  description   optics name   symmetry tag
+    2    Surf_type_2   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    2    0.0500  material B
+    2    0.0500  material B
+# layers  description   optics name   symmetry tag
+    1    Surf_type_3   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    3    0.0050  material C
+# layers  description   optics name   symmetry tag
+    7    Surf_type_4   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+    2    0.0500  material B
+    2    0.0500  material B
+    3    0.0050  material C
+# layers  description   optics name   symmetry tag
+    7    Surf_type_5   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    3    0.0050  material C
+    2    0.0500  material B
+    2    0.0500  material B
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+    1    0.0500  material A
+# layers  description   optics name   symmetry tag
+    1    cond_5.0      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   41    0.1000  ext_wall_mat
+# layers  description   optics name   symmetry tag
+    1    cond_1.0      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   42    0.1000  int_surf_mat
