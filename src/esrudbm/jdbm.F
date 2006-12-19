@@ -22,6 +22,7 @@ C dbm provides access to generic esp-r database, conversions
 C and editing facilities.
 
       program dbm
+#include "esprdbfile.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
 
@@ -51,9 +52,6 @@ C Path to problem and command line file (if any).
 
 C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
-
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Generic db commons.
       common/gendb/LGENDB
@@ -87,7 +85,6 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
-      CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72,tfile*72
       character longtfile*144
       character gendbfn*72,dgendbfn*72,outs248*248,LTMP*144
@@ -994,11 +991,13 @@ C    most dependant
 C ier returned as non-zero if a problem in scanning files.
 
       subroutine dealwithgdb(act,ier)
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/PRODB/LPRFDB,IPRODB
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -1020,7 +1019,6 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       character H*72,outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
-      character LFCON*72,LFMUL*72,LPRFDB*72
       logical unixok,gendbok
 
 C Set folder separator (fs) to \ or / as required.
@@ -1602,11 +1600,10 @@ C browse restricts user options, moddb is returned as true
 C if database names have changed.
 
       subroutine modifygdb(act,db,jdbhash,browse,moddb,ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/PRODB/LPRFDB,IPRODB
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/rpath/path
@@ -1630,7 +1627,6 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72,path*72,longtfile*144
-      character LFCON*72,LFMUL*72,LPRFDB*72
       logical unixok,gendbok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
 

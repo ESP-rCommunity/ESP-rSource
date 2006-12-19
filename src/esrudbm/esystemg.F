@@ -97,8 +97,6 @@ C IFLWN   - plant fluid flow simulation index (1 = on).
 C ICFFS   - fluid flow network node associated with each plant component. 
 C           NB fluid flow network & plant energy network need not be matched.
 C LAPROB  - fluid flow model description file.
-C LAPRES  - wind pressure coefficients distribution database.
-C LAFRES  - fluid flow network results file.
 
 C ICFFS   - fluid flow network node associated with each plant
 C           component. NB fluid flow network and plant energy
@@ -114,6 +112,15 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 #include "uncertainty.h"
 #include "gnetwk.h"
 #include "dhw_common.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+C default file names for databases
 
       PARAMETER (MSTMC=1)
 
@@ -148,7 +155,6 @@ C GRDR viewfactor from external surfaces to the ground
 C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
 C NZSUR is the number of surfaces in each zone.
@@ -160,10 +166,6 @@ C cfgroot (24 char) root name for the model (used when generating
 C   system files.
 C LCFGF (72 char) model configuration file name.
       common/C21/IFCFG,cfgroot,LCFGF
-
-C ICLIM is the file unit for the climate database.
-C LCLIM (72 char) climate file associated with model.
-      COMMON/C22/ICLIM,LCLIM
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -177,7 +179,7 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/PREC8/SLAT,SLON
       COMMON/G0/CTYPE
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C ZMFN1 (124 char) holds first line of flow node->zone links
 C ZMFN2 (124 char) holds second line of flow node->zone links
@@ -206,26 +208,11 @@ C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
 
-C Profiles database.
-      COMMON/PRODB/LPRFDB,IPRODB
-
-C Material and construction databases.
-C LFCON (72 char) materials database name.
-C IFCON file unit number for materials database.
-C LFMUL (72 char) constructions database name.
-C IFMUL file unit number for constructions database.
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
-
-C Optical db.
-C LOPTDB (72 char) optical database name.
-C IOPTDB file unit number for optical database.
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C LPRJLG (72 char) model log file.
       COMMON/LOG/LPRJLG
@@ -240,16 +227,6 @@ C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-C Defaults.
-C DCLIM (72 char) name of default climate file. Scanned from `default` file.
-C DAPRES (72 char) name of default wind pressure database.
-C DFCON (72 char) name of default materials database.
-C DFMUL (72 char) name of default constructions (MLC) database.
-C DOPTDB (72 char) name of default optical database. 
-C DPRFDB (72 char) name of default event profiles database.
-C DPCDB (72 char) name of default plant template database.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -421,15 +398,14 @@ C Generic databases.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB,LTDF,LTDFA
-      character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
+      character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,currentfile*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72

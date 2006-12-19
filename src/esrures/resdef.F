@@ -42,7 +42,7 @@ C routines.
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -58,7 +58,8 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
-      character LTMP*72,RFILE*72,H*72,outs*124
+      character LTMP*72,H*72,outs*124
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -784,6 +785,7 @@ C where they are first referenced.
 
       SUBROUTINE MOINIT(ISTREC)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -798,7 +800,6 @@ C where they are first referenced.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/RECV6/LCLIM
 C      COMMON/RECV7/ZOA(MCOM)
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
@@ -816,13 +817,11 @@ C      COMMON/RECV7/ZOA(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LCLIM,LCFGF,CHDUM
+      CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
       CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24

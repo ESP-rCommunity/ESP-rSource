@@ -22,11 +22,11 @@ C PCEDIT of ESRUpdb
 
 C This routine allows the user to edit certain items of a component.
 C The following items can be edited:
-C	Component generic type.
-C	Component description.
-C	Component code.
-C       Component nodal description.
-C       Miscellaneous data.
+C  Component generic type.
+C  Component description.
+C  Component code.
+C  Component nodal description.
+C  Miscellaneous data.
 
 C 'ival'=0 , means that component is already in database.
 C 'ival'=n , means that some values should be changed before inserting
@@ -88,9 +88,9 @@ C Check if library empty.
         endif
 
 C Dsiplay components lilst and get selection.
-     	inpc=npc
-	nitems=1
-	call list(inpc,ivals,nitems,ix)
+        inpc=npc
+        nitems=1
+        call list(inpc,ivals,nitems,ix)
         if (ix.eq.0) return
 
 C Read component data from data base.
@@ -116,15 +116,15 @@ C Edit component generic type.
  1020   call edisp(iuout,' ')
         write(buffer,'(a,a40)') ' Old generic type ',zgtype
         call edisp(iuout,buffer)
-  	h(1)='The generic type describes the group under which a '
+        h(1)='The generic type describes the group under which a '
         h(2)='component comes under. For instance, a water pump '
         h(3)='generic type is used for both centrifugal and '
         h(4)='reciprocating water pumps.'
         h(5)='A maximum of 40 characters may be used.'
         CALL EASKS(zgtype,' New generic type? ',' ',
      &    40,' ',' Generic type',IER,5)
-         if(ier.ne.0)goto 1020
-         ichang=1
+        if(ier.ne.0)goto 1020
+        ichang=1
 
 C Edit component description.
       elseif(ino.eq.2) then
@@ -179,7 +179,7 @@ C Display non-zero matrix coefficients.
             do 312 i=1,nmatx
               write(buffer,322) i,ncpos(i)
               call edisp(iuout,buffer)
-  322  	      format(' coefficient',I3,': position',i3)
+  322         format(' coefficient',I3,': position',i3)
   312       continue
             if(nmatx.eq.1) then
                item=1
@@ -213,8 +213,8 @@ C Edit external connectivity of node(s).
             write(buffer,'(a,i5)') ' Number of nodes:', nnode
             call edisp(iuout,buffer)
             call edisp(iuout,' ')
-	    do 346 i=1, nnode
-	       write(buffer,347) i,ndcon(i)
+            do 346 i=1, nnode
+              write(buffer,347) i,ndcon(i)
                call edisp(iuout,buffer)
   347          format(' node',i3,': connectivity value',i3)
   346       continue
@@ -244,11 +244,11 @@ C Edit state variable index of node(s).
             IF(.NOT.OK)GOTO 368
             call edisp(iuout,' ')
             write(buffer,'(a,i5)') ' Number of nodes:', nnode
-	    do 366 i=1,nnode
-	      write(buffer,367) i,isv(i)
+            do 366 i=1,nnode
+              write(buffer,367) i,isv(i)
               call edisp(iuout,buffer)
-  367	      format(' node',i3,': state variable index',i3)
-  366	    continue
+  367         format(' node',i3,': state variable index',i3)
+  366       continue
             if(nnode.eq.1) then
               item=1
               goto 1100
@@ -266,7 +266,7 @@ C Edit state variable index of node(s).
             h(7)='water    0              10                   20'
             h(8)='air      1              11                   21'
             h(9)='solid    9              19                   29'
-	    itemv=isv(item)
+            itemv=isv(item)
             CALL EASKI(itemv,' ',' New state variable index? ',
      &             0,'-',0,'-',1,' state variable index?',IER,9)
             if(ier.ne.0)goto 1100
@@ -286,11 +286,11 @@ C Edit components code numbers.
             call edisp(iuout,' ')
             write(buffer,'(a,i5)') ' Number of components:',mncomp
             call edisp(iuout,buffer)
-	    do 385 i=1, mncomp
-	      write(buffer,383) i,micode(i)
-	      call edisp(iuout,buffer)
-  383	      format(' component',i3,': code number',i6)
-  385	    continue
+            do 385 i=1, mncomp
+              write(buffer,383) i,micode(i)
+              call edisp(iuout,buffer)
+  383         format(' component',i3,': code number',i6)
+  385       continue
             if(mncomp.eq.1) then
               item=1
               goto 1120
@@ -324,15 +324,15 @@ C Edit components inter-connections.
             call edisp(iuout,buffer)
   410       format(
      &         6x,'C1',5x,'N1',5x,'CT',5x,'C2',5x,'N2',7x,'MDR',
-     &	       6x,'MISC1',5x,'MISC2')
-	    do 412 i=1,mncon
-	      write(buffer,415) (icndat(i,l),l=1,5),
-     &		  (rcndat(i,ll),ll=1,3)
-     	      call edisp(iuout,buffer)
-  415 	      format(5(2x,i5),2x,f10.3,2(2x,f8.3))
+     &         6x,'MISC1',5x,'MISC2')
+            do 412 i=1,mncon
+              write(buffer,415) (icndat(i,l),l=1,5),
+     &          (rcndat(i,ll),ll=1,3)
+              call edisp(iuout,buffer)
+  415         format(5(2x,i5),2x,f10.3,2(2x,f8.3))
   412       continue
             if(mncon.eq.1) then
-              icon=1
+              item=1
               goto 1140
             endif
  1130       item=0
@@ -350,10 +350,10 @@ C Edit components inter-connections.
             h(9)=' MDR  : Mass diversion ratio'
             h(10)=' MISC1: First miscellaneous data'
             h(11)=' MISC2: Second miscellaneous data'
-	       write(ltmp,416) (icndat(item,l),l=1,5),
-     &		  (rcndat(item,ll),ll=1,3)
-  416 	       format(5(2x,i5),2x,f10.3,2(2x,f8.3))
-  	    CALL EASKS(ltmp,' New values? ',
+            write(ltmp,416) (icndat(item,l),l=1,5),
+     &        (rcndat(item,ll),ll=1,3)
+  416         format(5(2x,i5),2x,f10.3,2(2x,f8.3))
+            CALL EASKS(ltmp,' New values? ',
      &       ' ',80,' ','connection values?',IER,11)
             if(ier.ne.0)goto 1140
             k=0
@@ -393,13 +393,13 @@ C Edit ADATA variables.
            IF(.NOT.OK)GOTO 530
            call edisp(iuout,' ')
            call edisp(iuout,' ADATA variables:')
-  	   do 520 i=1,nadata
+           do 520 i=1,nadata
              write(buffer,515) i,dtdesc(i)
              call edisp(iuout,buffer)
              write(buffer,517) datams(i)
              call edisp(iuout,buffer)
   515        format(i5,1x,a68)
-  517	     format(6x,'Value = ',g12.5)
+  517        format(6x,'Value = ',g12.5)
   520      continue
  1150      if(nadata.eq.1) then
              item=1
@@ -428,14 +428,14 @@ C Edit BDATA variables.
            IF(.NOT.OK)GOTO 560
            call edisp(iuout,' ')
            call edisp(iuout,' BDATA variables:')
-  	   do 550 j=1,nbdata
+           do 550 j=1,nbdata
              i=j+nadata
              write(buffer,545) j,dtdesc(i)
              call edisp(iuout,buffer)
              write(buffer,547) datams(i)
              call edisp(iuout,buffer)
   545        format(i5,1x,a68)
-  547	     format(6x,'Value = ',g12.5)
+  547        format(6x,'Value = ',g12.5)
   550      continue
  1180      if(nbdata.eq.1) then
              item=1
@@ -466,7 +466,7 @@ C Edit CDATA variables (description only).
            IF(.NOT.OK)GOTO 590
            call edisp(iuout,' ')
            call edisp(iuout,' CDATA variables:')
-  	   do 580 j=1,ncdata
+           do 580 j=1,ncdata
              i=j+nadata+nbdata
              write(buffer,575) j,dtdesc(i)
              call edisp(iuout,buffer)

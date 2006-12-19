@@ -641,6 +641,9 @@ C allow this to be saved. ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -648,7 +651,6 @@ C Optical and geometric properties.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -667,7 +669,6 @@ C Optical and geometric properties.
       CHARACTER TITL*72,NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER LFCON*72,LFMUL*72
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
@@ -974,8 +975,8 @@ C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -996,7 +997,7 @@ C zone construction file with minimum intervention by the user.
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
-      CHARACTER*72 LFMUL,LFCON,NAM,TITL
+      CHARACTER NAM*72,TITL*72
 
 C Assume no window optical properties asked for.
       IER=0
@@ -1857,8 +1858,8 @@ C ******* SCNTCNST
 C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
@@ -1868,7 +1869,7 @@ C Loop through referenced mlc and derives the longest timeconstant.
 c ITCNST  - number of start-up days
       COMMON/PREC7/ITCNST
 
-      character LFCON*72,LFMUL*72,NAM*72,TITL*72,outs*124
+      character NAM*72,TITL*72,outs*124
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,DESC*48,SSPARENT*12
       logical found

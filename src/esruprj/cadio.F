@@ -1313,6 +1313,15 @@ C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
@@ -1321,24 +1330,19 @@ C << to be done - then name file generated is never cleaned up >>
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       common/C3F/LCNN
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1368,12 +1372,12 @@ C << to be done - then name file generated is never cleaned up >>
       common/aim2def/iAIM2,LAIM2
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character*72 LFMUL,LFCON,LPRJLG,LPNF,LMOIST
+      character LPRJLG*72,LPNF*72,LMOIST*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
-      character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
+      character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72

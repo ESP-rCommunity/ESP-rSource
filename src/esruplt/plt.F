@@ -62,6 +62,7 @@ c Adam Hilger Ltd, Bristol and Boston, June 1985.
       program plt
 #include "building.h"
 #include "plant.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -84,7 +85,6 @@ c Adam Hilger Ltd, Bristol and Boston, June 1985.
 
 C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results libraries.
       common/reclen/nzrl,nprl,nerl
-      COMMON/C22/ICLIM,LCLIM
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -96,15 +96,13 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       LOGICAL     OK,dok,unixok
 
       CHARACTER*27 ITEM(9)
-      character H*72,ltmp*72,lclim*72,outs*144,inf*144,LCMDFL*144
+      character H*72,ltmp*72,outs*144,inf*144,LCMDFL*144
       character path*72,upath*72,esprc*72,cupath*72,outs248*248
       character dfdblbl*20,defdbfl*72,fs*1
 

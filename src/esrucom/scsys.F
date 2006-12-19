@@ -31,6 +31,15 @@ C been checked elsewhere.
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+C default file names for databases
 
       PARAMETER (MSTMC=1)
 
@@ -50,11 +59,9 @@ C been checked elsewhere.
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
@@ -64,8 +71,9 @@ C been checked elsewhere.
       COMMON/G0/CTYPE
 
 C Common blocks as in esystem.F (some omitted).
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
+
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -74,14 +82,10 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/defdb/dfdblbl,defdbfl
@@ -214,15 +218,14 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      character*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB,LTDF,LTDFA
-      character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      character*72 LAPROB,LPNF,LTDF,LTDFA
+      character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,CTYPE*3,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,currentfile*72
       CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72

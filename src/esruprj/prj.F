@@ -33,6 +33,15 @@ C ********** MAIN
       program prj
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+C default file names for databases
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -43,31 +52,22 @@ C ********** MAIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/C6/INDCFG
-      common/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
       common/CFGV/icfgv
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-
-C Profiles database.
-      common/PRODB/LPRFDB,IPRODB
-
-C Optical db.
-      common/GOPTDB/LOPTDB,IOPTDB
 
 C Project log file, journal on/off, unit number, cmd, file name.
       common/LOG/LPRJLG
@@ -98,7 +98,6 @@ C Where exemplars list and default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/deflt4/dinstpath
 
 C Images.
@@ -144,15 +143,14 @@ C Dispersed demands notes and file name.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LFMUL,LFCON,LCFGF,H,LPRJLG
+      character*72 LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
-      character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
+      character LAPROB*72
       character ITEMS(27)*33
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
@@ -1175,6 +1173,7 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
+#include "esprdbfile.h"
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -1185,7 +1184,7 @@ C to include the path and create a string to drive the modules.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -1219,7 +1218,7 @@ C level).
       character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,ENTFLNAM,lipvdatf
+      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
       character cfgroot*24,cr*24,spfdescr*8
 
 C dd is character array for selecting simulation parameter sets.
@@ -3815,6 +3814,7 @@ C << message to user that such a file does not exist
 
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
+#include "esprdbfile.h"
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
@@ -3836,7 +3836,7 @@ C Path to model and command line file (if any).
       common/cctlnm/ctldoc,lctlf
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -3844,7 +3844,6 @@ C Path to model and command line file (if any).
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -3857,9 +3856,9 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72,LCNN*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFCON,LFMUL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCTLF,LCFD
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB,LAPRES,LAFRES
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
       CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,CTLDOC*248,OUTSTR*124

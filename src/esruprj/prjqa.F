@@ -32,6 +32,14 @@ C the current model.
 #include "control.h"
 #include "plant.h"
 #include "tdf2.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -45,12 +53,8 @@ C the current model.
       CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
-      common/C7/LPCDB
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
-      common/GOPTDB/LOPTDB,IOPTDB
-      common/PRODB/LPRFDB,IPRODB
 
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
@@ -66,7 +70,6 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -90,7 +93,7 @@ C LPNF (72 char) plant network file name.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
@@ -185,7 +188,7 @@ C Remember if each zone is fully attributed.
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
-      character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
+      character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
@@ -197,8 +200,8 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
-      character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LOPTDB,LPCDB,LPRFDB
+      character dstmp*24,mlcname*12,currentfile*72
+      CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24

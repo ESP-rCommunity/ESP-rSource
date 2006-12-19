@@ -125,6 +125,9 @@ C attributes are known.
 
       SUBROUTINE GZPDBE(ICOMP,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -136,11 +139,10 @@ C IPRZ is primitive db ref for each layer.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      CHARACTER LFCON*72,LFMUL*72,outs*124,DESC*48,NAM*72,TITL*72
+      CHARACTER outs*124,DESC*48,NAM*72,TITL*72
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
 
 C Open the primitive construction db if not already done.
@@ -391,12 +393,13 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
 
-      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,RFILE*72
+      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SN*12
       character act*1

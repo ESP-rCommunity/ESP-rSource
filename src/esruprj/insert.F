@@ -251,7 +251,6 @@ C menu so that can return to where we were. Also connected surface.
           CALL EPMENRC
           if(iz.eq.icomp)goto 99
           if(iz.eq.0)return
-          call usrmsg(' ',' ','W')
           same=.false.
         elseif(ISCOPT.eq.2)then
           same=.true.

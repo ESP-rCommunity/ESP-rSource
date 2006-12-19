@@ -792,20 +792,22 @@ C and calculate the pressure coeffcients
       SUBROUTINE CPCACAL (IER)
 #include "net_flow.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
+C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
-      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
       CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      CHARACTER LAPROB*72,LTMP*72
       character doit*248
 
       dimension Xdom(10),Ydom(10),Zdom(10),azdom(4)
@@ -1300,11 +1302,16 @@ C Read in pc from file c2e.cpdb
           if (ier.ne.0) return
 
 C Write data to new file. 
-          LAPRES=' '
+ 777      LAPRES=' '
+          LTMP=LAPRES
           H(1)='To which file do you want to write the data?'
-          CALL EASKS(LAPRES,' Pressure coefficients database?',
+          CALL EASKS(LTMP,' Pressure coefficients database?',
      &         ' ',72,DAPRES,'pressure coefficients database',IER,1)
-          call EMKAPCDB(LAPRES,IER)
+          if(LTMP.ne.'  ')then
+            call EMKAPCDB(LAPRES,IER)
+          else
+            goto 777
+          endif
         ELSE
 
 C Read in pc from file c2e.cpdb
@@ -1314,7 +1321,8 @@ C Read in pc from file c2e.cpdb
           if (ier.ne.0) return
 
 C If LAPRES=DAPRES change LAPRES to local pressc.db1 and write data.
-          if(LAPRES.eq.DAPRES) LAPRES='pressc.db1'
+          if(LAPRES(1:lnblnk(LAPRES)).eq.
+     &       DAPRES(1:lnblnk(DAPRES))) LAPRES='pressc.db1'
           call EMKAPCDB(LAPRES,IER)
         ENDIF
       endif
@@ -1330,14 +1338,15 @@ C current contents of pc-data in common block.
       SUBROUTINE EMKAPCDB(FINA,IER)
 #include "net_flow.h"
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      character*72 LAPRES,LAPROB,LAFRES,FINA
+      character LAPROB*72,FINA*72
       character DEPRE*40
 
 C Check the number of pressure coefficients and give a warning 
@@ -1377,11 +1386,12 @@ C IER=0 OK, IER=1 problem.
 #include "net_flow.h"
 #include "epara.h"
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/pophelp/h(60)
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -1391,7 +1401,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER PCITM(35)*42
       character DEPRE*40,KEY*1,outwin*72,H*72,COMPS*40
       character*72 ITEMS(14)
-      character*72 LAPRES,LAPROB,LAFRES
+      character LAPROB*72
       LOGICAL OK,dok,moddb
 
       IER=0

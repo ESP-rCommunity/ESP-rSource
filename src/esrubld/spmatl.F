@@ -623,6 +623,9 @@ C of the component has only beed roughly verified.
 #include "building.h"
 #include "plant.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure databases)
 
 C Special materials
       COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
@@ -641,7 +644,7 @@ C Special materials
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -652,7 +655,7 @@ C Special materials
 
 
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72
       logical close
 
 C Read in the component data.

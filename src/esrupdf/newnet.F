@@ -61,7 +61,7 @@ C     simtyp - holds description of simulation type.
 
 C Mass flow network.
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -101,7 +101,7 @@ C Common controlling format of plant network file
       save bInitialized
       
       character*20 simtyp(3)
-      character*72  lpnam,laprob, lapres, lafres,LPNF
+      character lpnam*72,laprob*72,LPNF*72
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
@@ -165,7 +165,7 @@ C Read in the configuration file.
       if(lctlf(1:3).NE.'UNK'.AND.lctlf(1:2).NE.'  ') CALL SCANBPLINK
 
 C Open plant component data base.
-      call opnpdb(iupdb,1)
+      call opnpdb(1)
       CALL USRMSG(' ',' ','-')
 
 C Read components data from database
@@ -2087,6 +2087,7 @@ C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2095,7 +2096,6 @@ C The routine presents a list of surface layers.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION PNAM(ME),item(ME+10)
@@ -2103,7 +2103,7 @@ C The routine presents a list of surface layers.
       integer header,footer
       character item*32
       CHARACTER DESC*48,NAM*72,PNAM*20,H*72
-      CHARACTER TITL*72,SNAME*12,LFCON*72,LFMUL*72
+      CHARACTER TITL*72,SNAME*12
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
 
 C Check composite name of surface with composite name in MLC common.
