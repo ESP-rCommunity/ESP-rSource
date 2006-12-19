@@ -1,10 +1,10 @@
-# composite construction db defined in ../../databases/WM.mlc
-# based on materials db ../../databases/prim.db
+# composite construction db defined in ../databases/WM.mlc
+# based on materials db ../databases/prim.db
     9     # no of composites 
 # layers  description   optics name   symmetry tag
     8    Type_n.1      OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-   21    0.0400  Outer layer
+   34    0.0400  Outer0em layer
    21    0.0400  Outer layer
    21    0.0350  Outer layer
    22    0.0600  Mineral wool 1
@@ -40,7 +40,7 @@
 # layers  description   optics name   symmetry tag
     6    Type_n.5      OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-   29    0.0040  Rain protection
+   35    0.0040  Rain0em protection
    30    0.0800  Mineral wool 2
    31    0.0500  Concrete
    31    0.0500  Concrete
@@ -49,17 +49,17 @@
 # layers  description   optics name   symmetry tag
     3    sgl_glz_shd   TRAN  SG_CEN_shd    NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-   32    0.0020  shade
+   32    0.0020  2mm shade
     0    0.0060  air  0.080 0.080 0.080
-   33    0.0060  glass
+   33    0.0060  6mm glass
 # layers  description   optics name   symmetry tag
     5    dbl_glz_shd   TRAN  DG_CEN_shd    NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-   32    0.0020  shade
+   32    0.0020  2mm shade
     0    0.0060  air  0.080 0.080 0.080
-   33    0.0060  glass
+   33    0.0060  6mm glass
     0    0.0060  air  0.170 0.170 0.170
-   33    0.0060  glass
+   33    0.0060  6mm glass
 # layers  description   optics name   symmetry tag
     5    Type_n.3-flr  OPAQ  OPAQUE        Type_n.3      
 # mat ref thickness (m) mat descr & air gap R
