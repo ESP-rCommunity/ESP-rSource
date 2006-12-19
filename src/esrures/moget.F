@@ -1261,7 +1261,9 @@ C Solar processes.
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         
-C        call easkok('Report per square meter of surface',' ',OK)
+C        dok=.false.
+C        h(1)='The normal report is for the whole surface. '
+C        call askok('Report per square meter of surface',' ',OK,dok,1)
 C        if(ok)ISM=1
 C        slist=.true.
 C        if (ISM.eq.0) then
@@ -1527,8 +1529,9 @@ C Set up surface flux selection items.
         CALL EPICKS(IX,IVALS,' ',' Surface fluxes:',
      &         23,18,ITEMS,'surface fluxes',IER,4)
         if(IVALS(1).eq.0)goto 1
-        call usrmsg('  ','  ','-')
-        call easkok('Report per square meter of surface',' ',ok)
+        dok=.false.
+        h(1)='The normal report is for the whole surface. '
+        call askok('Report per square meter of surface',' ',OK,dok,1)
         ism=0
         if(ok)ism=1
         inoc=IVALS(1)

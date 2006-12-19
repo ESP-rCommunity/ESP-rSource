@@ -2468,8 +2468,10 @@ C Scan was ok so set mldbok to true.
           MLDBOK=.TRUE.
         endif
       else
+
+C Could not find constructions db (at this time), report to user.
         write(outs,'(3a)') ' No constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found!'
+     &     LFMUL(1:lnblnk(LFMUL)),' found!'
         call edisp(iuout,outs)
         MLDBOK=.FALSE.
       endif
@@ -2490,6 +2492,9 @@ C Open the pressure coef db (needed for network flow descriptions).
       if(XST)then
         CALL ERPRCDB(LAPRES,0,3,IER)
         call usrmsg(' ',' ','-')
+      else
+        call usrmsg(' Wind pressure db not found or there was a',
+     &  ' problem reading it!','W')
       endif
 
       return
@@ -3154,89 +3159,3 @@ C from version manager
       
       RETURN
       END
-
-C ********** dbdoscopy *********
-C dbdoscopy takes a source file and a destination file (with
-C   path) and converts any forward slashes to backwards slashes and detects
-C   spaces and creates and returns the doit command.
-C source (72 char) source file (with path).
-C lcopy (72 char) destination file (with path)
-C message (48 char) feedback to echo when preparing doit
-C doit (248 char) the command to execute
-C ier is zero if ok.
-      subroutine dbdoscopy(source,lcopy,message,doit,ier)
-      common/OUTIN/IUOUT,IUIN
-
-C Strings for dos version of source and destination of db file.
-      character rootpdos*72,upathdos*72,dq*1,outs*124
-      character source*72,lcopy*72,message*48,doit*248
-      logical unixok
-      integer lnrp  ! length of source file name
-      integer lnblankrp ! position of blank in source file
-      integer lnup  ! length of destination file name
-      integer lnblankup ! position of blank in source file
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        call usrmsg('dbdoscopy is being called on a Unix/Linux/OSX',
-     &    'computer environment - which could cause errors.','W')
-      endif
-
-C Make up a double quote for dos copy command, reset ier to zero
-C and clear the doit return string buffer.
-      dq = char(34)
-      ier=0
-      doit=' '
-
-C Debug statements for native windows version. If lnblankrp or
-C lnblankup is one then there are no spaces in the string so double quotes
-C are not required.  But in either case it is useful to change any '/'
-C in rootp and upath to '\'. 
-      rootpdos=' '
-      upathdos=' '
-      lnrp=lnblnk(source)
-      lnblankrp=iprevblnk(source,lnrp)
-      call backslashit(source,rootpdos) ! change / to \
-      write(outs,'(3a)') message,' ',rootpdos(1:lnrp)
-      call edisp(iuout,outs)
-
-      lnup=lnblnk(LCOPY)
-      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
-      call backslashit(LCOPY,upathdos)
-      write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-      call edisp(iuout,outs)
-
-C Create the doit command based on where there are blanks in the strings.
-      if(lnblankrp.gt.1.and.lnblankup.gt.1)then
-
-C There are blanks in both source or destination strings.
-        write(doit,'(8a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lnup),dq
-      elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
-
-C There are blanks in destination string.
-        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lnup),dq
-      elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
-
-C There are blanks in source string.
-        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lnup)
-      elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
-
-C There are no blanks in either source or destination strings.
-        write(doit,'(4a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    rootpdos(1:lnrp),' ',upathdos(1:lnup)
-      endif
-
-      return
-
-C Errors.
- 552  call usrmsg(
-     &  'Error creating the dos copy command (might not work)',
-     &  doit,'W')
-      ier=1
-      return
-      end
-

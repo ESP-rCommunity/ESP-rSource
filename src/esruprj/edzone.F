@@ -1532,6 +1532,10 @@ C IER=0 OK.
       character longtfile*144,longtfiledos*144
       character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET
+      logical XST,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
       nh = 0
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
@@ -1593,7 +1597,17 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
