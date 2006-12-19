@@ -98,8 +98,8 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,OTHEROK,XST
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
@@ -168,7 +168,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       MODIFY=.FALSE.
 

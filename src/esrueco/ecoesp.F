@@ -532,9 +532,9 @@ C optical properties databases.
 #include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character SOPT*12,outs*124,GDESCR*36
 
@@ -549,10 +549,10 @@ C this to 24 words wide.
         write(outs,'(a,a,a)') ' No construction, materials db ',
      &     LFCON(1:lnblnk(LFCON)),' found!'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
         CALL usrmsg(' Opened construction materials db.',' ','p')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -604,10 +604,10 @@ C the zone no are recorded in NZNOG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALZ(MCOM)
      
@@ -938,11 +938,11 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALZ(MCOM)
 

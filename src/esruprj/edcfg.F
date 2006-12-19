@@ -125,9 +125,9 @@ C Controls.
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
-      logical DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
       logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
@@ -1196,7 +1196,7 @@ C output, IER=0 indicates no error.
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -1207,7 +1207,7 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-      logical OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,context
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
@@ -3232,8 +3232,10 @@ C NEWPRB specifies a new model via existing or new configuration file
 C and the various CAD and native definition facilities. Confirm=true
 C request confirmation of configuration file name, ckpath=true finds
 C the path to it (should be false for CAD use as the file and its
-C location is already known).
-      SUBROUTINE NEWPRB(ITRC,confirm,ckpath,IER)
+C location is already known). If itisanexemplar=true then ensure that
+C browse is set to true in any case because the user has previously
+C selected an exemplar model.
+      SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "esprdbfile.h"
 
@@ -3259,9 +3261,10 @@ C location is already known).
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      logical XST,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      logical MODIFY,MODLEN,MODBND,browse,confirm,ckpath
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical MODIFY,MODLEN,MODBND,browse
+      logical confirm,ckpath,itisanexemplar
       logical unixok,prob
 
       dimension nwlistf(50),ivlist(50)
@@ -3365,10 +3368,10 @@ C If requested, find the path and local file name.
         ldirpath=lnblnk(dirpath)
         call fdroot(LCMDFL,path,LCFGF)
 
-C Debug << check out this on a native windows machine >>
+C Debug (and the following tests are primarily for Linux/OSX/Unix).
         write(t144,*) ' after fdroot path is ',path(1:lnblnk(path))
         call edisp(iuout,t144)
-        write(t144,*) ' lcfgf is ',lcfgf(1:lnblnk(lcfgf))
+        write(t144,*) ' model configuration is ',lcfgf(1:lnblnk(lcfgf))
         call edisp(iuout,t144)
         if(path(1:2).eq.'./')then
 
@@ -3390,16 +3393,19 @@ C There were folder separators in the name.
           call ckaccess(ifold,iaccess,icerr,path)
 
 C Debug.
-          write(t144,*) 'a iaccess is ',iaccess,icerr,ifold,path
-          call edisp(iuout,t144)
+C          write(t144,*) 'a iaccess is ',iaccess,icerr,ifold,path
+C          call edisp(iuout,t144)
           if(iaccess.eq.1)then
 
 C If iaccedss is non-zero then we do not have permission to write there
 C and so we treat that model as if browsing.
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
+            call edisp(iuout,
+     &'Folder permission prevents modificaton (only browse allowed).')
           else
             browse=.false.
+            call edisp(iuout,'User can modify this model.')
           endif
 
 #ifdef GTK
@@ -3423,34 +3429,46 @@ C Debug.
             browse=.false.
             call edisp(iuout,'User can modify this model.')
           else
-            call tstamp('>','PRJ: on browse mode')
-            browse=.true.
-            call edisp(iuout,
-     &        'User canot modify this model (only browse).')
+
+C We could get false browse=.true. in terms of the logic.
+C The check against the location of the exemplar models
+C as defined in the default file (which was done above)
+C should be retained. At this point just continue.
+            continue
           endif
 #endif
         endif
       else
 
-C Called without request to check paths.
-        ifold=-1
-        call ckaccess(ifold,iaccess,icerr,path)
+C If the user already selected an exemplar just force browse=true
+C otherwise check the folder access permissions.
+        if(itisanexemplar)then
+          browse=.true.
+          call edisp(iuout,'Exemplar models are for browsing.')
+        else
+
+C Called without request to check paths. See if the folder can be
+C writtn to (if iaccess is something other than one.)
+          ifold=-1
+          call ckaccess(ifold,iaccess,icerr,path)
 
 C Debug.
-C        write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
-        if(iaccess.eq.1)then
-          call tstamp('>','PRJ: on browse mode')
-          browse=.true.
-          call edisp(iuout,
-     &      'User canot modify this model (only browse).')
-        else
-          browse=.false.
-          call edisp(iuout,'User can modify this model.')
+C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
+          if(iaccess.eq.1)then
+            call tstamp('>','PRJ: on browse mode')
+            browse=.true.
+            call edisp(iuout,
+     &'Folder permission prevents modificaton (only browse allowed).')
+          else
+            browse=.false.
+            call edisp(iuout,'User can modify this model.')
+          endif
         endif
       endif
 
 C Debug.
-      write(6,*) 'NEWPRB browse status is ',browse
+C      write(t144,*) 'NEWPRB browse status is ',browse,iaccess
+C      call edisp(iuout,t144)
 
 C Get file separator.
       if(unixok)then
@@ -3728,7 +3746,7 @@ C If there is a ground topology read it.
         endif
 
 C Open core databases associated with the exemplar or new model.
-        if(MLDBOK.and.CONDBOK.and.OPTKOK)then
+        if(MLDBOK.and.MATDBOK.and.OPTKOK)then
           continue
         else
           call opendb(ier)

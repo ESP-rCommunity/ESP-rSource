@@ -73,9 +73,9 @@ C Default dbs.
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical OK,DOK,XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
@@ -578,7 +578,7 @@ C Act on the users choice. If no choice return to main menu.
      &                    ' was corrupt','W')
               goto 138
             endif
-            CONDBOK=.TRUE.
+            MATDBOK=.TRUE.
             moddb=.true.
             modcon=.true.
             LFCON=LTMP
@@ -720,7 +720,7 @@ C a new db, populate it and present editing facility.
      &                  ' (check file permissions).','W')
             goto 138
           endif
-          CONDBOK=.TRUE.
+          MATDBOK=.TRUE.
           moddb=.true.
           modcon=.true.
 
@@ -952,13 +952,13 @@ C ascii version of this new project materials db.
 
 C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
           IAF=IFIL+1
-          IF(.NOT.CONDBOK)THEN
+          IF(.NOT.MATDBOK)THEN
 
 C If materials not opened do it now.
             IER=0
             call EFOPRAN(IFCON,LFCON,40,1,IER)
             if(ier.ne.0)return 
-            CONDBOK=.TRUE.
+            MATDBOK=.TRUE.
           ENDIF
 
 C Confirm suggested name and then write out asci file.
@@ -2348,9 +2348,9 @@ C optical properties databases.
       common/OUTIN/IUOUT,IUIN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
@@ -2367,9 +2367,9 @@ C this to 24 words wide.
         write(outs,'(3a)') ' No materials db ',
      &     LFCON(1:lnblnk(LFCON)),' found!'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.

@@ -82,7 +82,7 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
@@ -94,7 +94,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*72,filname2*72,filname1*72,repfile*40
       character inf*72,ouf*72,layname*72,instring*72,lf*72
@@ -330,7 +330,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
         CFGOK=.FALSE.
         MLDBOK=.FALSE.
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
         CTLOK=.FALSE.
 
 C Scan the defaults file for default configuration.

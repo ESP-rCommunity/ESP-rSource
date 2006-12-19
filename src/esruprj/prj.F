@@ -121,7 +121,7 @@ C IPV description.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -137,9 +137,10 @@ C Dispersed demands notes and file name.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
-      logical     OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      logical     MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
-      logical     unixok,isdok,Vldtng,changedit,foundutl
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
+      logical unixok,isdok,Vldtng,changedit,foundutl
+      logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
@@ -164,6 +165,7 @@ C Dispersed demands notes and file name.
       CHARACTER dmdsdesc*248,bdmds*72,cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
+      character useraction*8  ! returned from exemplar access call.
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -262,7 +264,7 @@ C and control files have not been read in and that any files saved will
 C be atrributed.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       browse=.false.
@@ -473,9 +475,8 @@ C If an input file has been specified then load it.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
 
-C Check to see if the command line file is an IDST command
-C file.  If it is, extract configuration file name and command
-C data.
+C Check to see if the command line file is an IDST command file.
+C If it is, extract configuration file name and command data.
           isdok=.false.
           CALL ERPFREE(IFCFG,ISTAT)
           call FPOPEN(IFCFG,ISTAT,1,1,LCMDFL)
@@ -512,18 +513,25 @@ C              write(6,*)'idst naloc =',nidst,naloc
           endif
   23      CALL ERPFREE(IFCFG,ISTAT)
 
+C Call newprb without the need to confirm model but to check its path.
+C << for now assume that the file passed is not an exemplar >>
+          itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
-          call NEWPRB(ITRC,confirm,ckpath,IER)
+          call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
           if(ier.eq.-1)goto 3
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
           call tstamp('>',LCFGF)
         else
+
+C The model file might not exist.
+C << for now assume that the file passed is not an exemplar >>
+          itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
-          call NEWPRB(ITRC,confirm,ckpath,IER)
+          call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
           if(ier.eq.-1)goto 3
 
           call edisp(iuout,' Loading supplied model description.')
@@ -550,7 +558,7 @@ C current number of zones if a model has been loaded.
           call edisp(iuout,' ')
 
 C Open core of databases if not already done so.
-          if(MLDBOK.and.CONDBOK.and.OPTKOK)then
+          if(MLDBOK.and.MATDBOK.and.OPTKOK)then
             continue
           else
             call opendb(ier)
@@ -854,7 +862,12 @@ C rexmpl returns an ier=2 then the user asked to continue.
 C << An idea - rexmpl could return in addition the path and the cfg file  >>
 C << name parts of exemplar (because it already knows this so it need not >>
 C << be resolved again. >>
-              call rexmpl(IUF,exemfl,exemplar,ier)
+
+C Call rexmpl to get the exemplar. If ier is set to 2 then the
+C user didn't pick anything. If useraction is set to 'browse' then
+C ensure the toggle is set accordingly.
+              useraction = ' '
+              call rexmpl(IUF,exemfl,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -863,7 +876,13 @@ C << be resolved again. >>
               if(ier.ne.0)goto 3
               if(exemplar(1:7).ne.'UNKNOWN'.and.
      &           exemplar(1:2).ne.'  ')then
-                browse=.false.
+
+C Set initial browse toggle to match useraction.
+                if(useraction(1:8).eq.'browse  ')then
+                  browse=.true.
+                elseif(useraction(1:8).eq.'ownit   ')then
+                  browse=.false.
+                endif
 
 C Copy the exemplar configuration file (with full path) to LCMDFL.
                 write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
@@ -880,31 +899,42 @@ C Debug...
                 call edisp(iuout,' ')
 
 C If the path of the model indicates it is one of the standard
-C exemplars then flag browse to true.
-                call isunix(unixok)
-                if(unixok)then
-                  write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &              fs,'training'
-                else
-                  write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &              fs,'training'
-                endif
+C exemplars then flag browse and itisanexemplar to true.
+                write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &            fs,'training'
 
                 ldirpath=lnblnk(dirpath)
-                if(path(1:ldirpath).eq.dirpath(1:ldirpath))browse=.true.
+                if(path(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C For OSX/Linux/Unix comparison of paths is usually successful so
+C if the model path is to the distribution training folder believe it.
+                  browse=.true.
+                  itisanexemplar=.true.
+                else
+
+C A non match may happen in Native windows so fall back ont useracton
+C if there is no match in the paths.
+                  if(useraction(1:8).eq.'browse  ')then
+                    browse=.true.
+                    itisanexemplar=.true.
+                  elseif(useraction(1:8).eq.'ownit   ')then
+                    browse=.false.
+                    itisanexemplar=.false.
+                  endif
+                endif
                 write(outs,*) ' browse status is ',browse
                 call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
-C << Actually if GTK was used then there is no need to check for a path >>
+                call isunix(unixok)
                 confirm=.false.
                 if(unixok)then
                   ckpath=.true.
                 else
                   ckpath=.false.
                 endif
-                call NEWPRB(ITRC,confirm,ckpath,IER)
+                call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
                 call tstamp('>','PRJ: continuing with exemplar')
               endif
             endif
@@ -918,9 +948,10 @@ C << Actually if GTK was used then there is no need to check for a path >>
 C Select an existing model. If Project Manager was started with
 C 'UNKNOWN' then ask for actual name to create or read.
           if(LCMDFL(1:7).eq.'UNKNOWN')then
+            itisanexemplar=.false.
             confirm=.true.
             ckpath=.true.
-            call NEWPRB(ITRC,confirm,ckpath,IER)
+            call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
           else
 
 C Something was passed in via the command line so offer choice.
@@ -938,17 +969,23 @@ C Find the path and local file name.
             if(IW.eq.1)then
               ltcmdfl=LCMDFL
               call fdroot(ltcmdfl,path,LCFGF)
-              write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &          '/training'
+              write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &          fs,'training'
               ldirpath=lnblnk(dirpath)
-              if(path(1:ldirpath).eq.dirpath(1:ldirpath))browse=.true.
+              if(path(1:ldirpath).eq.dirpath(1:ldirpath))then
+                browse=.true.
+                itisanexemplar=.true.
+              else
+                itisanexemplar=.false.
+              endif
               confirm=.false.
               ckpath=.true.
-              call NEWPRB(ITRC,confirm,ckpath,IER)
+              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
             else
+              itisanexemplar=.false.
               confirm=.true.
               ckpath=.true.
-              call NEWPRB(ITRC,confirm,ckpath,IER)
+              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
             endif
 C Debug.
 C            write(6,*) ' browse status is ',browse

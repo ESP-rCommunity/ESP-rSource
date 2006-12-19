@@ -334,8 +334,6 @@ C Get info for db matching the alias.
             goto 4
           elseif(WORD(1:6).eq.'*avail')then
             call egetrm(outstr,K,avail,'W','db avail',IER)
-            write(outs,'(a,a)') ' Climate is : ',avail
-            call edisp(iuout,outs)
             if(avail(1:7).eq.'OFFLINE')then
               call usrmsg(
      & 'The selected climate file is not `ONLINE` and so you will have',
@@ -344,7 +342,6 @@ C Get info for db matching the alias.
               return
             elseif(avail(1:6).eq.'ONLINE')then
               CALL ERPFREE(idblfil,ISTAT)
-              write(6,*)'found match ',clmdb
               return
             endif
           elseif(WORD(1:11).eq.'*help_start')then
@@ -716,8 +713,6 @@ C for the line used in ASKOK.
             endif
           endif
         elseif(act.eq.'s')then
-          write(outs,'(a,a)') ' Climate is : ',clmlavail
-          call edisp(iuout,outs)
           if(clmlavail(1:7).eq.'OFFLINE')then
             call usrmsg(
      & 'The selected climate file is not `ONLINE` and so you will have',

@@ -128,7 +128,7 @@ C Path to model and command line file name.
 
       common/prec7/itcnst
       COMMON/DNORGH/IRTYPE
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -187,7 +187,7 @@ C HVAC AIM-2
       character hvacfile*72,LAIM2*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,XST
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       logical dll
 
@@ -420,7 +420,7 @@ C Specify ground simulation start-up period.
 
 C If materials db not yet defined or has not yet been opened do so.
 C Use the unit IFCON=IFIL+5 for this via common condb.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
   55    call EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(ier.ne.0)THEN
           if(dll)then
@@ -443,7 +443,7 @@ C Use the unit IFCON=IFIL+5 for this via common condb.
             endif
           endif
         endif
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Read in the multilayer construction database so that it's

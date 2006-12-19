@@ -579,10 +579,10 @@ C If this parameter is changed also change it in subroutine GVALUE
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
 
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,ISZERO
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch
 
       CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12,PROMP1*56
@@ -1119,9 +1119,9 @@ C Information on opaque/transparent is added to DESC.
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,chdb,showother,layermatch,layermatcha,modgeo
 
       dimension SNA(MS),PAZI(MS),PELV(MS)
@@ -1933,8 +1933,8 @@ C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
 #include "esprdbfile.h"
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,LASCI*72
 
@@ -1942,7 +1942,7 @@ C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFCON,ISTAT)
       call EFOPRAN(IFCON,LFCON,40,1,IER)
       if(ier.ne.0)return
-      CONDBOK=.TRUE.
+      MATDBOK=.TRUE.
 
 C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFA,LASCI,4,IER)
