@@ -14,7 +14,7 @@ PROG = res$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = res.o arrow.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o cgd.o \
-	  comfort.o convect2.o ctread.o design.o dmdrep.o dossupport.o e3dviews.o ecasctl.o \
+	  comfort.o convect2.o ctread.o design.o dmdrep.o e3dviews.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o emfnetw.o enerbs.o \
 	  enerbz.o enetmisc.o enetrdisp.o enetres.o enetrewr.o eroper.o \
 	  esru_misc.o esystem.o fabcon.o fabtmp.o frqdis.o iaq.o initalc.o \
@@ -52,9 +52,6 @@ convect2.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
-dossupport.F:
-	rm -f dossupport.F
-	ln -s $(COMdir)/dossupport.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
@@ -148,9 +145,9 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F convect2.F ctread.F \
-	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
-	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
-	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
-	psychro.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	tdrecres.F visgrd.F visual.F visvec.F
+	arrow.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F convect2.F ctread.F e3dviews.F \
+	ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F emfnetw.F \
+	enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F initalc.F \
+	item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F psychro.F rwipv.F sort.F \
+	spmatl.F spmisc.F startup.F tdfile.F tdrecres.F visgrd.F visual.F \
+	visvec.F

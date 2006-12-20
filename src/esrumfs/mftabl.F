@@ -348,16 +348,12 @@ C
 
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C ICLIM,LCLIM (for climate file)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/C22/ICLIM,LCLIM
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -375,8 +371,7 @@ C ICLIM,LCLIM (for climate file)
       PARAMETER (MCOLT=21)
       DIMENSION VOL(MCOLT)
 
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER H*72,LAPROB*72
+      CHARACTER LCLIM*72,H*72,LAPROB*72,LAPRES*72,LAFRES*72
       CHARACTER COLHDS(MCOLT)*14
       CHARACTER ITEM(12)*23
       character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124

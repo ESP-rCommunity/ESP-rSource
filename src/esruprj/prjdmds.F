@@ -55,8 +55,8 @@ C Types associated with each period in weekdays/saturdays/sundays.
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION ITEM(13)
       CHARACTER dmdsdesc*248,tcname*248,bdmds*72
@@ -754,12 +754,11 @@ C patterns.
       SUBROUTINE  SBCASL(IN,IDAY,IER)
 
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
-
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+C Profiles database.
+      COMMON/PRODB/LPRFDB,IPRODB
 
       COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
      &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
@@ -774,7 +773,7 @@ C Descriptive label for a zone load or casual gain types.
       DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
       DIMENSION  NO(100),DESC(100),IPRVAL(100)
       CHARACTER*40 DESC
-      CHARACTER H*72,hold*40,blodlabel*6
+      CHARACTER LPRFDB*72,H*72,hold*40,blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
 
 C Labels for loads.

@@ -33,8 +33,8 @@ C SETUP provides the menus and control logic for the res preference menu.
       common/pophelp/h(60)
       common/recov01/pifltog,lpifl
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION SETUPM(10)
       CHARACTER PERST1*14,PERST2*44,PERST3*44

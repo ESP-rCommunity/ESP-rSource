@@ -54,7 +54,7 @@ C
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
 
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
 
       COMMON/C1/NCOMP,NCON
 
@@ -78,8 +78,9 @@ C Hourly ventilation conductances and temperature of incoming air.
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
-      PARAMETER (SMALL=1.0E-15)
-      CHARACTER LAPROB*72,outs*124
+      PARAMETER       (SMALL=1.0E-15)
+      CHARACTER*72     LAPROB,LAPRES,LAFRES
+      character outs*124
       logical close
 
       DIMENSION        AMFR(MNOD,MNOD),INDX(MNOD)

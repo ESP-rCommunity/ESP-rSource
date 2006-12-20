@@ -1,4 +1,3 @@
-
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
@@ -34,7 +33,6 @@ C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
-#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -47,6 +45,7 @@ C an extrusion. IER=0 OK.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/PRODB/LPRFDB,IPRODB
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -61,7 +60,7 @@ C an extrusion. IER=0 OK.
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,HOLD*32
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MODE*4,SSPARENT*12
@@ -824,7 +823,6 @@ C DELZONE systematicly removes a thermal zone.
       SUBROUTINE DELZONE(ITRC,IWHICH,IER)
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -877,9 +875,10 @@ C Anchor data.
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       common/user/browse
+      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -892,7 +891,7 @@ C Current file (for use by low level I/O calls)
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER LAPROB*72,LCFGF*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,LPRFDB
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,cfgroot*24
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -1533,10 +1532,6 @@ C IER=0 OK.
       character longtfile*144,longtfiledos*144
       character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET
-      logical XST,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
 
       nh = 0
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
@@ -1598,17 +1593,7 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

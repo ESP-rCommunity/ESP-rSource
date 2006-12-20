@@ -42,7 +42,6 @@ C construction db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. Idbh is position in hash table.
       subroutine impmlc(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "building.h"
-#include "esprdbfile.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
@@ -62,6 +61,7 @@ C IFB as the binary channel. Idbh is position in hash table.
       common/gendb8b/itdat(20),itrep(20)
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       dimension thrmtg(ME),gaptg(ME),mattag(ME),DT(ME)
       dimension IP(ME),DRA(ME,3),laydesc(ME)
@@ -77,7 +77,7 @@ C IFB as the binary channel. Idbh is position in hash table.
       character dstmp*24,symname*12,othcolr*12,incolr*12
       character othacou*12,inacou*12,cnstimp*12
       character thrmtg*1,gaptg*1,mattag*12,laydesc*32
-      CHARACTER TITL*72,LTMP*72,DFILE*72
+      CHARACTER TITL*72,LFCON*72,LFMUL*72,LTMP*72,DFILE*72
 
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
@@ -1141,18 +1141,18 @@ C ************* MKAPRC (copy from edcondb.F)
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,NDESC*72,LASCI*72
+      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,LASCI*72
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFCON,ISTAT)
       call EFOPRAN(IFCON,LFCON,40,1,IER)
       if(ier.ne.0)return
-      MATDBOK=.TRUE.
+      CONDBOK=.TRUE.
 
 C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFA,LASCI,4,IER)
@@ -1204,12 +1204,10 @@ C File errors.
 C **************** TROPRO (copied from eprfilec.F)
 C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
+      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
-      CHARACTER DESC*40,OUTSTR*124,LASCI*72
+      CHARACTER DESC*40,OUTSTR*124,LPRFDB*72,LASCI*72
 
       IER =0
 

@@ -262,7 +262,6 @@ C ************* IPVDAT
 C Define information used in generating IPV.
       subroutine ipvdat(act)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -344,6 +343,7 @@ C water (ratio). For nipvassmt=1 these are initially set to 1.0.
 C This information is potentially used to support IPV calculations.
       common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
      &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
+      common/C22/ICLIM,LCLIM
       common/clmlst/cdblbl,cdblfil
 
       common/IPVI/nipvimg,lipvimg(4)
@@ -365,7 +365,7 @@ C ITMM is menu for metric sets.
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
       CHARACTER dmdsdesc*248,bdmds*72
-      character cdblbl*20,cdblfil*72
+      character LCLIM*72,cdblbl*20,cdblfil*72
       character cfgroot*24,cr*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
@@ -1746,7 +1746,7 @@ C IPV description.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
 
 C Simulation parameter sets.
       common/spfldes/spfdescr(MSPS)
@@ -1760,7 +1760,7 @@ C Simulation parameter sets.
       character act*1,lipvdatf*72,LCFGF*72,cfgroot*24,cr*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      CHARACTER LAPROB*72,ENTFLNAM*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,ENTFLNAM
       logical MSTROK,MSTRZN
 
       if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
@@ -1898,7 +1898,6 @@ C derived from scaling is less than a simple time multiplier then
 C the time multiplier is used.
       SUBROUTINE getmultip
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1907,6 +1906,7 @@ C the time multiplier is used.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/RADTYP/IDNGH
+      common/C22/ICLIM,LCLIM
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
@@ -1928,6 +1928,7 @@ C This information is potentially used to support IPV calculations.
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32
+      character LCLIM*72
       DIMENSION ALT(24),AZI(24),GHSUM(MIPVA),DAYGLOB(MIPVA)
       dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
       dimension seahddwk(MSPS)

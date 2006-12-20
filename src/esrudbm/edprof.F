@@ -449,7 +449,7 @@ C   IEXP = 99 check number of items and return in ITEMS
 C Current file (for use by low level I/O calls)
       common/curfile/currentfile
       CHARACTER*600 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248
+      CHARACTER*124 MSG1
       CHARACTER*(*) MSG
       character currentfile*72
 
@@ -479,14 +479,14 @@ C Find out the number of separate words/string groupings.
         CALL ELCHITMS(OUTSTR,ITEMS)
         if(IEXP.ne.ITEMS)then
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(3A,I3,3A)')' In ',
+            WRITE(tmp,'(3A,I3,3A)')' In ',
      &        currentfile(1:lnblnk(currentfile)),' expecting',IEXP,
      &        ' items (',MSG(1:lnblnk(MSG)),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            CALL LUSRMSG(tmp,OUTSTR,'F')
           else
-            WRITE(loutstr,'(A,I3,A,A,A)')' Expecting',IEXP,' items (',
+            WRITE(tmp,'(A,I3,A,A,A)')' Expecting',IEXP,' items (',
      &         MSG(1:lnblnk(MSG)),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            CALL LUSRMSG(tmp,OUTSTR,'F')
           endif
         endif
       endif
@@ -496,31 +496,29 @@ C Find out the number of separate words/string groupings.
   101 IER=1
       IF(IR.EQ.1)THEN
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',
-     &      currentfile(1:lnblnk(currentfile)),
+          WRITE(MSG1,'(5A)')' In ',currentfile(1:lnblnk(currentfile)),
      &      ' error reading (',MSG(1:lnblnk(MSG)),') in...'
         else
-          WRITE(loutstr,'(A,A)',IOSTAT=ISTAT,ERR=1)' Error reading: ',
+          WRITE(MSG1,'(A,A)',IOSTAT=ISTAT,ERR=1)' Error reading: ',
      &      MSG(1:lnblnk(MSG)),') in...'
         endif
-        CALL LUSRMSG(loutstr,OUTSTR,'W')
+        CALL LUSRMSG(MSG1,OUTSTR,'W')
       ENDIF
       goto 4
 
   102 IER=2
       IF(IR.EQ.1)THEN
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',
-     &      currentfile(1:lnblnk(currentfile)),
+          WRITE(tmp,'(5A)')' In ',currentfile(1:lnblnk(currentfile)),
      &      ' error reading (',MSG(1:lnblnk(MSG)),') EOF sensed.'
         else
-          WRITE(loutstr,'(3A)',IOSTAT=ISTAT,ERR=1)' Error reading ',
+          WRITE(tmp,'(3A)',IOSTAT=ISTAT,ERR=1)' Error reading ',
      &      MSG(1:lnblnk(MSG)),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',loutstr,'-')
+        CALL LUSRMSG(' ',tmp,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'ELSTRIPC: error writing warning re: ',OUTSTR
+   1  write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
 
       END
 

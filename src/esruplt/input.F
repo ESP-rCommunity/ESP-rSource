@@ -38,7 +38,6 @@ C               network need not be matched
       SUBROUTINE MZINPT
 
 #include "plant.h"
-#include "esprdbfile.h"
 
       COMMON/ER1/IER1
       COMMON/FILEP/IFIL
@@ -59,7 +58,9 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER H*72,LCFGF*72,path*72,LCMDFL*144,L144*144

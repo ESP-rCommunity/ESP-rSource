@@ -135,7 +135,6 @@ C a subroutine rather than as an application.
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "cfd.h"
-#include "esprdbfile.h"
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.
@@ -175,10 +174,12 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/C22/ICLIM,LCLIM
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
      &              sTNOD(MNOD)
@@ -225,6 +226,9 @@ C Where default db list are kept.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -243,7 +247,7 @@ C Uncertainty.
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Active domain common (expand to other domains?).
       common/ACTDOM/CFDOK
@@ -257,7 +261,7 @@ C Timeout information
       character sTimeout*72
       integer iTimeoutFlag      
 
-      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
+      LOGICAL OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -265,14 +269,15 @@ C Timeout information
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
-      character h*72,LTMP*72,OUTS*124,spsname*8
-      character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character h*72,LFCON*72,LFMUL*72,LTMP*72,OUTS*124,spsname*8
+      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character browsing*4
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
       character path*72,upath*72,esprc*72,bresfil*72
       character dfdblbl*20,defdbfl*72,RFILE*72,PFILE*72,MSTRFILE*72
-      character LAPROB*72,LAFRES*72
+      character LAPROB*72,LAPRES*72,LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
       character t16*16,outs248*248
@@ -316,7 +321,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       CTLOK=.FALSE.
       spfileok=.false.
       LUALF='UNKNOWN'

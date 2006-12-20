@@ -36,10 +36,6 @@ C output; IER=0 indicates no error.
 #include "net_flow.h"
 #include "control.h"
 #include "gnetwk.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LPRFDB,IPRODB (for event profile database)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
@@ -64,6 +60,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PREC2/VOL(MCOM)
       common/user/browse
       common/uhome/upath
@@ -103,7 +100,7 @@ C Controls.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
@@ -125,9 +122,9 @@ C Controls.
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
-      logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
       logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
@@ -135,10 +132,10 @@ C Controls.
       dimension ITEMS(29)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
-      character*72 LAPROB,DFILE,LPNF,tfile
-      character longtfile*144,longtfiledos*144
+      character*72 LAPROB,LAPRES,LAFRES,DFILE,LPNF,tfile
+      character longtfile*144
       character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
-      character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
+      character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72,LPRFDB*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
@@ -791,19 +788,8 @@ C << TODO: take viewcen from wireframe view information. >>
             call NETWRITE(IM)
           endif
 
-C append path to new command line depending on whether Unix or Dos.
-          call isunix(unixok)
-          if(unixok)then
-            call addpath(LFIL,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LFIL,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+C append path to new command line.
+          call addpath(LFIL,longtfile,concat)
 
 C Run the `net` module with graphic network file.
           write(doit,'(2a)')'net -file ',longtfile(1:lnblnk(longtfile))
@@ -988,29 +974,10 @@ C the results file should be placed in the users home folder.
           remote=.true.
         else
           ltmp = LCFGF
-          call isunix(unixok)
-          if(unixok)then
-            call addpath(ltmp,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(ltmp,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(ltmp,longtfile,concat)
           if(concat)then
             remote=.true.
           endif
-        endif
-
-C Set folder separator (fs) to \ or / as required.
-        call isunix(unixok)
-        if(unixok)then
-          fs = char(47)
-        else
-          fs = char(92)
         endif
 
         if(nsset.gt.0)then
@@ -1018,25 +985,23 @@ C Set folder separator (fs) to \ or / as required.
           if(INDCFG.eq.2)then
             if(splres(isset)(1:2).ne.'  '.and.
      &         splres(isset)(1:4).ne.'UNKN')then
-              ltrf = lnblnk(splres(isset))
-              write(tfile,'(a)') splres(isset)(1:ltrf)
-              write(longtfile,'(a)') splres(isset)(1:ltrf)
+              tfile=splres(isset)
               if(remote)then
                 call fdroot(tfile,ltpath,filen)
                 call isunix(unixok)
                 if(unixok)then
                   if (ICHAR(ltpath(1:1)).ne.47) then
-                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &                filen(1:lnblnk(filen))
                   endif
                 else
                   if (ltpath(2:2).ne.':') then
-                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &                filen(1:lnblnk(filen))
                   endif
                 endif
 C Debug.
-                write(6,*) 'remote so reset tfile to ',longtfile
+C                write(6,*) 'remote so reset tfile to ',tfile
               endif
               havefile=.true.
             else
@@ -1045,29 +1010,27 @@ C Debug.
             endif
             call edisp(iuout,
      &        'Take a note of the results file used...')
-            call edisp248(iuout,longtfile,100)
+            call edisp(iuout,tfile)
           else
             if(sblres(isset)(1:2).ne.'  '.and.
      &         sblres(isset)(1:4).ne.'UNKN')then
-              ltrf = lnblnk(sblres(isset))
-              write(tfile,'(a)') sblres(isset)(1:ltrf)
-              write(longtfile,'(a)') sblres(isset)(1:ltrf)
+              tfile=sblres(isset)
               if(remote)then
                 call fdroot(tfile,ltpath,filen)
                 call isunix(unixok)
                 if(unixok)then
                   if (ICHAR(ltpath(1:1)).ne.47) then
-                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &                filen(1:lnblnk(filen))
                   endif
                 else
                   if (ltpath(2:2).ne.':') then
-                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &                filen(1:lnblnk(filen))
                   endif
                 endif
 C Debug.
-                write(6,*) 'remote so reset tfile to ',longtfile
+C                write(6,*) 'remote so reset tfile to ',tfile
               endif
               havefile=.true.
             else
@@ -1076,34 +1039,24 @@ C Debug.
             endif
             call edisp(iuout,
      &        'Take a note of the results file used...')
-            call edisp248(iuout,longtfile,100)
+            call edisp(iuout,tfile)
           endif
         else
 
 C There are no simulation parameter sets so take a guess at the
 C file name that the user might have given.
           if(browse)then
-            write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,'libb'
+            write(tfile,'(2a)') upath(1:lnblnk(upath)),'/libb'
           else
             tfile='libb'
           endif
           call edisp(iuout,'Take a note of the results file used...')
-          call edisp248(iuout,longtfile,100)
+          call edisp(iuout,tfile)
         endif
         call tstamp('>','PRJ: beginning res')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-
-C However we got to this point, if Windows based look for spaces
-C and or forward slashes.
-        if(unixok)then
-          continue
-        else
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1111,7 +1064,7 @@ C an offset from prj start position.
           if(havefile)then
             write(doit,'(3a,3i4,3a)') 'res -mode ',tmode,
      &        ' -s ',iappw,iappx+35,iappy+45,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' & '
+     &        tfile(1:lnblnk(tfile)),' & '
           else
             write(doit,'(3a,3i4,a)') 'res -mode ',tmode,
      &        ' -s ',iappw,iappx+35,iappy+45,' & '
@@ -1119,7 +1072,7 @@ C an offset from prj start position.
         else
           if(havefile)then
             write(doit,'(5a)') 'res -mode ',tmode,' -s 0 0 0 -file ',
-     &        longtfile(1:lnblnk(longtfile)),' & '
+     &        tfile(1:lnblnk(tfile)),' & '
           else
             write(doit,'(3a)') 'res -mode ',tmode,' -s 0 0 0 & '
           endif
@@ -1196,18 +1149,18 @@ C output, IER=0 indicates no error.
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
+      logical OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,context
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
@@ -1231,14 +1184,14 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER jsmlcn*12,jsvfc*4,jsotf*4,jsother*15,jsname*12
       character jsparent*12
       character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
-      character outs*124,SNAME*12,cfgroot*24,longtfiledos*144
+      character outs*124,SNAME*12,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character HOLD*32,zdesc*64,zd*64
       CHARACTER ETEXT*82,CUBN*6
       character sfile*72,snpfile*72,fs*1,lodlabel*6
-      CHARACTER LAPROB*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2717,22 +2670,7 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-
-C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
-     &        longtfiledos(1:lnblnk(longtfiledos))
-            call edisp(iuout,outs)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -3232,15 +3170,13 @@ C NEWPRB specifies a new model via existing or new configuration file
 C and the various CAD and native definition facilities. Confirm=true
 C request confirmation of configuration file name, ckpath=true finds
 C the path to it (should be false for CAD use as the file and its
-C location is already known). If itisanexemplar=true then ensure that
-C browse is set to true in any case because the user has previously
-C selected an exemplar model.
-      SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+C location is already known).
+      SUBROUTINE NEWPRB(ITRC,confirm,ckpath,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
       common/FILEP/IFIL
       common/pophelp/h(60)
+      common/PRODB/LPRFDB,IPRODB
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       common/cctlnm/ctldoc,lctlf
@@ -3261,10 +3197,9 @@ C selected an exemplar model.
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical MODIFY,MODLEN,MODBND,browse
-      logical confirm,ckpath,itisanexemplar
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical MODIFY,MODLEN,MODBND,browse,confirm,ckpath
       logical unixok,prob
 
       dimension nwlistf(50),ivlist(50)
@@ -3272,7 +3207,7 @@ C Defaults.
       character*70 listfc70(50)
       character*32 WORDS(12)
 
-      character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
+      character LPRFDB*72,path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
@@ -3358,21 +3293,14 @@ C      write(6,*) ' path is ',path(1:lnblnk(path))
 
 C If requested, find the path and local file name.
       if(ckpath)then
-        if(unixok)then
-          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'training'
-        else
-          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'training'
-        endif
+        write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
+     &    '/training'
         ldirpath=lnblnk(dirpath)
         call fdroot(LCMDFL,path,LCFGF)
 
-C Debug (and the following tests are primarily for Linux/OSX/Unix).
-        write(t144,*) ' after fdroot path is ',path(1:lnblnk(path))
-        call edisp(iuout,t144)
-        write(t144,*) ' model configuration is ',lcfgf(1:lnblnk(lcfgf))
-        call edisp(iuout,t144)
+C Debug << check out this on a native windows machine >>
+C        write(6,*) ' after fdroot path is ',path(1:lnblnk(path))
+C        write(6,*) ' lcfgf is ',lcfgf(1:lnblnk(lcfgf))
         if(path(1:2).eq.'./')then
 
 C A ./ indicates that fdroot found no file separators. Must be in cfg folder.
@@ -3393,22 +3321,18 @@ C There were folder separators in the name.
           call ckaccess(ifold,iaccess,icerr,path)
 
 C Debug.
-C          write(t144,*) 'a iaccess is ',iaccess,icerr,ifold,path
-C          call edisp(iuout,t144)
+C          write(6,*) 'a iaccess is ',iaccess,icerr,ifold,path
           if(iaccess.eq.1)then
 
 C If iaccedss is non-zero then we do not have permission to write there
 C and so we treat that model as if browsing.
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
-            call edisp(iuout,
-     &'Folder permission prevents modificaton (only browse allowed).')
           else
             browse=.false.
-            call edisp(iuout,'User can modify this model.')
           endif
 
-#ifdef GTK
+#ifndef X11
 
 C For GTK versions, find odir (where prj was started) and compare with the
 C current path (both lnpath and lnpath-1 lengths) if there
@@ -3418,57 +3342,36 @@ C we can recognise that we started in a cfg folder.
           lnpath=lnblnk(path)
 
 C Debug.
-          write(t144,*) ' GTK path is ',path(1:lnblnk(path))
-          call edisp(iuout,t144)
-          write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
-          call edisp(iuout,t144)
+C          write(6,*) ' GTK path is ',path(1:lnblnk(path))
+C          write(6,*) ' GTK odir is ',odir(1:lnblnk(odir))
           if(path(1:lnpath).eq.odir(1:lnpath))then
             browse=.false.
-            call edisp(iuout,'User can modify this model.')
           elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
             browse=.false.
-            call edisp(iuout,'User can modify this model.')
           else
-
-C We could get false browse=.true. in terms of the logic.
-C The check against the location of the exemplar models
-C as defined in the default file (which was done above)
-C should be retained. At this point just continue.
-            continue
+            call tstamp('>','PRJ: on browse mode')
+            browse=.true.
           endif
 #endif
         endif
       else
 
-C If the user already selected an exemplar just force browse=true
-C otherwise check the folder access permissions.
-        if(itisanexemplar)then
-          browse=.true.
-          call edisp(iuout,'Exemplar models are for browsing.')
-        else
-
-C Called without request to check paths. See if the folder can be
-C writtn to (if iaccess is something other than one.)
-          ifold=-1
-          call ckaccess(ifold,iaccess,icerr,path)
+C Called without request to check paths.
+        ifold=-1
+        call ckaccess(ifold,iaccess,icerr,path)
 
 C Debug.
-C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
-          if(iaccess.eq.1)then
-            call tstamp('>','PRJ: on browse mode')
-            browse=.true.
-            call edisp(iuout,
-     &'Folder permission prevents modificaton (only browse allowed).')
-          else
-            browse=.false.
-            call edisp(iuout,'User can modify this model.')
-          endif
+C        write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
+        if(iaccess.eq.1)then
+          call tstamp('>','PRJ: on browse mode')
+          browse=.true.
+        else
+          browse=.false.
         endif
       endif
 
 C Debug.
-C      write(t144,*) 'NEWPRB browse status is ',browse,iaccess
-C      call edisp(iuout,t144)
+      write(6,*) 'NEWPRB browse status is ',browse
 
 C Get file separator.
       if(unixok)then
@@ -3537,8 +3440,7 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
           endif
 #endif
           action='cfg'
-          write(outs,*) 'models in folder ',subpath
-          call edisp(iuout,outs)
+          write(outs,*) 'models in ',subpath
           call clearfilelist(listf,50)
           call getfilelist(subpath,action,listf,nwlistf,nlistf)
           call copyfilelist(listf,nwlistf,listfc,50,maxw)
@@ -3746,7 +3648,7 @@ C If there is a ground topology read it.
         endif
 
 C Open core databases associated with the exemplar or new model.
-        if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+        if(MLDBOK.and.CONDBOK.and.OPTKOK)then
           continue
         else
           call opendb(ier)
@@ -3831,14 +3733,9 @@ C Scan the model topology and report on any problems encountered.
         h(2)=' a) re-edit the name,'
         h(3)=' b) create a new configuration file using the name,'
         h(4)=' c) delay deciding via cancel.'
-        h(5)=' '
-        h(6)='If the name of the model looks correct and includes what'
-        h(7)='you believe to the the correct path consider using the '
-        h(8)='respecify option and then using the file browser to '
-        h(9)='locate the model (if you are running the GTK version). '
         WRITE(OUTSTR,'(A,2X,A)')' Could not find',LCFGF
-        CALL EASKABC(OUTSTR,' Options: (see help)',
-     &    'respecify','new configuration file','cancel',IW,9)
+        CALL EASKABC(OUTSTR,' Options:',
+     &    'respecify','new configuration file','cancel',IW,4)
         if(IW.eq.1)then
           confirm=.true.
           goto 289

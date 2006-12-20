@@ -38,6 +38,7 @@ C inextblnk: Given a string, return position of blank just after ipos.
 C  icutstr: Given a string, cuts icut characters from position ipos.
 C  EPICKS:  Allows several selections to be made from an array of strings.
 C  MENUATOL Single item menu pick with items passed via parameters.
+C  EASKOK:  Generic yes/no facility returning OK as a logical parameter.
 C  ASKOK:   Generic yes/no/default facility returning OK as a logical parameter.
 C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
@@ -274,9 +275,8 @@ C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic faciltiies to edit the number.
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         iwidth=10
         WORD=' '
         if(NHELP.GT.0)then
@@ -520,9 +520,8 @@ C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic facilities to edit the number.
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         iwidth=16
         WORD=' '
         if(NHELP.GT.0)then
@@ -745,10 +744,8 @@ C Begin with prompts.
 C If in terminal type 8 (dialogue box) use graphic facilities to get the
 C string to convert.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         iwidth=16
         WORD=' '
         if(NHELP.GT.0)then
@@ -955,10 +952,8 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not used in GTK version (yet).
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         WORD144=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -975,7 +970,7 @@ C        iquery=0
 C << There are potentially several things that need updating >>
 C << to this call and to askf (within esp_file.c). >>
         CALL askf(PROMPT,FILEN)
-        write (6,*) 'askdialog FILEN:',FILEN
+        write (6,*) 'askdialog FILEN:',FILEN,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -984,22 +979,20 @@ C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(FILEN,WORD144)
 
-C << there is no default signal returned from the askf call so
-C << comment out this section of the code for now.
-C        IF(IFLG.EQ.-2)THEN
-C          LN=max(1,LNBLNK(DSTR))
-C          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
-C     &      DSTR(1:LN),'.'
-C          DOK=.true.
-C          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
-C          IF(OK)THEN
-C            FILEN=DSTR(1:LN)
-C            RETURN
-C          ELSE
-C            GOTO 20
-C          ENDIF
-C        ENDIF
-        IF(WORD144(1:2).EQ.'  ')THEN
+        IF(IFLG.EQ.-2)THEN
+          LN=max(1,LNBLNK(DSTR))
+          WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
+     &      DSTR(1:LN),'.'
+          DOK=.true.
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
+          IF(OK)THEN
+            FILEN=DSTR(1:LN)
+            RETURN
+          ELSE
+            GOTO 20
+          ENDIF
+        ENDIF
+        IF(WORD144.EQ.' '.or.IFLG.eq.-1)THEN
 
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
@@ -1129,7 +1122,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
       character prompt*144
       LOGICAL OK,DOK
 
@@ -1156,10 +1149,8 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -1181,8 +1172,7 @@ C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
 
 C Strip off the last character (end of line mark) as well as any
-C leading blanks from string returned. It is assumed that STRVAL
-C passed into the subroutine will fit within a 92 character WORD buffer.
+C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
 
         IF(iflg.EQ.-3)THEN
@@ -1234,7 +1224,7 @@ C In text mode, remind user of current string.
           call edisp(iuout,OUTSTR)
         endif
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A)')WORD
+        READ(IUIN,'(A72)')WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN
@@ -1559,10 +1549,8 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
+        idef=0
+        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -2731,6 +2719,22 @@ C Not one of the legal menu choices.
 
       END
 
+c ******************** EASKOK
+c EASKOK ** depreciated ** use ASKOK.
+
+      SUBROUTINE EASKOK(MSG1,MSG2,OK)
+
+      CHARACTER*(*) MSG1,MSG2
+      logical OK,DOK
+
+C Set NH=-1 so that no default option given in ASKOK.
+      NH=-1
+      DOK=.false.
+
+      call ASKOK(MSG1,MSG2,OK,DOK,NH)
+      return
+
+      END
 
 C ******************** ASKOK
 C ASKOK Generic choice facility returning logical variable
@@ -3503,85 +3507,83 @@ C ******* FDROOT
 C Given a file name (fstring) see if it contains a (path) and a (filen).
 C Note: mingw compilers require fstring to be declaired length (not *(*).
       SUBROUTINE fdroot(fstring,path,filen)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) path,filen,fstring
 C      character fstring*72
-      character fs*1,fs1*1
+      character fs*1,fs1*1,lpath*72
       logical unixok
-      integer ilbfstr  ! last actual char in fstring
-      integer ipos     ! the leftward moving character position
-      integer ilstr    ! declaired length of fstring
-      integer ilenfilen ! declaired length of filen to be returned
-      integer ilenpath ! declaired length of path to be returned
 
-C Set fileseparator depending on OS.
+C Clear variables and get string lengths.
+      ilpath = LEN(path)
+      ilbpath = lnblnk(path)
+      lpath=' '
+      write(lpath,'(a)') path(1:ilbpath)
+C      path = ' '
+      filen = ' '
+      ilfilen = LEN(filen)
+      ilstr = LEN(fstring)
+
+C Scan for last position of a `/' (UNIX) or '\' (NT).
+C Under mingw separators can be either.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
       else
         fs = char(92)
+        fs1 = char(47)
       endif
+      ipslash = 0
+      DO 99 I=1,ilpath
 
-C Clear variables and get string lengths.
-      filen = ' '
-      ilbfstr = lnblnk(fstring)
-      ipos = ilbfstr
-      ilstr = LEN(fstring)
-      ilenfilen = LEN(filen)
-      ilenpath = LEN(path)
+C UNIX or NT version as required.
+        if(path(I:I).eq.fs)ipslash=I
+        if(.NOT.unixok)then
+          if(path(I:I).eq.fs1)islash=I
+        endif
+        if(ichar(path(I:I)).lt.32)goto 98
+C        WRITE(iuout,'(a,I4,I4)')path(I:I),ichar(path(I:I)),ipslash
+ 99   CONTINUE
+ 98   continue
+      islash = 0
+      DO 97 I=1,ilstr
 
-C Loop backwards from last non-blank character until a separator is found.
- 344  continue
-      ipos=ipos-1
-      if(fstring(ipos:ipos).eq.fs)then
-        filen = ' '
-        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
-        path = ' '
-        if(ipos.gt.ilenpath)then
-          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
-        else
-          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+C UNIX or NT version as required.
+        if(fstring(I:I).eq.fs)islash=I
+        if(.NOT.unixok)then
+          if(fstring(I:I).eq.fs1)islash=I
         endif
-        return
-      elseif(fstring(ipos:ipos).eq.'/')then
-        filen = ' '
-        write(filen,'(a)',IOSTAT=IOS,ERR=1) fstring(ipos+1:ilbfstr)
-        path = ' '
-        if(ipos.gt.ilenpath)then
-          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ilenpath)
-        else
-          write(path,'(a)',IOSTAT=IOS,ERR=1) fstring(1:ipos)
+        if(ichar(fstring(I:I)).lt.32)goto 100
+C        WRITE(iuout,'(a,I4,I4)')fstring(I:I),ichar(fstring(I:I)),islash
+ 97   CONTINUE
+
+C If islash = 0 then no root in fstring
+100   if(islash.eq.0)then
+        if(ilstr.ge.ilfilen)then
+          write(filen,'(a)')fstring(1:ilfilen)
+        elseif(ilstr.lt.ilfilen)then
+          write(filen,'(a)')fstring(1:lnblnk(fstring))
         endif
-        return
+
+C If no root in path reset to ./, otherwise reinstate initial path string.
+        if(ipslash.eq.0)then
+          write(path,'(a1,a1)')'.',fs
+        else
+          path = lpath
+        endif
       else
 
-C Arrived at the first character. There have been no file separators
-C so filen is fstring (truncated if necessary) and the path becomes
-C the equivalent of where-i-am-now.
-        if(ipos.eq.1)then
-C          call edisp(iuout,' No folder separator found.')
-          if(ilstr.ge.ilenfilen)then
-            filen = ' '
-            write(filen,'(a)',IOSTAT=IOS,ERR=1)fstring(1:ilenfilen)
-            write(path,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
-            return
-          elseif(ilstr.lt.ilenfilen)then
-            write(filen,'(a)')fstring(1:lnblnk(fstring))
-            write(path,'(a1,a1)',IOSTAT=IOS,ERR=1) '.',fs
-            return
-          endif
-        elseif(ipos.gt.1)then
-          goto 344
+C If islash > 0 then root and file name
+        if(islash.ge.ilpath)then
+          write(path,'(a)')fstring(1:ilpath)
+        elseif(islash.lt.ilpath)then
+          write(path,'(a)')fstring(1:islash)
         endif
+        is=islash+1
+        write(filen,'(a)') fstring(is:lnblnk(fstring))
       endif
 
-      return
-
-   1  call edisp(iuout,
-     &  'fdroot: error composing path or file from string.')
-      call edisp(iuout,fstring)
-      return
-      end
+      RETURN
+      END
 
 C ******************** EFOPSEQ
 C EFOPSEQ: Open a sequential ASCII file and return appropriate
@@ -3874,7 +3876,6 @@ C blank or UNKNOWN then return XST=.FALSE.
 
       LOGICAL xst,concat
       CHARACTER SFILE*72,longtfile*144
-      integer ltf   ! position of last character in the string.
 
       xst=.false.
       if(SFILE(1:2).eq.'  ')return
@@ -3883,8 +3884,7 @@ C blank or UNKNOWN then return XST=.FALSE.
       call addpath(SFILE,longtfile,concat)
 
 C Does the file exist?
-      ltf=max(1,LNBLNK(longtfile))
-      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+      INQUIRE (FILE=longtfile,EXIST=xst)
 
       RETURN
       END
@@ -5269,7 +5269,6 @@ C Path to model and command line file (if any).
       character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dispbuf*124,dh*72
       logical unixok,there
-      integer ltf  ! position of last character in string.
 
       if(MMOD.ne.8)return
 
@@ -5612,7 +5611,6 @@ C terminal type 8.
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
       character tut_path*25,ltut*72,IA*3
       logical extra,XST
-      integer ltf  ! position of last character in the string.
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
@@ -5623,8 +5621,7 @@ C exh is 'show me more' text array read in from external file.
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
         XST=.FALSE.
-        ltf=max(1,LNBLNK(ltut))
-        INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
+        INQUIRE (FILE=ltut,EXIST=XST)
         if(XST)then
           open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
      &      STATUS='OLD',IOSTAT=ISTAT)
@@ -5908,15 +5905,13 @@ C number of lines (nhi) and their maximum width (ihw).
       CHARACTER*(*) OTHER
       CHARACTER exh*72,ltut*72,TOPIK*17,outstr*124
       logical XST
-      integer ltf  ! position of last character in the string.
 
 C Regenerate the topic string to match.
       TOPIK=' '
       WRITE(TOPIK,'(A5,A)')'*tut_',OTHER(1:12)
       if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
       XST=.FALSE.
-      ltf=max(1,LNBLNK(ltut))
-      INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
+      INQUIRE (FILE=ltut,EXIST=XST)
       if(XST)then
         open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
      &    STATUS='OLD',IOSTAT=IOS)
@@ -6041,15 +6036,11 @@ C General read of an ascii file.
       COMMON/OUTIN/IUOUT,IUIN
       character LFIL*72,outstr*124
       logical XST
-      integer ltf   ! position of last character in the string.
 
 C List out an ASCII file, if file name begins with "/" open
 C it directly.
-
-C << does not yet test for Windows path >>
       if(LFIL(1:1).eq.'/')then
-        ltf=max(1,LNBLNK(LFIL))
-        INQUIRE (FILE=LFIL(1:ltf),EXIST=XST)
+        INQUIRE (FILE=LFIL,EXIST=XST)
         IF (XST) THEN
           LN=max(1,lnblnk(LFIL))
           OPEN (IUNIT,FILE=LFIL(1:LN),ACCESS='SEQUENTIAL',
@@ -6497,12 +6488,13 @@ C     L      - current position in WORD
 C     LW     - maximum length of WORD
 
       SUBROUTINE EGETW(STRING,K,WORD,ACT,MSG,IER)
-#include "espriou.h"
-C espriou.h provides currentfile.
       common/OUTIN/IUOUT,IUIN
 
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
+
       CHARACTER*(*) WORD, STRING, MSG
-      CHARACTER ACT*1,A*1,loutstr*248
+      CHARACTER ACT*1,A*1,outstr*124,currentfile*72
 
       IER=0
       WORD=' '
@@ -6535,11 +6527,11 @@ C Copy WORD from STRING, character by character until separator found.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1)
      &      'WARNING: in ',currentfile(1:LN),
      &      ' past end of line for ',MSG(1:LNM),' in...'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &      'WARNING: Past end of line for ',
      &      MSG(1:LNM),' (word) in...'
         endif
@@ -6548,18 +6540,18 @@ C Copy WORD from STRING, character by character until separator found.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1)
      &      'FAILURE: in ',currentfile(1:LN),
      &      ' past end of line for ',MSG(1:LNM),' in...'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &      'FAILURE: Past end of line for ',
      &      MSG(1:LNM),' (word) in...'
         endif
       endif
-      CALL EDISP248(iuout,loutstr,100)
+      CALL EDISP(iuout,OUTSTR)
       if(lnblnk(STRING).gt.123)then
-        CALL EDISP248(iuout,STRING,100)
+        write(6,*) STRING
       else
         CALL EDISP(iuout,STRING)
       endif
@@ -6574,11 +6566,13 @@ C characters. Phrases are separated by tabs or commas. Provides a warning
 C message if ACT='W', a failure message if ACT='F' and does
 C no message if ACT='-'.
       SUBROUTINE EGETP(STRING,K,PHRASE,ACT,MSG,ier)
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
+
       CHARACTER*(*) PHRASE, STRING, MSG
-      CHARACTER ACT*1,A*1,loutstr*248
+      CHARACTER ACT*1,A*1,outstr*124,currentfile*72
 
 C LS is th maximum length of STRING, L the current position,
 C LW the maximum length of PHRASE.
@@ -6614,11 +6608,11 @@ C comma is found.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1)
      &      'WARNING: in ',currentfile(1:LN),
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &      'WARNING: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
@@ -6626,18 +6620,18 @@ C comma is found.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1)
      &      'FAILURE: in ',currentfile(1:LN),
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &      'FAILUREW: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
-      CALL EDISP248(iuout,loutstr,100)
+      CALL EDISP(iuout,OUTSTR)
       if(lnblnk(STRING).gt.123)then
-        CALL EDISP248(iuout,STRING,100)
+        write(6,*) STRING
       else
         CALL EDISP(iuout,STRING)
       endif
@@ -6655,11 +6649,13 @@ C no range checking if ACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWI(STRING,K,IV,MN,MX,ACT,MSG,IER)
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
+
       CHARACTER*(*) STRING, MSG
-      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,loutstr*248
+      CHARACTER ACT*1,STR1*10,STR2*10,WORD*20,OUTSTR*124,currentfile*72
 
 C Pick up line and lenght for error messages.
       ils=max(1,lnblnk(STRING))
@@ -6685,32 +6681,32 @@ C Check IV against minimum and respond based on ACT.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &      STRING(1:ils)
           endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp(iuout,OUTSTR)
+          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
+          call edisp(iuout,OUTSTR)
         ELSEIF(ACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &        STRING(1:ils)
           endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp(iuout,OUTSTR)
+          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') < allowable minimum ',
      &       STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
+          call edisp(iuout,outstr)
           IER=1
           RETURN
         ENDIF
@@ -6721,32 +6717,32 @@ C Check IV against minimum and respond based on ACT.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'WARNING: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
+            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &        STRING(1:ils)
           endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
+          call edisp(iuout,OUTSTR)
+          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &      ' value (',STR1(1:IW1),') > normal maximum ',STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
+          call edisp(iuout,OUTSTR)
         ELSEIF(ACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(4a)',IOSTAT=IOS,ERR=1)
+            WRITE(OUTSTR,'(4a)',IOSTAT=IOS,ERR=1)
      &        'FAILURE: in ',currentfile(1:LN),': ',STRING(1:ils)
           else
-            write(loutstr,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
+            write(OUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &        STRING(1:ils)
           endif
-          CALL EDISP248(iuout,loutstr,100)
-          write(loutstr,'(7a)',IOSTAT=IOS,ERR=1) ' the ',MSG(1:LNM),
+          call edisp(iuout,OUTSTR)
+          write(OUTSTR,'(7a)',IOSTAT=IOS,ERR=1) ' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') > allowable maximum ',
      &       STR2(1:IW2),'!'
-          CALL EDISP248(iuout,loutstr,100)
+          call edisp(iuout,outstr)
           IER=1
           RETURN
         ENDIF
@@ -6757,15 +6753,15 @@ C Check IV against minimum and respond based on ACT.
  1002 if(currentfile(1:2).ne.'  ')then
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
-        WRITE(loutstr,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
+        WRITE(OUTSTR,'(6a)',IOSTAT=IOS,ERR=1) 'Failed in ',
      &    currentfile(1:LN),': conversion of ',
      &    MSG(1:LNM),' value in ',WORD
       else
         LNM=max(1,lnblnk(MSG))
-        WRITE(loutstr,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
+        WRITE(OUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
  1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
       endif
-      CALL EDISP248(iuout,loutstr,100)
+      CALL EDISP(iuout,OUTSTR)
       IER=2
       GOTO 100
    1  write(6,*) 'EGETWI: error writing warning re: ',WORD
@@ -6781,14 +6777,17 @@ C no range checking if RACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWR(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
+
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
 
 C LOUTSTR is for messages to the user and should be long enough
 c to prevent truncation of messge contents.
 
       CHARACTER*(*) STRING, MSG
       CHARACTER RACT*1,STR1*16,STR2*16,WORD*20,LOUTSTR*248
+      character currentfile*72
 
 C Pick up line and length for error messages.
       ils=max(1,lnblnk(STRING))
@@ -6820,10 +6819,10 @@ C Check RV against minimum and respond based on RACT.
             write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &        STRING(1:ils)
           endif
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
           write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &      ' value (',STR1(1:IW1),') < normal minimum ',STR2(1:IW2),'!'
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
         ELSEIF(RACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
@@ -6835,11 +6834,11 @@ C Check RV against minimum and respond based on RACT.
             write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &      STRING(1:ils)
           endif
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
           write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') < allowable minumum ',
      &       STR2(1:IW2),'!'
-          call edisp248(iuout,loutstr,100)
+          call edisp248(iuout,loutstr,90)
           IER=1
           RETURN
         ENDIF
@@ -6856,11 +6855,11 @@ C Check RV against minimum and respond based on RACT.
             write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' WARNING in: ',
      &      STRING(1:ils)
           endif
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
           write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') > normal  maximum ',
      &       STR2(1:IW2),'!'
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
         ELSEIF(RACT.EQ.'F')THEN
           call edisp(iuout,' ')
           LN=max(1,lnblnk(currentfile))
@@ -6872,11 +6871,11 @@ C Check RV against minimum and respond based on RACT.
             write(LOUTSTR,'(a,a)',IOSTAT=IOS,ERR=1)' FAILURE in: ',
      &      STRING(1:ils)
           endif
-          call edisp248(iuout,LOUTSTR,100)
+          call edisp248(iuout,LOUTSTR,90)
           write(LOUTSTR,'(7a)',IOSTAT=IOS,ERR=1)' the ',MSG(1:LNM),
      &       ' value (',STR1(1:IW1),') > allowable maximum ',
      &       STR2(1:IW2),'!'
-          call edisp248(iuout,loutstr,100)
+          call edisp248(iuout,loutstr,90)
           IER=1
           RETURN
         ENDIF
@@ -6895,7 +6894,7 @@ C Check RV against minimum and respond based on RACT.
         WRITE(LOUTSTR,1003,IOSTAT=IOS,ERR=1)MSG(1:LNM),WORD
  1003   FORMAT(' Failed: conversion of ',A,' value in ',A)
       endif
-      CALL EDISP248(iuout,LOUTSTR,100)
+      CALL EDISP248(iuout,LOUTSTR,90)
       IER=2
       GOTO 100
    1  write(6,*) 'EGETWR: error writing warning re: ',STRING
@@ -6962,7 +6961,7 @@ C word, otherwise read another line from the file.
      &       I3,' in the string:')
       CALL EDISP(iuout,MSG1)
       if(LNM.ge.124)then
-        CALL EDISP248(iuout,OUTS,100)
+        write(6,*) 'EGETWRA: error writing: ',OUTS
       else
         CALL EDISP(iuout,OUTS)
       endif
@@ -7204,11 +7203,13 @@ C ***************** EGETRM
 C EGETRM returns the remainder of a text string TSTR after position k
 C in RSTR where RSTR has no leading blanks.
       SUBROUTINE EGETRM(TSTR,K,RSTR,ACT,MSG,IER)
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
+
       CHARACTER*(*) TSTR,RSTR,MSG
-      character ACT*1,A*1,loutstr*124,outs*124
+      character ACT*1,A*1,OUTSTR*124,outs*124,currentfile*72
 
       IER=0
 
@@ -7245,26 +7246,26 @@ C of RSTR or TSTR.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'WARNING in ',
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1) 'WARNING in ',
      &      currentfile(1:LN),': no chars found for ',
      &      MSG(1:LNM),' string in:'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &     'WARNING: no characters found for ',MSG(1:LNM),' string in:'
         endif
       elseif(ACT.EQ.'F')then
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1) 'FAILURE in ',
+          WRITE(OUTSTR,'(5a)',IOSTAT=IOS,ERR=1) 'FAILURE in ',
      &      currentfile(1:LN),': no chars found for ',
      &      MSG(1:LNM),' string in:'
         else
-          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+          WRITE(OUTSTR,'(3a)',IOSTAT=IOS,ERR=1)
      &      'FAILURE: no characters found for ',MSG(1:LNM),' string in:'
         endif
       endif
-      CALL EDISP248(iuout,loutstr,100)
+      CALL EDISP(iuout,OUTSTR)
       if(lnblnk(TSTR).gt.123)then
         write(6,*) TSTR
       else
@@ -7796,11 +7797,12 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE STRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
 
-      CHARACTER*124 tmp,STRING,OUTSTR
-      character loutstr*248
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
+      CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
+      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -7830,13 +7832,13 @@ C Find out the number of separate words/string groupings.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(3A,I3,3A)')'In ',currentfile(1:LN),
-     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            WRITE(tmp,'(3A,I3,3A)')'In ',currentfile(1:LN),' expecting',
+     &        IEXP,' items (',MSG(1:LNM),') in...'
+            CALL USRMSG(tmp,OUTSTR,'F')
           else
-            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+            WRITE(tmp,'(A,I3,3A)')' Expecting',IEXP,' items (',
      &         MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            CALL USRMSG(tmp,OUTSTR,'F')
           endif
         endif
       endif
@@ -7848,13 +7850,13 @@ C Find out the number of separate words/string groupings.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+          WRITE(MSG1,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') in...'
         else
-          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+          WRITE(MSG1,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
      &      MSG(1:LNM),') in...'
         endif
-        CALL LUSRMSG(loutstr,OUTSTR,'W')
+        CALL USRMSG(MSG1,OUTSTR,'W')
       ENDIF
       goto 4
 
@@ -7863,13 +7865,13 @@ C Find out the number of separate words/string groupings.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+          WRITE(tmp,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') EOF sensed.'
         else
-          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+          WRITE(tmp,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
      &      MSG(1:LNM),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',loutstr,'-')
+        CALL USRMSG(' ',tmp,'-')
       ENDIF
       goto 4
    1  write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
@@ -7889,11 +7891,13 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
 
+C Current file (for use by low level I/O calls)
+      common/curfile/currentfile
       CHARACTER*248 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248
+      CHARACTER*124 MSG1
       CHARACTER*(*) MSG
+      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -7923,13 +7927,13 @@ C Find out the number of separate words/string groupings.
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
           if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
+            WRITE(tmp,'(3A,I3,3A)')' In ',currentfile(1:LN),
      &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            CALL LUSRMSG(tmp,OUTSTR,'F')
           else
-            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+            WRITE(tmp,'(A,I3,3A)')' Expecting',IEXP,' items (',
      &         MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,OUTSTR,'F')
+            CALL LUSRMSG(tmp,OUTSTR,'F')
           endif
         endif
       endif
@@ -7941,13 +7945,13 @@ C Find out the number of separate words/string groupings.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+          WRITE(MSG1,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') in...'
         else
-          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+          WRITE(MSG1,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
      &      MSG(1:LNM),') in...'
         endif
-        CALL LUSRMSG(loutstr,OUTSTR,'W')
+        CALL LUSRMSG(MSG1,OUTSTR,'W')
       ENDIF
       goto 4
 
@@ -7956,16 +7960,16 @@ C Find out the number of separate words/string groupings.
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+          WRITE(tmp,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') EOF sensed.'
         else
-          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+          WRITE(tmp,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
      &      MSG(1:LNM),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',loutstr,'-')
+        CALL LUSRMSG(' ',tmp,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+   1  write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
 
       END
 
@@ -9392,7 +9396,6 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
-#include "espriou.h"
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -9426,8 +9429,9 @@ C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK
+      common/curfile/currentfile
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,OK,DOK,found,concat,redraw
       DIMENSION IVALS(MCOM),MTHNAM(12)
@@ -9435,7 +9439,7 @@ C ITPPSW current view - perspective/plan/south/west
       CHARACTER MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*124,tmode*8,longtfile*72, hold*24,act*1
-      CHARACTER head*19
+      CHARACTER head*19,currentfile*72
       character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
       character gopt*32,hopt*32
 
@@ -9613,11 +9617,11 @@ C Get file name.
      &    ' ',72,' ','viewer input file',IER,2)
         if(iw.eq.1)then
           CALL EFOPSEQ(IUO,LFIL,4,IER)
-          write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
+          currentfile=LFIL
         else
           CALL ERPFREE(IUO,ISTAT)
           call FPOPEN(IUO,ISTAT,1,3,LFIL)
-          write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
+          currentfile=LFIL
         endif
         CALL EMKVIEW(ITRC,IUO,CFGOK,IER)
         IF(IER.NE.0)THEN
@@ -9806,9 +9810,9 @@ C ITPPSW current view - perspective/plan/south/west
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,CLOSE,redraw
       DIMENSION FALT(7),IVAL(7)

@@ -32,15 +32,6 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
 #include "net_flow.h"
 #include "plantdb.h"
 #include "MultiYear_simulations.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
-C default file names for databases
 
       PARAMETER  (MCP=35)
 
@@ -49,10 +40,12 @@ C default file names for databases
       common/pophelp/h(60)
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/OUTIN/IUOUT,IUIN
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+C Profile databases.
+      common/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
@@ -62,7 +55,10 @@ C default file names for databases
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
+      common/C7/LPCDB
+      common/GOPTDB/LOPTDB,IOPTDB
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/rpath/path
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -70,22 +66,28 @@ C default file names for databases
       common/appw/iappw,iappx,iappy
 
 C Default dbs.
+      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+C Climate related.
+      common/C22/ICLIM,LCLIM
+
+      logical OK,DOK,XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical moddb,concat,browse,modcon,QUIET,modmlc,chgdb
       logical unixok,copydef,haveconstr,clkok
 
-      character LAPROB*72,H*72,LTMP*72,SOPT*12
+      character*72 LFMUL,LFCON,LCLIM,LAPROB,LAPRES,LAFRES,LPRFDB,LPCDB
+      character H*72,LTMP*72,LOPTDB*72,SOPT*12
       character GTYPE*12,GDESCR*36,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,dq*1,fs*1,DESCP*40,message*48
       character*72 ITEMS(15)
       character doit*248,tmode*8,tfile*72,longtfile*144
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character DEPRE*40,OUTSTR*124,LCOPY*72,LTMPFL*72,LASCI*72
       character DFILE*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -578,7 +580,7 @@ C Act on the users choice. If no choice return to main menu.
      &                    ' was corrupt','W')
               goto 138
             endif
-            MATDBOK=.TRUE.
+            CONDBOK=.TRUE.
             moddb=.true.
             modcon=.true.
             LFCON=LTMP
@@ -720,7 +722,7 @@ C a new db, populate it and present editing facility.
      &                  ' (check file permissions).','W')
             goto 138
           endif
-          MATDBOK=.TRUE.
+          CONDBOK=.TRUE.
           moddb=.true.
           modcon=.true.
 
@@ -952,13 +954,13 @@ C ascii version of this new project materials db.
 
 C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
           IAF=IFIL+1
-          IF(.NOT.MATDBOK)THEN
+          IF(.NOT.CONDBOK)THEN
 
 C If materials not opened do it now.
             IER=0
             call EFOPRAN(IFCON,LFCON,40,1,IER)
             if(ier.ne.0)return 
-            MATDBOK=.TRUE.
+            CONDBOK=.TRUE.
           ENDIF
 
 C Confirm suggested name and then write out asci file.
@@ -1343,11 +1345,9 @@ C Plant template database.
         H(23)='  chance to rename it.'
 
 C Use the profile database unit for testing plant db.
-        if(ipcdb.eq.0)ipcdb=iprodb
-        CALL ERPFREE(ipcdb,ISTAT)
+        CALL ERPFREE(IPRODB,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
-C << note a hard coded / found that needs to be a fs >>
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
@@ -1390,21 +1390,21 @@ C Act on the users choice. If no choice retrun to main menu.
 C If file exists open it, test file type, get number of items and close.
           if(XST)then
             IER=0
-            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+            call EFOPRAN(IPRODB,LTMP,IRECLN,1,IER)
             IF(ier.eq.0)THEN
               IREC = 1
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
               IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
                 call usrmsg('File is not a plant component database,',
      &            'please supply the file name again.','W')
                 goto 60
               endif
               IREC = 2
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
               write(outs,'(a,i3,2a)') 'There are ',NPC,
      &          ' components in ',LTMP(1:lnblnk(LTMP))
               call edisp(iuout,outs)
-              CALL ERPFREE(ipcdb,ISTAT)
+              CALL ERPFREE(IPRODB,ISTAT)
 
 C Get logical name of child process terminal type, expand model 
 C name to include the path and create a string to drive pdb.
@@ -1446,28 +1446,28 @@ C name to include the path and create a string to drive pdb.
           else
             goto 60
           endif
-          CALL ERPFREE(ipcdb,ISTAT)
+          CALL ERPFREE(IPRODB,ISTAT)
           call FINDFIL(LPCDB,XST)
           IF(XST)THEN
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
             IER=0
-            call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+            call EFOPRAN(IPRODB,LTMP,IRECLN,1,IER)
             IF(ier.eq.0)THEN
               IREC = 1
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
+              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
               IF (ZPDESC.NE.' PLANT COMPONENT DATABASE')then
                 call usrmsg('File is not a plant component database,',
      &            'please supply the file name again.','W')
                 goto 60
               endif
               IREC = 2
-              READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
+              READ (IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
               write(outs,'(a,i3,2a)') 'There are ',NPC,
      &          ' components in ',LTMP(1:lnblnk(LTMP))
               call edisp(iuout,outs)
-              CALL ERPFREE(ipcdb,ISTAT)
+              CALL ERPFREE(IPRODB,ISTAT)
             else
               call usrmsg('Sorry, error opening the file.',
      &          'Please use one of the other options.','W')
@@ -1533,10 +1533,10 @@ C a new db, populate it and present editing facility.
 
 C Create a minimal plant databases (code similar to pdb.F).
           moddb=.true.
-          CALL ERPFREE(ipcdb,ISTAT)
-          call EFOPRAN(ipcdb,LPCDB,IRECLN,3,IER)
-          CALL PCUPDT (ipcdb,0)
-          CALL ERPFREE(ipcdb,ISTAT)
+          CALL ERPFREE(IPRODB,ISTAT)
+          call EFOPRAN(IPRODB,LPCDB,IRECLN,3,IER)
+          CALL PCUPDT (IPRODB,0)
+          CALL ERPFREE(IPRODB,ISTAT)
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
@@ -2341,20 +2341,20 @@ C optical properties databases.
       subroutine opendb(ier)
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
 
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
+      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      character H*72,LASCI*72,DFILE*72
+      character H*72,LFCON*72,LFMUL*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
-      CHARACTER LAPROB*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
 
       IER=0
 
@@ -2367,9 +2367,9 @@ C this to 24 words wide.
         write(outs,'(3a)') ' No materials db ',
      &     LFCON(1:lnblnk(LFCON)),' found!'
         call edisp(iuout,outs)
-        MATDBOK=.FALSE.
+        CONDBOK=.FALSE.
       else
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -2468,10 +2468,8 @@ C Scan was ok so set mldbok to true.
           MLDBOK=.TRUE.
         endif
       else
-
-C Could not find constructions db (at this time), report to user.
         write(outs,'(3a)') ' No constructions db ',
-     &     LFMUL(1:lnblnk(LFMUL)),' found!'
+     &     LFCON(1:lnblnk(LFCON)),' found!'
         call edisp(iuout,outs)
         MLDBOK=.FALSE.
       endif
@@ -2492,9 +2490,6 @@ C Open the pressure coef db (needed for network flow descriptions).
       if(XST)then
         CALL ERPRCDB(LAPRES,0,3,IER)
         call usrmsg(' ',' ','-')
-      else
-        call usrmsg(' Wind pressure db not found or there was a',
-     &  ' problem reading it!','W')
       endif
 
       return
@@ -2510,10 +2505,10 @@ C     use the APP characters.
 C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
-#include "esprdbfile.h"
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
+      common/C22/ICLIM,LCLIM
       common/clmlst/cdblbl,cdblfil
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -2521,6 +2516,7 @@ C from version manager
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
@@ -2532,15 +2528,16 @@ C from version manager
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
-      CHARACTER*72 H,CDBLFIL,DFILE,LASCI,LTMP
+      CHARACTER*72 H,LCLIM,CDBLFIL,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
       CHARACTER CDBLBL*20,DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,PATH
       LOGICAL CLKOK,OK,CONCAT,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
-      character dinstpath*48,path*72
+      character dinstpath*48
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,NNAME
       dimension ICLM(24,6)
 
@@ -3157,3 +3154,89 @@ C from version manager
       
       RETURN
       END
+
+C ********** dbdoscopy *********
+C dbdoscopy takes a source file and a destination file (with
+C   path) and converts any forward slashes to backwards slashes and detects
+C   spaces and creates and returns the doit command.
+C source (72 char) source file (with path).
+C lcopy (72 char) destination file (with path)
+C message (48 char) feedback to echo when preparing doit
+C doit (248 char) the command to execute
+C ier is zero if ok.
+      subroutine dbdoscopy(source,lcopy,message,doit,ier)
+      common/OUTIN/IUOUT,IUIN
+
+C Strings for dos version of source and destination of db file.
+      character rootpdos*72,upathdos*72,dq*1,outs*124
+      character source*72,lcopy*72,message*48,doit*248
+      logical unixok
+      integer lnrp  ! length of source file name
+      integer lnblankrp ! position of blank in source file
+      integer lnup  ! length of destination file name
+      integer lnblankup ! position of blank in source file
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        call usrmsg('dbdoscopy is being called on a Unix/Linux/OSX',
+     &    'computer environment - which could cause errors.','W')
+      endif
+
+C Make up a double quote for dos copy command, reset ier to zero
+C and clear the doit return string buffer.
+      dq = char(34)
+      ier=0
+      doit=' '
+
+C Debug statements for native windows version. If lnblankrp or
+C lnblankup is one then there are no spaces in the string so double quotes
+C are not required.  But in either case it is useful to change any '/'
+C in rootp and upath to '\'. 
+      rootpdos=' '
+      upathdos=' '
+      lnrp=lnblnk(source)
+      lnblankrp=iprevblnk(source,lnrp)
+      call backslashit(source,rootpdos) ! change / to \
+      write(outs,'(3a)') message,' ',rootpdos(1:lnrp)
+      call edisp(iuout,outs)
+
+      lnup=lnblnk(LCOPY)
+      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
+      call backslashit(LCOPY,upathdos)
+      write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+      call edisp(iuout,outs)
+
+C Create the doit command based on where there are blanks in the strings.
+      if(lnblankrp.gt.1.and.lnblankup.gt.1)then
+
+C There are blanks in both source or destination strings.
+        write(doit,'(8a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
+
+C There are blanks in destination string.
+        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lnup),dq
+      elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
+
+C There are blanks in source string.
+        write(doit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lnup)
+      elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
+
+C There are no blanks in either source or destination strings.
+        write(doit,'(4a)',IOSTAT=IOS,ERR=552) 'copy /y ',
+     &    rootpdos(1:lnrp),' ',upathdos(1:lnup)
+      endif
+
+      return
+
+C Errors.
+ 552  call usrmsg(
+     &  'Error creating the dos copy command (might not work)',
+     &  doit,'W')
+      ier=1
+      return
+      end
+

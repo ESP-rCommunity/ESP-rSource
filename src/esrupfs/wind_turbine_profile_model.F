@@ -573,7 +573,7 @@ C-------------------------------------------------------------------------------
 
 
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
-      character LAPROB*72
+      character*72 LAPROB,LAPRES,LAFRES
       logical close
 
       REAL HDWTI

@@ -68,15 +68,14 @@ C Pre calculated data (filtered).
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
-      character doit*248,tmode*8,tfile*72
-      character longtfile*144,longtfiledos*144
+      character doit*248,tmode*8,tfile*72,longtfile*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
       character xfile*72,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
-      logical ok,dok,concat,unixok
+      logical ok,dok,concat
 
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
@@ -86,9 +85,6 @@ C Pre calculated data (filtered).
      &          'non-sedentary            ','out of range             '/
 
       DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
-
-C Check if Unix or Windows.
-      call isunix(unixok)
 
 C Initialise comfort variables.
       if(act.eq.'I'.or.act.eq.'V')then
@@ -332,17 +328,7 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
           write(doit,'(7a)') 'mrt -mode ',tmode,
      &       ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),

@@ -254,18 +254,13 @@ C Ask user for related mass flow network files.
       subroutine askmfn(mfunit)
 #include "building.h"
 #include "plant.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       LOGICAL OK,dok
-      character LAPROB*72
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character*72 LAPROB,LAPRES,LAFRES
       character H*72,ltmp*72
 
       h(1)='This file is assumed to exist. '

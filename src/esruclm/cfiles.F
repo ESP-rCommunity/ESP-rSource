@@ -40,9 +40,9 @@ C with the radiation flag set appropriately after the file has been
 C read in.
 C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKBCLM(ITRU,ICDESC,LASCI,IUNIT,IDS,IDF,silent,IER)
-#include "esprdbfile.h"
 
       common/pophelp/h(60)
+      COMMON/C22/ICLIM,LCLIM
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
@@ -53,7 +53,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       dimension ICLM(24,6)
 
       CHARACTER CLMLOC*30
-      CHARACTER H*72,LASCI*72,outs*124,OUTSTR*124
+      CHARACTER H*72,LCLIM*72,LASCI*72,outs*124,OUTSTR*124
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -223,16 +223,16 @@ C of the period being transferred.
 C Item 3 will be replaced by global horizontal radiation (W/M**2),
 C if the radiation flag set was set to GH in the binary climate file.
       SUBROUTINE MKACLM(ACT,LASCI,IAF,IBD,IED,IER)
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
       DIMENSION ICLM(24,6)
 
-      CHARACTER LASCI*72,outs*124,CLMLOC*30,outsd*124
+      CHARACTER LCLIM*72,LASCI*72,outs*124,CLMLOC*30,outsd*124
       character act*1,tab*1,msg*19
 
       tab = CHAR(9)
@@ -404,11 +404,11 @@ C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/INPER/INIT
       COMMON/FILEP/IFIL
+      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -420,6 +420,9 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
 C Where list of climate files is held.
       common/clmlst/cdblbl,cdblfil
 
+C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
       logical XST,ok,silent
       
 C Logical rescan = true if climatelist needs to be rescanned to
@@ -427,7 +430,7 @@ C pick up typical periods (i.e. if climate file name typed in
 C or passed into clm module).
       logical rescan
 
-      CHARACTER CLMLOC*30,H*72,outs*124,tab*1,outs248*248
+      CHARACTER CLMLOC*30,LCLIM*72,H*72,outs*124,tab*1,outs248*248
       character LCMDFL*144,cdblbl*20,cdblfil*72,clmdb*72,L144*144
       tab = CHAR(9)
 
@@ -856,8 +859,8 @@ C Item 3 can be replaced by global horizontal radiation (W/M**2),
 C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE EPWTOBCLM(LASCI,IUNIT,IER)
-#include "esprdbfile.h"
 
+      COMMON/C22/ICLIM,LCLIM
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
@@ -881,7 +884,7 @@ C Comment lines.
       dimension ICLMEPW(12,31,24,6)
 
       CHARACTER CLMLOC*30,WORD*24,uncert*44
-      CHARACTER LASCI*72,outs*124,OUTSTR*248
+      CHARACTER LCLIM*72,LASCI*72,outs*124,OUTSTR*248
       character dcline*248,currentfile*72
 
 C Initial guess on string sizes.

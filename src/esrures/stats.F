@@ -54,7 +54,7 @@ C results. Available at present:
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -69,8 +69,7 @@ C SNAPSH is a logical flag to request variation in header.
       character SLABEL*32,GLABEL*20
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER RSNAME*40
+      CHARACTER RFILE*72, RSNAME*40
       CHARACTER*3 NMTHNM(12)
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
@@ -763,7 +762,7 @@ C act='p' iget parameters already set.
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
@@ -778,8 +777,7 @@ C act='p' iget parameters already set.
       character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
-      CHARACTER RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER RFILE*72, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44,t12*12
 
       logical LARGE
@@ -1256,7 +1254,7 @@ C standard.
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1279,8 +1277,7 @@ C standard.
 
       character outs*124,zname*12,zdesc*64,act*1
       character SLABEL*32,GLABEL*20,prompt*124
-      CHARACTER PDESCR*60,SDESCR*44,RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER PDESCR*60,SDESCR*44,RFILE*72,RSNAME*40
       logical display
 
 C If output to file alter the edisp unit number.
@@ -1466,7 +1463,7 @@ C act='p' iget parameters already set.
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -1474,8 +1471,7 @@ C act='p' iget parameters already set.
       character SLABEL*32,GLABEL*20
       character prompt*124,outs*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
-      CHARACTER RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER RFILE*72, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS)
@@ -1821,7 +1817,7 @@ C Also called by recovert if act = 'p' << needs checking >>
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -1830,8 +1826,7 @@ C Also called by recovert if act = 'p' << needs checking >>
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       character SLABEL*32,GLABEL*20,prompt*124,outs*124,prompte*124
-      CHARACTER RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER RFILE*72, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44,H*72,act*1,zname*12,zdesc*64
       DIMENSION YDUM(MTS)
 
@@ -2037,7 +2032,7 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -2049,8 +2044,7 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,lodlabel*6,act*1,prompt*124
-      CHARACTER RSNAME*40,SLABEL*32,GLABEL*20
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER RFILE*72,RSNAME*40,SLABEL*32,GLABEL*20
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
 

@@ -33,7 +33,6 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
@@ -43,6 +42,7 @@ C Write IPV report based on description held in common.
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
+      COMMON/RECV6/LCLIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
@@ -135,7 +135,7 @@ C Pre calculated data (filtered).
       CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
-      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30
+      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30,LCLIM*72
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
@@ -3491,7 +3491,7 @@ C Simulator parameters.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72,act*1
-      character LCMDFL*144,longtfile*144,longtfiledos*144
+      character LCMDFL*144,longtfile*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
 
@@ -3550,18 +3550,7 @@ C Each call is a toggle.
 
 C If appending check and see if it exists. If so close it and then
 C open it with APPEND option. Use ifdef for F77 or F90.
-              longtfile=' '
-              if(unixok)then
-                call addpath(xfile,longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(xfile,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
+              call addpath(xfile,longtfile,concat)
               ltf=max(1,LNBLNK(longtfile))
               there=.false.
               INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
@@ -3610,10 +3599,10 @@ C open it with APPEND option. Ifedf for F77 or F90.
           endif
         endif
         if(iw.eq.1)then
-          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',longtfile(1:lnblnk(longtfile))
         else
-          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',xfile(1:lnblnk(xfile))
         endif
         call usrmsg(outs,' ','-')

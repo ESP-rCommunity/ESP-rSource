@@ -340,10 +340,6 @@ C Data items.
 #include "building.h"
 #include "power.h"
 #include "epara.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -363,11 +359,11 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
@@ -377,14 +373,14 @@ C Special materials file flag
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
 
       logical ok,dok, SPREPT
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST
       integer header,footer
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character LAPROB*72
+      character*72 LAPROB,LAPRES,LAFRES
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
-      CHARACTER TITL*72,SNAME*12,DADESC*72,spitem2*32
+      CHARACTER TITL*72,SNAME*12,LFCON*72,LFMUL*72,DADESC*72,spitem2*32
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25

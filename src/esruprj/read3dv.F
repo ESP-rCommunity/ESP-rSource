@@ -57,8 +57,8 @@ C converts into viewing coords, clips the image and draws it.
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL  ISTOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical greyok,found
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)

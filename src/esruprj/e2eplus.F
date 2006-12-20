@@ -26,12 +26,6 @@ C E2eplus: Inside and outside materials and composition and schedules generation
 C ******* Translate esp data to EnergyPlus file geom and materials.
       SUBROUTINE e2eplus(itrc,ioout,IER)
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
-C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -52,9 +46,12 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C22/ICLIM,LCLIM
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -101,11 +98,11 @@ C Simulation parameter presets.
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
       COMMON/CLMDT1/CLMLOC
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCLIM
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character GDESCR*36
+      character GDESCR*36,LOPTDB*72,LFCON*72,LFMUL*72
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -114,7 +111,7 @@ C Simulation parameter presets.
       character ctldoc*248,LCTLF*72,BLKNAME*8,BLKMAT*12
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
-      CHARACTER LAPROB*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
       CHARACTER*6 lodlabel
       character oprdesc*248,ctlstr*24
 

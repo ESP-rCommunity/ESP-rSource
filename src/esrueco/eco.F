@@ -41,12 +41,6 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
       PROGRAM eco
 #include "building.h"
 #include "LCA.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
-C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C default file names for databases
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -91,11 +85,12 @@ C Composites information
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -103,6 +98,8 @@ C For exporting to file
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C ECO specific commons 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -138,7 +135,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 
-      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(19) 
@@ -148,7 +145,8 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
-      CHARACTER inf*144,LCMDFL*144
+      CHARACTER LFCON*72,LFMUL*72,inf*144,LCMDFL*144,LOPTDB*72
+      CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,esprc*72,L144*144
       CHARACTER dfdblbl*20,defdbfl*72
@@ -221,7 +219,7 @@ C Set defaults.
       OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       MODIFY=.FALSE.
@@ -877,7 +875,7 @@ C Display Material list and allow selection of materials.
      &                      'Select a BCF file first','W')
           goto 10
         ENDIF
-        IF (.NOT.MATDBOK) THEN
+        IF (.NOT.CONDBOK) THEN
           call usrmsg('Materials database not yet loaded,',
      &                      'unable to display list.','W')
           goto 10

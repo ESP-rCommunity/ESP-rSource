@@ -60,7 +60,7 @@ C will have been defined prior to calling edmrt.
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
-      logical silent,unixok
+      logical silent
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
@@ -68,13 +68,9 @@ C will have been defined prior to calling edmrt.
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       character doit*248,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1
-      character longtfile*144,longtfiledos*144
+      character docpth*24,tmppth*24,dbspth*24,act*1,longtfile*144
 
       cfgmod=.false.
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
 
 C If user is browsing model then give warning and exit.
       if(browse)then
@@ -161,17 +157,7 @@ C to include the path and create a string to drive mrt.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -519,17 +505,7 @@ C to include the path and create a string to drive mrt.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

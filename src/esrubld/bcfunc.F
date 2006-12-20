@@ -5634,9 +5634,6 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -5648,6 +5645,7 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
+      common/condb/lfcon,ifcon,lfmul,ifmul
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -5678,6 +5676,7 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
+      character lfmul*72,lfcon*72
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
 
 C << for the case of bcl being called from solar is the limit >>

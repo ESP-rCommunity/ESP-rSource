@@ -77,8 +77,8 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
@@ -3583,12 +3583,11 @@ C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
-
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+C Profiles database.
+      COMMON/PRODB/LPRFDB,IPRODB
 
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
      &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
@@ -3608,7 +3607,7 @@ C Descriptive label for a zone load or casual gain types.
       DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
       DIMENSION  NO(100),DESC(100),IPRVAL(100)
       CHARACTER*40 DESC
-      CHARACTER H*72,hold*40,lodlabel*6
+      CHARACTER LPRFDB*72,H*72,hold*40,lodlabel*6
       character*8 ll1,ll2,ll3
       logical OK,DOK
 

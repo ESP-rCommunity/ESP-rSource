@@ -34,9 +34,6 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
       SUBROUTINE EDZONE(ITRC,ICOMP,IER)
 #include "net_flow.h"
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -70,8 +67,9 @@ C the floor area (one) or it was calculated (zero).
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -88,8 +86,8 @@ C the floor area (one) or it was calculated (zero).
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       LOGICAL MODIFY,MODLEN,MODBND,browse,context
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10)
@@ -98,12 +96,12 @@ C the floor area (one) or it was calculated (zero).
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER D12*12,T12*12,LTMP*72,GFILE*72
+      CHARACTER D12*12,T12*12,LTMP*72,GFILE*72,LPRFDB*72
       CHARACTER ITEMS*33,ITEMSS*32,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER LAPROB*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1
 
@@ -1707,7 +1705,6 @@ C saved to a geometry file ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1728,6 +1725,7 @@ C Optical and geometric properties.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/ground/grdtmp(12,mgrdp)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1736,8 +1734,8 @@ C Optical and geometric properties.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
 
@@ -1746,7 +1744,7 @@ C Optical and geometric properties.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
-      CHARACTER SALT*33,H*72,SN*12,SN2*12
+      CHARACTER SALT*33,H*72,SN*12,SN2*12,LFMUL*72,LFCON*72
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SSPARENT*12
 

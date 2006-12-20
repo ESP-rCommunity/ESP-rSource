@@ -54,10 +54,6 @@ C           - Principle use is for function button facility on workstations.
 C For operational details refer to the ESP-r program user's manual.
       program res
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -83,6 +79,7 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulation period and save option.
@@ -123,15 +120,17 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
       COMMON/pres/iunitp
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
 
       CHARACTER ITEM(19)*23
       CHARACTER*72 H,xfile,LTMP,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248
-      character outs*124,MODE*4,tg*1,delim*1
+      character outs*124,LFMUL*72,LFCON*72,MODE*4,tg*1,delim*1
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
       character path*72,upath*72,esprc*72,spsname*8,paction*16
       character dfdblbl*20,defdbfl*72,cfgroot*24,fs*1,act*16,aut*12
@@ -193,7 +192,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       pifltog='OFF'
@@ -669,9 +668,8 @@ C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,focus*4,tfile*72
-      character longtfile*144,longtfiledos*144
-      logical concat,show,unixok
+      character fmttag*4,fmtexe*20,tfile*72,longtfile*144,focus*4
+      logical concat,show
 
 C Loop through the images and for those which match the "focus"
 C can be displayed with a known utility can be brought up. Iforce,
@@ -684,9 +682,6 @@ C if set to 1 forces display.
         return
       endif
       if((iton.eq.0.or.iforce.eq.1))then
-
-C Check if Unix-based or DOS based.
-        call isunix(unixok)
         do 498 imgv=1,imgtyp
           ilist=' '
           ix=1
@@ -701,17 +696,7 @@ C begins with and `S`, otherwise attempt to match the focus and the image.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
                 longtfile=' '
-                if(unixok)then
-                  call addpath(limgfil(img),longtfile,concat)
-                else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                  call addpath(limgfil(img),longtfile,concat)
-                  call cmdfiledos(longtfile,longtfiledos,ier)
-                  longtfile=' '
-                  longtfile=longtfiledos
-                endif
+                call addpath(limgfil(img),longtfile,concat)
                 ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then

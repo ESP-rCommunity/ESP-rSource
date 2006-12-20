@@ -25,11 +25,6 @@ C blank or NONE not required and not yet defined.
 
       program e2r
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
-C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -62,6 +57,8 @@ C Where default db list are kept.
       common/rcmd/LCMDFL
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C Radiance based commons.
 C rofil = `outside` objects, rzfil = is the zone (inside) composition.
@@ -96,13 +93,13 @@ C Scene configuration commons.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       CHARACTER H*72,outs*124,ITEM*30
-      CHARACTER LDFGRID*72
+      CHARACTER*72 LFMUL,LFCON,LOPTDB,LDFGRID
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
@@ -122,7 +119,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(13)
 
-      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
@@ -196,7 +193,7 @@ C Set defaults.
       KEEP=.false.
       CFGOK=.false.
       MLDBOK=.false.
-      MATDBOK=.false.
+      CONDBOK=.false.
       CTLOK=.false.
       OPTKOK=.false.
       MODIFY=.false.
@@ -732,14 +729,14 @@ C Path to model.
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -854,10 +851,11 @@ C *************** opendb ***************
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      CHARACTER LFCON*72,LFMUL*72
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
@@ -870,10 +868,10 @@ C this to 24 words wide.
         write(outs,'(a,a,a)') ' No primitive constructions db ',
      &     LFCON(1:lnblnk(LFCON)),' found.'
         call edisp(iuout,outs)
-        MATDBOK=.FALSE.
+        CONDBOK=.FALSE.
       else
 C        CALL edisp(iuout,' opened primitive materials db.')
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.

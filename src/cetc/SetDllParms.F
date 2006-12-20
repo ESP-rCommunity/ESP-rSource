@@ -74,7 +74,7 @@ C----------------------------------------------------
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
             
       character*72 upath
-      character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character LCLIM*72,LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
  
       integer termtype,iappw,iappx,iappy
       logical unixok

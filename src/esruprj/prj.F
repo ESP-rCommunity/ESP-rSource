@@ -33,15 +33,6 @@ C ********** MAIN
       program prj
 #include "building.h"
 #include "uncertainty.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
-C default file names for databases
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -52,22 +43,31 @@ C default file names for databases
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/C6/INDCFG
+      common/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
+      common/C22/ICLIM,LCLIM
       common/CFGV/icfgv
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+
+C Profiles database.
+      common/PRODB/LPRFDB,IPRODB
+
+C Optical db.
+      common/GOPTDB/LOPTDB,IOPTDB
 
 C Project log file, journal on/off, unit number, cmd, file name.
       common/LOG/LPRJLG
@@ -98,6 +98,7 @@ C Where exemplars list and default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
+      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/deflt4/dinstpath
 
 C Images.
@@ -121,7 +122,7 @@ C IPV description.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -137,26 +138,25 @@ C Dispersed demands notes and file name.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
-      logical unixok,isdok,Vldtng,changedit,foundutl
-      logical itisanexemplar  ! passed to newprb to ensure browse mode.
+      logical     OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical     MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
+      logical     unixok,isdok,Vldtng,changedit,foundutl
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF,H,LPRJLG
+      character*72 LFMUL,LFCON,LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character inf*144,inz*16,inzone*16,LCMDFL*144
-      character outs*124,outstr*124,outs248*248
+      character inf*144,inz*16,inzone*16,LCMDFL*144,outs*124,outstr*124
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
-      character LAPROB*72
+      character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
       character ITEMS(27)*33
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
-      character GTGEOM*72,lipvdatf*72,longtfile*144
+      character GTGEOM*72,lipvdatf*72,longtfile*124
       character*10 wkd1, wkd2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
@@ -165,7 +165,6 @@ C Dispersed demands notes and file name.
       CHARACTER dmdsdesc*248,bdmds*72,cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
-      character useraction*8  ! returned from exemplar access call.
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -264,7 +263,7 @@ C and control files have not been read in and that any files saved will
 C be atrributed.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       browse=.false.
@@ -475,8 +474,9 @@ C If an input file has been specified then load it.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
 
-C Check to see if the command line file is an IDST command file.
-C If it is, extract configuration file name and command data.
+C Check to see if the command line file is an IDST command
+C file.  If it is, extract configuration file name and command
+C data.
           isdok=.false.
           CALL ERPFREE(IFCFG,ISTAT)
           call FPOPEN(IFCFG,ISTAT,1,1,LCMDFL)
@@ -513,25 +513,18 @@ C              write(6,*)'idst naloc =',nidst,naloc
           endif
   23      CALL ERPFREE(IFCFG,ISTAT)
 
-C Call newprb without the need to confirm model but to check its path.
-C << for now assume that the file passed is not an exemplar >>
-          itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
-          call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+          call NEWPRB(ITRC,confirm,ckpath,IER)
           if(ier.eq.-1)goto 3
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
           call tstamp('>',LCFGF)
         else
-
-C The model file might not exist.
-C << for now assume that the file passed is not an exemplar >>
-          itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
-          call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+          call NEWPRB(ITRC,confirm,ckpath,IER)
           if(ier.eq.-1)goto 3
 
           call edisp(iuout,' Loading supplied model description.')
@@ -558,7 +551,7 @@ C current number of zones if a model has been loaded.
           call edisp(iuout,' ')
 
 C Open core of databases if not already done so.
-          if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+          if(MLDBOK.and.CONDBOK.and.OPTKOK)then
             continue
           else
             call opendb(ier)
@@ -858,85 +851,32 @@ C rexmpl returns an ier=2 then the user asked to continue.
             INQUIRE (FILE=exemfl,EXIST=XST)
             if(XST)then
               call tstamp('>','PRJ: scanning exemplars enter')
-
-C << An idea - rexmpl could return in addition the path and the cfg file  >>
-C << name parts of exemplar (because it already knows this so it need not >>
-C << be resolved again. >>
-
-C Call rexmpl to get the exemplar. If ier is set to 2 then the
-C user didn't pick anything. If useraction is set to 'browse' then
-C ensure the toggle is set accordingly.
-              useraction = ' '
-              call rexmpl(IUF,exemfl,exemplar,useraction,ier)
+              call rexmpl(IUF,exemfl,exemplar,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
                 goto 3
               endif
               if(ier.ne.0)goto 3
-              if(exemplar(1:7).ne.'UNKNOWN'.and.
-     &           exemplar(1:2).ne.'  ')then
-
-C Set initial browse toggle to match useraction.
-                if(useraction(1:8).eq.'browse  ')then
-                  browse=.true.
-                elseif(useraction(1:8).eq.'ownit   ')then
-                  browse=.false.
-                endif
+              if(exemplar.ne.'UNKNOWN'.and.exemplar.ne.' ')then
+                browse=.false.
 
 C Copy the exemplar configuration file (with full path) to LCMDFL.
                 write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
                 ltcmdfl=exemplar
                 call fdroot(ltcmdfl,path,LCFGF)
-
-C Debug...
-                write(outs248,'(2a)') 'LCMDFL is ',LCMDFL
-                call edisp248(iuout,outs248,110)
-                write(outs248,'(2a)') 'model path is ',path
-                call edisp248(iuout,outs248,110)
-                write(outs248,'(2a)') 'model cfg is ',LCFGF
-                call edisp248(iuout,outs248,110)
-                call edisp(iuout,' ')
-
-C If the path of the model indicates it is one of the standard
-C exemplars then flag browse and itisanexemplar to true.
-                write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &            fs,'training'
-
-                ldirpath=lnblnk(dirpath)
-                if(path(1:ldirpath).eq.dirpath(1:ldirpath))then
-
-C For OSX/Linux/Unix comparison of paths is usually successful so
-C if the model path is to the distribution training folder believe it.
-                  browse=.true.
-                  itisanexemplar=.true.
-                else
-
-C A non match may happen in Native windows so fall back ont useracton
-C if there is no match in the paths.
-                  if(useraction(1:8).eq.'browse  ')then
-                    browse=.true.
-                    itisanexemplar=.true.
-                  elseif(useraction(1:8).eq.'ownit   ')then
-                    browse=.false.
-                    itisanexemplar=.false.
-                  endif
-                endif
-                write(outs,*) ' browse status is ',browse
-                call edisp(iuout,outs)
-
-C If running on a Windows machine the the file browser would have been
-C used and there is no need to check the path.
                 call isunix(unixok)
+                write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
+     &            '/training'
+                ldirpath=lnblnk(dirpath)
+                if(path(1:ldirpath).eq.dirpath(1:ldirpath))browse=.true.
                 confirm=.false.
-                if(unixok)then
-                  ckpath=.true.
-                else
-                  ckpath=.false.
-                endif
-                call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+                ckpath=.true.
+                call NEWPRB(ITRC,confirm,ckpath,IER)
                 call tstamp('>','PRJ: continuing with exemplar')
               endif
+C Debug.
+C              write(6,*) ' browse status is ',browse
             endif
           else
             call edisp(iuout,' No `exemplars` list available')
@@ -948,10 +888,9 @@ C used and there is no need to check the path.
 C Select an existing model. If Project Manager was started with
 C 'UNKNOWN' then ask for actual name to create or read.
           if(LCMDFL(1:7).eq.'UNKNOWN')then
-            itisanexemplar=.false.
             confirm=.true.
             ckpath=.true.
-            call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            call NEWPRB(ITRC,confirm,ckpath,IER)
           else
 
 C Something was passed in via the command line so offer choice.
@@ -969,23 +908,17 @@ C Find the path and local file name.
             if(IW.eq.1)then
               ltcmdfl=LCMDFL
               call fdroot(ltcmdfl,path,LCFGF)
-              write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &          fs,'training'
+              write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
+     &          '/training'
               ldirpath=lnblnk(dirpath)
-              if(path(1:ldirpath).eq.dirpath(1:ldirpath))then
-                browse=.true.
-                itisanexemplar=.true.
-              else
-                itisanexemplar=.false.
-              endif
+              if(path(1:ldirpath).eq.dirpath(1:ldirpath))browse=.true.
               confirm=.false.
               ckpath=.true.
-              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              call NEWPRB(ITRC,confirm,ckpath,IER)
             else
-              itisanexemplar=.false.
               confirm=.true.
               ckpath=.true.
-              call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              call NEWPRB(ITRC,confirm,ckpath,IER)
             endif
 C Debug.
 C            write(6,*) ' browse status is ',browse
@@ -1210,7 +1143,6 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
-#include "esprdbfile.h"
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -1221,7 +1153,7 @@ C to include the path and create a string to drive the modules.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -1254,19 +1186,19 @@ C level).
 
       character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
+      character selres*72,spflnam*72,longtfile*124
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,ENTFLNAM,lipvdatf
       character cfgroot*24,cr*24,spfdescr*8
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
       character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      character brw*8,outs*124,dq*1,fs*1
+      character brw*8,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
-      logical browse,concat,hri,defok,unixok
+      logical browse,concat,hri,defok
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
 
       modparms=.false.
@@ -1274,17 +1206,6 @@ C dd is character array for selecting simulation parameter sets.
       cr=cfgroot
       if(nsset.gt.0)isset=1
       t72='  '
-
-C When invoking doit commands we need to have a file separator
-C and a double quote character available in case of spaces in name.
-      call isunix(unixok)
-      if(unixok)then
-        dq = char(34)
-        fs = char(47)
-      else
-        dq = char(34)
-        fs = char(92)
-      endif
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -1456,22 +1377,7 @@ C Invoke simulator.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-
-C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
-     &        longtfiledos(1:lnblnk(longtfiledos))
-            call edisp248(iuout,outs,100)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If browsing pass this information to bps.
           if(browse)then
@@ -1500,22 +1406,7 @@ C an offset from prj start position.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-
-C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
-     &        longtfiledos(1:lnblnk(longtfiledos))
-            call edisp(iuout,outs)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
 
 C If browsing pass this information to bps.
           if(browse)then
@@ -1594,24 +1485,12 @@ C an offset from prj start position.
         ENDIF
       elseif(INO.EQ.MITEM-4)then
 
-C Visual simulation.  Starts e2r with configuration file. Depending on
-C if Unix or Windows setup the appropriate path.
+C Visual simulation.  Starts e2r with configuration file.
         call tstamp('>','PRJ: beginning e2r')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call isunix(unixok)
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,3a)') 'e2r -mode ',tmode,
      &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
@@ -2016,10 +1895,6 @@ C There is temporal data so must save at each timestep.
 
 C ********** ipvactions
 C ipvactions commissions ipv assessments and recovery and comparisons.
-
-C << noticed that the results file passed to res is 72 char rather than
-C << the longer string used when commissioning a simulation.
-
       subroutine ipvactions(ier)
 #include "building.h"
 
@@ -2052,7 +1927,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       character doit*248,tmode*8,tfile*72,H*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,longtfile*144,longtfiledos*144
+      character selres*72,longtfile*124
       CHARACTER LCFGF*72,lipvdatf*72
       character cfgroot*24,aut*12
 
@@ -2061,7 +1936,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character ltpath*72,filen*72,ltmp*72,upath*72
       character basefile*144,variantfile*144,outs*124,outsd*124
       character word1*20,word2*40,word3*20,outstr*124
-      character xfile*72,tg*1,delim*1,tab*1,fs*1
+      character xfile*72,tg*1,delim*1,tab*1
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
@@ -2093,14 +1968,6 @@ C the first array index is base and 2nd is variant, 3rd diff
       if(nsset.gt.0)isset=1
       write(basefile,'(a)') sipvres(1:lnblnk(sipvres))
       write(variantfile,'(a)') sipvres(1:lnblnk(sipvres))
-
-C Set file separator
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
 C Clear values.
       anu_ht_m2(1)=0.; anu_ht_m2(2)=0.; anu_ht_m2(3)=0.
@@ -2196,17 +2063,7 @@ C Temporarily assume no browsing if in ipv mode.
           brw = ' -b no '
         endif
 
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
 
 C Run only the number of assessments required.
         if(nipvassmt.eq.1)then
@@ -2304,12 +2161,12 @@ C        write(6,*) 'status of browse and remote ',browse,remote
               call isunix(unixok)
               if(unixok)then
                 if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &              filen(1:lnblnk(filen))
                 endif
               else
                 if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &              filen(1:lnblnk(filen))
                 endif
               endif
@@ -2345,12 +2202,12 @@ C              write(6,*) 'reset tfile to ',tfile
               call isunix(unixok)
               if(unixok)then
                 if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &              filen(1:lnblnk(filen))
                 endif
               else
                 if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                  write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &              filen(1:lnblnk(filen))
                 endif
               endif
@@ -2380,12 +2237,12 @@ C              write(6,*) 'itr3 reset tfile to ',tfile
             call isunix(unixok)
             if(unixok)then
               if (ICHAR(ltpath(1:1)).ne.47) then
-                write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &            filen(1:lnblnk(filen))
               endif
             else
               if (ltpath(2:2).ne.':') then
-                write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
+                write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
      &            filen(1:lnblnk(filen))
               endif
             endif
@@ -3216,14 +3073,10 @@ C    and iton=1 images have been displayed.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4
-      character longtfile*144,longtfiledos*144
+      character fmttag*4,fmtexe*20,tfile*72,focus*4,longtfile*124
       character topic*248,head*136,act*1,h*72
 
-      logical concat,show,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
+      logical concat,show
 
 C Loop through the images and display those which match the 'focus'
 C and can be displayed with a known utility. Iforce, if set to 1,
@@ -3253,24 +3106,7 @@ C attempt to match the focus with the image.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
                 longtfile=' '
-                if(unixok)then
-                  call addpath(limgfil(img),longtfile,concat)
-                else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.  If X11 then an external application is used
-C an double quoting is useful. If GTK then internal function used and
-C quotes are not required.
-                  call addpath(limgfil(img),longtfile,concat)
-#ifdef X11
-                  call cmdfiledos(longtfile,longtfiledos,ier)
-#endif
-#ifdef GTK
-                  call imgfiledos(longtfile,longtfiledos,ier)
-#endif
-                  longtfile=' '
-                  longtfile=longtfiledos
-                endif
+                call addpath(limgfil(img),longtfile,concat)
                 ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then
@@ -3328,17 +3164,7 @@ C << tag for editing ?? >>
             if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
             if(show)then
               longtfile=' '
-              if(unixok)then
-                call addpath(limgfil(img),longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(limgfil(img),longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
+              call addpath(limgfil(img),longtfile,concat)
               ixl=lnblnk(longtfile)
               if(focus(1:4).eq.'****')then
                 write(topic,'(3a)') ' Image ',longtfile(1:ixl),
@@ -3389,11 +3215,8 @@ C info being saved.
 
       character*(*) msg,xfile
       character H*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*144,longtfiledos*144
-      logical concat,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
+      character longtfile*144
+      logical concat
 
 C Each call is a toggle. If open then close text or graphics command
 C file. For the graphics ask if file should be further converted.
@@ -3407,17 +3230,7 @@ C file. For the graphics ask if file should be further converted.
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
             longtfile=' '
-            if(unixok)then
-              call addpath(xfile,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(xfile,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
+            call addpath(xfile,longtfile,concat)
           else
             write(longtfile,'(a)') xfile(1:lnblnk(xfile))
           endif
@@ -3454,19 +3267,9 @@ C and change any / to \.
 C Writing remotely, add the path to the given file name before
 C passing request to wwlib.c
             longtfile=' '
-            if(unixok)then
-              call addpath(xfile,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(xfile,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
-            call edisp248(iuout,longtfile,100)
-            call edisp248(iuout,xfile,100)
+            call addpath(xfile,longtfile,concat)
+C            write(6,*)'longtfile ',longtfile
+C            write(6,*)'xfile ',xfile
             call wwcopen(longtfile)
             call wwcsetstart
           endif
@@ -3851,7 +3654,6 @@ C << message to user that such a file does not exist
 
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
-#include "esprdbfile.h"
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
@@ -3873,7 +3675,7 @@ C Path to model and command line file (if any).
       common/cctlnm/ctldoc,lctlf
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -3881,6 +3683,7 @@ C Path to model and command line file (if any).
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -3893,9 +3696,9 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72,LCNN*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFCON,LFMUL
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCTLF,LCFD
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB,LAPRES,LAFRES
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
       CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,CTLDOC*248,OUTSTR*124
@@ -4791,11 +4594,7 @@ C contaminants network
 C << There is some problem with this section because the ctm file is
 C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
-        CALL CTREAD(iier)
-        if(iier.ne.0)then
-          outs='There was a problem scanning contaminates file.'
-          call edisp(iuout,outs)
-        endif
+        CALL CTREAD
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
         CNTMFIL=NNAME
         IUNIT=72

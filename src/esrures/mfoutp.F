@@ -56,9 +56,9 @@ C act='p' iget parameters already set.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/exporttg/xfile,tg,delim
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/SETNAM/RSNAME(MNRS)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -86,10 +86,9 @@ C Simulator parameters.
       character ALABEL(5)*12,t20*20,act*1,H*72
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,LTMPC*72
-      CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
+      CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14,RFILE*72
       character graftitle*64,grlbl*24,t24*24,LTIME*5
-      character LAPROB*72,RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72,LAPRES*72,LAFRES*72,RSNAME*40
       character xfile*72,tg*1,delim*1,tab*1
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
@@ -1142,8 +1141,7 @@ C to graphical result display of network flows.
 #include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
@@ -1153,8 +1151,7 @@ C to graphical result display of network flows.
       CHARACTER ETEXT*124, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44
       character graftitle*64,grlbl*24,t64*64
-      character LAPROB*72
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72,LAPRES*72,LAFRES*72
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get

@@ -3326,9 +3326,7 @@ C Trace output
       END IF
 
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(37).NE.0) then
-        WRITE(ITU,*) ' Leaving subroutine CMP34C trace'
-      ENDIF
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP01C'
 
       RETURN
       END

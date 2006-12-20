@@ -21,7 +21,6 @@ C Boston, MA 02111-1307 USA.
       program mld
 #include "building.h"
 #include "mould.h"
-#include "esprdbfile.h"
 
       common/minfo/mno(MOULD),species(MOULD)
       common/meqn/a0(MOULD),a1(MOULD),a2(MOULD),a3(MOULD)
@@ -54,8 +53,10 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
+      common/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48

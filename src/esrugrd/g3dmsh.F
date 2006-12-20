@@ -535,10 +535,10 @@ C and connections.
 C *********************************************************************
       SUBROUTINE CZCNVS(IZ,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -552,11 +552,11 @@ C *********************************************************************
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       CHARACTER MSG*72,FLTYP*25
-      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
+      CHARACTER*72 LFCON,LFMUL,L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
 
@@ -605,11 +605,11 @@ C Create a binary file for saving the nodes initial temperatures.
       IF(IER.NE.0)RETURN
 
 C If primitive database not opened, do it now.
-      IF(.NOT.MATDBOK)THEN
+      IF(.NOT.CONDBOK)THEN
         IER=0
         CALL EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(IER.NE.0)RETURN
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       ENDIF
 
 C Define the degree of boundary nodes modelling.
@@ -740,7 +740,7 @@ C Create the surface connections.
       CALL ERPFREE(ITAQ,ISTAT)
       CALL ERPFREE(IFCON,ISTAT)
 
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       RETURN
       END
 

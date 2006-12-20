@@ -32,16 +32,17 @@ C SDDEF001 - Material properties distribution definition.
       subroutine SDDEF001(ICDEF,IER)
 #include "building.h"
 #include "uncertainty.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
-      CHARACTER NAM*72,TITL*72
+      CHARACTER LFCON*72,LFMUL*72,NAM*72,TITL*72
       CHARACTER LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER H*72, ITEM(8)*16, LELM(MMLC*ME)*36
 
@@ -189,18 +190,18 @@ C SDDEF002 - Composite constructions dietribution definition.
       subroutine SDDEF002(ICDEF,IER)
 #include "building.h"
 #include "uncertainty.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
 
-      CHARACTER NAM*72,TITL*72
+      CHARACTER LFCON*72,LFMUL*72,NAM*72,TITL*72
       CHARACTER H*72, LELM(MMLC*ME)*36
       CHARACTER DESC*48, MATNAM*12
 

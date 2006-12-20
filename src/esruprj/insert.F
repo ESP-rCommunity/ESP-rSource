@@ -63,8 +63,8 @@ C as in deletion of an entire zone.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,closex,closey,closez
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL     OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
@@ -251,6 +251,7 @@ C menu so that can return to where we were. Also connected surface.
           CALL EPMENRC
           if(iz.eq.icomp)goto 99
           if(iz.eq.0)return
+          call usrmsg(' ',' ','W')
           same=.false.
         elseif(ISCOPT.eq.2)then
           same=.true.

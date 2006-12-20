@@ -33,9 +33,6 @@ C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
       program grd
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -51,6 +48,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -70,13 +68,13 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
-      CHARACTER H*72,LFILE*72,LCFGF*72
+      CHARACTER*72 H,LFILE,LCFGF,LFCON,LFMUL
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
       character dfdblbl*20,defdbfl*72
@@ -103,7 +101,7 @@ C Initialize global common data.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, updated geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
-      IFMAT=IFIL+4
+      IFCON=IFIL+4
       IFCFG=IFIL+5
       IUF=IFIL+6
       ICVS=IFIL+8
@@ -115,7 +113,7 @@ C Assume that the configuration and geometry files have not been read in.
       CFGOK=.FALSE.
       GRDOK=.FALSE.
       MLDBOK=.FALSE.
-      MATDBOK=.FALSE.
+      CONDBOK=.FALSE.
       CTLOK=.FALSE.
       MODIFY=.FALSE.
 
@@ -450,7 +448,7 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 
 C Exit program.
         call usrmsg(' Closing building gridding...',' ','P')
-        IF(MATDBOK)CALL ERPFREE(IFMAT,ISTAT)
+        IF(CONDBOK)CALL ERPFREE(IFCON,ISTAT)
         CALL EPAGEND
         STOP
       ENDIF
@@ -464,14 +462,14 @@ C coefficients.
 C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -479,9 +477,9 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL GRDOK
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LFCON,LFMUL
       CHARACTER VERTX*2
 
       GRDOK=.true.
@@ -511,11 +509,11 @@ C *********************************************************************
    10 CONTINUE
 
 C If primitive database not opened, do it now.
-      IF(.NOT.MATDBOK)THEN
+      IF(.NOT.CONDBOK)THEN
         IER=0
-        CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
+        CALL EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(IER.NE.0)RETURN
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       ENDIF
 
 C Initialise ground coefficients.

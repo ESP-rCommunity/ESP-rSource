@@ -16,8 +16,7 @@ PROG = prj$(EXE)
 
 OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfgmsc.o cfgrid.o cgd.o \
-	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o dossupport.o \
-	  e2eplus.o e3dviews.o ecasctl.o econstr.o \
+	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o e2eplus.o e3dviews.o ecasctl.o econstr.o \
 	  econtrol.o edatabase.o edcasctl.o edcfd.o edcfg.o edcon.o edcondb.o \
 	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edspmtl.o edtopol.o \
 	  edzone.o egeometry.o egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o \
@@ -66,9 +65,6 @@ ctprob.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
-dossupport.F:
-	rm -f dossupport.F
-	ln -s $(COMdir)/dossupport.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
@@ -208,7 +204,7 @@ install:
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	anlytc.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F cfgrid.F cgd.F common3dv.F ctprob.F \
-	ctread.F e3dviews.F dossupport.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
+	ctread.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F \
 	esru_misc.F esystem.F filelist.F h3k_utils.F initalc.F item.F mcdbscn.F mfcdat.F \
 	mfelst.F mfnmsc.F mfrlst.F mvalid.F net2pdf.F newnet.F nwkrewr.F plelev.F \

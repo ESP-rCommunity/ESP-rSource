@@ -648,7 +648,7 @@ C Set simulation toggles.
       COMMON/SOLOFF/ISOLAR
       COMMON/SKYFLG/ISKYFL
 
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
@@ -699,7 +699,7 @@ C 'simulation toggles' menu.
       dimension SALT(7),IVALS(5),IVAL(MCOM),HCALT(15),IHCVAL(15)
 
 
-      CHARACTER*72 LAPROB,H,vsnam,lfil,entflnam
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,H,vsnam,lfil,entflnam
       CHARACTER*40 ITEMG(33)
       character SALT*51,zname*12,zdesc*64,spflnam*72,outs*124
       character HCALT*42
@@ -1764,7 +1764,6 @@ C prior to each simulation commencing.
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
 #include "plant.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1809,6 +1808,7 @@ C prior to each simulation commencing.
 
       COMMON/WARN/IWARN
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C22/ICLIM,LCLIM
 
 C TSC data.
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
@@ -1835,7 +1835,7 @@ C Simulator parameters.
 
       CHARACTER ctldoc*248
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM
-      CHARACTER*72 LSHAD,LTHRM,LCTLF,LUTIL
+      CHARACTER*72 LSHAD,LTHRM,LCTLF,LCLIM,LUTIL
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,cfgroot*24,h*72
 
@@ -2413,7 +2413,6 @@ C if itru=33 then works as a header to the trace.
       subroutine mzinfo(itru)
 #include "building.h"
 #include "plant.h"
-#include "esprdbfile.h"
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
@@ -2422,7 +2421,8 @@ C if itru=33 then works as a header to the trace.
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/C22/ICLIM,LCLIM
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -2436,8 +2436,8 @@ C if itru=33 then works as a header to the trace.
      &ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &pmiscd(mcl,mpcdt,mpcdp,misc)
 
-      character*72 lsnam,lproj,lgeom,lafres
-      character*72 lshad,lthrm,lutil,lctlf,lcfgf,rfile
+      character*72 lsnam,lproj,lgeom
+      character*72 lshad,lthrm,lutil,lctlf,lclim,lcfgf,rfile
       character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
 
       dimension io(mcom)

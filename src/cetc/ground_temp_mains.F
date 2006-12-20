@@ -567,11 +567,16 @@ C The appropriate weather file has already been opened in the calling subroutine
 c----56--1---------2---------3---------4---------5---------6---------7---------8         
 
       SUBROUTINE Daily_DBT(iday_number)
-#include "esprdbfile.h"
 
       IMPLICIT NONE 
            
 #include "ground_temp_mains_common.h"
+
+C Climate file data
+       COMMON/C22/ICLIM,LCLIM
+       character*72 LCLIM     ! climate file associated with model
+       integer iclim          ! the file unit for the climate database
+
 
        INTEGER j     ! hour counter, 1-24
        INTEGER irec, iday_number

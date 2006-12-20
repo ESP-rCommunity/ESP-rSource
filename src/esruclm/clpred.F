@@ -39,7 +39,6 @@ C IST = 1 is not currently used.
 C IST = 2 the user is interested in transforming the data
 C IST = 3 the user is interested in curve fitting.
       SUBROUTINE CLPRED(IST)
-#include "esprdbfile.h"
       PARAMETER (MT=24,MD=365,MAAS=9)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -57,11 +56,12 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/C22/ICLIM,LCLIM
       COMMON/PERPER/PERST2
 
       CHARACTER*27 ITEM(14)
       character h*72,PRML*48,PRM*24,CLMLOC*30,PERST2*44,str*60
-      character outs*124
+      character LCLIM*72,outs*124
       DIMENSION ICLM(24,6),ICK(6),WVEL(24),NANG(MAAS),WRDF(MAAS)
       logical OK,dok,FOUND
 

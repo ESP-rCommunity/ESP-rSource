@@ -32,14 +32,6 @@ C the current model.
 #include "control.h"
 #include "plant.h"
 #include "tdf2.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -53,8 +45,12 @@ C ICLIM,LCLIM (for climate file)
       CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
+      common/C7/LPCDB
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
+      common/C22/ICLIM,LCLIM
+      common/GOPTDB/LOPTDB,IOPTDB
+      common/PRODB/LPRFDB,IPRODB
 
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
@@ -70,6 +66,7 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -93,7 +90,7 @@ C LPNF (72 char) plant network file name.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
@@ -166,17 +163,17 @@ C External folder browser.
 C A set of possible image formats (see config file) and
 C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
-      logical allattribok,changedit,ok,dok,concat,unixok
+      logical allattribok,changedit,ok,dok,concat
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
@@ -188,9 +185,9 @@ C Remember if each zone is fully attributed.
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
-      character GTNAME*15,CLMLOC*30,lipvdatf*72
+      character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
-      character longtfile*144,longtfiledos*144
+      character longtfile*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -200,8 +197,8 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
-      character dstmp*24,mlcname*12,currentfile*72
-      CHARACTER LAPROB*72,LPNF*72
+      character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LOPTDB,LPCDB,LPRFDB
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24
@@ -222,9 +219,6 @@ C in the current model. A -1 means not applicable
       integer destination
 
       character*10 wkd1, wkd2
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
 
       changedit=.false.
       IUF=IFIL+2
@@ -484,17 +478,7 @@ C necessary.  If vi then spawn a new window to do the editing.
           h(2)='use it to edit this file.  '
           CALL ASKOK(' ',' Edit this file?',OK,dok,2)
           IF(OK)then
-            if(unixok)then
-              call addpath(LPRJLG,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(LPRJLG,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
+            call addpath(LPRJLG,longtfile,concat)
             tmode='graph'
             if(teditor(1:2).eq.'  ')then
               call usrmsg(
@@ -1853,11 +1837,8 @@ C not browsing.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
       character zname*12,zdesc*64,ZN*12,doit*248,tmode*8
-      character longtfile*144,longtfiledos*144
-      logical ok,dok,ddok,found,XST,concat,anyish,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
+      character longtfile*144
+      logical ok,dok,ddok,found,XST,concat,anyish
 
 C Check to see if version of configuration file requires updating.
       if(icfgv.lt.3)then
@@ -1983,17 +1964,7 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
-              if(unixok)then
-                call addpath(LCFGF,longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(LCFGF,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
+              call addpath(LCFGF,longtfile,concat)
               write(doit,'(5a)') 'ish -mode text -file ',
      &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act update_silent'
@@ -2007,17 +1978,7 @@ C and change any / to \.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              if(unixok)then
-                call addpath(LCFGF,longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(LCFGF,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
+              call addpath(LCFGF,longtfile,concat)
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

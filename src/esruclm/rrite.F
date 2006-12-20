@@ -23,7 +23,6 @@ C 'RRITE' allows one day of hourly values (of the 6 climate
 C parameters to be edtied by the user and merged into the
 C climate file.
       SUBROUTINE RRITE
-#include "esprdbfile.h"
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -32,6 +31,7 @@ C climate file.
       common/appw/iappw,iappx,iappy
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
 
@@ -41,7 +41,7 @@ C climate file.
       DIMENSION item(31),holdd(24)
       CHARACTER*30 CLMLOC
       CHARACTER H*72,outs*124,item*40,holdd*34,hold*36,key*1
-      character head*16
+      character head*16,LCLIM*72
       logical ok,dok,altered
 
       altered=.false.
@@ -213,15 +213,16 @@ C Check if user wishes to edit another day.
 C ********** SITEDIT
 C SITEDIT edits site related data in a climate file.
       SUBROUTINE SITEDIT
-#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)
 
+      COMMON/C22/ICLIM,LCLIM
+
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      CHARACTER CLMLOC*30,T30*30,H*72,outs*124
+      CHARACTER CLMLOC*30,T30*30,H*72,outs*124,LCLIM*72
       logical ok
 
 C Ask for the year (2001 convenintly has monday on 1 Jan).

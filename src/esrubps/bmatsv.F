@@ -32,7 +32,6 @@ C Include files req'd for deleting temporary files after the simulation is compl
 C HOT3000: Fuel cell.
 #include "SOFC.h"
 #include "building.h"
-#include "esprdbfile.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "monitor.h"
@@ -120,6 +119,10 @@ C Power simulation flag.
 C Simulation start day required by cmp70c.
       common/simsdy/iss,isf
 
+C Climate file data
+      COMMON/C22/ICLIM,LCLIM
+      character*72 LCLIM
+      
 C Common for 3D building model.
       COMMON/GR1D04/GAM,RGAM
 

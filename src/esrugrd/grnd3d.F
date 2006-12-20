@@ -704,10 +704,10 @@ C GNDMSH controls ground gridding.
 C *********************************************************************
       SUBROUTINE GNDMSH(IER)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
@@ -717,7 +717,7 @@ C *********************************************************************
       DIMENSION IZZ(3),VZZ(5)
 
       CHARACTER    MSG*72,FLTYP*25
-      CHARACTER*72 PNAM,TITL,H,LTMP
+      CHARACTER*72 LFCON,LFMUL,PNAM,TITL,H,LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C Initialize the connections,nodes, and control volumes counters.
@@ -952,9 +952,9 @@ C MKCVGX performs gridding per one material volume.
 C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
 #include "building.h"
-#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
@@ -964,7 +964,7 @@ C *********************************************************************
       DIMENSION IXX(3),IYY(3),IZZ(3),VXX(5),VYY(5),VZZ(5)
       DIMENSION ACOND(3)
 
-      CHARACTER PNAM*72,TITL*72
+      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
 
       DNHC=0.
       DO 10 II=1,3

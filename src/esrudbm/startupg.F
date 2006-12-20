@@ -366,14 +366,15 @@ C ******************** ESCGDEF
 C ESCGDEF scans the ESP-r defaults definition file and returns
 C the default file and generic database names via common block. 
       SUBROUTINE ESCGDEF(dfdblbl,defdbfl,IFDEF,IER)
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
       common/dgendbf/dgendbfn(13)
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/DEFLT3/DFCFD
       CHARACTER OUTSTR*124,WORD*20,outs*124
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
       character dfdblbl*20,defdbfl*72
       character dgendbfn*72

@@ -97,7 +97,10 @@ C icffs   - fluid flow network node associated with each plant component.
 C           NB fluid flow network and plant energy network need not be matched
 
 C laprob  - fluid flow description file
+C lapres  - wind pressure coefficients distribution database
+C lafres  - fluid flow network results file
 
+C lpcdb   - the name of the plant component database
 C lpnam   - the name of the plant system
 C npcomp  - number of plant components
 
@@ -169,13 +172,6 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPCDB/IPCDB (for plant template database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
-C default file names for databases
-
 #include "plant.h"
 #include "tdf2.h"
 #include "dhw_common.h"
@@ -198,22 +194,28 @@ C Path to model and command line file name.
       CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
+      COMMON/C7/LPCDB
 
-      common/afn/iairn,laprob,icaas(mcom)
+      common/afn/iairn,laprob,lapres,lafres,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
 
       common/prec7/itcnst
       COMMON/DNORGH/IRTYPE
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/C22/ICLIM,LCLIM
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
+C MLC commons.
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -250,20 +252,22 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144
-      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
-      character*72 laprob,path,ENTFLNAM
+      CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
+      character*72 laprob,lapres,lafres,LPCDB,path,ENTFLNAM
+      character LCLIM*72
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
       character hvacfile*72,LAIM2*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
+      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       logical dll
 
@@ -444,12 +448,11 @@ C Fluid flow simulation parameters if fluid flow network defined.
       if(iairn.ge.1.or.iflwn.eq.1) call mflwsu
 
 C Unless building only, plant matrix template setup & checks.
-C If plant component db file unit not set use iaprob
 C <<< width of plant db 20???? >>>
       if(indcfg.ne.1) then
-        if(ipcdb.eq.0)ipcdb=IAPROB
-        call EFOPRAN(ipcdb,LPCDB,20,1,IER)
-        call mzpmxt(ipcdb)
+        IUNIT1=IAPROB
+        call EFOPRAN(IUNIT1,LPCDB,20,1,IER)
+        call mzpmxt(iunit1)
 
 C Default flag for plant<->electrical network interdomain iteration
 C to false. Plant coponents requiring this facility will set flag
@@ -511,11 +514,11 @@ C Specify ground simulation start-up period.
       ENDIF
 
 C Free plant components database if opened.
-      if(ipcdb.ne.0) call erpfree(ipcdb,istat)
+      if(iunit1.ne.0) call erpfree(iunit1,istat)
 
 C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFCON=IFIL+5 for this via common condb.
-      IF(.NOT.MATDBOK)THEN
+      IF(.NOT.CONDBOK)THEN
   55    call EFOPRAN(IFCON,LFCON,40,1,IER)
         IF(ier.ne.0)THEN
           if(dll)then
@@ -538,7 +541,7 @@ C Use the unit IFCON=IFIL+5 for this via common condb.
             endif
           endif
         endif
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       ENDIF
 
 C Read in the multilayer construction database so that it's
@@ -1490,9 +1493,8 @@ C Once per hour storage of results, averaged over that hour.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-C lafres  - fluid flow network results file
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/ENETRES/ERESLIB
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/dllerr/dllsubr,dllmesg
@@ -1503,8 +1505,8 @@ C lafres  - fluid flow network results file
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical dll,match
 
-      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 LAPROB,ENTFLNAM,ERESLIB
+      character RFILE*72,PFILE*72,MSTRFILE*72
+      character*72 LAPROB,LAPRES,LAFRES,ENTFLNAM,ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8

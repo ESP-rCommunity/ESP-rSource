@@ -26,12 +26,10 @@ C SDDFLT001 set defaults based on material type.
       subroutine SDDFLT001
 #include "building.h"
 #include "uncertainty.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -40,7 +38,8 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
 
       character CLSSEL*36
-      character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
+      character CLSDES*48,IDESC*72,H*72
+      character LFCON*72,LFMUL*72,KEY*1,outs*124
       character xfile*72,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
 

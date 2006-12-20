@@ -39,22 +39,21 @@ C exportcad: controls model export facilities.
       common/rpath/path
       common/appw/iappw,iappx,iappy
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      logical MODIFY,MODLEN,MODBND,unixok
+      logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,concat
+      logical MODIFY,MODLEN,MODBND
 
       DIMENSION ITEMS1(11)
 
-      character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
+      character LFIL*72,H*72,path*72,LCFGF*72,tfile*72,longtfile*144
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
       character xfile*72,tg*1,delim*1,ffile*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
-      character longtfile*144,longtfiledos*144
       logical oke
 
       if(.NOT.cfgok)then
@@ -62,9 +61,6 @@ C exportcad: controls model export facilities.
      &              ' you can export it!','W')
          return
       endif
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
 
    33 INO1=-4
       ITEMS1(1) ='a to VIEWER (hidden line)  '
@@ -100,8 +96,6 @@ C Help text for this menu.
       CALL EMENU('Exports',ITEMS1,11,INO1)
 
 C Prepare filter command lines with path.
-
-C << the code that creates the initial LFIL is not yet updated to work with DOS paths with spaces. >>
       iw=0
       if(path.ne.'./'.and.path.ne.' ')then
         write(outs,'(A,A)') ' The current path is: ',path
@@ -126,17 +120,7 @@ C Construct a 'VIEWER' format file.  First get file name.
         CALL EASKS(LFIL,' File name for image data ? ',
      &    ' ',72,' ','VIEWER input file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
@@ -163,17 +147,7 @@ C DXF creation.  Process similar to ecnv filter for VIEWER.
         CALL EASKS(LFIL,' DXF file name ? ',
      &    ' ',72,' ','dxf export file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
@@ -201,17 +175,7 @@ C XZIP creation.  Process similar to ecnv filter for VIEWER.
         call edisp(iuout,' Performing model conversion.')
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
@@ -241,14 +205,7 @@ C RADIANCE creation.  Starts e2r with configuration file.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
+          call addpath(LCFGF,longtfile,concat)
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(a,3i4,3a)') 'e2r -s ',
      &        iappw,iappx+35,iappy+40,' -file ',
@@ -330,14 +287,7 @@ C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
         call edisp(iuout,' Performing model conversion.')
 
 C Why is the addpath not used?
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
@@ -366,17 +316,7 @@ C Export to TSBI3 (Danish simulation tool) file.
         CALL EASKS(LFIL,' File name for TSBI3 file ? ',
      &    ' ',72,' ','TSBI3 file',IER,4)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
@@ -421,17 +361,7 @@ C Export to VRML (2.0) file.
         CALL EASKS(LFIL,' File name for VRML file ? ',
      &    ' ',72,' ','vrml file',IER,4)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
@@ -481,17 +411,13 @@ C External cad package.
       common/cad3rd/cadlbl,cadexe,cadfmt
 
       common/pophelp/h(60)
-      LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
-      logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
+      LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath
 
-      character LCFGF*72,H*72,LFIL*72,LCMDFL*144
+      character LCFGF*72,H*72,LFIL*72,LCMDFL*144,longtfile*144
       character outs*124,OUTSTR*124,cfgroot*24,doit*248,tfile*72
       character cadlbl*20,cadexe*20,cadfmt*4
-      character longtfile*144,longtfiledos*144
 
-C Set file unit and check if running Unix-like OS.
       ifun=ifil+1
-      call isunix(unixok)
 
 C CAD definition and importing.
       H(1)='Executing CAD program by which the zone geometry'
@@ -529,17 +455,7 @@ C If there is a currently loaded model then convert it.
         CALL EASKS(LFIL,' Put current model into DXF file named: ',
      &    ' ',72,' ','dxf export file',IER,2)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
@@ -555,14 +471,7 @@ C and change any / to \.
         CALL EASKS(LFIL,' Put current model into ZIP file named: ',
      &    ' ',72,' ','zip export file',IER,1)
         call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -if esp -in ',
      &      longtfile(1:lnblnk(longtfile)),
@@ -649,17 +558,7 @@ C is a ZIP or DXF file.
         endif
         CALL ERPFREE(ifun,ISTAT)
 
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
+        call addpath(LCFGF,longtfile,concat)
         call edisp(iuout,' Performing model conversion.')
         call tstamp('>','PRJ: import from CAD')
         if(typez)then
@@ -687,12 +586,11 @@ C and change any / to \.
         call runit(doit,'-')
 
 C Re-read the upgraded configuration file. Reconstruct the path.
-        itisanexemplar=.false.
         browse=.false.
         confirm=.true.
         ckpath=.false.
         LCMDFL=longtfile
-        call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+        call NEWPRB(ITRC,confirm,ckpath,IER)
       endif
       return
       end
@@ -700,8 +598,7 @@ C Re-read the upgraded configuration file. Reconstruct the path.
 C ********* rexmpl
 C rexmpl: scan the exemplars file, parse information and offer the user
 C selection of or information about exemplars. 
-C useraction is returned - 'browse' or 'ownit' or 'continue'
-      subroutine rexmpl(iexfil,exfil,exemplar,useraction,ier)
+      subroutine rexmpl(iexfil,exfil,exemplar,ier)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -724,20 +621,12 @@ C to quit the image browser.
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
-      character dq*1,fs*1,thecfgis*72
-      character useraction*8
+      character dq*1,fs*1
       logical XST,unixok
 
 C Make up a double quote and file separator for xcopy.
-      useraction ='-'
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-        dq = char(34)
-      else
-        fs = char(92)
-        dq = char(34)
-      endif
+      dq = char(34)
+      fs = char(92)
 
 C Open the exemplar file.
   41  IER=0
@@ -1022,49 +911,21 @@ C Present information on an exemplar.
               call edisp(iuout,' Configuration is: ')
               call edisp(iuout,exemplar)
 
-C If running on a windows machine get the last token within the string exemplar
-C which is the name of the configuration file. Work backwards from the end
-C of the string till a file separator of either DOS or Unix type is reached.
-              call isunix(unixok)
-              if(.NOT.unixok)then
-                thecfgis=' '
-                ilexem = lnblnk(exemplar)
-                ipslash = ilexem
-                ipos = ilexem
- 344            continue
-                ipos=ipos-1
-                if(exemplar(ipos:ipos).eq.fs)then
-                  write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  call edisp(iuout,'The model configuration file is...')
-                  call edisp(iuout,thecfgis)
-                elseif(exemplar(ipos:ipos).eq.'/')then
-                  write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  call edisp(iuout,'The model configuration file is...')
-                  call edisp(iuout,thecfgis)
-                else
-                  if(ipos.eq.1)then
-                    call edisp(iuout,' No folder separator found.')
-                  elseif(ipos.gt.1)then
-                    goto 344
-                  endif
-                endif
-              endif
-
 C Check to see if the configuration file exists. If it does not then
 C warn the user that the model is off-line and return
 C to the list of exemplars.
-              CALL ERPFREE(iexfil+1,ISTAT)
-              INQUIRE (FILE=exemplar,EXIST=XST)
-              if(.NOT.XST)then
-                call tstamp('>','PRJ: found off-line exemplar')
-                call usrmsg('The selected exemplar is currently',
+               CALL ERPFREE(iexfil+1,ISTAT)
+               INQUIRE (FILE=exemplar,EXIST=XST)
+               if(.NOT.XST)then
+                 call tstamp('>','PRJ: found off-line exemplar')
+                 call usrmsg('The selected exemplar is currently',
      &             'off-line.  See your administrator for access.','W')
-                exemplar='UNKNOWN'
-                CALL ERPFREE(iexfil+1,ISTAT)
-                rewind(iexfil,ERR=92)
-                goto 41
-              endif
-              goto 4
+                 exemplar='UNKNOWN'
+                 CALL ERPFREE(iexfil+1,ISTAT)
+                 rewind(iexfil,ERR=92)
+                 goto 41
+               endif
+               goto 4
             elseif(WORD(1:5).eq.'*lcfg')then
 
 C For older format file, skip past local configuration file name.
@@ -1103,7 +964,6 @@ C if there are zones existing, remove them from memory.
      &          '`own` it','select another exemplar','continue',IW,15)
               if(IW.eq.1)then
                 call tstamp('>','PRJ: browse exemplar')
-                useraction='browse  '
               elseif(IW.eq.2)then
                 if(upath.ne.' ')then
 
@@ -1111,11 +971,6 @@ C See if can derive the local configuration name.
                   call fdroot(rootp,cfg_path,cfg_root)
                   lex=lnblnk(exemplar)
                   lcfgr=lnblnk(cfg_root)
-
-C Debug the model source.
-C                  write(outs,'(a,2i4,2a)') 'cfg_root = ',lex,lcfgr,
-C     &              '  ',cfg_root(1:lcfgr)
-C                  call edisp(iuout,outs)
                   do 342 ilex=1,lex-lcfgr
                     if(cfg_root(1:lcfgr).eq.
      &                exemplar(ilex:ilex+lcfgr-1))then
@@ -1143,30 +998,28 @@ C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
 C     &                ' ',rootp(1:lnrp)
 C                    call edisp(iuout,outs)
                     call backslashit(rootp,rootpdos)
-                    write(outs,'(2a)') 'Getting model from...',
+                    write(outs,'(2a)') 'getting model from ',
      &                rootpdos(1:lnrp)
                     call edisp(iuout,outs)
 
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
-C                    call fdroot(rootp,rootpath,modelroot)
-                    call fdroot(rootpdos,rootpath,modelroot)
+                    call fdroot(rootp,rootpath,modelroot)
                     lnmr=lnblnk(modelroot)
 
 C Debug the model destination.
-C                    write(outs,'(2a)') 'the model root folder is = ',
+C                    write(outs,'(2a)') 'the model folder is = ',
 C     &                modelroot(1:lnmr)
 C                    call edisp(iuout,outs)
-                    call edisp(iuout,' ')
+C                    call edisp(iuout,' ')
                     lnup=lnblnk(upath)
                     lnblankup=iprevblnk(upath,lnup)
-                    call backslashit(upath,upathdos)
-C Debug.
 C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
 C     &                ' ',upath(1:lnup)
 C                    call edisp(iuout,outs)
-C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-C                    call edisp(iuout,outs)
+                    call backslashit(upath,upathdos)
+                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+                    call edisp(iuout,outs)
                     if(lnblankrp.gt.1.and.lnblankup.gt.1)then
 
 C There are blanks in both source or destination strings.
@@ -1196,26 +1049,12 @@ C There are no blanks in either source or destination strings.
                   call lusrmsg('Copying exemplar to your home folder.',
      &               doit,'-')
                   call runit(doit,'-')
-                  if(unixok)then
-
-C If Unix-like then append tail of exemplar string to the users default
-C path to get the new exemplar name.
-                    write(exemplar,'(3a)')upath(1:lnblnk(upath)),fs,
-     &                exemplar(ilex:lnblnk(exemplar))
-                  else
-
-C If Windows based then append the modelroot string to the path to make
-C up the exemplar name.
-                    lnmr=lnblnk(modelroot)
-                    write(exemplar,'(7a)')upathdos(1:lnblnk(upathdos)),
-     &                fs,modelroot(1:lnmr),fs,'cfg',fs,
-     &                thecfgis(1:lnblnk(thecfgis))
-                  endif
-                  call edisp(iuout,'Your model (that you own) is now:')
+                  write(exemplar,'(3a)')upath(1:lnblnk(upath)),'/',
+     &              exemplar(ilex:lnblnk(exemplar))
+                  call edisp(iuout,' The model is now:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
-                  useraction='ownit   '
                 endif
               elseif(IW.eq.3)then
 
@@ -1223,7 +1062,6 @@ C User asked to select another, rewind the file and jump back to
 C the top menu to re-resent groups.
                 exemplar='UNKNOWN'
                 REWIND(iexfil,ERR=92)
-                useraction='continue'
                 goto 41
               elseif(IW.eq.4)then
 
@@ -1231,7 +1069,6 @@ C User asked to continue, close the file set ier and return to top
 C level menu of prj.
                 exemplar='UNKNOWN'
                 CALL ERPFREE(iexfil,ISTAT)
-                useraction='continue'
                 ier=2
                 return
               endif
@@ -1322,15 +1159,6 @@ C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 #include "building.h"
 #include "uncertainty.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
-
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
@@ -1339,19 +1167,24 @@ C ICLIM,LCLIM (for climate file)
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
+      COMMON/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
+      common/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       common/C3F/LCNN
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/PRODB/LPRFDB,IPRODB
+      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1381,12 +1214,12 @@ C ICLIM,LCLIM (for climate file)
       common/aim2def/iAIM2,LAIM2
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character LPRJLG*72,LPNF*72,LMOIST*72
+      character*72 LFMUL,LFCON,LPRJLG,LPNF,LMOIST
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72,doit*248
       character path*72,upath*72,cfgroot*24,curdir*72
-      character LAPROB*72
+      character*72 LCLIM,LAPROB,LAPRES,LAFRES,LPCDB,LPRFDB,LOPTDB
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
@@ -1400,7 +1233,7 @@ C ICLIM,LCLIM (for climate file)
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,
 C patroot is true if path is at root level. 

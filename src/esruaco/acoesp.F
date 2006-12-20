@@ -33,13 +33,14 @@ C ********** opendb (copy of code from eddb.F)
 C Open materials constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
-#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
+      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
+      character LFCON*72,LFMUL*72
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0
@@ -53,10 +54,10 @@ C this to 24 words wide.
         write(outs,'(a,a,a)') ' No construction, materials db ',
      &     LFCON(1:lnblnk(LFCON)),' found!'
         call edisp(iuout,outs)
-        MATDBOK=.FALSE.
+        CONDBOK=.FALSE.
       else
         CALL usrmsg(' Opened construction materials db.',' ','p')
-        MATDBOK=.TRUE.
+        CONDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -106,10 +107,10 @@ C Display Zones list and wait for INIPIC item selected
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/surfsel/isursel(MCON),NbSurSel(MCOM)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
       CHARACTER H*72,zname*12,zdesc*64
       
@@ -315,11 +316,11 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
       COMMON/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALZ(MCOM)
 

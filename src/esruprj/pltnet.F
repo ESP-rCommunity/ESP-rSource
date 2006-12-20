@@ -31,19 +31,15 @@ C epltnet selects how a network of plant components is defined/edited.
 C This displays the main menu and controls the program flow.
 C Contents:
 C   IFPNF  - unit number for plant configuration file.
+C   iupdb  - plant component database unit.
 
 C ************ epltnet
 C epltnet selects how a network of plant components is defined/edited.
       subroutine epltnet(iedit,ier)
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      common/funit/iucfg,iupdb
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -53,7 +49,7 @@ C Plant network.
 
 C Use next unit up from plant network file for the plant database.
       ifpnf=IFIL+1
-      ipcdb=IFPNF+1
+      iupdb=IFPNF+1
 
 C Let the user pick a menu item.
    10 INO=-5
@@ -1106,10 +1102,8 @@ C connections and containments.
 
        SUBROUTINE LISTPNF
 #include "plant.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPCDB/IPCDB (for plant template database)
 
+      COMMON/C7/LPCDB
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
@@ -1120,7 +1114,7 @@ C LPCDB/IPCDB (for plant template database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PCNAM/PCNAME(MPCOM)
 
-      character OUTS*72,OUTSTR*124
+      character lpcdb*72,OUTS*72,OUTSTR*124
       CHARACTER PCNAME*15,pcdesc*80
 
 C Write out general information pertaining to plant database and the 
@@ -1189,25 +1183,28 @@ C This subroutine opens plant component database and
 C recovers components record pointers.
 C    mode = 1 : Read database file name and read data pointers.
 C    mode = 2 : Read data pointers only.
+C    lpcdb  -  name of plant component data base.
 
-      subroutine opnpdb(mode)
+      subroutine opnpdb(iupdb,mode)
 
 #include "plant.h"
-#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
+      COMMON/C7/LPCDB
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
       CHARACTER*25 ZDESC
-      character h*72,buffer*72,ltmp*72
+      character*72 h, buffer,lpcdb,ltmp
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.
@@ -1226,10 +1223,8 @@ C Initialize plant component database file.
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
-C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
-C not been set use the unit from the event profiles database.
-         if(ipcdb.eq.0)ipcdb=iprodb
-         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
+C 'irecln' is defined in 'plantdf.h'.
+         CALL FPRAND (iupdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then
@@ -1257,7 +1252,7 @@ C File doesn't exist.
 
 C Old file, so check header.
          IREC = 1
-         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
+         READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
          IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
             ok=.false.
             dok=.true.
@@ -1270,7 +1265,7 @@ C Old file, so check header.
             if(ok) goto 100
          endif
          IREC = 2
-         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) npcdb
+         READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) npcdb
          write(buffer,72) npcdb
   72     format(' Data base contains',i5,' components.')
 
@@ -1281,7 +1276,7 @@ C Recover item pointers.
          DO 110 I = 3, MHEADR
             NRR = NR + IRECLN - 1
             IREC = I
-            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
+            READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
      &                          (ITMLOC(J,1),J=NR,NRR)
             NR = NR + IRECLN
   110    CONTINUE
@@ -1304,7 +1299,6 @@ C
       subroutine rcdata(ipc,mode)
 
 #include "plant.h"
-#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)      
 
@@ -1318,6 +1312,7 @@ C
       common/trnsys/ittype(mpcom), loctrs(mpcom), idbct(mpcom), ntypes
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/OUTIN/IUOUT,IUIN
+      common/funit/iucfg, iupdb
 
       character*68 mscdsc, cvrdsc      
       dimension ival(mpcom)
@@ -1326,26 +1321,26 @@ C
 C Find absolute record in dbase for component
 C and read associated data.
       irec=itmloc(npref(ipc),1)
-      read(ipcdb,rec=irec,iostat=istat,err=99999)
+      read(iupdb,rec=irec,iostat=istat,err=99999)
      &    idum1,icode(ipc),zcdate,nnode,nmatx,nmisc
       npi(ipc)=nmisc
       nnodes(ipc)=nnode
       irec=irec+1
-      read(ipcdb,rec=irec,iostat=istat,err=99999) ictype
+      read(iupdb,rec=irec,iostat=istat,err=99999) ictype
       idbct(ipc)=ictype
       if(ictype.eq.0) then
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &      ictype,mncomp,mncon,nadata,nbdata,ncdata,napout
          nci(ipc)=ncdata
 
 C Read number of external connections per node
          irec=irec+2
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &     (ndcon(ipc,jj),jj=1,nnode)
 
 C Read state variable index.
          irec=irec+1
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &     (isv(ipc,jj),jj=1,nnode)
 
 C Point to miscellaneous data record.
@@ -1354,7 +1349,7 @@ C Point to miscellaneous data record.
 
 C Start reading misc data items description and value.
             do 100 i=1, nmisc
-               read(ipcdb,rec=irec,iostat=istat,err=99999)
+               read(iupdb,rec=irec,iostat=istat,err=99999)
      &           mscdsc(i), parval
                if(mode.eq.1) tadata(ipc,i)=parval
                irec=irec+1
@@ -1365,37 +1360,37 @@ C If any control data exists for this component
 C read its description.
          if(ncdata.gt.0) then
             do 200 i=1, ncdata
-               read(ipcdb,rec=irec,iostat=istat,err=99999)
+               read(iupdb,rec=irec,iostat=istat,err=99999)
      &           cvrdsc(i)
                irec=irec+1
   200       continue
          endif
       elseif(ictype.eq.2) then
-         read (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
+         read (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
      &          ictype,ntypes
 
 C Read number of external connections per node
          irec=irec+2
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &     (ndcon(ipc,jj),jj=1,nnode)
 
 C Read state variable index.
          irec=irec+1
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &     (isv(ipc,jj),jj=1,nnode)
 
 C Point to TRNSYS model type entries
          irec=irec+1
          irec= irec+((nmatx-1)/irecln+1)
-         read (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
+         read (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
      &           (ittype(ityp),ityp=1, ntypes)
          do 1000 itp=1,ntypes
             irec=irec+1
             loctrs(itp)=irec
-            read(ipcdb,rec=irec,iostat=istat,err=99999)
+            read(iupdb,rec=irec,iostat=istat,err=99999)
      &          ntadat,ntbdat,ntcdat,ntmisc,ntapot
             irec=irec+ntmisc+ntcdat+ntapot+1
-            read(ipcdb,rec=irec,iostat=istat,err=99999)
+            read(iupdb,rec=irec,iostat=istat,err=99999)
      &          idum1, idum2, ispmfc
             irec=irec+ispmfc
  1000    continue
@@ -1408,7 +1403,7 @@ C Let user select required type.
 C establish location of this type and
 C read data
          irec=loctrs(jtype)
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &       nadata,nbdata,ncdata,nmisc,ntapot        
          irec=irec+1
          nci(ipc)=ncdata
@@ -1417,7 +1412,7 @@ C read data
 
 C Start reading misc data items description and value.
             do 1010 i=1, nmisc
-               read(ipcdb,rec=irec,iostat=istat,err=99999)
+               read(iupdb,rec=irec,iostat=istat,err=99999)
      &           mscdsc(i), parval
                if(mode.eq.1) tadata(ipc,i)=parval
                irec=irec+1
@@ -1428,7 +1423,7 @@ C If any control data exists for this component
 C read its description.
          if(ncdata.gt.0) then
             do 1020 i=1, ncdata
-               read(ipcdb,rec=irec,iostat=istat,err=99999)
+               read(iupdb,rec=irec,iostat=istat,err=99999)
      &           cvrdsc(i)
                irec=irec+1
  1020       continue
@@ -1446,18 +1441,18 @@ C update descriptions for selected components
       subroutine update
 
 #include "plant.h"
-#include "esprdbfile.h"
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/OUTIN/IUOUT,IUIN
+      common/funit/iucfg, iupdb
 
       CHARACTER pcdesc*80, cdesc*80
 
       do 10 ipc=1,npcomp
          IREC = ITMLOC(npref(ipc),1)+2
-         read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) cdesc
+         read(iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) cdesc
          WRITE(pcdesc,14) cdesc
    14    FORMAT(A80)
    10 CONTINUE
@@ -1473,10 +1468,10 @@ C in database.
       subroutine descpc
 
 #include "plant.h"
-#include "esprdbfile.h"
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
+      common/funit/iucfg, iupdb    
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
@@ -1485,11 +1480,11 @@ C in database.
 C Write description of each component in string array.
       DO 10 L=1,npcdb
       irec=itmloc(L,1)
-      read(ipcdb,rec=irec,iostat=istat,err=99999)
+      read(iupdb,rec=irec,iostat=istat,err=99999)
      &    idum1,icd,zcdate,nnode,nmatx,nmisc
          icode(L)=icd
          IREC = ITMLOC(l,1)+2
-         read(ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) cdesc
+         read(iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) cdesc
          WRITE(pcdesc(l),'(a80)') cdesc
    10 CONTINUE
       return
@@ -1503,7 +1498,6 @@ C This subroutine reads mass flow component data
 C from plant component database.
       subroutine getmfc(ipc,nconns)
 #include "plant.h"
-#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)
  
@@ -1514,26 +1508,27 @@ C from plant component database.
       common/mfddsc/mfdatstr(mpcon,17)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/OUTIN/IUOUT,IUIN
+      common/funit/iucfg, iupdb
 
       CHARACTER  ltpcmf*60,mfdatstr*40,tmpstr*68,pcdesc*80,zcdate*16 
 
       irec=itmloc(npref(ipc),1)
-      read(ipcdb,rec=irec,iostat=istat,err=99999)
+      read(iupdb,rec=irec,iostat=istat,err=99999)
      &    idum1,idum2,zcdate,nnode,nmatx,nmisc
       irec=irec+1
-      read(ipcdb,rec=irec,iostat=istat,err=99999)
+      read(iupdb,rec=irec,iostat=istat,err=99999)
      &    ictype,mncomp,mncon,nadata,nbdata,ncdata,napout
 
 C Point to mass flow components data record.
       irec= itmloc(npref(ipc),1)+6+(nmatx-1)/irecln+nmisc+
      &      napout+ ncdata
       do 10 icon=1, nconns
-         read(ipcdb,rec=irec,iostat=istat,err=99999)
+         read(iupdb,rec=irec,iostat=istat,err=99999)
      &     itypmf(icon), isdimf(icon), isdcmf(icon), icnnmf(icon),
      &     ltpcmf(icon)
          irec=irec+1
          do 20 isup=1, isdcmf(icon)
-            read(ipcdb,rec=irec,iostat=istat,err=99999)
+            read(iupdb,rec=irec,iostat=istat,err=99999)
      &      tmpstr,supcmf(icon,isup)
             write(mfdatstr(icon,isup),'(a)') tmpstr(1:40)
             irec=irec+1

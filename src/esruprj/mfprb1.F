@@ -40,15 +40,12 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
-
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -60,14 +57,14 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
       COMMON/MFLOWIT/fndegc,imix 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       common/user/browse
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
       CHARACTER*33 ITEM1(24)
-      CHARACTER LAPROB*72,LCFGF*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPRFDB,LCFGF
       CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
       character zmfn1*124,zmfn2*124,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -75,7 +72,7 @@ C LPRFDB,IPRODB (for event profile database)
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -684,9 +681,6 @@ C
 #include "net_flow.h"
 #include "building.h"
 #include "epara.h"
-#include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -705,7 +699,7 @@ C LAPRES,IFPRE (for window pressure databases)
       COMMON/MFLOWIT/fndegc,imix 
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
@@ -716,7 +710,7 @@ C LAPRES,IFPRE (for window pressure databases)
 
       CHARACTER H*72,outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
-      CHARACTER LAPROB*72,t72*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES,t72
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
@@ -2052,14 +2046,13 @@ C << should mode Z be visible when user first enters flow facility? >>
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
 #include "net_flow.h"
-#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2105,7 +2098,7 @@ C associated with the largest ventilation rate.
       LOGICAL MODIFY,MODLEN,MODBND,XST
       logical closevz,closeiz,close,foundit
       character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
-      character*72 LAPROB,H
+      character*72 LAPROB,LAPRES,LAFRES,H
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 

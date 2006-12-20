@@ -871,10 +871,10 @@ C MFLIST Fluid flow file: list common block contents.
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
       COMMON/C1/NCOMP,NCON
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,zname*12,zdesc*64
-      CHARACTER LAPROB*72
+      CHARACTER*72 LAPROB,LAPRES,LAFRES
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4
       logical written
 

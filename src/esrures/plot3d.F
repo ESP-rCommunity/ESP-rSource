@@ -583,7 +583,7 @@ C series data ie. timesteps-vs-day-vs-data.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -594,8 +594,7 @@ C series data ie. timesteps-vs-day-vs-data.
       REAL XDATA(100),YDATA(100),ZDATA(100),VERTEX(16),
      1     YDATA1(1000),XLT(2),YLT(2),XYZARW(6,3),COEFF(5)
 
-      CHARACTER LNAME*72,ETEXT*72,PDESCR*60,SDESCR*44
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER LNAME*72,ETEXT*72,PDESCR*60,SDESCR*44,RFILE*72
       CHARACTER*40 TITLE,NAME
       CHARACTER*10 AXIS(3),ANAME,ANAME1
       character detail*72,zname*12,zdesc*64

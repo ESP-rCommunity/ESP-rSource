@@ -42,12 +42,12 @@ C user's manual.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG 
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(13)
-      character outs*124,h*72,LAPROB*72 
+      character outs*124,h*72,LAPROB*72,LAPRES*72,LAFRES*72 
 
 C Setup menu text.
       ITEM(1) ='2 Select result set   '
@@ -567,7 +567,7 @@ C to graphical result display.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/RESLIB/RFILE
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -577,8 +577,7 @@ C to graphical result display.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      CHARACTER ETEXT*124, RSNAME*40
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER RFILE*72,ETEXT*124, RSNAME*40
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64

@@ -396,14 +396,15 @@ C It uses espinstalldir.h which was created by the Install
 C script with the current esp-r install directory held
 C in a string instpath.
       SUBROUTINE ESCDEF(dfdblbl,defdbfl,IFDEF,IER)
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
       CHARACTER OUTSTR*124,WORD*20,outs*124
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dfdblbl*20,defdbfl*72,dinstpath*48,di*48

@@ -21,7 +21,6 @@ C Boston, MA 02111-1307 USA.
       program pdb
 
 #include "plantdb.h"
-#include "esprdbfile.h"
 
 C The Plant component DataBase program maintains a
 C database containing plant component descriptions.
@@ -36,6 +35,7 @@ C database entry.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
@@ -65,6 +65,7 @@ C Mass flow components data
       CHARACTER ZITEM(9)*26 
       CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,mfsdsc*68,ltpcmp*60 

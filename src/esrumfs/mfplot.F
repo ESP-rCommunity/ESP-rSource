@@ -52,8 +52,7 @@ C     VOL() -  volume used for calculating change rate in case IDIM=3
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
       common/curfile/currentfile
 
@@ -72,8 +71,7 @@ C Currently only one node plotted.
       CHARACTER ETEXT*72,temp*28,WORD*20,OUTSTR*124
       character H*72,outs*124,nterm*1,NDNAM*12
       character PERST1*14,PERST2*44,PERST3*44,currentfile*72
-      character LAPROB*72
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72,LAPRES*72,LAFRES*72
       logical OK,DOK
 
 C In order to pass strings across to C it is necessary to first
