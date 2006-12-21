@@ -23,6 +23,9 @@ C ESRU: mrt
 C Revised to take in configuration file and zone focus.
       program mrt
 #include "building.h"
+
+      integer igraphiclib  ! external definition
+
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -470,25 +473,30 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   289   llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &    'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &    'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &        'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,3)
+     &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,3)
-#endif
+
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
 

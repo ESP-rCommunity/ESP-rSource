@@ -234,6 +234,8 @@ C   control information to the configuration control file.
 #include "epara.h"
 #include "esprdbfile.h"
 
+      integer igraphiclib  ! external definition
+
       PARAMETER  (MC=35)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -261,24 +263,29 @@ C Defaults.
       L144=LCMDFL
       llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(L144,' Event profile db? ',
-     &    ' ',96,DPRFDB,'binary events db',IER,2)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(L144,' Event profile db? ',
-     &    ' ',124,DPRFDB,'binary events db',IER,2)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',124,DPRFDB,'binary events db',IER,2)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(L144,' Event profile db? ',
      &    ' ',144,DPRFDB,'binary events db',IER,2)
+      else
+        CALL EASKF(L144,' Event profile db? ',
+     &    ' ',96,DPRFDB,'binary events db',IER,2)
       endif
-#else
-      CALL EASKF(L144,' Event profile db? ',
-     &  ' ',144,DPRFDB,'binary events db',IER,2)
-#endif
+
       IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 155
       LCMDFL=L144
       IER=0

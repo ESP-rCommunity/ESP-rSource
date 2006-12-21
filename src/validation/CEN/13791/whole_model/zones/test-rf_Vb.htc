@@ -1,0 +1,13 @@
+*HC_CTL for zone T_3-V_c
+*Date,Mon Oct 16 17:57:29 2006
+   1 # number control intervals
+   7 # number of surfaces
+# (South East North West Roof Floor window)
+  0.00    24.00 # start and end time of interval
+   4 # CEN calculation control type
+*Doc,User supplied hc values
+*basetop     6.0    5.0 #  index (within the zone) of a typcial base & top
+*floor     5.000  0.700 13.500 #  CEN floor upwd_inside, downwd_inside, external
+*ceiling   5.000  0.700 13.500 #  CEN ceiling upwd_inside, downwd_inside, external
+*slope     5.000  0.700 13.500 #  CEN sloped upwd_inside, downwd_inside, external
+*wall      2.500  2.500 13.500 #  CEN wall inside, partition, external

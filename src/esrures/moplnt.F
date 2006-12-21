@@ -708,6 +708,8 @@ C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
+      integer igraphiclib  ! external definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/pres/iunitp
@@ -747,24 +749,28 @@ C default file names for databases
         h(3)='is separate from zone and flow results. Please '
         h(4)='supply the name (if the field is blank). '
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
-     &      'library file',IER,4)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(ltmp,' Library name ? ',' ',124,DFILE,
-     &      'library file',IER,4)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
+     &        'library file',IER,4)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(ltmp,' Library name ? ',' ',124,DFILE,
+     &        'library file',IER,4)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
+     &        'library file',IER,4)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
      &      'library file',IER,4)
+        else
+          CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
+     &      'library file',IER,4)
         endif
-#else
-        CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
-     &    'library file',IER,4)
-#endif
 
         if(LTMP(1:2).eq.'  '.or.LTMP(1:4).eq.'UNKN')goto 6
       else

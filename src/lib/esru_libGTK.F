@@ -7208,7 +7208,7 @@ C in RSTR where RSTR has no leading blanks.
       common/OUTIN/IUOUT,IUIN
 
       CHARACTER*(*) TSTR,RSTR,MSG
-      character ACT*1,A*1,loutstr*124,outs*124
+      character ACT*1,A*1,loutstr*248,outs*124
 
       IER=0
 
@@ -7266,13 +7266,13 @@ C of RSTR or TSTR.
       endif
       CALL EDISP248(iuout,loutstr,100)
       if(lnblnk(TSTR).gt.123)then
-        write(6,*) TSTR
+        CALL EDISP248(iuout,TSTR,100)
       else
         CALL EDISP(iuout,TSTR)
       endif
       GOTO 100
-   1  write(outs,*) 'EGETRM: error writing warning re: ',RSTR
-      call edisp(iuout,outs)
+   1  write(loutstr,*) 'EGETRM: error writing warning re: ',RSTR
+      call edisp248(iuout,loutstr,100)
 
       END
 

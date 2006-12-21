@@ -54,10 +54,10 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER GS*52
       DIMENSION OPTITM(35),SALT(9),IVALSS(9),IGSET(MGOPT)
       CHARACTER H*72,OPTITM*54,DSOPT*12
-      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*72
+      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*72,tg*1,delim*1
-      character OUTSTR*124,lfil*72,word*24
+      character OUTSTR*124,lfil*72,word*24,outs248*248
       dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
@@ -194,8 +194,9 @@ C List database.
         elseif(irpt.eq.2)then
           itu = ixunit
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
-          call edisp(itu,'In the optical database: ')
-          call edisp(itu, LOPTDB)
+          write(outs248,'(2a)') 'In the optical database: ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,120)
           call edisp(itu,' ')
         elseif(irpt.eq.3)then
           goto 3

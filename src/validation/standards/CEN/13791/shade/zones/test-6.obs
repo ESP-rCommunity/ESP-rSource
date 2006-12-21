@@ -1,9 +1,0 @@
-# site obstruction file defined in test-6.obs
-# associated with zone geometry file test-6.geo
-# and referenced by zone utility file test-6.utl
-  50.000 0.000    # latitude & longitude
-    1    # no obstruction blocks
-# origin  X   Y   Z   width  depth  height  angle  descr
-   25.000    7.000    0.000   1.000  15.000  10.000    0.0  First         # block  1
-# grid opq X  opq Z  win X  win Z
-    20 20    10    10

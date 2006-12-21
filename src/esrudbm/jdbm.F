@@ -26,6 +26,7 @@ C and editing facilities.
 #include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -270,25 +271,30 @@ C Confirm problem name.
       LTMP=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   29  llt=lnblnk(ltmp)
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
-     &    'config file name',IER,5)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
-     &    'config file name',IER,5)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &      'config file name',IER,5)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+     &      'config file name',IER,5)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &      'config file name',IER,5)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
      &    'config file name',IER,5)
+      else
+        CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &    'config file name',IER,5)
       endif
-#else
-      CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
-     &  'config file name',IER,5)
-#endif
+
       IF(LTMP.EQ.' ')GOTO 29
       LCMDFL=LTMP
 
@@ -627,21 +633,26 @@ C Change problem name.
 
 C Call EASKF depending on the current file name length.
   289   llt=lnblnk(ltmp)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
-     &      'config file name',IER,5)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
-     &      'config file name',IER,5)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &        'config file name',IER,5)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+     &        'config file name',IER,5)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+     &        'config file name',IER,5)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
      &      'config file name',IER,5)
+        else
+          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+     &      'config file name',IER,5)
         endif
-#else
-        CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
-     &    'config file name',IER,5)
-#endif
+
         IF(LTMP.EQ.' ')GOTO 289
         LCMDFL=LTMP
 

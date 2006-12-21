@@ -2023,6 +2023,8 @@ C << the longer string used when commissioning a simulation.
       subroutine ipvactions(ier)
 #include "building.h"
 
+      integer igraphiclib  ! external definition
+
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       common/pophelp/h(60)
@@ -2437,21 +2439,25 @@ C Toggle delimeter.
  41     llt=lnblnk(basefile)
         h(1)='This is the name of the IPV report for the base case'
         h(2)='model (or the model you want to reference against).'
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(basefile,'IPV base case report file ?',
-     &      ' ',96,'xxx.rep','IPV base report',IER,2)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(basefile,'IPV base case report file ?',
-     &      ' ',124,'xxx.rep','IPV base report',IER,2)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(basefile,'IPV base case report file ?',
+     &        ' ',96,'xxx.rep','IPV base report',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(basefile,'IPV base case report file ?',
+     &        ' ',124,'xxx.rep','IPV base report',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(basefile,'IPV base case report file ?',
+     &        ' ',144,'xxx.rep','IPV base report',IER,2)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(basefile,'IPV base case report file ?',
      &      ' ',144,'xxx.rep','IPV base report',IER,2)
+        else
+          CALL EASKF(basefile,'IPV base case report file ?',
+     &      ' ',96,'xxx.rep','IPV base report',IER,2)
         endif
-#else
-        CALL EASKF(basefile,'IPV base case report file ?',
-     &    ' ',144,'xxx.rep','IPV base report',IER,2)
-#endif
         lnf=lnblnk(basefile)
         inquire (file=basefile(1:lnf),exist=xst)
         if(xst)then
@@ -2471,21 +2477,25 @@ C Ask the name of the design variant file.
  40     llt=lnblnk(variantfile)
         h(1)='This is the name of the IPV report for the other'
         h(2)='model.'
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(variantfile,'IPV variant report file ?',
-     &      ' ',96,'xxx.rep','IPV variant report',IER,2)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(variantfile,'IPV variant report file ?',
-     &      ' ',124,'xxx.rep','IPV variant report',IER,2)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(variantfile,'IPV variant report file ?',
+     &        ' ',96,'xxx.rep','IPV variant report',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(variantfile,'IPV variant report file ?',
+     &        ' ',124,'xxx.rep','IPV variant report',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(variantfile,'IPV variant report file ?',
+     &        ' ',144,'xxx.rep','IPV variant report',IER,2)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(variantfile,'IPV variant report file ?',
      &      ' ',144,'xxx.rep','IPV variant report',IER,2)
+        else
+          CALL EASKF(variantfile,'IPV variant report file ?',
+     &      ' ',96,'xxx.rep','IPV variant report',IER,2)
         endif
-#else
-        CALL EASKF(variantfile,'IPV variant report file ?',
-     &    ' ',144,'xxx.rep','IPV variant report',IER,2)
-#endif
         lnf=lnblnk(variantfile)
         inquire (file=variantfile(1:lnf),exist=xst)
         if(xst)then

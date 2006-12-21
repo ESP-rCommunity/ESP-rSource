@@ -40,6 +40,8 @@ C               network need not be matched
 #include "plant.h"
 #include "esprdbfile.h"
 
+      integer igraphiclib  ! external definition
+
       COMMON/ER1/IER1
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -85,24 +87,28 @@ C Call EASKF depending on the current file name length.
    44 llt=lnblnk(L144)
       H(1)='This is the plant network definition.'
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(L144,' Plant configuration file?',' ',96,DFCFG,
-     &    'plt config file name',IER,1)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(L144,' Plant configuration file?',' ',124,DFCFG,
-     &    'plt config file name',IER,1)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Plant configuration file?',' ',96,DFCFG,
+     &      'plt config file name',IER,1)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Plant configuration file?',' ',124,DFCFG,
+     &      'plt config file name',IER,1)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Plant configuration file?',' ',144,DFCFG,
+     &      'plt config file name',IER,1)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(L144,' Plant configuration file?',' ',144,DFCFG,
      &    'plt config file name',IER,1)
+      else
+        CALL EASKF(L144,' Plant configuration file?',' ',96,DFCFG,
+     &    'plt config file name',IER,1)
       endif
-#else
-      CALL EASKF(L144,' Plant configuration file?',' ',144,DFCFG,
-     &  'plt config file name',IER,1)
-#endif
 
       IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 44
       call st2file(L144,LCMDFL)

@@ -1426,7 +1426,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = lin ]; then
@@ -1444,7 +1444,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = cygw ]; then
@@ -1462,7 +1462,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = osx ]; then
@@ -1480,7 +1480,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = mingw ]; then
@@ -1498,7 +1498,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   fi
@@ -1540,19 +1540,19 @@ if [ "$install_training" = "yes" ]; then
      echo " "
      echo "Updating materials and climate databases in validation models..."
      echo " "
-     cd ${SRCdir}/validation/standards/CEN/13791/databases
+     cd ${SRCdir}/validation/CEN/13791/databases
      $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a
      $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a
      $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a
      cd ${SRCdir}
-     ./bin/materials_db_conv validation/standards/CEN/13791/databases prim.db.a prim.db
+     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db
      echo " "
      echo "... done."
      echo "Copying training and validation models ..."
      cp -r ${SRCdir}/training ${ESPdir}/training
   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
      cp -r ${SRCdir}/validation ${ESPdir}/validation
-  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/standards/stds_list > ${ESPdir}/validation/standards/stds_list
+  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/stds_list > ${ESPdir}/validation/stds_list
      echo "  "
      echo "Editing training and validation models for current system ..."
   
@@ -2024,6 +2024,8 @@ if [ "$delete_temp_files" = "yes" ]; then
   rm -f training/house/svph/dbs/linford.materialdb
   rm -f training/cellular_shd/dbs/cellular.materials
   rm -f training/glenview/databases/constr.db1
+  rm -f training/constr/tp_sub/dbs/tp_sub.material
+  rm -f validation/CEN/13791/databases/prim.db
 fi
 
 echo " "

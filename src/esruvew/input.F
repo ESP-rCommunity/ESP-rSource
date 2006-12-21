@@ -3,6 +3,8 @@ C----------------------------------------------------
 #include "viewer.h"
 #include "viewer.h2"
 
+      integer igraphiclib  ! external definition
+
       PARAMETER (MNF = 10)
       PARAMETER (MTR = 100)
       PARAMETER (MELT = 8)
@@ -116,24 +118,28 @@ C If the file exists then go ahead and load it.
         L144=LCMDFL
         llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Viewer input file name?',' ',
-     &      96,'test.vew','initial input file',IER,1)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Viewer input file name?',' ',
-     &      124,'test.vew','initial input file',IER,1)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        96,'test.vew','initial input file',IER,1)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        124,'test.vew','initial input file',IER,1)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Viewer input file name?',' ',
+     &        144,'test.vew','initial input file',IER,1)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Viewer input file name?',' ',
      &      144,'test.vew','initial input file',IER,1)
+        else
+          CALL EASKF(L144,' Viewer input file name?',' ',
+     &      96,'test.vew','initial input file',IER,1)
         endif
-#else
-        CALL EASKF(L144,' Viewer input file name?',' ',
-     &    144,'test.vew','initial input file',IER,1)
-#endif
 
         call usrmsg('File selected is',LCMDFL,'-')
         if(ier.ne.0.or.L144(1:2).eq.'  ')then

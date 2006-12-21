@@ -38,6 +38,7 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 #include "espriou.h"
 C espriou.h provides currentfile.
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -500,24 +501,28 @@ C List connections.
         H(5)='data will be available for editing.'
   289   llt=lnblnk(ltmp)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(ltmp,' Model configuration file ?',' ',96,
-     &      DFCFG,'config file name',IER,5)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(ltmp,' Model configuration file ?',' ',124,
-     &      DFCFG,'config file name',IER,5)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(ltmp,' Model configuration file ?',' ',96,
+     &        DFCFG,'config file name',IER,5)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(ltmp,' Model configuration file ?',' ',124,
+     &        DFCFG,'config file name',IER,5)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(ltmp,' Model configuration file ?',' ',144,
+     &        DFCFG,'config file name',IER,5)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(ltmp,' Model configuration file ?',' ',144,
      &      DFCFG,'config file name',IER,5)
+        else
+          CALL EASKF(ltmp,' Model configuration file ?',' ',96,
+     &      DFCFG,'config file name',IER,5)
         endif
-#else
-        CALL EASKF(ltmp,' Model configuration file ?',' ',144,
-     &    DFCFG,'config file name',IER,5)
-#endif
 
         call usrmsg('File selected is',ltmp,'-')
         IF(LTMP.EQ.' ')GOTO 289

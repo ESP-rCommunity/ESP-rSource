@@ -1,0 +1,66 @@
+*connections  for geometry_B
+*Date Thu Nov 16 10:28:14 2006
+     63   # number of connections
+   1   1   7   0   0  #   1  South in T_1-V_a >|< Identical CEN 13791
+   1   2   7   0   0  #   2  East in T_1-V_a >|< Identical CEN 13791
+   1   3   7   0   0  #   3  North in T_1-V_a >|< Identical CEN 13791
+   1   4   0   0   0  #   4  West in T_1-V_a is External
+   1   5   7   0   0  #   5  Ceiling in T_1-V_a >|< Identical CEN 13791
+   1   6   7   0   0  #   6  Floor in T_1-V_a >|< Identical CEN 13791
+   1   7   0   0   0  #   7  window in T_1-V_a is External
+   2   1   7   0   0  #   8  South in T_1-V_b >|< Identical CEN 13791
+   2   2   7   0   0  #   9  East in T_1-V_b >|< Identical CEN 13791
+   2   3   7   0   0  #  10  North in T_1-V_b >|< Identical CEN 13791
+   2   4   0   0   0  #  11  West in T_1-V_b is External
+   2   5   7   0   0  #  12  Ceiling in T_1-V_b >|< Identical CEN 13791
+   2   6   7   0   0  #  13  Floor in T_1-V_b >|< Identical CEN 13791
+   2   7   0   0   0  #  14  window in T_1-V_b is External
+   3   1   7   0   0  #  15  South in T_1-V_c >|< Identical CEN 13791
+   3   2   7   0   0  #  16  East in T_1-V_c >|< Identical CEN 13791
+   3   3   7   0   0  #  17  North in T_1-V_c >|< Identical CEN 13791
+   3   4   0   0   0  #  18  West in T_1-V_c is External
+   3   5   7   0   0  #  19  Ceiling in T_1-V_c >|< Identical CEN 13791
+   3   6   7   0   0  #  20  Floor in T_1-V_c >|< Identical CEN 13791
+   3   7   0   0   0  #  21  window in T_1-V_c is External
+   4   1   7   0   0  #  22  South in T_2-V_a >|< Identical CEN 13791
+   4   2   7   0   0  #  23  East in T_2-V_a >|< Identical CEN 13791
+   4   3   7   0   0  #  24  North in T_2-V_a >|< Identical CEN 13791
+   4   4   0   0   0  #  25  West in T_2-V_a is External
+   4   5   7   0   0  #  26  Ceiling in T_2-V_a >|< Identical CEN 13791
+   4   6   7   0   0  #  27  Floor in T_2-V_a >|< Identical CEN 13791
+   4   7   0   0   0  #  28  window in T_2-V_a is External
+   5   1   7   0   0  #  29  South in T_2-V_b >|< Identical CEN 13791
+   5   2   7   0   0  #  30  East in T_2-V_b >|< Identical CEN 13791
+   5   3   7   0   0  #  31  North in T_2-V_b >|< Identical CEN 13791
+   5   4   0   0   0  #  32  West in T_2-V_b is External
+   5   5   7   0   0  #  33  Ceiling in T_2-V_b >|< Identical CEN 13791
+   5   6   7   0   0  #  34  Floor in T_2-V_b >|< Identical CEN 13791
+   5   7   0   0   0  #  35  window in T_2-V_b is External
+   6   1   7   0   0  #  36  South in T_2-V_c >|< Identical CEN 13791
+   6   2   7   0   0  #  37  East in T_2-V_c >|< Identical CEN 13791
+   6   3   7   0   0  #  38  North in T_2-V_c >|< Identical CEN 13791
+   6   4   0   0   0  #  39  West in T_2-V_c is External
+   6   5   7   0   0  #  40  Ceiling in T_2-V_c >|< Identical CEN 13791
+   6   6   7   0   0  #  41  Floor in T_2-V_c >|< Identical CEN 13791
+   6   7   0   0   0  #  42  window in T_2-V_c is External
+   7   1   7   0   0  #  43  South in T_3-V_a >|< Identical CEN 13791
+   7   2   7   0   0  #  44  East in T_3-V_a >|< Identical CEN 13791
+   7   3   7   0   0  #  45  North in T_3-V_a >|< Identical CEN 13791
+   7   4   0   0   0  #  46  West in T_3-V_a is External
+   7   5   0   0   0  #  47  Roof in T_3-V_a is External
+   7   6   7   0   0  #  48  Floor in T_3-V_a >|< Identical CEN 13791
+   7   7   0   0   0  #  49  window in T_3-V_a is External
+   8   1   7   0   0  #  50  South in T_3-V_b >|< Identical CEN 13791
+   8   2   7   0   0  #  51  East in T_3-V_b >|< Identical CEN 13791
+   8   3   7   0   0  #  52  North in T_3-V_b >|< Identical CEN 13791
+   8   4   0   0   0  #  53  West in T_3-V_b is External
+   8   5   0   0   0  #  54  Roof in T_3-V_b is External
+   8   6   7   0   0  #  55  Floor in T_3-V_b >|< Identical CEN 13791
+   8   7   0   0   0  #  56  window in T_3-V_b is External
+   9   1   7   0   0  #  57  South in T_3-V_c >|< Identical CEN 13791
+   9   2   7   0   0  #  58  East in T_3-V_c >|< Identical CEN 13791
+   9   3   7   0   0  #  59  North in T_3-V_c >|< Identical CEN 13791
+   9   4   0   0   0  #  60  West in T_3-V_c is External
+   9   5   0   0   0  #  61  Roof in T_3-V_c is External
+   9   6   7   0   0  #  62  Floor in T_3-V_c >|< Identical CEN 13791
+   9   7   0   0   0  #  63  window in T_3-V_c is External

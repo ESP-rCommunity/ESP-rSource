@@ -183,8 +183,7 @@ C Set defaults and exemplars depending on whether Unix or NT.
         write(defdbfl,'(2a)') instpath(1:ln),'/default'
 C        defdbfl='/usr/esru/esp-r/default'
         vldlbl='Validation standards'
-        write(vldfl,'(2a)') instpath(1:ln),
-     &        '/validation/standards/stds_list'
+        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
 C        cdblfil='/usr/esru/esp-r/climate/climatelist'
@@ -199,8 +198,7 @@ C        altdot='/usr/esru/esp-r/esprc'
         dfdblbl='Standard defaults'
         write(defdbfl,'(2a)') instpath(1:ln),'/default'
         vldlbl='Validation tests'
-        write(vldfl,'(2a)') instpath(1:ln),
-     &        '/validation/standards/stds_list'
+        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
@@ -576,7 +574,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
@@ -676,7 +673,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,infa*72,infb*72,appn*24,outs*124
@@ -965,7 +961,6 @@ C Timeout information
       character sTimeout*72  
       integer iTimeoutFlag
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1092,7 +1087,6 @@ C  to be passed to res from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1206,7 +1200,6 @@ C  and output (converted) file to be passed to clm from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1325,7 +1318,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1439,7 +1431,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
@@ -1544,7 +1535,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
@@ -1627,7 +1617,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1748,7 +1737,6 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      logical unixok
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,actf*72,appn*24

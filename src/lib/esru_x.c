@@ -8896,3 +8896,12 @@ int ixavail_()
   return 1;
 }
 
+/*********** igraphiclib_ *************************************** *
+ * Function indicating if raw X!! libraries are used
+ * use a one for X11 and in esru.c set two and in esru_fc.f set 3.
+ */
+int igraphiclib_()
+{
+  return 1;  /* use a one for X11 */
+}
+

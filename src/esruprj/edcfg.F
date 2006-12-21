@@ -3280,6 +3280,8 @@ C Defaults.
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
+      integer igraphiclib  ! external definition
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -3325,25 +3327,31 @@ C Call EASKF depending on the current file name length.
 C Use ifdefs because the X11 version will be returning only the
 C name of the file.
         llt=lnblnk(ltmp)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
-     &    'config file name',IER,17)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
-     &    'config file name',IER,17)
-        elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,17)
-        endif
-#else
+
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,17)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
+     &      'config file name',IER,17)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &      'config file name',IER,17)
+          endif
+        elseif(iglib.eq.2)then
 
 C Note for GTK, LTMP will be returned with the absolute path to the folder
 C even if prj started up in the cfg folder. There is subsequent
 C logic which determines if we actually are browsing.
-        CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,17)
-#endif
+          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &      'config file name',IER,17)
+        else
+          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,17)
+        endif
 
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '
@@ -3408,35 +3416,36 @@ C and so we treat that model as if browsing.
             call edisp(iuout,'User can modify this model.')
           endif
 
-#ifdef GTK
+          iglib = igraphiclib()  ! find out if GTK.
+          if(iglib.eq.2)then
 
 C For GTK versions, find odir (where prj was started) and compare with the
 C current path (both lnpath and lnpath-1 lengths) if there
 C is a match then even though there was a full explicit path
 C we can recognise that we started in a cfg folder. 
-          call usrdir(odir)
-          lnpath=lnblnk(path)
+            call usrdir(odir)
+            lnpath=lnblnk(path)
 
 C Debug.
-          write(t144,*) ' GTK path is ',path(1:lnblnk(path))
-          call edisp(iuout,t144)
-          write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
-          call edisp(iuout,t144)
-          if(path(1:lnpath).eq.odir(1:lnpath))then
-            browse=.false.
-            call edisp(iuout,'User can modify this model.')
-          elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
-            browse=.false.
-            call edisp(iuout,'User can modify this model.')
-          else
+            write(t144,*) ' GTK path is ',path(1:lnblnk(path))
+            call edisp(iuout,t144)
+            write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
+            call edisp(iuout,t144)
+            if(path(1:lnpath).eq.odir(1:lnpath))then
+              browse=.false.
+              call edisp(iuout,'User can modify this model.')
+            elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
+              browse=.false.
+              call edisp(iuout,'User can modify this model.')
+            else
 
 C We could get false browse=.true. in terms of the logic.
 C The check against the location of the exemplar models
 C as defined in the default file (which was done above)
 C should be retained. At this point just continue.
-            continue
+              continue
+            endif
           endif
-#endif
         endif
       else
 

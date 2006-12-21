@@ -213,3 +213,6 @@ void	egphelpscroll_(long int* impx,long int* impy,long int* ipflg,
 /* Shared functions still to be ported across from esru_nox.c */
 /* void	windcl_(int* n, int* ir, int* ig, int* ib); */
 /* void	winscl_(char* act, long int* n); */
+
+int	ixavail();
+int	igraphiclib();
