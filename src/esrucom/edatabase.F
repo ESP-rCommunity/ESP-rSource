@@ -39,16 +39,16 @@ C DRAIR is the air gap layer resistance for 3 orientations.
 
       SUBROUTINE ERMLDB(ITRC,ITRU,IER)
 #include "building.h"
+#include "esprdbfile.h"
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/curfile/currentfile
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,layermatch
 
-      CHARACTER OUTSTR*124,LFMUL*72,DESC*48,NAM*72,H*72
-      CHARACTER RSTR*124,currentfile*72,LFCON*72
+      CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72
+      CHARACTER RSTR*124,currentfile*72
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Keep track of how many times materials db read fails.
@@ -558,9 +558,9 @@ C Information is available via common block MLC.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -568,7 +568,7 @@ C IER=0 OK, IER=1 problem.
 
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,DESC*48,LFCON*72,LFMUL*72,COMPS*33
+      CHARACTER H*72,DESC*48,COMPS*33
 
       IER=0
       ISEL=0
@@ -683,13 +683,13 @@ C current contents of common MLC.  In the case of an air layer sub-
 C stitute the U value for each layer.
       SUBROUTINE EMKAMLD(ITRU,IER)
 #include "building.h"
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+#include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       DIMENSION PNAM(ME)
-      CHARACTER DESC*48,LFCON*72,LFMUL*72,NAM*72,TITL*72,PNAM*72
+      CHARACTER DESC*48,NAM*72,TITL*72,PNAM*72
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN
@@ -754,8 +754,12 @@ C already been opened). If user has requested a listing of the
 C database then use itopt (which may be text feedback or a file unit).
       SUBROUTINE EROPTDB(ITRC,ITOPT,SOPT,GDESCR,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C DG Direct trans at 5 angles.
 C HG Solar heat gain at 5 angles (for documentation purposes only).
@@ -774,7 +778,7 @@ C GS (52 char) list of optical database items to select from.
 
       LOGICAL FOUND
       CHARACTER GS*52,WORD*20,topt*72,outs*124,currentfile*72
-      CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36,LOPTDB*72
+      CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
 
 C Open the optical database, if scanning all items reset the
 C counters for the number of single and double items before scan.

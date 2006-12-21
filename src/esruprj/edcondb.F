@@ -34,9 +34,9 @@ C ELISTC: Controls display and editing of materials.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       LOGICAL     OK,DOK,MODDB,chgdb
@@ -45,7 +45,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
       DIMENSION ENAM(19),IDBE(19)
       character ACTION*1,CLSSEL*36
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
-      CHARACTER OUTSTR*124,LFCON*72,LFMUL*72,KEY*1,PDBM*64,outs*124
+      CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
       CHARACTER xfile*72,tg*1,delim*1
 
 C Assume no changes to db amd user has not entered password.
@@ -566,6 +566,7 @@ C id string.
       SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
 
 C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
@@ -574,7 +575,6 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/exporttg/xfile,tg,delim
@@ -586,7 +586,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       logical moddb,chgdb,layermatch
 
       CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12,PROMP1*56
-      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,PROMP2*56
+      CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*72,tg*1,delim*1,outs*124,TITL*72,NAM*72
       CHARACTER STGLP(7)*56
@@ -1101,6 +1101,7 @@ C Information on opaque/transparent is added to DESC.
 
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1116,7 +1117,6 @@ C Information on opaque/transparent is added to DESC.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
@@ -1128,7 +1128,7 @@ C Information on opaque/transparent is added to DESC.
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
-      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,SOPT*12
+      CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
       character T12OTH*12
       CHARACTER outs*124,MLED*38,PNAM*72,T12*12,MMLAY*38,MLCSYM*12
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
@@ -1855,10 +1855,9 @@ C ************* MKBPRC
 C MKBPRC: Creates a binary materials db based on the
 C current contents of an ASCII file LASCI opened on unit IFA. 
       SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+#include "esprdbfile.h"
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,OUTSTR*124
-      CHARACTER LASCI*72
+      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
 
 C The binary file will be overwritten.
       call EFOPRAN(IFCON,LFCON,40,4,IER)
@@ -1933,11 +1932,11 @@ C ************* MKAPRC
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+#include "esprdbfile.h"
       COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,LASCI*72
+      CHARACTER IDESC*72,NDESC*72,LASCI*72
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFCON,ISTAT)

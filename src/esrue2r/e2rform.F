@@ -531,6 +531,7 @@ C mkriofil: Write inside/outside materials and composition files.
 C If ACT='i' then interactive, ACT='s' for silent.
       SUBROUTINE mkriofil(ftr,fict,ACT,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -548,7 +549,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -595,7 +595,6 @@ C TMC data
       character h*72,zname*12,ZN*12,zdesc*64,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,DESC*48,MLCN*12,OTF*4,OPT*12
-      CHARACTER LFCON*72,LFMUL*72
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12

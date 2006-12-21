@@ -1087,7 +1087,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
       LOGICAL OK,DOK
 
    20 IER=0
@@ -1133,7 +1133,8 @@ C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
 
 C Strip off the last character (end of line mark) as well as any
-C leading blanks from string returned.
+C leading blanks from string returned. It is assumed that STRVAL
+C passed into the subroutine will fit within a 92 character WORD buffer.
         call c2fstr(STRVAL,WORD)
 
         IF(idef.EQ.1)THEN
@@ -1181,7 +1182,7 @@ C In text mode, remind user of current string.
           call edisp(iuout,OUTSTR)
         endif
         CALL USRMSG(PROMP1,PROMP2,'?')
-        READ(IUIN,'(A72)')WORD
+        READ(IUIN,'(A)')WORD
         A=WORD(1:1)
         IF(lnblnk(WORD).EQ.1)THEN
           IF(A.EQ.'D'.OR.A.EQ.'d')THEN

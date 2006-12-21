@@ -436,9 +436,9 @@ C LMPEDG creates control volumes and connections for lumped edge.
 C *********************************************************************
       SUBROUTINE LMPEDG(IZ,IEG)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -450,7 +450,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72,LFCON*72,LFMUL*72
+      CHARACTER PNM*72,TL*72
 
 C Determine the lumped edge thermophysical properties.
       VOLML=0.
@@ -578,9 +578,9 @@ C DISEDG creates control volumes and connections for discretised edge.
 C *********************************************************************
       SUBROUTINE DISEDG(IZ,IEG)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -593,7 +593,7 @@ C *********************************************************************
       COMMON/GR3D81/ISNDS(MS),ISNDE(MEZ),ISNDC(MCZ)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
+      CHARACTER PNAM*72,TITL*72
 
       ISP1=-2
       IS1=ISFEDG(IEG,1)
@@ -770,9 +770,9 @@ C LMPCRN creates control volumes and connections for lumped corner.
 C *********************************************************************
       SUBROUTINE LMPCRN(IZ,ICR)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -784,7 +784,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72,LFCON*72,LFMUL*72
+      CHARACTER PNM*72,TL*72
 
 C Determine the lumped corner thermophysical properties.
       VOLML=0.
@@ -907,9 +907,9 @@ C DISCRN creates control volumes and connections for discretised corner.
 C *********************************************************************
       SUBROUTINE DISCRN(IZ,ICR)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -921,7 +921,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
+      CHARACTER PNAM*72,TITL*72
 
       ISP1=-3
       IS1=ISFCRN(ICR,1)

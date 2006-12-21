@@ -37,20 +37,24 @@ C file to manage the reading and saving of this db.
       SUBROUTINE EDOPT(IER)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IFPRE (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LPRFDB,IPRODB (for event profile database)
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/GPICK/GS(MGOPT),nopt
-      COMMON/PRODB/LPRFDB,IPRODB
       common/user/browse
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       CHARACTER GS*52
       DIMENSION OPTITM(35),SALT(9),IVALSS(9),IGSET(MGOPT)
-      CHARACTER H*72,OPTITM*54,DSOPT*12,LPRFDB*72
-      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,LOPTDB*72,KEY*1,loptdbl*72
+      CHARACTER H*72,OPTITM*54,DSOPT*12
+      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*72
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*72,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24
@@ -1414,6 +1418,7 @@ C optic properties. These are usually the result of measurements.
       subroutine edbioptics()
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 1 for the present.
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
@@ -1427,7 +1432,6 @@ C to 1 for the present.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/PRODB/LPRFDB,IPRODB
 
 C NSTMCFL flag for each model surface (connection). A non-zero
 C   number indicates bi-directional information is available.
@@ -1436,7 +1440,7 @@ C   Limited to 0 or 1 at present.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
-      character H*72,VERT*54,CXITM*43,LPRFDB*72,key*1,lfil*72
+      character H*72,VERT*54,CXITM*43,key*1,lfil*72
       character outs*124,bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND,ok,dok
 

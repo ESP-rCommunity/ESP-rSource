@@ -33,19 +33,18 @@ C At present this data is cursory.
       SUBROUTINE  MZPLS1
 #include "building.h"
 #include "plant.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPCDB/IPCDB (for plant template database)
+C ICLIM,LCLIM (for climate file)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       COMMON/LIBRCP/IRCPLP
-      COMMON/C7/LPCDB
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-
-      COMMON/C22/ICLIM,LCLIM
-
-      CHARACTER*72 LCLIM, lpcdb
 
       IUNIT=IFIL+3
 

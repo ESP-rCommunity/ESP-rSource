@@ -750,11 +750,12 @@ C corresponding to graphical result display.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
-      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,RFILE*72,act*1
+      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,act*1
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outsd*80,outsd1*81,RSNAME*40
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical zlist

@@ -24,9 +24,11 @@ C ELISTCMOD: Controls display and editing of primitive constructions.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/H(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -35,7 +37,6 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
       DIMENSION EDBCON(19),EDBDEN(19),EDBSHT(19),EE(19),EA(19),EDRV(19)
       DIMENSION ENAM(19),IDBE(19)
       CHARACTER ACTION*1,CLSSEL*36
-      CHARACTER*72 LFCON,LFMUL
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
       CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
       CHARACTER xfile*72,tg*1,delim*1
@@ -528,14 +529,13 @@ C ********** opendb (copy of code from eddb.F)
 C Open materials constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
       logical    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
 
-      character LFCON*72,LFMUL*72
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0
@@ -1312,12 +1312,12 @@ C
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
 #include "LCA.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
 
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -1429,8 +1429,7 @@ C
       CHARACTER*72 MatDesc,MatCat,LayerDes
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15,SSPARENT*12
-      CHARACTER DESC*48, LFCON*72,LFMUL*72
-      CHARACTER zname*12,zdesc*64
+      CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
       CHARACTER StepName*36,StepSName*12
@@ -2342,12 +2341,12 @@ C phylosophy as LCACalc
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
 #include "LCA.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -2464,8 +2463,7 @@ C phylosophy as LCACalc
 
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15,SSPARENT*12
-      CHARACTER DESC*48, LFCON*72,LFMUL*72
-      CHARACTER zname*12,zdesc*64
+      CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
       CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72

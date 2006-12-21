@@ -500,10 +500,10 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
       subroutine listual(ISEC,IELM)
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -515,7 +515,7 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
 
       character LUALF*72,LCNG*15,LLOC*15,outs*124
       character ZNAME*12, zdesc*64
-      character LFCON*72,LFMUL*72,NAM*72,TITL*72,MATNAM*12,ITEM(6)*20
+      character NAM*72,TITL*72,MATNAM*12,ITEM(6)*20
 
       IER=0
 

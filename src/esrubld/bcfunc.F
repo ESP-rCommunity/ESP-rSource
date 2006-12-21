@@ -2383,8 +2383,17 @@ C Determine coupled supply plant component and node.
         IN=NPCDAT(IPCMP,9)+IPNOD-1
       ELSEIF(ISIND.EQ.4) THEN
 
-C Set the embedded flag to zero.
-        IPALLOC(IPCMP)=0
+C Set the embedded flag to zero after finding ipcmp.
+        IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
+        if(ipcmp.ne.0) then
+          IPALLOC(IPCMP)=0
+        else
+          call edisp(itu,
+     &     ' BCL06: fatal error (zero index) of control data item.')
+          call epwait
+          call epagend
+          STOP   
+        endif
 
 C Determine the number of supply and extracting components.
         NCPL=IFIX(BMISCD(ICF,IDTYP,IPER,2))
@@ -5634,6 +5643,9 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -5645,7 +5657,6 @@ C ICALL = 2 signals call from solar with request for alternative props.
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
-      common/condb/lfcon,ifcon,lfmul,ifmul
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -5676,7 +5687,6 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
-      character lfmul*72,lfcon*72
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
 
 C << for the case of bcl being called from solar is the limit >>

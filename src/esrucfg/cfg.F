@@ -33,6 +33,9 @@ C  surbox - find bounding box and centre of a surface.
 
       program cfg
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -69,7 +72,6 @@ C ITPPSW current view - perspective/plan/south/west
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -105,7 +107,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEMS1(22)
       CHARACTER LCFGF*72,H*72,CFGFN*72,LTMP*144
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER ITEMS1*30,inf*144,CXSTR*78,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character DCNN*72,LLCNN*72,LCNN*72

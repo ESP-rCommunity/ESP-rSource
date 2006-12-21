@@ -62,8 +62,8 @@ C Versions of results libraries.
       common/rpath/path
       common/uhome/upath
       common/user/browse
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/ffn/iflwn,icffs(mpcon)
       COMMON/FFC/IMFRES
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
@@ -89,8 +89,8 @@ C Active domain common.
 
       character outs*124,ltmp*72,h*72,path*72,upath*72,longtfile*144
       character cfgroot*24,LCFGF*72
-      character*72 LAPROB,LAPRES,LAFRES,ENTFLNAM,ERESLIB,CFRESF
-      character RFILE*72,PFILE*72,MSTRFILE*72
+      character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
 
       logical OK,dok,MSTROK,MSTRZN,remote,unixok,browse

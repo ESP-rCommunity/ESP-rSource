@@ -32,6 +32,7 @@ C Include files req'd for deleting temporary files after the simulation is compl
 C HOT3000: Fuel cell.
 #include "SOFC.h"
 #include "building.h"
+#include "esprdbfile.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "monitor.h"
@@ -119,10 +120,6 @@ C Power simulation flag.
 C Simulation start day required by cmp70c.
       common/simsdy/iss,isf
 
-C Climate file data
-      COMMON/C22/ICLIM,LCLIM
-      character*72 LCLIM
-      
 C Common for 3D building model.
       COMMON/GR1D04/GAM,RGAM
 
@@ -1273,7 +1270,7 @@ C data, permitting the simulation to be re-wound to to the state at
 C which plant iteration is ajourned, if inter-domain iteration is active.
 
 C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
-              if ( itsct == 7 ) then
+              if ( itsct.eq.7 ) then
                 call Plt_TimeRow_Manipulate(iSaving)
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
@@ -1426,6 +1423,8 @@ C.....Update reports.
             else
               iStartupFlag = 0
             endif
+
+C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
             call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
 C IF NSINC=1, turn off initialization of h3kreports meta data
@@ -1591,7 +1590,7 @@ C the impact of modifications on simulation times.
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'
          CALL EDISP(IUOUT,outs)
-         CALL EDISP(IOUTS,'')
+         CALL EDISP(IOUTS,' ')
       endif
 #endif 
 
