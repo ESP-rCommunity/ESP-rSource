@@ -47,10 +47,7 @@ C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
       common/pophelp/h(60)
-      common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/OUTIN/IUOUT,IUIN
-      common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -72,13 +69,13 @@ C Default esp-r distribution path.
       logical moddb,browse,modcon,QUIET
       logical unixok,copydef,haveconstr,clkok
 
-      character H*72,LTMP*72,DESC*48,path*72,outs*124
+      character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48
       character*72 ITEMS(15)
       character doit*248
-      character DEPRE*40,OUTSTR*124,LCOPY*72,LTMPFL*72
+      character DEPRE*40,OUTSTR*124,LCOPY*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character dinstpath*48
 
@@ -617,22 +614,17 @@ C Open materials constructions, multi-layer constructions and
 C optical properties databases.
 
       subroutine opendb(ier)
-#include "building.h"
-#include "net_flow.h"
 #include "esprdbfile.h"
 
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
-      CHARACTER LAPROB*72
 
       IER=0
 
@@ -787,7 +779,6 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 
       SUBROUTINE EDDBMAT(moddb,modcon,APP)
-#include "building.h"
 #include "esprdbfile.h"
 
       common/FILEP/IFIL
@@ -1708,13 +1699,11 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 
       SUBROUTINE EDDBPCDB(moddb,APP)
-#include "building.h"
 #include "esprdbfile.h"
 #include "plantdb.h"
 
       PARAMETER  (MCP=35)
 
-      common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1723,19 +1712,14 @@ C     if blank then no file name change implied.
       common/appw/iappw,iappx,iappy
       common/rpath/path
       common/deflt4/dinstpath
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
-      COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
-
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       CHARACTER H*72,LTMP*72
-      character longtfile*144,longtafile*144,message*48
-      CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
+      character longtfile*144,message*48
+      CHARACTER DOIT*248,fs*1,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,linstd*60,tmode*8
       CHARACTER ZPDESC*25
@@ -2095,33 +2079,27 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 C
       SUBROUTINE EDDBPROFILE(moddb,APP)
-#include "building.h"
 #include "esprdbfile.h"
 
       PARAMETER  (MCP=35)
 
-      common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
-      common/appw/iappw,iappx,iappy
       common/rpath/path
       common/deflt4/dinstpath
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
       CHARACTER H*72,LTMP*72
-      character longtfile*144,longtafile*144,message*48
+      character longtfile*144,message*48
       CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
       CHARACTER OUTS*124,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
-      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,linstd*60,tmode*8
 
@@ -2478,7 +2456,9 @@ C This facility offers browsing for GTK version.
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character opte*24,optf*24,optg*24
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2512,14 +2492,14 @@ C Remember the initial file name in case user choice fails.
       H(9)='   and if you have permission to update the file you'
       H(10)='   can edit the entities in the database.'
       H(11)=' '
-      H(12)='b) select another file: you will asked for a file'
-      H(13)='   name and if it is found you can browse or edit it.'
-      H(14)='   Hint: if you eventually want to copy that other file'
-      H(15)='   into the model folder first select it and then ask'
-      H(16)='   for a copy.'
-      H(17)=' '
-      H(18)='c) make a new database: a new database will be created '
-      H(19)='   based on the file name you supply.'
+      H(12)='b) Select from list (not available for optics databases).'
+      H(13)=' '
+      H(14)='c) Make a new database: a new database will be created '
+      H(15)='   based on the file name you supply. It will contain a'
+      H(16)='   minimal number of items and you can then modify this'
+      H(17)='   as required. '
+      H(18)='   Exercise care if you use a text editor to copy sets'
+      H(19)='   of data from another optical database.'
       H(20)=' '
       H(21)='d) copy default database: a project copy of the default'
       H(22)='  database will be made and you will be offered a '
@@ -2540,11 +2520,11 @@ C If GTK library then there are additional options so include in help.
         H(33)=' g) copy another database to the project allows you to'
         H(34)=' locate a database and get a project copy of it.'
       else
-        H(25)=' '
-        H(26)=' '
-        H(27)=' '
-        H(28)=' '
-        H(29)=' '
+        H(25)='e) select a file (X11 only): edit the file name'
+        H(26)='   and if it is found you can browse or edit it.'
+        H(27)='   Hint: if you eventually want to copy that other file'
+        H(28)='   into the model folder first select it and then ask'
+        H(29)='   for a copy.'
         H(30)=' '
         H(31)=' '
         H(32)=' '
@@ -2556,16 +2536,19 @@ C If GTK library then there are additional options so include in help.
       ltf=max(1,LNBLNK(longtfile))
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
-C Make up additional options depending on graphics lib.
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for optics database. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='   '
+        opte='e edit file name'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
         opte='e browse ../dbs'
         optf='f browse distribution'
-        optg='g make copy of another'
+        optg='g make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -2574,9 +2557,9 @@ C If db does not exist locally offer limited choices:
         idno=2
         isw=0
         call MENUATOL(outs,'Optical properties options:',
-     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'a browse/edit (NOT APPLICABLE)','b select from list (N/A)',
      &    'c make a new database','d copy the default database',
-     &    opte,optf,' ',' ',' ',' ',' ',' ',isw,idno,34)
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.true.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
@@ -2584,7 +2567,7 @@ C If corportate database then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL(outs,'Optical properties options:',
-     &    'a browse or edit this file','b select another file',
+     &    'a browse or edit this file','b select from list (N/A)',
      &    'c make a new database','d make project copy of database',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
@@ -2594,17 +2577,18 @@ C If corportate database then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL(outs,'Optical properties options:',
-     &    'a browse or edit this file','b select another file',
+     &    'a browse or edit this file','b select from list (N/A)',
      &    'c make a new database','d make project copy of database',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
       else
 
-C If db exists locally offer the following choices:
+C If db exists locally toggle whether the user as asked to copy the
+C default database or the current database.
         idno=1
         isw=0
         call MENUATOL(outs,'Optical properties options:',
-     &    'a browse or edit this file','b select another file',
+     &    'a browse or edit this file','b select from list (N/A)',
      &    'c make a new database','d copy the default database',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         if(isw.eq.4)copydef=.true.
@@ -2619,19 +2603,7 @@ C Act on the users choice. If no choice, return to main menu.
 C If file exists read it and enter editing facility.
         if(XST)then
           LOPTDB=lltmp
-          IER=0
-          SOPT='ALL'
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-            call usrmsg('Problem encountered with optical database!',
-     &        'Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            goto 50
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
+          goto 44
         else
           call usrmsg('Sorry there is no file to browse/edit.',
      &                'Please use one of the other options. ','W')
@@ -2639,67 +2611,8 @@ C If file exists read it and enter editing facility.
         endif
       elseif(isw.eq.2)then
 
-C Based on the non-blank length of the file name string call easkf
-C to get the file name (in X11 this might be within the model or
-C in the distribution databases folder). In the GTK version easkf
-C will return a full path.
-        H(1)='An optical properties database holds information for'
-        H(2)='transparent constructions. It is closely related to'
-        H(3)='the constructions database referenced by the project.'
-        llt=lnblnk(lltmp)
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' Optical properties database?',
-     &        ' ',96,DOPTDB,'optical properties database',IER,3)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' Optical properties database?',
-     &        ' ',124,DOPTDB,'optical properties database',IER,3)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' Optical properties database?',
-     &        ' ',144,DOPTDB,'optical properties database',IER,3)
-          endif
-        elseif(iglib.eq.2)then
-          CALL EASKF(lltmp,' Optical properties database?',
-     &      ' ',144,DOPTDB,'optical properties database',IER,3)
-        else
-          CALL EASKF(lltmp,' Optical properties database?',
-     &      ' ',96,DOPTDB,'optical properties database',IER,3)
-        endif
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-          LOPTDB=lltmp
-        else
-          goto 50
-        endif
-        CALL ERPFREE(IOPTDB,ISTAT)
-        call FINDFIL(LOPTDB,XST)
-        IF(XST)THEN
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          write(outs248,'(2a)') 'Accessing optics db ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-          call edisp248(iuout,outs248,100)
-          SOPT='ALL'
-          ier=0
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-           call usrmsg('Problem encountered with optical database!',
-     &       'Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            LOPTDB=lprev
-            goto 50
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
-        else
-          write(outs248,'(2a)') LOPTDB(1:lnblnk(LOPTDB)),
-     &      ' does not appear to exist.'
-          call edisp248(iuout,outs248,100)
-          goto 50
-        endif
+C There is no select by list for optics database.
+        goto 50
       elseif(isw.eq.3)then
 
 C No optics db found so set-up minimal common block, create
@@ -2775,19 +2688,7 @@ C Scan the new file and use the editing facility.
         h(3)='have the relevant information you can start now.'
         CALL ASKOK(outs,' Browse or edit it?',OK,dok,3)
         if(OK)then
-          SOPT='ALL'
-          ier=0
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-            call usrmsg(' Problem encountered with optical database!',
-     &        ' Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            goto 352
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
+          goto 44
         endif
       elseif(isw.eq.4.or.isw.eq.7)then
 
@@ -2795,8 +2696,8 @@ C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name then do the copy.
-C Use LTMP for the file name as known to esp-r and LCOPY for
-C the system cp call.   
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.   
         if(copydef)then
           write(outs248,'(2a)') 'The source file is:',
      &      DOPTDB(1:lnblnk(DOPTDB))
@@ -2917,22 +2818,7 @@ C be pre-pended when using most inbuilt file opening calls.
             endif
           endif
           moddb=.true.
-          write(outs248,'(2a)') 'New project optics db: ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-          call edisp248(iuout,outs248,100)
-          SOPT='ALL'
-          ier=0
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-            call usrmsg(' Problem encountered with optical db!',
-     &        ' Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            goto 50
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
+          goto 44
         else
           goto 54
         endif
@@ -2955,25 +2841,42 @@ C Test the returned file and if it is not readable reset LOPTDB.
      &      ' ',144,DOPTDB,'optical properties database',IER,6)
           LOPTDB=LCOPY
           moddb=.true.
-          write(outs248,'(2a)') 'Accessing optics db: ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-          call edisp248(iuout,outs248,100)
-          SOPT='ALL'
-          ier=0
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-            call usrmsg(' Problem encountered with optical db!',
-     &        ' Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            LOPTDB=lprev
-            goto 50
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
+          goto 44
         else
-          call usrmsg('Browse feature not available',' ','W')
+
+C For X11 and text allow user to type in a file name.
+          H(1)='An optical properties database holds information for'
+          H(2)='transparent constructions. It is closely related to'
+          H(3)='the constructions database referenced by the project.'
+          llt=lnblnk(lltmp)
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' Optical properties database?',
+     &        ' ',96,DOPTDB,'optical properties database',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' Optical properties database?',
+     &        ' ',124,DOPTDB,'optical properties database',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' Optical properties database?',
+     &        ' ',144,DOPTDB,'optical properties database',IER,3)
+          endif
+          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+            LOPTDB=lltmp
+          else
+            goto 50
+          endif
+          CALL ERPFREE(IOPTDB,ISTAT)
+          call FINDFIL(LOPTDB,XST)
+          IF(XST)THEN
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+            goto 44
+          else
+            write(outs248,'(2a)') LOPTDB(1:lnblnk(LOPTDB)),
+     &        ' does not appear to exist.'
+            call edisp248(iuout,outs248,100)
+            goto 50
+          endif
         endif
       elseif(isw.eq.6)then
 
@@ -2995,26 +2898,31 @@ C call to eroptdb and if this is not successful reset LOPTDB.
      &      ' ',144,DOPTDB,'optical properties database',IER,6)
           LOPTDB=LCOPY
           moddb=.true.
-          write(outs248,'(2a)') 'Accessing optics db: ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-          call edisp248(iuout,outs248,100)
-          SOPT='ALL'
-          ier=0
-          call tstamp('>','PRJ: enter optical db')
-          CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
-          if(ier.ne.0)then
-            call usrmsg(' Problem encountered with optical db!',
-     &        ' Please check database location and content.','W')
-            OPTKOK=.FALSE.
-            LOPTDB=lprev
-            goto 50
-          else
-            OPTKOK=.TRUE.
-            call EDOPT(IIER)
-          endif
+          goto 44
         else
           call usrmsg('Browse feature not available',' ','W')
         endif
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+      write(outs248,'(2a)') 'Accessing optics db: ',
+     &  LOPTDB(1:lnblnk(LOPTDB))
+      call edisp248(iuout,outs248,100)
+      SOPT='ALL'
+      ier=0
+      call tstamp('>','PRJ: enter optical db')
+      CALL EROPTDB(0,ITRU,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg(' Problem encountered with optical db!',
+     &    ' Please check database location and content.','W')
+        OPTKOK=.FALSE.
+        LOPTDB=lprev
+        goto 50
+      else
+        OPTKOK=.TRUE.
+        call EDOPT(IIER)
       endif
 
       return
