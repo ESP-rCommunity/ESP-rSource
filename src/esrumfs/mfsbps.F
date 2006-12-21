@@ -89,7 +89,7 @@ C Sets known constant pressure nodes pressures and reset other nodes
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -120,19 +120,19 @@ C LAPRES,IFPRE (for window pressure databases)
 
       IER1=0
 
-C If for some reason IFPRE is still zero set it to IFIL+4
-      if(IFPRE.eq.0)IFPRE=IFIL+4
+C If for some reason IAPRES is still zero set it to IFIL+4
+      if(IAPRES.eq.0)IAPRES=IFIL+4
       IUNIT=IFIL+4
 
 C Open WIND PRESSURE COEFFICIENTS file, read coefficient
 C sets and close.
-      CALL EFOPSEQ(IFPRE,LAPRES,1,IER)
+      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(ier.ne.0) GOTO 2
-      READ(IFPRE,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
+      READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
       DO 100 J=1,NPRE
-      READ(IFPRE,*,IOSTAT=ISTAT,ERR=3,END=4) (FPRE(I,J), I=1,MPOS)
+      READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) (FPRE(I,J), I=1,MPOS)
   100 CONTINUE
-      CALL ERPFREE(IFPRE,ISTAT)
+      CALL ERPFREE(IAPRES,ISTAT)
 
 C Open fluid flow PROBLEM file and do a simple validity check.
       if(iairn.eq.0.and.iflwn.eq.1) then

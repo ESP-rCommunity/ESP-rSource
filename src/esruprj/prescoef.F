@@ -358,11 +358,11 @@ C should calculate pressure coefficients.
       COMMON/RAY6/LINSTY(MCON)
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/CPCALC2/FICOCP
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
-      logical CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION VERT(35),COMPS(MPCP),IVAL(MPCP)
       CHARACTER VERT*75,KEY*1,H*72,DESCRC*25
@@ -794,7 +794,7 @@ C and calculate the pressure coeffcients
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

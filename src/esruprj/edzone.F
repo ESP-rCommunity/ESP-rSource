@@ -825,6 +825,8 @@ C DELZONE systematicly removes a thermal zone.
 #include "building.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -886,9 +888,6 @@ C Anchor data.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -899,7 +898,7 @@ C Current file (for use by low level I/O calls)
       character SSPARENT*12
       CHARACTER H*72,zname*12,zdesc*64,ctldoc*248,LCTLF*72,outs*124
       character zmfn1*124,zmfn2*124,ltmp*72,NDNAM*12
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,currentfile*72
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
       if(browse)then
@@ -947,7 +946,7 @@ C should be scanned and converted into flow common blocks.
         CALL EFOPSEQ(IUM,LAPROB,1,IER)
         CALL STRIPC(IUM,OUTSTR,99,ND,0,'1st line of file',IER)
         if(ier.eq.0)then
-          currentfile=LAPROB
+          write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
             CALL EMFREAD(IUM,ITRC,IER)

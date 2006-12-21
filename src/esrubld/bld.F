@@ -153,12 +153,12 @@ C BEMS interaction time for results dump.
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      LOGICAL OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,OK3D
+      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -186,7 +186,7 @@ C have not been read in.
       dllmesg=' '
 
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       spfileok=.false.
       LUALF='UNKNOWN'
@@ -429,7 +429,7 @@ C to allow same common/reclen with bps
       nprl = nzrl
 
 C Unit for primitives constr db in case control -99 is invoked.
-      ifcon=ifil+5
+      ifmat=ifil+5
 
 C Initialise results averaging flag: 0 means
 C results will be averaged.

@@ -134,20 +134,20 @@ C the number of layers & construction name.
      &              'no of composite constructions',IER)
 
 C Find the legacy materials file used with this legacy construction
-C file and open it on unit ifcon. If legacy construction then
+C file and open it on unit ifmat. If legacy construction then
 C there probably was an earlier scan and conversion of a legacy
-C material database so LFCON should already be instanciated.
+C material database so LFMAT should already be instanciated.
 C If it was not possible to open the material db then set default
 C values for the inside and outside solar and IR.
-      LTMP=LFCON
+      LTMP=LFMAT
       DFILE='/usr/esru/esp-r/databases/constr.db2'
   29  CALL EASKS(LTMP,
      &  ' Legacy materials db used with this legacy construction',
      &  ' database?',72,DFILE,'legacy matrl name',IER,1)
       IF(LTMP.EQ.' ')GOTO 29
-      IFCON=IFIL
-      call ERPFREE(IFCON,IOS)
-      call EFOPRAN(IFCON,LTMP,40,1,IER)
+      IFMAT=IFIL
+      call ERPFREE(IFMAT,IOS)
+      call EFOPRAN(IFMAT,LTMP,40,1,IER)
       if(ier.ne.0)then
         othir=0.90
         sinir=0.90
@@ -229,7 +229,7 @@ C If legacy material db was opened then scan for ir and sol values.
                 othir=0.0
                 othsol=0.0
               else
-                CALL ERPCDB(IFCON,IP(IL),ITRU,IER,DBCON,DBDEN,
+                CALL ERPCDB(IFMAT,IP(IL),ITRU,IER,DBCON,DBDEN,
      &            DBSHT,E,A,DRV,TITL,NAM)
                 othir=E
                 othsol=A
@@ -239,7 +239,7 @@ C If legacy material db was opened then scan for ir and sol values.
                 othir=0.0
                 othsol=0.0
               else
-                CALL ERPCDB(IFCON,IP(IL),ITRU,IER,DBCON,DBDEN,
+                CALL ERPCDB(IFMAT,IP(IL),ITRU,IER,DBCON,DBDEN,
      &            DBSHT,E,A,DRV,TITL,NAM)
                 sinir=E
                 sinsol=A
@@ -357,7 +357,7 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  lastr(idbh)+1
 
 C Close file before exiting.
-      call ERPFREE(IFCON,IOS)
+      call ERPFREE(IFMAT,IOS)
       CALL ERPFREE(IFA,IOS)
       CALL ERPFREE(IFB,IOS)
       call edisp(iuout,' Reached end of legacy file, closing files.')
@@ -365,7 +365,7 @@ C Close file before exiting.
       
   99  CALL ERPFREE(IFA,IOS)
       CALL ERPFREE(IFB,IOS)
-      call ERPFREE(IFCON,IOS)
+      call ERPFREE(IFMAT,IOS)
       RETURN
 
    1  write(outs,'(a,I6)') 'IMPRESSC: Error writing record ',IREC
@@ -1143,16 +1143,16 @@ C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,LASCI*72
 
 C Open the binary materials database (in clase it was closed elsewhere).
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,1,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)return
-      CONDBOK=.TRUE.
+      MATDBOK=.TRUE.
 
 C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFA,LASCI,4,IER)
@@ -1163,7 +1163,7 @@ C Write out a file header.
 
 C Check binary contents.
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' binary materials database empty! ',' ','W')
         IER=1
@@ -1175,13 +1175,13 @@ C Proceed.
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         WRITE(IFA,12)IC,NE,IDESC(:lnblnk(IDESC))
    12   FORMAT('# class|no elements|description',/,I5,I5,3X,A)
         IF(NE.LE.0)goto 10
         DO 20 J=1,NE
           IREC=IREC+1
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
      &         NDESC
           NCODE=IREC-1
           WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
@@ -1193,10 +1193,10 @@ C Proceed.
       RETURN
 
 C File errors.
- 1000 CALL USRMSG(' NE,NDESC read error in ',LFCON,'W')
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
       IER=1
       goto 99
- 1001 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+ 1001 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
       IER=1
 
       END
@@ -1280,7 +1280,7 @@ C For each period.
 C *************** ERPCDB (copied from esrucom/edatabase.F)
 C ERPCDB reads one element from a binary materials database
 C returning them via parameter list.
-C IFCON is the unit number of the database,  IEL the requested 
+C IFMAT is the unit number of the database,  IEL the requested 
 C element, ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C ITRC is the trace level.  It is assumed that the database has been
 C previously opened and other parts of the code will close it when
@@ -1288,7 +1288,7 @@ C appropriate.  E is the element emissivity, A is the solar absorb, DRV
 C is the diffusion resistance, TITL is the classification title, PNAM is
 C the material name.
 
-      SUBROUTINE ERPCDB(IFCON,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
+      SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
      &                  DRV,TITL,PNAM)
 
       CHARACTER PNAM*72,TITL*72,outs*124
@@ -1308,9 +1308,9 @@ C reference is to material db 0 (air).
       DBSHT=0.0
       IF(IEL.NE.0)THEN
         IR=((IEL-1)/20)*20+1
-        READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
         IR = IEL + 1
-        READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
      &       DRV,PNAM
 
 C If all values are still 0.0 then not an actual element.
@@ -1319,7 +1319,7 @@ C If all values are still 0.0 then not an actual element.
         CALL ECLOSE(DBSHT,0.0,0.001,CLOSE3)
         if(CLOSE1.and.CLOSE2.and.CLOSE3)then
           write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
-     &                           ' has no data, or all zero...',IR,IFCON
+     &                           ' has no data, or all zero...',IR,IFMAT
           call usrmsg(outs,' Please check your selection! ','W')
           ier=1
           return
@@ -1336,10 +1336,10 @@ C Air layer encountered so put in zeroes.
 
   99  RETURN
  105  write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' in file',IFCON
+     &    ' read error @ record ',IR,' in file',IFMAT
       call edisp(itru,outs)
       IER=1
-      CALL ERPFREE(IFCON,ISTAT)
+      CALL ERPFREE(IFMAT,ISTAT)
       goto 99
 
       END

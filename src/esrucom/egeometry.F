@@ -84,6 +84,8 @@ C conversion to the 'G1' format takes place.
  
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
 C CTYPE (3 char) - zone shape type (REC, REG or GEN)
       COMMON/G0/CTYPE
@@ -134,9 +136,7 @@ C Save total transparent surface area for surfaces connected to external BC.
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
@@ -144,7 +144,7 @@ C and error details for dll mode.
       CHARACTER OUTSTR*124,LGEOM*72,WORD*20,CTYPE*3,zname*12,SOTHER*15
       CHARACTER*12 SNAME,SMLCN
       CHARACTER*4 SVFC,tmpvfc,SOTF,tmpsot
-      character ZN*12,phrase*64,zdesc*64,outs*124,currentfile*72
+      character ZN*12,phrase*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124
       logical dll,checkbase
 
@@ -172,7 +172,7 @@ C Initialise geometry data file. and set currentfile.
           RETURN
         endif
       ENDIF
-      currentfile=LGEOM
+      write(currentfile,'(a)') LGEOM(1:lnblnk(LGEOM))
 
 C Read lines from file, if one item then assumed to 
 C be CTYPE, if 2 then the second is the zone name which
@@ -2018,8 +2018,8 @@ C returns an index to the matching zone.  If no match then returns 0.
 #include "building.h"
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       CHARACTER zname*12,ZN*12,zdesc*64
       character*(*) STRING
 

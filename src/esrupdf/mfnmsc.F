@@ -256,7 +256,7 @@ C Ask user for related mass flow network files.
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)

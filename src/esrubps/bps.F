@@ -243,7 +243,7 @@ C Uncertainty.
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Active domain common (expand to other domains?).
       common/ACTDOM/CFDOK
@@ -257,7 +257,7 @@ C Timeout information
       character sTimeout*72
       integer iTimeoutFlag      
 
-      LOGICAL OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,OK3D
+      LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -316,7 +316,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       spfileok=.false.
       LUALF='UNKNOWN'
@@ -614,7 +614,7 @@ C Parameter 'nprecl' as defined in 'plant.h'.
       nprl = nprecl
 
 C Unit for primitives constr db in case control -99 is invoked.
-      ifcon=ifil+5
+      ifmat=ifil+5
 
 C Initialise results averaging flag: 0 means
 C results will be averaged.

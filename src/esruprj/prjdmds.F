@@ -55,8 +55,8 @@ C Types associated with each period in weekdays/saturdays/sundays.
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION ITEM(13)
       CHARACTER dmdsdesc*248,tcname*248,bdmds*72

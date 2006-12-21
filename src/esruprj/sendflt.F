@@ -28,7 +28,7 @@ C SDDFLT001 set defaults based on material type.
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -86,7 +86,7 @@ C Add uncertainty percentages to foot of list.
 C Check that the material db is not empty.
     4 IER=0
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' Materials db is empty.',' ','W')
         IER=1
@@ -101,7 +101,7 @@ C Gather the names of the various classes and present this list.
       DO 44 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         write(CLSSEL(I),'(A)') IDESC(1:36)
         IF(NE.GT.0)THEN
           M=M+1

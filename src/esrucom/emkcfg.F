@@ -36,11 +36,11 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "bc_data.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 
       PARAMETER (MSTMC=1,MSGAL=1)
@@ -422,7 +422,7 @@ C Begin writing the file.
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prm  ',
-     &      LFCON(1:lnblnk(LFCON))
+     &      LFMAT(1:lnblnk(LFMAT))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',

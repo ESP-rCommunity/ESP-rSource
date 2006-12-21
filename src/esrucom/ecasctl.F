@@ -65,6 +65,7 @@ C IDCFID   - Daylight coefficient sensor ID
 
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -87,10 +88,7 @@ C Daylight coefficient common block data definition:
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
-      CHARACTER*72 LCGCIN,currentfile
+      CHARACTER LCGCIN*72
       character outs*124,OUTSTR*124,cgcdesc*64
       
       dimension DV(MDCFV)
@@ -103,7 +101,7 @@ C Current file (for use by low level I/O calls)
         IER=1
         RETURN
       ENDIF
-      currentfile=LCGCIN
+      write(currentfile,'(a)') LCGCIN(1:lnblnk(LCGCIN))
 
       cgcdesc(icomp)='no description'
 

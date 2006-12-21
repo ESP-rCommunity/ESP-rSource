@@ -27,9 +27,9 @@ C blank or NONE not required and not yet defined.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -96,7 +96,7 @@ C Scene configuration commons.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -122,7 +122,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(13)
 
-      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
@@ -149,7 +149,7 @@ C Scene configuration file IRCFG = IFIL+17.
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.
-      IFCON=IFIL+13
+      IFMAT=IFIL+13
       IFMUL=IFIL+14
       IOPTDB=IFIL+15
       iuj=IFIL+1
@@ -196,7 +196,7 @@ C Set defaults.
       KEEP=.false.
       CFGOK=.false.
       MLDBOK=.false.
-      CONDBOK=.false.
+      MATDBOK=.false.
       CTLOK=.false.
       OPTKOK=.false.
       MODIFY=.false.
@@ -732,14 +732,14 @@ C Path to model.
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -856,24 +856,24 @@ C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
 C Open currently named primitive construction db.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(a,a,a)') ' No primitive constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
 C        CALL edisp(iuout,' opened primitive materials db.')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -883,7 +883,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,ITRU,IER)
         IF(IER.NE.0)then
           write(outs,'(a,a,a)') ' Problem with multilayer constr db ',
-     &     LFCON(1:lnblnk(LFCON)),'... '
+     &     LFMAT(1:lnblnk(LFMAT)),'... '
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -892,7 +892,7 @@ C          call edisp(iuout,' opened multilayer constructions db.')
         endif
       else
         write(outs,'(a,a,a)') ' No multilayer constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
       endif
 

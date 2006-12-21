@@ -131,6 +131,10 @@ C ------------------------------------------------------------------------------
       IMPLICIT NONE
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
+
+      integer lnblnk
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -141,7 +145,6 @@ C ------------------------------------------------------------------------------
       common/aim2def/iAIM2,LAIM2
       INTEGER iAIM2
       CHARACTER LAIM2 *72
-
 
       COMMON/WindowControl/
      &     fWindowSetpoint,
@@ -160,10 +163,6 @@ C ------------------------------------------------------------------------------
       REAL  fDeltaTInttoExt
       REAL fWindowLowSetpoint
       CHARACTER WORD*128
-
-C Current file name (for use by low level I/O calls).
-      common/curfile/currentfile
-      character*72 currentfile
 
 C Declarations for local variables and variables passed in common blocks.
       CHARACTER outs*124,OUTSTR*124
@@ -268,7 +267,7 @@ C occur as this file unit is already in use.
       CALL ERPFREE(IUNIT,ISTAT)
       CALL EFOPSEQ(IUNIT,LAIM2,1,IER)
       IF(ier.ne.0)goto 1000
-      currentfile = LAIM2
+      write(currentfile,'(a)') LAIM2(1:lnblnk(LAIM2))
 
 C Get first line.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'AIM-2 Data',IER)

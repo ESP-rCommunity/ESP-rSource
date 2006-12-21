@@ -66,8 +66,8 @@ C output, IER=0 OK.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
@@ -643,7 +643,7 @@ C IER=1 problem. Make use of construction information in common MLC.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -852,7 +852,7 @@ C gaps in preparation of scan.
 
 C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
-          CALL ERPCDB(IFCON,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
           IF(IER.EQ.1)RETURN
           CON(ISUR,IL)=DBCON
@@ -991,8 +991,8 @@ C zone construction file with minimum intervention by the user.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,MODGEO,MODCON
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
 
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -1069,7 +1069,7 @@ C the material was not found and must be asked for.
 
 C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
-              CALL ERPCDB(IFCON,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
               IF(IER.EQ.1)RETURN
               CON(IS,IL)=DBCON
@@ -1896,7 +1896,7 @@ c homogeneous layer.
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            CALL ERPCDB(IFCON,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
 
 C Get properties for outer layer.

@@ -246,6 +246,8 @@ C          flow control function.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -296,16 +298,14 @@ C          flow control function.
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION IVA(MCOM),RVA(misc)
       CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*72
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
      &          WORD*20,CMPID*12,NDPOS*12,NDNEG*12
-      character ZNAME*12,zdesc*64,currentfile*72
+      character ZNAME*12,zdesc*64
       character dllsubr*12,dllmesg*124,outs*124,t40*40
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,LOUTSTR*248
@@ -350,7 +350,7 @@ C Initialise control file if the name is something other than UNKNOWN.
       else
         return
       endif
-      currentfile=LCTLF
+      write(currentfile,'(a)') LCTLF(1:lnblnk(LCTLF))
 
 c Initialise all control data to zero.
       CALL EZCTLI

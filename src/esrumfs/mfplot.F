@@ -38,6 +38,8 @@ C     VOL() -  volume used for calculating change rate in case IDIM=3
 
       SUBROUTINE MFPLOT(itrc,itru,IFRES,ier)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 #include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -55,7 +57,6 @@ C     VOL() -  volume used for calculating change rate in case IDIM=3
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
-      common/curfile/currentfile
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
@@ -71,7 +72,7 @@ C Currently only one node plotted.
       CHARACTER LABEL1*10,LABEL2*10
       CHARACTER ETEXT*72,temp*28,WORD*20,OUTSTR*124
       character H*72,outs*124,nterm*1,NDNAM*12
-      character PERST1*14,PERST2*44,PERST3*44,currentfile*72
+      character PERST1*14,PERST2*44,PERST3*44
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       logical OK,DOK
@@ -111,7 +112,7 @@ C yet set.
 C Set day and month numbers for simulation period.
       CALL EDAYR(IDAYF,ISDF,ISMF)
       CALL EDAYR(IDAYL,ISDL,ISML)
-      currentfile=LAFRES
+      write(currentfile,'(a)') LAFRES(1:lnblnk(LAFRES))
 
 C Initialize output period day and month numbers.
       IODF=ISDF

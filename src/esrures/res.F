@@ -56,7 +56,7 @@ C For operational details refer to the ESP-r program user's manual.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -123,8 +123,8 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
       COMMON/pres/iunitp
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
 
@@ -193,7 +193,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       pifltog='OFF'
@@ -386,8 +386,8 @@ C unit ifil+6 for output file.
       delim = '-'
 
 C Assume primitive constructions input from IFIL+3.
-      IFCON=IFIL+3
-      LFCON=DFCON
+      IFMAT=IFIL+3
+      LFMAT=DFCON
 
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9

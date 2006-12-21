@@ -88,8 +88,8 @@ C the floor area (one) or it was calculated (zero).
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       LOGICAL MODIFY,MODLEN,MODBND,browse,context
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10)
@@ -1736,8 +1736,8 @@ C Optical and geometric properties.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
 
@@ -1997,7 +1997,7 @@ C << geometry file and if so do not use CONINF.
      &       '(database data matching surface construction attribute) ',
      &            ok,dok,2)
                 if(ok)then
-                  call ETMLDB(1,iuout,IFCON,ii,imerr)        
+                  call ETMLDB(1,iuout,IFMAT,ii,imerr)        
                 endif
               endif
   5         continue
@@ -4573,6 +4573,7 @@ C << conversion to the 'G1' format takes place.
  
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
 
       common/FILEP/IFIL
 
@@ -4629,9 +4630,6 @@ C calculated based on FLOR orientations (zero).
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
@@ -4651,7 +4649,7 @@ C be inserted.
       character lzip*72,dfile*72
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4 
       character ZN*12,phrasea*64,phraseb*64,zdesc*64,outs*124
-      character currentfile*72,dllsubr*12,dllmesg*124,act*2
+      character dllsubr*12,dllmesg*124,act*2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,msg*48
       logical dll,checkbase
@@ -4672,7 +4670,7 @@ C Initialise geometry data file. and set currentfile.
      &      ' could not be opened.'
         goto 1002
       ENDIF
-      currentfile=lzip
+      write(currentfile,'(a)') lzip(1:lnblnk(lzip))
 
 C First line of a zip file starts with 'COM'. If so the 2nd line
 C of the file is the tag 'NAME' followed by the name of the file

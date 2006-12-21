@@ -773,7 +773,7 @@ C Estimate the start up period for the ground.
           RESIST=0.
           DO 30 IL=1,NDZG
             IEL=ITPGND(IX,IY,IL)
-            CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,
+            CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
      &              DBSHT,E,A,DRV,TITL,PNAM)
             IF(IER.NE.0)STOP "error (801): while reading primative db."
             DNHCVL=DNHCVL+DXG(IX)*DYG(IY)*DZG(IL)*DBDEN*DBSHT
@@ -984,7 +984,7 @@ C *********************************************************************
       DO 20 I3=1,2
       IF(IXX(I1).GT.0.AND.IYY(I2).GT.0.AND.IZZ(I3).GT.0)THEN
         IEL=ITPGND(IXX(I1),IYY(I2),IZZ(I3))
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
      &              DBSHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (803): while reading primative db."
         DNHC=DNHC+VXX(I1)*VYY(I2)*VZZ(I3)*DBDEN*DBSHT

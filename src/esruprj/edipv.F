@@ -34,6 +34,7 @@ C altered based on information held in IPV definition.
       subroutine IPVCMD(act,inf)
 #include "building.h"
 #include "uncertainty.h"
+#include "espriou.h"
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -68,9 +69,6 @@ C Control commons (for command file updating)
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       character*(*) inf
       character LCFGF*72
       character LCMDFL*144,outs*124,outstr*124,cfgroot*24
@@ -79,7 +77,6 @@ C Current file (for use by low level I/O calls)
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER word*24
       character cpth*48,cmdn*48,runmode*12,keepres*4,donegdst*72
-      CHARACTER currentfile*72
       character act*1
 
 C Check if IPV file known and fill common blocks before reading command data.

@@ -46,11 +46,13 @@ C and the current category ic and item iit. Ino is the menu index
 C the user selected and iract informs the parent code what to do
 C when EITCOMMON returns.
       subroutine eitcommon(IFB,idbh,ic,iit,ino,ACT,iract,primod,IER)
+#include "espriou.h"
+C espriou.h provides currentfile.
+
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -64,13 +66,13 @@ C Generic db commons:
      &               nbitrep(MGIT),ibitusc(MGIT)
 
       character ittag*12,itmenu*32,itdate*24,itdoc*248,gendbfn*72
-      character h*72,ACT*1,outs*124,currentfile*72
+      character h*72,ACT*1,outs*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,t12*12,t32*32,t248*248
       logical primod
 
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       if(ino.EQ.2)THEN
         if(ACT(1:1).eq.'M')then
           H(1)='A unique identity (up to 12 char) is required and it'
@@ -176,10 +178,10 @@ C tabular listing as a pop-up. Assumes that current database is open on
 C unit IFB.
       subroutine edmat2(db,IFB,idbh,ic,iit,ACT,IER)
 #include "building.h"
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -198,7 +200,7 @@ C Generic db commons:
       character dbnote*72,ituntstr*42,itsrcstr*1,itcnfstr*42
       character acoutag*12,colormtag*12,lcatag*12
       character acoumenu*32,colormenu*32,lcamenu*32
-      character currentfile*72,gendbfn*72
+      character gendbfn*72
       character unote*72,snote*248
       character ustr*12,ustra*12,ustrb*12,ustrc*12,ustrd*12,ustre*12
       character ustrf*12,ustrg*12,ustrh*12,ustri*12
@@ -211,7 +213,7 @@ C Generic db commons:
       real misc1,misc2
 
 C Scan the data from the common blocks.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
 
@@ -480,11 +482,11 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edmat(IFB,idbh,ic,iit,ACT,IER)
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -511,7 +513,7 @@ C Generic db commons:
       character acoutag*12,colormtag*12,lcatag*12
       character acoumenu*32,colormenu*32,lcamenu*32
       character class*12,item*12,selitem*12,selmenu*32
-      character kact*1,head*38,currentfile*72
+      character kact*1,head*38
       character gendbfn*72,snote*248
       character ustr*12,ustra*12,ustrb*12,ustrc*12,ustrd*12,ustre*12
       character ustrf*12,ustrg*12,ustrh*12,ustri*12,unote*72
@@ -521,7 +523,7 @@ C Generic db commons:
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call prsmat(idbh,iit,'g',acoutag,colormtag,lcatag,
@@ -530,11 +532,11 @@ C Scan the data from the common blocks.
       call prssrc(idbh,snote)
 
 C Recover associated text for the material attributes.
-      currentfile=gendbfn(5)
+      write(currentfile,'(a)')  gendbfn(5)(1:lnblnk(gendbfn(5)))
       call prsmenu(5,acoutag,acoumenu,iacou,iacoucat)
-      currentfile=gendbfn(6)
+      write(currentfile,'(a)')  gendbfn(6)(1:lnblnk(gendbfn(6)))
       call prsmenu(6,colormtag,colormenu,icolr,icolrcat)
-      currentfile=gendbfn(8)
+      write(currentfile,'(a)')  gendbfn(8)(1:lnblnk(gendbfn(8)))
       call prsmenu(8,lcatag,lcamenu,ilca,ilcacat)
 
 C After parsing menus recover the header of the current db.
@@ -857,11 +859,11 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edacous(IFB,idbh,ic,iit,ACT,IER)
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -883,7 +885,7 @@ C Generic db commons:
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
-      character dbnote*72,atype*4,aunit*8,currentfile*72
+      character dbnote*72,atype*4,aunit*8
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72,hold*32,kact*1,head*38
       character gendbfn*72,snote*248,outs*124,outs248*248
@@ -893,7 +895,7 @@ C Scan the data from the common blocks. Check category type to see if
 C SYS or MAT also check first character of item name to see if it starts
 C with E for material or C for composite.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call PRSACOU(idbh,iit,'g',atype,aunit,FRQ,ier)
@@ -1163,11 +1165,11 @@ C a tabular listing and return,, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edcolour(IFB,idbh,ic,iit,ACT,IER)
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -1190,7 +1192,7 @@ C Generic db commons:
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
-      character dbnote*72,head*38,currentfile*72
+      character dbnote*72,head*38
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,ustr*12,unote*72
       character coltype*12,colptrn*72,hold*32,kact*1
@@ -1199,7 +1201,7 @@ C Generic db commons:
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call PRSCOLR(idbh,iit,'g',IR255,IG255,IB255,greyrefl,coltype,
@@ -1378,11 +1380,11 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edtransp(IFB,idbh,ic,iit,ACT,IER)
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
       common/gendbf/gendbfn(13)
@@ -1406,14 +1408,14 @@ C Generic db commons:
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
       character dbnote*72,ituntstr*42,itsrcstr*1,itcnfstr*42
-      character ustr*12,unote*72,currentfile*72
+      character ustr*12,unote*72
       character itdat*248,itrep*248,kact*1,head*38
       character gendbfn*72,snote*248,outs*124,outs248*248
       logical primod,showtags
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call prstransp(idbh,iit,'g',eimp,ier)

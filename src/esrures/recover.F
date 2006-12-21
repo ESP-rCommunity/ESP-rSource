@@ -28,10 +28,10 @@ C READPIF - read performance information file and gather data.
 
       SUBROUTINE READPIF(iier)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/curfile/currentfile
 
       COMMON/DEFLT/IDEFLT
       common/recov01/pifltog,lpifl
@@ -62,7 +62,7 @@ C       by calling eddisp (as opposed to edisp).
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character xfile*72,tg*1,delim*1,outs*124,currentfile*72
+      character xfile*72,tg*1,delim*1,outs*124
       character SLABEL*32,GLABEL*20,outfile*72
       character TSLABEL*32,TLLABEL*64,TGLABEL*20
       character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8

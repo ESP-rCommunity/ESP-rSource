@@ -23,6 +23,7 @@ C and editing facilities.
 
       program dbm
 #include "esprdbfile.h"
+#include "espriou.h"
       parameter (MGCL=30)
       parameter (MGIT=500)
 
@@ -67,15 +68,14 @@ C Name of databases in common/gendbfn and file unit index in common/gendbfi
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
-      common/curfile/currentfile
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 C Backup of documentation (for editing) bkdoc is the text, 
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL OK,dok,statusok,gendbok
       LOGICAL moddb,unixok,browse,status
 
@@ -92,7 +92,7 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
       character curfile*72,dba*12,act*1,action*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character docpth*24,tmppth*24,dbspth*24
 
       call ezero
       call curmodule('dbm ')
@@ -157,7 +157,7 @@ C have not been read in. Initial assumption that tool is in browse
 C mode.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       browse=.TRUE.
       statusok=.FALSE.
@@ -597,7 +597,8 @@ C << are referenced in the current model >>
 C Select some of the constructions for writing. First, scan the
 C constructions db header to get list of constructions.
         idbhc=1
-        currentfile=gendbfn(idbhc)
+        write(currentfile,'(a)') 
+     &    gendbfn(idbhc)(1:lnblnk(gendbfn(idbhc)))
         IFB=igendbf(idbhc)
         call scandbhd(IFB,idbhc,ier)
         do 444 ik=1,nbitem(idbhc)
@@ -994,7 +995,7 @@ C ier returned as non-zero if a problem in scanning files.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -1217,12 +1218,12 @@ C binary to legacy ASCII and then import that to generic format.
             if(idp.eq.2)then
 
 C Use standard esp-r common flow for legacy materials db.
-              LFCON=gendbfn(idp)
-              IFCON=IFIL+2
-              call EFOPRAN(IFCON,LFCON,40,1,IER)
+              LFMAT=gendbfn(idp)
+              IFMAT=IFIL+2
+              call EFOPRAN(IFMAT,LFMAT,40,1,IER)
               if(ier.ne.0)then
                 call usrmsg('unable to open legacy binary materials db',
-     &            LFCON,'W')
+     &            LFMAT,'W')
                 gendbok(idp)=.false.
                 goto 42
               endif 
@@ -1473,12 +1474,12 @@ C binary to legacy ASCII and then import that to generic format.
           if(idp.eq.2)then
 
 C Use standard esp-r common flow for legacy materials db.
-            LFCON=gendbfn(idp)
-            IFCON=IFIL+2
-            call EFOPRAN(IFCON,LFCON,40,1,IER)
+            LFMAT=gendbfn(idp)
+            IFMAT=IFIL+2
+            call EFOPRAN(IFMAT,LFMAT,40,1,IER)
             if(ier.ne.0)then
               call usrmsg('unable to open legacy binary materials db',
-     &          LFCON,'W')
+     &          LFMAT,'W')
               gendbok(idp)=.false.
               return
             endif 
@@ -2071,12 +2072,12 @@ C generic format ASCII (LAGENDB) and binary (LGENDB).
           if(dbask(1:8).eq.'material')then
 
 C Use standard esp-r common code for legacy materials db.
-            LFCON=gendbfn(idbhash)
-            IFCON=IFIL+2
-            call EFOPRAN(IFCON,LFCON,40,1,IER)
+            LFMAT=gendbfn(idbhash)
+            IFMAT=IFIL+2
+            call EFOPRAN(IFMAT,LFMAT,40,1,IER)
             if(ier.ne.0)then
               call usrmsg('unable to open legacy binary materials db',
-     &          LFCON,'W')
+     &          LFMAT,'W')
               jdbhash=0
               return
             endif 

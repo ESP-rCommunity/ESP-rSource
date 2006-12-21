@@ -28,6 +28,8 @@ C ********** pregist
 C Register a new project. Parameter act = 'i' then initial pass.
       subroutine pregist(act,ier)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -60,16 +62,13 @@ C Images.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
       dimension nwlistf(50)
 
-      logical XST,OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok
 
       character dstmp*24,LCFTMP*24
@@ -83,7 +82,7 @@ C Calendar.
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*1
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character docpth*24,tmppth*24,dbspth*24
       character*72 listf(50),listfc(50)
       character subpath*72,action*3,outs*124
 
@@ -313,7 +312,7 @@ C information.
           IF(OK)GOTO 53
         ENDIF
       else
-        currentfile=LPRJLG
+        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(a,a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
@@ -469,6 +468,7 @@ C information.
 C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
+#include "espriou.h"
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -482,15 +482,12 @@ C Maintain model folders.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/user/browse
-
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
 
 C Remember width of file/folder names passed back from getfilelist.
       dimension nwlistf(50)
-      logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir
@@ -502,7 +499,7 @@ C Remember width of file/folder names passed back from getfilelist.
       character*33 ITEMS(19)
       character*72 listf(50),listfc(50)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character docpth*24,tmppth*24,dbspth*24
       character subpath*72,action*3
 
 C Set folder separator (fs) to \ or / as required.

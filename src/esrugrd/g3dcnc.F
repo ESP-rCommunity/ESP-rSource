@@ -462,7 +462,7 @@ C Determine the lumped edge thermophysical properties.
       DO 10 IY=1,NDYE(IEG)
       DO 10 IX=1,NDXE(IEG)
         IEL=ITPEDG(IEG,IX,IY,IDZ)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
         IF(IER.NE.0)STOP "error (407): while reading primative db."
         VL=DZE(IEG,IDZ)*DYE(IEG,IY)*DXE(IEG,IX)
         VOLML=VOLML+VL
@@ -627,7 +627,7 @@ C *********************************************************************
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPEDG(IEG,IX,IY,IL)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (411): while reading primative db."
 
 C Create the control volume and node.
@@ -797,7 +797,7 @@ C Determine the lumped corner thermophysical properties.
       DO 10 IY=1,NDYC(ICR)
       DO 10 IX=1,NDXC(ICR)
         IEL=ITPCRN(ICR,IX,IY,IDZ)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
         IF(IER.NE.0)STOP "error (415): while reading primative db."
         VL=DZC(ICR,IDZ)*DYC(ICR,IY)*DXC(ICR,IX)
         VOLML=VOLML+VL
@@ -951,7 +951,7 @@ C *********************************************************************
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPCRN(ICR,IX,IY,IL)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (419): while reading primative db."
 
 C Create the control volume and node.

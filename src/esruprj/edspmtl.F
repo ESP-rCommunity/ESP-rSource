@@ -342,8 +342,8 @@ C Data items.
 #include "epara.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LAPRES,IAPRES (for window pressure databases)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -364,7 +364,7 @@ C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -377,7 +377,7 @@ C Special materials file flag
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
 
       logical ok,dok, SPREPT
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST
       integer header,footer
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -1027,7 +1027,7 @@ C Write menu displaying a list of layer names
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          CALL ERPCDB(IFCON,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
           IF(IER.EQ.1) THEN
              call edisp(iuout,' Found an error reading PCDB!')

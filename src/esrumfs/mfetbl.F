@@ -31,7 +31,7 @@ C     NDONAM - name of node(s) corresponding to column contents
 #include "net_flow.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

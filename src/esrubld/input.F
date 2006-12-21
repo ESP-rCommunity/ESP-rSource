@@ -128,7 +128,7 @@ C Path to model and command line file name.
 
       common/prec7/itcnst
       COMMON/DNORGH/IRTYPE
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -187,7 +187,7 @@ C HVAC AIM-2
       character hvacfile*72,LAIM2*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,XST
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       logical dll
 
@@ -419,9 +419,9 @@ C Specify ground simulation start-up period.
       ENDIF
 
 C If materials db not yet defined or has not yet been opened do so.
-C Use the unit IFCON=IFIL+5 for this via common condb.
-      IF(.NOT.CONDBOK)THEN
-  55    call EFOPRAN(IFCON,LFCON,40,1,IER)
+C Use the unit IFMAT=IFIL+5 for this via common condb.
+      IF(.NOT.MATDBOK)THEN
+  55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(ier.ne.0)THEN
           if(dll)then
             dllsubr='mzinpt'
@@ -432,18 +432,18 @@ C Use the unit IFCON=IFIL+5 for this via common condb.
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            ltmp=LFCON
+            ltmp=LFMAT
   56        CALL EASKS(ltmp,' Primitive material db? ',
      &        ' ',72,DFCON,'primitive constr db file name',IER,2)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-              LFCON=ltmp
+              LFMAT=ltmp
               goto 55
             else
               goto 56
             endif
           endif
         endif
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Read in the multilayer construction database so that it's
@@ -1176,6 +1176,8 @@ C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -1195,7 +1197,6 @@ C Timestep zone airflow is handled by tdf.
       COMMON/CHANNL/NOCHAN
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       common/dllerr/dllsubr,dllmesg
-      common/curfile/currentfile
 
 C Residential hydrogen cogen: control file
       common/resh2ctl/iresh2ctl,resh2flnam
@@ -1209,7 +1210,6 @@ C Residential hydrogen cogen: control file
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
-      character currentfile*72
       LOGICAL dll
 
 C Reset warning flag and check and see if running in dll mode.

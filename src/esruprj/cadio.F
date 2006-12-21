@@ -39,12 +39,12 @@ C exportcad: controls model export facilities.
       common/rpath/path
       common/appw/iappw,iappx,iappy
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,concat
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok
 
       DIMENSION ITEMS1(11)
@@ -482,6 +482,7 @@ C External cad package.
 
       common/pophelp/h(60)
       LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
+      logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
       character LCFGF*72,H*72,LFIL*72,LCMDFL*144
       character outs*124,OUTSTR*124,cfgroot*24,doit*248,tfile*72
@@ -686,11 +687,12 @@ C and change any / to \.
         call runit(doit,'-')
 
 C Re-read the upgraded configuration file. Reconstruct the path.
+        itisanexemplar=.false.
         browse=.false.
         confirm=.true.
         ckpath=.false.
         LCMDFL=longtfile
-        call NEWPRB(ITRC,confirm,ckpath,IER)
+        call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
       endif
       return
       end
@@ -698,7 +700,8 @@ C Re-read the upgraded configuration file. Reconstruct the path.
 C ********* rexmpl
 C rexmpl: scan the exemplars file, parse information and offer the user
 C selection of or information about exemplars. 
-      subroutine rexmpl(iexfil,exfil,exemplar,ier)
+C useraction is returned - 'browse' or 'ownit' or 'continue'
+      subroutine rexmpl(iexfil,exfil,exemplar,useraction,ier)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -722,9 +725,11 @@ C to quit the image browser.
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
       character dq*1,fs*1,thecfgis*72
+      character useraction*8
       logical XST,unixok
 
 C Make up a double quote and file separator for xcopy.
+      useraction ='-'
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
@@ -1098,6 +1103,7 @@ C if there are zones existing, remove them from memory.
      &          '`own` it','select another exemplar','continue',IW,15)
               if(IW.eq.1)then
                 call tstamp('>','PRJ: browse exemplar')
+                useraction='browse  '
               elseif(IW.eq.2)then
                 if(upath.ne.' ')then
 
@@ -1209,6 +1215,7 @@ C up the exemplar name.
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
+                  useraction='ownit   '
                 endif
               elseif(IW.eq.3)then
 
@@ -1216,6 +1223,7 @@ C User asked to select another, rewind the file and jump back to
 C the top menu to re-resent groups.
                 exemplar='UNKNOWN'
                 REWIND(iexfil,ERR=92)
+                useraction='continue'
                 goto 41
               elseif(IW.eq.4)then
 
@@ -1223,6 +1231,7 @@ C User asked to continue, close the file set ier and return to top
 C level menu of prj.
                 exemplar='UNKNOWN'
                 CALL ERPFREE(iexfil,ISTAT)
+                useraction='continue'
                 ier=2
                 return
               endif
@@ -1315,11 +1324,11 @@ C << to be done - then name file generated is never cleaned up >>
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure databases)
+C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 
       common/OUTIN/IUOUT,IUIN
@@ -1342,7 +1351,7 @@ C ICLIM,LCLIM (for climate file)
       common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1391,7 +1400,7 @@ C ICLIM,LCLIM (for climate file)
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,
 C patroot is true if path is at root level. 
@@ -1607,7 +1616,7 @@ C Build up a list of the current files used in the model.
      &  LCNN(1:lnblnk(LCNN))
       do 41 i=1,7
         if(i.eq.1)then
-          LF=LFCON
+          LF=LFMAT
         elseif(i.eq.2)then
           LF=LFMUL
         elseif(i.eq.3)then

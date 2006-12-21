@@ -818,7 +818,7 @@ C     tzph,tzpc are zone heating/cooling use over time.
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &     lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILEE,LAFRES
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/rcmd/LCMDFL
       character LCMDFL*144
       character LTMP*72,h*72,zname*12,zdesc*64,outs*124

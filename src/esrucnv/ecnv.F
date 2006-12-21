@@ -32,9 +32,9 @@ C to code from ABACUS, Department of Architecture & Building Science.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
-C LFCON,IFCON,LFMUL,IFMUL (for materials and constructions database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -82,7 +82,7 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
@@ -94,7 +94,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*72,filname2*72,filname1*72,repfile*40
       character inf*72,ouf*72,layname*72,instring*72,lf*72
@@ -171,7 +171,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Assume construction input from 15 and materials from 16.
       IFMUL=15
-      IFCON=16
+      IFMAT=16
       IOPTDB=17
 
 C Assume there are no obstructions.
@@ -330,7 +330,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
         CFGOK=.FALSE.
         MLDBOK=.FALSE.
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
         CTLOK=.FALSE.
 
 C Scan the defaults file for default configuration.
@@ -1209,7 +1209,7 @@ C file so that output file can be written from commons.
 
       LCLIM=DCLIM
       LAPRES=DAPRES
-      LFCON=DFCON
+      LFMAT=DFCON
       LFMUL=DFMUL
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
@@ -1358,7 +1358,7 @@ C Comment for configuration index (upgrade registration level).
       IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
      &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
-      WRITE(ioout,'(A,A)') '*prm  ',LFCON(1:lnblnk(LFCON))
+      WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
       WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))
       WRITE(ioout,'(A,A)') '*prs  ',LAPRES(1:lnblnk(LAPRES))

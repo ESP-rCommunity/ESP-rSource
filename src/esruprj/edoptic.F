@@ -39,7 +39,7 @@ C file to manage the reading and saving of this db.
 #include "epara.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IFPRE (for window pressure database)
+C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPRFDB,IPRODB (for event profile database)
 
