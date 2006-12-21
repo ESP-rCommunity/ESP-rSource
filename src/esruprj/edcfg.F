@@ -133,7 +133,7 @@ C Controls.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,LAPRES,LAFRES,DFILE,LPNF,tfile
-      character longtfile*144
+      character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72,LPRFDB*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
@@ -788,8 +788,19 @@ C << TODO: take viewcen from wireframe view information. >>
             call NETWRITE(IM)
           endif
 
-C append path to new command line.
-          call addpath(LFIL,longtfile,concat)
+C append path to new command line depending on whether Unix or Dos.
+          call isunix(unixok)
+          if(unixok)then
+            call addpath(LFIL,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LFIL,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C Run the `net` module with graphic network file.
           write(doit,'(2a)')'net -file ',longtfile(1:lnblnk(longtfile))
@@ -974,10 +985,29 @@ C the results file should be placed in the users home folder.
           remote=.true.
         else
           ltmp = LCFGF
-          call addpath(ltmp,longtfile,concat)
+          call isunix(unixok)
+          if(unixok)then
+            call addpath(ltmp,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(ltmp,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
           if(concat)then
             remote=.true.
           endif
+        endif
+
+C Set folder separator (fs) to \ or / as required.
+        call isunix(unixok)
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
         endif
 
         if(nsset.gt.0)then
@@ -985,23 +1015,25 @@ C the results file should be placed in the users home folder.
           if(INDCFG.eq.2)then
             if(splres(isset)(1:2).ne.'  '.and.
      &         splres(isset)(1:4).ne.'UNKN')then
-              tfile=splres(isset)
+              ltrf = lnblnk(splres(isset))
+              write(tfile,'(a)') splres(isset)(1:ltrf)
+              write(longtfile,'(a)') splres(isset)(1:ltrf)
               if(remote)then
                 call fdroot(tfile,ltpath,filen)
                 call isunix(unixok)
                 if(unixok)then
                   if (ICHAR(ltpath(1:1)).ne.47) then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &                filen(1:lnblnk(filen))
                   endif
                 else
                   if (ltpath(2:2).ne.':') then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &                filen(1:lnblnk(filen))
                   endif
                 endif
 C Debug.
-C                write(6,*) 'remote so reset tfile to ',tfile
+                write(6,*) 'remote so reset tfile to ',longtfile
               endif
               havefile=.true.
             else
@@ -1010,27 +1042,29 @@ C                write(6,*) 'remote so reset tfile to ',tfile
             endif
             call edisp(iuout,
      &        'Take a note of the results file used...')
-            call edisp(iuout,tfile)
+            call edisp248(iuout,longtfile,100)
           else
             if(sblres(isset)(1:2).ne.'  '.and.
      &         sblres(isset)(1:4).ne.'UNKN')then
-              tfile=sblres(isset)
+              ltrf = lnblnk(sblres(isset))
+              write(tfile,'(a)') sblres(isset)(1:ltrf)
+              write(longtfile,'(a)') sblres(isset)(1:ltrf)
               if(remote)then
                 call fdroot(tfile,ltpath,filen)
                 call isunix(unixok)
                 if(unixok)then
                   if (ICHAR(ltpath(1:1)).ne.47) then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &                filen(1:lnblnk(filen))
                   endif
                 else
                   if (ltpath(2:2).ne.':') then
-                    write(tfile,'(3a)') upath(1:lnblnk(upath)),'/',
+                    write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,
      &                filen(1:lnblnk(filen))
                   endif
                 endif
 C Debug.
-C                write(6,*) 'remote so reset tfile to ',tfile
+                write(6,*) 'remote so reset tfile to ',longtfile
               endif
               havefile=.true.
             else
@@ -1039,24 +1073,34 @@ C                write(6,*) 'remote so reset tfile to ',tfile
             endif
             call edisp(iuout,
      &        'Take a note of the results file used...')
-            call edisp(iuout,tfile)
+            call edisp248(iuout,longtfile,100)
           endif
         else
 
 C There are no simulation parameter sets so take a guess at the
 C file name that the user might have given.
           if(browse)then
-            write(tfile,'(2a)') upath(1:lnblnk(upath)),'/libb'
+            write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,'libb'
           else
             tfile='libb'
           endif
           call edisp(iuout,'Take a note of the results file used...')
-          call edisp(iuout,tfile)
+          call edisp248(iuout,longtfile,100)
         endif
         call tstamp('>','PRJ: beginning res')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
+
+C However we got to this point, if Windows based look for spaces
+C and or forward slashes.
+        if(unixok)then
+          continue
+        else
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1064,7 +1108,7 @@ C an offset from prj start position.
           if(havefile)then
             write(doit,'(3a,3i4,3a)') 'res -mode ',tmode,
      &        ' -s ',iappw,iappx+35,iappy+45,' -file ',
-     &        tfile(1:lnblnk(tfile)),' & '
+     &        longtfile(1:lnblnk(longtfile)),' & '
           else
             write(doit,'(3a,3i4,a)') 'res -mode ',tmode,
      &        ' -s ',iappw,iappx+35,iappy+45,' & '
@@ -1072,7 +1116,7 @@ C an offset from prj start position.
         else
           if(havefile)then
             write(doit,'(5a)') 'res -mode ',tmode,' -s 0 0 0 -file ',
-     &        tfile(1:lnblnk(tfile)),' & '
+     &        longtfile(1:lnblnk(longtfile)),' & '
           else
             write(doit,'(3a)') 'res -mode ',tmode,' -s 0 0 0 & '
           endif
@@ -1184,7 +1228,7 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER jsmlcn*12,jsvfc*4,jsotf*4,jsother*15,jsname*12
       character jsparent*12
       character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
-      character outs*124,SNAME*12,cfgroot*24
+      character outs*124,SNAME*12,cfgroot*24,longtfiledos*144
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -2670,7 +2714,22 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+
+C Debug the patched file name.
+            write(outs,'(2a)') 'corrected file ',
+     &        longtfiledos(1:lnblnk(longtfiledos))
+            call edisp(iuout,outs)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -3293,14 +3352,21 @@ C      write(6,*) ' path is ',path(1:lnblnk(path))
 
 C If requested, find the path and local file name.
       if(ckpath)then
-        write(dirpath,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/training'
+        if(unixok)then
+          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'training'
+        else
+          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'training'
+        endif
         ldirpath=lnblnk(dirpath)
         call fdroot(LCMDFL,path,LCFGF)
 
 C Debug << check out this on a native windows machine >>
-C        write(6,*) ' after fdroot path is ',path(1:lnblnk(path))
-C        write(6,*) ' lcfgf is ',lcfgf(1:lnblnk(lcfgf))
+        write(t144,*) ' after fdroot path is ',path(1:lnblnk(path))
+        call edisp(iuout,t144)
+        write(t144,*) ' lcfgf is ',lcfgf(1:lnblnk(lcfgf))
+        call edisp(iuout,t144)
         if(path(1:2).eq.'./')then
 
 C A ./ indicates that fdroot found no file separators. Must be in cfg folder.
@@ -3321,7 +3387,8 @@ C There were folder separators in the name.
           call ckaccess(ifold,iaccess,icerr,path)
 
 C Debug.
-C          write(6,*) 'a iaccess is ',iaccess,icerr,ifold,path
+          write(t144,*) 'a iaccess is ',iaccess,icerr,ifold,path
+          call edisp(iuout,t144)
           if(iaccess.eq.1)then
 
 C If iaccedss is non-zero then we do not have permission to write there
@@ -3332,7 +3399,7 @@ C and so we treat that model as if browsing.
             browse=.false.
           endif
 
-#ifndef X11
+#ifdef GTK
 
 C For GTK versions, find odir (where prj was started) and compare with the
 C current path (both lnpath and lnpath-1 lengths) if there
@@ -3342,15 +3409,21 @@ C we can recognise that we started in a cfg folder.
           lnpath=lnblnk(path)
 
 C Debug.
-C          write(6,*) ' GTK path is ',path(1:lnblnk(path))
-C          write(6,*) ' GTK odir is ',odir(1:lnblnk(odir))
+          write(t144,*) ' GTK path is ',path(1:lnblnk(path))
+          call edisp(iuout,t144)
+          write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
+          call edisp(iuout,t144)
           if(path(1:lnpath).eq.odir(1:lnpath))then
             browse=.false.
+            call edisp(iuout,'User can modify this model.')
           elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
             browse=.false.
+            call edisp(iuout,'User can modify this model.')
           else
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
+            call edisp(iuout,
+     &        'User canot modify this model (only browse).')
           endif
 #endif
         endif
@@ -3365,8 +3438,11 @@ C        write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
         if(iaccess.eq.1)then
           call tstamp('>','PRJ: on browse mode')
           browse=.true.
+          call edisp(iuout,
+     &      'User canot modify this model (only browse).')
         else
           browse=.false.
+          call edisp(iuout,'User can modify this model.')
         endif
       endif
 
@@ -3440,7 +3516,8 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
           endif
 #endif
           action='cfg'
-          write(outs,*) 'models in ',subpath
+          write(outs,*) 'models in folder ',subpath
+          call edisp(iuout,outs)
           call clearfilelist(listf,50)
           call getfilelist(subpath,action,listf,nwlistf,nlistf)
           call copyfilelist(listf,nwlistf,listfc,50,maxw)
@@ -3733,9 +3810,14 @@ C Scan the model topology and report on any problems encountered.
         h(2)=' a) re-edit the name,'
         h(3)=' b) create a new configuration file using the name,'
         h(4)=' c) delay deciding via cancel.'
+        h(5)=' '
+        h(6)='If the name of the model looks correct and includes what'
+        h(7)='you believe to the the correct path consider using the '
+        h(8)='respecify option and then using the file browser to '
+        h(9)='locate the model (if you are running the GTK version). '
         WRITE(OUTSTR,'(A,2X,A)')' Could not find',LCFGF
-        CALL EASKABC(OUTSTR,' Options:',
-     &    'respecify','new configuration file','cancel',IW,4)
+        CALL EASKABC(OUTSTR,' Options: (see help)',
+     &    'respecify','new configuration file','cancel',IW,9)
         if(IW.eq.1)then
           confirm=.true.
           goto 289

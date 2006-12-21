@@ -70,9 +70,13 @@ C Use file unit IPRODB temporarily.
       character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
       character doit*248,tmode*8,tfile*72,LCFGF*72,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,longtfile*144
+      character docpth*24,tmppth*24,dbspth*24
+      character longtfile*144,longtfiledos*144
       LOGICAL MODIFY,MODLEN,MODBND,concat,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,silent
+      LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check for obstructions. If file exists ask user to confirm
 C it or dereference it. If it does not exist ask user for
@@ -239,7 +243,17 @@ C to include the path and create a string to drive ish.
            doit = ' '
            call tchild(ICPMOD)
            call termode(ICPMOD,tmode)
-           call addpath(LCFGF,longtfile,concat)
+           if(unixok)then
+             call addpath(LCFGF,longtfile,concat)
+           else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+             call addpath(LCFGF,longtfile,concat)
+             call cmdfiledos(longtfile,longtfiledos,ier)
+             longtfile=' '
+             longtfile=longtfiledos
+           endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.  If existing db out of date the

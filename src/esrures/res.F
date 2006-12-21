@@ -668,8 +668,9 @@ C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,longtfile*144,focus*4
-      logical concat,show
+      character fmttag*4,fmtexe*20,focus*4,tfile*72
+      character longtfile*144,longtfiledos*144
+      logical concat,show,unixok
 
 C Loop through the images and for those which match the "focus"
 C can be displayed with a known utility can be brought up. Iforce,
@@ -682,6 +683,9 @@ C if set to 1 forces display.
         return
       endif
       if((iton.eq.0.or.iforce.eq.1))then
+
+C Check if Unix-based or DOS based.
+        call isunix(unixok)
         do 498 imgv=1,imgtyp
           ilist=' '
           ix=1
@@ -696,7 +700,17 @@ C begins with and `S`, otherwise attempt to match the focus and the image.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
                 longtfile=' '
-                call addpath(limgfil(img),longtfile,concat)
+                if(unixok)then
+                  call addpath(limgfil(img),longtfile,concat)
+                else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                  call addpath(limgfil(img),longtfile,concat)
+                  call cmdfiledos(longtfile,longtfiledos,ier)
+                  longtfile=' '
+                  longtfile=longtfiledos
+                endif
                 ixl=lnblnk(longtfile)
                 ixe=ix+ixl
                 if(ixe.le.200)then

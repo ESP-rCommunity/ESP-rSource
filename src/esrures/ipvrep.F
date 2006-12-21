@@ -3491,7 +3491,7 @@ C Simulator parameters.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72,act*1
-      character LCMDFL*144,longtfile*144
+      character LCMDFL*144,longtfile*144,longtfiledos*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
 
@@ -3550,7 +3550,18 @@ C Each call is a toggle.
 
 C If appending check and see if it exists. If so close it and then
 C open it with APPEND option. Use ifdef for F77 or F90.
-              call addpath(xfile,longtfile,concat)
+              longtfile=' '
+              if(unixok)then
+                call addpath(xfile,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(xfile,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
               ltf=max(1,LNBLNK(longtfile))
               there=.false.
               INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
@@ -3599,10 +3610,10 @@ C open it with APPEND option. Ifedf for F77 or F90.
           endif
         endif
         if(iw.eq.1)then
-          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',longtfile(1:lnblnk(longtfile))
         else
-          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',xfile(1:lnblnk(xfile))
         endif
         call usrmsg(outs,' ','-')

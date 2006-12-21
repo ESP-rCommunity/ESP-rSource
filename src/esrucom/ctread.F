@@ -42,10 +42,11 @@ C SSNAME: Source/sink name
 C CNCNI: Initial contaminant concentration in each node (may be
 C different from ambient concentration)
 
-      SUBROUTINE CTREAD
+      SUBROUTINE CTREAD(ier)
 #include "net_flow.h"
 #include "building.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
       COMMON/FILEP/IFIL
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -81,14 +82,21 @@ C Check if valid flow network file is referenced
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,'flow network file',IER)
       IF(IER.NE.0) GOTO 1009
 c      IF(MFK.EQ.1)THEN
-        IF(OUTSTR(1:LNBLNK(OUTSTR)).NE.LAPROB) GOTO 1011
+        IF(OUTSTR(1:LNBLNK(OUTSTR)).NE.LAPROB(1:lnblnk(LAPROB)))then
+          call edisp(iuout,'Reference to flow network in ctm file is:')
+          call edisp(iuout,OUTSTR)
+          call edisp(iuout,'Flow network in configuration file is:')
+          call edisp(iuout,LAPROB)
+C          GOTO 1011  ! In GTK LAPROB seems to have a trailing /
+        ENDIF
 C << code to update contaminant file if flow network is not valid
+C << it might look to see if there were more than one node/component/connection
 c      ENDIF
 
 C Skip section header
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_1') GOTO 1012
+      IF(OUTSTR(1:9).NE.'SECTION_1') GOTO 1012
 
 C Read number of contaminants
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
@@ -109,7 +117,7 @@ C Set flag indicating presence of contaminant file
 C Skip section header
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_2') GOTO 1014
+      IF(OUTSTR(1:9).NE.'SECTION_2') GOTO 1014
 
 C Read contaminant name and ambient concentrations
       DO 10 ICONTM=1,NCONTM
@@ -120,7 +128,9 @@ C Read contaminant name and ambient concentrations
         IF(IER.NE.0) GOTO 1009
         CONTMNAM(ICONTM)=PHRASE
 
-C Now get ambient concentrations 
+C Now get ambient concentrations.
+C << if this is reading a long list of numbers we could use an
+C << alternative technique to fill the array.
         DO 987 IT=1,MT
           IF(IT.EQ.1.OR.IT.EQ.13)THEN
             CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,'ambient conc',IER)
@@ -153,13 +163,13 @@ C Fill common block for sources/sinks associated with each contaminant
 C Skip section header
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_3') GOTO 1015
+      IF(OUTSTR(1:9).NE.'SECTION_3') GOTO 1015
 
 C Skip contaminant names if rates are defined otherwise 
 C this is SECTION_4
   7   CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).EQ.'SECTION_4') THEN
+      IF(OUTSTR(1:9).EQ.'SECTION_4') THEN
         GOTO 2000
 
 C Now read first order chemical reaction rate constants
@@ -181,7 +191,7 @@ C Now read first order chemical reaction rate constants
 C Now go on to node based information
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_4') GOTO 1016
+      IF(OUTSTR(1:9).NE.'SECTION_4') GOTO 1016
 
 C Determine number of internal nodes (KNOD)
  2000 KNOD=0
@@ -216,7 +226,7 @@ C Set initial concnetration for INOD
 C Now go on to component based information
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_5') GOTO 1019
+      IF(OUTSTR(1:9).NE.'SECTION_5') GOTO 1019
 
 C Read number of components having efficiencies other than unity
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
@@ -248,7 +258,7 @@ C Read number of components having efficiencies other than unity
 C Now go on to sources and sinks
  20   CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_6') GOTO 1020
+      IF(OUTSTR(1:9).NE.'SECTION_6') GOTO 1020
 
 C Read number of sources/sinks
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
@@ -346,7 +356,7 @@ C Read Supplementary data items depending upon type
 C Now go on to source/sink linkage with nodes
       CALL STRIPC(IUNIT,OUTSTR,0,ITEMS,1,' ',IER)
       IF(IER.NE.0) GOTO 1009
-      IF(OUTSTR(:9).NE.'SECTION_7') GOTO 1021
+      IF(OUTSTR(1:9).NE.'SECTION_7') GOTO 1021
 
 C Determine number of internal nodes (KNOD)
       KNOD=0
@@ -380,26 +390,37 @@ C Close contaminant file
 
 C Error Messages
  1009 CALL USRMSG(' error reading contaminant file',' ','W')
+      ier=1
       RETURN
- 1011 CALL USRMSG('The flow network file on which contaminant',' ','W')
-      CALL USRMSG('model is based has been changed/derefernced',' ','W')
+ 1011 CALL USRMSG('The flow network file on which the contaminant',
+     &  'model is based has been changed/derefernced','W')
+      ier=1
       RETURN
  1012 CALL USRMSG(' problem reading no. of contaminants',' ','W')
+      ier=1
       RETURN
  1013 CALL USRMSG(' no contaminants defined',' ','W')
+      ier=1
       RETURN
  1014 CALL USRMSG(' problem reading ambient concentrations',' ','W')
+      ier=1
       RETURN
- 1015 CALL USRMSG(' problem reading rate constants',' ','W')
+ 1015 CALL USRMSG(' problem reading chemical rate constants',' ','W')
+      ier=1
       RETURN
  1016 CALL USRMSG(' problem reading node based information',' ','W')
+      ier=1
       RETURN
  1017 CALL USRMSG(' prob reading source sink suppl data items',' ','W')
+      ier=1
       RETURN
  1019 CALL USRMSG(' problem reading filter efficiencies',' ','W')
+      ier=1
       RETURN
  1020 CALL USRMSG(' problem reading source/sink models',' ','W')
+      ier=1
       RETURN
  1021 CALL USRMSG(' problem reading source/sink - node links',' ','W')
+      ier=1
       RETURN
       END

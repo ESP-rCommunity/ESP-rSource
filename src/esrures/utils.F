@@ -1512,7 +1512,8 @@ C Simulator parameters.
 
       character*(*) msg,xfile
       character H*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*144,longtfile*144
+      character ixpfile*72,ttext*42,LCMDFL*144
+      character longtfile*144,longtfiledos*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
 
@@ -1582,8 +1583,8 @@ C Each call is a toggle.
             if(ier.ne.0)return
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs,'(A,A,A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                       ' for export parameters.'
+            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                        ' for export parameters.'
             call usrmsg(outs,' ','-')
           elseif(tg.eq.'T')then
             call efopseq(ixunit,xfile,4,IER)
@@ -1591,10 +1592,21 @@ C Each call is a toggle.
           elseif(tg.eq.'G')then
 
 C Writing remotely, add the path to the given file name before
-C passing request to wwlib.c
+C passing request to c graphic calls. Check if Unix-based or DOS based.
+            call isunix(unixok)
             tfile=xfile
             longtfile=' '
-            call addpath(tfile,longtfile,concat)
+            if(unixok)then
+              call addpath(tfile,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(tfile,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
             call wwcopen(longtfile)
             call wwcsetstart
           endif
