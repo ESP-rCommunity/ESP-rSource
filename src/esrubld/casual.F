@@ -394,8 +394,8 @@ C Check to see if the future  building time is between the start hour and
 C the end hour of the gain
         start_hour = Coupling_gain_info(icomp,iDay,ii,1) ! start hour 0-24)
         stop_hour  = Coupling_gain_info(icomp,iDay,ii,2) ! end hour (0-24)
-        if ( ( btimef .ge. start_hour ) 
-     &          .and. ( btimef .lt. stop_hour ) )then
+        if ( ( btimef .gt. start_hour ) 
+     &          .and. ( btimef .le. stop_hour ) )then
 C gain applies to future time. Get total non-hvac electric load (W_elec_nonHVAC, W)
           W_electric_nonHVAC =  Elec_Net_Load_Calc(occupant_load) ! W
 C get data for gain coupling:
