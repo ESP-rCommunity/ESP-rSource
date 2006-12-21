@@ -1396,6 +1396,8 @@ C Then call appropriate supplementary data input subroutine.
 
         IF(ITPCMP(IFCMP).EQ. 10) THEN
           CALL MF010I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ. 11) THEN
+          CALL MF011I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 15) THEN
           CALL MF015I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 17) THEN
@@ -1420,6 +1422,8 @@ C Then call appropriate supplementary data input subroutine.
           CALL MF130I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.210) THEN
           CALL MF210I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ.211) THEN
+          CALL MF211I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.220) THEN
           CALL MF220I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.230) THEN
@@ -2358,8 +2362,8 @@ C A nothing happening infiltration fixed volume component (with
 C zero flow), remember index via noinfforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='inflf_.0000'
-        ITPCMP(NCMP)=IVALCM(6)
-        LTPCMP(NCMP)=LVALCM(6)
+        ITPCMP(NCMP)=IVALCM(7)
+        LTPCMP(NCMP)=LVALCM(7)
         ISDCMP(NCMP)=2
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2370,8 +2374,8 @@ C A nothing happening ventilation fixd volume component. (with
 C zero flow), remember index via noventforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='ventf_.0000'
-        ITPCMP(NCMP)=IVALCM(6)
-        LTPCMP(NCMP)=LVALCM(6)
+        ITPCMP(NCMP)=IVALCM(7)
+        LTPCMP(NCMP)=LVALCM(7)
         ISDCMP(NCMP)=2
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2382,8 +2386,8 @@ C A nothing happening crack 5mm x 1m (so zones with no infiltration
 C or ventilation are not perfectly closed), remember index via crackforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='crack_5mm1m'
-        ITPCMP(NCMP)=IVALCM(11)
-        LTPCMP(NCMP)=LVALCM(11)
+        ITPCMP(NCMP)=IVALCM(12)
+        LTPCMP(NCMP)=LVALCM(12)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2394,8 +2398,8 @@ C or ventilation are not perfectly closed), remember index via crackforcurrent.
 C A small exfiltration grill 0.2m^2, remember index via gr02forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.2'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2406,8 +2410,8 @@ C A small exfiltration grill 0.2m^2, remember index via gr02forcurrent
 C An exfiltration grill 0.4m^2, remember index via gr04forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.4'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2418,8 +2422,8 @@ C An exfiltration grill 0.4m^2, remember index via gr04forcurrent
 C An exfiltration grill 0.6m^2, remember index via gr06forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.6'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2550,8 +2554,8 @@ C Add that connection now with component (pointed to by icompforinf).
 C If infiltraiton is non-zero and unique make a new component
                     NCMP=NCMP+1
                     write(CMNAM(NCMP),'(a,F5.4)') 'inflf_',finfmax(iz)
-                    ITPCMP(NCMP)=IVALCM(6)
-                    LTPCMP(NCMP)=LVALCM(6)
+                    ITPCMP(NCMP)=IVALCM(7)
+                    LTPCMP(NCMP)=LVALCM(7)
                     ISDCMP(NCMP)=2
                     ISDCNN(NCMP)=0
                     SUPCMP(NCMP,1)=1.0
@@ -2594,8 +2598,8 @@ C We have one of the initial zones so just generate new component
 C and connection for infiltration and exfiltration.
                   NCMP=NCMP+1
                   write(CMNAM(NCMP),'(a,F5.4)') 'inflf_',finfmax(iz)
-                  ITPCMP(NCMP)=IVALCM(6)
-                  LTPCMP(NCMP)=LVALCM(6)
+                  ITPCMP(NCMP)=IVALCM(7)
+                  LTPCMP(NCMP)=LVALCM(7)
                   ISDCMP(NCMP)=2
                   ISDCNN(NCMP)=0
                   SUPCMP(NCMP,1)=1.0
@@ -2677,8 +2681,8 @@ C     & icaas(isrczforvent(iz))
 C Make a new ventilation component.
                     NCMP=NCMP+1
                     write(CMNAM(NCMP),'(a,F5.4)') 'ventf_',fvntmax(iz)
-                    ITPCMP(NCMP)=IVALCM(6)
-                    LTPCMP(NCMP)=LVALCM(6)
+                    ITPCMP(NCMP)=IVALCM(7)
+                    LTPCMP(NCMP)=LVALCM(7)
                     ISDCMP(NCMP)=2
                     ISDCNN(NCMP)=0
                     SUPCMP(NCMP,1)=1.0
@@ -2720,8 +2724,8 @@ C We have one of the initial zones so just generate new component
 C and connection for ventilation.
                   NCMP=NCMP+1
                   write(CMNAM(NCMP),'(a,F5.4)') 'ventf_',fvntmax(iz)
-                  ITPCMP(NCMP)=IVALCM(6)
-                  LTPCMP(NCMP)=LVALCM(6)
+                  ITPCMP(NCMP)=IVALCM(7)
+                  LTPCMP(NCMP)=LVALCM(7)
                   ISDCMP(NCMP)=2
                   ISDCNN(NCMP)=0
                   SUPCMP(NCMP,1)=1.0
