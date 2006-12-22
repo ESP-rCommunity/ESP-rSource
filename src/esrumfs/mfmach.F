@@ -24,6 +24,7 @@ C which make up the calculation core of mfs:
 C     MFSOLV
 C     MFNPDV
 C     MF010C
+C     MF011C  Air inlet device self-adjustable, (polinomial)
 C     MF015C
 C     MF017C
 C     MF020C
@@ -36,6 +37,7 @@ C     MF110C
 C     MF120C
 C     MF130C
 C     MF210C
+C     MF211C  Cowl Roof Outlet
 C     MF220C
 C     MF230C
 C     MF240C
@@ -57,13 +59,13 @@ C MFnnnC(ICNN,DP) calculates the fluid mass flow rate through
 C connection ICNN, which is a fluid flow component of type 'nnn'
 C and has a pressure difference DP between its +ve and -ve
 C sides.
-C
+
 C ************** MFSOLV 
 C MFSOLV uses an iterative, whole network, Newton-Raphson method
 C to solve the nodal pressures and the fluid mass flows through
 C each interconnection of a nodal network which is submitted
 C to one or more (pressure) boundary conditions.
-C
+
 C This subroutine starts out with some pressure at each node.
 C Depending on the type of connection and its associated data,
 C it then calculates the fluid mass flow rates through each
@@ -94,7 +96,7 @@ C     RHS    - right hand side vector of matrix eq {PJMTX} {PRC} = {RHS}
 C     RESR   - residual relative to SAFLW
 C     RESAMX - maximum absolute residual
 C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
-C
+
       SUBROUTINE MFSOLV
 
 #include "building.h"
@@ -188,6 +190,8 @@ C Calculate, depending on flow component type, fluid mass flow(s)
 C and partial derivative dFlow/d(dPressure)
           IF(ITCN.EQ. 10) THEN
             CALL MF010C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ. 11) THEN
+            CALL MF011C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 15) THEN
             CALL MF015C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ. 17) THEN
@@ -212,6 +216,8 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF130C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.210) THEN
             CALL MF210C(ICNN,DP,DFDDP)
+          ELSE IF(ITCN.EQ.211) THEN
+            CALL MF211C(ICNN,DP,DFDDP) 
           ELSE IF(ITCN.EQ.220) THEN
             CALL MF220C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.230) THEN
@@ -311,7 +317,7 @@ C Write trace output if applicable
             WRITE(outs,1052) '*****>',NDNAM(INOD),PRES(INOD),
      &                         RESID(INOD),SAFLW(INOD)
             call edisp(IMFTU,outs)
-         END IF
+          END IF
    50   CONTINUE
       END IF
  1050 FORMAT(' It',I4,1X,A12,
@@ -605,6 +611,112 @@ C If component is closed the derivative is set equal to zero.
       RETURN
       END
 
+C ************* MF011C
+C Method after Armando Pinto which approximates self regulating
+C devices which have a rated flow rate of 15m3/h at 20 Pa. or
+C 30m3/h at 20 Pa. These devices are designed to maintain flow
+C close to these rates over a range of pressure differences.
+C The component uses a polynomial to predict flows at
+C other pressures. This device is typical of units
+C mfg for use in the French market. Further information can
+C be found at <http://www.france-air.com/franceair/doc_prod/PV/PV1_E311.pdf>
+
+C Fluid mass flow calculation routine for flow component type:
+C Air inlet device self-adjustable, given by polinomial
+C            SUPCMP(ICMP,1) - fluid type (1=air, 2=water)
+C     FCOF = SUPCMP(ICMP,2) - air flow at 20 Pa, 15 or 30 m3/h
+C     FEXP = SUPCMP(ICMP,3) - number of devices
+
+      SUBROUTINE MF011C(ICNN,DELP,DERIV)
+
+#include "net_flow.h"
+
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/MFLOW5/RHON(MNOD)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION DELP,DERIV
+      DOUBLE PRECISION a6,a5,a4,a3,a2,a1,RO,CVol
+      logical close15,close30
+
+      PARAMETER       (SMALL=1.0E-15)
+
+      IDPS=NODPS(ICNN)
+      IDNE=NODNE(ICNN)
+      ICMP=ITPCON(ICNN)
+
+c FCOF = 15.0 for 15 m3/h  FCOF=30.0 for 30 m3/h unit.
+      FCOF=SUPCMP(ICMP,2)
+      call eclose(FCOF,15.00,0.001,close15)
+      call eclose(FCOF,30.00,0.001,close30)
+
+c FEXP = number of devices (??)
+      FEXP=SUPCMP(ICMP,3)
+
+C Depending on which FCOF set parameters. If neither assume values for 15.
+      IF (close15) then
+        a6=-1.1873D-9
+        a5=4.7143D-7
+        a4=-7.2433D-5
+        a3=5.3879D-3
+        a2=-1.9706D-1
+        a1=DBLE(3.1833)
+      elseif (close30) then
+        a6=-2.4621D-10
+        a5=1.2947D-7
+        a4=-2.6885D-5
+        a3=2.7794D-3
+        a2=-1.4663D-1
+        a1=DBLE(3.6182)
+      else
+        a6=-1.1873D-9
+        a5=4.7143D-7
+        a4=-7.2433D-5
+        a3=5.3879D-3
+        a2=-1.9706D-1
+        a1=DBLE(3.1833)
+      endif
+
+      CVol=FEXP*(a6*DABS(DELP)**6+a5*DABS(DELP)**5+a4*DABS(DELP)**4+
+     &           a3*DABS(DELP)**3+a2*DABS(DELP)**2+a1*DABS(DELP)) 
+
+      if (dabs(delp).gt.150.) then
+        CVol=FEXP*(a6*(150.)**6+a5*(150.)**5+a4*(150.)**4+
+     &             a3*(150.)**3+a2*(150.)**2+a1*(150.)) 
+      end if
+      
+C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
+      IF(DELP.GE.0.) THEN
+        FLW1(ICNN)=RHON(IDPS)*CVol/3600.
+        RO=RHON(IDPS)
+      ELSE
+        FLW1(ICNN)=-RHON(IDNE)*CVol/3600.
+        RO=RHON(IDNE)
+      END IF
+
+      FLW2(ICNN)=0.
+
+      IF(DABS(DELP).GT.DBLE(SMALL)) THEN
+         DERIV=RO/3600.*FEXP*(6.*a6*DABS(DELP)**5+5.*a5*DABS(DELP)**4+
+     &    4.*a4*DABS(DELP)**3+3.*a3*DABS(DELP)**2+2.*a2*DABS(DELP)+a1)
+        IF (dabs(delp).gt.150.) DERIV=0.0
+      ELSE
+        CALL MFNPDV(ICNN,DELP,DERIV)
+      END IF
+
+C If component is closed the derivative is set equal to zero.
+      if((dabs(delp).gt.DBLE(small)).and.((dabs(flw1(icnn))+
+     &    dabs(flw2(icnn))).lt.DBLE(small))) deriv=0.0
+
+      RETURN
+      END
+
 C *************** MF015C 
 C Fluid mass flow calculation routine for flow component type:
 C power law mass flow resistance (m = a.dP^b)
@@ -615,7 +727,6 @@ C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
       SUBROUTINE MF015C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
-
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -667,7 +778,6 @@ C     FEXP = SUPCMP(ICMP,3) - flow exponent b (-)
       SUBROUTINE MF017C(ICNN,DELP,DERIV)
 
 #include "net_flow.h"
-
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/MFLOW5/RHON(MNOD)
@@ -1233,10 +1343,6 @@ C Apply value of ctlpos to WDTH if component controlled.
         if(ctlpos(icnn).lt.0.0)then
           WDTH=0.00
           write(6,*) 'door width reset to 0mm'
-c        elseif(ctlpos(icnn).gt.1.0)then
-c          WDTH=SUPCMP(ICMP,2)
-c          write(6,*) 
-c     &       'door width reset - cannot be greater than nominal width'
         else
           WDTH=SUPCMP(ICMP,2)*ctlpos(icnn)
 C          write(6,*) 'door width reset to ',WDTH,ctlpos(icnn)
@@ -1302,7 +1408,7 @@ C If door is closed the derivative is set equal to zero.
 
 C ***************** MF210C 
 C Fluid mass flow calculation routine for flow component type:
-C general flow conduit (ie. duct or pipe)
+C general flow conduit (ie. duct or pipe).
 C     IFLD = SUPCMP(ICMP,1) - fluid type (1=air, 2=water)
 C     DIAH = SUPCMP(ICMP,2) - conduit hydraulic diameter (m)
 C     AREA = SUPCMP(ICMP,3) - cross-sectional area (m^2)
@@ -1424,6 +1530,149 @@ C If duct is closed the derivative is set equal to zero.
       if((dabs(delp).gt.dble(small)).and.((dabs(flw1(icnn))+
      & dabs(flw2(icnn))).lt.dble(small))) deriv=0.0 
 
+      RETURN
+      END
+    
+C ***************** MF211C
+C Cowl roof ventilator using a method after Armando Pinto based on
+C experimental results of:
+C Gonzalez M.A. On the aerodynamics of natural ventilators. London
+C Pergamon Press, 1984, Building and environment. Vol 19 No 3.
+
+C The paper mentions 7 different models of cowels tested and table
+C one gives several of the coefficients.
+C Model 1 coef B varies between 0.72 and 1.28 depending on direction
+C         coef n varies between 0.51 and 0.26 depending on direction
+C Model 2 coef B varies between 0.37 and 0.80 depending on direction
+C         coef n varies between 0.31 and 0.40 depending on direction
+C Model 3 coef B 0.25  coef n 0.16
+C Model 4 coef B 0.12  coef n 0.17
+C Model 5 coef B 0.37  coef n 0.10
+C Model 6 coef B 0.21  coef n 0.19
+C Model 7 coef B 0.28  coef n 0.45
+
+C Fluid mass flow calculation routine for flow component type:
+C Cowl Roof Outlet
+C     FLUID =   SUPCMP(ICMP,1) - fluid type (1=air)
+C     DIAH =    SUPCMP(ICMP,2) - Cowl hydraulic diameter (m)
+C     K =       SUPCMP(ICMP,3) - local dynamic loss factors (-)
+C     B =       SUPCMP(ICMP,4) - coefficient of cowl
+C     n =       SUPCMP(ICMP,5) - coefficient of cowl
+C     WINDEFF = SUPCMP(ICMP,6) - FLAG =1 CONSIDER WIND EFFECT, =0 DONT
+C     LNIT                  - local iteration counter
+C     RHO                   - fluid density (kg/m^3)
+
+      SUBROUTINE MF211C(ICNN,DELP,DERIV)
+
+#include "net_flow.h"
+
+      PARAMETER (SMALL=1.0E-15)
+      COMMON/MFLOW5/RHON(MNOD)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+C Climate commons. 
+      COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION DELP,DERIV
+
+C Kloss is the local loss dynamic factor.
+C Bb is the 1st cowl coefficient, Nn is the 2nd cowl coefficient.
+C Vi is average air flow velocity, ROE is fluid density (kg/m^3)
+C AREA is ?
+      DOUBLE PRECISION Kloss, Bb, Nn, AREA, Vi,PI,ROE, DPDV
+      DOUBLE PRECISION DERIV1, vi0, vi1, viX, f0,f1,fx
+      character outs*124
+      logical close1,close2
+      integer WINDEFF
+
+C Local variables for start node of the connection (NODPS) the
+C end node of the connection (NODNE) and the component type (ITPCON)
+      IDPS=NODPS(ICNN)
+      IDNE=NODNE(ICNN)
+      ICMP=ITPCON(ICNN)
+
+C WINDEFF flag: 0 - no wind effect on cowl, 1 - consider wind effect. 
+      DIAH=SUPCMP(ICMP,2)
+      Kloss=SUPCMP(ICMP,3)
+      Bb=SUPCMP(ICMP,4)
+      Nn=SUPCMP(ICMP,5)
+      WINDEFF=NINT(SUPCMP(ICMP,6))
+      PI=ATAN(1.0)*4.0
+      AREA=PI*DIAH**2/4. 
+      ROE=DENSIT(1,DRYB)   
+      
+C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
+      IF(DELP.GE.0.) THEN
+        RHO=RHON(IDPS)
+      ELSE
+        RHO=RHON(IDNE)
+      ENDIF
+      
+C Use eclose to test if WSPD is zero.
+      CALL ECLOSE(WSPD,0.0,0.001,close1)
+
+C If we are considering wind effects AND the wind speed is not close
+C to zero AND the flow direction is positive then iterate up to 200
+C times to calculate the average air flow velocity Vi.
+      if ((WINDEFF.EQ.1).AND.(.NOT.close1).and.(DELP.GT.0.0)) then
+        Vi0=0.0
+        Vi1=(DABS(DELP)*2./RHO/Kloss)**(0.5)
+        DO 100 i = 1, 200
+          ViX=(Vi0+Vi1)/2.
+          f0=-DELP+Kloss/2.*RHO*Vi0**2+
+     &       1./2.*RHO*(WSPD**2)*Bb*((RHO/ROE*Vi0**2/WSPD**2)**Nn)
+          f1=-DELP+Kloss/2.*RHO*Vi1**2+
+     &       1./2.*RHO*(WSPD**2)*Bb*((RHO/ROE*Vi1**2/WSPD**2)**Nn)
+          fX=-DELP+Kloss/2.*RHO*ViX**2+
+     &       1./2.*RHO*(WSPD**2)*Bb*((RHO/ROE*ViX**2/WSPD**2)**Nn)     
+          if ((fx*f1).lt.0.0) then
+            Vi0=ViX
+          else
+            Vi1=ViX
+          endif
+          if ((abs(Vi0-Vi1).lt.0.0001).and.
+     &        (abs(fx).lt.0.0001)) goto 110
+  100   CONTINUE
+  
+  110   CONTINUE     
+        Vi=(Vi0+Vi1)/2.0     
+      ELSE
+
+C Do not take wind effects into account.
+        Vi=(DABS(DELP)*2./RHO/Kloss)**(0.5)
+      END IF
+        
+      FLW1(ICNN)=Vi*AREA*RHO
+
+C Flow is now known; change sign if dP is -ve.
+   20 IF(DELP.LT.0.0) FLW1(ICNN)=-FLW1(ICNN)
+
+      FLW2(ICNN)=0.0
+
+C Calculate DERIV1
+      CALL MFNPDV(ICNN,DELP,DERIV1)
+      If (DERIV1.lt.0.0) DERIV1=DBLE(0.1)
+
+C Use eclose to test if Vi is zero.
+      CALL ECLOSE(REAL(Vi),0.0,0.001,close2)
+      
+      DPDV=Kloss*RHO*Vi
+      IF ((WINDEFF.eq.1).AND.(.NOT.close1).AND.(.NOT.close2)) then
+        DPDV=DPDV+ROE*(WSPD**(2.-2.*Nn))*Bb*2.*Nn*(Vi**(2.*Nn-1.))
+      end if
+
+      IF ((DABS(DELP).GT.DBLE(SMALL)).AND.(DPDV.NE.0.0)) THEN
+        DERIV=Area*RHO/DPDV
+      ELSE
+        DERIV=DERIV1
+      ENDIF
+          
       RETURN
       END
 
