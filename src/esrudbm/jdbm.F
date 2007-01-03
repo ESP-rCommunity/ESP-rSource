@@ -23,9 +23,9 @@ C and editing facilities.
 
       program dbm
 #include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
+
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -59,13 +59,12 @@ C Generic db commons.
       common/gendb/LGENDB
 
 C Name of databases in common/gendbfn and file unit index in common/gendbfi
-      common/dgendbf/dgendbfn(13)
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+C are from esprdbfile.h
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -77,18 +76,18 @@ C Backup of documentation (for editing) bkdoc is the text,
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL OK,dok,statusok,gendbok
+      LOGICAL OK,dok,statusok
       LOGICAL moddb,unixok,browse,status
 
       DIMENSION item(23),cnsel(100),icnsel(100)
-      dimension dba(13)
+      dimension dba(MGDB)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72,tfile*72
       character longtfile*144
-      character gendbfn*72,dgendbfn*72,outs248*248,LTMP*144
+      character outs248*248,LTMP*144
       character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
       character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
       character curfile*72,dba*12,act*1,action*12
@@ -164,7 +163,7 @@ C mode.
       statusok=.FALSE.
 
 C Initial clear of (all possible db) generic db commons and hash tables.
-      do 245 j=1,13
+      do 245 j=1,MGDB
         gendbok(j)=.FALSE.
         gendbfn(j)='  '
         call clrgdbc(j)
@@ -439,7 +438,7 @@ C      ITEM(17)='< convert: ASCII>BIN>ASCII & legacy   '
       mitm=23
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
-      call askabout('dbm',1)
+      call askabout('dbm ',1)
 
       if(MMOD.eq.8)then
         CALL VWMENU(' Database manager',ITEM,mitm,0,0,IWE,irpx,irpy,INO)
@@ -461,7 +460,7 @@ C Before exiting, update the cfg file if database files have changed.
           if(OK)CALL EMKCFGG('-',IER)
         endif
         call erpfree(IBFIL,ISTAT)
-        do 244 j=1,13
+        do 244 j=1,MGDB
           if(gendbok(j)) call erpfree(igendbf(j),istat)
  244    continue
         CALL EPAGEND
@@ -532,7 +531,7 @@ C Switch from browse mode.
 
 C Create new database (minimal).
         call pkavailgbd(seldb,status,mdbhash)
-        if(mdbhash.gt.0.and.mdbhash.le.13)then
+        if(mdbhash.gt.0.and.mdbhash.le.MGDB)then
           idbhash=mdbhash
           IBFIL=igendbf(idbhash)
           write(db,'(a)') seldb
@@ -906,14 +905,14 @@ C PKAVAILGBD presents a list of currently scanned generic databases
 C and return selected dbtype (string), status (logical) and hash
 C position.
       subroutine pkavailgbd(seldb,status,idbhash)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/gendb0/gendbok(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
 
-      dimension dblist(13),idbsel(13),dbsel(13),statarray(13)
-      dimension lenn(13),dba(13)
-      logical gendbok
+      dimension dblist(MGDB),idbsel(MGDB),dbsel(MGDB),statarray(MGDB)
+      dimension lenn(MGDB),dba(MGDB)
       logical status,statarray
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dba*12
       character dbnote*72,dblist*36,h*72,seldb*12,dbsel*12
@@ -952,7 +951,7 @@ C Setup root names for any new files that might be made.
       dba(13)='component_db'
  
 C Loop through list of databases creating strings.
-      do 37 i=1,13
+      do 37 i=1,MGDB
         if(gendbok(i))then
           lenn(i)=lnblnk(dbmenu(i))
           write(dblist(i),'(2a)') dbmenu(i)(1:lenn(i)),' available'
@@ -966,7 +965,7 @@ C Loop through list of databases creating strings.
       INPIC=1
       h(1)='You may select one database to focus on.'
       CALL EPICKS(INPIC,idbsel,' ',' Which database:',
-     &        36,13,dblist,'databases',IER,1)
+     &        36,MGDB,dblist,'databases',IER,1)
       IF(INPIC.EQ.0)then
         seldb='none'
         status=.false.
@@ -1013,25 +1012,21 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C Name of databases in common/gendbfn and file unit index in common/gendbfi
-      common/gendbf/gendbfn(13)
-      common/dgendbf/dgendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
 
-      dimension idpendord(13),dba(13)
+      dimension idpendord(MGDB),dba(MGDB)
 
-      character gendbfn*72,dgendbfn*72
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
-      logical unixok,gendbok
+      logical unixok
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1623,23 +1618,18 @@ C if database names have changed.
 C Generic db commons.
       common/gendb/LGENDB
 
-C Name of databases in common/gendbfn and file unit index in common/gendbfi
-      common/gendbf/gendbfn(13)
-      common/dgendbf/dgendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
 
-      dimension dba(13)
+      dimension dba(MGDB)
 
-      character gendbfn*72,dgendbfn*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72,path*72,longtfile*144
-      logical unixok,gendbok,browse,moddb,copydef,XST,newfile
+      logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
 
 C Set folder separator (fs) to \ or / as required.

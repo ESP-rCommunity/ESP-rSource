@@ -27,18 +27,18 @@ C Assumes that current database is open on unit IFB.
       subroutine edprof(IFB,idbh,ic,iit,ACT,IER)
 #include "epara.h"
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -57,7 +57,7 @@ C Generic db commons:
       character dbnote*72,outs*124,outs248*248,hold*60
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72,DayT*8,KEY*1,Patr*8,head*38
-      character gendbfn*72,snote*248
+      character snote*248
       logical primod,OK,dok,showtags
 
 C Scan the data from the common blocks.

@@ -4,6 +4,31 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C esprdbfile.h holds common block for database file names and units.
 
+C parameters for generic databases
+C MGDB - (integer) number of generic databases
+C MGCL - (integer) number of categories in a generic database
+C MGIT - (integer) number of items in a generic database
+      integer MGDB,MGCL,MGIT 
+      parameter (MGDB=13)
+      parameter (MGCL=30)
+      parameter (MGIT=500)
+
+C Array of generic database file names (72 char).
+      common/gendbf/gendbfn(MGDB)
+      character gendbfn*72
+
+C Array of default generic database file names (72 char).
+      common/dgendbf/dgendbfn(MGDB)
+      character dgendbfn*72
+
+C Array of file unit numbers for generic databases.
+      common/gendbfi/igendbf(MGDB)
+      integer igendbf
+
+C Array of logicals indicating generic database scanned ok.
+      common/gendb0/gendbok(MGDB)
+      logical gendbok
+
 C LAPRES - (72 char) wind pressure coefficients distribution database
 C iapres  - file unit for wind pressure coef database
       common/APRES/LAPRES,IAPRES

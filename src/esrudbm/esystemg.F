@@ -121,6 +121,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
+
 #include "espriou.h"
 C espriou.h provides currentfile.
 
@@ -150,7 +151,8 @@ C xlat,   - Site latitude and the longitudinal difference between the
 C xlon      site and the reference time zone (east +ve).
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
 
 C SKYR viewfactor from external surfaces to the sky
 C GRDR viewfactor from external surfaces to the ground
@@ -385,10 +387,6 @@ C is a logical flag, .true. restricts update/save options.
       common/uhome/upath
       common/user/browse
 
-C Generic databases.
-      common/dgendbf/dgendbfn(13)
-      common/gendbf/gendbfn(13)
-
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
@@ -431,7 +429,6 @@ C Generic databases.
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character HDR*12
-      character gendbfn*72,dgendbfn*72
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -449,7 +446,7 @@ C Patch for dbm use. Scan for default generic databases and the
 C set gendbfn before reading model.
       defdbfl='./gdefaults'
       call escgdef(dfdblbl,defdbfl,IUF,IER)
-      do 43 i=1,13
+      do 43 i=1,MGDB
         gendbfn(i)=dgendbfn(i)
   43  continue
       LCLIM=DCLIM
@@ -2273,7 +2270,8 @@ C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
       COMMON/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       CHARACTER POS*124,OUTSTR*124,sdesc*16
 

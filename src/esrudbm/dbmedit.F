@@ -46,7 +46,7 @@ C Itwhich is the index of the item selected from the database and
 C Icwhich is its category. Idbh is the position in the hash table.
       subroutine edselcat(IFB,idbh,itwhich,icwhich,action,IER)
 #include "epara.h"
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -57,11 +57,11 @@ C Icwhich is its category. Idbh is the position in the hash table.
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
       common/gendb/LGENDB
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -85,7 +85,6 @@ C Backup of documentation (for editing).
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
-      character gendbfn*72
 
 C Read the header.
       IFB=igendbf(idbh)
@@ -660,8 +659,7 @@ C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Itwhich is the index of the db item selected.
       subroutine edselitem(IFB,idbh,itwhich,ic,action,IER)
 #include "epara.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -670,10 +668,11 @@ C allow choice.  Itwhich is the index of the db item selected.
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
       common/gendb/LGENDB
-      common/gendbf/gendbfn(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -699,7 +698,6 @@ C and current items then lengths of each list.
       character action*1,KEY*1,PDBM*38,head*42,h*72,t32*32,t12*12
       CHARACTER dstmp*24,catlist*32
       character ct*8,bl2*2
-      character gendbfn*72
 
 C Assumes that the db file is open, gather the catg documentation.
       bl2='  '
@@ -1259,9 +1257,12 @@ C else if act='i' then setup documentation to reflect import of a legacy
 C database file. Idbh is position in hash table. afile is the legacy file
 C if known.
       subroutine intdbdoc(idbh,act,afil,ier)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+#include "esprdbfile.h"
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72,act*1
       character afil*72
 
@@ -1459,15 +1460,15 @@ C EDCATDOC: Edit category level documentation (act = c). Assumes that common blo
 C are current (i.e. scandbhd already called). If changes made update
 C the current database.
       subroutine edcatdoc(IFB,idbh,ic,act,IER)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
       common/gendb/LGENDB
-      common/gendbf/gendbfn(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1483,7 +1484,6 @@ C Backup of documentation (for editing).
       character dbnote*72,c8*8,outs*124
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character t72*72,LGENDB*72,act*1,h*72,dstmp*24,t248*248
-      character gendbfn*72
 
 C Assumes that the db file is open, gather the catg documentation. 
       IAFIL=IFIL+1
@@ -1581,17 +1581,17 @@ C  newgcat: Depending on the db type create a new class and place in it one
 C item of the current database type. Iclnew is the new class and
 C iitnew is the new item associated with it.
       subroutine newgcat(IFB,idbh,iclnew,iitnew,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
       common/gendb/LGENDB
-      common/gendbf/gendbfn(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1602,7 +1602,6 @@ C iitnew is the new item associated with it.
       character catdoc*248,cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,LGENDB*72,h*72
       character c8*8,c20*20,outs*124,dstmp*24,item*12,clist*28
-      character gendbfn*72
 
 C Position of new item will be at lastr+1 so compute and updated lastr
 C for the current type of database.
@@ -1772,14 +1771,14 @@ C ************* newgitem
 C  newgitem: Depending on the db type create a new instance of an item for
 C subsequent editing. Icl is the class the item is associated with.
       subroutine newgitem(IFB,idbh,icl,iit,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -2093,7 +2092,7 @@ C are the same whether the item is to be inserted in a binary
 C db or used in the creation of a new minimal db. Used by 
 C newgitem and agdbnew.
       subroutine instanitm(db,type,iit,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
@@ -2318,15 +2317,16 @@ C AGDBNEW: Create a minimal boilerplate ascii generic database which can be read
 C in and converted to a new binary db file. Act is << >>. Db is the
 C type of database to create, idbh is its position in the hash table.
       subroutine agdbnew(IFA,AFIL,db,idbh,act,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -2372,9 +2372,9 @@ C Open the ascii file, clear db commons and initialise (via clrgdbc).
 
 C The pattern is that there is one item in each category created
 C and that with few exceptions items are of type 'STD '. Currently
-C we need to loop 13 times to fill cattype & itcat. Exceptions are
+C we need to loop MGDB times to fill cattype & itcat. Exceptions are
 C handled as required later in the code.
-      do 19 i=1,13
+      do 19 i=1,MGDB
         cattype(i)='STD'
         itcat(i)=i
   19  continue
@@ -3029,7 +3029,7 @@ C << DONE THIS FAR >>
               endif
             endif
 
-C In case of materials write 13 categories. After each general instanciation
+C In case of materials write MGDB categories. After each general instanciation
 C set itdat to values appropriate for the category (approx).
             if(dbtag(idbh)(1:8).eq.'material')then
               ctype='STD'

@@ -24,7 +24,6 @@ C  SCESPRC: scans the ESP-r dot file (environment)
 C  ESCDEF : scans the ESP-r defaults definition file
 C  parsepar variants: Parse command lines.
 
-
 C ******************** scesprc 
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder.  If not found then some defaults are set.
@@ -47,8 +46,15 @@ C External graphing tool.
 C External folder browser.
       common/folderbr/foldlbl,foldexe
 
-C A set of possible image formats (see config file) and
-C matching executables.
+C A set of possible image formats which can be accepted within
+C a model configuration file. These definitions are held in the
+C so-called esprc file. To add additional image types and/or 3rd
+C party display applications edit the ESP-r Install script which
+C creates the esprc file.
+C   imgtyp is the number of different image formats supported
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBM)
+C   fmtexe (20 char) is the application name used to display
+C          images of type fmttag.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
 
 C A set of possible cad packages: labels and executables.
@@ -72,6 +78,9 @@ C Where exemplars list and default db list are kept.
       common/exemlst/exemlbl,exemfl
       common/defdb/dfdblbl,defdbfl
 
+C Where validation tests are kept.
+      common/vldlst/vldlbl,vldfl
+
 C Where list of climate files is held.
       common/clmlst/cdblbl,cdblfil
       logical localdot,unixok,dll
@@ -89,11 +98,13 @@ C Where list of climate files is held.
       character foldlbl*20,foldexe*48
       character tutlbl*20,tutexe*96
       character exemlbl*20,exemfl*72
+      character vldlbl*20,vldfl*72 
       character dfdblbl*20,defdbfl*72
       character cdblbl*20,cdblfil*72
       character journcmd*20,jfile*72
       character altdot*72
       character upath*72
+#include "espinstalldir.h"
 
 C Check if running in dll mode, if so clear most of the
 C initial values because they will not be used.
@@ -158,30 +169,39 @@ C will use xwud.
         gxwdlbl='Appl window dump'
       endif
 
+C Set defaults and exemplars depending on whether Unix or NT.
       call isunix(unixok)
+      ln=lnblnk(instpath)
       if(unixok)then
-        write(gxwdcmd,'(a,a,a)')'xwud -out ',upath(1:lnblnk(upath)),
-     &    '/gxwd.xwd'
+        write(gxwdcmd,'(3a)')'xwud -out ',upath(1:lnblnk(upath)),
+     &  '/gxwd.xwd'
         tprlbl='Text dump'
         write(tprcmd,'(a,a)') upath(1:lnblnk(upath)),'/tx_dump'
         exemlbl='Standard exemplars'
-        exemfl='/usr/esru/esp-r/training/exemplars'
+        write(exemfl,'(2a)') instpath(1:ln),'/training/exemplars'
         dfdblbl='Standard defaults'
-        defdbfl='/usr/esru/esp-r/default'
+        write(defdbfl,'(2a)') instpath(1:ln),'/default'
+C        defdbfl='/usr/esru/esp-r/default'
+        vldlbl='Validation standards'
+        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
         cdblbl='Standard climates'
-        cdblfil='/usr/esru/esp-r/climate/climatelist'
-        altdot='/usr/esru/esp-r/esprc'
+        write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
+C        cdblfil='/usr/esru/esp-r/climate/climatelist'
+        write(altdot,'(2a)') instpath(1:ln),'/esprc'
+C        altdot='/usr/esru/esp-r/esprc'
       else
         write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
         tprlbl='Text dump'
         write(tprcmd,'(a)') 'c:/temp/tx_dump'
         exemlbl='Standard exemplars'
-        exemfl='c:/esru/esp-r/training/exemplars'
+        write(exemfl,'(2a)') instpath(1:ln),'/training/exemplars'
         dfdblbl='Standard defaults'
-        defdbfl='c:/esru/esp-r/default'
+        write(defdbfl,'(2a)') instpath(1:ln),'/default'
+        vldlbl='Validation tests'
+        write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
         cdblbl='Standard climates'
-        cdblfil='c:/esru/esp-r/climate/climatelist'
-        altdot='c:/esru/esp-r/esprc'
+        write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
+        write(altdot,'(2a)') instpath(1:ln),'/esprc'
       endif
 
 C If running in dll mode skip reading .esprc file.
@@ -189,7 +209,7 @@ C If running in dll mode skip reading .esprc file.
         return
       endif
 
-C Open the defaults file, return if not found.
+C Open the esprc file, return if not found.
       IER=0
       CALL ERPFREE(IFDEF,ISTAT)
 
@@ -326,6 +346,11 @@ C Turn journaling on/off.
         CALL EGETP(OUTSTR,K,defdbfl,'W','def db file',IER)
         write(outs,'(4a)')' Default: ',dfdblbl,' in ',defdbfl
         if(itrc.gt.0)call edisp(iuout,outs)
+      elseif(WORD(1:16).eq.'*validation_stds')then
+        CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
+        CALL EGETP(OUTSTR,K,vldfl,'W','validation stds file',IER)
+        write(outs,'(4a)')' Validation: ',vldlbl,' in ',vldfl
+        if(itrc.gt.0)call edisp(iuout,outs)
       elseif(WORD(1:12).eq.'*db_climates')then
         CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
         CALL EGETP(OUTSTR,K,cdblfil,'W','clm db list file',IER)
@@ -351,94 +376,121 @@ C Close file before exiting.
    45 CONTINUE
       if(localdot)then
         write(outs,'(3a)') 'Scanning ',
-     &         LFDEF(:lnblnk(LFDEF)),' definitions.'
+     &         LFDEF(1:lnblnk(LFDEF)),' definitions.'
         if(itrc.gt.1)CALL USRMSG(' ',OUTS,'-')
       else
         write(outs,'(3a)') 'Standard settings in: ',
-     &         altdot(:lnblnk(altdot)),' successfully scanned...'
-        if(itrc.gt.0)CALL USRMSG(' ',OUTS,'-')
+     &         altdot(1:lnblnk(altdot)),' successfully scanned...'
+        if(itrc.gt.1)CALL USRMSG(' ',OUTS,'-')
       endif
       CALL ERPFREE(IFDEF,ISTAT)
       RETURN
       END
 
 C ******************** ESCGDEF 
-C ESCGDEF scans the ESP-r defaults definition file and returns
-C the default file and generic database names via common block. 
+C ESCDEF scans the ESP-r defaults definition file and returns
+C the default file and genereic database names via common block.
+C It uses espinstalldir.h which was created by the Install
+C script with the current esp-r install directory held
+C in a string instpath.
       SUBROUTINE ESCGDEF(dfdblbl,defdbfl,IFDEF,IER)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      common/dgendbf/dgendbfn(13)
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      COMMON/DEFLT3/DFCFD
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      common/deflt4/dinstpath
       CHARACTER OUTSTR*124,WORD*20,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
-      character dfdblbl*20,defdbfl*72
-      character dgendbfn*72
-      logical unixok
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
+      logical unixok,dll
+#include "espinstalldir.h"
 
 C Assume default db names (in case of failure to find defaults
 C file or failure reading it).
       call isunix(unixok)
       if(unixok)then
-        DFCFG ='/usr/esru/esp-r/training/3z_bld/cfg/building_basic'
-        DFCTL ='/usr/esru/esp-r/training/3z_bld/ctl/building.ctl'
-        DAPROB='/usr/esru/esp-r/training/3z_bld/flows/building.mfn_a'
-        DPNF  ='/usr/esru/esp-r/training/plant/plant_only/d2.cfg'
-        DFCFD ='/usr/esru/esp-r/training/cfd/template.dfd'
-        DEFRLB='/usr/esru/esp-r/training/test.res'
-        DAFRES='/usr/esru/esp-r/training/test.mfr'
-        DCLIM ='/usr/esru/esp-r/climate/clm67'
-        dgendbfn(1)='/usr/esru/esp-r/databases/multicon.gdb'
-        dgendbfn(2)='/usr/esru/esp-r/databases/material.gdb'
-        dgendbfn(3)='/usr/esru/esp-r/databases/optics.gdb'
+        write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
+        write(di,'(a)') instpath(1:lnblnk(instpath))
+        ln=lnblnk(di)
+        write(DFCFG,'(2a)') di(1:ln),
+     &    '/training/3z_bld/cfg/building_basic'
+        write(DFCTL,'(2a)') di(1:ln),
+     &    '/training/3z_bld/ctl/building.ctl'
+        write(DAPROB,'(2a)') di(1:ln),
+     &    'training/basic/networks/bld_basic_af1.afn'
+        write(DPNF,'(2a)') di(1:ln),
+     &    '/training/plant/vent_simple/cfg/vent.cfg'
+        write(DFCFD,'(2a)') di(1:ln),
+     &    '/training/cfd/template.dfd'
+        write(DEFRLB,'(2a)') di(1:ln),'/databases/test.res'
+        write(DAFRES,'(2a)') di(1:ln),'/databases/test.mfr'
+        write(DCLIM,'(2a)') di(1:ln),'/climate/clm67'
+        write(dgendbfn(1),'(2a)') di(1:ln),'/databases/multicon.gdb'
+        write(dgendbfn(2),'(2a)') di(1:ln),'/databases/material.gdb'
+        write(dgendbfn(3),'(2a)') di(1:ln),'/databases/optics.gdb'
         dgendbfn(4)=' '
-        dgendbfn(5)='/usr/esru/esp-r/databases/acoustic.gdb'
-        dgendbfn(6)='/usr/esru/esp-r/databases/colour.gdb'
-        dgendbfn(7)='/usr/esru/esp-r/databases/micotoxin.gdb'
-        dgendbfn(8)='/usr/esru/esp-r/databases/envimpact.gdb'
-        dgendbfn(9)='/usr/esru/esp-r/databases/transport.gdb'
-        dgendbfn(10)='/usr/esru/esp-r/databases/pressc.gdb'
-        dgendbfn(11)='/usr/esru/esp-r/databases/profiles.gdb'
-        dgendbfn(12)='/usr/esru/esp-r/databases/plantc.gdb'
-        dgendbfn(13)='/usr/esru/esp-r/databases/components.gdb'
+        write(dgendbfn(5),'(2a)') di(1:ln),'/databases/acoustic.gdb'
+        write(dgendbfn(6),'(2a)') di(1:ln),'/databases/colour.gdb'
+        write(dgendbfn(7),'(2a)') di(1:ln),'/databases/micotoxin.gdb'
+        write(dgendbfn(8),'(2a)') di(1:ln),'/databases/envimpact.gdb'
+        write(dgendbfn(9),'(2a)') di(1:ln),'/databases/transport.gdb'
+        write(dgendbfn(10),'(2a)') di(1:ln),'/databases/pressc.gdb'
+        write(dgendbfn(11),'(2a)') di(1:ln),'/databases/profiles.gdb'
+        write(dgendbfn(12),'(2a)') di(1:ln),'/databases/plantc.gdb'
+        write(dgendbfn(13),'(2a)') di(1:ln),'/databases/components.gdb'
       else
-        DFCFG ='c:/esru/esp-r/training/3z_bld/cfg/building_basic'
-        DFCTL ='c:/esru/esp-r/training/3z_bld/ctl/building.ctl'
-        DAPROB='c:/esru/esp-r/training/3z_bld/flows/building.mfn_a'
-        DPNF  ='c:/esru/esp-r/training/plant/plant_only/d2.cfg'
-        DFCFD ='c:/esru/esp-r/training/cfd/template.dfd'
-        DEFRLB='c:/esru/esp-r/training/test.res'
-        DAFRES='c:/esru/esp-r/training/test.mfr'
-        DCLIM ='c:/esru/esp-r/climate/clm67'
+C        dinstpath = 'c:/esru/esp-r'
+        write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
+        write(di,'(a)') instpath(1:lnblnk(instpath))
+        ln=lnblnk(di)
+        write(DFCFG,'(2a)') di(1:ln),
+     &    '/training/3z_bld/cfg/building_basic'
+        write(DFCTL,'(2a)') di(1:ln),
+     &    '/training/3z_bld/ctl/building.ctl'
+        write(DAPROB,'(2a)') di(1:ln),
+     &    'training/basic/networks/bld_basic_af1.afn'
+        write(DPNF,'(2a)') di(1:ln),
+     &    '/training/plant/vent_simple/cfg/vent.cfg'
+        write(DFCFD,'(2a)') di(1:ln),
+     &    '/training/cfd/template.dfd'
+        write(DEFRLB,'(2a)') di(1:ln),'/databases/test.res'
+        write(DAFRES,'(2a)') di(1:ln),'/databases/test.mfr'
+        write(DCLIM,'(2a)') di(1:ln),'/climate/clm67'
         DAPRES='c:/esru/esp-r/databases/pressc.db1'
         DFCON ='c:/esru/esp-r/databases/constr.db2'
         DFMUL ='c:/esru/esp-r/databases/multicon.db2'
         DOPTDB='c:/esru/esp-r/databases/optics.db2'
         DPRFDB='c:/esru/esp-r/databases/profiles.db1'
         DPCDB ='c:/esru/esp-r/databases/plantc.db1'
-        dgendbfn(1)='c:/esru/esp-r/databases/multicon.gdb'
-        dgendbfn(2)='c:/esru/esp-r/databases/material.gdb'
-        dgendbfn(3)='c:/esru/esp-r/databases/optics.gdb'
-        dgendbfn(4)='c:'
-        dgendbfn(5)='c:/esru/esp-r/databases/acoustic.gdb'
-        dgendbfn(6)='c:/esru/esp-r/databases/colour.gdb'
-        dgendbfn(7)='c:/esru/esp-r/databases/micotoxin.gdb'
-        dgendbfn(8)='c:/esru/esp-r/databases/envimpact.gdb'
-        dgendbfn(9)='c:/esru/esp-r/databases/transport.gdb'
-        dgendbfn(10)='c:/esru/esp-r/databases/pressc.gdb'
-        dgendbfn(11)='c:/esru/esp-r/databases/profiles.gdb'
-        dgendbfn(12)='c:/esru/esp-r/databases/plantc.gdb'
-        dgendbfn(13)='c:/esru/esp-r/databases/components.gdb'
+        write(dgendbfn(1),'(2a)') di(1:ln),'/databases/multicon.gdb'
+        write(dgendbfn(2),'(2a)') di(1:ln),'/databases/material.gdb'
+        write(dgendbfn(3),'(2a)') di(1:ln),'/databases/optics.gdb'
+        dgendbfn(4)=' '
+        write(dgendbfn(5),'(2a)') di(1:ln),'/databases/acoustic.gdb'
+        write(dgendbfn(6),'(2a)') di(1:ln),'/databases/colour.gdb'
+        write(dgendbfn(7),'(2a)') di(1:ln),'/databases/micotoxin.gdb'
+        write(dgendbfn(8),'(2a)') di(1:ln),'/databases/envimpact.gdb'
+        write(dgendbfn(9),'(2a)') di(1:ln),'/databases/transport.gdb'
+        write(dgendbfn(10),'(2a)') di(1:ln),'/databases/pressc.gdb'
+        write(dgendbfn(11),'(2a)') di(1:ln),'/databases/profiles.gdb'
+        write(dgendbfn(12),'(2a)') di(1:ln),'/databases/plantc.gdb'
+        write(dgendbfn(13),'(2a)') di(1:ln),'/databases/components.gdb'
+      endif
+
+C Check if running in dll mode, if so skip reading defaults file.
+      call isadll(dll)
+      if(dll)then
+        return
       endif
 
 C Open the defaults file, return if not found.
       IER=0
       CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(a,a,a)') 'The file ',defdbfl(:lnblnk(defdbfl)),
+        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' was not found (assuming standard databases).'
         call edisp(IUOUT,outs)
         IER=1
@@ -448,7 +500,7 @@ C Open the defaults file, return if not found.
 C Read '*ESP-r Defaults' tag.
       CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'default tag',IER)
       if(OUTSTR(1:15).ne.'*ESP-r Defaults')then
-        write(outs,'(a,a,a)') 'The file ',defdbfl(:lnblnk(defdbfl)),
+        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' is not a defaults file.'
         call edisp(IUOUT,outs)
         IER=1
@@ -460,7 +512,9 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
       CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'def names',IER)
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','def names',IFLAG)
-      if(WORD(1:4).eq.'*cfg')then
+      if(WORD(1:5).eq.'*ipth')then
+        CALL EGETRM(OUTSTR,K,dinstpath,'W','instal folder',IER)
+      elseif(WORD(1:4).eq.'*cfg')then
         CALL EGETRM(OUTSTR,K,DFCFG,'W','def config',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(OUTSTR,K,DFCTL,'W','def control',IER)
@@ -511,7 +565,7 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
       endif
 
       if(ier.ne.0)then
-        write(outs,'(a,a,a)') 'Problem detected in ',
+        write(outs,'(3a)') 'Problem detected in ',
      &    defdbfl(:lnblnk(defdbfl)),' while reading...'
         CALL EDISP(IUOUT,outs)
         CALL EDISP(IUOUT,outstr)
@@ -537,20 +591,30 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-
-C Unix version.
-      integer iargc,m
       character*48 prog
-      character argument*72,mode*8,inf*72,appn*24
-C      character outs*124
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24,outs*248
+      integer iXavail
 
-C Assume graphic mode for NT and Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+
       iappw = 0
       iappx = 0
       iappy = 0
@@ -560,10 +624,10 @@ C Assume graphic mode for NT and Unix version.
 C Get arguments from command line:
 C If one parameter.
       if(m.eq.0)then
-C        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -606,10 +670,10 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-C        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -679,26 +743,45 @@ C ********* parsim
 C  Allowing terminal, size, config file, simulation parameter file arguments
 C  to be passed to the program from the invocation line.  
 
-      subroutine parsim(termtype,iappw,iappx,iappy,inf,sps,aut,actf)
+      subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
+     &  aut,actf)
       COMMON/OUTIN/IUOUT,IUIN
 
+C Timeout information
+      common/TIMEOUT/sTimeout,iTimeoutFlag
+
+      character sTimeout*72  
+      integer iTimeoutFlag
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124
-      character sps*8,aut*12,actf*72
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,sps*8,aut*12,actf*72,browse*4
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+
       iappw = 0
       iappx = 0
       iappy = 0
+      browse = 'no'
       inf  = 'UNKNOWN'
       sps  = 'UNKNOWN'
       aut  = 'default'
@@ -707,11 +790,11 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
 C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
+        write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
 C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
@@ -738,6 +821,9 @@ C        call edisp(iuout,outs)
             termtype = -6
             mode = 'script'
           endif
+        elseif(argument(1:2).eq.'-b')then
+          i=i+1
+          call getarg(i,browse)
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
@@ -759,19 +845,22 @@ C        call edisp(iuout,outs)
         elseif(argument(1:5).eq.'-actf')then
           i=i+1
           call getarg(i,actf)
+        elseif(argument(1:8).eq.'-timeout')then
+          i=i+1
+          call getarg(i,sTimeout)
+          iTimeoutFlag = 1          
         endif
         goto 41
 
   42    continue
         outs=' '
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
 C        call edisp(iuout,outs)
-C        outs=' '
-C        write(outs,'(5a)') 'and parameters ',sps(1:lnblnk(sps)),
-C     &   ' in ',aut,' mode.'
-C        call edisp(iuout,outs)
+        outs=' '
+        write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
+     &   ' in ',aut,' mode and ',browse,' browsing.'
         return
       endif
 
@@ -814,17 +903,29 @@ C  to be passed to res from the invocation line.
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-      character outs*124,actf*72
-      character act*16,aut*12
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,actf*72,act*16,aut*12
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+
       iappw = 0
       iappx = 0
       iappy = 0
@@ -836,12 +937,10 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -947,17 +1046,29 @@ C  to be passed to the program from the invocation line.
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
-C      character outs*124
-      character zone*16,act*16
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,zone*16,act*16
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -968,13 +1079,13 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
 C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
+        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
 C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
+        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
 C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
@@ -1024,14 +1135,11 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1071,17 +1179,28 @@ C  to be passed to the program from the invocation line.
       integer termtype,iappw,iappx,iappy
       integer iargc,m
       character*48 prog
-      character argument*72,mode*8,inf*72,appn*24
-C      character outs*124
-      character zone*16
+      character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1091,12 +1210,10 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1200,24 +1317,36 @@ C  to be passed to the program from the invocation line.
       integer termtype
       integer iargc,m
       character*48 prog
-      character argument*72,mode*8,inf*72,appn*24
-C      character outs*124
+      character argument*72,mode*8,inf*144,appn*24,outs*248
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+
       inf  = 'UNKNOWN'
       argument = ' '
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
 C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
@@ -1251,10 +1380,10 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
+C        call edisp248(iuout,outs,90)
         return
       endif
       end
@@ -1305,19 +1434,31 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      integer iargc,m
       character*48 prog
+      integer iargc,m
       character argument*72,mode*8,inf*72,appn*24
-      character outs*124
-      character aim*12,act*72,zone*16
+      character outs*248,aim*12,act*72,zone*16
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+       
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1329,15 +1470,15 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
         call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
+        write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
 C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'with scene purpose',aim(1:lnblnk(aim))
+        write(outs,'(a,a)') 'with scene purpose',aim(1:lnblnk(aim))
 C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
+        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
 C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
@@ -1390,16 +1531,12 @@ C        call edisp(iuout,outs)
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with scene purpose ',aim(1:lnblnk(aim))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
+     &    ' with scene purpose ',aim(1:lnblnk(aim)),
+     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1416,20 +1553,31 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      integer iargc,m
       character*48 prog
-      character argument*72,mode*8,inf*72,actf*72,appn*24
-      character outs*124
-      character act*16
+      integer iargc,m
+      character argument*72,mode*8,inf*72,actf*144,appn*24
+      character outs*124,act*16
 
 
-C Assume graphic mode for NT or Unix version.
-      termtype = 8
-      mode = 'graphic'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1440,14 +1588,11 @@ C Assume graphic mode for NT or Unix version.
 
 C  Get arguments from command line: If one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'applied to ',actf(1:lnblnk(actf))
-        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
+     &    ' applied to ',actf(1:lnblnk(actf))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1495,14 +1640,11 @@ C  Get arguments from command line: If one parameter.
         endif
         goto 41
   42    continue
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'applied to ',actf(1:lnblnk(actf))
-        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
+     &    ' applied to ',actf(1:lnblnk(actf))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1515,14 +1657,13 @@ C Parse command line paramters for ecnv.
       subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       COMMON/OUTIN/IUOUT,IUIN
+
       integer iargc,m
       integer termtype
       integer i,itrc,itmprm,iobs,ichop
       real conv
-      character*48 prog
-      character argument*72,inf*72,outs*124,appn*24
-      character iform*24,oform*24,ouf*72,ucfg*72
-      character mode*8
+      character argument*72,prog*48,inf*72,outs*124,appn*24
+      character iform*24,oform*24,ouf*72,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'
       iform = 'UNKNOWN'
@@ -1615,7 +1756,7 @@ C If one parameter.
         goto 41
 
   42    continue
-        write(outs,'(a,a,a,a)') 'Starting ecnv in ',
+        write(outs,'(4a)') 'Starting ecnv in ',
      &    oform(1:lnblnk(oform)),' mode with in file ',
      &    inf(1:lnblnk(inf))
         call edisp(iuout,outs)

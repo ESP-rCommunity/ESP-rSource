@@ -43,14 +43,16 @@ C IFB as the binary channel. Idbh is position in hash table.
       subroutine impmlc(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "building.h"
 #include "esprdbfile.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+C providing paramaters MGDB,MGCL,MGIT
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -380,13 +382,15 @@ C IMPRIMMAT: Imports from legacy ascii materials file (AFIL) to a generic
 C materials db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine imprimmat(IFA,AFIL,IFB,BFIL,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -714,13 +718,14 @@ C IMPRESSC: Imports from legacy pressure coef file (AFIL) to a generic
 C wind pressure db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine impressc(IFA,AFIL,IFB,BFIL,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -916,13 +921,14 @@ C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C profile db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)

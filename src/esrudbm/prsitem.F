@@ -60,9 +60,10 @@ C of air gap resistances, laydesc is the corresponding material description.
      &  othacou,inacou,othir,sinir,othsol,sinsol,cnstimp,
      &  nlay,thrmtg,gaptg,mattag,DT,IP,DRA,laydesc,ier)
 #include "building.h"
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+C esprdbfile.h provides gendbfn
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
@@ -75,7 +76,6 @@ C of air gap resistances, laydesc is the corresponding material description.
       character symname*12,othcolr*12,incolr*12,othacou*12,inacou*12
       character OTF*4,OPT*12,cnstimp*12
       character thrmtg*1,gaptg*1,mattag*12,laydesc*32
-      character gendbfn*72
 
 C << check ituntstr >>
 C Unit strings for constructions:  ituntstr='------cccc------b-----'
@@ -177,16 +177,15 @@ C roughness, misc1 and misc2 are optional real parameters.
       subroutine prsmat(idbh,iit,act,acoutag,colormtag,lcatag,
      &  lcatype,r1lca,r2lca,NCODE,DBCON,DBDEN,DBSHT,E,A,DRV,
      &  spec,rough,misc1,misc2,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
 
       character act*1,outs*248,outsd*248,outm*124,lcatype*1
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character acoutag*12,colormtag*12,lcatag*12
-      character gendbfn*72
       logical close1,close2,close3
       real misc1,misc2
 
@@ -262,16 +261,15 @@ C a colour calculation or pattern file name.
 
       subroutine prscolr(idbh,iit,act,IR255,IG255,IB255,greyrefl,
      &  coltype,colptrn,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
 
       character act*1,outs*248,outsd*248
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character coltype*12,colptrn*72
-      character gendbfn*72
 
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
@@ -314,16 +312,14 @@ C atype (M or C) indicates material or construction, aunit makes explicit
 C the scope of the data (per m^2 or person etc.), FRQ are the coef
 C 17 different frequencies.
       subroutine prsacou(idbh,iit,act,atype,aunit,FRQ,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
 
       dimension FRQ(17)
       character act*1,outs*248,outsd*248
       character itdat*248,itrep*248,ittag*12,itmenu*32,atype*4,aunit*8
-      character gendbfn*72
 
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
@@ -369,10 +365,8 @@ C assite is name of assembly at site,
 C lasmat 1st/2nd/3rd maintenance names.
       subroutine prsenvci(idbh,iit,act,lassurn,laspern,ntrn,trbsn,
      &  dtrbs,rtrbs,assite,lasmat,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -384,7 +378,6 @@ C lasmat 1st/2nd/3rd maintenance names.
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character assite*12,lassurn*12,laspern*12,trbsn*12,lasmat*12
-      character gendbfn*72
 
 C Check that the item is in an allowable category.
 C These are the units for this category:
@@ -470,10 +463,8 @@ C trbsn transport names (3), dtrbs transport distances (3),
 C eimp (9 effects),ntrn is the number of transports.
 C Used with the following category types: RECYCP, INCENP DUMPP
       subroutine prsenvi(idbh,iit,act,ntrn,trbsn,dtrbs,eimp,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -484,7 +475,6 @@ C Used with the following category types: RECYCP, INCENP DUMPP
       character act*1,outs*248,outsd*248,ct*8,trbsn*12
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-      character gendbfn*72
 
 C Check that the item is in an allowable category.
 C For INCENP  ituntstr='-b-b-bcdefcccccc' 
@@ -568,10 +558,8 @@ C rn=recycling name, rr=recycling rate, in= incineration name,
 C ri incineration rate, dn=dump name, rd=dump rate, eimp=9 impacts.
       subroutine prsenvf(idbh,iit,act,fablif,brkias,ntrn,trbsn,dtrbs,
      &  rtrbs,rn,rr,in,ri,dn,rd,eimp,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -582,7 +570,6 @@ C ri incineration rate, dn=dump name, rd=dump rate, eimp=9 impacts.
       character act*1,outs*248,outsd*248,ct*8,trbsn*12
       character itdat*248,itrep*248,ittag*12,itmenu*32,rn*12,in*12,dn*12
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-      character gendbfn*72
 
 C Check that the item is in an allowable category.
 C Units for MATLCA are:  ituntstr='a--b--b--b-------cdef' 
@@ -672,10 +659,8 @@ C common block gendb8b. iit the requested element, IER=0 OK, IER=1 problem.
 C Used with the category types: ASMPRJ, CNSTRMNT, CNSTRASM
 C brkasp=breakage assembly on project,eimp=9 impacts.
       subroutine prsenvp(idbh,iit,act,tag,brkasp,eimp,ier)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -686,7 +671,6 @@ C brkasp=breakage assembly on project,eimp=9 impacts.
       character act*1,outs*248,outsd*248,ct*8,tag*1
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-      character gendbfn*72
 
 C Check that the item is in an allowable category.
 C For ASMPRJ units are: ituntstr='--cdefccccccc' 
@@ -744,16 +728,15 @@ C GWP is global warming potential, AP is acidifacation potential, PS
 C is photo smog potential, UNRE is utilisation of nonrenewable energy.
 C << this needs to be changed to 9 impacts >>
       subroutine prstransp(idbh,iit,act,eimp,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
 
       dimension eimp(9)
       character act*1,outs*248,outsd*248
       character itdat*248,itrep*248,ittag*12,itmenu*32
-      character gendbfn*72
 
 C Unit strings for transport:  ituntstr='abcd------'
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
@@ -790,16 +773,15 @@ C wind pressure db via esp-r common block gendb8b. iit the requested element,
 C IER=0 OK, IER=1 problem.
 C FDAT is the pressure coefficient at 16 angles.
       subroutine prspres(idbh,iit,act,FDAT,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
 
       dimension FDAT(16)
       character act*1,outs*248,outsd*248
       character itdat*248,itrep*248,ittag*12,itmenu*32
-      character gendbfn*72
 
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
@@ -849,10 +831,8 @@ C write data a in itrep(1-6)
 C write data b in itrep(7-12)
 C write data c in itrep(13-18)
       subroutine prsprof(idbh,iit,act,NCG,Patr,DayT,ST,A,B,C,ier)
-      parameter (MGIT=500)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendbf/gendbfn(13)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -865,7 +845,6 @@ C write data c in itrep(13-18)
       character itdat*248,itrep*248,ittag*12,itmenu*32,DayT*8,Patr*8
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character ihold*72
-      character gendbfn*72
 
       ict=itcat(iit)
       ct=cattype(ict)
