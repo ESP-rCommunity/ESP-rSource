@@ -214,7 +214,7 @@ C Open the esprc file, return if not found.
       CALL ERPFREE(IFDEF,ISTAT)
 
 C Debug.
-      write(6,*) 'lfdef is ',lfdef
+C      write(6,*) 'lfdef is ',lfdef
       call FPOPEN(IFDEF,ISTAT,1,0,LFDEF)
       IF(ISTAT.LT.0)THEN
         CALL ERPFREE(IFDEF,ISTAT)
@@ -621,8 +621,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -688,10 +687,61 @@ C Help message for parpsf.
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
 
-      if(appn(1:3).eq.'clm')then
+      if(appn(1:3).eq.'bld'.or.appn(1:3).eq.'bps')then
+        call edisp(iuout,'This is the ESP-r Simulator. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'   [-p <param_set_name> <how>]')
+        call edisp(iuout,'    (where how {interactive|silent} defines')
+        call edisp(iuout,'     whether the user interacts')
+        call edisp(iuout,'   [-actf file providing bems commands')
+        call edisp(iuout,'   [-s < width, offset left & top>]')
+        call edisp(iuout,'   [-b {no|yes}]')
+        call edisp(iuout,' ')
+        call edisp(iuout,'  where -mode options are:')
+        call edisp(iuout,'    text    = text mode')
+        call edisp(iuout,'    graphic = graphic mode')
+        call edisp(iuout,'    script = script mode')
+        call edisp(iuout,'  where -b (browse options) are used to')
+        call edisp(iuout,'    indicate that the user has requested')
+        call edisp(iuout,'    a simulation for a model they are')
+        call edisp(iuout,'    browsing (in which case the results')
+        call edisp(iuout,'    will be placed in the users home')
+        call edisp(iuout,'    folder. Default is no.')
+        call edisp(iuout,' ')
+        call edisp(iuout,' -help :this help message. ')
+        return
+      elseif(appn(1:3).eq.'clm')then
         call edisp(iuout,'The climate analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <climate db>]')
+        call edisp(iuout,'   [-act <action> <how> <file>]')
+        call edisp(iuout,'  (where action {asci2bin|bin2asci|epw2bin})')
+        call edisp(iuout,'  (where how {interactive|silent} defines ')
+        call edisp(iuout,'   whether the user interacts')
+        call edisp(iuout,'  (where file is asci input or output file)')
+        call edisp(iuout,'   [-s < width, offset left & top>]')
+        call edisp(iuout,' ')
+        call edisp(iuout,'  where -mode options are:')
+        call edisp(iuout,'    text    = text mode')
+        call edisp(iuout,'    graphic = graphic mode')
+        call edisp(iuout,'    script = script mode')
+        call edisp(iuout,' ')
+        call edisp(iuout,'Example converting binary file to asci: ')
+        call edisp(iuout,
+     &    ' clm -file current.clm -act bin2asci silent current.asci')
+        call edisp(iuout,' ')
+        call edisp(iuout,'Example converting asci file to binary: ')
+        call edisp(iuout,
+     &    ' clm -file new.clm -act asci2bin silent current.asci')
+        call edisp(iuout,' ')
+        call edisp(iuout,
+     &    'Example converting (an edited) EPW file to binary:')
+        call edisp(iuout,
+     &    ' clm -file new.clm -act epw2bin silent current.epw')
+        call edisp(iuout,' ')
+        call edisp(iuout,' -help :this help message. ')
+        return
       elseif(appn(1:3).eq.'cfg')then
         call edisp(iuout,'The topology checking module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -706,9 +756,39 @@ C Help message for parpsf.
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <focus zone|index>]')
         call edisp(iuout,'       [-purpose <scene purpose>]')
+      elseif(appn(1:3).eq.'grd')then
+        call edisp(iuout,'The 2-D and 3D gridding module.')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'       [-zone <name|index>]')
+      elseif(appn(1:3).eq.'ish')then
+        call edisp(iuout,'The shading & insolation database module.')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'       [-zone <name|index>]')
+        call edisp(iuout,'       [-s < width, offset left & top>]')
+        call edisp(iuout,'       [-act {recalculate|update_silent}]')
+        call edisp(iuout,' ')
+        call edisp(iuout,'  where -mode options are:')
+        call edisp(iuout,'    text    = text mode ')
+        call edisp(iuout,'    graphic = graphic mode')
+        call edisp(iuout,'    script = script mode')
+        call edisp(iuout,' ')
+        call edisp(iuout,'  where -act recalculate')
+        call edisp(iuout,'    interactively recalculates shading.')
+        call edisp(iuout,'  where -act update_silent')
+        call edisp(iuout,'    no usr interaction during recalculation.')
+        call edisp(iuout,' ')
+        call edisp(iuout,' -help :this help message. ')
+        return
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
+      elseif(appn(1:3).eq.'mrt')then
+        call edisp(iuout,'The viewfactor calculation module.')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'       [-zone <name|index>]')
       elseif(appn(1:3).eq.'pdb')then
         call edisp(iuout,'The plant components database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -716,13 +796,55 @@ C Help message for parpsf.
       elseif(appn(1:3).eq.'pdf')then
         call edisp(iuout,'The plant network definitions. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
+      elseif(appn(1:3).eq.'pfs')then
+        call edisp(iuout,'This is the power flow simulator. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+      elseif(appn(1:3).eq.'plt')then
+        call edisp(iuout,'The stand-alone plant module. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <plant network file>]')
+      elseif(appn(1:3).eq.'prj')then
+        call edisp(iuout,'The project manager.')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'       [-zone <name|index>]')
       elseif(appn(1:3).eq.'pro')then
         call edisp(iuout,'The event profiles database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <profiles db>]')
-      elseif(appn(1:3).eq.'tut')then
-        call edisp(iuout,'The ESP-r tutorial. ')
+      elseif(appn(1:3).eq.'res')then
+        call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <results file>]')
+        call edisp(iuout,'   [-act <action, {interactive|silent}>]')
+        call edisp(iuout,'  (where action {ipv_win|ipv_trn|ipv_sum|)')
+        call edisp(iuout,'                 ipv_ann|BEMS|recover})')
+        call edisp(iuout,'  (where default is interactive mode and')
+        call edisp(iuout,'   silent is automatic execution)')
+        call edisp(iuout,'   [-actf file providing bems commands or')
+        call edisp(iuout,'   recovery commands]')
+        call edisp(iuout,'   [-s < width, offset left & top>]')
+        call edisp(iuout,' ')
+        call edisp(iuout,'  where -mode options are:')
+        call edisp(iuout,'    text    = text mode')
+        call edisp(iuout,'    graphic = graphic mode')
+        call edisp(iuout,'    script = script mode')
+        call edisp(iuout,' ')
+        call edisp(iuout,' -help :this help message. ')
+        return
+      elseif(appn(1:3).eq.'tdf')then
+        call edisp(iuout,'The temporal database manager. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <database file>]')
+        call edisp(iuout,'       [-act {update|extract|export|}')
+        call edisp(iuout,'              import}}')
+        call edisp(iuout,'       [-actf file as follows:')
+        call edisp(iuout,' if act = update, actf gives commands')
+        call edisp(iuout,' if act = extract, actf gives commands')
+        call edisp(iuout,' if act = export, actf holds exported data')
+        call edisp(iuout,' if act = import, actf is data to import')
+        call edisp(iuout,'       [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'vew')then
         call edisp(iuout,'The hidden line viewer. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -788,7 +910,7 @@ C into binary, and set default terminal type as necessary
       actf  = 'UNKNOWN'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -803,7 +925,7 @@ C        call edisp(iuout,outs)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-          call parsimh(appn)
+          call parpsfh(appn)
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
@@ -861,35 +983,12 @@ C        call edisp(iuout,outs)
         outs=' '
         write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
      &   ' in ',aut,' mode and ',browse,' browsing.'
+C        call edisp(iuout,outs)
         return
       endif
 
 C Errors.
    2  write(6,'(a)') 'parpsf: error extracting parameters.'
-      return
-      end
-
-C ****** parsimh
-C Help message for parsim.
-      subroutine parsimh(appn)
-      COMMON/OUTIN/IUOUT,IUIN
-      character appn*24
-
-      call edisp(iuout,'This is the ESP-r Simulator. ')
-      call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      call edisp(iuout,'       [-file <configuration file>]')
-      call edisp(iuout,'   [-p <param_set_name, {interactive|silent}>]')
-      call edisp(iuout,'      (where the default is interactive)')
-      call edisp(iuout,'      (and silent is automatic execution)')
-      call edisp(iuout,'   [-actf file providing bems commands')
-      call edisp(iuout,'   [-s < width, offset left & top>]')
-      call edisp(iuout,' ')
-      call edisp(iuout,'  where -mode options are:')
-      call edisp(iuout,'    text    = text mode')
-      call edisp(iuout,'    graphic = graphic mode')
-      call edisp(iuout,'    script = script mode')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
       return
       end
 
@@ -935,7 +1034,7 @@ C into binary, and set default terminal type as necessary
       actf  = 'UNKNOWN'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -948,7 +1047,7 @@ C        call edisp248(iuout,outs,90)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-          call parresh(appn)
+          call parpsfh(appn)
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
@@ -992,14 +1091,11 @@ C        call edisp248(iuout,outs,90)
 
   42    continue
         outs=' '
-        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
+        write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        outs=' '
-        write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
+     &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-C        call edisp(iuout,outs)
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1008,33 +1104,122 @@ C Errors.
       return
       end
 
-C ****** parresh
-C Help message for parres.
-      subroutine parresh(appn)
+C ********* parclm
+C  Allowing terminal, size, input file, action and silent arguments
+C  and output (converted) file to be passed to clm from the invocation line.  
+
+      subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
       COMMON/OUTIN/IUOUT,IUIN
-      character appn*24
 
-      call edisp(iuout,'This is the ESP-r analysis module. ')
-      call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      call edisp(iuout,'       [-file <results file>]')
-      call edisp(iuout,'   [-act <action, {interactive|silent}>]')
-      call edisp(iuout,'  (where action {ipv_win|ipv_trn|ipv_sum|)')
-      call edisp(iuout,'                 ipv_ann|BEMS|recover})')
-      call edisp(iuout,'  (where default is interactive mode and')
-      call edisp(iuout,'   silent is automatic execution)')
-      call edisp(iuout,'   [-actf file providing bems commands or')
-      call edisp(iuout,'   recovery commands]')
-      call edisp(iuout,'   [-s < width, offset left & top>]')
-      call edisp(iuout,' ')
-      call edisp(iuout,'  where -mode options are:')
-      call edisp(iuout,'    text    = text mode')
-      call edisp(iuout,'    graphic = graphic mode')
-      call edisp(iuout,'    script = script mode')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
+      integer termtype,iappw,iappx,iappy
+      character*48 prog
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,ascif*72,act*16,aut*12
 
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
+      iappw = 0
+      iappx = 0
+      iappy = 0
+      inf  = 'UNKNOWN'
+      act = 'NONE'
+      aut  = 'interactive'
+      ascif  = 'UNKNOWN'
+      argument = ' '
+
+C Get arguments from command line: if one parameter.
+      if(m.eq.0)then
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
+C        call edisp248(iuout,outs,90)
+        return
+      elseif(m.ge.1)then
+ 41     i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+
+        if(argument(1:5).eq.'-help')then
+          call parpsfh(appn)
+          stop
+        elseif(argument(1:5).eq.'-mode')then
+          i=i+1
+          call getarg(i,argument)
+          if(argument(1:4).eq.'text')then
+            termtype = -1
+            mode = 'text'
+          elseif(argument(1:4).eq.'page')then
+            termtype = -2
+            mode = 'page'
+          elseif(argument(1:5).eq.'graph')then
+            termtype = 8
+            mode = 'graphic'
+          elseif(argument(1:6).eq.'script')then
+            termtype = -6
+            mode = 'script'
+          endif
+        elseif(argument(1:2).eq.'-s')then
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+        elseif(argument(1:5).eq.'-file')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:4).eq.'-act')then
+          i=i+1
+          call getarg(i,act)
+          i=i+1
+          call getarg(i,aut)
+          i=i+1
+          call getarg(i,ascif)
+        endif
+        goto 41
+
+  42    continue
+        outs=' '
+        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf))
+C        call edisp(iuout,outs)
+        outs=' '
+        write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
+     &   ' in ',aut,' mode.'
+C        call edisp(iuout,outs)
+        write(outs,'(2a)') 'using/making file ',ascif(1:lnblnk(ascif))
+C        call edisp(iuout,outs)
+        return
+      endif
+
+C Errors.
+   2  write(6,'(a)') 'parclm: error extracting parameters.'
       return
       end
+
 
 C ********* parsfza (equivalent to startsfza.c)
 C  Allowing terminal, size, config file, zone focus and actions arguments
@@ -1077,7 +1262,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1094,7 +1279,7 @@ C        call edisp(iuout,outs)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-          call parsfzah(appn)
+          call parpsfh(appn)
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
@@ -1148,27 +1333,6 @@ C Errors.
       return
       end
 
-C ****** parsfzah
-C Help message for parsfza.
-      subroutine parsfzah(appn)
-      COMMON/OUTIN/IUOUT,IUIN
-      character appn*24
-      call edisp(iuout,'The shading & insolation database module.')
-      call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      call edisp(iuout,'       [-file <configuration file>]')
-      call edisp(iuout,'       [-zone <name|index>]')
-      call edisp(iuout,'       [-s < width, offset left & top>]')
-      call edisp(iuout,' ')
-      call edisp(iuout,'  where -mode options are:')
-      call edisp(iuout,'    text    = text mode ')
-      call edisp(iuout,'    graphic = graphic mode')
-      call edisp(iuout,'    script = script mode')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
-
-      return
-      end
-
 C ********* parsfz (equivalent to startsfz.c)
 C  Allowing terminal, size, config file, zone focus arguments
 C  to be passed to the program from the invocation line.  
@@ -1177,8 +1341,8 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
-      integer iargc,m
       character*48 prog
+      integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
 
 
@@ -1208,7 +1372,7 @@ C into binary, and set default terminal type as necessary
       zone = 'ALL'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1221,8 +1385,8 @@ C        call edisp248(iuout,outs,90)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-            call parpsfh(appn)
-            stop
+          call parpsfh(appn)
+          stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1259,12 +1423,10 @@ C        call edisp248(iuout,outs,90)
         goto 41
 
   42    continue
-C        write(outs,'(6a)') 'Starting ',prog(1:lnblnk(prog)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-C        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1273,39 +1435,6 @@ C Errors.
       return
       end
 
-C ****** parsfzh
-C Help message for parsfz.
-      subroutine parsfzh(appn)
-      COMMON/OUTIN/IUOUT,IUIN
-      character appn*24
-
-      if(appn(1:3).eq.'prj')then
-        call edisp(iuout,'The project manager.')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
-        call edisp(iuout,'       [-zone <name|index>]')
-      elseif(appn(1:3).eq.'mrt')then
-        call edisp(iuout,'The viewfactor calculation module.')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
-        call edisp(iuout,'       [-zone <name|index>]')
-      elseif(appn(1:3).eq.'grd')then
-        call edisp(iuout,'The 2-D and 3D gridding module.')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
-        call edisp(iuout,'       [-zone <name|index>]')
-      endif
-      call edisp(iuout,'       [-s < width, offset left & top>]')
-      call edisp(iuout,' ')
-      call edisp(iuout,'  where -mode options are:')
-      call edisp(iuout,'    text    = text mode ')
-      call edisp(iuout,'    graphic = graphic mode')
-      call edisp(iuout,'    script = script mode')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
-
-      return
-      end
 
 C ********* partf (equivalent to startup.c)
 C  Allowing terminal and config file arguments
@@ -1315,8 +1444,8 @@ C  to be passed to the program from the invocation line.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype
-      integer iargc,m
       character*48 prog
+      integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
 
 
@@ -1342,7 +1471,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1355,8 +1484,8 @@ C        call edisp(iuout,outs)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-            call partfh(appn)
-            stop
+          call parpsfh(appn)
+          stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1388,44 +1517,6 @@ C        call edisp248(iuout,outs,90)
       endif
       end
 
-C ****** partfh
-C Help message for partf.
-      subroutine partfh(appn)
-      COMMON/OUTIN/IUOUT,IUIN
-      character appn*24
-
-      if(appn(1:3).eq.'pfs')then
-        call edisp(iuout,'This is the power flow simulator. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
-      elseif(appn(1:3).eq.'plt')then
-        call edisp(iuout,'The stand-alone plant module. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <plant network file>]')
-      elseif(appn(1:3).eq.'tdf')then
-        call edisp(iuout,'The temporal database manager. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <database file>]')
-        call edisp(iuout,'       [-act {update|extract|export|}')
-        call edisp(iuout,'              import}}')
-        call edisp(iuout,'       [-actf file as follows:')
-        call edisp(iuout,' if act = update, actf gives commands')
-        call edisp(iuout,' if act = extract, actf gives commands')
-        call edisp(iuout,' if act = export, actf holds exported data')
-        call edisp(iuout,' if act = import, actf is data to import')
-        call edisp(iuout,'       [-s < width, offset left & top>]')
-      endif
-      call edisp(iuout,' ')
-      call edisp(iuout,'  where -mode options are:')
-      call edisp(iuout,'    text    = text mode ')
-      call edisp(iuout,'    graphic = graphic mode')
-      call edisp(iuout,'    script = script mode')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
-
-      return
-      end
-
 C ********* parspza 
 C  Allowing terminal, size, config file, scene purpose and actions arguments
 C  to be passed to the program from the invocation line.  
@@ -1436,7 +1527,7 @@ C  to be passed to the program from the invocation line.
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,appn*24
+      character argument*72,mode*8,inf*144,appn*24
       character outs*248,aim*12,act*72,zone*16
 
 
@@ -1468,12 +1559,12 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
 C        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with scene purpose',aim(1:lnblnk(aim))
@@ -1555,8 +1646,8 @@ C  to be passed to the program from the invocation line.
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*72,actf*144,appn*24
-      character outs*124,act*16
+      character argument*72,mode*8,inf*144,actf*72,appn*24
+      character outs*248,act*16
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1586,7 +1677,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C  Get arguments from command line: If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1600,7 +1691,7 @@ C        call edisp248(iuout,outs,90)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-          call partfh(appn)
+          call parpsfh(appn)
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
@@ -1696,14 +1787,16 @@ C If one parameter.
       call edisp(iuout,'The product model filter. ')
       call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
       call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
-      call edisp(iuout,'  -of {esp|dxf|viewer|zip|xfig} -out <file>')
+      call edisp(iuout,
+     &  '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
       call edisp(iuout,' ')
       call edisp(iuout,'Where options are:')
       call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
       call edisp(iuout,'      (dxf = AutoCAD V11-12)')
       call edisp(iuout,'      (ww = ww graphic commands)')
       call edisp(iuout,' -in [file]  = input file')
-      call edisp(iuout,' -of [esp|dxf|viewer|tsbi3|xfig] = dest format')
+      call edisp(iuout,
+     &  ' -of [esp|dxf|viewer|tsbi3|xfig|vrml] = dest format')
       call edisp(iuout,' -out [file] = output file')
       call edisp(iuout,' -v          = verbose mode')
       call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
@@ -1711,10 +1804,10 @@ C If one parameter.
       call edisp(iuout,' -obs        = include esp-r obstructions')
       call edisp(iuout,' ')
       call edisp(iuout,'The following combinations are supported:')
-      call edisp(iuout,'   input format    output format')
-      call edisp(iuout,'   esp-r           dxf, viewer, zip, tsbi3')
-      call edisp(iuout,'   dxf             esp-r, viewer')
-      call edisp(iuout,'   zip             esp-r, viewer')
+      call edisp(iuout,'  input format  output format')
+      call edisp(iuout,'  esp-r         dxf, viewer, zip, tsbi3, vrml')
+      call edisp(iuout,'  dxf           esp-r, viewer')
+      call edisp(iuout,'  zip           esp-r, viewer')
       call edisp(iuout,' ')
       call edisp(iuout,'If converting to esp-r then an additional') 
       call edisp(iuout,'parameter is allowed:')
@@ -1759,9 +1852,9 @@ C If one parameter.
         write(outs,'(4a)') 'Starting ecnv in ',
      &    oform(1:lnblnk(oform)),' mode with in file ',
      &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a,a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
-        call edisp(iuout,outs)
+C        call edisp(iuout,outs)
+        write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
+C        call edisp(iuout,outs)
         return
       endif
       end
@@ -1785,6 +1878,7 @@ C Comment out UNIX or NT version as required.
         if(unixok)then
           if(string(I:I).eq.'/')islash=I
         else
+          if(string(I:I).eq.'\\')islash=I
 C         if(string(I:I).eq.'\')islash=I
         endif
         if(ichar(string(I:I)).lt.32)goto 100

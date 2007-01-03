@@ -793,7 +793,6 @@ C common block data. Idbh is position in hash table.
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
 
 C Write first two records of db.
-C      c20='*ESP-r binary db    '
       c20='*ESP-r binary db 2  '
       irec=1
       WRITE(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
@@ -888,7 +887,7 @@ C and common blocks.
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
 
 C Initialise variables.
-      idbwidth(idbh)=24
+      idbwidth(idbh)=65
       lastr(idbh)=0
       dbtag(idbh)=' '
       dbmenu(idbh)=' '
@@ -1136,6 +1135,7 @@ C changing its length).
       character srcchr*4,srcnote*248,bkdoctyp*2
       character bkdoc*72,bk4*4,bk12*12,bk72*72
       character bk248*248
+      character errmsg*48
       logical bkdocok,ok,dok
 
 C Setup a tab character.
@@ -1146,6 +1146,8 @@ C Open the binary file and read the header.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
       call EFOPRAN(IFB,BFIL,idbw,1,IER)
+
+      errmsg='reading how many tags menus units etc.'
       irec=1
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
@@ -1168,6 +1170,8 @@ C Open the binary file and read the header.
       elseif(c20(1:20).eq.'*ESP-r binary db 2  ')then
         idbver(idbh)=2
       endif
+
+      errmsg='reading database date and note.'
       irec=2
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)dbdate(idbh),dbnote(idbh)
 
@@ -1227,6 +1231,7 @@ C If units edited then write updated text.
  252    continue
       else
         if(nbunit(idbh).gt.0)then
+          errmsg='reading unit char unit string & note.'
           irec = 2
           do 4 inbu=1,nbunit(idbh)
             IREC=IREC+1
@@ -1249,6 +1254,7 @@ C which had been setup as the user edited the text.
  253    continue
       else
         if(nbsrc(idbh).gt.0)then
+          errmsg='reading source char source note.'
           irec = 2 + nbunit(idbh)
           do 5 inbsrc=1,nbsrc(idbh)
 
@@ -1276,6 +1282,8 @@ C be updated then write out alternative text.
           nbdbdoc(idbh)=1
           dbdoc(1)='Database documentation to be inserted here'
         endif
+
+        errmsg='reading database documentation.'
         IREC = 2+nbunit(idbh)+nbsrc(idbh)
         do 51 i=1,nbdbdoc(idbh)
           IREC=IREC+1
@@ -1285,6 +1293,7 @@ C be updated then write out alternative text.
       endif
 
 C Read start record of each category.
+      errmsg='reading start record for each category.'
       IREC = 3+nbunit(idbh)+nbsrc(idbh)+nbdbdoc(idbh)
       read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)(irscat(j),j=1,24)
       IREC=IREC+1
@@ -1299,6 +1308,7 @@ C Skip to first category record and read cat data.
       icl=0
       iit=0
       do 42 k=1,nbcat(idbh)
+        errmsg='reading category type menu date etc.'
         icl=icl+1
         IREC=irscat(icl)
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
@@ -1323,6 +1333,7 @@ C If this category documentation to be updated then use bkdoc text.
             nbcatdoc(icl)=1
             catdoc(1)='Category documentation to be inserted here.'
           endif
+          errmsg='reading category documentation.'
           do 53 ij=1,nbcatdoc(icl)
             IREC=IREC+1
             read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(ij)
@@ -1461,7 +1472,8 @@ C Close file before exiting.
       CALL ERPFREE(IFB,IOS)
       RETURN
 
-    1 write(outs,'(a,I6)') ' Error writing record ',IREC
+    1 write(outs,'(a,I6,4a)') 'SCANDB error at record',IREC,
+     &  ' of file ',dbtag(idbh),' when ',errmsg(1:lnblnk(errmsg))
       call edisp(iuout,outs)
       CALL ERPFREE(IFA,IOS)
       CALL ERPFREE(IFB,IOS)
@@ -1804,12 +1816,15 @@ C and current items then lengths of each list.
       character dbnote*72,c8*8,c20*20,outs*124,LGENDB*72
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
+      character errmsg*48
 
 C Open the binary file and read the header if not already done so.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
       call EFOPRAN(IFB,LGENDB,idbw,1,IER)
       if(ier.ne.0)return
+
+      errmsg='reading how many tags menus units etc.'
       irec=1
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
@@ -1828,6 +1843,7 @@ C Open the binary file and read the header if not already done so.
         return
       endif
 
+      errmsg='reading database date and note.'
       IREC=2
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)dbdate(idbh),dbnote(idbh)
 
@@ -1859,6 +1875,7 @@ C Open the binary file and read the header if not already done so.
 
 C Units and Sources.
       if(nbunit(idbh).gt.0.and.nbunit(idbh).le.12)then
+        errmsg='reading unit char unit string & note.'
         IREC=2
         do 4 inbu=1,nbunit(idbh)
           IREC=IREC+1
@@ -1869,7 +1886,8 @@ C Units and Sources.
         write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
       endif
       if(nbsrc(idbh).gt.0.and.nbsrc(idbh).le.24)then
-        IREC = 2+nbunit(idbh)
+        errmsg='reading source char source note.'
+        IREC = 2 + nbunit(idbh)
         do 5 inbsrc=1,nbsrc(idbh)
 
 C Read next record for srcnote.
@@ -1883,6 +1901,7 @@ C Read next record for srcnote.
 
 C Db and attribute help records.
       if(nbdbdoc(idbh).ge.1.and.nbdbdoc(idbh).le.10)then
+        errmsg='reading database documentation.'
         IREC = 2+nbunit(idbh)+nbsrc(idbh)
         do 51 i=1,nbdbdoc(idbh)
           IREC = IREC+1
@@ -1893,6 +1912,7 @@ C Db and attribute help records.
       endif
 
 C Read start record of each category.
+      errmsg='reading start record for each category.'
       IREC = 3+nbunit(idbh)+nbsrc(idbh)+nbdbdoc(idbh)
       read(IFB,REC=IREC,IOSTAT=IOS,ERR=1) (irscat(j),j=1,24)
       IREC=IREC+1
@@ -1907,6 +1927,7 @@ C Skip to first category record and read cat data.
       icl=0
       iit=0
       do 42 k=1,nbcat(idbh)
+        errmsg='reading category type menu date etc.'
         icl=icl+1
         IREC=irscat(icl)
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
@@ -1915,6 +1936,7 @@ C Skip to first category record and read cat data.
 C Debug...
         write(6,*)'scan ',cattag(icl),
      &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
+        errmsg='reading category documentation.'
         do 52 i=1,nbcatdoc(icl)
           IREC=IREC+1
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(i)
@@ -1961,8 +1983,8 @@ C Close file before exiting.
       RETURN
 
 C Error message.
-    1 write(outs,'(a,I6,a,i3)') 'SCANDB Error reading record ',IREC,
-     &  ' of file unit ',ifb
+    1 write(outs,'(a,I6,4a)') 'SCANDB error at record',IREC,
+     &  ' of file ',dbtag(idbh),' when ',errmsg(1:lnblnk(errmsg))
       call edisp(iuout,outs)
       CALL ERPFREE(IFB,IOS)
       return

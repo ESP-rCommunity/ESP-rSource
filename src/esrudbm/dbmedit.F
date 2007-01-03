@@ -56,7 +56,7 @@ C Icwhich is its category. Idbh is the position in the hash table.
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb/LGENDB
+C      common/gendb/LGENDB
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -667,7 +667,7 @@ C allow choice.  Itwhich is the index of the db item selected.
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb/LGENDB
+C      common/gendb/LGENDB
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -1466,7 +1466,7 @@ C the current database.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/gendb/LGENDB
+C      common/gendb/LGENDB
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
      &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -1586,7 +1586,7 @@ C iitnew is the new item associated with it.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/gendb/LGENDB
+C      common/gendb/LGENDB
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      

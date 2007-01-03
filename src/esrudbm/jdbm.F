@@ -21,6 +21,14 @@ C Boston, MA 02111-1307 USA.
 C dbm provides access to generic esp-r database, conversions
 C and editing facilities.
 
+C << issues to bring generic databases in line with current concepts:
+C << a)
+C <<
+C << b)
+C <<
+C << c)
+C <<
+
       program dbm
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
@@ -56,10 +64,12 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Generic db commons.
-      common/gendb/LGENDB
-
 C Name of databases in common/gendbfn and file unit index in common/gendbfi
 C are from esprdbfile.h
+
+C << why is LGENDB in common? >>
+C      common/gendb/LGENDB
+
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -85,8 +95,8 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
-      character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72,tfile*72
-      character longtfile*144
+      character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
+      character tfile*72,longtfile*144
       character outs248*248,LTMP*144
       character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
       character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
@@ -113,9 +123,11 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
+      delim = '-'
+      ixopen = 0
 
 C Get command line parameters.
-      call parpsf(MODL,iapw,iapx,iapy,inf)
+      call parpsf(MODL,iappw,iappx,iappy,inf)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -125,6 +137,95 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       write(path,'(a1,a1)')'.',fs
+
+C Initialise output device, assume minimal trace, and a smallish
+C wide display.
+      MMOD=MODL
+      if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
+        iappwi= 740
+        iapphi= 530
+        iappx=30
+        iappy=30
+      else
+        if(iappx.le.0)iappx=30
+        if(iappy.le.0)iappy=30
+        if(iappw.le.200)then
+          iappwi=int(740*iappw*0.01)
+          iapphi=int(530*iappw*0.01)
+        elseif(iappw.gt.200)then
+          continue
+        endif
+      endif
+
+      if(iappw.gt.0.and.iappw.lt.100)then
+        menuchw = MAX0(int(41*iappw*0.01),12)
+        LIMTTY=18
+        LIMIT =18
+      else
+        menuchw = 41
+        LIMTTY=18
+        LIMIT =18
+      endif
+      IF(MMOD.EQ.8)THEN
+
+C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback).
+        IMFS=1
+        IFS=1
+        ITFS=1
+        call userfonts(IFS,ITFS,IMFS)
+      ELSE
+        LIMTTY=18
+        LIMIT =18
+      ENDIF
+      CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
+     &'ESP-r db manager: enquiries to esru@strath.ac.uk')
+
+C Open the text display box equal to LIMTTY if MODEL = 8.
+      IF(MODEL.EQ.8)THEN
+        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
+#ifdef X11
+        call opencpw
+        call opentutorial
+        call opensetup
+#endif
+        mdispl=0
+        nifgrey=0
+        ncset=0
+        ngset=0
+        nzonec=0
+        call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+        call startbuffer()
+
+C << this might not have been implemented yet >>
+C        call charsusingfnt(ifs,icw,nlines)
+        icw=80
+      else
+        icw=72
+      endif
+      IF(MODEL.NE.-6)ICOUT=IUOUT
+
+C Display copywrite based on current text display width.
+      write(outs248,'(3a)')
+     &  'ESP-r - database manager: Version 2.2a of January 2006. ',
+     &  'Copyright 2001-6 Energy Systems Research Unit, University ',
+     &  'of Strathclyde, Glasgow Scotland.'
+      call edisp248(IUOUT,outs248,icw)
+      call edisp(IUOUT,' ')
+
+C Find the user's home folder then get user's custom settings.
+C Make temporary use of file unit IAF=IFIL+1.
+      IAF=IFIL+1
+      call usrhome(upath)
+      if(unixok)then
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
+      else
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
+      endif
+      call scesprc(esprc,IAF,0,IIER)
+
+C Scan the defaults file for default configuration. << tmp name >>
+      defdbfl='./gdefaults'
+      call escgdef(dfdblbl,defdbfl,IAF,IER)
 
       LGENDB=' '
 
@@ -169,88 +270,6 @@ C Initial clear of (all possible db) generic db commons and hash tables.
         call clrgdbc(j)
  245  continue
 
-C Initialise output device, assume minimal trace, and a smallish
-C wide display.
-      MODEL=MODL
-      iappw=iapw
-      iappx=iapx
-      iappy=iapy
-      if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappwi= 740
-        iapphi= 530
-        iappx=30
-        iappy=30
-      else
-        if(iappx.le.0)iappx=30
-        if(iappy.le.0)iappy=30
-        if(iappw.le.200)then
-          iappwi=int(740*iappw*0.01)
-          iapphi=int(530*iappw*0.01)
-        elseif(iappw.gt.200)then
-          continue
-        endif
-      endif
-
-      if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(41*iappw*0.01),12)
-      else
-        menuchw = 41
-      endif
-      IF(MMOD.EQ.8)THEN
-
-C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback).
-        IMFS=1
-        IFS=1
-        ITFS=1
-        call userfonts(IFS,ITFS,IMFS)
-        LIMTTY=18
-        LIMIT =18
-      ENDIF
-      CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r db manager: problems e_mail esru@strath.ac.uk')
-
-C Open the text display box equal to LIMTTY if MODEL = 8.
-      IF(MODEL.EQ.8)THEN
-        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
-        mdispl=0
-        nifgrey=0
-        ncset=0
-        ngset=0
-        nzonec=0
-        call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
-        call startbuffer()
-
-C << this might not have been implemented yet >>
-C        call charsusingfnt(ifs,icw,nlines)
-        icw=80
-      else
-        icw=72
-      endif
-      IF(MODEL.NE.-6)ICOUT=IUOUT
-
-C Display copywrite based on current text display width.
-      write(outs248,'(3a)')
-     &  'ESP-r - database manager: Version 2.1g of October 2005. ',
-     &  'Copyright 2001-4 Energy Systems Research Unit, University ',
-     &  'of Strathclyde, Glasgow Scotland.'
-      call edisp248(IUOUT,outs248,icw)
-      call edisp(IUOUT,' ')
-
-C Find the user's home folder then get user's custom settings.
-C Make temporary use of file unit IAF=IFIL+1.
-      IAF=IFIL+1
-      call usrhome(upath)
-      if(unixok)then
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
-      else
-        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
-      endif
-      call scesprc(esprc,IAF,0,IIER)
-
-C Scan the defaults file for default configuration. << tmp name >>
-      defdbfl='./gdefaults'
-      call escgdef(dfdblbl,defdbfl,IAF,IER)
-
 C Take command line file name to LCMDF and use as initial climate file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
         LCMDFL=' '
@@ -261,6 +280,7 @@ C Take command line file name to LCMDF and use as initial climate file.
       endif
 
 C Confirm problem name.
+C << see about something other than /usr/esru >>
       H(1)='The system configuration file holds the definition of'
       H(2)='the building/plant to be simulated, including the'
       H(3)='names of all of the files required. If the name given'
@@ -277,47 +297,56 @@ C name with the full path.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+          CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
      &      'config file name',IER,5)
         elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+          CALL EASKF(LTMP,' Model name ? ',' ',124,DFILE,
      &      'config file name',IER,5)
         elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+          CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
      &      'config file name',IER,5)
         endif
       elseif(iglib.eq.2)then
-        CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+        CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
      &    'config file name',IER,5)
       else
-        CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+        CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
      &    'config file name',IER,5)
       endif
 
-      IF(LTMP.EQ.' ')GOTO 29
+      IF(LTMP(1:2).EQ.'  ')GOTO 29
       LCMDFL=LTMP
 
 C Find the path and local file name. Reset all gendbfn to defaults.
       call fdroot(LCMDFL,path,LCFGF)
       call edisp(iuout,' ')
-      call usrmsg(' Scanning the model...',' ','-')
+      call usrmsg('Scanning the model configuration...',' ','-')
       MODE='ALL '
       itrc=0
       IAPROB=IFIL+2
       call ersysg(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
       if(IER.eq.0)then
         CFGOK=.TRUE.
-        call usrmsg(' Scanning the model...done.',' ','-')
+        call usrmsg('Scanning the model configuration...done.',' ','-')
+      else
+        call usrmsg('Scanning the model configuration...failed.',
+     &    '(file not found or error during scan) assuming defaults.',
+     &    'W')
       endif
 
 C Open and scan known databases (from least dependant to most dependant).
 C In each case check iter return code to see if file can be directly
 C scanned (iter=0), if it should be converted from asci (iter=2), or
 C if it is a legacy file which might be imported (iter=3).
-      call usrmsg(' Scanning the databases...',' ','-')
+      call usrmsg('Scanning the databases...',' ','-')
       action='all_depend'
       call dealwithgdb(action,ier)
-      call usrmsg(' Scanning the databases...done.',' ','-')
+      if(ier.eq.0)then
+        call usrmsg('Scanning the databases...done.',' ','-')
+      else
+        call usrmsg('Scanning the databases...might have had a',
+     &    'problem (see messages generated during scan).','W')
+      endif
 
 C Main menu and control loop.
     3 INO=-4
@@ -635,20 +664,20 @@ C Call EASKF depending on the current file name length.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+            CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
      &        'config file name',IER,5)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LTMP,' Problem name ? ',' ',124,DFILE,
+            CALL EASKF(LTMP,' Model name ? ',' ',124,DFILE,
      &        'config file name',IER,5)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+            CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
      &        'config file name',IER,5)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(LTMP,' Problem name ? ',' ',144,DFILE,
+          CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
      &      'config file name',IER,5)
         else
-          CALL EASKF(LTMP,' Problem name ? ',' ',96,DFILE,
+          CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
      &      'config file name',IER,5)
         endif
 
@@ -818,6 +847,7 @@ C CTLEXP: Control feedback to export wireframe or text feedback area.
 C Assign user-specified export file - checking if local or remote.
 C tg is a character T or G specifying text or graphic 
 C info being saved.
+C << needs to be compaired for longer strings >>
       subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1614,9 +1644,10 @@ C if database names have changed.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/rpath/path
+      common/deflt4/dinstpath
 
 C Generic db commons.
-      common/gendb/LGENDB
+C      common/gendb/LGENDB
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
@@ -1628,7 +1659,8 @@ C Generic db commons.
       character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
-      character LAGENDB*72,LGENDB*72,path*72,longtfile*144
+      character LAGENDB*72,LGENDB*72,longtfile*144
+      character dinstpath*48,path*72,dirpath*48
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
 
@@ -1639,6 +1671,11 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
 
 C Assume no changes in database, that file does not exist and
 C it is not a new file. Also remember the database tag (db) in dbask.
@@ -1737,6 +1774,9 @@ C or has previously been opened.
       else
         gendbfn(jdbhash)=tfile
       endif
+
+C Check the database type returing information via the variables
+C idbhash (which type of database) and ITER (what state it is in).
       db=dba(jdbhash)
       idbw=idbwidth(jdbhash)
       call ckgdbtype(igendbf(jdbhash),gendbfn(jdbhash),db,idbhash,idbw,
@@ -1758,6 +1798,8 @@ C The file is a binary file of the correct type so just continue.
       elseif(iter.eq.1)then
         XST=.false.
       elseif(iter.eq.2)then
+
+C << why not just do the conversion? >>
         call usrmsg('This is an ASCII version of the database',
      &    'please request a conversion ASCII-BINARY.','W')
         XST=.true.
