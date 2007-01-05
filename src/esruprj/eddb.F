@@ -2163,7 +2163,8 @@ C << explicit / in path - use fs instead! >>
         call MENUATOL(outs,'Event profile options:',
      &    'a browse/edit (NOT APPLICABLE)','b select another file',
      &    'c make a new database','d copy the default database',
-     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,31)
+     &    'e binary > ascii','f ascii > binary',' ',' ',' ',' ',' ',
+     &    ' ',isw,idno,31)
         copydef=.true.
       elseif(L144(1:linst).eq.linstd(1:linst))then
 

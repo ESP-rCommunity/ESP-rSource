@@ -74,8 +74,8 @@ compiler_version="none"    # append string to compilers?
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dfs c2e cfg clm e2r ecnv eco grd ish mfs mld mrt pdb prj pro res tdf vew"
-# (bld plt, net and vww are not currently built)
+programs="aco b2e bps dbm dfs c2e cfg clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+# (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -1262,7 +1262,6 @@ BPS=bps
 CLM=clm
 ISH=ish
 PRJ=prj
-PRO=pro
 PDB=pdb
 if [ -f esrubps/bps ] ; then
   BPS=${SRCdir}/esrubps/bps
@@ -1275,9 +1274,6 @@ if [ -f esruish/ish ] ; then
 fi
 if [ -f esruprj/prj ] ; then
   PRJ=${SRCdir}/esruprj/prj
-fi
-if [ -f esrupro/pro ] ; then
-  PRO=${SRCdir}/esrupro/pro
 fi
 if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
@@ -1657,26 +1653,26 @@ if [ "$install_dbs" = "yes" ]; then
   
      cd ${SRCdir}/databases
   
-     echo "Creating binary event profiles database ..."
-     $PRO -mode text >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/profiles.db1
-y
-~
+     echo "Creating binary event profiles databases ..."
+     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
+g
+f
 profiles.db1.a
 ${DESTdir}/esp-r/databases/profiles.db1
 y
 -
+-
 zzz
 
-   $PRO -mode text >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/profiles.db2
-y
-~
+     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
+g
+f
 profiles.db2.a
 ${DESTdir}/esp-r/databases/profiles.db2
 y
+-
 -
 zzz
    echo "... done."

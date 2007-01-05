@@ -4,7 +4,7 @@
 SRCdir=`pwd`
 
 PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt pdb prj pro res tdf vew
+	   mld mrt pdb prj res tdf vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -73,8 +73,6 @@ plt:
 	cd $(SRCdir)/esruplt; $(MAKE)
 prj: 
 	cd $(SRCdir)/esruprj; $(MAKE)
-pro: 
-	cd $(SRCdir)/esrupro; $(MAKE)
 res: 
 	cd $(SRCdir)/esrures; $(MAKE)
 tdf: 
@@ -108,7 +106,6 @@ install:
 	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip ./esrupdb/pdb$(EXE); cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruplt/plt$(EXE) ]; then strip ./esruplt/plt$(EXE); cp ./esruplt/plt$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip ./esruprj/prj$(EXE); cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrupro/pro$(EXE) ]; then strip ./esrupro/pro$(EXE); cp ./esrupro/pro$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then strip ./esrures/res$(EXE); cp ./esrures/res$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then strip ./esrutdf/tdf$(EXE); cp ./esrutdf/tdf$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruvew/viewer$(EXE) ]; then strip ./esruvew/viewer$(EXE); cp ./esruvew/viewer$(EXE) $(ESPdir)/bin; fi
@@ -138,7 +135,6 @@ clean:
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
 	cd $(SRCdir)/esruplt; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
-	cd $(SRCdir)/esrupro; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
 	cd $(SRCdir)/esrutdf; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
