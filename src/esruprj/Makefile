@@ -19,7 +19,7 @@ OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o dossupport.o \
 	  e2eplus.o e3dviews.o ecasctl.o econstr.o \
 	  econtrol.o edatabase.o edcasctl.o edcfd.o edcfg.o edcon.o edcondb.o \
-	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edspmtl.o edtopol.o \
+	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edpro.o edspmtl.o edtopol.o \
 	  edzone.o egeometry.o egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o \
 	  enetprj.o enetrewr.o eroper.o esru_misc.o esystem.o filelist.o \
 	  folders.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o mcdbscn.o \

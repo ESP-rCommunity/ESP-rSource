@@ -2074,6 +2074,7 @@ C Logic as other copy database.
 
 C ********** EDDBPROFILE
 C EDDBPROFILE Changes the events profile database current cfg file references.
+C This version uses call to subroutine casfmk. 
 C moddb is from version manager
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
@@ -2083,6 +2084,7 @@ C
 
       PARAMETER  (MCP=35)
 
+      common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -2093,15 +2095,14 @@ C
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
-      CHARACTER H*72,LTMP*72
-      character longtfile*144,message*48
+      CHARACTER H*72,LTMP*72,LASCI*72,DFILE*72,L144*144
       CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
-      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER OUTS*124,APP*4,ext*4,message*48
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,linstd*60,tmode*8
+      character dinstpath*48,path*72,linstd*60
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2113,9 +2114,11 @@ C Set folder separator (fs) to \ or / as required.
 
       moddb=.false.
 
- 40   ltmp=LPRFDB
+ 40   write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+      write(ltmp,'(a)') LPRFDB(1:71)
+      llt=lnblnk(L144)
       write(outs,'(2a)') 'Options for event profiles db: ',
-     &  LTMP(1:lnblnk(LTMP))
+     &  ltmp(1:lnblnk(ltmp))
       H(1)= '   Events Database '
       H(3)= ' '
       H(4)= 'Profiles in this database are currently used to  '
@@ -2153,7 +2156,7 @@ C << explicit / in path - use fs instead! >>
       write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &  '/databases'
       linst=lnblnk(linstd)
-      call FINDFIL(LTMP,XST)
+      call FINDFIL(L144,XST)
       IF(.NOT.XST)THEN
         idno=2
         isw=0
@@ -2162,7 +2165,7 @@ C << explicit / in path - use fs instead! >>
      &    'c make a new database','d copy the default database',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,31)
         copydef=.true.
-      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+      elseif(L144(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
         idno=1
@@ -2194,25 +2197,16 @@ C Act on the users choice. If nothing selected return to main menu.
 C If file exists open it, test file type, get number of items and close.
         if(XST)then
           IER=0
-          call EFOPRAN(IPRODB,LTMP,10,1,IER)
+          call EFOPRAN(IPRODB,L144,10,1,IER)
           IF(ier.eq.0)then
-            LPRFDB=LTMP
             CALL USRMSG(' opened profiles db...',' ','-')
             IREC=1
             READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
             CALL USRMSG(' opened profiles db...ok',' ','-')
             CALL ERPFREE(IPRODB,ISTAT)
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-            call tstamp('>','PRJ: start pro')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,longtfile,concat)
-            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                  longtfile(1:lnblnk(longtfile)),' &'
-            call runit(doit,tmode)
+C Call casfmk for the editing/browsing interface.
+            call casfmk(L144,ier)
             moddb=.true.
           else
             call usrmsg('Sorry, error opening the file.',
@@ -2226,12 +2220,42 @@ C name to include the path and create a string to drive viewer.
         endif
       elseif(isw.eq.2)then
 
-        H(1)='An event profiles db holds a schedule of patterns'
-        H(2)='over a day. '
-        CALL EASKS(ltmp,' Event profiles database?',
-     &    ' ',72,DPRFDB,'event profiles database',IER,1)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPRFDB=ltmp
+C LPRFDB not yet 144 char but use longer string buffer.
+ 155    h(1)='An event profiles database holds named sets of profiles'
+        h(2)='in a binary representation. '
+        write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        llt=lnblnk(L144)
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        else
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        endif
+
+        if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
+          llt=lnblnk(L144)
+          if(llt.le.72)then 
+            write(LPRFDB,'(a)') L144(1:lnblnk(L144))
+          else
+            write(LPRFDB,'(a)') L144(1:72)
+          endif
         else
           goto 40
         endif
@@ -2245,16 +2269,8 @@ C use the editing facility.
      &      LPRFDB(1:lnblnk(LPRFDB))
           call edisp(iuout,outs)
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
+C Call casfmk for the editing/browsing interface.
+          call casfmk(L144,ier)
           moddb=.true.
         else
           write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),
@@ -2283,18 +2299,18 @@ C a new db, populate it and present editing facility.
      &    IER,2)
         if(clkok) return
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPRFDB=ltmp
+          write(LPRFDB,'(a)') ltmp
         else
           goto 42
         endif
 
-C Create a minimal events databases (code similar to pro.F).
+C Create a minimal events databases.
         moddb=.true.
         call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
         NITEMS = 1
         NO(1) = 2
         NCG(1)= 1
-        DESCP(1)='First profile'
+        DESCP(1)='Always ON 100%'
         ICGS1(1)=0
         ICGF1(1)=24
         CGS1(1)=100.0
@@ -2322,16 +2338,10 @@ C use the editing facility.
         CALL ASKOK(outs,' Browse or edit database?',OK,dok,4)
         if(OK)then
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
+C Call casfmk for the editing/browsing interface.
+          write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+          call casfmk(L144,ier)
+          moddb=.true.
         endif
       elseif(isw.eq.4)then
 
@@ -2375,7 +2385,7 @@ C Logic for copy similar to the pattern established above.
             endif
             call usrmsg('copying default file via',doit,'-')
             call runit(doit,'-')
-            LPRFDB=LTMP
+            write(LPRFDB,'(a)') LTMP
           else
             doit = ' '
             if(unixok)then
@@ -2389,34 +2399,122 @@ C Logic for copy similar to the pattern established above.
             endif
             call usrmsg('copying file via',doit,'-')
             call runit(doit,'-')
-            LPRFDB=LTMP
+            write(LPRFDB,'(a)') LTMP
           endif
           moddb=.true.
           write(outs,'(2a)') 'Accessing event profiles db:',
      &      LPRFDB(1:lnblnk(LPRFDB))
           call edisp(iuout,outs)
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
+C Call casfmk for the editing/browsing interface.
+          write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+          call casfmk(L144,ier)
+          moddb=.true.
         else
           goto 244
         endif
       elseif(isw.eq.5)then
 
 C Profile db: BINARY > ASCII. 
-        call edisp(iuout,'Use the module pro for BINARY > ASCII...')
+C Ask for the binary file name and then confirm the ASCII db name.
+        IAF=IFIL+1
+        H(1)='The events db contains one or more descriptions of'
+        H(2)='profiles created via a diary entry format.'
+        write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        llt=lnblnk(L144)
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        else
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        endif
+
+        if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
+          llt=lnblnk(L144)
+          if(llt.le.72)then 
+            write(LPRFDB,'(a)') L144(1:lnblnk(L144))
+          else
+            write(LPRFDB,'(a)') L144(1:72)
+          endif
+        else
+          goto 40
+        endif
+
+        write(LASCI,'(A,A2)')LPRFDB(1:lnblnk(LPRFDB)),'.a'
+        DFILE='./newprofiles.db1.a'
+        CALL EASKS(LASCI,' ASCII event profile? ',
+     &    ' ',72,DFILE,'ascii events db',IER,2)
+
+        CALL TROPRO(iuout,IAF,LASCI,IER)
+        call tstamp('>','PRO: convert binary to ascii')
       elseif(isw.eq.6)then
 
 C Profile db: ASCII > BINARY.
-        call edisp(iuout,'Use the module pro for ASCII > BINARY...')
+C Ask for the ASCII file name and then confirm the binary db name.
+        IAF=IFIL+1
+        H(1)='The events db contains one or more descriptions of'
+        H(2)='profiles created via a diary entry format.'
+        llt=lnblnk(LPRFDB)
+        if(llt.le.69)then 
+          write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+        else
+          write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+        endif
+        CALL EASKS(LASCI,' ASCII event profile source? ',
+     &    ' ',72,'profiles.db1.a','ascii events db',IER,2)
+
+        H(1)='The existing binary events db will be overwritten'
+        H(2)='with the data from the ASCII version.'
+        write(L144,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        llt=lnblnk(L144)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        else
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        endif
+
+        if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
+          llt=lnblnk(L144)
+          if(llt.le.72)then 
+            write(LPRFDB,'(a)') L144(1:lnblnk(L144))
+          else
+            write(LPRFDB,'(a)') L144(1:72)
+          endif
+        else
+          goto 40
+        endif
+        CALL TRIPRO(iuout,IAF,LASCI,IER)
       endif
       return
 
