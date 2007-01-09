@@ -27,6 +27,11 @@ C CSIADC Add, delete, edit source/sink models
 C CTIADC Add, delete, edit contaminants
 C CTLIST List contaminant information to text feedback area
 
+C TODO LIST
+C << introduction of 'cancel' option only partially implemented
+C << and instanciation of data edited in a sequence should be
+C << done only after all of the dialogs have been accepted.
+
 C ******************** CTWRIT ********************
 C Dump contaminant model to file 
 C Definitions of most variables is given in ctread.F
@@ -320,6 +325,8 @@ C Definitions of most variables is given in ctread.F
       REAL SPMSUP
       LOGICAL OK,DOK,CLKOK,XST,CLOSER,UNIXOK
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,BROWSE
+
+      integer NTSTEPCT   ! for local editing.
 
 C set contaminant file 
       IUNIT=IFIL+72
@@ -800,9 +807,14 @@ C Now put in filter efficiencies if any
         H(3) =' timestep a five minute timestep is usually appropriate.'
         H(4) =' Contaminant timestep should be integer multiple of '
         H(5) =' building timestep.' 
-        CALL EASKI(NTSTEPC,' ','no of contaminant simulation timesteps / 
-     & hour? ',
-     &        1,'W',120,'W',12,'contaminant simul tstep ',IER,5)
+        H(6)=' '
+        H(7)='A cancel request leaves the model unchanged. '
+        NTSTEPCT=NTSTEPC
+        CALL EASKI(NTSTEPCT,' ',
+     &    'no of contaminant simulation timesteps / hour? ',
+     &    1,'W',120,'W',12,'contaminant simul tstep ',IERI,7)
+        if(ieri.eq.-3) goto 2000
+        NTSTEPC=NTSTEPCT
         GOTO 2000
       ELSE
         GOTO 2000
@@ -1282,10 +1294,61 @@ C editing then also use this facility.
  10     CONTINUE
 
 
-C Now get source/sink type
+C Now get source/sink type.
+C Remind the user what the current source/sink type is!
+        IF(EDIT) THEN
+          if(SPMTYP(ISPMNU).eq.1) then
+           call edisp(iuout,'Currently a constant coefficient')
+          elseif(SPMTYP(ISPMNU).eq.2) then
+           call edisp(iuout,'Currently a cut-off concentration')
+          elseif(SPMTYP(ISPMNU).eq.3) then
+           call edisp(iuout,'Currently an exponential decay/increase')
+          elseif(SPMTYP(ISPMNU).eq.4) then
+           call edisp(iuout,'Currently a bounday layer diffusion')
+          elseif(SPMTYP(ISPMNU).eq.5) then
+           call edisp(iuout,'Currently a time dependant constant mass')
+          elseif(SPMTYP(ISPMNU).eq.6) then
+           call edisp(iuout,'Currently a personal CO2 emission')
+          else
+           call edisp(iuout,'Currently undefined.')
+          endif
+        else
+          call edisp(iuout,'Source sink type not yet defined.')
+        endif
+
  2007   INNO=-2
         H(1) ='Sources and sinks may be defined for each contaminant.'
         H(2) ='These can then be linked to each node to account for'
+        H(3) ='for removal or generation of the contaminant.'
+        H(4) =' '
+        H(5) ='Source/Sink models: '
+        H(6) ='(1) Constant coefficient: A fixed amount G(kg/s) of '
+        H(7) ='    contaminant is added/removed from the node'
+        H(8) ='    mass added/removed = G'
+        H(9) ='(2) Cut-off concentration: The contaminant mass added'
+        H(10)='    to the node decreases until concentration (C) '
+        H(11)='    reaches a cut-off value'
+        H(12)='    mass added = G*(1-C/C_cutoff)'
+        H(13)='(3) Exponential model: Mass decays/increases'
+        H(14)='    exponentially in the node'
+        H(15)='    mass added/removed = G*exp(t/timeconstant)'
+        H(16)='(4) Boundary layer diffusion: Mass emitted (kg/s)'
+        H(17)='    from a surface is given by h*rho*A*(C-C_s/k) '
+        H(18)='    where h = avg. film mass transfer coeff,  '
+        H(19)='    rho = film density of air, A = area of emitting '
+        H(20)='    surface, C = air conc, C_s = surface concentration'
+        H(21)='    of contaminant & k = Henry adsorption coeff'
+        H(22)='(5) Time dependant: A fixed mass (kg/s) of contaminant'
+        H(23)='    is added within a user specified interval'
+        H(24)='(6) Personal CO2 emission: From information about '
+        H(25)='    the number of people and their metabolic activity'
+        H(26)='    CO2 emissions from the node are evaluated'
+        H(27)=' '
+        H(28)='A cancel request (integers) leaves the model unchanged'
+        H(29)='for the item currently being edited. Not all items in '
+        H(30)='a sequence of edits may have been restored so please'
+        H(31)='check your model description. '
+
         ITEMS(1) ='a constant coefficient           '       
         ITEMS(2) ='b cut-off concentration          '
         ITEMS(3) ='c exponential decay/increase     '
@@ -1299,7 +1362,7 @@ C Now get source/sink type
         CALL EMENU('Choose Source/Sink models',ITEMS,NITEMS,INNO)
         IF(INNO.EQ.9)RETURN
         IF(INNO.EQ.8) THEN
-          CALL PHELPD('source/sink models',26,'-',0,0,IER)
+          CALL PHELPD('source/sink models',31,'-',0,0,IER)
           GOTO 2007
         ELSEIF(INNO.GE.1.AND.INNO.LE.6)THEN
 
@@ -1385,7 +1448,8 @@ C Now get supplementary data items for exponential decay/increase.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
           CALL EASKI(IV,' ','Generation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,3)=REAL(IV)
           ELSE
@@ -1394,7 +1458,8 @@ C Now get supplementary data items for exponential decay/increase.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
           CALL EASKI(IV,' ','Generation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,4)=REAL(IV)
           ELSE
@@ -1403,12 +1468,16 @@ C Now get supplementary data items for exponential decay/increase.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
           CALL EASKI(IV,' ','Generation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,5)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,5)=REAL(IV)
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
 
 C Now get supplementary data items for bndry layer diffusion.
@@ -1468,6 +1537,9 @@ C Now get supplementary data items for bndry layer diffusion.
           ELSE
             SPMSUP(ISPMNU,6)=VAL
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
 
 C Now get supplementary data items for time dependant constant mass.
@@ -1485,7 +1557,8 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,2))
           CALL EASKI(IV,' ','Generation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,2)=REAL(IV)
           ELSE
@@ -1494,7 +1567,8 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
           CALL EASKI(IV,' ','Generation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,3)=REAL(IV)
           ELSE
@@ -1503,7 +1577,8 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
           CALL EASKI(IV,' ','Generation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,4)=REAL(IV)
           ELSE
@@ -1512,7 +1587,8 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
           CALL EASKI(IV,' ','Generation stop time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,5)=REAL(IV)
           ELSE
@@ -1521,7 +1597,8 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,6))
           CALL EASKI(IV,' ','Generation stop time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,6)=REAL(IV)
           ELSE
@@ -1530,12 +1607,16 @@ C Now get supplementary data items for time dependant constant mass.
           IV=1
           if(EDIT) IV=NINT(SPMSUP(ISPMNU,7))
           CALL EASKI(IV,' ','Generation stop time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,7)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,7)=REAL(IV)
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
 
 C Now get supplementary data items for personal CO2 emission.
@@ -1546,13 +1627,19 @@ C Now get supplementary data items for personal CO2 emission.
           H(4)=' (occupancy casual gains) in the operations file. This'
           H(5)=' source would still need to be linked to the node and '
           H(6)=' contaminant though.                                  '
+          H(7)=' '
+          H(8)='A cancel request (integers) leaves the model unchanged'
+          H(9)='for the item currently being edited. Not all items in '
+          H(10)='a sequence of edits may have been restored so please'
+          H(11)='check your model description. '
           CALL EASKAB(' Take metabolic rates from occupancy casual ',
-     &      'gains (defined in operation files) ','yes','no',JC,6)
+     &      'gains (defined in operation files) ','yes','no',JC,11)
           IF(JC.EQ.2)THEN
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,1))
             CALL EASKI(IV,' ','Number of people ? ',
-     &        1,'-',1,'-',1,'source/sink suppl data',IER,26)
+     &        1,'-',1,'-',1,'source/sink suppl data',IERI,11)
+            if(ieri.eq.-3) goto 2007
             SPMSUP(NSPMNO,8)=REAL(IV)
             H(1) ='CO2 Emission is calculated from metabolic '
             H(2) ='activity of people the following activity levels'
@@ -1564,9 +1651,13 @@ C Now get supplementary data items for personal CO2 emission.
             H(8) ='Level5: 725W (very heavy work)'
             H(9) ='Alternately level 6 can be chosen to input'
             H(10)='activity level in Watts'
+            H(11)='A cancel request might not clean up all items'
+            H(12)='so please check your model. '
+            H(13)='<< further work required in CSIADC >> '
             IV=1
             CALL EASKI(IV,' ','Choose activity level (see help) ? ',
-     &        1,'F',6,'F',1,'source/sink suppl data',IER,10)
+     &        1,'F',6,'F',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,1)=REAL(IV)
             ELSE
@@ -1576,7 +1667,8 @@ C Now get supplementary data items for personal CO2 emission.
               IV=100
               if(EDIT) IV=NINT(SPMSUP(ISPMNU,9))
               CALL EASKI(IV,' ','Choose metabolic rate (Watts) ? ',
-     &          100,'-',1000,'-',1,'source/sink suppl data',IER,10)
+     &          100,'-',1000,'-',1,'source/sink suppl data',IERI,13)
+              if(ieri.eq.-3) goto 2007
               IF(.NOT.EDIT) THEN
                 SPMSUP(NSPMNO,9)=REAL(IV)
               ELSE
@@ -1586,7 +1678,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,2))
             CALL EASKI(IV,' ','Occupation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,2)=REAL(IV)
             ELSE
@@ -1595,7 +1688,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
             CALL EASKI(IV,' ','Occupation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,3)=REAL(IV)
             ELSE
@@ -1604,7 +1698,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
             CALL EASKI(IV,' ','Occupation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,10)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,4)=REAL(IV)
             ELSE
@@ -1613,7 +1708,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
             CALL EASKI(IV,' ','Occupation stop time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,5)=REAL(IV)
             ELSE
@@ -1622,7 +1718,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,6))
             CALL EASKI(IV,' ','Occupation stop time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,6)=REAL(IV)
             ELSE
@@ -1631,7 +1728,8 @@ C Now get supplementary data items for personal CO2 emission.
             IV=1
             if(EDIT) IV=NINT(SPMSUP(ISPMNU,7))
             CALL EASKI(IV,' ','Occupation stop time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,10)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,7)=REAL(IV)
             ELSE
@@ -1644,6 +1742,9 @@ C Now get supplementary data items for personal CO2 emission.
               SPMSUP(ISPMNU,1)=-1.0
             ENDIF
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
       ELSEIF(IADC.EQ.2)THEN
 
@@ -1885,8 +1986,13 @@ C Ask for default concentration
         H(3) = 'Constant concentration assumes one value over 24'
         H(4) = 'hours, choose variable concentration to specify'
         H(5) = 'a different concentration for each hour of day'
+        H(6)=' '
+        H(7)='A cancel request (integers) leaves the model unchanged'
+        H(8)='for the item currently being edited. Not all items in '
+        H(9)='a sequence of edits may have been restored so please'
+        H(10)='check your model description. '
         CALL EASKAB('Which best describes the average hourly',
-     &    ' contaminant concentration','Variable','Constant',IHORC,5)
+     &    ' contaminant concentration','Variable','Constant',IHORC,10)
         IF(IHORC.EQ.1)GOTO 1
         IF(IHORC.EQ.2)GOTO 2
  1      ITIM=1
@@ -1895,7 +2001,12 @@ C Ask for default concentration
         CALL EASKR(CONC,' ',STR,0.,'F',0.,'-',1.,'conc',IER,5)
         IF(ITIM.LT.MT)THEN
           CALL EASKI(NTIM,' ','Til when (1-24 hours) is this valid ?',
-     &     ITIM,'F',MT,'F',ITIM+1,'ambieNt concentration',IER,5)
+     &     ITIM,'F',MT,'F',ITIM+1,'ambieNt concentration',IERI,10)
+          if(ieri.eq.-3) then
+
+C << to be done - return data to previous value before exit >>
+            return
+          endif
         ELSE
           NTIM=MT
         ENDIF
