@@ -676,6 +676,8 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       CHARACTER DESC*40,OUTSTR*124,LASCI*72
+      character ermsg*48   ! for read error messages
+      character outs*124   ! string buffer for messages
 
       IER =0
 
@@ -683,6 +685,7 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
       call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
       if(ier.ne.0)return
 
+      ermsg='reading record one number of items '
       IREC=1
       READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NITEMS
       IF(NITEMS.LE.0)THEN
@@ -704,6 +707,7 @@ C Write out a file header.
   30  FORMAT('# events profiles db defined in ',A)
 
 C Proceed
+      ermsg='reading record one number of items '
       IREC=1
       READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NITEMS
 
@@ -711,8 +715,10 @@ C Proceed
    21 FORMAT(I5,'    # Number of items')
 
       DO 10 I = 1,NITEMS
+        write(ermsg,'(a,i2)') 'reading number events in profile ',I
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
+        write(ermsg,'(a,i2)') 'reading description of profile ',I
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  DESC(I)
 
@@ -722,6 +728,8 @@ C Proceed
 
 C For each period.
         DO 20 J = 1,NCG(I)
+          write(ermsg,'(a,i2,a,i2)') 'reading data of profile ',I,
+     &      ' at period ',J
           IREC = IREC + 1
           READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
           WRITE(IFA,23,IOSTAT=ISTAT,ERR=1000)IS,IF,A,B
@@ -736,9 +744,9 @@ C For each period.
  1000 CALL USRMSG(' ',' ASCII file write error in ','W')
       goto 99
 
- 1001 WRITE(OUTSTR,1004)IREC
- 1004 FORMAT(' File read error ! record',I6)
-      CALL USRMSG(' ',OUTSTR,'W')
+ 1001 write(outs,'(3a,i4)') 'In profile db: error ',
+     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
+      call edisp(iuout,outs)
       goto 99
 
       END
@@ -768,12 +776,8 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       YMIN=0.
 
 C Set up data ready for graph drawing.
-#ifdef X11
-      call feedbox(menuchw,2,igfw,igfh)
-      call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
-      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
       call startbuffer
+      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
       call axiscale(igw,igwh,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')

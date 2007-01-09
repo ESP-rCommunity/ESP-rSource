@@ -44,10 +44,10 @@ C IPCDB - unit number of plant template database
       common/C7/LPCDB,IPCDB
       character lpcdb*72
 
-C LPRFDB - (72 char) event profile database file name
+C LPRFDB - (144 char) event profile database file name
 C IPRODB - unit number of event profile database
       COMMON/PRODB/LPRFDB,IPRODB
-      character LPRFDB*72
+      character LPRFDB*144
 
 C LFMAT - (72 char) materials db file name
 C LFMUL - (72 char) constructions db file name
@@ -64,11 +64,11 @@ C ICLIM - unit number of climate file
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
 C DFCON - default materials, DFMUL - default constructions
-C DOPTDB - default optics, DPRFDB - default events
+C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPRFDB,DPCDB
-      character DOPTDB*144
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPCDB
+      character DOPTDB*144,DPRFDB*144
 
 C Define as integers.
       integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
