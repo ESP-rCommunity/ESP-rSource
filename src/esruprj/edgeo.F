@@ -758,8 +758,10 @@ C profile has not been defined.
               H(5)='    which case a 0 followed by a profile number'
               H(6)='    is required.'
               H(7)='-3  a connection to a 3D ground model.'
+              H(8)=' '
+              H(9)='A cancel request leaves the model unchanged. '
               CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,9)
               if(ieri.eq.-3) goto 3
             elseif(IOS.EQ.6)then
 
