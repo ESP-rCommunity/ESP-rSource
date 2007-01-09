@@ -526,10 +526,13 @@ C Edit building/plant/flow/global control description.
 c Relate control functions to the appropriate zones
 c from the configuration file.
         if(icfoc.eq.0)then
-          NZ=NCOMP
+          NZT=NCOMP
           H(1)='This should match current system configuration file.'
-          CALL EASKI(NZ,' ',' Number zones in the model?',
-     &      1,'F',MCOM,'F',NCOMP,'no of zones',IER,1)
+          H(2)='If you cancel the menu will be re-displayed. '
+          CALL EASKI(NZT,' ',' Number zones in the model?',
+     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,2)
+          if(ieri.eq.-3) goto 92
+          NZ=NZT
           IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
 
 c Match single zone with single control function.
@@ -542,15 +545,29 @@ c Remember zero implies no control.
   304     IF(NZ.EQ.1)then
             H(1)='This is the index of the control. A 0 means no'
             H(2)='control, 1 is first control function, etc.)'
-            CALL EASKI(ICASCF(1),' Associated control for',
+            H(3)='If you cancel the menu will be re-displayed.'
+            ica=ICASCF(1)
+            CALL EASKI(ICA,' Associated control for',
      &        ' first zone?',0,'F',MCOM,'F',0,
-     &        'associated control',IER,2)
+     &        'associated control',IERI,3)
+            if(ieri.eq.-3) goto 92
+            ICASCF(1)=ica
           else
             do 311 IJ=1,NZ
               write(outs,'(A,A,A,I2,A)')' For ',zname(IJ),'(',IJ,')'
-              CALL EASKI(ICASCF(IJ),outs,
+              ica=ICASCF(IJ)
+              H(1)='This is the index of the control. A 0 means no'
+              H(2)='control, 1 is first control function, etc.)'
+              H(3)='If you cancel only this instance of the control'
+              H(4)='will retain its previous value.'
+              CALL EASKI(ICA,outs,
      &          ' Associated control?',0,'F',MCOM,'F',0,
-     &          'associated control',IER,2)
+     &          'associated control',IER,4)
+              if(ieri.eq.-3)then
+                goto 311
+              else
+                ICASCF(IJ)=ica
+              endif
   311       continue
           endif
 
@@ -710,6 +727,8 @@ C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
         h(1)='This adds or deletes a control loop or addes or deletes'
         h(2)='or copies a day type (unless wkd:sat:sun). '
+        h(3)='If you cancel when editing an index the requested action'
+        h(4)='will not be acted upon (but please check).  '
         CALL EASKATOG('Options:',' ','delete loop','add loop',
      &  'copy loop','delete/add/copy day type','continue',' ',' ',IW,2)
         if(IW.eq.1)then
@@ -724,23 +743,28 @@ C Add or delete a control day type (unless Weekday/Sat/Sun).
 C Begin by selecting the loop to focus on.
           if(icfoc.eq.0)then
             CALL EASKI(IFOC,'Index of zone control function to act on?',
-     &          ' ',0,'F',ncf,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncf,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=nbcdt(IFOC)
           elseif(icfoc.eq.1)then
             CALL EASKI(IFOC,'Index of plant control function ?',
-     &          ' ',0,'F',ncl,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncl,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=npcdt(IFOC)
           elseif(icfoc.eq.2)then
             CALL EASKI(IFOC,'Index of flow control function to act on?',
-     &          ' ',0,'F',ncc,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncc,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=nfcdt(IFOC)
           elseif(icfoc.eq.3)then
             CALL EASKI(IFOC,'Index of global control function ?',
-     &          ' ',0,'F',ngf,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ngf,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=ngcdt(IFOC)
           elseif(icfoc.eq.4)then
             CALL EASKI(IFOC,'Index of power control function ?',
-     &          ' ',0,'F',necl,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',necl,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=necdt(IFOC)
           endif
           if(nn.eq.0)then
@@ -2337,11 +2361,14 @@ C If no cooling capacity then set cooling set point to 100C.
           H(5)=' 4 items for the sensor location, followed by the'
           H(6)=' heating set-point and cooling set-point for'
           H(7)=' that auxiliary sensor'
-          H(8)=' - Refer ESP-r Data Model section 9 '
+          H(9)=' '
+          H(10)='If you choose cancel the controller data will not be'
+          H(11)='altered and you will be returned to the main menu. '
 
           I8=int(cm(8))
           CALL EASKI(I8,' ',' No. of aux sensors ',
-     &      0,'F',MSEN,'F',3,'no. of aux sensors',IER,8)
+     &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,11)
+          if(ieri.eq.-3) goto 92
           cm(1)=7.+6.*I8
           cm(8)=float(I8)
 
@@ -2511,8 +2538,12 @@ C Slave Capacity Controller
           if(ier.ne.0)goto 101
         else
           H(1)='See ESP-r Data Model section 9 for details. '
+          H(2)=' '
+          H(3)='If you choose cancel the controller data will not be'
+          H(4)='altered and you will be returned to the main menu. '
           CALL EASKI(NITEMS,' ',' No of control law data items ?',
-     &      0,'F',MISC,'F',1,'control law data items',IER,1)
+     &      0,'F',MISC,'F',1,'control law data items',IERI,4)
+          if(ieri.eq.-3) goto 92
           cm(1)=FLOAT(NITEMS)
           if(NITEMS.GT.0)then
             do 33 MM=2,NITEMS+1
@@ -4087,6 +4118,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
       CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,SALT*40
+      integer isn1T,isn2T,isn3T,isn4T   ! temporary values for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4261,17 +4293,34 @@ C Senses current zone db temp if ideal.
       elseif(ivert.eq.1.and.(icfoc.eq.1.or.icfoc.eq.2))then
 
 C Senses output (plant control) or temperature (flow control) of a plant component.
-        isn1=-1
+C Offer the user a cancel option.
+        isn1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
-        CALL EASKI(isn2,' ',' Plant component index for sensor ? ',
-     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn2T=isn2
+        CALL EASKI(isn2T,' ',' Plant component index for sensor ? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,5)
+        if(ieri.eq.-3) goto 3
+
         H(1)='This value specifies the plant component node (see '
         H(2)='the plant component database). '
-        CALL EASKI(isn3,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IER,2)
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,5)
+        if(ieri.eq.-3) goto 3
+
+C If the user has not canceled instanciate from temporary values.
         nsup=0
         if(icfoc.eq.2)nsup=0
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.1.and.icfoc.eq.3)then
 
 C Sensed condition does not matter.
@@ -4290,21 +4339,32 @@ C Power control sensor not yet implemented, return zeros.
      &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
 
 C Senses mix of zone db temp and MRT.
-        isn1=-2
+        isn1T=-2
         CALL EPMENSV
         idef=0
-        call askzone(isn2,idef,'Zone for sensor','Select zone','-',
+        isn2T=isn2
+        call askzone(isn2T,idef,'Zone for sensor','Select zone','-',
      &    'MRT sensor',ier)
         CALL EPMENRC
         H(1)='The convective weighting factor is the percent of'
         H(2)='overall energy exchange that is convective. '
-        CALL EASKI(isn3,' ',' Convective weighting factor (%) ?',
-     &      0,'F',100,'-',50,'convective weighting',IER,2)
-        nsup=0
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IERI,5)
+        if(ieri.eq.-3) goto 3
 
 C In the case of mass flow this choice implies no supplemental
 C items, but return isense as the control law.
         if(icfoc.eq.2)isense=1
+
+C If the user has not canceled instanciate from temporary values.
+        nsup=0
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.4.and.
      &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
 
@@ -4372,12 +4432,20 @@ C Senses external relative humidity.
 
 C Uses information in temporal file.
 C << check whether temporal file associated with model. >>
-        isn1= -5
+        isn1T= -5
         H(1)='A temporal file holds timestep data including setpoints'
         H(2)='for use with zone or plant controls.   '
-        CALL EASKI(isn2,'Index of the temporal item to associate with',
-     &    ' this sensor:  ',0,'F',0,'-',1,'temporal file item',IER,2)
-        isn3=0
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn2T=isn2
+        CALL EASKI(isn2T,'Index of the temporal item to associate with',
+     &    ' this sensor: ',0,'F',0,'-',1,'temporal file item',IERI,5)
+        isn3T=0
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.11.and.(icfoc.eq.2))then
 
 C Senses network flow node or connection. 
@@ -4507,7 +4575,7 @@ C Sense radiation at exterior of surface.
       elseif(ivert.eq.12.and.(icfoc.eq.0.or.icfoc.eq.1))then
 
 C Uses value from function generator. 
-        isn1= -6
+        isn1T= -6
         H(1)=' The available functions are:'
         H(2)=' '
         H(3)='   Function          supp1    supp2    supp3   supp4'
@@ -4522,8 +4590,12 @@ C Uses value from function generator.
         H(12)='  8: Cosine:        max      min      freq    shift'
         H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
         H(14)=' - Refer ESP-r Data Model section 9 ' 
-        CALL EASKI(isn2,' ',' Required mathematical function ?',
+        isn2T=isn2
+        CALL EASKI(isn2T,' ',' Required mathematical function ?',
      &      1,'F',9,'F',1,'generated function',IER,14)
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
       elseif(ivert.eq.12.and.(icfoc.eq.5))then
 
 C Sense lux via daylight coef method. << ? if other info required >>
@@ -4534,17 +4606,25 @@ C Sense lux via daylight coef method. << ? if other info required >>
       elseif(ivert.eq.13.and.(icfoc.eq.0))then
 
 C Changes thermophysical properties.
-        isn1= -99
+        isn1T= -99
         H(1)='Upper zone air temperature limit (above which sub- '
         H(2)='stitution occurs. '
-        CALL EASKI(isn2,' Upper zone air temperature limit',
+        isn2T=isn2
+        CALL EASKI(isn2T,' Upper zone air temperature limit',
      &    ' (integer) above which substitution occurs ? ',
-     &    0,'-',0,'-',30,'upper air',IER,2)
+     &    0,'-',0,'-',30,'upper air',IERI,2)
+        if(ieri.eq.-3) goto 3
+
         H(1)='Lower zone air temperature limit (below which sub- '
         H(2)='stitution occurs. '
-        CALL EASKI(isn3,' Lower zone air temperature limit',
+        isn3T=isn3
+        CALL EASKI(isn3T,' Lower zone air temperature limit',
      &    ' (integer) below which substitution occurs ? ',
-     &    0,'-',0,'-',0,'lower air',IER,2)
+     &    0,'-',0,'-',0,'lower air',IERI,2)
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       else
 
 C Not one of the legal menu choices.
@@ -4566,9 +4646,16 @@ C Query user for any nested controls (unless thermo substitution).
         if(OK)then
           H(1)='Index of the control function to point to.'
           H(2)='Note that control must be control type -99.'
-          CALL EASKI(isn4,' ',
+          H(3)='A cancel restores the previous values. '
+          isn4T=isn4
+          CALL EASKI(isn4T,' ',
      &      ' Control function (index) to be nested: ',
-     &        0,'F',0,'-',1,'nested control',IER,2)
+     &        0,'F',0,'-',1,'nested control',IERI,3)
+          if(ieri.eq.-3) then
+            continue
+          else
+            isn4=isn4T
+          endif
         else
           isn4=0
         endif
@@ -4613,6 +4700,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION VERT(35)
       CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
+      integer ian1T,ian2T,ian3T  ! local variable for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4637,18 +4725,29 @@ C IVERT is the menu position, MVERT the current number of menu lines.
 
 C If sensor location -99 ask for up to three surfaces where substi-.
 C tutions will occur. << revise to selection list at some point >>.
-        call edisp(IUOUT,' ')
-        call edisp(IUOUT,' Substitutions are allowed on up to three')
-        call edisp(iuout,' surfaces (0 for each not required). ')
-        call edisp(IUOUT,'  ')
+C Offer the user option to cancel.
         H(1)='Up to three surfaces may have substitute properties.'
         H(2)='The number required is the index in the surface.'
-        CALL EASKI(ian1,' ',' First surface index ?',
-     &     0,'F',MS,'F',1,'1st surf for subst',IER,2)
-        CALL EASKI(ian2,' ',' Second surface index ?',
-     &     0,'F',MS,'F',1,'2nd surf for subst',IER,2)
-        CALL EASKI(ian3,' ',' Third surface index ?',
-     &     0,'F',MS,'F',1,'3rd surf for subst',IER,2)
+        H(3)='A zero signals no substitution as follows: '
+        H(4)=' three non-zero indicies will switcheds three'
+        H(5)=' two non-zero followed by a zero switches two'
+        H(6)=' one non-zero followed by two zeros switches one'
+        H(7)='If you cancel then data will revert to previous vlues.'
+        ian1T=ian1
+        CALL EASKI(ian1T,' ',' First surface index (see help)?',
+     &     0,'F',MS,'F',1,'1st surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian2T=ian2
+        CALL EASKI(ian2T,' ',' Second surface index (see help)?',
+     &     0,'F',MS,'F',1,'2nd surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Third surface index (see help)?',
+     &     0,'F',MS,'F',1,'3rd surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
         return
       endif
 
@@ -4767,16 +4866,25 @@ C Actuates current zone air point.
         ian3=0
       elseif(ivert.eq.1.and.(icfoc.eq.1))then
 
-C Within a plant component.
-        ian1=-1
+C Within a plant component (offer the user a cancel option).
+        ian1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
-        CALL EASKI(ian2,' ',' Plant component index ? ',
-     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian2T=ian2
+        CALL EASKI(ian2T,' ',' Plant component index ? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,3)
+        if(ieri.eq.-3) goto 3
         H(1)='This value specifies the plant component node (see '
         H(2)='the plant component database). '
-        CALL EASKI(ian3,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,3)
+        if(ieri.eq.-3) goto 3
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
       elseif(ivert.eq.1.and.(icfoc.eq.2))then
 
 C At a flow connection.
@@ -4829,16 +4937,23 @@ C Power control sensor not yet implemented, return zeros.
       elseif(ivert.eq.2.and.(icfoc.eq.0))then
 
 C Actuates radiant convective mix.
-        ian1=-2
+        ian1T=-2
         CALL EPMENSV
         idef=0
-        call askzone(ian2,idef,'Zone for actuation','Select zone','-',
+        ian2T=ian2
+        call askzone(ian2T,idef,'Zone for actuation','Select zone','-',
      &    'mixed injection',ier)
         CALL EPMENRC
         H(1)='The convective weighting factor is the percent of'
         H(2)='overall energy exchange that is convective. '
-        CALL EASKI(ian3,' ',' Convective weighting factor (%) ?',
-     &      0,'F',100,'-',50,'convective weighting',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IERI,3)
+        if(ieri.eq.-3) goto 3
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
       elseif(ivert.eq.2.and.(icfoc.eq.2))then
 
 C At a flow component.

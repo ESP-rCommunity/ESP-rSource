@@ -224,8 +224,8 @@ C by the user.
 C Examples:
 C Ask user for zone number.
 C        ICOMP=1
-C        H(1)='The zone number is required only for reporting '//
-C     &           'purposes.'
+C        H(1)='The zone number is required only for reporting '
+C        H(2)='purposes.'
 C        CALL EASKI(ICOMP,' ',' What is the zone number? ',
 C     &             1,'F',MCOM,'W',1,'zone number',IER,1)
 
@@ -238,8 +238,9 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,1)
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
-      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72
+      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,cancel*6
       LOGICAL OK,DOK
+      integer ivalold
 
       IER=0
 
@@ -247,9 +248,13 @@ C If IVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.IVAL.LT.MINV)IVAL=IDEFLT
       if(MAXACT.EQ.'F'.and.IVAL.GT.MAXV)IVAL=IDEFLT
 
+C Clear string buffers and instanciate 'ask'
    20 WORD=' '
       ask ='        '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
+
+C Remember value passed in in case of a cancel.
+      ivalold=ival
 
 C Generate help and default strings.
       CALL INTSTR(IDEFLT,STR2,IW2,IER)
@@ -275,7 +280,11 @@ C If in graphic mode use graphic faciltiies to edit the number.
         idef=0
         iquery=0
         iwidth=10
-        CALL openaskbox(PROMP1,PROMP2,iwidth)
+
+C Include a cancel option.
+        cancel='cancel'
+        CALL openaskaltbox(PROMP1,PROMP2,cancel,iwidth)
+C        CALL openaskbox(PROMP1,PROMP2,iwidth)
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP+1,IHW,IER)
@@ -286,18 +295,26 @@ C If in graphic mode use graphic faciltiies to edit the number.
           call dupphelp(dh)
           call updhelp(dh,2,IHW)
         endif
-        CALL askdialog(ask,idef,iquery)
+        CALL askaltdialog(ask,cancel,idef,iquery)
+C        CALL askdialog(ask,idef,iquery)
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(ask,WORD)
         ask='        '
-        IF(idef.EQ.1)THEN
+        if(idef.EQ.1)then
 
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
           IVAL=IDEFLT
           call usrmsg('  ','  ','-')
+          RETURN
+        elseif(idef.eq.2)then
+
+C Cancel button was pressed, reset ival as ivalold and mark as cancel. 
+          IVAL=ivalold
+          call usrmsg('User requested a cancel for dialog',PROMP1,'-')
+          ier=-3
           RETURN
         ENDIF
         IF(WORD.EQ.' ')THEN
@@ -438,11 +455,11 @@ C Example:
 C    ....
 C Read a site latitude.
 C        XLAT=50.0
-C        H(1)='The latitude is required for calculating the '//
-C     &           'sun position, it should '
-C        H(2)='be similar to that assumed for the climate file.'
+C        H(1)='The latitude is required for calculating the sun'
+C        H(2)='position, it should be similar to that assumed for'
+C        H(3)='the climate file.'
 C        CALL EASKR(XLAT,' ',' What is the site latitude (deg) ? ',
-C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,2)
+C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,3)
 C    ...
 
       SUBROUTINE EASKR(RVAL,PROMP1,PROMP2,RMIN,MINACT,
@@ -510,6 +527,8 @@ C If in graphic mode use graphic faciltiies to edit the number.
         idef=0
         iquery=0
         iwidth=16
+
+C << future addition of a cancel option here >>
         CALL openaskbox(PROMP1,PROMP2,iwidth)
         WORD=' '
         if(NHELP.GT.0)then

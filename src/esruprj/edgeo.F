@@ -759,7 +759,8 @@ C profile has not been defined.
               H(6)='    is required.'
               H(7)='-3  a connection to a 3D ground model.'
               CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,7)
+              if(ieri.eq.-3) goto 3
             elseif(IOS.EQ.6)then
 
 C List out user defined profiles, assuming that if June is 0.0, then the
@@ -774,7 +775,8 @@ C profile has not been defined.
                 H(1)='One of the user defined profile numbers is'
                 H(2)='required here.'
                 CALL EASKI(IIE2,' User defined ground profile index ?',
-     &            ' ',0,'F',9,'F',1,'user defined profile',IER,2)
+     &            ' ',0,'F',9,'F',1,'user defined profile',IERI,2)
+                if(ieri.eq.-3) goto 3
               else
                 call usrmsg(
      &          'No user defined ground profiles have been found.',
@@ -1114,6 +1116,10 @@ C Rotation choices.
      &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
               CALL ESCROT(VAL,x1,y1)
               call usrmsg(' ',' ','-')
+            elseif(IRT.EQ.4)THEN
+
+C User asked to cancel so jump back to menu setup code.
+              goto 3
             endif
             ZBFLG(ICOMP)=0.
             CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -2352,9 +2358,10 @@ C profile has not been defined.
               call edisp(iuout,outs)
             endif
  21       continue
-          SOTHER(IS)='GROUND'
-          SSOTHER(IC)='GROUND'
-          ICT(IC)=4
+
+C Ask for the standard monthly profile index and if a valid response
+C set the common blocks. If out of range warn user. If user cancels
+C the action make no changes and jump back to 13 (the menu creation code).
           H(1)='A ground connection allows either:'
           H(2)='> 0 a connection to one of several standard profiles'
           H(3)='    in which case the profile number is required.'
@@ -2364,10 +2371,19 @@ C profile has not been defined.
           H(7)='-3  a connection to a 3D ground model.'
           iic2=ic2(IC)
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,7)
           IF(IIC2.GT.0)THEN
-            IC2(IC)=iic2
-            IE2(IC)=0
+            if(ieri.eq.0)then
+              IC2(IC)=iic2
+              IE2(IC)=0
+              SOTHER(IS)='GROUND'
+              SSOTHER(IC)='GROUND'
+              ICT(IC)=4
+            elseif(ieri.eq.-3)then
+              goto 13
+            else
+              goto 777
+            endif
           ELSE
             CALL USRMSG(' ',' Unacceptable ground profile...','W')
             GOTO 777
@@ -2383,15 +2399,32 @@ C profile has not been defined.
               WRITE(OUTS,'(12F6.1)')(UGRDTP(J,IGRDP),J=1,12)
               call edisp(iuout,outs)
  22         continue
-            SOTHER(IS)='GROUND'
-            SSOTHER(IC)='GROUND'
-            ICT(IC)=4
+
+C Ask for the user defined monthly profile index and if a valid response
+C set the common blocks. If out of range warn user. If user cancels
+C the action make no changes and jump back to 13 (the menu creation code).
             H(1)='One of the user defined profile numbers is'
             H(2)='required here.'
-            CALL EASKI(IIE2,' User defined ground profile index ?',
-     &        ' ',0,'F',9,'F',1,'user defined profile',IER,2)
-            IC2(IC)=0
-            IE2(IC)=iie2
+ 778        CALL EASKI(IIE2,' User defined ground profile index ?',
+     &        ' ',0,'F',9,'F',1,'user defined profile',IERI,2)
+            if(IIE2.gt.0)then
+              if(ieri.eq.0)then
+                IC2(IC)=0
+                IE2(IC)=iie2
+                SOTHER(IS)='GROUND'
+                SSOTHER(IC)='GROUND'
+                ICT(IC)=4
+              elseif(ieri.eq.-3)then
+                goto 13
+              else
+                goto 778
+              endif
+            else
+              call usrmsg(
+     &          'User defined ground profile out of range. Retry or',
+     &          'go to `model context` to define another.','W')
+              goto 778
+            endif
           else
            call usrmsg(
      &        'No user defined ground profiles have been found.',
@@ -2414,21 +2447,17 @@ C Link to a 3D conduction model..
           IC2(IC)=0
         ELSEIF(IVAL(1).EQ.9)THEN
 
-C BASESIMP start.
 C Get BASESIMP configuration via call to bsimtype.
-          SOTHER(IS)='BASESIMP'
-          SSOTHER(IC)='BASESIMP'
-          ICT(IC)=6
           H(1)='Specify the BASESIMP configuration number (iconfig). '
           H(2)='Refer to src/esp-r/esrubld/bscoeff.F for the '
           H(3)='correspondence between iconfig and standard BASESIMP '
           H(4)='descriptors (e.g. BCIN_1).'
           IBS=IC2(IC)
           call bsimtype(ibs)
-          IC2(IC)=IBS
 
 C Get `surface weighting factor', the percentage of the BASESIMP heat loss to
-C attribute to the surface under consideration.
+C attribute to the surface under consideration. If the user cancels the
+C action do not instanciate the data.
           Ifrac=IE2(IC)
           H(1)='BASESIMP is a `whole-foundation model`. Therefore, when'
           H(2)='a foundation is represented by numerous ESP-r surfaces'
@@ -2437,27 +2466,27 @@ C attribute to the surface under consideration.
           H(5)='heat loss to attribute to each surface. Normally the'
           H(6)='sum of surfaces representing a founcation is 100%.'
           CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
-     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
-          IE2(IC)=Ifrac
-C BASESIMP end.
+     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IERI,6)
+          if(ieri.eq.0)then
+            IE2(IC)=Ifrac
+            IC2(IC)=IBS
+            SOTHER(IS)='BASESIMP'
+            SSOTHER(IC)='BASESIMP'
+            ICT(IC)=6
+          elseif(ieri.eq.-3)then
+            INODA=-4
+            goto 13
+          endif
 
         ELSEIF(IVAL(1).EQ.10)THEN
           SOTHER(IS)='IDENT_CEN'
           SSOTHER(IC)='IDENT_CEN'
           ICT(IC)=7
-
-C          H(1)='This is like the SIMILAR but for CEN 13791 test'
-C          H(2)='A similar (type 1) connection can include an offset'
-C          H(3)='temperature and radiation (W/m^2) from that of the'
-C          H(4)='current zone. This is not available for the CEN'
-C          H(5)='13791 partition where these values are 0. '
-C          H(6)='For details see section 4.4.2 CEN 13791 standard. '
           VALT=0.0
           VALW=0.0
           IC2(IC)=INT(VALT)
           IE2(IC)=INT(VALW)
           showother=.false.
-
 
         ELSEIF(IVAL(1).EQ.11)THEN
 
@@ -3341,14 +3370,26 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
      &    'replicate','edit (several)','do nothing',' ',IRT,14)
         if(IRT.eq.1)then
+
+C If user cancels jump back to menu setup, otherwise add the requested
+C number of vertices.
+          IADD=1
           CALL EASKI(IADD,' ',' How many vertices to add ? ',
-     &     1,'F',MTV-NTV,'F',1,'+ vertex',IER,14)
-          CALL ADDVERT(icomp,IADD,'A',IER)
-          ILEN=NTV
-          IPACT=CREATE
-          CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
-          ZBFLG(ICOMP)=0.
+     &     1,'W',MTV-NTV,'F',1,'+ vertex',IERI,14)
+          if(iadd.eq.0)then
+            goto 92
+          else
+            if(ieri.eq.-3)then
+              goto 92
+            else
+              CALL ADDVERT(icomp,IADD,'A',IER)
+              ILEN=NTV
+              IPACT=CREATE
+              CALL EKPAGE(IPACT)
+              MODGEO=.TRUE.
+              ZBFLG(ICOMP)=0.
+            endif
+          endif
         elseif(IRT.eq.2)then
 
 C Delete one or more vertices, get list and then sort in decending
@@ -3416,18 +3457,22 @@ C only up to MTV.
           if(inpick.eq.1)then
             iwhich=IVLST(1)
             CALL EASKI(IADD,' ',' Replicate how many times ? ',
-     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IER,1)
-            if(IADD.ge.1)then
-              do 144 ij=1,IADD
-                CALL ADDVERT(icomp,IWHICH,'C',IER)
- 144          continue
-              ILEN=NTV
-              IPACT=CREATE
-              CALL EKPAGE(IPACT)
-              MODGEO=.TRUE.
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.
+     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IERI,1)
+            if(ieri.eq.-3)then
+              goto 92
+            elseif(ieri.eq.0)then
+              if(IADD.ge.1)then
+                do 144 ij=1,IADD
+                  CALL ADDVERT(icomp,IWHICH,'C',IER)
+ 144            continue
+                ILEN=NTV
+                IPACT=CREATE
+                CALL EKPAGE(IPACT)
+                MODGEO=.TRUE.
+                MODIFY=.TRUE.
+                MODBND=.TRUE.
+                ZBFLG(ICOMP)=0.
+              endif
             endif
           endif
         elseif(IRT.eq.5)then
@@ -3743,14 +3788,18 @@ C Transform all surface vertices.
         endif
         if(IRT.eq.3.or.IRT.eq.5)then
 
-C Rotate around a point in the surface.
+C Rotate around a point in the surface (offer user cancel option).
           call tstamp('>','PRJ: do surface rotation')
           H(1)='The rotation is applied around one vertex of'
           H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
           H(3)='vertex in the surface. '
           CALL EASKI(IRV,'Rotate about which vertex index: ',
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
-     &       1,'F',N,'F',1,'rotation anchor',IER,3)
+     &       1,'F',N,'F',1,'rotation anchor',IERI,3)
+          if(ieri.eq.-3)then
+            MODIFY=.FALSE.
+            goto 92
+          endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
           ANG=0.

@@ -315,6 +315,7 @@ C *********************************************************************
       character h*72
       character*32 item(11)
       CHARACTER*72 Msg
+      integer NTimeT,NRootT,NIterT  ! local values for editing.
       
    10 INO=-3
       WRITE(ITEM(1),'(A13,F8.1,A2)')'1 Time step: ',DTime,' s'
@@ -351,13 +352,21 @@ C Simulation time step.
 C Number of simulation time steps.
       ELSEIF(INO.EQ.2)THEN
         WRITE(Msg,'(A)')'Enter the number of simulation time steps:'
-        H(1)='    Enter the number of simulation time steps.'
-        CALL EASKI(NTime,' ',Msg,1,'F',3600,'W',60,'time steps',IER,1)
+        H(1)='Enter the number of simulation time steps.'
+        H(2)='If you cancel the current value will be retained. '
+        NTimeT=NTime
+        CALL EASKI(NTimeT,' ',Msg,1,'F',3600,'W',60,'time steps',
+     &    IERI,2)
+        if(ieri.eq.-3)then
+          goto 10
+        else
+          NTime=NTimeT
+        endif
 
 C Monitoring location.
       ELSEIF(INO.EQ.3)THEN
         WRITE(Msg,'(A)')'Enter the monitoring location:'
-        H(1)='    Enter the monitoring location.'
+        H(1)='Enter the monitoring location.'
         CALL EASKABC(Msg,' ','External surface','Internal surface',
      &              'Within Construction',IW,1)
         IF(IW.EQ.1)THEN
@@ -370,9 +379,16 @@ C Monitoring location.
             MaxNd=MaxNd+NPLyr(il)
   100     continue
           WRITE(Msg,'(A)')'Enter the monitoring node number:'
-          H(1)='    Enter monitoring node number counting from the'
-          H(2)=' outside surface node, which is the first node.'
-          CALL EASKI(MonNod,Msg,' ',1,'F',MaxNd,'F',2,'node',IER,2)
+          H(1)='Enter monitoring node number counting from the'
+          H(2)='outside surface node, which is the first node.'
+          H(3)='If you cancel the previous value will be retained.'
+          MonNodT=MonNod
+          CALL EASKI(MonNodT,Msg,' ',1,'F',MaxNd,'F',2,'node',IERI,3)
+          if(ieri.eq.-3)then
+            goto 10
+          else
+            MonNod=MonNodT
+          endif
         ENDIF
 
 C Zone side equations implicitness degree.
@@ -383,10 +399,17 @@ C Zone side equations implicitness degree.
 C Number of eigenvalues
       ELSEIF(INO.EQ.7)THEN
         WRITE(Msg,'(A)')'Enter the number of eigenvalues:'
-        H(1)='    Enter the number of eigenvalues.  In general, the'
+        H(1)=' Enter the number of eigenvalues.  In general, the'
         H(2)=' higher the number of eigenvalue the more accurate '
         H(3)=' analytical results are produced. '
-        CALL EASKI(NRoot,' ',Msg,1,'F',1000,'W',100,'number',IER,3)
+        H(4)='If you cancel the previous value will be retained.'
+        NRootT=NRoot
+        CALL EASKI(NRoot,' ',Msg,1,'F',1000,'W',100,'number',IERI,4)
+        if(ieri.eq.-3)then
+          goto 10
+        else
+          NRoot=NRootT
+        endif
 
 C Maximum iterrations
       ELSEIF(INO.EQ.8)THEN
@@ -403,10 +426,19 @@ C Maximum iterrations
         H(10)=' NB: the small magnitude eigenvalues, which are the most'
         H(11)=' effective on the result accuracy will always converge'
         H(12)=' within the first 100 iterrations.'
-        CALL EASKI(NIter,' ',Msg,100,'W',3000,'W',500,'number',IER,12)
-C Help.
+        H(13)='If you cancel the previous value will be retained.'
+        NIterT=NIter
+        CALL EASKI(NIterT,' ',Msg,100,'W',3000,'W',500,'number',
+     &    IERI,13)
+        if(ieri.eq.-3)then
+          goto 10
+        else
+          NIter=NIterT
+        endif
       ELSEIF(INO.EQ.MITEM-1)THEN
-        H(1)='    This is the advanced options menu.  The default '
+
+C Help.
+        H(1)='This is the advanced options menu.  The default '
         H(2)='values are usually acceptable.  These options should not'
         H(3)='be altered unless fully understood.  The available '
         H(4)='options are:'
