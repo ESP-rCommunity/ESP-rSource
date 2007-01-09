@@ -1276,7 +1276,7 @@ C Create a matching ascii version of the generic db.
                 goto 42
               endif
             elseif(idp.eq.11)then
-              LPRFDB=gendbfn(idp)
+              write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
               CALL TROPRO(iuout,IAFIL,afil,IER)
               if(ier.eq.0)then
@@ -1532,7 +1532,7 @@ C Create a matching ascii version of the generic db.
               return
             endif
           elseif(idp.eq.11)then
-            LPRFDB=gendbfn(idp)
+            write(LPRFDB,'(a)') gendbfn(idp)
             IPRODB=IFIL+2
             CALL TROPRO(iuout,IAFIL,afil,IER)
             if(ier.eq.0)then
@@ -2146,7 +2146,7 @@ C Create a matching ascii version of the generic db.
             gendbfn(idbhash)=LGENDB
             goto 42
           elseif(dbask(1:8).eq.'profiles')then
-            LPRFDB=gendbfn(idbhash)
+            write(LPRFDB,'(a)')  gendbfn(idbhash)
             IPRODB=IFIL+2
             CALL TROPRO(iuout,IAFIL,afil,IER)
             if(ier.eq.0)then
