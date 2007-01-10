@@ -460,32 +460,55 @@ C Rescan climatelist file to acquire seasons and periods.
         IUF=IFIL+2
         call scancdblist(IUF,cdblfil,LCLIM,ok,ier)
         if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
-          ipvastjd(1)=ia1wins
-          ipvafnjd(1)=ia1winf
-          ipvastjd(2)=ia1sprs
-          ipvafnjd(2)=ia1sprf
-          ipvastjd(3)=iasums
-          ipvafnjd(3)=iasumf
-          ipvastjd(4)=ia2sprs
-          ipvafnjd(4)=ia2sprf
-          ipvastjd(5)=ia2wins
-          ipvafnjd(5)=ia2winf
+          if(nipvassmt.eq.1)then
+            continue
+          elseif(nipvassmt.eq.3)then
+            ipvastjd(1)=ia1wins
+            ipvafnjd(1)=ia1winf
+            ipvastjd(2)=ia1sprs
+            ipvafnjd(2)=ia1sprf
+            ipvastjd(3)=iasums
+            ipvafnjd(3)=iasumf
+          elseif(nipvassmt.eq.5)then
+            ipvastjd(1)=ia1wins
+            ipvafnjd(1)=ia1winf
+            ipvastjd(2)=ia1sprs
+            ipvafnjd(2)=ia1sprf
+            ipvastjd(3)=iasums
+            ipvafnjd(3)=iasumf
+            ipvastjd(4)=ia2sprs
+            ipvafnjd(4)=ia2sprf
+            ipvastjd(5)=ia2wins
+            ipvafnjd(5)=ia2winf
+          endif
         endif
       else
 
 C Set defaults as in esrucom/rcdblist.F Only set ipvastjd and ipvafnjd
 C if subroutine was called in initilisation mode.
         if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
-          CALL EDAY(9,1,ipvastjd(1))
-          CALL EDAY(15,1,ipvafnjd(1))
-          CALL EDAY(6,3,ipvastjd(2))
-          CALL EDAY(12,3,ipvafnjd(2))
-          CALL EDAY(11,7,ipvastjd(3))
-          CALL EDAY(17,7,ipvafnjd(3))
-          CALL EDAY(2,10,ipvastjd(4))
-          CALL EDAY(8,10,ipvafnjd(4))
-          CALL EDAY(20,11,ipvastjd(5))
-          CALL EDAY(26,11,ipvafnjd(5))
+          if(nipvassmt.eq.1)then
+            CALL EDAY(1,1,ipvastjd(1))
+            CALL EDAY(31,12,ipvafnjd(1))
+          elseif(nipvassmt.eq.3)then
+            CALL EDAY(9,1,ipvastjd(1))
+            CALL EDAY(15,1,ipvafnjd(1))
+            CALL EDAY(6,3,ipvastjd(2))
+            CALL EDAY(12,3,ipvafnjd(2))
+            CALL EDAY(11,7,ipvastjd(3))
+            CALL EDAY(17,7,ipvafnjd(3))
+          elseif(nipvassmt.eq.5)then
+            CALL EDAY(9,1,ipvastjd(1))
+            CALL EDAY(15,1,ipvafnjd(1))
+            CALL EDAY(6,3,ipvastjd(2))
+            CALL EDAY(12,3,ipvafnjd(2))
+            CALL EDAY(11,7,ipvastjd(3))
+            CALL EDAY(17,7,ipvafnjd(3))
+            CALL EDAY(2,10,ipvastjd(4))
+            CALL EDAY(8,10,ipvafnjd(4))
+            CALL EDAY(20,11,ipvastjd(5))
+            CALL EDAY(26,11,ipvafnjd(5))
+          endif
         endif
         CALL EDAY(1,1,is1wins)
         CALL EDAY(28,2,is1winf)
@@ -700,7 +723,14 @@ C Also update or create matched simulation parameter sets.
           h(1)='This file holds a description of an Integrated '
           h(2)='Performance View of this model, including periods,'
           h(3)='climatic degree day information & associated zones.'
-          ltmp=lipvdatf
+          lr=lnblnk(cfgroot)
+          if(lnblnk(lipvdatf).eq.0)then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          else
+            ltmp=lipvdatf
+          endif
           CALL EASKS(ltmp,'IPV description file ?',
      &      ' ',72,'xxx.ipv','IPV file',IER,3)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') lipvdatf=ltmp
@@ -759,8 +789,15 @@ C Images associated with the IPV.
    52       continue
           endif
         elseif(IW.eq.2)then
+          H(1)='Images (GIF) can be included in an IPV.'
+          H(2)=' '
+          H(3)='A cancel results in no change in your model. '
           CALL EASKI(IFOC,'Which image (give index) ? ',' ',
-     &        1,'F',nipvimg,'F',1,'ipv image',IER,1)
+     &        1,'F',nipvimg,'F',1,'ipv image',IERI,3)
+          if(ieri.eq.-3) then
+            INO=-1
+            goto 3
+          endif
           h(1)='This image file will be associated with the IPV. '
           t72=lipvimg(IFOC)
           CALL EASKS(t72,'Image file name:',' ',72,'xxx','image file',
@@ -1388,9 +1425,14 @@ C Add delete copy metric set.
             goto 44
           endif
         elseif(IRT.eq.2)then
+          h(1)='You can delete an existing set. If you request a'
+          h(2)='rather than supplying an index then the model is '
+          h(3)='not changed. '
           CALL EASKI(IFOC,'Which metric set (give index) ? ',
-     &      '(zero to skip)',0,'F',nms,'F',1,'demand set index',IER,1)
-          if(ifoc.eq.0)then
+     &      '(zero to skip)',0,'F',nms,'F',1,'demand set index',IERI,3)
+          if(ieri.eq.-3)then
+            continue
+          elseif(ifoc.eq.0)then
             continue
           else
             do 111 is=ifoc,nms-1
@@ -1451,9 +1493,10 @@ C IGET = 74 IPV conv+radiant & latent zone injection
       ITMGET(10)='j visual comfort (glare)    '
       ITMGET(11)='k daylight factors          '
       ITMGET(12)='l zone cnv + rad & latent   '
-      ITMGET(13)='? help                      '
-      ITMGET(14)='- exit                      '
-      nitmget=14
+      ITMGET(13)='* NO CHOICE AT THIS TIME    '
+      ITMGET(14)='? help                      '
+      ITMGET(15)='- exit                      '
+      nitmget=15
 
 C Help text for this menu.
       h(1)='This is a sub-set of the metrics that can be selected'
@@ -1461,13 +1504,17 @@ C Help text for this menu.
       h(3)=' '
       h(4)='For each metric the IPV will include statistics,'
       h(5)='frequency reporting and timestep data for display days.'
+      h(6)=' '
+      h(7)='If you need to cancel select the NO CHOICE option. '
 
       CALL EMENU('Metric options',ITMGET,nitmget,INOG)
       if(INOG.eq.nitmget)then
         goto 43
       elseif(INOG.eq.nitmget-1)then
-        CALL PHELPD('metric options',5,'-',0,0,IER)
+        CALL PHELPD('metric options',7,'-',0,0,IER)
         goto 777
+      elseif(INOG.eq.nitmget-2)then
+        goto 43
       elseif(INOG.eq.1)then
         imetget(ijj)=6
         imetmsc(ijj,1)=6
@@ -1553,11 +1600,11 @@ C Help text for this menu.
         metgroup(ijj)='pltcrl_zones'
         metrglbl(ijj)='Plnt cnv+rad&lat (W)'
       endif
+
       INPIC=NCOMP
       CALL EPICKS(INPIC,IVALS,' ',
      &  ' Which zones to associate with this metric: ',
      &  12,NCOMP,zname,' zone list',IER,1)
-      nzmg(ijj)=INPIC
 
       h(1)='Give a short (12 char or less) unique identifier for the'
       h(2)='group of zones associated with this metric. '
@@ -1565,30 +1612,38 @@ C Help text for this menu.
       CALL EASKS(t12,
      &  'Unique identifier for group of zones associated with metric?',
      &  ' ',12,'offices','metric group name',IER,2)
-      if(t12(1:2).ne.'  '.and.t12(1:4).ne.'UNKN')metgroup(ijj)=t12
 
 C Find base area of each of the zones.
       TFLA=0.
-      do 24 mz=1,nzmg(ijj)
+      do 24 mz=1,INPIC
         izmg(ijj,mz)=IVALS(mz)
         TFLA=TFLA+ZBASEA(ivals(mz))
   24  continue
       H(1)='Floor area for zones associated with this metric.'
       CALL EASKR(TFLA,' ',' Associated floor area (m^2)? ',
-     &  0.0,'F',9999.0,'W',0.,'associated floor m2',IER,1)
-      if(ier.eq.0)emgflr(ijj)=TFLA
+     &  0.0,'F',9999.0,'W',0.,'associated floor m2',IERR,1)
 
       h(1)='If metric is to be assessed only during occupied '
       h(2)='periods then supply the casual gain type assiciated '
       h(3)='with occupancy. A zero means full time occupancy. '
+      h(4)=' '
+      h(5)='If you cancel then no changes are made to the metric.'
       icgv=imetmsc(ijj,1)
       CALL EASKI(icgv,'Casual gain type associated with occupancy',
      &  '(0 = full time): ',
-     &  0,'F',3,'F',1,'casual type for comfort',IER,3)
-      if(ier.eq.0)imetmsc(ijj,1)=icgv
-      MODSIT=.true.
-      goto 42
+     &  0,'F',3,'F',1,'casual type for comfort',IERI,5)
+      if(ieri.eq.-3) then
+        goto 43
+      else
 
+C Ok to instanciate the data and then jump to 42 to process it.
+        nzmg(ijj)=INPIC
+        if(t12(1:2).ne.'  '.and.t12(1:4).ne.'UNKN')metgroup(ijj)=t12
+        if(ierr.eq.0)emgflr(ijj)=TFLA
+        imetmsc(ijj,1)=icgv
+        MODSIT=.true.
+        goto 42
+      endif
 
 C Deal with energy sets (and then return to appropriate point in main menue).
  142  continue
@@ -1640,9 +1695,13 @@ C Add delete copy demand set.
             goto 144
           endif
         elseif(IRT.eq.2)then
+          h(1)='You can add delete an existing set and if you choose'
+          h(2)='to cancel then no changes are made to the demand sets.'
           CALL EASKI(IFOC,'Which demand set (give index) ? ',
-     &      '(zero to skip)',0,'F',neds,'F',1,'demand set index',IER,1)
-          if(ifoc.eq.0)then
+     &    '(zero to skip)',0,'F',neds,'F',1,'demand set index',IERI,2)
+          if(ieri.eq.-3) then
+            continue
+          elseif(ifoc.eq.0)then
             continue
           else
             do 11 is=ifoc,neds-1

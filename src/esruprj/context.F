@@ -809,10 +809,17 @@ C IPV data.
         h(1)='This file holds a description of an Integrated '
         h(2)='Performance View of this model, including periods,'
         h(3)='climatic degree day information and associated zones.'
-        ltmp=lipvdatf
+        lr=lnblnk(cfgroot)
+        if(lnblnk(lipvdatf).eq.0)then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        else
+          ltmp=lipvdatf
+        endif
  142    CALL EASKS(ltmp,'IPV description file ?',
      &    ' ',72,'xxx.ipv','IPV file',IER,3)
-        if(lipvdatf(1:2).ne.'  ')then
+        if(ltmp(1:2).ne.'  ')then
           lipvdatf=ltmp
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
