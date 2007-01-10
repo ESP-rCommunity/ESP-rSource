@@ -39,6 +39,12 @@ C           and cell distribution for each region.
 C ASKMFNOD- asks for one or more mass flow nodes (copy of mfoutp.F).
 C ASKMFCON- Asks for one or more mass flow connections (copy of mfoutp.F).  
 
+C << TODO
+C << The introduction of cancel options for easki calls should be
+C << extended to ensure that data in a sequence of edits is only
+C << instanciated if no cancels are called in the sequence. Currently
+C << the code does not re-establish some of the earlier values in
+C << a mixed integer and real sequence of edits.
 
 C ************* CFDCOMP 
 C CFDCOMP controls the editing of CFD input files.
@@ -394,23 +400,62 @@ C Arrays for sorting domains from (see code for comments).
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124
 
-C Assume axes defined.
+      integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
+
+C Assume axes defined and set initial values for general resolution
+C of the X Y Z axis.
+C << Todo: set these based on a higher level concept of
+C << low/medium/high resolution and/or the size of the zone.
       origin=.TRUE.
+      icellx=20
+      icelly=20
+      icellz=20
 
 C Check if we have vertex data.
       if (iorg.eq.0) then
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
         h(1)='Choose a vertex point.'
-        CALL EASKI(iorg,' Specify vertex at origin of CFD domain. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IER,1)
+        h(2)=' '
+        h(3)='A cancel request will return you to the main menu '
+        h(4)='without altering the model. '
+        iorgt=iorg
+        CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
         h(1)='Choose a vertex point. Axes must be cartesian.'
-        CALL EASKI(ixend,' Specify vertex at end of X axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IER,1)
-        CALL EASKI(iyend,' Specify vertex at end of Y axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IER,1)
-        CALL EASKI(izend,' Specify vertex at end of Z axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IER,1)
+        ixendt=ixend
+        CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+        iyendt=iyend
+        CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+        izendt=izend
+        CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+C No cancels so instanciate variables.
+        iorg=iorgt
+        ixend=ixendt
+        iyend=iyendt
+        izend=izendt
       endif
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
@@ -535,15 +580,47 @@ C Display menu.
 
 C Specify origin and axes of CFD domain.
         h(1)='Choose a vertex point.'
-        CALL EASKI(iorg,' Specify vertex at origin of CFD domain. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IER,1)
+        h(2)=' '
+        h(3)='A cancel request will return you to the main menu '
+        h(4)='without altering the model. '
+        iorgt=iorg
+        CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
         h(1)='Choose a vertex point. Axes must be cartesian.'
-        CALL EASKI(ixend,' Specify vertex at end of X axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IER,1)
-        CALL EASKI(iyend,' Specify vertex at end of Y axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IER,1)
-        CALL EASKI(izend,' Specify vertex at end of Z axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IER,1)
+        ixendt=ixend
+        CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+        iyendt=iyend
+        CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+        izendt=izend
+        CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,4)
+        if(ieri.eq.-3) then
+          origin=.false.
+          return
+        endif
+
+C No cancels so instanciate variables.
+        iorg=iorgt
+        ixend=ixendt
+        iyend=iyendt
+        izend=izendt
 
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
@@ -666,11 +743,22 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
         if(NREG(1,ICFD).eq.0)NREG(1,ICFD)=ilx-1
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
+
+        h(1)='This sets the general resolution along the axis '
+        h(2)='which is to be accommodaed by the regions in the axis.'
+        h(3)=' '
+        h(4)='A cancel request will return you to the main menu '
+        h(5)='but you will need to check the CFD domain because some'
+        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along X axis (max is ',NTCELX,
      &    ' over ',xdis,'m) would you like to have?'
         CALL EASKI(icellx,outs,' ',1,'F',NTCELX,'F',10,
-     &    'requested total X cells',IER,0)
+     &    'requested total X cells',IERI,6)
+        if(ieri.eq.-3) then
+          xgrid=.FALSE.
+          return
+        endif
         tolx=(xdis/real(icellx))
         ntcx=0
         if(ilx.ge.2)then
@@ -685,11 +773,22 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
         endif
 C debug        write(6,*) xd,tolx,int(xd/tolx)
 C debug        write(6,*) 'ncellx ',NCELX
+
+        h(1)='This sets the general resolution along the axis '
+        h(2)='which is to be accommodaed by the regions in the axis.'
+        h(3)=' '
+        h(4)='A cancel request will return you to the main menu '
+        h(5)='but you will need to check the CFD domain because some'
+        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along Y axis (max is ',NTCELY,
      &    ' over ',ydis,'m) would you like to have?'
         CALL EASKI(icelly,outs,' ',1,'F',NTCELY,'F',10,
-     &    'requested total Y cells',IER,0)
+     &    'requested total Y cells',IERI,6)
+        if(ieri.eq.-3) then
+          xgrid=.FALSE.
+          return
+        endif
         toly=(ydis/real(icelly))
         ntcy=0
         if(ily.ge.2)then
@@ -704,11 +803,22 @@ C debug        write(6,*) 'ncellx ',NCELX
         endif
 C debug        write(6,*) yd,toly,int(yd/toly)
 C debug        write(6,*) 'ncelly ',NCELY
+
+        h(1)='This sets the general resolution along the axis '
+        h(2)='which is to be accommodaed by the regions in the axis.'
+        h(3)=' '
+        h(4)='A cancel request will return you to the main menu '
+        h(5)='but you will need to check the CFD domain because some'
+        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along Z axis (max is ',NTCELZ,
      &    ' over ',zdis,'m) would you like to have?'
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
-     &    'requested total Z cells',IER,0)
+     &    'requested total Z cells',IERI,6)
+        if(ieri.eq.-3) then
+          xgrid=.FALSE.
+          return
+        endif
         tolz=(zdis/real(icellz))
         ntcz=0
         if(ilz.ge.2)then
@@ -772,10 +882,30 @@ C Additional Z axis must be gridded.
             call usrmsg(
      &        'A non-orthogonal grid requires a Z distribution',
      &        'of points on the East face of the domain. ','W')
-            CALL EASKI(ieorg,' Specify vertex at start of east Z axis.',
-     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IER,1)
-            CALL EASKI(izende,' Specify vertex at end of east Z axis.',
-     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IER,1)
+            h(1)='Look at the wireframe image of the zone to find this'
+            h(2)='out. '
+            h(3)=' '
+            h(4)='A cancel request will return you to the main menu'
+            h(5)='but you will need to check the CFD domain because'
+            h(6)='some prior edits might cause inconsistencies. '
+            if(ieorg.eq.0) ieorg=1
+            CALL EASKI(ieorg,'Specify vertex at start of east Z axis.',
+     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IERI,6)
+            if(ieri.eq.-3) then
+              zegrid=.FALSE.
+              return
+            endif
+            izendet=izende
+            CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
+     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IERI,6)
+            if(ieri.eq.-3) then
+              zegrid=.FALSE.
+              return
+            endif
+
+C User did not cancel so instanciate values.
+            izende=izendet
+
             zedis=crowxyz(X(ieorg),Y(ieorg),Z(ieorg),X(izende),
      &              Y(izende),Z(izende))
 
@@ -1461,10 +1591,16 @@ C Convergence criteria.
         h(7)= ' '
         h(8)= 'Specify the number of iterations, after which the'
         h(9)= 'calculations will be halted.'
+        h(10)=' '
+        h(11)='A cancel results in no change to the model. '
         ival=MAXITR(ICFD)
         CALL EASKI(ival,' ',' Maximum iterations to perform?',
-     &             0,'F',10000,'F',500,'iterations',IER,9)
-        MAXITR(ICFD)=ival
+     &             0,'F',10000,'F',500,'iterations',IERI,11)
+        if(ieri.eq.-3)then
+          continue
+        else
+          MAXITR(ICFD)=ival
+        endif
       elseif (INO.eq.23+NCTM) then
         h(1)= 'An iterative solution procedure is employed.'
         h(2)= 'Iterations continue until either:'
@@ -2742,9 +2878,14 @@ C Define CFD grid cells for source type boundary condition
 
 C<< Should ideally popup a list of casual gain types from zone
 C operations file here with some regard for standalone running of dfs
+        h(1)= 'This is the index of the casual gain included in the'
+        h(2)= 'zone operation file.  '
+        h(3)= '  '
+        h(4)= 'A cancel results in no change in the model.  '
         IVAL=IDCasgn(ISB,ICFD)
         call EASKI(IVAL,'Which casual gain index represents heat ',
-     &  'generation?',0,'W',3,'W',1,'casgn index',IER,1)
+     &  'generation?',0,'W',3,'W',1,'casgn index',IERI,4)
+        if(ieri.eq.-3) goto 7
         if (IER.eq.0) IDCasgn(ISB,ICFD)=IVAL
       elseif (INO.eq.9) then
         VAL=FCasgn(ISB,ICFD)
@@ -3776,6 +3917,8 @@ C and cell distribution for each region.
 
       character H*72,ITEM(MNREG+5)*44,KEY*1,HOLD*24,outs*124,TITLE*30
 
+      integer icellt   ! for local editing.
+
 C Set additional output units to stdout. Then redirect warning 
 C messages to stderr in case of rule script program control.
       IMFTU=IUOUT
@@ -4063,12 +4206,23 @@ C Locate regions by vertices.
             endif
 
 C Got length of region now ask for no of cells and power law and symmetry.
+C Offer the user a cancel option.
             if (IW.ne.3) then
               icell=NCEL(IFOC,ICFD)
               h(1)='A region can be subdivided into a number of cells.'
-              CALL EASKI(icell,' Specify number of cells in region',' ',
-     &          1,'F',NTCELX,'F',10,'single region',IER,1)
-              NCEL(IFOC,ICFD) = icell
+              h(2)=' '
+              h(3)='A cancel takes you back to the grid definition'
+              h(4)='menu and you should check your model for incon-'
+              h(5)='sistencies.'
+              icellt=icell
+              CALL EASKI(icellt,' Specify number of cells in region',
+     &          ' ',1,'F',NTCELX,'F',10,'single region',IERI,5)
+              if(ieri.eq.-3) then
+                goto 5
+              else
+                icell=icellt
+                NCEL(IFOC,ICFD) = icell
+              endif
 
 C If the number of cells is greater than 1 then ask for details, otherwise 
 C set default size and power law.
@@ -4104,8 +4258,12 @@ C set default size and power law.
         elseif (IRO.eq.2) then
           IDEL=NRG(IAX,ICFD)
           h(1)= 'This is the region index.'
+          h(2)= 'A cancel returns you to the menu without changing'
+          h(3)= 'the model.'
           CALL EASKI(IDEL,' ','Which region to delete ? ',
-     &                    0,'F',NRG(IAX,ICFD),'F',1,'del reg',IER,1)
+     &                    0,'F',NRG(IAX,ICFD),'F',1,'del reg',IERI,3)
+          if(ieri.eq.-3) goto 5
+
           if (IDEL.gt.0) then
             do 100 ID=IDEL,NRG(IAX,ICFD)
               if ((ID+1).le.MNREG) then
