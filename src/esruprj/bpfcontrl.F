@@ -1828,7 +1828,7 @@ C On-off control.
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
-C << this logic is used for the cased of a setpoint temperature
+C << this logic is used for the case of a setpoint temperature
 C << defined in a temporal file.
           H(1)=' - Refer ESP-r Data Model section 9 '
           if(itrc.gt.0)then
@@ -2296,18 +2296,66 @@ C Null controller.
           cm(1)=0.0
         elseif(IBCLAW(II,JJ,KK).eq.19)then
 
-C Ideal multi-sensor heating/cooling controller.
-C First 7 data-items are equal to basic controller above.
-          H(1)=' - Refer ESP-r Data Model section 9 '
-          call edisp(iuout,' Ideal multi-sensor controller:')
-          cm(1)=6.0
+C Ideal multi-sensor ON/OFF heating/cooling controller.
  243      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
-          H(1)='Heat delivery may be less than the max. If minimium'
-          H(2)='heating > 0 then heating will continue at a re- '
-          H(3)='duced level even when the setpoint is reached. '
+          h(1)='A multi-sensor control is used to inject/extract heat'
+          h(2)='in one zone (termed source) based on conditions in one'
+          h(3)='or more locations (termed auxilliary sensors).'
+          h(4)=' '
+          h(5)='If  any of the auxilliary sensors demands heat then'
+          h(6)='heat will be injected in the source. If any of the'
+          h(7)='auxilliary sensors demand cooling then heat will be'
+          h(8)='extracted from the source. If there are simultaneous'
+          h(9)='demands for heating and cooling nothing will happen.'
+          h(10)=' '
+          h(11)='A classic use is to condition a mixing box/air handler'
+          h(12)='used within an air flow network to deliver heating or '
+          h(13)='cooling to occupied spaces. '
+          h(14)=' '
+          h(15)='If you are using a multi-sensor controller to enable'
+          h(16)='a chilled ceiling (represented as a zone) or a radiant'
+          h(17)='heating panel (represented as a zone) then these set'
+          h(18)='points are the temperature of the working fluid in '
+          h(19)='the radiant panel. Later you will be asked for the '
+          h(20)='setpoints for the occupied space(s). '
+          h(21)=' '
+          h(22)='Example: to heat a radiant panel to 70C in order '
+          h(23)='to get a temperature of 21C in room(s) below'
+          h(24)='the multi-sensor control can be used. '
+          h(25)=' '
+          H(26)='Heat delivery may be less than the max. If minimium'
+          H(27)='heating > 0 then heating will continue at a re- '
+          H(28)='duced level even when the setpoint is reached. '
+          H(29)='If there is no cooling then use zero values in '
+          H(30)='conjunction with a hight cooling setpoint. '
+          H(31)=' '
+          H(32)='Note this type of control is an ON/OFF control and'
+          H(33)='thus you should use an appropriately short timestep'
+          H(34)='of one or two minutes if there is not much mass in'
+          H(35)='the radiant panel or if there is a considerable air'
+          H(36)='air flow rate. '
+          H(37)=' '
+          H(38)='Note: with the control law it is most common to set'
+          H(39)='the sensor in the occupied space to be located at'
+          H(40)='the zone air node (sensing remote mixed rad/conv is'
+          H(41)='??) '
+          H(42)=' '
+          H(43)=' '
+          H(44)='Also for both heating and cooling panels it is '
+          H(45)='common to inject at the air node and to use a hc '
+          H(46)='coefficient regime to set a high hc coef at the '
+          H(47)='surfaces to ensure flux is transferred to the '
+          H(48)='of the panel. '
+          H(49)=' '
+          H(50)='For a mixing box it is usually not necessary to '
+          H(51)='use a hc regime in within the box. '
+
+C First 7 data-items are equal to basic controller above.
+          call edisp(iuout,' Ideal multi-sensor ON/OFF controller:')
+          cm(1)=6.0
           CALL EASKS(HOLD,' Max & Min heat capacity, Max & Min cool ',
-     &      ' capacity for basic control: ',40,' 1000. 0. 1000. 0. ',
-     &      'max min heat cool',IER,3)
+     &      ' capacity for basic control (see help): ',
+     &      40,' 1000. 0. 1000. 0. ','max min heat cool',IER,51)
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
           CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
@@ -2316,10 +2364,24 @@ C First 7 data-items are equal to basic controller above.
           if(ier.ne.0)goto 243
 
  244      WRITE(HOLD,'(2f8.2)')cm(6),cm(7)
-          H(1)='If you do not wish cooling use a high set point. '
-          H(2)='A 0 deg.C setpoint does NOT turn it off. '
-          CALL EASKS(HOLD,' Heating & cooling setpoints:',
-     &      '  ',40,' 20. 24. ','heat cool setpoints',IER,2)
+          h(1)='It you are using a multi-sensor controller to enable'
+          h(2)='a chilled ceiling (represented as a zone) or a radiant'
+          h(3)='heating panel (represented as a zone) then these set '
+          h(4)='points are the temperature of the working fluid in '
+          h(5)='the radiant panel. Later you will be asked for the '
+          h(6)='setpoints for the occupied space. '
+          h(7)=' '
+          h(8)='Example: to heat a radiant panel to 70C in order '
+          h(9)='to get a temperature of 21C in one or more room below'
+          h(10)='the multi-sensor control can be used. '
+          h(11)=' '
+          H(12)='If you do not wish cooling use a high set point '
+          H(13)='such as 100C. A 0 deg C cooling setpoint does not'
+          H(14)='turn cooling off. '
+          CALL EASKS(HOLD,
+     &      'Heating & cooling setpoints within the zone where flux',
+     &      'is injected or extracted (see help)',40,' 20. 24. ',
+     &      'heat cool setpoints',IER,14)
           K=0
           CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Heat setp',IER)
           CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool setp',IER)
@@ -2354,20 +2416,27 @@ C If no cooling capacity then set cooling set point to 100C.
 140         continue   
           endif
 
-          H(1)=' The max number of auxiliary sensors is MSEN'
-          H(2)=' '
-          H(3)=' The number of data items = 7 + 6 * no. of sensors'
-          H(4)=' For each auxiliary sensor, 6 items are needed:'
-          H(5)=' 4 items for the sensor location, followed by the'
-          H(6)=' heating set-point and cooling set-point for'
-          H(7)=' that auxiliary sensor'
-          H(9)=' '
-          H(10)='If you choose cancel the controller data will not be'
-          H(11)='altered and you will be returned to the main menu. '
+          H(1)= ' The max number of auxiliary sensors is MSEN'
+          H(2)= ' '
+          H(3)= ' The number of data items = 7 + 6 * no. of sensors'
+          H(4)= ' For each auxiliary sensor, 6 items are needed:'
+          H(5)= ' 4 items for the sensor location and two setpoints.'
+          H(6)= ' '
+          H(7)= ' Example: to sense air temperature is 3rd zone which'
+          H(8)= '    needs to be heated to 21.1C and no cooling'
+          H(9)= '    3.0 0.0 0.0 0.0 21.1 100.0 '
+          H(10)='  '
+          H(11)=' So it is worth gathering information on the location'
+          H(12)=' of auxillary sensors before answering any further'
+          H(13)=' question abouts this control and carefully'
+          H(14)=' checking the data/QA report afterwards.'
+          H(15)=' '
+          H(16)='If you choose cancel the controller data will not be'
+          H(17)='altered and you will be returned to the main menu. '
 
           I8=int(cm(8))
           CALL EASKI(I8,' ',' No. of aux sensors ',
-     &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,11)
+     &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,17)
           if(ieri.eq.-3) goto 92
           cm(1)=7.+6.*I8
           cm(8)=float(I8)
@@ -2382,30 +2451,31 @@ C Auxiliary sensor details,
           H(8)='        3 = wind dir, 4 = diffuse rad, '
           H(9)='        5 = direc norm rad, 6 = RH'
           H(10)=' '
-          H(11)='This data is followed - per sensor - by the'
-          H(12)='heating set-point and cooling set-point for'
-          H(13)='that auxiliary sensor.'
-          H(14)=' '
-          H(15)=' - Refer ESP-r Data Model section 9 '
+          H(11)= ' Example: to sense air temperature is 3rd zone'
+          H(12)= '    3.0  0.0 0.0  '
+          H(13)= ' '
+          H(14)='This data is followed - per sensor - by the'
+          H(15)='heating set-point and cooling set-point for'
+          H(16)='that auxiliary sensor.'
           DO 141 L=1,I8
             ndx=9+6*(L-1)
             call edisp(iuout,' ')
             WRITE(outs,'(a,i2,a)')' For aux sensor ',L,' define....'
             call edisp(iuout,outs)
             CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
-     &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,15)
+     &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,16)
             CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,16)
             CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,16)
             CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,16)
 
             CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,16)
 
             CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,16)
 141       continue
  
         elseif(IBCLAW(II,JJ,KK).eq.20)then
