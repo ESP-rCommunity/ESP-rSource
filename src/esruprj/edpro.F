@@ -169,7 +169,6 @@ C List contents of database.
       ELSEIF(INO.EQ.(MVERT-3))THEN
 
 C Insert a profile. (lastrec is next available record).
-        NO(NITEMS+1)=lastrec
         NITEMS = NITEMS + 1
         WRITE(outs,'(a,I4)') ' Profile  ',NITEMS
         call edisp(iuout,outs)
@@ -177,35 +176,45 @@ C Insert a profile. (lastrec is next available record).
         H(1)='Between 1 and 35 events can be acommodated.'
         H(2)='An event is equivalent to a period of time with'
         H(3)='associated values. '
+        H(4)=' '
+        H(5)='A cancel request leaves the model unchanged.'
         IV=NCG(NITEMS)
         CALL EASKI(IV,' ',' Number of events in profile: ',
-     &       1,'F',MC,'F',1,'no events',IER,3)
-        NCG(NITEMS)=IV
-        DESC(NITEMS)='New profile'
-        IPACT=CREATE
-        CALL EKPAGE(IPACT)
-        CALL EPMENSV
+     &       1,'F',MC,'F',1,'no events',IERI,5)
+        if(ieri.eq.-3) then
+          NITEMS = NITEMS - 1
+          goto 92
+        else
+
+C Instanciate the data.
+          NO(NITEMS+1)=lastrec
+          NCG(NITEMS)=IV
+          DESC(NITEMS)='New profile'
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+          CALL EPMENSV
 
 C Because we are creating a new profile set asciupdate true.
-        asciupdate=.true.
-        CALL EDPROF(NITEMS,'N',asciupdate,IER)
-        if(asciupdate)then
+          asciupdate=.true.
+          CALL EDPROF(NITEMS,'N',asciupdate,IER)
+          if(asciupdate)then
 
 C If update needed free the binary file, do conversion and
 C then jump back to 77 to rescan the header of the database.
-          CALL ERPFREE(IPRODB,ISTAT)
-          write(LASCI,'(A,A2)')LPRFDB(1:lnblnk(LPRFDB)),'.a'
-          IAF=IFIL+1
-          CALL TROPRO(iuout,IAF,LASCI,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'A backup ASCII version placed in...')
-            call edisp(iuout,LASCI)
+            CALL ERPFREE(IPRODB,ISTAT)
+            write(LASCI,'(A,A2)')LPRFDB(1:lnblnk(LPRFDB)),'.a'
+            IAF=IFIL+1
+            CALL TROPRO(iuout,IAF,LASCI,IER)
+            if(ier.eq.0)then
+              call edisp(iuout,'A backup ASCII version placed in...')
+              call edisp(iuout,LASCI)
+            endif
           endif
+          CALL EPMENRC
+          CALL USRMSG(' ',' ','-')
+          call tstamp('>','PRO: insert a new db item')
+          GOTO 77
         endif
-        CALL EPMENRC
-        CALL USRMSG(' ',' ','-')
-        call tstamp('>','PRO: insert a new db item')
-        GOTO 77
       ELSEIF(INO.EQ.(MVERT-4))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -513,7 +522,10 @@ C EDEVENT: Edit details of a profile event.
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
       character outs*124,H*72,DESC*40
-      logical OK
+      logical OK,shiftnext
+
+C Set notification of need to shift next period start to false
+      shiftnext=.false.
 
   10  IER=0
       WRITE(outs,'(A,I4,A,A)') ' Event  - ',IFOC,' in ',DESC(IPR)
@@ -522,46 +534,57 @@ C EDEVENT: Edit details of a profile event.
 
   11  IES=ICGS1(IFOC)
       H(1)='An event may start between hours 0 and 23. '
+      H(2)=' '
+      H(3)='A cancel request leaves the model unchanged.'
       CALL EASKI(IES,outs,' start hour : ',
-     &    0,'F',23,'F',0,'start',IER,0)
+     &    0,'F',23,'F',0,'start',IERI,3)
+      if(ieri.eq.-3) return
+
       if(IFOC.gt.1.and.IES.lt.ICGF1(IFOC-1))then
         call usrmsg('The start time overlaps previous event...',
      &              'you must respecify.','W')
         goto 11
       endif
       CALL USRMSG(' ',' ','-')
-      ICGS1(IFOC)=IES
 
   12  IEF=ICGF1(IFOC)
       H(1)='An event may finish  between hours 1 and 24.'
+      H(2)=' '
+      H(3)='A cancel request leaves the model unchanged.'
       CALL EASKI(IEF,outs,' finish hour: ',
-     &    IES,'F',24,'F',0,'finish',IER,0)
+     &    IES,'F',24,'F',0,'finish',IERI,3)
+      if(ieri.eq.-3) return
+
       if(IFOC.lt.NCG(IPR).and.IEF.gt.ICGS1(IFOC+1))then
         CALL EASKAB(' Finish time overlaps next event...',
      &     ' ','respecify finish','shift next event start',IW,0)
         if(IW.eq.1)goto 12
-        ICGS1(IFOC+1)=IEF
+        shiftnext=.true.
       endif
       CALL USRMSG(' ',' ','-')
-      ICGF1(IFOC)=IEF
 
       EC=CGS1(IFOC)
       H(1)='The first value is the percentage of sensible gain.'
       CALL EASKR(EC,' ',' First value (sensible) percentage ? ',
      &   0.,'F',100.,'F',50.,'first value',IER,1)
-      CGS1(IFOC)=EC
 
       EL=CGL1(IFOC)
       H(1)='The second value is the percentage of latent gain.'
       CALL EASKR(EL,' ',' Second value (latent) percentage ? ',
      &   0.,'F',100.,'F',50.,'first value',IER,1)
-      CGL1(IFOC)=EL
 
       if(IER.ne.0)then
         CALL usrmsg('A problem was detected during input...',
      &              'Please repeat the specification.','W')
         goto 10
       endif
+
+C If we got to this point we can instanciate the data.
+      ICGS1(IFOC)=IES
+      ICGF1(IFOC)=IEF
+      if(shiftnext) ICGS1(IFOC+1)=IEF
+      CGS1(IFOC)=EC
+      CGL1(IFOC)=EL
 
       RETURN
       END
