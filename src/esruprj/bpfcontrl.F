@@ -4188,7 +4188,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
       CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,SALT*40
-      integer isn1T,isn2T,isn3T,isn4T   ! temporary values for editing.
+      integer isn1T,isn2T,isn3T,isn4T,ilayt   ! temporary values for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4341,7 +4341,17 @@ C Ask for the specific zone.
           if(IWN.eq.1)then
             isn3=0
           elseif(IWN.eq.2)then
-            call asksnode(isn1,isn2,ilay,isn3,ier)
+
+C Work with local variables and only instanciate if ier is zero.
+            ilayt=0
+            isn3t=isn3
+            call asksnode(isn1,isn2,ilayt,isn3t,ier)
+            if(ier.eq.0)then
+              ilay=ilayt
+              isn3=isn3t
+            else
+              goto 3
+            endif
           elseif(IWN.eq.3)then
             goto 3
           endif
@@ -4770,7 +4780,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION VERT(35)
       CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
-      integer ian1T,ian2T,ian3T  ! local variable for editing.
+      integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4921,7 +4931,17 @@ C Decode from the potentially long list to the zone number via KEYIND.
           if(IWN.eq.1)then
             ian3=0
           elseif(IWN.eq.2)then
-            call asksnode(ian1,ian2,ilay,ian3,ier)
+
+C Work with local variables and only instanciate if ier is zero.
+            ilayt=0
+            ian3t=ian3
+            call asksnode(ian1,ian2,ilayt,ian3t,ier)
+            if(ier.eq.0)then
+              ilay=ilayt
+              ian3=ian3t
+            else
+              goto 3
+            endif
           elseif(IWN.eq.3)then
             goto 3
           endif
