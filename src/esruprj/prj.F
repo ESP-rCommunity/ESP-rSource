@@ -1269,6 +1269,8 @@ C dd is character array for selecting simulation parameter sets.
       logical browse,concat,hri,defok,unixok
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
 
+      integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
+
       modparms=.false.
       lr=lnblnk(cfgroot)
       cr=cfgroot
@@ -1859,9 +1861,17 @@ C do not allow this set name to be changed.
           call scntcnst(TDM,istd,TCM,ISTC)
           H(1)='Presimulation days to allow model to reach equlabrium.'
           H(2)='The default is the suggested value for this model.'
-          CALL EASKI(isstup,'Presimulation period (days): ',' ',
-     &       0,'F',100,'W',ITCNST,'presimulation days',IER,2)
-          modparms=.true.
+          H(3)=' '
+          H(4)='A cencel leaves the model unchanged. '
+          isstupt=isstup
+          CALL EASKI(isstupt,'Presimulation period (days): ',' ',
+     &       0,'F',100,'W',ITCNST,'presimulation days',IERI,4)
+          if(ieri.eq.-3)then
+            continue
+          else
+            isstup=isstupt
+            modparms=.true.
+          endif 
         endif
       elseif(MITEM.eq.23.and.INO.EQ.4)then
         if(itdflg.ne.0)then
@@ -1872,41 +1882,57 @@ C do not allow this set name to be changed.
         H(1)='Zone-side timesteps range from 1 to 60 per hour.'
         H(2)='Note: if the model includes temporal data then you must'
         H(3)='use the same zone-side teimstep as in the temporal file.'
-        CALL EASKI(isbnstep,'Zone-side timesteps per hour: ',' ',
-     &       1,'F',60,'W',2,'zone steps per hour',IER,1)
-        if(isbnstep.gt.1)then
-          if(itdflg.ne.0)then
+        H(4)=' '
+        H(5)='A cancel leaves the model unchanged. '
+        isbnstept=isbnstep
+        CALL EASKI(isbnstept,'Zone-side timesteps per hour: ',' ',
+     &       1,'F',60,'W',2,'zone steps per hour',IERI,5)
+        if(ieri.eq.-3)then
+          continue
+        else
+          if(isbnstep.gt.1)then
+            if(itdflg.ne.0)then
 
 C There is temporal data so must save at each timestep.
-            write(6,*) 'temporal data found so save each timestep'
-            isavgh=0
-          else
-            H(1) ='Bps calculates the value of each state variable '
-            H(2) ='at each computational time step. The default action'
-            H(3) ='is to transfer each value at each computational'
-            H(4) ='time step to the results database(s).'
-            H(5) ='This option allows to average results over one'
-            H(6) ='hour before transfer to the results database(s),'
-            H(7) ='thus decreasing the size of results database(s).'
-            defok=.false.
-            hri=.false.
-            call askok(' Hourly results integration: ',' ',hri,defok,7)
-            if(hri)then
-              isavgh=1
-            else
+              write(6,*) 'temporal data found so save each timestep'
               isavgh=0
+            else
+              H(1)='Bps calculates the value of each state variable'
+              H(2)='at each computational time step. The default '
+              H(3)='action is to transfer each value at each '
+              H(4)='computational time step to the results file(s).'
+              H(5)='This option allows to average results over one'
+              H(6)='hour before transfer to the results database(s),'
+              H(7)='thus decreasing the size of results database(s).'
+              defok=.false.
+              hri=.false.
+              call askok(' Hourly results integration: ',' ',hri,
+     &          defok,7)
+              if(hri)then
+                isavgh=1
+              else
+                isavgh=0
+              endif
             endif
+          else
+            isavgh=0
           endif
-        else
-          isavgh=0
+          modparms=.true.
         endif
-        modparms=.true.
       elseif(MITEM.eq.23.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           H(1)='Plant-side timesteps range from 1 to 60 per hour.'
-          CALL EASKI(ispnstep,'Plant-side timesteps per zone step: ',
-     &      ' ',1,'F',100,'W',10,'plt steps per hour',IER,1)
-          modparms=.true.
+          H(2)=' '
+          H(3)='A cancel leaves the model unchanged. '
+          ispnstept=ispnstep
+          CALL EASKI(ispnstept,'Plant-side timesteps per zone step:',
+     &      ' ',1,'F',100,'W',10,'plt steps per hour',IERI,3)
+          if(ieri.eq.-3)then
+            continue
+          else
+            ispnstep=ispnstept
+            modparms=.true.
+          endif
         endif
       elseif(MITEM.eq.23.and.INO.EQ.6)then
         H(1)='Save >> 0 summary table '
@@ -1914,9 +1940,17 @@ C There is temporal data so must save at each timestep.
         H(3)='Save >> 2 (1+) surface temps '
         H(4)='Save >> 3 (2+) node temps '
         H(5)='Save >> 4 (2+) zone and surface energy balances '
-        CALL EASKI(issave,'Save level for predictions (0-4)?: ',
-     &      '(see help)',0,'F',4,'F',4,'save level',IER,5)
-        modparms=.true.
+        H(6)=' '
+        H(7)='A cancel leaves the model save level unchanged.'
+        issavet=issave
+        CALL EASKI(issavet,'Save level for predictions (0-4)?: ',
+     &      '(see help)',0,'F',4,'F',4,'save level',IERI,7)
+        if(ieri.eq.-3)then
+          continue
+        else
+          issave=issavet
+          modparms=.true.
+        endif
       elseif(MITEM.eq.23.and.INO.EQ.7)then 
         CALL EDAY(isstday(isset),isstmon(isset),ISDS)
         CALL EDAY(isfnday(isset),isfnmon(isset),ISDF)

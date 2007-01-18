@@ -3612,6 +3612,8 @@ C Descriptive label for a zone load or casual gain types.
       character*8 ll1,ll2,ll3
       logical OK,DOK
 
+      integer IPPFT,IPPHAST  ! for local editing.
+
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') lodlabel(icomp,1)
       write(ll2,'(1x,a6,1x)') lodlabel(icomp,2)
@@ -3686,7 +3688,7 @@ C << and small power can be entered in terms of W/m2.
       CALL EGETWR(HOLD,K,CON,0.0,1.0,'F','conv frac',IER)
 
       SUM = RAD + CON
-      IF (SUM .LT. 0.98 .OR. SUM .GT. 1.00)then
+      IF (SUM .LT. 0.98 .OR. SUM .GT. 1.02)then
         dok=.false.
         h(1)='If the sum is less than 0.98 or greater than 1.00 then'
         h(2)='the sensible load may not be well represented in your '
@@ -3721,8 +3723,22 @@ C << and small power can be entered in terms of W/m2.
           H(3)='leading load is one with a capacative  '
           H(4)='element. Unity loads are purely resistive'
           H(5)='i.e. incandescent lighting.'
-          CALL EASKI(IPPF,' ',' Lagging -1, Leading 1 or Unity 0 ? ',
-     &      -1,'F',1,'F',0,'casual gain type',IER,5) 
+          H(6)=' '
+          H(7)='A cancel leaves the model without electrical data'
+          H(8)='for this item. '
+          ippft=ippf
+          CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
+     &      '(see help) ',-1,'F',1,'F',0,'casual gain type',IERI,8) 
+          if(ieri.eq.-3)then
+            PPF=0.0
+            IPPF=0
+            PBVOLT=0.0
+            IPPHAS=1
+            PE=0.0
+            goto 42
+          else
+            ippf=ippft
+          endif
 
           H(1)='To expand the profile into energy values it'
           H(2)='is necessary to supply the power consumption'
@@ -3736,15 +3752,28 @@ C << and small power can be entered in terms of W/m2.
           CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
      &      0.,'F',99.,'-',240.,'Operational volatage ',IER,1)
 
-          IPPHAS=1
+          IPPHAST=1
           H(1)='Which phse of the three phse supply is the load'
           H(2)='connected to ? (1-3) or 4 - all three i.e. for'
           H(3)='a large induction motor.'
-          CALL EASKI(IPPHAS,' ','Supply phase 1-3 or 4 ? ',
-     &       1,'F',4,'F',1,'casual gain type',IER,5) 
+          H(4)=' '
+          H(5)='A cancel leaves the model without electrical data'
+          H(6)='for this item. '
+          ipphast=ipphas
+          CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
+     &       1,'F',4,'F',1,'casual gain type',IERI,6) 
+          if(ieri.eq.-3)then
+            PPF=0.0
+            IPPF=0
+            PBVOLT=0.0
+            IPPHAS=1
+            PE=0.0
+          else
+            ipphas=ipphast
+          endif            
         ENDIF
       ENDIF
-      call usrmsg(' ',' ','-')
+ 42   call usrmsg(' ',' ','-')
           
       if(IDAY .EQ. 1)then
 
@@ -3856,6 +3885,9 @@ C Base area for zones.
       logical OK,DOK,CLOSE,silent
 
       character OUTS*124,hold*24,h*72
+
+      integer IV,ipft,IPHAST  ! for local editing.
+      real pft,pwrt,bvoltt   ! for local editing.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4049,46 +4081,72 @@ C Electrical details.
 
 C Get the electrical details of the load from the user
           H(1)=' Power factor will vary between 0 - 1.0'
- 80       VAL=PF
-          call EASKR(VAL,' ','Load power factor?',
+ 80       pft=PF
+          call EASKR(pft,' ','Load power factor?',
      &           0.0,'F',1.0,'F',1.0,'power factor',IER,1)
           if (IER.ne.0) goto 80
-          PF=VAL
+
           H(1)='The load will either be capacitive, leading current,'
           H(2)='or reactive with a lagging current, most loads take '
           H(3)='a lagging current.'
-          IV=IPF
-          call ECLOSE(PF,1.0,0.0001,CLOSE)
+          H(4)=' '
+          H(5)='A (*) flags an existing value. '
+
+          call ECLOSE(pft,1.0,0.0001,CLOSE)
           if (CLOSE) then
-            IPF=0
+            IPFT=0
           else
-            call EASKAB('Is the load current leading or lagging?',
-     &                   '(see help)','Leading','Lagging',IOPT,3)
-            if (IOPT.EQ.1) then
-              IPF=-1
+            if(ipf.eq.-1)then
+              call EASKAB('Is the load current leading or lagging?',
+     &          '(see help)','Leading (*)','Lagging',IOPT,5)
+            elseif(ipf.eq.1)then
+              call EASKAB('Is the load current leading or lagging?',
+     &          '(see help)','Leading','Lagging (*)',IOPT,5)
             else
-              IPF=1
+              call EASKAB('Is the load current leading or lagging?',
+     &          '(see help)','Leading','Lagging',IOPT,5)
+            endif
+            if (IOPT.EQ.1) then
+              IPFT=-1
+            else
+              IPFT=1
             endif
           endif
+
           H(1)='What is the real power consumption in watts?'
- 90       VAL=PWR
-          call EASKR(VAL,' ',' Real power consumption ? ',
-     &          0.0,'-',10000.0,'-',CMGS,'power consumption',IER,1)
+          H(2)='This might be the same as the sensible load for'
+          H(3)='some devices (please check). '
+ 90       pwrt=PWR
+          call EASKR(pwrt,'Real power consumption ?','  ',
+     &          0.0,'-',10000.0,'-',CMGS,'power consumption',IER,3)
           if (IER.ne.0) goto 90
-          PWR=VAL
+
           H(1)=' What voltage does the load operate at i.e. 220V'
- 100      VAL=BVOLT
-          call EASKR(VAL,' ','Operational voltage?',
+ 100      bvoltt=BVOLT
+          call EASKR(bvoltt,' ','Operational voltage?',
      &          0.0,'-',10000.0,'-',220.0,'op voltage',IER,1)
           if (IER.ne.0) goto 100
-          BVOLT=VAL
+
           H(1)='To which phase of the 3-phase supply is the load '
           H(2)='connected, 1-3 or 4-all three.'
- 110      IV=IPHAS
-          call EASKI(IV,' ',' Which phase is load connected to ? ',
-     &               1,'F',4,'F',1,'phase ',IER,2)
-          if (IER.ne.0) goto 110
-          IPHAS=IV
+          H(3)=' '
+          H(4)='A cancel leaves the electrical data unchanged.'
+ 110      IPHAST=IPHAS
+          call EASKI(IPHAST,'Which phase is load connected to?',
+     &      '(see help)',1,'F',4,'F',1,'phase ',IERI,4)
+          if(ieri.eq.-3)then
+            continue
+          elseif (ieri.gt.0)then
+            goto 110
+          else
+
+C No more cancels so instanciate the data for this period.
+            BVOLT=bvoltt
+            PWR=PWRT
+            IPF=IPFT
+            PF=pft
+            IPHAS=IPHAST
+          endif
         endif
       endif
 

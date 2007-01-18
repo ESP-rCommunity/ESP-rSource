@@ -90,7 +90,13 @@ C Help text for this menu.
         h(3)='stage of development. Hence for the safety'
         h(4)='of the novice user graphical network '
         h(5)='definition is password protected.'
-        call easki(ians,' ','Password: ',0,'-',0,'-',0,'Password',IER,5)
+        h(6)=' '
+        h(7)='If you do not know the password select cancel'
+        h(8)='and you will be given a change to try again with '
+        h(9)='the text/menu based interface.'
+        call easki(ians,' ','Password: ',0,'-',0,'-',0,'Password',
+     &    IERI,9)
+        if(ieri.eq.-3) goto 10
         if(ians.ne.101) goto 10
 
 C Call the 'net' program for network definition.
@@ -577,12 +583,20 @@ C If no selection has been made before exit then return with 0.
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
+        h(1)='Supply the index of the plant component. '
+        h(2)=' '
+        h(3)='A cancel continues without a component. '
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NPCOMP,'F',1,'script comp',IER,0)
-        if(IER.NE.0)goto 96
-        IS=IV
-        RETURN
-
+     &         1,'F',NPCOMP,'F',1,'script comp',IERI,3)
+        if(ieri.eq.-1)then
+          is=0
+          return
+        elseif(ieri.gt.0) then
+          goto 96
+        else
+          IS=IV
+          RETURN
+        endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Allow a component to be added, checked for uniqueness and returned.
@@ -821,12 +835,20 @@ C If no selection has been made before exit then return with 0.
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
+        h(1)='Supply the index of the plant component. '
+        h(2)=' '
+        h(3)='A cancel continues without a component. '
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NPCOMP,'F',1,'script comp',IER,0)
-        if(IER.NE.0)goto 96
-        IS=IV
-        RETURN
-
+     &         1,'F',NPCOMP,'F',1,'script comp',IERI,3)
+        if(ieri.eq.-1)then
+          is=0
+          return
+        elseif(ieri.gt.0) then
+          goto 96
+        else
+          IS=IV
+          RETURN
+        endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Allow a component to be added, checked for uniqueness and returned.
@@ -1025,11 +1047,20 @@ C If no selection has been made before exit then return with 0.
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
+        h(1)='Supply the index of the plant component. '
+        h(2)=' '
+        h(3)='A cancel continues without a component. '
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NCONT,'F',1,'script comp',IER,0)
-        if(IER.NE.0)goto 96
-        IS=IV
-        RETURN
+     &         1,'F',NCONT,'F',1,'script comp',IERI,3)
+        if(ieri.eq.-1)then
+          is=0
+          return
+        elseif(ieri.gt.0) then
+          goto 96
+        else
+          IS=IV
+          RETURN
+        endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Allow a component to be added, checked for uniqueness and returned.

@@ -1500,6 +1500,11 @@ C ********************* MF310I
 C Fluid flow component supplementary data input or check for
 C general flow inducer (dP = SUM (i=0 to 3) ai.(m/ro)^i; which is
 C                       only valid for q,min <= m/ro <= q,max )
+
+C << consider what would need to change to implement a cancel
+C << option within this interface and the degree to which the
+C << data instanciation needs to change.
+
       SUBROUTINE MF310I(ICMP,IER)
 
 #include "net_flow.h"
@@ -1610,17 +1615,22 @@ C Check if not all coefficients equal to zero.
         CALL ECLOSE(SUPCMP(ICMP,7),0.0,0.001,closec)
         IF(closea.and.closeb.and.closec) GOTO 43
 
-C Points to be read off performance curve
+C Points to be read off performance curve.
+
+C << to be done: implement a cancel option for easki >>
       ELSE
  71     H(1)=' Coordinates entered should be over the '
         H(2)=' entire range of the performance curve. '
         H(3)=' (Not just the preferred operating range)'
         H(4)=' Ideally values for near max and near min'
         H(5)=' flow should also be used.'
+        H(6)=' '
+        H(7)='Cancel option not yet implemented. '
         CALL PHELPD('curve fit',5,'-',0,0,IER)
- 88     CALL EASKI(IVAL,' ',
-     &    ' How many points to be read off performance curve?',
-     &    4,'F',maxp,'F',4,'points read off',IER,5)
+ 88     CALL EASKI(IVAL,
+     &    'How many points to be read off performance curve?',
+     &    '(note: CANCEL option not implemented)',
+     &    4,'F',maxp,'F',4,'points read off',IER,7)
         DO 53 IIVAL=1,IVAL
           WRITE(HOLD,'(2F11.5)')XVAL(IIVAL),YVAL(IIVAL)
  63       CALL EASKS(HOLD,
