@@ -178,6 +178,11 @@ C Help text for this menu.
       H(15)=' '
       H(16)='An automated building of triangles from a list of '
       H(17)='vetices is provided. '
+      H(18)=' '
+      H(19)='If you are creating the initial vertices via a click-'
+      H(20)='on-bitmap the ESP-r cookbook has a useful guide. '
+      H(21)=' '
+      H(22)='<< to be written>> '
 
       CALL EMENU('Ground Topology',ITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
@@ -185,7 +190,7 @@ C Help text for this menu.
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C List help.
-        CALL PHELPD('grnd topo section',17,'-',0,0,IER)
+        CALL PHELPD('grnd topo section',22,'-',0,0,IER)
       ELSEIF(INO.EQ.nitms-2)THEN
         call edisp(iuout,'Current list of vertices.... ')
         DO 335, I=1, NGTV
@@ -1175,16 +1180,27 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(12)=' '
         h(13)='In graphic mode you can edit a number of vertices by '
         h(14)='clicking on the wire-frame image. '
+        h(15)=' '
+        h(16)='A cancel request leaves the model unchanged. '
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
      &    'replicate','edit (several)','do nothing',' ',IRT,14)
         if(IRT.eq.1)then
+          IADD=1
           CALL EASKI(IADD,' ',' How many vertices to add ? ',
-     &     1,'F',MGTV-NGTV,'F',1,'+ vertex',IER,14)
-          CALL ADDGVERT(IADD,'A',IER)
-          ILEN=NGTV
-          IPACT=CREATE
-          CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
+     &     1,'F',MGTV-NGTV,'F',1,'+ vertex',IERI,16)
+          if(iadd.eq.0)then
+            goto 92
+          else
+            if(ieri.eq.-3)then
+              goto 92
+            else
+              CALL ADDGVERT(IADD,'A',IER)
+              ILEN=NGTV
+              IPACT=CREATE
+              CALL EKPAGE(IPACT)
+              MODGEO=.TRUE.
+            endif
+          endif
         elseif(IRT.eq.2)then
 
 C Delete one or more vertices, get list and then sort in decending
@@ -1247,17 +1263,21 @@ C only up to MTV.
           if(inpick.eq.1)then
             iwhich=IVLST(1)
             CALL EASKI(IADD,' ',' Replicate how many times ? ',
-     &        1,'F',MGTV-NGTV,'F',1,'+ replicate vertex',IER,1)
-            if(IADD.ge.1)then
-              do 144 ij=1,IADD
-                CALL ADDGVERT(IWHICH,'C',IER)
- 144          continue
-              ILEN=NGTV
-              IPACT=CREATE
-              CALL EKPAGE(IPACT)
-              MODGEO=.TRUE.
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
+     &        1,'F',MGTV-NGTV,'F',1,'+ replicate vertex',IERI,16)
+            if(ieri.eq.-3)then
+              goto 92
+            elseif(ieri.eq.0)then
+              if(IADD.ge.1)then
+                do 144 ij=1,IADD
+                  CALL ADDGVERT(IWHICH,'C',IER)
+ 144            continue
+                ILEN=NGTV
+                IPACT=CREATE
+                CALL EKPAGE(IPACT)
+                MODGEO=.TRUE.
+                MODIFY=.TRUE.
+                MODBND=.TRUE.
+              endif
             endif
           endif
         elseif(IRT.eq.5)then
@@ -2131,10 +2151,23 @@ C Transform all surface vertices.
 
 C Rotate around a point in the surface.
           H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface.'
+          H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
+          H(3)='vertex in the surface. '
+          H(4)=' '
+          H(5)='A cancel leaves the model unchanged. '
           if(.NOT.DOK)then
             CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
-     &        1,'F',NVER1,'F',1,'rotation anchor',IER,2)
+     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,5)
+            if(ieri.eq.-3)then
+
+C User asked to cancel so retract new information and return.
+              MODIFY=.FALSE.
+              NGVER(NGT)=0
+              GSNAME(NGT)=' '
+              GMLCN(NGT)=' '
+              NGT=NGT-1
+              return
+            endif
             H(1)='The rotation is applied around at and positive'
             H(2)='is anticlockwise. '
             ANG=0.
@@ -2583,9 +2616,15 @@ C Rotate around a point in the surface.
           H(1)='The rotation is applied around one vertex of'
           H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
           H(3)='vertex in the surface. '
+          H(4)=' '
+          H(5)='A cancel leaves the model unchanged. '
           CALL EASKI(IRV,'Rotate about which vertex index: ',
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
-     &       1,'F',N,'F',1,'rotation anchor',IER,3)
+     &       1,'F',N,'F',1,'rotation anchor',IERI,5)
+          if(ieri.eq.-3)then
+            MODIFY=.FALSE.
+            goto 92
+          endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
           ANG=0.

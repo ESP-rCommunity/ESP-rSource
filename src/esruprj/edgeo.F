@@ -776,8 +776,10 @@ C profile has not been defined.
  22             continue
                 H(1)='One of the user defined profile numbers is'
                 H(2)='required here.'
+                H(3)=' '
+                H(4)='A cancel leaves the model unchanged. '
                 CALL EASKI(IIE2,' User defined ground profile index ?',
-     &            ' ',0,'F',9,'F',1,'user defined profile',IERI,2)
+     &            ' ',0,'F',9,'F',1,'user defined profile',IERI,4)
                 if(ieri.eq.-3) goto 3
               else
                 call usrmsg(
@@ -2371,9 +2373,11 @@ C the action make no changes and jump back to 13 (the menu creation code).
           H(5)='    case a 0 followed by a profile number is '
           H(6)='    required.'
           H(7)='-3  a connection to a 3D ground model.'
+          H(8)=' '
+          H(9)='A cancel leaves the model unchanged. '
           iic2=ic2(IC)
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,9)
           IF(IIC2.GT.0)THEN
             if(ieri.eq.0)then
               IC2(IC)=iic2
@@ -2407,8 +2411,10 @@ C set the common blocks. If out of range warn user. If user cancels
 C the action make no changes and jump back to 13 (the menu creation code).
             H(1)='One of the user defined profile numbers is'
             H(2)='required here.'
+            H(3)=' '
+            H(4)='A cancel leaves the model unchanged. '
  778        CALL EASKI(IIE2,' User defined ground profile index ?',
-     &        ' ',0,'F',9,'F',1,'user defined profile',IERI,2)
+     &        ' ',0,'F',9,'F',1,'user defined profile',IERI,4)
             if(IIE2.gt.0)then
               if(ieri.eq.0)then
                 IC2(IC)=0
@@ -2467,8 +2473,10 @@ C action do not instanciate the data.
           H(4)='must specify the percentage of the whole-foundation'
           H(5)='heat loss to attribute to each surface. Normally the'
           H(6)='sum of surfaces representing a founcation is 100%.'
+          H(7)=' '
+          H(8)='A cancel leaves the model unchanged. '
           CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
-     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IERI,6)
+     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IERI,8)
           if(ieri.eq.0)then
             IE2(IC)=Ifrac
             IC2(IC)=IBS
@@ -3369,6 +3377,8 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(12)=' '
         h(13)='In graphic mode you can edit a number of vertices by '
         h(14)='clicking on the wire-frame image. '
+        h(15)=' '
+        h(16)='A cancel request leaves the model unchanged. '
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
      &    'replicate','edit (several)','do nothing',' ',IRT,14)
         if(IRT.eq.1)then
@@ -3377,7 +3387,7 @@ C If user cancels jump back to menu setup, otherwise add the requested
 C number of vertices.
           IADD=1
           CALL EASKI(IADD,' ',' How many vertices to add ? ',
-     &     1,'W',MTV-NTV,'F',1,'+ vertex',IERI,14)
+     &     1,'W',MTV-NTV,'F',1,'+ vertex',IERI,16)
           if(iadd.eq.0)then
             goto 92
           else
@@ -3459,7 +3469,7 @@ C only up to MTV.
           if(inpick.eq.1)then
             iwhich=IVLST(1)
             CALL EASKI(IADD,' ',' Replicate how many times ? ',
-     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IERI,1)
+     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IERI,16)
             if(ieri.eq.-3)then
               goto 92
             elseif(ieri.eq.0)then
@@ -3795,9 +3805,11 @@ C Rotate around a point in the surface (offer user cancel option).
           H(1)='The rotation is applied around one vertex of'
           H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
           H(3)='vertex in the surface. '
+          H(4)=' '
+          H(5)='A cancel leaves the model unchanged. '
           CALL EASKI(IRV,'Rotate about which vertex index: ',
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
-     &       1,'F',N,'F',1,'rotation anchor',IERI,3)
+     &       1,'F',N,'F',1,'rotation anchor',IERI,5)
           if(ieri.eq.-3)then
             MODIFY=.FALSE.
             goto 92
