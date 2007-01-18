@@ -275,8 +275,15 @@ C Create a header section with site name, period etc.
         WRITE(outs,'(I6,2F8.2,I4)',IOSTAT=ISTAT,ERR=1002)IYEAR,CLAT,
      &      CLONG,IDNGH
         call SDELIM(outs,outsd,'C',IW)
-        write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
-     &    '   # year latitude long diff rad flag'
+
+C When writing clarify which type of solar radiation is used.
+        if(IDNGH.eq.0)then
+          write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
+     &      '   # year, latitude, long diff, direct normal rad flag'
+        else
+          write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
+     &      '   # year, latitude, long diff, global horiz rad flag'
+        endif
         outs=' '
         WRITE(outs,'(2I6)',IOSTAT=ISTAT,ERR=1003)IBD,IED
         call SDELIM(outs,outsd,'C',IW)
