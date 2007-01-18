@@ -469,15 +469,22 @@ C Transform all surface vertices.
 
 C Rotate around a point in the surface.
           H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface.'
+          H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
+          H(3)='vertex in the surface. '
+          H(4)=' '
+          H(5)='The rotation is applied around at and positive'
+          H(6)='is anticlockwise. '
+          H(7)=' '
+          H(8)='A cancel leaves skips the rotation step. '
           if(.NOT.DDOK)then
             CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
-     &        1,'F',NVER1,'F',1,'rotation anchor',IER,2)
-            H(1)='The rotation is applied around at and positive'
-            H(2)='is anticlockwise. '
+     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,8)
+            if(ieri.eq.-3)then
+              goto 166
+            endif
             ANG=0.
             CALL EASKR(ANG,' ',' Rotation (deg + = anticlockwise) ? ',
-     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
+     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,8)
           endif
           if(ANG.LT.-.01.OR.ANG.GT..01)then
             PI = 4.0 * ATAN(1.0)
@@ -499,6 +506,7 @@ C Rotate around a point in the surface.
 
 C After transforms, append new surface vertices to zone list if
 C they are unique, otherwise link the new surface to an existing vetex.
+  166   continue
         do 143 ix = 1,NVER1
           if(NTV+1.le.MTV)then
             found=.false.
@@ -1277,6 +1285,11 @@ C Add a rectanguular surface within or at bottom of existing surface.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 C act is 'ii' insert interactive, 'sw' insert window silently, or
 C act = 'sd' insert door silently or 'sp' insert window percentage silently.
+
+C << Implementation of a cancel option will require the common block
+C << instanciation code blocks to be moved so that the data is only
+C << written at the end of the process. This has yet to be done.
+
       SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO,ZO,XW,ZH,IER)
 #include "building.h"
       PARAMETER  (MPL = 200 )
@@ -1653,29 +1666,45 @@ C in the new surface.
           H(14)='might link to the lower right corner of the '
           H(15)='bounding surface.  This convention will hopefully '
           H(16)='limit the chance of the edges crossing. '
-          CALL PHELPD('tmc insert warning',16,'-',0,0,IER)
+          H(17)=' '
+          H(18)='The bounding surface must be wrapped around new one'
+          H(19)='so you will be asked for additional information.'
+          H(20)=' '
+          H(21)='If you cancel when asked about connecting to a'
+          H(22)='vertex in the bounding surface, the first point'
+          H(23)='of the bounding surface will be assumed. Please'
+          H(24)='resolve this issue at a later point!'
+          CALL PHELPD('tmc insert warning',24,'-',0,0,IER)
 
-          H(1)=' Bounding surface must be wrapped around new one. '
           CALL EASKAB('There is already a `hole` in the surface - ',
      &      'corner of insert to connect to: ','lower left',
-     &      'lower right',ICH,1)
-          H(1)='Tie to new surface will begin from this point.'
+     &      'lower right',ICH,24)
+
           WRITE(outs,'(24i3)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
           call edisp(iuout,outs)
  8795     CALL EASKI(IVH,
      &      ' Which vertex in the bounding surface to tie to:',
      &      ' ( usually at lower right corner of bounding surface) ? ',
-     &      1,'F',NTV,'F',1,'bound vert',IER,1)
+     &      1,'F',NTV,'F',1,'bound vert',IERI,24)
+          if(ieri.eq.-3)then
 
-C See which JVN matches IVH.
-          ipoint=0
-          DO 8796 IVCK=1,NVER(IS)
-            IF(JVN(IS,IVCK).EQ.IVH)ipoint=IVCK
- 8796     CONTINUE
-          if(ipoint.eq.0)then
-            call edisp(iuout,'Vertex not part of bounding surface...')
-            goto  8795
+C In response to a cancel set ipoint to the first vertex position
+C of the bounding surface (position in the list rather than the
+C index of the vertex).
+            ipoint=1
+          else
+
+C See which JVN matches IVH. ipoint is then the position in the edge
+C list of the bounding surface.
+            ipoint=0
+            DO 8796 IVCK=1,NVER(IS)
+              IF(JVN(IS,IVCK).EQ.IVH)ipoint=IVCK
+ 8796       CONTINUE
+            if(ipoint.eq.0)then
+              call edisp(iuout,'Vertex not part of bounding surface...')
+              goto  8795
+            endif
           endif
 
 C Shift links above ipoint to allow room.
@@ -1686,6 +1715,9 @@ C Shift links above ipoint to allow room.
           NZTV(icomp)=NTV
 
 C NNX is downward loop counter to shift jvn.
+
+C << for some surface topologies the ipoint logic and the
+C << shifting logic clash - requires careful debuging
           NNX=NVER(IS)+1
   154     continue
           NNX=NNX-1
