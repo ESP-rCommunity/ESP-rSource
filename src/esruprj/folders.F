@@ -86,6 +86,8 @@ C Calendar.
       character*72 listf(50),listfc(50)
       character subpath*72,action*3,outs*124
 
+      integer iyeart    ! for local editing
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -434,19 +436,30 @@ C Ask for site position.
      &       -15.0,'W',15.0,'W',0.0,'site londitude',IER,3)
         IF(IER.EQ.0)XLON=SLON
 
-C Ask for year, initialise and then print out the calendar.
+C Ask for year, initialise and then print out the calendar if the
+C user does not cancel the operation.
         H(1)='The project controls and scheduling uses a year'
         H(2)='index. You can use the one specified with the climate'
         H(3)='file or give the current year.'
-        CALL EASKI(IYEAR,' ',' Year for schedules and assessments?',
-     &       1900,'W',2010,'W',2000,'year',IER,3)
-        call calenmanage('i',ier)
-        loop=8
-        loopst=1
-        call calenprint(iuout,'t',iyear,loopst,loop,ier)
-        call edisp(iuout,' ')
-        call calenprint(iuout,'g',iyear,loopst,loop,ier)
-        call edisp(iuout,' ')
+        H(4)=' '
+        H(5)='A camcel request allows you to proceed without changing'
+        H(6)='the schedules year (it does not yet cancel the creation'
+        H(7)='of a new model.'
+        iyeart=iyear
+        CALL EASKI(IYEART,' ',' Year for schedules and assessments?',
+     &       1900,'W',2010,'W',2000,'year',IERI,7)
+        if(ieri.eq.-3) then
+          call calenmanage('i',ier)
+        else
+          iyear=iyeart
+          call calenmanage('i',ier)
+          loop=8
+          loopst=1
+          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call edisp(iuout,' ')
+          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+          call edisp(iuout,' ')
+        endif
 
         H(1)='Other site related information such as ground '
         H(2)='reflection and wind exposure can be found in the '
