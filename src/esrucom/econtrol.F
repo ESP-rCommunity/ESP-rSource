@@ -2139,9 +2139,11 @@ C Ideal Control law.
           cm(5)=bmiscd(II,JJ,KK,5)
           cm(6)=bmiscd(II,JJ,KK,6)
           cm(7)=bmiscd(II,JJ,KK,7)
-
-C << nothing yet done with cm(8) value when making up report >>
           cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
           if(nint(cm(1)).eq.6)then
 
 C Older control files might only have 6 items for basic controller.
@@ -2155,7 +2157,7 @@ C Older control files might only have 6 items for basic controller.
 
 C Newer control files have an extra item related to humidity control.
             write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &        msg1,' max heating capacity ',cm(2),
+     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
      &        'W min heating capacity ',cm(3),'W max cooling capacity ',
      &        cm(4),'W min cooling capacity ',cm(5),
      &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
@@ -2164,27 +2166,34 @@ C Newer control files have an extra item related to humidity control.
             if(nint(cm(12)).eq.1)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &          msg1,' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min cooling capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),
-     &          'C cooling setpoint ',cm(7),
-     &          'C and moisture inj humidity control with upper sp',
+     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &          'W min heating cap ',cm(3),
+     &          'W max cooling cap ',cm(4),
+     &          'W min cooling cap ',cm(5),
+     &          'W. Heating sp ',cm(6),
+     &          'C cooling sp ',cm(7),
+     &          'C and moisture inj RH control with upper sp',
      &          cm(8),'(%) lower sp ',cm(9),
      &          '(%) max humidification rate ',cm(10),
-     &          '(g/s) max dehujidification rage ',cm(11),'(g/s).'
+     &          '(g/s) max dehumidification rate ',cm(11),'(g/s).'
             elseif(nint(cm(12)).eq.2)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a)') 
-     &          msg1,' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min heaing capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),
-     &          'C cooling setpoint ',cm(7),
-     &          'C abd temp based humidity control with upper sp ',
+     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &          'W min heating cap ',cm(3),
+     &          'W max cooling cap ',cm(4),
+     &          'W min heaing cap ',cm(5),
+     &          'W. Heating sp ',cm(6),
+     &          'C cooling sp ',cm(7),
+     &          'C and T based RH ctl with upper sp ',
      &          cm(8),'(%) lower sp ',cm(9),'(%).'
+            elseif(nint(cm(12)).eq.0)then
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
+     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
+     &        cm(4),'W min cooling capacity ',cm(5),
+     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &        cm(7),'C. with incomplete RH control.'
             endif
           endif
           call SDELIM(lmsg,message,'S',IW)
