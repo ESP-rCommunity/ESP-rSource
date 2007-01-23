@@ -2339,15 +2339,15 @@ C          call edisp248(6,message,80)
           cm(10)=bmiscd(II,JJ,KK,10)
           cm(11)=bmiscd(II,JJ,KK,11)
           cm(12)=bmiscd(II,JJ,KK,12)
-          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,
-     &      a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f7.2,a,f5.2,a)') 
-     &    ' multistage: heating off ',cm(2),
-     &    'W heating stage 1 ',cm(3),'W heating stage 2 ',cm(4),
-     &    'W heating stage 3 ',cm(5),'W cooling off ',cm(6),
-     &    'W cooling stage 1 ',cm(7),'W cooling stage 2 ',cm(8),
-     &    'W cooling stage 3 ',cm(9),'W heating setpoint ',cm(10),
-     &    'C heating deadband ',cm(11),'C cooling setpoint ',cm(12),
-     &    'C cooling deadband ',cm(13),'C.' 
+          write(lmsg,'(a,f7.1,a,f9.1,a,f9.1,a,f9.1,a,f7.1,a,f9.1,
+     &      a,f9.1,a,f9.1,a,f6.2,a,f5.2,a,f6.2,a,f5.2,a)') 
+     &    ' multistage: heat off',cm(2),
+     &    'W heat stg 1 ',cm(3),'W heat stg 2 ',cm(4),
+     &    'W heat stg 3 ',cm(5),'W cool off',cm(6),
+     &    'W cool stg 1 ',cm(7),'W cool stg 2 ',cm(8),
+     &    'W cool stg 3 ',cm(9),'W heat sp ',cm(10),
+     &    'C heat db ',cm(11),'C cool sp ',cm(12),
+     &    'C cool db ',cm(13),'C.' 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.8)then

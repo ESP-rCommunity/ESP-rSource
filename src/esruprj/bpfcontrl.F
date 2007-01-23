@@ -1161,7 +1161,7 @@ C Edit building control function II.
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248
-      logical close1,close2,close3,close4
+      logical close1,close2,close3,close4,useold
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -1296,8 +1296,22 @@ C to periods.
         endif
 
 C If menu editing version available use it otherwise use the
-C sequential question interface.
-        if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4)then
+C sequential question interface. If return from editctlperiod
+C having selected a control law it does not deal with then
+C this will be signaled by an ier condition equal to the control
+C law that has been selected so further user selection of control
+C law can be jumped around.
+        useold=.false.
+  77    if(useold)then
+          if(iclawt.ge.0.and.iclawt.le.22)then
+            iclaw=iclawt
+            IBCLAW(II,JJ,KK)=iclaw
+            useold=.false.
+            goto 62
+          endif
+        endif
+        if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
+     &     iclaw.eq.7)then
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
 
@@ -1309,6 +1323,11 @@ C Remember the previous start
           endif
           call editctlperiod(' Zone control period data',
      &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
           goto 92
         endif
 
@@ -1412,6 +1431,11 @@ C Basic control or pre-heat/cool is taken care of by a call to editctlperiod.
           endif
           call editctlperiod(' Zone control period data',
      &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawT=ier
+            goto 77
+          endif
           goto 92
         elseif(IBCLAW(II,JJ,KK).eq.2)then
 
@@ -1425,6 +1449,11 @@ C Free-floating control is taken care of by a call to editctlperiod.
           endif
           call editctlperiod(' Zone control period data',
      &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
            goto 92
         elseif(IBCLAW(II,JJ,KK).eq.4)then
 
@@ -1438,6 +1467,11 @@ C Ideal fixed injection is taken care of by a call to editctlperiod.
           endif
           call editctlperiod(' Zone control period data',
      &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
            goto 92
         elseif(IBCLAW(II,JJ,KK).eq.5)then
 
@@ -1643,57 +1677,73 @@ C (Q=m'Cp(Ts' + Ta'))
           ENDIF
         elseif(IBCLAW(II,JJ,KK).eq.7)then
 
-C Multi-stage.
-          call edisp(iuout,' Multistage controller:')
-          cm(1)=12.0
- 148      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,' Heat flux (W): OFF, Stages 1, 2, 3 for',
-     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
-     &      'multistage heating',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Heat OFF',IER)
-          CALL EGETWR(HOLD,K,cm(3),cm(2),999999.,'F','Htstg1',IER)
-          CALL EGETWR(HOLD,K,cm(4),cm(3),999999.,'F','Htstg2',IER)
-          CALL EGETWR(HOLD,K,cm(5),cm(4),999999.,'F','Htstg3',IER)
-          if(ier.ne.0)goto 148
+C Multi-stage is taken care of by a call to editctlperiod.
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-  49      WRITE(HOLD,'(4f8.0)')cm(6),cm(7),cm(8),cm(9)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,' Cooling flux (W): OFF, Stages 1, 2, 3 for',
-     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
-     &      'multistage cooling',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Cool OFF',IER)
-          CALL EGETWR(HOLD,K,cm(7),cm(6),999999.,'F','Clstg1',IER)
-          CALL EGETWR(HOLD,K,cm(8),cm(7),999999.,'F','Clstg2',IER)
-          CALL EGETWR(HOLD,K,cm(9),cm(8),999999.,'F','Clstg3',IER)
-          if(ier.ne.0)goto 49
+C          call edisp(iuout,' Multistage controller:')
+C          cm(1)=12.0
+C 148      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,' Heat flux (W): OFF, Stages 1, 2, 3 for',
+C     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
+C     &      'multistage heating',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Heat OFF',IER)
+C          CALL EGETWR(HOLD,K,cm(3),cm(2),999999.,'F','Htstg1',IER)
+C          CALL EGETWR(HOLD,K,cm(4),cm(3),999999.,'F','Htstg2',IER)
+C          CALL EGETWR(HOLD,K,cm(5),cm(4),999999.,'F','Htstg3',IER)
+C          if(ier.ne.0)goto 148
 
-  50      WRITE(HOLD,'(4f8.2)')cm(10),cm(11),cm(12),cm(13)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,
-     &     ' Heating setpoint & deadband, Cooling setpoint & deadband',
-     &     ' for multistage control: ',40,' 18. 2. 100. 2. ',
-     &      'multi setpoints',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(10),-100.,100.,'F','Heat set',IER)
-          CALL EGETWR(HOLD,K,cm(11),0.,10.,'F','Heat dead',IER)
-          CALL EGETWR(HOLD,K,cm(12),-100.,100.,'F','Cool set',IER)
-          CALL EGETWR(HOLD,K,cm(13),0.,10.,'F','Cool dead',IER)
-          if(ier.ne.0)goto 50
+C  49      WRITE(HOLD,'(4f8.0)')cm(6),cm(7),cm(8),cm(9)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,' Cooling flux (W): OFF, Stages 1, 2, 3 for',
+C     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
+C     &      'multistage cooling',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Cool OFF',IER)
+C          CALL EGETWR(HOLD,K,cm(7),cm(6),999999.,'F','Clstg1',IER)
+C          CALL EGETWR(HOLD,K,cm(8),cm(7),999999.,'F','Clstg2',IER)
+C          CALL EGETWR(HOLD,K,cm(9),cm(8),999999.,'F','Clstg3',IER)
+C          if(ier.ne.0)goto 49
+
+C  50      WRITE(HOLD,'(4f8.2)')cm(10),cm(11),cm(12),cm(13)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,
+C     &     ' Heating setpoint & deadband, Cooling setpoint & deadband',
+C     &     ' for multistage control: ',40,' 18. 2. 100. 2. ',
+C     &      'multi setpoints',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(10),-100.,100.,'F','Heat set',IER)
+C          CALL EGETWR(HOLD,K,cm(11),0.,10.,'F','Heat dead',IER)
+C          CALL EGETWR(HOLD,K,cm(12),-100.,100.,'F','Cool set',IER)
+C          CALL EGETWR(HOLD,K,cm(13),0.,10.,'F','Cool dead',IER)
+C          if(ier.ne.0)goto 50
  
 C If no cooling capacity then set cooling set point to 100C.
-          CALL ECLOSE(cm(7),0.0,0.001,close1)
-          CALL ECLOSE(cm(8),0.0,0.001,close2)
-          CALL ECLOSE(cm(9),0.0,0.001,close3)
-          if(close1.and.close2.and.close3)then
-            call edisp(iuout,' ')
-            call edisp(iuout,' No cooling capacity defined - setting')
-            call edisp(iuout,' the cooling setpoint high (100 deg.C).')
-            cm(12)=100.
-            cm(13)=1.
-          endif
+C          CALL ECLOSE(cm(7),0.0,0.001,close1)
+C          CALL ECLOSE(cm(8),0.0,0.001,close2)
+C          CALL ECLOSE(cm(9),0.0,0.001,close3)
+C          if(close1.and.close2.and.close3)then
+C            call edisp(iuout,' ')
+C            call edisp(iuout,' No cooling capacity defined - setting')
+C            call edisp(iuout,' the cooling setpoint high (100 deg.C).')
+C            cm(12)=100.
+C            cm(13)=1.
+C          endif
         elseif(IBCLAW(II,JJ,KK).eq.8)then
 
 C Variable supply temperature with limit constraints.
@@ -5109,6 +5159,9 @@ C  nper (int) how many periods have been defined.
 C  loopdaytype (int) the number of day types defined for this loop
 C  prevstart (real) start time of previous period.
 C  act (1 char) is ...
+C  ier is greater than one if the user has selected a control law
+C    that is not supported yet. The calling routine should then
+C    deal with the dialogs using standard sequential method.
       subroutine editctlperiod(head,icfoc,icloop,iday,iper,nper,
      &  loopdaytype,prevstart,act,ier)
 #include "building.h"
@@ -5139,13 +5192,14 @@ C   for control law one.
       DIMENSION VERT(35),SALT(21),IVALS(21)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
+      integer ivals              ! for return of selection array.
 
       CHARACTER VERT*45,KEY*1,SSTR*72,TMP*72,ltmp*248,SALT*42
       character menu*32,prompt1*72,prompt2*72
       character outs*124,head*48
 
       integer icfoc,icloop,iday,iper,nper,loopdaytype  ! passed parameters
-      logical close,close1,close2,modval,OK,dok    ! to test if variable has changed.
+      logical close,close1,close2,close3,modval,OK,dok ! to test if variable has changed.
       real tcpst  ! for local editing.
 
 C Set initial logical values.
@@ -5343,10 +5397,10 @@ C the previous period is before it otherwise warn user.
 
 C Control law (depending on the control domain)
         if(ictyp.eq.0)then
-          SALT(1)= 'Basic controller for heating/cooling  (*)'
-          SALT(2)= 'Free-float controller                 (*)'
-          SALT(3)= 'Basic pre-heat or pre-cool controller (*)'
-          SALT(4)= 'Fixed heat injection and extraction   (*)'
+          SALT(1)= 'Basic controller for heating/cooling   '
+          SALT(2)= 'Free-float controller                  '
+          SALT(3)= 'Basic pre-heat or pre-cool controller  '
+          SALT(4)= 'Fixed heat injection and extraction    '
           SALT(5)= 'PID control action for heating/cooling '
           SALT(6)= 'Flux connection between zone & plant   '
           SALT(7)= 'Multi-stage control with hysteresis    '
@@ -5371,7 +5425,7 @@ C Control law (depending on the control domain)
           else
             IX=iclaw
           endif
-  63      CALL EPICKS(IX,IVALS,' ',' Control law ((*) switch allowed):',
+  63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
      &         42,21,SALT,'control law',IER,nctlhelp)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclaw.ne.IVALS(1))then
@@ -5381,7 +5435,16 @@ C yet supported with the new menu structure return to the calling subroutine.
             modval=.true.
             iclaw=IVALS(1)
             write(TMP,'(a)') SALT(iclaw)  ! update string for menu
-            if(iclaw.eq.2)then
+            if(iclaw.eq.1)then
+              cmlocal(1)=7.0        ! this swap is supported, major menu change.
+              cmlocal(2)=1000.0     ! reset to default values
+              cmlocal(3)=0.0
+              cmlocal(4)=1000.0
+              cmlocal(5)=0.0
+              cmlocal(6)=20.0
+              cmlocal(7)=24.0
+              goto 90
+            elseif(iclaw.eq.2)then
               cmlocal(1)=0.0        ! this swap is supported, major menu change.
               goto 90
             elseif(iclaw.eq.4)then
@@ -5393,54 +5456,82 @@ C yet supported with the new menu structure return to the calling subroutine.
               goto 90
             elseif(iclaw.eq.5)then
               cmlocal(1)=9.0        ! varies (this is the smallest) no yet supported.
+              ier=5
               return
             elseif(iclaw.eq.6)then
               cmlocal(1)=5.0        ! varies (this is the smallest)
+              ier=6
               return
             elseif(iclaw.eq.7)then
-              cmlocal(1)=12.0
-              return
+              cmlocal(1)=12.0       ! this swap is supported, major menu change.
+              cmlocal(2)=0.0        ! reset to default values
+              cmlocal(3)=1000.0
+              cmlocal(4)=2000.0
+              cmlocal(5)=3000.0
+              cmlocal(6)=0.0
+              cmlocal(7)=1000.0
+              cmlocal(8)=2000.0
+              cmlocal(9)=3000.0
+              cmlocal(10)=20.0
+              cmlocal(11)=2.0
+              cmlocal(12)=24.0
+              cmlocal(13)=2.0
+              goto 90
             elseif(iclaw.eq.8)then
               cmlocal(1)=6.0
+              ier=8
               return
             elseif(iclaw.eq.9)then
               cmlocal(1)=9.0
+              ier=9
               return
             elseif(iclaw.eq.10)then
               cmlocal(1)=6.0
+              ier=10
               return
             elseif(iclaw.eq.11)then
               cmlocal(1)=10.0        ! varies (this is the smallest)
+              ier=11
               return
             elseif(iclaw.eq.12)then
               cmlocal(1)=10.0        ! varies (this is the smallest)
+              ier=12
               return
             elseif(iclaw.eq.13)then
               cmlocal(1)=12.0
+              ier=13
               return
             elseif(iclaw.eq.14)then
               cmlocal(1)=14.0
+              ier=14
               return
             elseif(iclaw.eq.15)then
               cmlocal(1)=6.0       ! varies (this is the smallest)
+              ier=15
               return
             elseif(iclaw.eq.16)then
               cmlocal(1)=9.0
+              ier=16
               return
             elseif(iclaw.eq.17)then
               cmlocal(1)=7.0
+              ier=17
               return
             elseif(iclaw.eq.18)then
               cmlocal(1)=0.0
+              ier=18
               return
             elseif(iclaw.eq.19)then
               cmlocal(1)=6.0
+              ier=19
               return
             elseif(iclaw.eq.20)then
               cmlocal(1)=1.0       ! varies (this is the smallest)
+              ier=20
               return
             elseif(iclaw.eq.21)then
               cmlocal(1)=3.0
+              ier=21
               return
             else
 
@@ -5528,9 +5619,45 @@ C User altered the cooling capacity so check to see if cooling setpoint needs re
               goto 91   ! minor change
             endif
           elseif(iclaw.eq.2)then
-            continue
+            continue    ! no post processing required.
           elseif(iclaw.eq.4)then
-            continue
+            continue    ! no post processing required.
+          elseif(iclaw.eq.7)then
+
+C Warn user if stage capacities do not increment.
+            cmlocal(1)=12.0
+            if(cmlocal(5).lt.cmlocal(4))then
+              call edisp(iuout,'Heating stage 3 less than stage 2!')
+            endif
+            if(cmlocal(4).lt.cmlocal(3))then
+              call edisp(iuout,'Heating stage 2 less than stage 1!')
+            endif
+            if(cmlocal(3).lt.cmlocal(2))then
+              call edisp(iuout,'Heating stage 1 less than base!')
+            endif
+            if(cmlocal(9).lt.cmlocal(8))then
+              call edisp(iuout,'Cooling stage 3 less than stage 2!')
+            endif
+            if(cmlocal(8).lt.cmlocal(7))then
+              call edisp(iuout,'Cooling stage 2 less than stage 1!')
+            endif
+            if(cmlocal(7).lt.cmlocal(6))then
+              call edisp(iuout,'Cooling stage 1 less than base!')
+            endif
+ 
+C If no cooling capacity then set cooling set point to 100C.
+            CALL ECLOSE(cmlocal(7),0.0,0.001,close1)
+            CALL ECLOSE(cmlocal(8),0.0,0.001,close2)
+            CALL ECLOSE(cmlocal(9),0.0,0.001,close3)
+            if(close1.and.close2.and.close3)then
+              call edisp(iuout,' ')
+              call edisp(iuout,
+     &    ' Zero cooling capacity - setting cooling setpoint to 100C.')
+              cmlocal(12)=100.
+              cmlocal(13)=1.0
+              modval=.true.
+              goto 91   ! minor change
+            endif
           else
 
 C << other control laws where processing is required... >>
@@ -5740,7 +5867,7 @@ C Depending on the current number of miscel items also do humidity.
           H(6)='You are given the option to discard changes when you '
           H(7)='exit the period. '
           nctlhelp=7
-          nmenulines=1    ! set to one less than the last cm index used.
+          nmenulines=1    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
@@ -5800,11 +5927,78 @@ C Depending on the current number of miscel items also do humidity.
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.7)then
+
+C A multi-stage controller with hysteresis.
+          h(1)='A multi-stage controller with hysteresis has a'
+          h(2)='base heating and cooling capacity and, for each'
+          h(3)='three stages of increating capacity (e.g. stage'
+          h(4)='two must have a greater capacity or at least the'
+          h(5)='same capacity as stage one).'
+          h(6)=' '
+          h(7)='Setpoints are defined in terms of a temperature '
+          h(8)='and a deadband (greater than or equal to zero C).'
+          h(9)=' '
+          h(10)='The logic switches to the least stage that will'
+          h(11)='maintained the desired temperature. It will'
+          h(12)='step up and down between stages looking for an'
+          h(13)='appropriate capacity. '
+          H(14)=' '
+          H(15)='You are given the option to discard changes when you '
+          H(16)='exit the period. '
+          nctlhelp=16
+          nmenulines=13    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          menu(2)='Heat capacity at OFF state (W)'
+          prompt1(2)='Heat capacity at OFF state (W) (typically zero'
+          prompt2(2)='and a non-zero base load is allowed '
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=0.0
+          menu(3)='Heat capacity at 1st stage (W) '
+          prompt1(3)='Heat capacity at 1st stage (W)'
+          prompt2(3)='(must be greater than base load)'
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Heat capacity at 2nd stage (W)'
+          prompt1(4)='Heat capacity at 2nd stage (W)'
+          prompt2(4)='(must be greater than 1st stage)'
+          ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=2000.0
+          menu(5)='Heat capacity at 3rd stage (W)'
+          prompt1(5)='Heat capacity at 3rd stage (W)'
+          prompt2(5)='(must be greater than 2nd stage)'
+          ndec(5)=1; vmin(5)=0.0; vmax(5)=999999.0; vdef(5)=3000.0
+          menu(6)='Cool capacity at OFF state (W)'
+          prompt1(6)='Cool capacity at OFF state (W) (typically zero'
+          prompt2(6)='and a non-zero base load is allowed '
+          ndec(6)=1; vmin(6)=0.0; vmax(6)=999999.0; vdef(6)=0.0
+          menu(7)='Cool capacity at 1st stage (W)'
+          prompt1(7)='Cool capacity at 1st stage (W)'
+          prompt2(7)='(must be greater than base load) '
+          ndec(7)=1; vmin(7)=0.0; vmax(7)=999999.0; vdef(7)=1000.0
+          menu(8)='Cool capacity at 2nd stage (W)'
+          prompt1(8)='Cool capacity at 2nd stage (W)'
+          prompt2(8)='(must be greater than 1st stage)'
+          ndec(8)=1; vmin(8)=0.0; vmax(8)=999999.0; vdef(8)=2000.0
+          menu(9)='Cool capacity at 3rd stage (W)'
+          prompt1(9)='Cool capacity at 3rd stage (W)'
+          prompt2(9)='(must be greater than 2nd stage) '
+          ndec(9)=1; vmin(9)=0.0; vmax(9)=999999.0; vdef(9)=3000.0
+          menu(10)='Heating setpoint (C)'
+          prompt1(10)='Heating setpoint (C)'
+          prompt2(10)=' '
+          ndec(10)=3; vmin(10)=0.0; vmax(10)=100.0; vdef(10)=20.0
+          menu(11)='Heating deadband (C)'
+          prompt1(11)='Heating deadband (C)'
+          prompt2(11)='(zero or greater)'
+          ndec(11)=3; vmin(11)=0.0; vmax(11)=10.0; vdef(11)=1.0
+          menu(12)='Cooling setpoint (C)'
+          prompt1(12)='Cooling setpoint (C)'
+          prompt2(12)=' '
+          ndec(12)=3; vmin(12)=0.0; vmax(12)=100.0; vdef(12)=24.0
+          menu(13)='Cooling deadband (C)'
+          prompt1(13)='Cooling deadband (C)'
+          prompt2(13)='(zero or greater)'
+          ndec(13)=3; vmin(13)=0.0; vmax(13)=10.0; vdef(13)=1.0
         elseif(iclaw.eq.8)then
           menu(1)=' '
           prompt1(1)=' '
