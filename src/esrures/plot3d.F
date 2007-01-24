@@ -113,7 +113,7 @@ C Set chosen result set.
     3 continue
 
 C Instanciate h() array for the menu.
-      h(1)='The contaminate selection menu does not yet have'
+      h(1)='The contaminant selection menu does not yet have'
       h(2)='any help associated with it. '
 
       CALL EMENU('  3D profile',ITEM,NITMS,INO)

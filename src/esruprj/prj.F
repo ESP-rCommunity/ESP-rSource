@@ -4837,15 +4837,15 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
         CALL CTREAD(iier)
         if(iier.ne.0)then
-          outs='There was a problem scanning contaminates file.'
+          outs='There was a problem scanning contaminants file.'
           call edisp(iuout,outs)
         endif
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
         CNTMFIL=NNAME
         IUNIT=72
         CALL CTWRIT(iunit)
-        msg1='updating model for contaminates network changes...'
-        call edisp(iuout,'Contaminates network being copied.')
+        msg1='updating model for contaminants network changes...'
+        call edisp(iuout,'Contaminants network being copied.')
       ELSEIF(M.EQ.22)THEN
 
 C Versioning of zone operations. First ask which zones that

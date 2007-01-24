@@ -2106,7 +2106,7 @@ C subroutine to fill in contaminant common blocks
       IF(IAIRN.GT.0.AND.NOCNTM.EQ.1)then
         CALL CTREAD(iier)
         if(iier.ne.0)then
-          outs='There was a problem with scanning contaminates file.'
+          outs='There was a problem with scanning contaminants file.'
           call edisp(iuout,outs)
         endif
       endif
