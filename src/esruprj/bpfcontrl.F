@@ -1163,6 +1163,8 @@ C Edit building control function II.
       character outsa*84,outsb*84,outsc*84,ltmp*248
       logical close1,close2,close3,close4,useold
 
+      integer iclawt   ! control law index passed back from editctlperiod
+
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
 
@@ -1302,6 +1304,7 @@ C this will be signaled by an ier condition equal to the control
 C law that has been selected so further user selection of control
 C law can be jumped around.
         useold=.false.
+        iclawt=-1
   77    if(useold)then
           if(iclawt.ge.0.and.iclawt.le.22)then
             iclaw=iclawt
@@ -1311,11 +1314,14 @@ C law can be jumped around.
           endif
         endif
         if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
-     &     iclaw.eq.7)then
+     &     iclaw.eq.7.or.iclaw.eq.8)then
+
+C Remember the previous start (prevstart) and the total number of
+C period in this control loop (nper) and the number of day types
+C included in the control loop defintion (loopdaytype) before
+C starting up the menu based control period definition.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
-
-C Remember the previous start
           if(KK.GT.1)then
             prevstart=TBCPS(II,JJ,KK-1)
           else
@@ -1693,80 +1699,45 @@ C Multi-stage is taken care of by a call to editctlperiod.
             goto 77
           endif
           goto 92
-
-C          call edisp(iuout,' Multistage controller:')
-C          cm(1)=12.0
-C 148      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,' Heat flux (W): OFF, Stages 1, 2, 3 for',
-C     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
-C     &      'multistage heating',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Heat OFF',IER)
-C          CALL EGETWR(HOLD,K,cm(3),cm(2),999999.,'F','Htstg1',IER)
-C          CALL EGETWR(HOLD,K,cm(4),cm(3),999999.,'F','Htstg2',IER)
-C          CALL EGETWR(HOLD,K,cm(5),cm(4),999999.,'F','Htstg3',IER)
-C          if(ier.ne.0)goto 148
-
-C  49      WRITE(HOLD,'(4f8.0)')cm(6),cm(7),cm(8),cm(9)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,' Cooling flux (W): OFF, Stages 1, 2, 3 for',
-C     &      ' multistage control: ',40,' 0. 1000. 2000. 3000. ',
-C     &      'multistage cooling',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Cool OFF',IER)
-C          CALL EGETWR(HOLD,K,cm(7),cm(6),999999.,'F','Clstg1',IER)
-C          CALL EGETWR(HOLD,K,cm(8),cm(7),999999.,'F','Clstg2',IER)
-C          CALL EGETWR(HOLD,K,cm(9),cm(8),999999.,'F','Clstg3',IER)
-C          if(ier.ne.0)goto 49
-
-C  50      WRITE(HOLD,'(4f8.2)')cm(10),cm(11),cm(12),cm(13)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,
-C     &     ' Heating setpoint & deadband, Cooling setpoint & deadband',
-C     &     ' for multistage control: ',40,' 18. 2. 100. 2. ',
-C     &      'multi setpoints',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(10),-100.,100.,'F','Heat set',IER)
-C          CALL EGETWR(HOLD,K,cm(11),0.,10.,'F','Heat dead',IER)
-C          CALL EGETWR(HOLD,K,cm(12),-100.,100.,'F','Cool set',IER)
-C          CALL EGETWR(HOLD,K,cm(13),0.,10.,'F','Cool dead',IER)
-C          if(ier.ne.0)goto 50
- 
-C If no cooling capacity then set cooling set point to 100C.
-C          CALL ECLOSE(cm(7),0.0,0.001,close1)
-C          CALL ECLOSE(cm(8),0.0,0.001,close2)
-C          CALL ECLOSE(cm(9),0.0,0.001,close3)
-C          if(close1.and.close2.and.close3)then
-C            call edisp(iuout,' ')
-C            call edisp(iuout,' No cooling capacity defined - setting')
-C            call edisp(iuout,' the cooling setpoint high (100 deg.C).')
-C            cm(12)=100.
-C            cm(13)=1.
-C          endif
         elseif(IBCLAW(II,JJ,KK).eq.8)then
 
 C Variable supply temperature with limit constraints.
-          call edisp(iuout,' Variable supply temp controller:')
-          cm(1)=6.0
-  51      WRITE(HOLD,'(2f7.2,f7.3,2f7.2)')cm(2),cm(3),cm(4),cm(5),
-     &        cm(6)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,
-     &    ' Max & Min supply temp, air flow rate(m^3/sec), heat & cool',
-     &    ' setpoints for variable supply: ',40,
-     &      ' 30.  10.  1.  18.  24. ','var supply',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(2),-10.,100.,'F','Max suplyt',IER)
-          CALL EGETWR(HOLD,K,cm(3),-10.,100.,'F','Min suplyt',IER)
-          CALL EGETWR(HOLD,K,cm(4),0.  ,999.,'F','air rate',IER)
-          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','heat set',IER)
-          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','cool set',IER)
-          if(ier.ne.0)goto 51
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-          CALL EASKR(cm(7),' Cooling availability..',
-     &      ' 0.) cooling, 1.) no cooling ? ',
-     &      0.,'F',1.,'F',0.,'cool avail',IER,1)
+C          call edisp(iuout,' Variable supply temp controller:')
+C          cm(1)=6.0
+C  51      WRITE(HOLD,'(2f7.2,f7.3,2f7.2)')cm(2),cm(3),cm(4),cm(5),
+C     &        cm(6)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,
+C     &    ' Max & Min supply temp, air flow rate(m^3/sec), heat & cool',
+C     &    ' setpoints for variable supply: ',40,
+C     &      ' 30.  10.  1.  18.  24. ','var supply',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(2),-10.,100.,'F','Max suplyt',IER)
+C          CALL EGETWR(HOLD,K,cm(3),-10.,100.,'F','Min suplyt',IER)
+C          CALL EGETWR(HOLD,K,cm(4),0.  ,999.,'F','air rate',IER)
+C          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','heat set',IER)
+C          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','cool set',IER)
+C          if(ier.ne.0)goto 51
+
+C          CALL EASKR(cm(7),' Cooling availability..',
+C     &      ' 0.) cooling, 1.) no cooling ? ',
+C     &      0.,'F',1.,'F',0.,'cool avail',IER,1)
         elseif(IBCLAW(II,JJ,KK).eq.9)then
 
 C Heat pipe.
@@ -5141,7 +5112,7 @@ C Set up array of menu strings.
         call EPICKS(NCPK,ICPK,PROMPT1,PROMPT2,
      &    12,NCONTM,VERTC,'Contaminant select',IER,NH)
       else
-        call usrmsg('There are no contaminates to select.',' ','W')
+        call usrmsg('There are no contaminants to select.',' ','W')
       endif
       return
       end
@@ -5479,8 +5450,15 @@ C yet supported with the new menu structure return to the calling subroutine.
               goto 90
             elseif(iclaw.eq.8)then
               cmlocal(1)=6.0
-              ier=8
-              return
+              cmlocal(2)=30.0        ! reset to default values
+              cmlocal(3)=10.0
+              cmlocal(4)=1.0
+              cmlocal(5)=18.0
+              cmlocal(6)=24.0
+              cmlocal(7)=0.0
+              goto 90
+C              ier=8
+C              return
             elseif(iclaw.eq.9)then
               cmlocal(1)=9.0
               ier=9
@@ -5658,6 +5636,8 @@ C If no cooling capacity then set cooling set point to 100C.
               modval=.true.
               goto 91   ! minor change
             endif
+          elseif(iclaw.eq.8)then
+            continue    ! no post processing required.
           else
 
 C << other control laws where processing is required... >>
@@ -6000,11 +5980,69 @@ C A multi-stage controller with hysteresis.
           prompt2(13)='(zero or greater)'
           ndec(13)=3; vmin(13)=0.0; vmax(13)=10.0; vdef(13)=1.0
         elseif(iclaw.eq.8)then
+
+C Variable supply temperature with limit constraints.
+          h(1)='This control represents an idealised air based '
+          h(2)='environmental control system that delivers air '
+          h(3)='at a fixed flow rate (same for heating & cooling'
+          h(4)='operation). The heating supply temperature varies'
+          h(5)='up to a maximum setpoint and the cooling supply'
+          h(6)='temperature varies down to a minimum setpoint.'
+          h(7)=' '
+          h(8)='The room heating and cooling setpoints (typically'
+          h(9)='defined so there is a deadband) are met on the basis'
+          h(10)='of the heating and/or cooling implicit at the '
+          h(11)='defined flow rate and supply temperature (i.e.'
+          h(12)='the capacity and efficiency of the supply is not'
+          h(13)='defined). You have the option to specify that cooling'
+          h(14)='is not available. '
+          h(15)=' '
+          h(16)='This control law can be used to check whether an '
+          h(17)='air based system is able to meet demand patterns in '
+          h(18)='a room prior to specification of a detailed component'
+          h(19)='model.'
+          h(20)=' '
+          h(21)='The output performance data is ??'
+          h(22)=' '
+          H(23)='You are given the option to discard changes when you '
+          H(24)='exit the period. '
+          nctlhelp=24
+          nmenulines=7    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Maximum supply temperature (C)'
+          prompt1(2)='Maximum (heating) supply temperature (C) '
+          prompt2(2)=' '
+          ndec(2)=3; vmin(2)=-10.0; vmax(2)=100.0; vdef(2)=30.0
+          menu(3)='Minimum supply temperature (C)'
+          prompt1(3)='Minimum (cooling) supply temperature (C)'
+          prompt2(3)=' '
+          ndec(3)=3; vmin(3)=-10.0; vmax(3)=100.0; vdef(3)=10.0
+          menu(4)='Air supply flow rate (m^3/sec) '
+          prompt1(4)='Air supply flow rate (m^3/sec) '
+          prompt2(4)=' '
+          ndec(4)=4; vmin(4)=0.0; vmax(4)=100.0; vdef(4)=1.0
+          menu(5)='Heating (room) setpoint (C)'
+          prompt1(5)='Heating (room) setpoint (C) '
+          prompt2(5)=' '
+          ndec(5)=3; vmin(5)=-100.0; vmax(5)=100.0; vdef(5)=18.0
+          menu(6)='Cooling (room) setpoint (C)'
+          prompt1(6)='Cooling (room) setpoint (C)'
+          prompt2(6)=' '
+          ndec(6)=3; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=24.0
+          if(int(cm(7)).eq.0)then
+            menu(7)='Cooling >> enabled '
+            prompt1(7)='Cooling is available in the supply (value is'
+            prompt2(7)='a zero) change to a one to turn off cooling)'
+            ndec(7)=0; vmin(7)=0.0; vmax(7)=1.0; vdef(7)=0.0
+          elseif(int(cm(7)).eq.1)then
+            menu(7)='Cooling >> not enabled '
+            prompt1(7)='Cooling is not available in the supply (value'
+            prompt2(7)='is a one) change to zero to turn on cooling)'
+            ndec(7)=0; vmin(7)=0.0; vmax(7)=1.0; vdef(7)=0.0
+          endif
         elseif(iclaw.eq.9)then
           menu(1)=' '
           prompt1(1)=' '

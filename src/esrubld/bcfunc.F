@@ -2911,6 +2911,7 @@ C with limit constraints.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -2925,14 +2926,16 @@ C with limit constraints.
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       
       character outs*124
-c
-c Fatal error test.
-c
+
+C Fatal error test if there are less than 6 misecel items.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL08')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL08')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -2942,12 +2945,13 @@ C Trace output
       CALL MZMIXT(IZ,TMRT,TCTL)
   101 IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.0)TCTL=TF
       IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.1)TCTL=SOLAIR(TF,QFF,QDF)
-c TSM = max supply air temperature (deg.C)
-c TSN = min supply air temperature (deg.C)
-c AFR = air volume flow rate (m3/s)
-c HSP = heating set point temp. (deg.C)
-c CSP = cooling set point temp. (deg.C)
-c IFC = cooling availability index (0; cooling, 1; no cooling)
+
+C TSM = max supply air temperature (deg.C)
+C TSN = min supply air temperature (deg.C)
+C AFR = air volume flow rate (m3/s)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
+C IFC = cooling availability index (0; cooling, 1; no cooling)
       TSM=BMISCD(ICF,IDTYP,IPER,2)
       TSN=BMISCD(ICF,IDTYP,IPER,3)
       AFR=BMISCD(ICF,IDTYP,IPER,4)
@@ -2957,10 +2961,10 @@ c IFC = cooling availability index (0; cooling, 1; no cooling)
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)GOTO 3
       D=AFR*1.2*1006.0
 
-c Is temp. too high ?
+c Is temperature above the cooling setpoint?
       IF(TCTL.GT.CSP)GOTO 1
 
-c Too low, establish Tsupply to heat air to HSP.
+c Too low, establish Tsupply to heat air to heating set point (HSP).
       TS=(BB3-(BB1-(BB2*D))*HSP)/(BB2*D)
 
 c Is this supply temperature available ?
@@ -2988,6 +2992,8 @@ c Is this supply temperature available ?
 
 C Enter gain due to mechanical system here
 C mechanical system mass flow rate * moisture content.
+C << what does GEXTF the future ambient humidity ratio 
+C << have to do with this component ??
     3 ZMBI(IICOMP,3)=AFR*1.2*GEXTF
 
 C Total mass flow rate lost from the zone (no moisture included).
@@ -2996,8 +3002,11 @@ C Total mass flow rate lost from the zone (no moisture included).
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F8.3,A,F8.3,A,F10.3)') 
+     &     ' Qfuture = ',QFUT,
+     &     ' Tfuture = ',TFUT,
+     &     ' Tsupply = ',TS,
+     &     ' Flow loss from zone = ',ZMBI(IICOMP,4)
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL08')
       END IF

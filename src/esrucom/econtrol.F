@@ -2361,9 +2361,9 @@ C          call edisp248(6,message,80)
           if(nint(cm(7)).eq.1) msg1='C no cooling available.'
           write(lmsg,'(a,f7.2,a,f7.2,a,f9.4,a,f6.2,a,f6.2,a)') 
      &    ' variable supply temp: max supply T',cm(2),
-     &    'C min supply T',cm(3),'C air flow rate  ',cm(4),
-     &    '(m^3/s) heating setpoint ',cm(5),'C cooling setpoint',cm(6),
-     &    msg1 
+     &    'C min supply T',cm(3),'C air flow rate ',cm(4),
+     &    '(m^3/s) room heating setpoint ',cm(5),
+     &    'C room cooling setpoint',cm(6),msg1 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.9)then
