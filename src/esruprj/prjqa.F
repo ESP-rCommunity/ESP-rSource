@@ -982,26 +982,37 @@ C if verbose print periods, seasons and ratios as well.
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           continue
         else
-          call ripvdat(IFCFG,lipvdatf,ier)
+          call ripvdat(IFCFG,lipvdatf,ieripv)
           call edisp(itu,' ')
-          call edisp(itu,
-     &      'An Integrated Perormance View has been defined:')
-          if(contextinfo.eq.1)then
-            WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
-            call edisp(itu,outs)
-            WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
-            call edisp(itu,outs)
-            call edisp(itu,'Synopsis:')
-            call edisp248(itu,ipvsynop,80)
-          elseif(contextinfo.eq.2)then
+          if(ieripv.eq.0)then
+            call edisp(itu,
+     &        'An Integrated Performance View has been defined:')
+            if(contextinfo.eq.1)then
+              WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
+              call edisp(itu,outs)
+              WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
+              call edisp(itu,outs)
+              call edisp(itu,'Synopsis:')
+              call edisp248(itu,ipvsynop,80)
+            elseif(contextinfo.eq.2)then
 
-C Rescan the climatelist file to get seasons.
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              call scancdblist(IUF,cdblfil,LCLIM,ok,ier)
+C Rescan the climatelist file to get seasons. If this was successful
+C then include a description of the IPV.
+              INQUIRE (FILE=cdblfil,EXIST=XST)
+              if(XST)then
+                IUF=IFIL+2
+                call scancdblist(IUF,cdblfil,LCLIM,ok,ieripv)
+                if(ieripv.eq.0)then
+                  call listipvdat(itu,'a',ier)
+                else
+                  call edisp(itu,
+     &              'And the IPV file was incomplete or missing.')
+                endif
+              endif
             endif
-            call listipvdat(itu,'a',ier)
+          else
+            call edisp(itu,
+     &       'An Integrated Performance View is incomplete or missing.')
           endif
         endif
 

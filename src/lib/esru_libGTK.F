@@ -8457,10 +8457,25 @@ C Determine the month and day of month via EDAYR.
       CALL EDAYR(IDOY,IDAYN,IMTHN)
       CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
 
-C Build up the descriptive text strings.
-      WRITE(DESCR,'(i2.2,2a)',ERR=1)IDAYN,'-',MTHNAM(IMTHN)
-      WRITE(DESCR1,'(2a,i2.2,2a)',ERR=1)DAYNAM(IDWK),'-',IDAYN,'-',
-     &    MTHNAM(IMTHN)
+C Build up the descriptive text strings if a known month. Trap out
+C of range idwk and imthn to prevent string array crashes.
+      if(imthn.gt.0.and.imthn.le.12)then
+        WRITE(DESCR,'(i2.2,2a)',ERR=1)IDAYN,'-',MTHNAM(IMTHN)
+        if(idwk.gt.0.and.idwk.le.7)then
+          WRITE(DESCR1,'(2a,i2.2,2a)',ERR=1)DAYNAM(IDWK),'-',IDAYN,'-',
+     &      MTHNAM(IMTHN)
+        else
+          WRITE(DESCR1,'(a,i2.2,2a)',ERR=1) 'XXX-',IDAYN,'-',
+     &      MTHNAM(IMTHN)
+        endif
+      else
+        WRITE(DESCR,'(i2.2,a)',ERR=1)IDAYN,'-XXX'
+        if(idwk.gt.0.and.idwk.le.7)then
+          WRITE(DESCR1,'(2a,i2.2,a)',ERR=1)DAYNAM(IDWK),'-',IDAYN,'-XXX'
+        else
+          WRITE(DESCR1,'(a,i2.2,a)',ERR=1) 'XXX-',IDAYN,'-XXX'
+        endif
+      endif
 
       RETURN
  1    call usrmsg('STDATE: problem writing date strings.',' ','W')
