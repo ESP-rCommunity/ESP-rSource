@@ -33,7 +33,7 @@ C      BCL04: fixed heat injection/extraction control.
 C      BCL05: proportional+integral+derivative control action.
 C      BCL06: plant to building linker.
 C      BCL07: multi-stage controller with hysteresis.
-C      BCL08: variable supply temperature system.
+C      BCL08: CV HAVC variable supply temperature system.
 C      BCL09: heat pipe.
 C      BCL10: on/off control.
 C      BCL11: temperature brought to multi-sensor value (ideal).
@@ -3202,6 +3202,7 @@ C ON condition is reached.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3221,7 +3222,10 @@ c Fatal error test.
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL10')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL10')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -3232,8 +3236,8 @@ C Determine sensed temperature.
         return
       endif
 
-c QHM = max heating capacity (W)
-c QCM = max cooling capacity (W)
+c QHM = fixed heating capacity (W)
+c QCM = fixed cooling capacity (W)
 c HSPON = heating ON set point temp. (deg.C)
 c HSPOFF = heating OFF set point temp. (deg.C)
 c CSPON = cooling ON set point temp. (deg.C)
@@ -3289,8 +3293,11 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,5a,F8.3)')
+     &     ' Qfuture= ',QFUT,' (heating=',QH,' cooling=',QC,
+     &     ') heating prior ',LASTH(IICOMP),
+     &     ' cooling prior ',LASTC(IICOMP),
+     &     ' Tfuture= ',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL10')
       END IF

@@ -1314,7 +1314,7 @@ C law can be jumped around.
           endif
         endif
         if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
-     &     iclaw.eq.7.or.iclaw.eq.8)then
+     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1478,7 +1478,7 @@ C Ideal fixed injection is taken care of by a call to editctlperiod.
             iclawt=ier
             goto 77
           endif
-           goto 92
+          goto 92
         elseif(IBCLAW(II,JJ,KK).eq.5)then
 
 C PID controller.
@@ -1701,7 +1701,7 @@ C Multi-stage is taken care of by a call to editctlperiod.
           goto 92
         elseif(IBCLAW(II,JJ,KK).eq.8)then
 
-C Variable supply temperature with limit constraints.
+C CV HAVC variable supply temperature with limit constraints.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -1717,27 +1717,6 @@ C Variable supply temperature with limit constraints.
             goto 77
           endif
           goto 92
-
-C          call edisp(iuout,' Variable supply temp controller:')
-C          cm(1)=6.0
-C  51      WRITE(HOLD,'(2f7.2,f7.3,2f7.2)')cm(2),cm(3),cm(4),cm(5),
-C     &        cm(6)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,
-C     &    ' Max & Min supply temp, air flow rate(m^3/sec), heat & cool',
-C     &    ' setpoints for variable supply: ',40,
-C     &      ' 30.  10.  1.  18.  24. ','var supply',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(2),-10.,100.,'F','Max suplyt',IER)
-C          CALL EGETWR(HOLD,K,cm(3),-10.,100.,'F','Min suplyt',IER)
-C          CALL EGETWR(HOLD,K,cm(4),0.  ,999.,'F','air rate',IER)
-C          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','heat set',IER)
-C          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','cool set',IER)
-C          if(ier.ne.0)goto 51
-
-C          CALL EASKR(cm(7),' Cooling availability..',
-C     &      ' 0.) cooling, 1.) no cooling ? ',
-C     &      0.,'F',1.,'F',0.,'cool avail',IER,1)
         elseif(IBCLAW(II,JJ,KK).eq.9)then
 
 C Heat pipe.
@@ -1772,30 +1751,46 @@ C Heat pipe.
      &    ' 0) no trace, 1) trace ? ',0.,'F',1.,'F',0.,'trace',IER,1)
         elseif(IBCLAW(II,JJ,KK).eq.10)then
 
-C On-off control.
-          cm(1)=6.0
-  55      WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,
-     &      ' Maxiumu heating and cooling capacity for',
-     &      ' separate flux controller: ',40,' 10000. 10000. ',
-     &      ' separate flux capacity',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
-          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Cool',IER)
-          if(ier.ne.0)goto 55
+C Control with separate on/off setpoints for heating and cooling.
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-  56      WRITE(HOLD,'(4f8.2)')cm(4),cm(5),cm(6),cm(7)
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKS(HOLD,' Heating ON & OFF, Cooling ON & OFF set-',
-     &     ' points for separate flux control: ',40,' 18. 10. 100. 88.',
-     &      'prop max min set',IER,1)
-          K=0
-          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Heat ON',IER)
-          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat OFF',IER)
-          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Cool ON',IER)
-          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool OFF',IER)
-          if(ier.ne.0)goto 56
+C          cm(1)=6.0
+C  55      WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,
+C     &      ' Maxiumu heating and cooling capacity for',
+C     &      ' separate flux controller: ',40,' 10000. 10000. ',
+C     &      ' separate flux capacity',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
+C          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Cool',IER)
+C          if(ier.ne.0)goto 55
+
+C  56      WRITE(HOLD,'(4f8.2)')cm(4),cm(5),cm(6),cm(7)
+C          H(1)='See ESP-r Data Model section 9 for details. '
+C          CALL EASKS(HOLD,' Heating ON & OFF, Cooling ON & OFF set-',
+C     &     ' points for separate flux control: ',40,' 18. 10. 100. 88.',
+C     &      'prop max min set',IER,1)
+C          K=0
+C          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Heat ON',IER)
+C          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat OFF',IER)
+C          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Cool ON',IER)
+C          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool OFF',IER)
+C          if(ier.ne.0)goto 56
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
@@ -5457,16 +5452,19 @@ C yet supported with the new menu structure return to the calling subroutine.
               cmlocal(6)=24.0
               cmlocal(7)=0.0
               goto 90
-C              ier=8
-C              return
             elseif(iclaw.eq.9)then
               cmlocal(1)=9.0
               ier=9
               return
             elseif(iclaw.eq.10)then
               cmlocal(1)=6.0
-              ier=10
-              return
+              cmlocal(2)=1000.0        ! reset to default values
+              cmlocal(3)=1000.0
+              cmlocal(4)=18.0
+              cmlocal(5)=22.0
+              cmlocal(6)=26.0
+              cmlocal(7)=24.0
+              goto 90
             elseif(iclaw.eq.11)then
               cmlocal(1)=10.0        ! varies (this is the smallest)
               ier=11
@@ -5637,6 +5635,8 @@ C If no cooling capacity then set cooling set point to 100C.
               goto 91   ! minor change
             endif
           elseif(iclaw.eq.8)then
+            continue    ! no post processing required.
+          elseif(iclaw.eq.10)then
             continue    ! no post processing required.
           else
 
@@ -6050,11 +6050,70 @@ C Variable supply temperature with limit constraints.
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.10)then
+          
+C Control with separate on/off setpoints for heating and cooling.
+          h(1)='This control allows separate flux ON and flux OFF'
+          h(2)='set points to be specified for heating and cooling.'
+          h(3)=' '
+          h(4)='During ON periods the specified flux is applied'
+          h(5)='until the OFF setpoint is reached. When the OFF'
+          h(6)='condition has been reached the flux input is not'
+          h(7)='reactivated until and ON state is agsin reached.'
+          h(8)=' '
+          h(9)= 'Example: if the temperature goes below 18C turn on'
+          h(10)='  heating until 22C is reached and keep off until'
+          h(11)='  the temperature falls below 18C again.'
+          h(12)=' '
+          h(13)='Example: if the temperature goes above 26C turn on'
+          h(14)='  cooling until 24C is reached and keep off until'
+          h(15)='  the temperature rises to 26C.'
+          h(16)=' '
+          h(17)='If the heating OFF and the cooling OFF setpoints'
+          h(18)='overlap then heating and cooling are both ON. '
+          h(19)=' '
+          h(20)='Note because the full heating or cooling capacity'
+          h(21)='is used when an ON state is called for a shorter'
+          h(22)='timestep should be used (typically 5 minutes or'
+          h(23)='less). Also the heating and cooling capacity should'
+          h(24)='match the demands of the room otherwise poor temp-'
+          h(25)='erature control will be obtained. '
+          h(26)=' '
+          h(27)='This control is an alternative to the basic ideal'
+          h(28)='controller which only has a single setpoint for '
+          h(29)='heating and cooling. '
+          h(30)=' '
+          H(31)='You are given the option to discard changes when you'
+          H(32)='exit the period. '
+          nctlhelp=32
+          nmenulines=7    ! set to the last cm index used
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Heating (fixed) capacity (W)'
+          prompt1(2)='Heating capacity (W) used for ON state'
+          prompt2(2)='(injection is at a fixed rate)'
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
+          menu(3)='Cooling (fixed) capacity (W)'
+          prompt1(3)='Cooling capacity (W) used for ON state'
+          prompt2(3)='(extraction is at a fixed rate) '
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Heating ON setpoint (C)'
+          prompt1(4)='Heating ON setpoint (C) (turn on heating if'
+          prompt2(4)='the temperature falls below this setpoint)'
+          ndec(4)=3; vmin(4)=-100.0; vmax(4)=100.0; vdef(4)=18.0
+          menu(5)='Heating OFF setpoint (C)'
+          prompt1(5)='Heating OFF setpoint (C) (turn off heating if'
+          prompt2(5)='the temperature goes above this point) '
+          ndec(5)=3; vmin(5)=-100.0; vmax(5)=100.0; vdef(5)=22.0
+          menu(6)='Cooling ON setpoint (C) '
+          prompt1(6)='Cooling ON setpoint (C) (turn on cooling if'
+          prompt2(6)='the temperature goes above this setpoint) '
+          ndec(6)=3; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=26.0
+          menu(7)='Cooling OFF setpoint (C) '
+          prompt1(7)='Cooling OFF setpoint (C) (turn off cooling if'
+          prompt2(7)='the temperature goes below this setpoint) '
+          ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
         elseif(iclaw.eq.11)then
           menu(1)=' '
           prompt1(1)=' '
@@ -6121,6 +6180,12 @@ C Variable supply temperature with limit constraints.
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         else
+          h(1)=' '
+          h(2)=' '
+          h(3)=' '
+          h(4)=' '
+          nctlhelp=4
+          nmenulines=7    ! set to the last cm index used
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '

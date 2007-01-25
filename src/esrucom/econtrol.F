@@ -2393,10 +2393,10 @@ C          call edisp248(6,message,80)
           cm(6)=bmiscd(II,JJ,KK,6)
           cm(7)=bmiscd(II,JJ,KK,7)
           write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,a)') 
-     &    ' separate ON/OFF flux: max heating capacity ',cm(2),
-     &    'W max cooling capacity ',cm(3),'W heating on at ',cm(4),
-     &    'C heating off at ',cm(5),'C cooling on at ',cm(6),
-     &    'C cooling off at ',cm(7),'C.'
+     &    ' separate ON/OFF flux: heating capacity ',cm(2),
+     &    'W cooling capacity ',cm(3),'W heating on below ',cm(4),
+     &    'C heating off above ',cm(5),'C cooling on above ',cm(6),
+     &    'C cooling off below ',cm(7),'C.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.11)then
