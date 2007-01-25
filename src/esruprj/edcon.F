@@ -1330,6 +1330,7 @@ C through each of the existing surfaces and finds unique optical types.
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
+      logical canceled   ! toggle set if user interupts an edit session.
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
       CHARACTER DESC*48,outs*124
@@ -1407,6 +1408,8 @@ C Check to see if this new construction has a known set of opticals.
      &      'supply optical properties','select another composite',
      &      'assign `opaque` to this one',IW,2)
           IF(IW.EQ.1)THEN
+
+C << todo consider how one might treat a cancel request within eoptks
             NTL=LAYERS(ICF)
             CALL EOPTKS(ITRC,ITRU,'T',IER)
           ELSEIF(IW.EQ.2)THEN
@@ -1537,7 +1540,29 @@ C Display of current information...
 
 C Having displayed the current common data provide an editing facility...
 C For each of the TMC types found in this zone ask if there is any
-C control attached.
+C control attached.  Provide a jump back point in case the user
+C invokes a cancel during the editing.
+      canceled=.false.
+  203 if(canceled)then
+        dok=.false.
+        h(1)='You interupted the specification. If you want to start'
+        h(2)='again say yes or if you want to not have optical controls'
+        h(3)='say no and the data will be cleared. '
+        CALL ASKOK('Try again to define the optical control?',
+     &    '(a no clears the optical control definitions) ',OK,
+     &    dok,3)
+        if(.NOT.OK) then
+
+C Clear the optical control common blocks that might have
+C been set during the prior edit.
+          DO 204 IT=1,NTMC
+            IBCMT(ICOMP,IT)=0
+            NBCTMC(ICOMP,IT)=0
+            IBCSUR(ICOMP,IT)=0
+  204     continue
+          GOTO 200
+        endif
+      endif
       DO 22 IT=1,NTMC
         if(IBCMT(ICOMP,IT).eq.1)then
           h(1)='There is a surface attribute that indicates that an'
@@ -1552,7 +1577,7 @@ C control attached.
           WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,
      &      ' there is an optical control. Options:'
           CALL EASKABC(outs,' ','remove this optical control',
-     &      'edit this optical contr4ol','accept control as-is',iwa,6)
+     &      'edit this optical control','accept control as-is',iwa,9)
           if(iwa.eq.1)then
             IBCMT(ICOMP,IT)=0
             GOTO 22
@@ -1577,8 +1602,14 @@ C control attached.
         IBCMT(ICOMP,IT)=1
         N1=NBCTMC(ICOMP,IT)
         H(1)='Up to 8 control periods are allowed. '
+        H(2)='If you cancel you will be given the option to exit'
+        H(3)='the optical control definition or start again. '
         CALL EASKI(N1,' ',' No of control periods? ',
-     &    1,'F',MBP,'F',1,'no of control periods',IER,1)
+     &    1,'F',MBP,'F',1,'no of control periods',IERI,3)
+        if(ieri.eq.-3) then
+          canceled=.true.
+          goto 203
+        endif
         NBCTMC(ICOMP,IT)=N1
 
         N2=IBCSUR(ICOMP,IT)
@@ -1590,13 +1621,19 @@ C control attached.
         H(6)='   use this particular type of TMC.'
         H(7)=' * one internal Daylight Coefficient sensor '
         H(8)='   number defined by user.'
+        H(9)='If you cancel you will be given the option to exit'
+        H(10)='the optical control definition or start again. '
         CALL EASKAB('Transparent surfaces can be controlled:',' ',
      &    'via separate sensors','via a single sensor',IW,8)
         if(IW.eq.1)then
           IBCSUR(ICOMP,IT)=0
         else
           CALL EASKI(N2,'Surface index for common sensor location:',' ',
-     &      1,'F',NSUR,'F',1,'sensor location',IER,8)
+     &      1,'F',NSUR,'F',1,'sensor location',IERI,10)
+          if(ieri.eq.-3) then
+            canceled=.true.
+            goto 203
+          endif
           IBCSUR(ICOMP,IT)=N2
         endif
 
@@ -1736,6 +1773,9 @@ C << Note: do not know what sort of question is to be asked here! >>
 
 C Pick the alternative optical properties for the period. Note that
 C the number of layers should match that of the base case.
+
+C << todo: consider how to react to a cancel request within eoptks
+
           CALL EOPTKS(ITRC,ITRU,'T',IER)
           DO 42 ID=1,5
             TMCT2(ICOMP,IT,ID,ICP)=DG(ID)
@@ -1780,10 +1820,20 @@ C transparent construction data editing.
       CHARACTER SOPT*12,GDESCR*36,H*72,HOLD*42
       CHARACTER WHICH*1,outs*124
 
+      integer ntlt   ! for local editing.
+
 C The user will be allowed to use a item from the optical database or
-C to put in the data directly.
+C to put in the data directly.  77 is a jump back point in case the
+C user cancels part way through the definition.
+
+C << todo: consider adding a cancel option >>
+
+  77  h(1)='Manual data input will ask for the direct transmission'
+      h(2)='at each angle as well as absorption characteristics for'
+      h(3)='layer. Using data from an optical database simplifies '
+      h(4)='the process. '
       CALL EASKAB(' Get optical properties from: ',' ',
-     &  ' manual data input',' optical database',IW,0)
+     &  ' manual data input',' optical database',IW,4)
       IF(IW.EQ.2)THEN
         CALL EDWINO(SOPT,IER)
         IF(SOPT.EQ.'UNKNOWN')RETURN
@@ -1821,9 +1871,16 @@ C to put in the data directly.
 C For each of the layers provide the absorptions.
         H(1)='This is almost always equal to that of the associated'
         H(2)='multilayer construction. Layers index (outside=1).'
-        CALL EASKI(NTL,' ',
+        H(3)='If you cancel you will be taken back to the start'
+        H(4)='of the editing sequence. '
+        ntlt=ntl
+        CALL EASKI(NTLT,' ',
      &    ' Current no. of layers (including air gaps)? ',
-     &    1,'F',ME,'F',1,'layers in tmc',IER,2)
+     &    1,'F',ME,'F',1,'layers in tmc',IERI,4)
+        if(ieri.eq.-3)then
+          goto 77
+        endif
+        ntl=ntlt
 
         H(1)='The simulation of radiation transmission through '
         H(2)='transparent constructions requires that the short-'

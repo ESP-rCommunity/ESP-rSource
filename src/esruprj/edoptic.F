@@ -281,6 +281,8 @@ C Add a new item to the optical db
             H(1)='The layout of glazing, air gaps and blinds can'
             H(2)='be selected from this list or an alternative '
             H(3)='defined.'
+            H(4)=' '
+            H(5)='A cancel request leaves the model unchanged.'
             IX=1
             CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
      &        48,9,SALT,'Typical glazing types',IER,3)
@@ -288,7 +290,11 @@ C Add a new item to the optical db
             if(IOS.eq.9)then
               nl=1
               CALL EASKI(nl,' ',' Number of layers in the new set ?',
-     &          1,'F',ME,'F',1,'opt set layers',IER,2)
+     &          1,'F',ME,'F',1,'opt set layers',IERI,5)
+              if(ieri.eq.-3) then
+                INO=-4
+                GOTO 3
+              endif
               layout='g------'
             elseif(IOS.eq.1)then
               nl=1
@@ -814,7 +820,7 @@ C List help text for the menu.
           CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
      &      ilabs,'Optical layer (select one to copy)',IER,2)
           IL=IGSET(1)-1
-          if(IL.ne.0.and.NTLED.lt.ME)then
+          if(IL.gt.0.and.NTLED.lt.ME)then
             NTLED=NTLED+1
             RFED(NTLED)=RFED(IL)
             ABED(NTLED,1)=ABED(IL,1)
@@ -1597,9 +1603,15 @@ C Display information about the anchors associated with connection.
             else
               nl=1
               h(1)='There are a limited number of types. '
+              h(2)=' '
+              h(3)='A cancel request leaves the model unchanged.'
               CALL EASKI(nl,' ',' Which bi-directional type?',
-     &          0,'F',MSTMC,'F',1,'bi opt types',IER,1)
-              NSTMCFL(ifocc)=nl
+     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
+              if(ieri.eq.-3)then
+                continue
+              else
+                NSTMCFL(ifocc)=nl
+              endif
             endif
           endif
         else

@@ -28,20 +28,20 @@ C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edmlc(IFB,idbh,ic,iit,ACT,IER)
 #include "building.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -73,12 +73,12 @@ C Backup of documentation (for editing).
       character class*12,item*12,mmatmenu*32
       character mmattag*12
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
-      character gendbfn*72,snote*248
+      character snote*248
       character kact*1,head*38
       character oacumenu*32,iacumenu*32,ocmenu*32,icmenu*32
       character selitem*12,selmenu*32,cnstm*32
       character unitchr*4,unitstr*12,unitnote*72
-      logical primod,ok,dok,gendbok,bkdocok,modit,dmodit
+      logical primod,ok,dok,bkdocok,modit,dmodit
       real misc1,misc2
 
 C Scan the data from the common blocks.

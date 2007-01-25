@@ -819,8 +819,7 @@ C if act is 'h' write the header boilerplate
 C if act is 'g' write generic item.
       SUBROUTINE PCRDFGDB(IUFIL,act)
 #include "plantdb.h" 
-      parameter (MGCL=30)
-      parameter (MGIT=300)
+#include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)

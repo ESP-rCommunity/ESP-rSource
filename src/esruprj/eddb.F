@@ -2074,6 +2074,7 @@ C Logic as other copy database.
 
 C ********** EDDBPROFILE
 C EDDBPROFILE Changes the events profile database current cfg file references.
+C This version uses call to subroutine casfmk. 
 C moddb is from version manager
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
@@ -2083,6 +2084,7 @@ C
 
       PARAMETER  (MCP=35)
 
+      common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -2093,15 +2095,19 @@ C
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
-      CHARACTER H*72,LTMP*72
-      character longtfile*144,message*48
-      CHARACTER DOIT*248,fs*1,LCOPY*72,DESCP*40
-      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER H*72,LTMP*72,LASCI*72,DFILE*72,lltmp*144,lprev*144
+      character longtfile*144,LCOPY*144,message*48
+      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER OUTS*124,OUTS248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
+      character DESCP*40
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,linstd*60,tmode*8
+      character dinstpath*48,path*72,dirpath*48
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28,opth*28,opti*28
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2111,11 +2117,19 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      moddb=.false.
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
 
- 40   ltmp=LPRFDB
-      write(outs,'(2a)') 'Options for event profiles db: ',
-     &  LTMP(1:lnblnk(LTMP))
+      moddb=.false.
+      lprev=LPRFDB
+
+ 40   lltmp=LPRFDB
+      llt=lnblnk(lltmp)
+      write(outs248,'(2a)') 'Options for event profiles db: ',
+     &  lltmp(1:lnblnk(lltmp))
+      write(outs,'(a)') outs248(1:123)
       H(1)= '   Events Database '
       H(3)= ' '
       H(4)= 'Profiles in this database are currently used to  '
@@ -2136,54 +2150,116 @@ C Set folder separator (fs) to \ or / as required.
       H(19)='   and if you have permission to update the file you'
       H(20)='   can edit the entities in the database.'
       H(21)=' '
-      H(22)='b) select another file: you will asked for a file'
-      H(23)='   name and if it is found you can browse or edit it.'
-      H(24)=' '
-      H(25)=' '
-      H(26)='c) make a new database: a new database will be created '
-      H(27)='   based on the file name you supply.'
-      H(28)=' '
-      H(29)='d) copy default database: a project copy of the default'
-      H(30)='  database will be made and you will be offered a '
-      H(31)='  chance to rename it.'
-      CALL ERPFREE(IPRODB,ISTAT)
+      H(22)='b) Select from list (not available for optics databases).'
+      H(23)=' '
+      H(24)='c) Make a new database: a new database will be created '
+      H(25)='   based on the file name you supply. It will contain a'
+      H(26)='   minimal number of items and you can then modify this'
+      H(27)='   as required. '
+      H(28)='   Exercise care if you use a text editor to copy sets'
+      H(29)='   of data from another optical database.'
+      H(30)=' '
+      H(31)='d) copy default database: a project copy of the default'
+      H(32)='  database will be made and you will be offered a '
+      H(33)='  chance to rename it.'
+      H(34)=' '
+      H(35)='e) binary -> ascii conversion saves current database '
+      H(36)='  to a computer independant form.'
+      H(37)=' '
+      H(38)='f) ascii -> binary useful when switching computers.'
+      H(39)=' '
 
-C Get length of path to where esp-r databases were installed.
-C << explicit / in path - use fs instead! >>
-      write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &  '/databases'
-      linst=lnblnk(linstd)
-      call FINDFIL(LTMP,XST)
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.2)then
+        H(40)='g) browse ../dbs allows you to look in the model ../dbs'
+        H(41)='  folder for alternative optics files. If you do not'
+        H(42)='  find anything the previous value will be restored.'
+        H(43)=' '
+        H(44)='h) browse distribution displays files in the databases'
+        H(45)='  folder of the ESP-r distribution. If you do not find'
+        H(46)='  anything the previous value will be restored.'
+        H(47)=' '
+        H(48)='i) copy another database to the project allows you to'
+        H(49)=' locate a database and get a project copy of it.'
+      else
+        H(40)='g) select a file (X11 only): edit the file name'
+        H(41)='   and if it is found you can browse or edit it.'
+        H(42)='   Hint: if you eventually want to copy that other file'
+        H(43)='   into the model folder first select it and then ask'
+        H(44)='   for a copy.'
+        H(45)=' '
+        H(46)=' '
+        H(47)=' '
+        H(48)=' '
+        H(49)=' '
+      endif
+      CALL ERPFREE(IPRODB,ISTAT)
+      call addpath(LLTMP,longtfile,concat)
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for profiles database. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='e binary > ascii'
+        optf='f ascii > binary'
+        optg='g edit file name'
+        opth=' '
+        opti=' '
+      elseif(iglib.eq.2)then
+        opte='e binary > ascii'
+        optf='f ascii > binary'
+        optg='g browse ../dbs'
+        opth='h browse distribution'
+        opti='i make copy of another file'
+      endif
+
       IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices:
         idno=2
         isw=0
         call MENUATOL(outs,'Event profile options:',
-     &    'a browse/edit (NOT APPLICABLE)','b select another file',
+     &    'a browse/edit (NOT APPLICABLE)','b select from list (N/A)',
      &    'c make a new database','d copy the default database',
-     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,31)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
         copydef=.true.
-      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
-C If corportate database then offer the following choices:
+C If corportate database then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL(outs,'Event profile options:',
-     &    'a browse or edit this file','b select another file',
+     &    'a browse or edit this file','b select from list (N/A)',
      &    'c make a new database','d make project copy of database',
-     &    'e binary > ascii','f ascii > binary',' ',' ',' ',' ',' ',
-     &    ' ',isw,idno,31)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL(outs,'Event profile options:',
+     &    'a browse or edit this file','b select from list (N/A)',
+     &    'c make a new database','d make project copy of database',
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
         copydef=.false.
       else
 
-C If db exists locally offer the following choices:
+C If db exists locally toggle whether the user as asked to copy the
+C default database or the current database.
         idno=1
         isw=0
         call MENUATOL(outs,'Event profile options:',
-     &    'a browse or edit this file','b select another file',
+     &    'a browse or edit this file','b select from list (N/A)',
      &    'c make a new database','d copy the default database',
-     &    'e binary > ascii','f ascii > binary',' ',' ',' ',' ',
-     &    ' ',' ',isw,idno,31)
-        copydef=.true.
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.9)copydef=.false.
       endif
 
 C Act on the users choice. If nothing selected return to main menu.
@@ -2193,32 +2269,8 @@ C Act on the users choice. If nothing selected return to main menu.
 
 C If file exists open it, test file type, get number of items and close.
         if(XST)then
-          IER=0
-          call EFOPRAN(IPRODB,LTMP,10,1,IER)
-          IF(ier.eq.0)then
-            LPRFDB=LTMP
-            CALL USRMSG(' opened profiles db...',' ','-')
-            IREC=1
-            READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
-            CALL USRMSG(' opened profiles db...ok',' ','-')
-            CALL ERPFREE(IPRODB,ISTAT)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-            call tstamp('>','PRJ: start pro')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LPRFDB,longtfile,concat)
-            write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                  longtfile(1:lnblnk(longtfile)),' &'
-            call runit(doit,tmode)
-            moddb=.true.
-          else
-            call usrmsg('Sorry, error opening the file.',
-     &        'Please use one of the other options.','W')
-            goto 40
-          endif
+          LPRFDB=lltmp
+          goto 44
         else
           call usrmsg('Sorry there is no file to browse/edit.',
      &      'Please use one of the other options. ','W')
@@ -2226,42 +2278,8 @@ C name to include the path and create a string to drive viewer.
         endif
       elseif(isw.eq.2)then
 
-        H(1)='An event profiles db holds a schedule of patterns'
-        H(2)='over a day. '
-        CALL EASKS(ltmp,' Event profiles database?',
-     &    ' ',72,DPRFDB,'event profiles database',IER,1)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPRFDB=ltmp
-        else
-          goto 40
-        endif
-        CALL ERPFREE(IPRODB,ISTAT)
-        call FINDFIL(LPRFDB,XST)
-        IF(XST)THEN
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          write(outs,'(2a)') 'Accessing profiles db ',
-     &      LPRFDB(1:lnblnk(LPRFDB))
-          call edisp(iuout,outs)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
-          moddb=.true.
-        else
-          write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),
-     &      ' does not appear to exist.'
-          call edisp(iuout,outs)
-          goto 40
-        endif
+C There is no select by list for optics database.
+        goto 40
       elseif(isw.eq.3)then
 
 C No event profile db found so set-up minimal common block, create
@@ -2283,18 +2301,18 @@ C a new db, populate it and present editing facility.
      &    IER,2)
         if(clkok) return
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPRFDB=ltmp
+          write(LPRFDB,'(a)') ltmp(1:lnblnk(ltmp))
         else
           goto 42
         endif
 
-C Create a minimal events databases (code similar to pro.F).
+C Create a minimal events databases.
         moddb=.true.
         call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
         NITEMS = 1
         NO(1) = 2
         NCG(1)= 1
-        DESCP(1)='First profile'
+        DESCP(1)='Always ON 100%'
         ICGS1(1)=0
         ICGF1(1)=24
         CGS1(1)=100.0
@@ -2313,7 +2331,13 @@ C Create a minimal events databases (code similar to pro.F).
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
-        write(outs,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),' created.'
+        if(lnblnk(LPRFDB).lt.100)then
+          write(outs,'(3a)') 'Events db ',LPRFDB(1:lnblnk(LPRFDB)),
+     &     ' created.'
+        else
+          write(outs,'(3a)') 'Events db ',LPRFDB(1:100),
+     &     '... created.'
+        endif
         dok=.true.
         h(1)='An empty profiles database has been created. It'
         h(2)='is useless unless it is populated with data. If '
@@ -2321,30 +2345,49 @@ C use the editing facility.
         h(4)='to do this.'
         CALL ASKOK(outs,' Browse or edit database?',OK,dok,4)
         if(OK)then
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &                longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
+          moddb=.true.
+          goto 44
         endif
-      elseif(isw.eq.4)then
+      elseif(isw.eq.4.or.isw.eq.9)then
 
-C Copy the standard db to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
+C Copy a database to project dbs folder. If iws is 4 then the
+C user has asked for the default database. If isw is 7 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name then do the copy.
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.   
         if(copydef)then
-          call edisp(iuout,'The source file is:')
-          call edisp(iuout,DPRFDB)
+          write(outs248,'(2a)') 'The source file is:',
+     &      DPRFDB(1:lnblnk(DPRFDB))
+          call edisp248(iuout,outs248,100)
         else
-          call edisp(iuout,'The source file is:')
-          call edisp(iuout,LPRFDB)
+          h(1)='You are asked to confirm the source file for the'
+          h(2)='copy action. If this one is ok then accept it. '
+          write(outs248,'(2a)') 'The current source file is:',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp248(iuout,outs248,100)
+          lltmp=LPRFDB
+          llt=lnblnk(lltmp)
+          iglib = igraphiclib()
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(lltmp,' Event profile db (source)? ',
+     &          ' ',96,DPRFDB,'binary events db',IER,2)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(lltmp,' Event profile db(source)? ',
+     &          ' ',124,DPRFDB,'binary events db',IER,2)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(lltmp,' Event profile db(source)? ',
+     &          ' ',144,DPRFDB,'binary events db',IER,2)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(lltmp,' Event profile db(source)? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          else
+            CALL EASKF(lltmp,' Event profile db(source)? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          endif
+          LPRFDB=lltmp
         endif
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
@@ -2360,8 +2403,25 @@ C the file name as known to esp-r and LCOPY for the system cp call.
      &    ' ',72,'event.db','copied events database',IER,2)
         call isunix(unixok)
         IF(LTMP(1:2).NE.'  ')then
-          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &      LTMP(1:lnblnk(LTMP))
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
           if(copydef)then
             doit = ' '
             if(unixok)then
@@ -2371,11 +2431,19 @@ C the file name as known to esp-r and LCOPY for the system cp call.
 
 C Logic for copy similar to the pattern established above.
               message='getting events db file from '
-              call dbdoscopy(DPRFDB,lcopy,message,doit,ier)
+              call dblongdoscopy(DPRFDB,lcopy,message,doit,ier)
             endif
             call usrmsg('copying default file via',doit,'-')
             call runit(doit,'-')
-            LPRFDB=LTMP
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+            else
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+            endif
           else
             doit = ' '
             if(unixok)then
@@ -2385,40 +2453,238 @@ C Logic for copy similar to the pattern established above.
 
 C Logic for copy similar to the pattern established above.
               message='getting events db file from '
-              call dbdoscopy(LPRFDB,lcopy,message,doit,ier)
+              call dblongdoscopy(LPRFDB,lcopy,message,doit,ier)
             endif
             call usrmsg('copying file via',doit,'-')
             call runit(doit,'-')
-            LPRFDB=LTMP
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+            else
+              call FINDFIL(LTMP,XST)
+              if(XST)then
+                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+              else
+                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+                call edisp(iuout,'Problem locating the new database.')
+                call edisp(iuout,'try browse ../dbs to find it.')
+              endif
+            endif
           endif
           moddb=.true.
-          write(outs,'(2a)') 'Accessing event profiles db:',
-     &      LPRFDB(1:lnblnk(LPRFDB))
-          call edisp(iuout,outs)
-
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive viewer.
-          call tstamp('>','PRJ: start pro')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          call addpath(LPRFDB,longtfile,concat)
-          write(doit,'(5a)') 'pro -mode ',tmode,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
-          call runit(doit,tmode)
+          goto 44
         else
           goto 244
         endif
       elseif(isw.eq.5)then
 
 C Profile db: BINARY > ASCII. 
-        call edisp(iuout,'Use the module pro for BINARY > ASCII...')
+C Ask for the binary file name and then confirm the ASCII db name.
+        IAF=IFIL+1
+        H(1)='The events db contains one or more descriptions of'
+        H(2)='profiles created via a diary entry format.'
+        lltmp=LPRFDB
+        llt=lnblnk(lltmp)
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(lltmp,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        else
+          CALL EASKF(lltmp,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        endif
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+          LPRFDB=lltmp
+        else
+          goto 40
+        endif
+
+C 144 -> 72 character switch so limit portion written to LASCI.
+        llt=lnblnk(LPRFDB)
+        if(llt.le.69)then 
+          write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+        else
+          write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+        endif
+
+        DFILE='./newprofiles.db1.a'
+        CALL EASKS(LASCI,' ASCII event profile? ',
+     &    ' ',72,DFILE,'ascii events db',IER,2)
+
+C Do conversion to ASCII and then redisplay the menu.
+        CALL TROPRO(iuout,IAF,LASCI,IER)
+        call tstamp('>','PRO: convert binary to ascii')
+        goto 40
       elseif(isw.eq.6)then
 
 C Profile db: ASCII > BINARY.
-        call edisp(iuout,'Use the module pro for ASCII > BINARY...')
+C Ask for the ASCII file name and then confirm the binary db name.
+        IAF=IFIL+1
+        H(1)='The events db contains one or more descriptions of'
+        H(2)='profiles created via a diary entry format.'
+        llt=lnblnk(LPRFDB)
+        if(llt.le.69)then 
+          write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+        else
+          write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+        endif
+        CALL EASKS(LASCI,' ASCII event profile source? ',
+     &    ' ',72,'profiles.db1.a','ascii events db',IER,2)
+
+        H(1)='The existing binary events db will be overwritten'
+        H(2)='with the data from the ASCII version.'
+        write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        llt=lnblnk(lltmp)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(lltmp,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        else
+          CALL EASKF(lltmp,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Do conversion and then to prove that the file was correctly
+C converted proceed to browse/edit the details.
+          LPRFDB=lltmp
+          CALL TRIPRO(iuout,IAF,LASCI,IER)
+          moddb=.true.
+          goto 44
+        else
+          goto 40
+        endif
+
+      elseif(isw.eq.7)then
+
+C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
+C can see the files in that folder. Note the user may browse away
+C from this location. Easkf returns the absolut path to the
+C file selected (later see if this can be resolved to ../dbs). 
+C Test the returned file and if it is not readable reset LPRFDB.
+        if(iglib.eq.2)then
+          h(1)='An event profiles database holds named sets of profiles'
+          h(2)='in a binary representation. '
+          H(3)=' '
+          H(4)='A local database folder (../dbs) is usually associated'
+          H(5)='with each model. '
+          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+          CALL EASKF(LCOPY,' Event profiles database?',
+     &      ' ',144,DOPTDB,'Event profiles database',IER,5)
+          LPRFDB=LCOPY
+          moddb=.true.
+          goto 44
+        else
+
+C For X11 and text allow user to type in a file name.
+          h(1)='An event profiles database holds named sets of profiles'
+          h(2)='in a binary representation. '
+          write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+          llt=lnblnk(lltmp)
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',96,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',124,DPRFDB,'binary events db',IER,2)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' Event profile db? ',
+     &        ' ',144,DPRFDB,'binary events db',IER,2)
+          endif
+          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+            LPRFDB=lltmp
+            moddb=.true.
+            goto 44
+          else
+            goto 40
+          endif
+        endif
+
+      elseif(isw.eq.8)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing). Test this suggested file via
+C call to eroptdb and if this is not successful reset LOPTDB.
+        if(iglib.eq.2)then
+          h(1)='An event profiles database holds named sets of profiles'
+          h(2)='in a binary representation. '
+          H(3)=' '
+          H(4)='The ESP-r distribution includes alternatives to the'
+          H(5)='default which might be useful.'
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' Event profiles database?',
+     &      ' ',144,DOPTDB,'Event profiles database',IER,5)
+          LPRFDB=LCOPY
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available',' ','W')
+          goto 40
+        endif
       endif
-      return
+
+C Test the selected or copied database. If a problem restore
+C the previous file name and loop back, otherwise edit the
+C database contents.
+   44 continue
+      write(outs248,'(2a)') 'Accessing event profile db: ',
+     &  LPRFDB(1:lnblnk(LPRFDB))
+      call edisp248(iuout,outs248,100)
+      IER=0
+      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      IF(ier.eq.0)then
+        CALL USRMSG(' opened profiles db...',' ','-')
+        IREC=1
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
+        CALL USRMSG(' opened profiles db...ok',' ','-')
+        CALL ERPFREE(IPRODB,ISTAT)
+
+C Call casfmk for the editing/browsing interface.
+        call casfmk(LPRFDB,ier)
+        return
+      else
+        call usrmsg('Sorry, error opening the file.',
+     &    'Please use one of the other options.','W')
+        LPRFDB=lprev
+        goto 40
+      endif
 
  450  call edisp(iuout,' Event profile file error  ')
       return
@@ -2796,7 +3062,7 @@ C be pre-pended when using most inbuilt file opening calls.
 
 C Similar dos copy logic but using LOPTDB.
               message='getting optics db file from '
-              call dbdoscopy(LOPTDB,lcopy,message,doit,ier)
+              call dblongdoscopy(LOPTDB,lcopy,message,doit,ier)
             endif
             call usrmsg('copying file via',doit,'-')
             call runit(doit,'-')
@@ -2901,6 +3167,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
           goto 44
         else
           call usrmsg('Browse feature not available',' ','W')
+          goto 50
         endif
       endif
 

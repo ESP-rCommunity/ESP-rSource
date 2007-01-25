@@ -1833,13 +1833,17 @@ C control file sensors, actuator, control types, control laws.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
-      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
-      CHARACTER SSTR*72,WHICH*1,ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
+      CHARACTER SSTR*72,SSTRB*48
+      CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15
       CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SN*12
 
+      dimension icsn(4)   ! for passing sensor location to decodesensor
+      integer icsn
+
       SSTR=' '
+      SSTRB=' '
 
       if(icfoc.eq.0)goto 42     ! zone ideal control
       if(icfoc.eq.1)goto 43     ! plant control
@@ -1849,55 +1853,12 @@ C control file sensors, actuator, control types, control laws.
   42  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
 
 C Ideal Sensor.
-        IF(IBSN(II,1).GT.0)THEN
-          write(zn,'(a)') zname(IBSN(II,1))
-          if(IBSN(II,2).gt.0)then
-            write(sn,'(a)') SNAME(IBSN(II,1),IBSN(II,2))
-          else
-            sn='-'
-          endif
-          IF(IBSN(II,2).EQ.0)THEN
-            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
-     &        zn(1:lnblnk(zn)),'.'
-          ELSEIF(IBSN(II,2).GT.0.AND.IBSN(II,3).EQ.0)THEN
-            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ELSEIF(IBSN(II,2).GT.0.AND.IBSN(II,3).GT.0)THEN
-            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ENDIF
-        ELSEIF(IBSN(II,1).EQ.0)THEN
-          SSTR='senses the temperature of the current zone.'
-        ELSEIF(IBSN(II,1).EQ.-2)THEN
-          write(zn,'(a)') zname(IBSN(II,2))
-          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
-        ELSEIF(IBSN(II,1).EQ.-3)THEN
-          IF(IBSN(II,2).EQ.0)THEN
-            SSTR='senses ambient dry bulb temperature.'
-          ELSEIF(IBSN(II,2).EQ.1)THEN
-            SSTR='senses the sol-air temperature.'
-          ELSEIF(IBSN(II,2).EQ.2)THEN
-            SSTR='senses wind speed.'
-          ELSEIF(IBSN(II,2).EQ.3)THEN
-            SSTR='senses wind direction.'
-          ELSEIF(IBSN(II,2).EQ.4)THEN
-            SSTR='senses dif hor rad.'
-          ELSEIF(IBSN(II,2).EQ.5)THEN
-            SSTR='senses dir nor rad.'
-          ELSEIF(IBSN(II,2).EQ.6)THEN
-            SSTR='senses ext rel hum.'
-          ENDIF
-        ELSEIF(IBSN(II,1).EQ.-5)THEN
-          WRITE(SSTR,65)IBSN(II,2)
-  65      FORMAT('reads from temporal file item.',I2)
-        ELSEIF(IBSN(II,1).EQ.-6)THEN
-          SSTR='sensed value from function generator.'
-        ELSEIF(IBSN(II,1).EQ.-99)THEN
-          SSTR=' construction substitution.'
-        ELSE
-          SSTR='senses UNKNOWN condition.'
-        ENDIF
+        icsn(1)=IBSN(II,1)
+        icsn(2)=IBSN(II,2)
+        icsn(3)=IBSN(II,3)
+        icsn(4)=IBSN(II,4)
+        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+
       ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
 
 C Actuator.
@@ -1952,54 +1913,12 @@ C Ideal Control law.
 
 C Plant Sensor.
         SSTR='undefined condition'
-        IF(IPSN(II,1).GT.0)THEN
-          write(zn,'(a)') zname(IPSN(II,1))
-          if(IPSN(II,2).gt.0)then
-            write(sn,'(a)') SNAME(IPSN(II,1),IPSN(II,2))
-          else
-            sn='-'
-          endif
-          IF(IPSN(II,2).EQ.0)THEN
-            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
-     &        zn(1:lnblnk(zn)),'.'
-          ELSEIF(IPSN(II,2).GT.0.AND.IPSN(II,3).EQ.0)THEN
-            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ELSEIF(IPSN(II,2).GT.0.AND.IPSN(II,3).GT.0)THEN
-            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ENDIF
-        ELSEIF(IPSN(II,1).EQ.-1)THEN
-          WRITE(SSTR,113)
-     &IPSN(II,2),pcname(IPSN(II,2))(1:LNBLNK(pcname(IPSN(II,2)))),
-     &IPSN(II,3)
- 113      FORMAT('senses var in compt. ',I2,':',a,' @ node no. ',I2)
-        ELSEIF(IPSN(II,1).EQ.-2)THEN
-          WRITE(SSTR,114)IPSN(II,2)
- 114      FORMAT('senses a mix of db T and MRT in zone:',I2)
-        ELSEIF(IPSN(II,1).EQ.-3)THEN
-          IF(IPSN(II,2).EQ.0)THEN
-            SSTR='senses ambient dry bulb temperature.'
-          ELSEIF(IPSN(II,2).EQ.1)THEN
-            SSTR='senses the sol-air temperature.'
-          ELSEIF(IPSN(II,2).EQ.2)THEN
-            SSTR='senses wind speed.'
-          ELSEIF(IPSN(II,2).EQ.3)THEN
-            SSTR='senses wind direction.'
-          ELSEIF(IPSN(II,2).EQ.4)THEN
-            SSTR='senses dif hor rad.'
-          ELSEIF(IPSN(II,2).EQ.5)THEN
-            SSTR='senses dir nor rad.'
-          ELSEIF(IPSN(II,2).EQ.6)THEN
-            SSTR='senses ext rel hum.'
-          ENDIF
-        ELSEIF(IPSN(II,1).EQ.-4)THEN
-          SSTR='senses  mass flow node or connection.'
-        ELSEIF(IPSN(II,1).EQ.-5)THEN
-          SSTR='reads measurements from a boundry data file.'
-        ELSEIF(IPSN(II,1).EQ.-6)THEN
-          SSTR='function generator.'
-        ENDIF
+        icsn(1)=IPSN(II,1)
+        icsn(2)=IPSN(II,2)
+        icsn(3)=IPSN(II,3)
+        icsn(4)=IPSN(II,4)
+        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+
       ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
 
 C Plant actuator.
@@ -2065,76 +1984,12 @@ C Plant Control law.
 
 C Flow Sensor.
         SSTR='undefined condition'
-        IF(IFSN(II,1).GT.0)THEN
-          write(zn,'(a)') zname(IFSN(II,1))
-          if(IFSN(II,2).gt.0)then
-            write(sn,'(a)') SNAME(IFSN(II,1),IFSN(II,2))
-          else
-            sn='-'
-          endif
-          IF(IFSN(II,2).EQ.0)THEN
-            WRITE(SSTR,'(3a)')'senses dry bulb temperature in ',
-     &        zn(1:lnblnk(zn)),'.'
-          ELSEIF(IFSN(II,2).GT.0.AND.IFSN(II,3).EQ.0)THEN
-            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ELSEIF(IFSN(II,2).GT.0.AND.IFSN(II,3).GT.0)THEN
-            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ENDIF
-        ELSEIF(IFSN(II,1).EQ.-1)THEN
-          WRITE(SSTR,163)IFSN(II,2),IFSN(II,1)
- 163      FORMAT('senses temp of plant component',I2,' in zone.',I2)
-        ELSEIF(IFSN(II,1).EQ.-2)THEN
-          write(zn,'(a)') zname(IFSN(II,2))
-          WRITE(SSTR,'(2a)')'senses a mix of db T and MRT in ',
-     &      zn(1:lnblnk(zn))
-        ELSEIF(IFSN(II,1).EQ.-3)THEN
-          IF(IFSN(II,2).EQ.0)THEN
-            SSTR='senses ambient dry bulb temperature.'
-          ELSEIF(IFSN(II,2).EQ.1)THEN
-            SSTR='senses the sol-air temperature.'
-          ELSEIF(IFSN(II,2).EQ.2)THEN
-            SSTR='senses wind speed.'
-          ELSEIF(IFSN(II,2).EQ.3)THEN
-            SSTR='senses wind direction.'
-          ELSEIF(IFSN(II,2).EQ.4)THEN
-            SSTR='senses dif hor rad.'
-          ELSEIF(IFSN(II,2).EQ.5)THEN
-            SSTR='senses dir nor rad.'
-          ELSEIF(IFSN(II,2).EQ.6)THEN
-            SSTR='senses ext rel hum.'
-          ENDIF
-        ELSEIF(IFSN(II,1).EQ.-4)THEN
+        icsn(1)=IFSN(II,1)
+        icsn(2)=IFSN(II,2)
+        icsn(3)=IFSN(II,3)
+        icsn(4)=IFSN(II,4)
+        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
 
-C Decode which connection or node is sensed. NNAM is the string
-C representing the index of the node.
-          L=IFSN(II,2)
-          NNAM=' '
-          CALL INTSTR(L,NNAM,LEN,IER)
-          DESC=NDNAM(L)(1:lnblnk(NDNAM(L)))
-          IF(IFSN(II,4).EQ.0)THEN
-            if(ifsn(ii,2).gt.0.and.ifsn(ii,3).gt.0)then
-              nl1=lnblnk(ndnam(ifsn(ii,2)))
-              nl2=lnblnk(ndnam(ifsn(ii,3)))
-              write(SSTR,'(3a,i3,3a,i3,a)')'sensors are nodes ',
-     &          ndnam(ifsn(ii,2))(1:nl1),' (',ifsn(ii,2),') & ',
-     &          ndnam(ifsn(ii,3))(1:nl2),' (',ifsn(ii,3),')'
-            elseif(ifsn(ii,2).gt.0.and.ifsn(ii,3).eq.0)then
-              WRITE(SSTR,'(4A)')'senses node (',NNAM(1:LNBLNK(NNAM)),
-     &          ') ',DESC(1:lnblnk(desc))
-            else
-              SSTR='  # sensor node(s) not yet defined'
-            endif
-          ELSEIF(IFSN(II,4).EQ.1)THEN
-            WRITE(SSTR,'(A,i3,4a)') 'senses connection (',
-     &        L,') ',NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L))))
-          ELSEIF(IFSN(II,4).EQ.2)THEN
-            WRITE(SSTR,'(6a)')'senses node (',NNAM(1:LNBLNK(NNAM)),') '
-     &      ,DESC(1:lnblnk(desc)),', contaminant: ',contmnam(ifsn(ii,3))
-          ENDIF
-        ENDIF
       ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
 
 C Flow actuator.
@@ -2225,9 +2080,6 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      common/pcnam/pcname(mpcom)
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
      &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
@@ -2241,9 +2093,6 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
      &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
-      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
-     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
@@ -2255,10 +2104,13 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-      CHARACTER SSTR*72,ZNAME*12,ZN*12,zdesc*64
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15
-      CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
-      dimension cm(misc)
+      CHARACTER SSTR*72,SSTRB*48
+      CHARACTER NDNAM*12
+
+      dimension cm(misc)  ! for passing miscel control data
+      real cm
+      dimension icsn(4)   ! for passing sensor location to
+      integer icsn
 
 C sub-strings for describing multi-sensor flow controls.
       character msg1*24,msg2*24,msg3*24,msg4*24,msg*72,lmsg*248
@@ -2650,8 +2502,49 @@ C          call edisp248(6,message,80)
           SSTR='null controller.'
           message='null controller has no data'
         ELSEIF(IBCLAW(II,JJ,KK).EQ.19)then
-          SSTR='basic multi-sensor'
-          message='ideal multi-sensor controller report TBD'
+          SSTR='ideal multi-sensor'
+C          message='ideal multi-sensor controller report TBD'
+          cm(1)=bmiscd(II,JJ,KK,1)
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          write(lmsg,'(a,f8.0,a,f6.0,a,f8.0,a,f6.0,a,f6.1,a,f6.1,a)')     
+     &      ' Ideal multi-sensor: max heat cp ',cm(2),
+     &      'W min heat cp ',cm(3),'W max cool cp ',cm(4),
+     &      'W min heat cp ',cm(5),'W Heat stpt ',cm(6),
+     &      'C cool stpt ',cm(7),'C Aux:'
+          llongmsg=lnblnk(lmsg)
+          lx=llongmsg+1
+          nitems=nint(cm(8))
+          DO 79 L=1,nitems
+            ndx=8+6*(L-1)
+            icsn(1)=nint(bmiscd(II,JJ,KK,ndx+1))
+            icsn(2)=nint(bmiscd(II,JJ,KK,ndx+2))
+            icsn(3)=nint(bmiscd(II,JJ,KK,ndx+3))
+            icsn(4)=nint(bmiscd(II,JJ,KK,ndx+4))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+
+C Append the sensor msg to the end of lmsg and increment lx position.
+            llmsg=lnblnk(SSTRB)+17
+            ly=lx+llmsg
+            if(ly.lt.247)then
+              write(lmsg(lx:ly),'(2a,2F6.1)') SSTRB(1:lnblnk(SSTRB)),
+     &          ' h/c',bmiscd(II,JJ,KK,ndx+5),bmiscd(II,JJ,KK,ndx+6)
+              lx=ly+1
+            endif
+
+C << there will not be sufficient room in the text buffer for 2nd
+C << and 3rd aux sensors so these need to be written to subsequent
+C << lines of the report.
+
+ 79      continue
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.20)then
           SSTR='evaporative source'
           cm(2)=bmiscd(II,JJ,KK,2)
@@ -2746,7 +2639,7 @@ C          call edisp248(6,message,80)
           cm(4)=fmiscd(II,JJ,KK,4)
           cm(5)=fmiscd(II,JJ,KK,5)
           cm(6)=fmiscd(II,JJ,KK,6)
-          write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f4.1,a,f6.2,a)') 
+          write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f5.1,a,f6.2,a)') 
      &      ' proportional + hysteresis: signal lower limit ',cm(2),
      &      ' valve lower limit (%)',cm(3),' signal upper limit ',
      &      cm(4),' valve upper limit (%)',cm(5),' dS ',cm(6),'.'
@@ -3009,6 +2902,288 @@ C For zone & flow controls list out the verbose decoding of the misc items.
       return
 
  3    CALL USRMSG(' ',' Problem generating report. ','W')
+      return
+      end
+
+C ******************** decodesensor
+C Decodesensor takes the 4 indices that define a sensor
+C and returns a descriptive string.
+C icfoc is the index of the control domain
+C icsn(4) is the array of indices
+C SSTR is the string (72 char) returned
+C SSTRB is brief string (48 char) returned
+      subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      common/pcnam/pcname(mpcom)
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+
+      integer icfoc
+      dimension icsn(4)
+      character sstr*72,sstrb*48
+      CHARACTER ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
+      CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,sn*12
+
+      sstr=' '
+      sstrb=' '
+      if(icfoc.eq.0)then
+
+C Ideal Sensor.
+        IF(icsn(1).GT.0)THEN
+          write(zn,'(a)') zname(icsn(1))
+          if(icsn(2).gt.0)then
+            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+          else
+            sn='-'
+          endif
+          IF(icsn(2).EQ.0)THEN
+            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)') 'senses dry bulb T in ',
+     &        zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).EQ.0)THEN
+            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')  'senses T at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).GT.0)THEN
+            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.0)THEN
+          SSTR='senses the temperature of the current zone.'
+          SSTRB='senses db T of the current zone.'
+        ELSEIF(icsn(1).EQ.-2)THEN
+          write(zn,'(a)') zname(icsn(2))
+          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+        ELSEIF(icsn(1).EQ.-3)THEN
+          IF(icsn(2).EQ.0)THEN
+            SSTR='senses ambient dry bulb temperature.'
+            SSTRB='senses ambient db T.'
+          ELSEIF(icsn(2).EQ.1)THEN
+            SSTR='senses the sol-air temperature.'
+            SSTRB='senses the sol-air T.'
+          ELSEIF(icsn(2).EQ.2)THEN
+            SSTR='senses wind speed.'
+            SSTRB='senses wind speed.'
+          ELSEIF(icsn(2).EQ.3)THEN
+            SSTR='senses wind direction.'
+            SSTRB='senses wind direction.'
+          ELSEIF(icsn(2).EQ.4)THEN
+            SSTR='senses dif hor rad.'
+            SSTRB='senses dif hor rad.'
+          ELSEIF(icsn(2).EQ.5)THEN
+            SSTR='senses dir nor rad.'
+            SSTRB='senses dir nor rad.'
+          ELSEIF(icsn(2).EQ.6)THEN
+            SSTR='senses ext rel hum.'
+            SSTRB='senses ext RH.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.-5)THEN
+          WRITE(SSTR,65)icsn(2)
+  65      FORMAT('reads from temporal file item.',I2)
+          WRITE(SSTRB,66)icsn(2)
+  66      FORMAT('reads temporal item.',I2)
+        ELSEIF(icsn(1).EQ.-6)THEN
+          SSTR='sensed value from function generator.'
+          SSTRB='sensed value from func gen.'
+        ELSEIF(icsn(1).EQ.-99)THEN
+          SSTR=' construction substitution.'
+          SSTRB=' MLC substitution.'
+        ELSE
+          SSTR='senses UNKNOWN condition.'
+          SSTRB='senses UNKNOWN condition.'
+        ENDIF
+      elseif(icfoc.eq.1)then
+
+C Plant Sensor.
+        SSTR='undefined condition'
+        IF(icsn(1).GT.0)THEN
+          write(zn,'(a)') zname(icsn(1))
+          if(icsn(2).gt.0)then
+            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+          else
+            sn='-'
+          endif
+          IF(icsn(2).EQ.0)THEN
+            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)') 'senses db T in ',
+     &        zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).EQ.0)THEN
+            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')  'senses T at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).GT.0)THEN
+            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.-1)THEN
+          WRITE(SSTR,113)
+     &      icsn(2),pcname(icsn(2))(1:LNBLNK(pcname(icsn(2)))),
+     &      icsn(3)
+ 113      FORMAT('senses var in compt. ',I2,':',a,' @ node no. ',I2)
+          WRITE(SSTRB,114)
+     &      icsn(2),pcname(icsn(2))(1:LNBLNK(pcname(icsn(2))))
+ 114      FORMAT('senses var in compt. ',I2,':',a)
+        ELSEIF(icsn(1).EQ.-2)THEN
+          write(zn,'(a)') zname(icsn(2))
+          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+        ELSEIF(icsn(1).EQ.-3)THEN
+          IF(icsn(2).EQ.0)THEN
+            SSTR='senses ambient dry bulb temperature.'
+            SSTRB='senses ambient db T.'
+          ELSEIF(icsn(2).EQ.1)THEN
+            SSTR='senses the sol-air temperature.'
+            SSTRB='senses the sol-air T.'
+          ELSEIF(icsn(2).EQ.2)THEN
+            SSTR='senses wind speed.'
+            SSTRB='senses wind speed.'
+          ELSEIF(icsn(2).EQ.3)THEN
+            SSTR='senses wind direction.'
+            SSTRB='senses wind direction.'
+          ELSEIF(icsn(2).EQ.4)THEN
+            SSTR='senses dif hor rad.'
+            SSTRB='senses dif hor rad.'
+          ELSEIF(icsn(2).EQ.5)THEN
+            SSTR='senses dir nor rad.'
+            SSTRB='senses dir nor rad.'
+          ELSEIF(icsn(2).EQ.6)THEN
+            SSTR='senses ext rel hum.'
+            SSTRB='senses ext RH.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.-4)THEN
+          SSTR='senses  mass flow node or connection.'
+          SSTRB='senses  mass flow node or connec.'
+        ELSEIF(icsn(1).EQ.-5)THEN
+          SSTR='reads measurements from a boundry data file.'
+          SSTRB='reads from a boundry data file.'
+        ELSEIF(icsn(1).EQ.-6)THEN
+          SSTR='sensed value from function generator.'
+          SSTRB='sensed value from func gen.'
+        ENDIF
+      elseif(icfoc.eq.2)then
+
+C Flow Sensor.
+        SSTR='undefined condition'
+        IF(icsn(1).GT.0)THEN
+          write(zn,'(a)') zname(icsn(1))
+          if(icsn(2).gt.0)then
+            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+          else
+            sn='-'
+          endif
+          IF(icsn(2).EQ.0)THEN
+            WRITE(SSTR,'(3a)')'senses dry bulb temperature in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)') 'senses dry bulb T in ',
+     &        zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).EQ.0)THEN
+            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')  'senses T at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).GT.0)THEN
+            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.-1)THEN
+          WRITE(SSTR,163)icsn(2),icsn(1)
+ 163      FORMAT('senses temp of plant component',I2,' in zone.',I2)
+          WRITE(SSTRB,164)icsn(2),icsn(1)
+ 164      FORMAT('senses T of plant comp',I2,' in zone.',I2)
+        ELSEIF(icsn(1).EQ.-2)THEN
+          write(zn,'(a)') zname(icsn(2))
+          WRITE(SSTR,'(2a)')'senses a mix of db T and MRT in ',
+     &      zn(1:lnblnk(zn))
+          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+        ELSEIF(icsn(1).EQ.-3)THEN
+          IF(icsn(2).EQ.0)THEN
+            SSTR='senses ambient dry bulb temperature.'
+            SSTRB='senses ambient db T.'
+          ELSEIF(icsn(2).EQ.1)THEN
+            SSTR='senses the sol-air temperature.'
+            SSTRB='senses the sol-air T.'
+          ELSEIF(icsn(2).EQ.2)THEN
+            SSTR='senses wind speed.'
+            SSTRB='senses wind speed.'
+          ELSEIF(icsn(2).EQ.3)THEN
+            SSTR='senses wind direction.'
+            SSTRB='senses wind direction.'
+          ELSEIF(icsn(2).EQ.4)THEN
+            SSTR='senses dif hor rad.'
+            SSTRB='senses dif hor rad.'
+          ELSEIF(icsn(2).EQ.5)THEN
+            SSTR='senses dir nor rad.'
+            SSTRB='senses dir nor rad.'
+          ELSEIF(icsn(2).EQ.6)THEN
+            SSTR='senses ext rel hum.'
+            SSTRB='senses ext RH.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.-4)THEN
+
+C Decode which connection or node is sensed. NNAM is the string
+C representing the index of the node.
+          L=icsn(2)
+          NNAM=' '
+          CALL INTSTR(L,NNAM,LEN,IER)
+          DESC=NDNAM(L)(1:lnblnk(NDNAM(L)))
+          IF(icsn(4).EQ.0)THEN
+            if(icsn(2).gt.0.and.icsn(3).gt.0)then
+              nl1=lnblnk(ndnam(icsn(2)))
+              nl2=lnblnk(ndnam(icsn(3)))
+              write(SSTR,'(3a,i3,3a,i3,a)')'sensors are nodes ',
+     &          ndnam(icsn(2))(1:nl1),' (',icsn(2),') & ',
+     &          ndnam(icsn(3))(1:nl2),' (',icsn(3),')'
+              write(SSTRB,'(4a)')'sensor nodes ',
+     &          ndnam(icsn(2))(1:nl1),' & ',ndnam(icsn(3))(1:nl2)
+            elseif(icsn(2).gt.0.and.icsn(3).eq.0)then
+              WRITE(SSTR,'(4A)')'senses node (',NNAM(1:LNBLNK(NNAM)),
+     &          ') ',DESC(1:lnblnk(desc))
+              WRITE(SSTRB,'(4A)')'senses node (',NNAM(1:LNBLNK(NNAM)),
+     &          ') ',DESC(1:lnblnk(desc))
+            else
+              SSTR='sensor node(s) not yet defined'
+              SSTRB='sensor node(s) not yet defined'
+            endif
+          ELSEIF(icsn(4).EQ.1)THEN
+            WRITE(SSTR,'(A,i3,4a)') 'senses connection (',
+     &        L,') ',NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L))))
+            WRITE(SSTRB,'(4a)') 'senses conn ',
+     &        NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L))))
+          ELSEIF(icsn(4).EQ.2)THEN
+            WRITE(SSTR,'(6a)')'senses node (',NNAM(1:LNBLNK(NNAM)),') '
+     &      ,DESC(1:lnblnk(desc)),', contaminant: ',contmnam(icsn(3))
+            WRITE(SSTRB,'(6a)')'senses node (',NNAM(1:LNBLNK(NNAM)),') '
+     &      ,DESC(1:lnblnk(desc)),', contm: ',contmnam(icsn(3))
+          ENDIF
+        ENDIF
+      endif
+
       return
       end
  

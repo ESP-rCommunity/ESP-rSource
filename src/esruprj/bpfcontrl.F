@@ -526,10 +526,13 @@ C Edit building/plant/flow/global control description.
 c Relate control functions to the appropriate zones
 c from the configuration file.
         if(icfoc.eq.0)then
-          NZ=NCOMP
+          NZT=NCOMP
           H(1)='This should match current system configuration file.'
-          CALL EASKI(NZ,' ',' Number zones in the model?',
-     &      1,'F',MCOM,'F',NCOMP,'no of zones',IER,1)
+          H(2)='If you cancel the menu will be re-displayed. '
+          CALL EASKI(NZT,' ',' Number zones in the model?',
+     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,2)
+          if(ieri.eq.-3) goto 92
+          NZ=NZT
           IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
 
 c Match single zone with single control function.
@@ -542,15 +545,29 @@ c Remember zero implies no control.
   304     IF(NZ.EQ.1)then
             H(1)='This is the index of the control. A 0 means no'
             H(2)='control, 1 is first control function, etc.)'
-            CALL EASKI(ICASCF(1),' Associated control for',
+            H(3)='If you cancel the menu will be re-displayed.'
+            ica=ICASCF(1)
+            CALL EASKI(ICA,' Associated control for',
      &        ' first zone?',0,'F',MCOM,'F',0,
-     &        'associated control',IER,2)
+     &        'associated control',IERI,3)
+            if(ieri.eq.-3) goto 92
+            ICASCF(1)=ica
           else
             do 311 IJ=1,NZ
               write(outs,'(A,A,A,I2,A)')' For ',zname(IJ),'(',IJ,')'
-              CALL EASKI(ICASCF(IJ),outs,
+              ica=ICASCF(IJ)
+              H(1)='This is the index of the control. A 0 means no'
+              H(2)='control, 1 is first control function, etc.)'
+              H(3)='If you cancel only this instance of the control'
+              H(4)='will retain its previous value.'
+              CALL EASKI(ICA,outs,
      &          ' Associated control?',0,'F',MCOM,'F',0,
-     &          'associated control',IER,2)
+     &          'associated control',IER,4)
+              if(ieri.eq.-3)then
+                goto 311
+              else
+                ICASCF(IJ)=ica
+              endif
   311       continue
           endif
 
@@ -710,6 +727,8 @@ C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
         h(1)='This adds or deletes a control loop or addes or deletes'
         h(2)='or copies a day type (unless wkd:sat:sun). '
+        h(3)='If you cancel when editing an index the requested action'
+        h(4)='will not be acted upon (but please check).  '
         CALL EASKATOG('Options:',' ','delete loop','add loop',
      &  'copy loop','delete/add/copy day type','continue',' ',' ',IW,2)
         if(IW.eq.1)then
@@ -724,23 +743,28 @@ C Add or delete a control day type (unless Weekday/Sat/Sun).
 C Begin by selecting the loop to focus on.
           if(icfoc.eq.0)then
             CALL EASKI(IFOC,'Index of zone control function to act on?',
-     &          ' ',0,'F',ncf,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncf,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=nbcdt(IFOC)
           elseif(icfoc.eq.1)then
             CALL EASKI(IFOC,'Index of plant control function ?',
-     &          ' ',0,'F',ncl,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncl,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=npcdt(IFOC)
           elseif(icfoc.eq.2)then
             CALL EASKI(IFOC,'Index of flow control function to act on?',
-     &          ' ',0,'F',ncc,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ncc,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=nfcdt(IFOC)
           elseif(icfoc.eq.3)then
             CALL EASKI(IFOC,'Index of global control function ?',
-     &          ' ',0,'F',ngf,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',ngf,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=ngcdt(IFOC)
           elseif(icfoc.eq.4)then
             CALL EASKI(IFOC,'Index of power control function ?',
-     &          ' ',0,'F',necl,'F',0,'associated control',IER,2)
+     &          ' ',0,'F',necl,'F',0,'associated control',IERI,4)
+            if(ieri.eq.-3) goto 92
             nn=necdt(IFOC)
           endif
           if(nn.eq.0)then
@@ -1804,7 +1828,7 @@ C On-off control.
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
-C << this logic is used for the cased of a setpoint temperature
+C << this logic is used for the case of a setpoint temperature
 C << defined in a temporal file.
           H(1)=' - Refer ESP-r Data Model section 9 '
           if(itrc.gt.0)then
@@ -2272,18 +2296,66 @@ C Null controller.
           cm(1)=0.0
         elseif(IBCLAW(II,JJ,KK).eq.19)then
 
-C Ideal multi-sensor heating/cooling controller.
-C First 7 data-items are equal to basic controller above.
-          H(1)=' - Refer ESP-r Data Model section 9 '
-          call edisp(iuout,' Ideal multi-sensor controller:')
-          cm(1)=6.0
+C Ideal multi-sensor ON/OFF heating/cooling controller.
  243      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
-          H(1)='Heat delivery may be less than the max. If minimium'
-          H(2)='heating > 0 then heating will continue at a re- '
-          H(3)='duced level even when the setpoint is reached. '
+          h(1)='A multi-sensor control is used to inject/extract heat'
+          h(2)='in one zone (termed source) based on conditions in one'
+          h(3)='or more locations (termed auxilliary sensors).'
+          h(4)=' '
+          h(5)='If  any of the auxilliary sensors demands heat then'
+          h(6)='heat will be injected in the source. If any of the'
+          h(7)='auxilliary sensors demand cooling then heat will be'
+          h(8)='extracted from the source. If there are simultaneous'
+          h(9)='demands for heating and cooling nothing will happen.'
+          h(10)=' '
+          h(11)='A classic use is to condition a mixing box/air handler'
+          h(12)='used within an air flow network to deliver heating or '
+          h(13)='cooling to occupied spaces. '
+          h(14)=' '
+          h(15)='If you are using a multi-sensor controller to enable'
+          h(16)='a chilled ceiling (represented as a zone) or a radiant'
+          h(17)='heating panel (represented as a zone) then these set'
+          h(18)='points are the temperature of the working fluid in '
+          h(19)='the radiant panel. Later you will be asked for the '
+          h(20)='setpoints for the occupied space(s). '
+          h(21)=' '
+          h(22)='Example: to heat a radiant panel to 70C in order '
+          h(23)='to get a temperature of 21C in room(s) below'
+          h(24)='the multi-sensor control can be used. '
+          h(25)=' '
+          H(26)='Heat delivery may be less than the max. If minimium'
+          H(27)='heating > 0 then heating will continue at a re- '
+          H(28)='duced level even when the setpoint is reached. '
+          H(29)='If there is no cooling then use zero values in '
+          H(30)='conjunction with a hight cooling setpoint. '
+          H(31)=' '
+          H(32)='Note this type of control is an ON/OFF control and'
+          H(33)='thus you should use an appropriately short timestep'
+          H(34)='of one or two minutes if there is not much mass in'
+          H(35)='the radiant panel or if there is a considerable air'
+          H(36)='air flow rate. '
+          H(37)=' '
+          H(38)='Note: with the control law it is most common to set'
+          H(39)='the sensor in the occupied space to be located at'
+          H(40)='the zone air node (sensing remote mixed rad/conv is'
+          H(41)='??) '
+          H(42)=' '
+          H(43)=' '
+          H(44)='Also for both heating and cooling panels it is '
+          H(45)='common to inject at the air node and to use a hc '
+          H(46)='coefficient regime to set a high hc coef at the '
+          H(47)='surfaces to ensure flux is transferred to the '
+          H(48)='of the panel. '
+          H(49)=' '
+          H(50)='For a mixing box it is usually not necessary to '
+          H(51)='use a hc regime in within the box. '
+
+C First 7 data-items are equal to basic controller above.
+          call edisp(iuout,' Ideal multi-sensor ON/OFF controller:')
+          cm(1)=6.0
           CALL EASKS(HOLD,' Max & Min heat capacity, Max & Min cool ',
-     &      ' capacity for basic control: ',40,' 1000. 0. 1000. 0. ',
-     &      'max min heat cool',IER,3)
+     &      ' capacity for basic control (see help): ',
+     &      40,' 1000. 0. 1000. 0. ','max min heat cool',IER,51)
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
           CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
@@ -2292,10 +2364,24 @@ C First 7 data-items are equal to basic controller above.
           if(ier.ne.0)goto 243
 
  244      WRITE(HOLD,'(2f8.2)')cm(6),cm(7)
-          H(1)='If you do not wish cooling use a high set point. '
-          H(2)='A 0 deg.C setpoint does NOT turn it off. '
-          CALL EASKS(HOLD,' Heating & cooling setpoints:',
-     &      '  ',40,' 20. 24. ','heat cool setpoints',IER,2)
+          h(1)='It you are using a multi-sensor controller to enable'
+          h(2)='a chilled ceiling (represented as a zone) or a radiant'
+          h(3)='heating panel (represented as a zone) then these set '
+          h(4)='points are the temperature of the working fluid in '
+          h(5)='the radiant panel. Later you will be asked for the '
+          h(6)='setpoints for the occupied space. '
+          h(7)=' '
+          h(8)='Example: to heat a radiant panel to 70C in order '
+          h(9)='to get a temperature of 21C in one or more room below'
+          h(10)='the multi-sensor control can be used. '
+          h(11)=' '
+          H(12)='If you do not wish cooling use a high set point '
+          H(13)='such as 100C. A 0 deg C cooling setpoint does not'
+          H(14)='turn cooling off. '
+          CALL EASKS(HOLD,
+     &      'Heating & cooling setpoints within the zone where flux',
+     &      'is injected or extracted (see help)',40,' 20. 24. ',
+     &      'heat cool setpoints',IER,14)
           K=0
           CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Heat setp',IER)
           CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool setp',IER)
@@ -2330,18 +2416,28 @@ C If no cooling capacity then set cooling set point to 100C.
 140         continue   
           endif
 
-          H(1)=' The max number of auxiliary sensors is MSEN'
-          H(2)=' '
-          H(3)=' The number of data items = 7 + 6 * no. of sensors'
-          H(4)=' For each auxiliary sensor, 6 items are needed:'
-          H(5)=' 4 items for the sensor location, followed by the'
-          H(6)=' heating set-point and cooling set-point for'
-          H(7)=' that auxiliary sensor'
-          H(8)=' - Refer ESP-r Data Model section 9 '
+          H(1)= ' The max number of auxiliary sensors is MSEN'
+          H(2)= ' '
+          H(3)= ' The number of data items = 7 + 6 * no. of sensors'
+          H(4)= ' For each auxiliary sensor, 6 items are needed:'
+          H(5)= ' 4 items for the sensor location and two setpoints.'
+          H(6)= ' '
+          H(7)= ' Example: to sense air temperature is 3rd zone which'
+          H(8)= '    needs to be heated to 21.1C and no cooling'
+          H(9)= '    3.0 0.0 0.0 0.0 21.1 100.0 '
+          H(10)='  '
+          H(11)=' So it is worth gathering information on the location'
+          H(12)=' of auxillary sensors before answering any further'
+          H(13)=' question abouts this control and carefully'
+          H(14)=' checking the data/QA report afterwards.'
+          H(15)=' '
+          H(16)='If you choose cancel the controller data will not be'
+          H(17)='altered and you will be returned to the main menu. '
 
           I8=int(cm(8))
           CALL EASKI(I8,' ',' No. of aux sensors ',
-     &      0,'F',MSEN,'F',3,'no. of aux sensors',IER,8)
+     &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,17)
+          if(ieri.eq.-3) goto 92
           cm(1)=7.+6.*I8
           cm(8)=float(I8)
 
@@ -2355,30 +2451,31 @@ C Auxiliary sensor details,
           H(8)='        3 = wind dir, 4 = diffuse rad, '
           H(9)='        5 = direc norm rad, 6 = RH'
           H(10)=' '
-          H(11)='This data is followed - per sensor - by the'
-          H(12)='heating set-point and cooling set-point for'
-          H(13)='that auxiliary sensor.'
-          H(14)=' '
-          H(15)=' - Refer ESP-r Data Model section 9 '
+          H(11)= ' Example: to sense air temperature is 3rd zone'
+          H(12)= '    3.0  0.0 0.0  '
+          H(13)= ' '
+          H(14)='This data is followed - per sensor - by the'
+          H(15)='heating set-point and cooling set-point for'
+          H(16)='that auxiliary sensor.'
           DO 141 L=1,I8
             ndx=9+6*(L-1)
             call edisp(iuout,' ')
             WRITE(outs,'(a,i2,a)')' For aux sensor ',L,' define....'
             call edisp(iuout,outs)
             CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
-     &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,15)
+     &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,16)
             CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,16)
             CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,16)
             CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,16)
 
             CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,16)
 
             CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ? ',
-     &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,15)
+     &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,16)
 141       continue
  
         elseif(IBCLAW(II,JJ,KK).eq.20)then
@@ -2511,8 +2608,12 @@ C Slave Capacity Controller
           if(ier.ne.0)goto 101
         else
           H(1)='See ESP-r Data Model section 9 for details. '
+          H(2)=' '
+          H(3)='If you choose cancel the controller data will not be'
+          H(4)='altered and you will be returned to the main menu. '
           CALL EASKI(NITEMS,' ',' No of control law data items ?',
-     &      0,'F',MISC,'F',1,'control law data items',IER,1)
+     &      0,'F',MISC,'F',1,'control law data items',IERI,4)
+          if(ieri.eq.-3) goto 92
           cm(1)=FLOAT(NITEMS)
           if(NITEMS.GT.0)then
             do 33 MM=2,NITEMS+1
@@ -4087,6 +4188,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
       CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,SALT*40
+      integer isn1T,isn2T,isn3T,isn4T,ilayt   ! temporary values for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4239,7 +4341,17 @@ C Ask for the specific zone.
           if(IWN.eq.1)then
             isn3=0
           elseif(IWN.eq.2)then
-            call asksnode(isn1,isn2,ilay,isn3,ier)
+
+C Work with local variables and only instanciate if ier is zero.
+            ilayt=0
+            isn3t=isn3
+            call asksnode(isn1,isn2,ilayt,isn3t,ier)
+            if(ier.eq.0)then
+              ilay=ilayt
+              isn3=isn3t
+            else
+              goto 3
+            endif
           elseif(IWN.eq.3)then
             goto 3
           endif
@@ -4261,17 +4373,34 @@ C Senses current zone db temp if ideal.
       elseif(ivert.eq.1.and.(icfoc.eq.1.or.icfoc.eq.2))then
 
 C Senses output (plant control) or temperature (flow control) of a plant component.
-        isn1=-1
+C Offer the user a cancel option.
+        isn1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
-        CALL EASKI(isn2,' ',' Plant component index for sensor ? ',
-     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn2T=isn2
+        CALL EASKI(isn2T,' ',' Plant component index for sensor ? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,5)
+        if(ieri.eq.-3) goto 3
+
         H(1)='This value specifies the plant component node (see '
         H(2)='the plant component database). '
-        CALL EASKI(isn3,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IER,2)
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,5)
+        if(ieri.eq.-3) goto 3
+
+C If the user has not canceled instanciate from temporary values.
         nsup=0
         if(icfoc.eq.2)nsup=0
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.1.and.icfoc.eq.3)then
 
 C Sensed condition does not matter.
@@ -4290,21 +4419,32 @@ C Power control sensor not yet implemented, return zeros.
      &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
 
 C Senses mix of zone db temp and MRT.
-        isn1=-2
+        isn1T=-2
         CALL EPMENSV
         idef=0
-        call askzone(isn2,idef,'Zone for sensor','Select zone','-',
+        isn2T=isn2
+        call askzone(isn2T,idef,'Zone for sensor','Select zone','-',
      &    'MRT sensor',ier)
         CALL EPMENRC
         H(1)='The convective weighting factor is the percent of'
         H(2)='overall energy exchange that is convective. '
-        CALL EASKI(isn3,' ',' Convective weighting factor (%) ?',
-     &      0,'F',100,'-',50,'convective weighting',IER,2)
-        nsup=0
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IERI,5)
+        if(ieri.eq.-3) goto 3
 
 C In the case of mass flow this choice implies no supplemental
 C items, but return isense as the control law.
         if(icfoc.eq.2)isense=1
+
+C If the user has not canceled instanciate from temporary values.
+        nsup=0
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.4.and.
      &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
 
@@ -4372,12 +4512,20 @@ C Senses external relative humidity.
 
 C Uses information in temporal file.
 C << check whether temporal file associated with model. >>
-        isn1= -5
+        isn1T= -5
         H(1)='A temporal file holds timestep data including setpoints'
         H(2)='for use with zone or plant controls.   '
-        CALL EASKI(isn2,'Index of the temporal item to associate with',
-     &    ' this sensor:  ',0,'F',0,'-',1,'temporal file item',IER,2)
-        isn3=0
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn2T=isn2
+        CALL EASKI(isn2T,'Index of the temporal item to associate with',
+     &    ' this sensor: ',0,'F',0,'-',1,'temporal file item',IERI,5)
+        isn3T=0
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       elseif(ivert.eq.11.and.(icfoc.eq.2))then
 
 C Senses network flow node or connection. 
@@ -4507,7 +4655,7 @@ C Sense radiation at exterior of surface.
       elseif(ivert.eq.12.and.(icfoc.eq.0.or.icfoc.eq.1))then
 
 C Uses value from function generator. 
-        isn1= -6
+        isn1T= -6
         H(1)=' The available functions are:'
         H(2)=' '
         H(3)='   Function          supp1    supp2    supp3   supp4'
@@ -4522,8 +4670,12 @@ C Uses value from function generator.
         H(12)='  8: Cosine:        max      min      freq    shift'
         H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
         H(14)=' - Refer ESP-r Data Model section 9 ' 
-        CALL EASKI(isn2,' ',' Required mathematical function ?',
+        isn2T=isn2
+        CALL EASKI(isn2T,' ',' Required mathematical function ?',
      &      1,'F',9,'F',1,'generated function',IER,14)
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
       elseif(ivert.eq.12.and.(icfoc.eq.5))then
 
 C Sense lux via daylight coef method. << ? if other info required >>
@@ -4534,17 +4686,25 @@ C Sense lux via daylight coef method. << ? if other info required >>
       elseif(ivert.eq.13.and.(icfoc.eq.0))then
 
 C Changes thermophysical properties.
-        isn1= -99
+        isn1T= -99
         H(1)='Upper zone air temperature limit (above which sub- '
         H(2)='stitution occurs. '
-        CALL EASKI(isn2,' Upper zone air temperature limit',
+        isn2T=isn2
+        CALL EASKI(isn2T,' Upper zone air temperature limit',
      &    ' (integer) above which substitution occurs ? ',
-     &    0,'-',0,'-',30,'upper air',IER,2)
+     &    0,'-',0,'-',30,'upper air',IERI,2)
+        if(ieri.eq.-3) goto 3
+
         H(1)='Lower zone air temperature limit (below which sub- '
         H(2)='stitution occurs. '
-        CALL EASKI(isn3,' Lower zone air temperature limit',
+        isn3T=isn3
+        CALL EASKI(isn3T,' Lower zone air temperature limit',
      &    ' (integer) below which substitution occurs ? ',
-     &    0,'-',0,'-',0,'lower air',IER,2)
+     &    0,'-',0,'-',0,'lower air',IERI,2)
+        if(ieri.eq.-3) goto 3
+        isn1=isn1T
+        isn2=isn2T
+        isn3=isn3T
       else
 
 C Not one of the legal menu choices.
@@ -4566,9 +4726,16 @@ C Query user for any nested controls (unless thermo substitution).
         if(OK)then
           H(1)='Index of the control function to point to.'
           H(2)='Note that control must be control type -99.'
-          CALL EASKI(isn4,' ',
+          H(3)='A cancel restores the previous values. '
+          isn4T=isn4
+          CALL EASKI(isn4T,' ',
      &      ' Control function (index) to be nested: ',
-     &        0,'F',0,'-',1,'nested control',IER,2)
+     &        0,'F',0,'-',1,'nested control',IERI,3)
+          if(ieri.eq.-3) then
+            continue
+          else
+            isn4=isn4T
+          endif
         else
           isn4=0
         endif
@@ -4613,6 +4780,7 @@ C flow connections.It is assumed that the user will make one selection only.
       DIMENSION VERT(35)
       CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
+      integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4637,18 +4805,29 @@ C IVERT is the menu position, MVERT the current number of menu lines.
 
 C If sensor location -99 ask for up to three surfaces where substi-.
 C tutions will occur. << revise to selection list at some point >>.
-        call edisp(IUOUT,' ')
-        call edisp(IUOUT,' Substitutions are allowed on up to three')
-        call edisp(iuout,' surfaces (0 for each not required). ')
-        call edisp(IUOUT,'  ')
+C Offer the user option to cancel.
         H(1)='Up to three surfaces may have substitute properties.'
         H(2)='The number required is the index in the surface.'
-        CALL EASKI(ian1,' ',' First surface index ?',
-     &     0,'F',MS,'F',1,'1st surf for subst',IER,2)
-        CALL EASKI(ian2,' ',' Second surface index ?',
-     &     0,'F',MS,'F',1,'2nd surf for subst',IER,2)
-        CALL EASKI(ian3,' ',' Third surface index ?',
-     &     0,'F',MS,'F',1,'3rd surf for subst',IER,2)
+        H(3)='A zero signals no substitution as follows: '
+        H(4)=' three non-zero indicies will switcheds three'
+        H(5)=' two non-zero followed by a zero switches two'
+        H(6)=' one non-zero followed by two zeros switches one'
+        H(7)='If you cancel then data will revert to previous vlues.'
+        ian1T=ian1
+        CALL EASKI(ian1T,' ',' First surface index (see help)?',
+     &     0,'F',MS,'F',1,'1st surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian2T=ian2
+        CALL EASKI(ian2T,' ',' Second surface index (see help)?',
+     &     0,'F',MS,'F',1,'2nd surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Third surface index (see help)?',
+     &     0,'F',MS,'F',1,'3rd surf for subst',IERI,7)
+        if(ieri.eq.-3) return
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
         return
       endif
 
@@ -4752,7 +4931,17 @@ C Decode from the potentially long list to the zone number via KEYIND.
           if(IWN.eq.1)then
             ian3=0
           elseif(IWN.eq.2)then
-            call asksnode(ian1,ian2,ilay,ian3,ier)
+
+C Work with local variables and only instanciate if ier is zero.
+            ilayt=0
+            ian3t=ian3
+            call asksnode(ian1,ian2,ilayt,ian3t,ier)
+            if(ier.eq.0)then
+              ilay=ilayt
+              ian3=ian3t
+            else
+              goto 3
+            endif
           elseif(IWN.eq.3)then
             goto 3
           endif
@@ -4767,16 +4956,25 @@ C Actuates current zone air point.
         ian3=0
       elseif(ivert.eq.1.and.(icfoc.eq.1))then
 
-C Within a plant component.
-        ian1=-1
+C Within a plant component (offer the user a cancel option).
+        ian1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
-        CALL EASKI(ian2,' ',' Plant component index ? ',
-     &      0,'F',0,'-',1,'plant comp no',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian2T=ian2
+        CALL EASKI(ian2T,' ',' Plant component index ? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,3)
+        if(ieri.eq.-3) goto 3
         H(1)='This value specifies the plant component node (see '
         H(2)='the plant component database). '
-        CALL EASKI(ian3,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Plant component node ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,3)
+        if(ieri.eq.-3) goto 3
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
       elseif(ivert.eq.1.and.(icfoc.eq.2))then
 
 C At a flow connection.
@@ -4829,16 +5027,23 @@ C Power control sensor not yet implemented, return zeros.
       elseif(ivert.eq.2.and.(icfoc.eq.0))then
 
 C Actuates radiant convective mix.
-        ian1=-2
+        ian1T=-2
         CALL EPMENSV
         idef=0
-        call askzone(ian2,idef,'Zone for actuation','Select zone','-',
+        ian2T=ian2
+        call askzone(ian2T,idef,'Zone for actuation','Select zone','-',
      &    'mixed injection',ier)
         CALL EPMENRC
         H(1)='The convective weighting factor is the percent of'
         H(2)='overall energy exchange that is convective. '
-        CALL EASKI(ian3,' ',' Convective weighting factor (%) ?',
-     &      0,'F',100,'-',50,'convective weighting',IER,2)
+        H(3)='A cancel restores the previous value. '
+        ian3T=ian3
+        CALL EASKI(ian3T,' ',' Convective weighting factor (%) ?',
+     &      0,'F',100,'-',50,'convective weighting',IERI,3)
+        if(ieri.eq.-3) goto 3
+        ian1=ian1T
+        ian2=ian2T
+        ian3=ian3T
       elseif(ivert.eq.2.and.(icfoc.eq.2))then
 
 C At a flow component.

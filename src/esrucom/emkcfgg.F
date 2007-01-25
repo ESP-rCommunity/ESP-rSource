@@ -58,7 +58,8 @@ C ICLIM,LCLIM (for climate file)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C5/IXPOS,GREF
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
@@ -208,8 +209,7 @@ C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-C Generic databases.
-      common/gendbf/gendbfn(13)
+C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
@@ -245,7 +245,6 @@ C Generic databases.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
-      character gendbfn*72
 
       IUF=IFIL+1
       IER=0

@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Two adjacent cellular offices with floor
-heating & chilled ceiling defined in cellular_flh.cfg generated on Thu Oct 12
-09:53:59 2006. Notes associated with the model are in cellular_flh.log
+heating & chilled ceiling defined in cellular_flh.cfg generated on Mon Jan 15
+10:22:38 2007. Notes associated with the model are in cellular_flh.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -10,7 +10,7 @@ weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
 The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67.
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
  
 An Integrated Perormance View has been defined:
 Title : Model of two adjacent cellular with floo
@@ -92,32 +92,32 @@ chilled ceiling (cooled to ~16C) to keep zone ~26C.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 15.0 26.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 15.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
 26.00C.
    2  6.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 19.0 24.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 24.00C.
    3 18.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 15.0 26.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 15.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
 26.00C.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 15.0 26.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 15.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
 26.00C.
    2  9.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 19.0 24.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 24.00C.
    3 17.00 db temp   > flux      free floating
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 10.0 30.0 0.0
 basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 10.00C cooling setpoint
+capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
 30.00C.
  
  The sensor for function  2 senses dry bulb temperature in manager_a.
@@ -125,26 +125,33 @@ capacity 2500.0W min heaing capacity 0.0W. Heating setpoint 10.00C cooling setpo
  The function day types are Weekdays, Saturdays & Sundays
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  6.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 30.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   3 18.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 35.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 21.0 100.0
+   2  6.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 30.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 30.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 21.0 100.0
+   3 18.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 28.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 18.0 100.0
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  8.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 28.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 18.0 100.0
+   2  8.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 35.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 21.0 100.0
    3 17.00 db temp   > flux      free floating       2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
  free floating (no parameters).
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  8.00 db temp   > flux      basic multi-sensor  2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 28.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 18.0 100.0
+   2  8.00 db temp   > flux      senses dry bulb tem 2000.0 0.0 0.0 0.0 35.0 100.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 2000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
+Heat stpt 35.0C cool stpt 100.0C Aux:senses dry bulb T in manager_a. h/c 21.0 100.0
    3 17.00 db temp   > flux      free floating       2000.0 0.0 0.0 0.0 28.0 100.0 1.0 1.0 0.0
  free floating (no parameters).
  
@@ -153,28 +160,37 @@ ideal multi-sensor controller report TBD
  The function day types are Weekdays, Saturdays & Sundays
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  6.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   3 18.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   2  6.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   3 18.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 18.0C Aux:senses dry bulb T in manager_a. h/c 0.0 28.0
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  6.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   3 18.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   2  6.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   3 18.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 18.0C Aux:senses dry bulb T in manager_a. h/c 0.0 28.0
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   2  6.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
-   3 18.00 db temp   > flux      basic multi-sensor  0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
-ideal multi-sensor controller report TBD
+   1  0.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   2  6.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 16.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 16.0C Aux:senses dry bulb T in manager_a. h/c 0.0 26.0
+   3 18.00 db temp   > flux      senses dry bulb tem 0.0 0.0 2000.0 0.0 0.0 18.0 1.0 1.0 0.0
+Ideal multi-sensor: max heat cp 0.W min heat cp 0.W max cool cp 2000.W min heat cp 0.W
+Heat stpt 0.0C cool stpt 18.0C Aux:senses dry bulb T in manager_a. h/c 0.0 28.0
  
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  0
@@ -337,7 +353,7 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
   5  6.10      0. -90. floor        OPAQ FLOR screed       ||< floor_cor:floor
   6  2.32    180.   0. door         OPAQ VERT door         ||< door:manager_a
   7  1.28    180.   0. ptn_corid    OPAQ VERT gyp_gyp_ptn  ||< ptn_corid:manager_a
-  8  0.920   180.   0. part_frame   OPAQ VERT insul_frame  ||< part_frame:manager_a
+  8  0.920   180.  -0. part_frame   OPAQ VERT insul_frame  ||< part_frame:manager_a
   9  4.48    180.   0. part_glaz    TRAN VERT dbl_glz      ||< part_glaz:manager_a
  10  0.920   180.   0. part_frameb  OPAQ VERT insul_frame  ||< part_frame:manager_b
  11  2.32    180.   0. door_b       OPAQ VERT door         ||< door:manager_b

@@ -29,17 +29,16 @@ C a bcf file. ilen is the number of constructions.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
       COMMON/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF
 
-C Generic db commons: file log, list of db, current classifications,
+C Generic db commons: file log, current classifications,
 C and current items then lengths of each list.
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -59,7 +58,6 @@ C Working list of constructions and materials << >>
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
       character clist*12,mlist*12,cfgroot*24,LCFGF*72
-      character gendbfn*72
 
       character symname*12,othcolr*12,incolr*12,othacou*12,inacou*12
       character OTF*4,OPT*12,cnstimp*12,dstmp*24

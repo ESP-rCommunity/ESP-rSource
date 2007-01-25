@@ -355,7 +355,11 @@ C If error 101 then do not save the new entry.
         elseif (ITYP.eq.2) then 
           IFOC=0
           call LOCDEF(IFOC,IER)
-          if (IER.eq.101) NILOC=NILOC-1
+
+C If ier is 101 or 2 then do nothing more (niloc was already
+C decremented within locdef).
+          if (IER.eq.101) goto 2
+          if (IER.eq.2) goto 2
         elseif (ITYP.eq.3) then 
           IFOC=0
           call LINKDEF(IFOC,IER)
@@ -370,7 +374,11 @@ C Edit an existing definition.
           if (IER.eq.101) NICNG=NICNG-1
         elseif (ITYP.eq.2) then 
           call LOCDEF(IFOC,IER)
-          if (IER.eq.101) NILOC=NILOC-1
+
+C If ier is 101 or 2 then do nothing more (niloc was already
+C decremented within locdef).
+          if (IER.eq.101) goto 2
+          if (IER.eq.2) goto 2
         elseif (ITYP.eq.3) then 
           call LINKDEF(IFOC,IER)
           if (IER.eq.101) NIACT=NIACT-1
@@ -591,8 +599,8 @@ C a list of options to choose from where applicable.
 C If an internal construction is selected then the related surface 
 C in the adjacent zone will also be selected automatically. 
 C ITEM   If equal to zero then add a new definition, else edit. 
-
-
+C IERR is zero is ok, 101 if there was a problem with the location
+C   specification and 2 if there was a cancel issued during editing.
       subroutine LOCDEF(ITEM,IERR)
 #include "building.h"
 #include "uncertainty.h"
@@ -618,8 +626,18 @@ C ITEM   If equal to zero then add a new definition, else edit.
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       CHARACTER H*72, ZNAME*12, zdesc*64, STMP*12
 
+      integer idst,ihst,idft,ihft   ! for local editing.
+      integer idf,ids,ihf,ihs
+
+C Set initial values.
       IERR=0
       IER=0
+      ids=1
+      ihs=1
+      idf=365
+      ihf=24
+
+C Increment number of uncertainty locations.
       NILOC=NILOC+1
       NZG(NILOC)=0
       NTLOC(NILOC)=0
@@ -628,11 +646,14 @@ C First discover if the location is spatial or temporal
       H(1)='The location of the uncertainty can be:'
       H(2)=' - spatial and in all temporal locations.'
       H(3)=' - temporal and in all spatial locations.'
-      H(3)=' - both.  Only use this option if both domains have'
-      H(3)='   a restriction'
+      H(4)=' - both.  Only use this option if both domains have'
+      H(5)='   a restriction'
+      H(6)=' '
+      H(7)='If you select cancel (where a number is requested) '
+      H(8)='the current model data will not be changed. '
       CALL EASKABC(' ',
      &    'In which domain is the uncertainty location restricted: ',
-     &    'spatial','temporal','both',IW,4)
+     &    'spatial','temporal','both',IW,8)
 
       if (IW.eq.1.or.IW.eq.3) then
 
@@ -731,19 +752,52 @@ C * selection.
       if (IW.eq.2.or.IW.eq.3) then
 
 C Temporal locations.
+        H(1)='The period when uncertainty is applicable requires '
+        H(2)='starting and finishing dates. '
+        H(3)='If you select cancel (where a number is requested) '
+        H(4)='the current model data will not be changed. '
         NTLOC(NILOC)=-1
-        call EASKI(IDS,' ','Start day? ',1,'F',365,'F',9,
-     &                'day of year',IER,5)
-        NTG(NILOC,1)=IDS
-        call EASKI(IHS,' ','Start hour? ',1,'F',24,'F',1,
-     &                'hour of day',IER,5)
-        NTG(NILOC,2)=IDS
-        call EASKI(IDF,' ','Finish day? ',1,'F',365,'F',15,
-     &                'day of year',IER,5)
-        NTG(NILOC,3)=IDS
-        call EASKI(IHF,' ','Finish hour? ',1,'F',24,'F',24,
-     &                'hour of day',IER,5)
-        NTG(NILOC,4)=IDS
+        idst=ids
+        call EASKI(IDST,' ','Start day? ',1,'F',365,'F',9,
+     &                'day of year',IERI,4)
+        if(ieri.eq.-3) then
+          NILOC=NILOC-1
+          IERR=2
+          return
+        endif
+
+        ihst=ihs
+        call EASKI(IHST,' ','Start hour? ',1,'F',24,'F',1,
+     &                'hour of day',IERI,4)
+        if(ieri.eq.-3) then
+          NILOC=NILOC-1
+          IERR=2
+          return
+        endif
+
+        idft=idf
+        call EASKI(IDFT,' ','Finish day? ',1,'F',365,'F',15,
+     &                'day of year',IERI,4)
+        if(ieri.eq.-3) then
+          NILOC=NILOC-1
+          IERR=2
+          return
+        endif
+
+        ihft=ihf
+        call EASKI(IHFT,' ','Finish hour? ',1,'F',24,'F',24,
+     &                'hour of day',IERI,4)
+        if(ieri.eq.-3) then
+          NILOC=NILOC-1
+          IERR=2
+          return
+        endif
+
+C Ok to instanciate the data and complete the editing.
+        NTG(NILOC,1)=IDST
+        NTG(NILOC,2)=IHST
+        NTG(NILOC,3)=IDFT
+        NTG(NILOC,4)=IHFT
       endif
 
 C Provide id string name.

@@ -64,18 +64,31 @@ C an extrusion. IER=0 OK.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,HOLD*32
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character MODE*4,SSPARENT*12
+      character MODE*4,SSPARENT*12,fs*1
       CHARACTER OUTSTR*124,H*72,zname*12,CTYPE*3,ZN*12,zdesc*64
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
-      LOGICAL OK,dok,browse,OKC,XST
+      LOGICAL OK,dok,browse,OKC,XST,unixok
+
+C << todo - consider how a more robust cancel facility can
+C << be established. Possibly one that deletes the new zone
+C << from the model or that finds ways to uninstanciate the
+C << common block data that was set prior to the cancel instruction.
 
 C If browsing then user cannot create a new zone.
       if(browse)then
         call usrmsg('Cannot update model while in browse ',
      &    'mode with a new zone, you must `own` the model! ','W')
         return
+      endif
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
       endif
 
 C Clear local coordinate array.
@@ -87,10 +100,10 @@ C Clear local coordinate array.
 C Creation of a new zone, first ask its name, trapping out
 C illegal characters.
       call tstamp('>','PRJ: new zone')
-      H(1)='The name of the zone is used both for descriptive'
+      ZN=' '
+ 42   H(1)='The name of the zone is used both for descriptive'
       H(2)='and bookkeeping purposes.  Each name should be'
       H(3)='unique and should not contain blanks. '
- 42   ZN=' '
       CALL EASKS(ZN,' What do you want to call this new zone ',
      &  ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
       IF(ZN.eq.' '.or.ier.ne.0)goto 42
@@ -105,11 +118,11 @@ C << Unix vs NT needs to be updated >>
         WRITE(OFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.opr'
       else
-        WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
-        WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
-        WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
       endif
       LGEOM(ICOMP)=DFILE
@@ -218,8 +231,12 @@ C User begins with an extruded shape.
      &       0.000,'W',99.9,'W',2.7,'elevation of top',IER,2)
         H(1)='The number of walls does not include the base '
         H(2)='and the top.'
+        H(3)=' '
+        H(4)='A cancel instruction lets you start the zone '
+        H(5)='creation process again. '
         CALL EASKI(NW,' ',' Number of walls? ',
-     &           3,'F',MS-2,'F',4,'no of walls',IER,2)
+     &           3,'F',MS-2,'F',4,'no of walls',IERI,5)
+        if(ieri.eq.-3) goto 42
         call edisp(iuout,'Input the coordinates around the base ')
         call edisp(iuout,'polygon ANTI-clockwise looking from the')
         call edisp(iuout,'top, preferably beginning from the lower ')

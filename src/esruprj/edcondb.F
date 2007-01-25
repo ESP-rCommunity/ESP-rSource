@@ -1099,6 +1099,12 @@ C IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Information on opaque/transparent is added to DESC.
 
+C << TODO:
+C << Think of a way to preserve the current data just in case
+C << the user cancels the process part way through. On idea
+C << would be to create a temporary file that could be re-read
+C << if needed.
+
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -1393,8 +1399,10 @@ C +- Layer.
         h(3)='order is other-side to zone-side), or insert a layer'
         h(4)='(you will be asked to select a point of insertion and'
         h(5)='existing inner layers will be shifted).'
-        CALL EASKABC(' Layer options: ',' ',' Delete ',
-     &    ' Append @ inside face',' Insert ',IW,5)
+        h(6)=' '
+        h(7)='If you cancel no changes will be made in the mode. '
+        CALL EASKABCD(' Layer options: ',' ',' Delete',
+     &    ' Append @ inside face',' Insert','Continue',IW,7)
         IF(IW.EQ.1)THEN
 
 C If no of layers is edited then ask the user which one to remove.
@@ -1431,6 +1439,10 @@ C Check is layers no longer match.
             if(iw.eq.3)then
 
 C If inserting internal layer, shift inner layers before editing.
+
+C << todo: find a way to restore prior state if the user elects
+C << to cancel part way through the process.
+
               H(1)='Any one of the layers may be selected.'
               IX=1
               CALL EPMENSV
@@ -1481,8 +1493,15 @@ C reference.
               H(1)='Each item in the materials db has a reference'
               H(2)='number. '
               H(3)='Air is reference 0.'
+              H(4)=' '
+              H(5)='If you cancel then no changes should have been'
+              H(6)='made to your model (but please check). '
               CALL EASKI(IWHICH,' ',' Material db reference no: ',
-     &          0,'F',600,'F',0,'material reference',IER,3)
+     &          0,'F',600,'F',0,'material reference',IERI,6)
+              if(ieri.eq.-3)then
+                ILED=-1
+                GOTO 3
+              endif 
             endif
             IPR(IFOC,ILN)=IWHICH
             if(iw.eq.2)LAYERS(IFOC)=ILN
@@ -1541,10 +1560,13 @@ C If an air layer then ask for gap resistance.
             ILED=-1
             GOTO 3
           ENDIF
+        ELSEIF(IW.EQ.4)THEN
+          moddb = .false.
+          GOTO 3
         ENDIF
         moddb = .true.
 
-C Check is layers no longer match.
+C Check if layers no longer match.
         call ismlcsymmetric(ifoc,layermatcha)
         if(.NOT.layermatcha)then
           call edisp(iuout,'Layers might now be nonsymmetric.')
@@ -1784,8 +1806,15 @@ C reference.
           H(1)='Each item in the materials database has a'
           H(2)='reference number. Future selection via list...'
           H(3)='Air is reference 0.'
+          H(4)=' '
+          H(5)='If you cancel then no changes should have been'
+          H(6)='made to your model (but please check). '
           CALL EASKI(IWHICH,' ',' Materials db reference: ',
-     &        0,'F',600,'F',0,'materials reference',IER,3)
+     &        0,'F',600,'F',0,'materials reference',IERI,6)
+          if(ieri.eq.-3)then
+            ILED=-1
+            GOTO 3
+          endif 
         endif
         IPR(IFOC,ILED-8)=IWHICH
 

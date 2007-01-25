@@ -418,10 +418,20 @@ C Ask user where the current time meridian is.
       IIC2=0
       h(1)='EnergyPlus needs to know the offset in hours from GTM.'
       h(2)='West is negative, East is positive. '
-      CALL EASKI(IIC2,' Time zone (hours +- GTM) ',
-     &  ' ',-11,'F',11,'F',1,'time zone difference',IER,2)
-      WRITE(ioout,'(a,i3,2a)',iostat=ios,err=2) '  ',iic2,com,
-     &  '   !- TimeZone {hr} [supplied by user]'
+      h(3)=' '
+      h(4)='The cancel option will skip the creation of the '
+      h(5)='EnergyPlus descriptive file time zone section.'
+      IIC2T=IIC2
+      CALL EASKI(IIC2T,' Time zone (hours +- GTM) ',
+     &  ' ',-11,'F',11,'F',1,'time zone difference',IERI,5)
+      if(ieri.eq.-3)then
+        WRITE(ioout,'(3a)',iostat=ios,err=2) '  0',com,
+     &    '   !- TimeZone {hr} [not yet supplied]'
+      else
+        iic2=iic2t
+        WRITE(ioout,'(a,i3,2a)',iostat=ios,err=2) '  ',iic2,com,
+     &    '   !- TimeZone {hr} [supplied by user]'
+      endif
 
       h(1)='EnergyPlus needs to know the site elevation in metres'
       h(2)='above sea level. '

@@ -99,6 +99,8 @@ C ITEMS is menu for site/context items.
       character imgfmt*4,imgfoc*4,limgfil*72
       character hold24*24,act*1,GTNAME*15
 
+      integer idwe1T,idwe2T,iyearT   ! local values for editing.
+
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
@@ -556,13 +558,22 @@ C Weekends def.
         H(2)='Sunday as `weekends`.  You can define these days and'
         H(3)='even set a one day weekend by defining the second'
         H(4)='day equal to the first.'
-        CALL EASKI(idwe1,'Index of day (mon=1,tue=2 etc.) for the',
+        H(5)=' '
+        H(6)='A cancel request leaves the model unchanged. '
+        idwe1T=idwe1
+        CALL EASKI(idwe1T,'Index of day (mon=1,tue=2 etc.) for the',
      &    ' first day of the weekend:',
-     &        1,'F',7,'F',6,'1st weekend index',IER,4)
+     &        1,'F',7,'F',6,'1st weekend index',IERI,6)
+        if(ieri.eq.-3) goto 3
+        idwe1=idwe1T
         wkd1=wkday(idwe1)
-        CALL EASKI(idwe2,'Index of day (mon=1,tue=2 etc.) for the',
+
+        idwe2T=idwe2
+        CALL EASKI(idwe2T,'Index of day (mon=1,tue=2 etc.) for the',
      &    ' second day of the weekend:',
-     &        1,'F',7,'F',7,'2nd weekend index',IER,4)
+     &        1,'F',7,'F',7,'2nd weekend index',IERI,6)
+        if(ieri.eq.-3) goto 3
+        idwe2=idwe2T
         wkd2=wkday(idwe2)
         MODSIT=.true.
       ELSEIF(INO.EQ.7)THEN
@@ -572,8 +583,13 @@ C and then list the months of the year.
         H(1)='The project controls and scheduling uses a year'
         H(2)='index. You can use the one specified with the climate'
         H(3)='file or give the current year.'
-        CALL EASKI(IYEAR,' ',' Year for schedules and assessments?',
-     &       1900,'W',2010,'W',2001,'year',IER,3)
+        H(4)=' '
+        H(5)='A cancel request leaves the model unchanged. '
+        iyeart=iyear
+        CALL EASKI(iyeart,' ',' Year for schedules and assessments?',
+     &       1900,'W',2010,'W',2001,'year',IERI,5)
+        if(ieri.eq.-3) goto 3
+        iyear=iyeart
         MODSIT=.true.
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
@@ -717,8 +733,11 @@ C Ground temperature profiles....
         elseif(IRT.eq.2)then
           if(NGRDP.gt.0)then
             H(1)='Provide index of the ground temperature profile.'
+            H(2)=' '
+            H(3)='A cancel request leaves the model unchanged. '
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IER,1)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,3)
+            if(ieri.eq.-3) goto 3
             goto 93
           else
             call usrmsg('No profiles known.','Choose add!','W')
@@ -790,10 +809,17 @@ C IPV data.
         h(1)='This file holds a description of an Integrated '
         h(2)='Performance View of this model, including periods,'
         h(3)='climatic degree day information and associated zones.'
-        ltmp=lipvdatf
+        lr=lnblnk(cfgroot)
+        if(lnblnk(lipvdatf).eq.0)then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        else
+          ltmp=lipvdatf
+        endif
  142    CALL EASKS(ltmp,'IPV description file ?',
      &    ' ',72,'xxx.ipv','IPV file',IER,3)
-        if(lipvdatf(1:2).ne.'  ')then
+        if(ltmp(1:2).ne.'  ')then
           lipvdatf=ltmp
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
@@ -1503,8 +1529,12 @@ C Delete an association and move others up.
           h(1)='Select the index of the temporal item you do not wish'
           h(2)='use in the current model. This removes the association'
           h(3)='but does not remove the entity from the temporal file.'
+          H(4)=' '
+          H(5)='A cancel request leaves the model unchanged. '
           CALL EASKI(it,'Temporal item which you do not want to use',
-     &      'in this model?',1,'F',itemstd,'F',1,'selec index',IER,3)
+     &      'in this model?',1,'F',itemstd,'F',1,'selec index',IERI,5)
+          if(ieri.eq.-3) goto 42
+
           if(it.eq.0)then
             goto 42
           elseif(it.eq.itemstd)then
@@ -1528,8 +1558,11 @@ C Add association or edit current association.
           if(itro.eq.3)then
             h(1)='Select the index of the association you wish to'
             h(2)='modify in the current model. '
+            H(3)=' '
+            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(ite,'Which temporal association to modify?',
-     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',IER,2)
+     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',IERI,4)
+            if(ieri.eq.-3) goto 42
             if(ite.ne.0)then
 
 C Reset itemstd to the item to be edited.
@@ -1538,14 +1571,20 @@ C Reset itemstd to the item to be edited.
               call edisp(iuout,outs)
               h(1)='Select the index of the temporal item you wish to'
               h(2)='change to for this association. '
+              H(3)=' '
+              H(4)='A cancel request leaves the model unchanged. '
               CALL EASKI(it,'Temporal item index to associate with',
-     &          'this?',1,'F',NITDF,'F',1,'selec tdf index',IER,2)
+     &          'this?',1,'F',NITDF,'F',1,'selec tdf index',IERI,4)
+              if(ieri.eq.-3) goto 42
             endif
           elseif(itro.eq.2)then
             h(1)='Select the index of the temporal item you wish to'
             h(2)='include in the current model. '
+            H(3)=' '
+            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(it,'Temporal item index to associate with',
-     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',IER,2)
+     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',IERI,4)
+            if(ieri.eq.-3) goto 42
             ITEMSTD=ITEMSTD+1
             ite=ITEMSTD
           endif
@@ -1618,7 +1657,8 @@ C Present a summary of the steps needed to create a temporal-control link.
             h(11)='    tain the setpoint.'
             h(12)=' d) the actuation zone (air point)'
             h(13)=' '
-            CALL PHELPD('temporal-control popup',13,'-',0,0,IER)
+            h(14)='A cancel request leaves the model unchanged. '
+            CALL PHELPD('temporal-control popup',14,'-',0,0,IER)
 
 C Ask the user whether there has already been a control law defined
 C to use the setpoint. If so report on that control loop and offer
@@ -1643,10 +1683,11 @@ C copy data into cm variables for later editing.
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
      &          'use existing control','create new control','continue',
-     &          IRTC,13)
+     &          IRTC,14)
               if(irtc.eq.1)then
                 CALL EASKI(ispl,'Control loop to use set point data?',
-     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IER,13)
+     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,14)
+                if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=-5
                 ibsn(ispl,2)=ITE
@@ -2849,8 +2890,14 @@ C Ground temperature profiles....
           if(NGRDP.gt.0)then
             ifoc=1
             H(1)='Provide index of the ground temperature profile.'
+            H(2)=' '
+            H(3)='A cancel request leaves the model unchanged. '
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IER,1)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,3)
+            if(ieri.eq.-3) then
+              modsit=.false.
+              return
+            endif
             goto 93
           else
             call usrmsg('No profiles known.','Choose add!','W')

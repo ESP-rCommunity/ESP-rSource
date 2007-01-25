@@ -80,7 +80,7 @@ C Where exemplars list and default db list are kept.
 
 C Where validation tests are kept.
       common/vldlst/vldlbl,vldfl
-      
+
 C Where list of climate files is held.
       common/clmlst/cdblbl,cdblfil
       logical localdot,unixok,dll
@@ -380,7 +380,7 @@ C Close file before exiting.
         if(itrc.gt.1)CALL USRMSG(' ',OUTS,'-')
       else
         write(outs,'(3a)') 'Standard settings in: ',
-     &         altdot(:lnblnk(altdot)),' successfully scanned...'
+     &         altdot(1:lnblnk(altdot)),' successfully scanned...'
         if(itrc.gt.1)CALL USRMSG(' ',OUTS,'-')
       endif
       CALL ERPFREE(IFDEF,ISTAT)
@@ -478,7 +478,7 @@ C Open the defaults file, return if not found.
       IER=0
       CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'The file ',defdbfl(:lnblnk(defdbfl)),
+        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' was not found (assuming standard databases).'
         call edisp(IUOUT,outs)
         IER=1
@@ -488,7 +488,7 @@ C Open the defaults file, return if not found.
 C Read '*ESP-r Defaults' tag.
       CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'default tag',IER)
       if(OUTSTR(1:15).ne.'*ESP-r Defaults')then
-        write(outs,'(3a)') 'The file ',defdbfl(:lnblnk(defdbfl)),
+        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' is not a defaults file.'
         call edisp(IUOUT,outs)
         IER=1
@@ -604,8 +604,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -704,8 +703,7 @@ C into binary, and set default terminal type as necessary
       infb  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
@@ -957,7 +955,7 @@ C  to be passed to the program from the invocation line.
 
 C Timeout information
       common/TIMEOUT/sTimeout,iTimeoutFlag
-      
+
       character sTimeout*72  
       integer iTimeoutFlag
       integer termtype,iappw,iappx,iappy
@@ -985,7 +983,7 @@ C into binary, and set default terminal type as necessary
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-      
+
       iappw = 0
       iappx = 0
       iappy = 0
@@ -996,8 +994,7 @@ C into binary, and set default terminal type as necessary
       actf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1111,7 +1108,7 @@ C into binary, and set default terminal type as necessary
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-      
+
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1121,8 +1118,7 @@ C into binary, and set default terminal type as necessary
       actf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1234,8 +1230,7 @@ C into binary, and set default terminal type as necessary
       ascif  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1351,8 +1346,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1462,8 +1456,7 @@ C into binary, and set default terminal type as necessary
       zone = 'ALL'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1476,8 +1469,8 @@ C        call edisp248(iuout,outs,90)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-            call parpsfh(appn)
-            stop
+          call parpsfh(appn)
+          stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1562,8 +1555,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1576,8 +1568,8 @@ C        call edisp(iuout,outs)
         call getarg(i,argument)
 
         if(argument(1:5).eq.'-help')then
-            call parpsfh(appn)
-            stop
+          call parpsfh(appn)
+          stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1641,7 +1633,7 @@ C into binary, and set default terminal type as necessary
         call getarg(i,prog)
         call findapp(prog,appn)
       endif
-!       
+       
       iappw = 0
       iappx = 0
       iappy = 0
@@ -1651,8 +1643,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -1770,8 +1761,7 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line:
-C If one parameter.
+C Get arguments from command line: if one parameter.
       if(m.eq.0)then
         write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',

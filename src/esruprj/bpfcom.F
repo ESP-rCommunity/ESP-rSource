@@ -52,14 +52,22 @@ C Add or delete a building/plant/flow control.
       dimension rper(30),rperf(30)
 
       if(ACT.eq.'D')then
+
+C To delete a control loop ask for its index. Offer users a
+C cancel option.
         ID=1
         if(icfoc.eq.0)limit=ncf
         if(icfoc.eq.1)limit=ncl
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
         h(1)='Controls are referenced by their index. '
+        h(2)='If you select cancel then you will be returned to '
+        h(3)='control menu. '
         CALL EASKI(ID,' ',' Which control index to delete? ',
-     &    1,'F',limit,'F',1,'delete control',IER,1)
+     &    1,'F',limit,'F',1,'delete control',IERI,3)
+        if(ieri.eq.-3)then
+          return
+        endif
         IF(ID.LE.0.OR.ID.GT.LIMIT)THEN
           WRITE(outs,*)'Index id=',ID,' not in range... Returning'
           CALL EDISP(IUOUT,outs)
@@ -226,6 +234,9 @@ C Global.
       elseif(ACT.eq.'A')then
         h(1)='Control day types allows different control patterns '
         h(2)='on different days.  '
+        h(3)='If you cancel when specifying the day types the control'
+        h(4)='loop will not be added (and please confirm the details '
+        h(5)='in case an error crept in. '
         if(icfoc.eq.0.and.ncf+1.gt.mcf)then
           call usrmsg('Cannot add more zone controls.',' ','W')
           return
@@ -248,20 +259,26 @@ C Global.
           iban(ncf,2)=0
           iban(ncf,3)=0
 
-C Initial setup of day types.
+C Initial setup of day types. Offer the user a cancel option and
+C if that is selected decrement ncf and return.
           IV=NBCDT(ncf)
           write(outs,'(a,i2,a)')
      &      ' Number of zone control day types (currently',IV,') :'
           CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,2)
+     &      'weekday/Saturday/Sunday','one','other',IV,5)
           if(iv.eq.1)then
             NBCDT(ncf)=0
           elseif(iv.eq.2)then
             NBCDT(ncf)=1
           elseif(iv.eq.3)then
             CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCF,'-',1,'no control day types',IER,2)
-            NBCDT(ncf)=IV
+     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
+            if(ieri.eq.-3)then
+              ncf=ncf-1
+              return
+            else
+              NBCDT(ncf)=IV
+            endif
           endif
           NN=NBCDT(ncf)
           IF(NN.EQ.0)NN=3
@@ -269,15 +286,21 @@ C Initial setup of day types.
           h(2)='control. You can specify that there will be several'
           h(3)='periods in the day and then supply details later.'
           h(4)='You can add or delete or modify periods later.'
+          h(5)='If you cancel when specifying periods in the day type'
+          h(6)='the control loop will be removed. '
           do 87 ik=1,NN
-            ibcdv(ncf,ik,1)=1
-            ibcdv(ncf,ik,2)=365
-            nbcdp(ncf,ik)=1
             IP=1
             write(outs,'(a,i2)') 'How many periods in day type ',ik
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
-     &      1,'F',mbcdp,'F',1,'ctl periods',IER,4)
-            nbcdp(ncf,ik)=IP
+     &      1,'F',mbcdp,'F',1,'ctl periods',IERI,6)
+            if(ieri.eq.-3)then
+              ncf=ncf-1
+              return
+            else
+              ibcdv(ncf,ik,1)=1
+              ibcdv(ncf,ik,2)=365
+              nbcdp(ncf,ik)=IP
+            endif
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
@@ -309,19 +332,29 @@ C              if(IDP.gt.1)tbcps(ncf,ik,IDP)=float(IDP)
           ipan(ncl,3)=0
 
 C Initial setup of day types.
+          h(1)='Control day types allows different control patterns '
+          h(2)='on different days.  '
+          h(3)='If you cancel when specifying the day types the control'
+          h(4)='loop will not be added (and please confirm the details'
+          h(5)='in case an error crept in. '
           IV=NPCDT(ncl)
           write(outs,'(a,i2,a)')
      &     ' Number of plant control day types (currently',IV,') :'
           CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,2)
+     &      'weekday/Saturday/Sunday','one','other',IV,5)
           if(iv.eq.1)then
             NPCDT(ncl)=0
           elseif(iv.eq.2)then
             NPCDT(ncl)=1
           elseif(iv.eq.3)then
             CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCL,'-',1,'no control day types',IER,2)
-            NPCDT(ncl)=IV
+     &       0,'F',MCL,'-',1,'no control day types',IERI,5)
+            if(ieri.eq.-3)then
+              ncl=ncl-1
+              return
+            else
+              NPCDT(ncl)=IV
+            endif
           endif
           NN=NPCDT(ncl)
           IF(NN.EQ.0)NN=3
@@ -329,14 +362,21 @@ C Initial setup of day types.
           h(2)='control. You can specify that there will be several'
           h(3)='periods in the day and then supply details later.'
           h(4)='You can add or delete or modify periods later.'
+          h(5)='If you cancel when specifying periods in the day type'
+          h(6)='the control loop will be removed. '
           do 187 ik=1,NN
-            ipcdv(ncl,ik,1)=1
-            ipcdv(ncl,ik,2)=365
             IP=1
             write(outs,'(a,i2)') 'How many periods in day type ',ik
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
-     &      1,'F',mpcdp,'F',1,'ctl periods',IER,4)
-            npcdp(ncl,ik)=IP
+     &      1,'F',mpcdp,'F',1,'ctl periods',IERI,6)
+            if(ieri.eq.-3)then
+              ncl=ncl-1
+              return
+            else
+              ipcdv(ncl,ik,1)=1
+              ipcdv(ncl,ik,2)=365
+              npcdp(ncl,ik)=IP
+            endif
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
@@ -373,30 +413,45 @@ C Add a flow function.
           nfsup(ncc)=0
 
 C Initial setup of day types.
+          h(1)='Control day types allows different control patterns '
+          h(2)='on different days.  '
+          h(3)='If you cancel when specifying the day types the control'
+          h(4)='loop will not be added (and please confirm the details '
+          h(5)='in case an error crept in. '
           IV=nfcdt(ncc)
           write(outs,'(a,i2,a)')
      &      ' No. vent/hydronic control day types (currently',IV,') :'
           CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,2)
+     &      'weekday/Saturday/Sunday','one','other',IV,5)
           if(iv.eq.1)then
             NFCDT(ncc)=0
           elseif(iv.eq.2)then
             NFCDT(ncc)=1
           elseif(iv.eq.3)then
             CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCC,'-',1,'no control day types',IER,2)
-            NFCDT(ncc)=IV
+     &       0,'F',MCC,'-',1,'no control day types',IERI,5)
+            if(ieri.eq.-3)then
+              ncc=ncc-1
+              return
+            else
+              NFCDT(ncc)=IV
+            endif
           endif
           NN=nfcdt(ncc)
           IF(NN.EQ.0)NN=3
           do 587 ik=1,NN
-            ifcdv(ncc,ik,1)=1
-            ifcdv(ncc,ik,2)=365
             IP=1
             write(outs,'(a,i2)') 'How many periods in day type ',ik
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
-     &      1,'F',mfcdp,'F',1,'ctl periods',IER,4)
-            nfcdp(ncc,ik)=IP
+     &      1,'F',mfcdp,'F',1,'ctl periods',IERI,5)
+            if(ieri.eq.-3)then
+              ncc=ncc-1
+              return
+            else
+              ifcdv(ncc,ik,1)=1
+              ifcdv(ncc,ik,2)=365
+              nfcdp(ncc,ik)=IP
+            endif
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
@@ -430,11 +485,21 @@ C              if(IDP.gt.1)tfcps(ncc,ik,IDP)=float(IDP)
           igan(ngf,3)=0
 
 C Initial setup of day types.
+          h(1)='Control day types allows different control patterns '
+          h(2)='on different days.  '
+          h(3)='If you cancel when specifying the day types the control'
+          h(4)='loop will not be added (and please confirm the details '
+          h(5)='in case an error crept in). '
           IV=NGCDT(ngf)
           CALL EASKI(IV,'No of control day types',
      &      ' (Nb. 0 implies typical Weekday/Saturday/Sunday ). ',
-     &      0,'F',MGL,'-',50,'no control day types',IER,2)
-          NGCDT(ngf)=IV
+     &      0,'F',MGL,'-',50,'no control day types',IERI,5)
+          if(ieri.eq.-3)then
+            ngf=ngf-1
+            return
+          else
+            NGCDT(ngf)=IV
+          endif
           NN=NGCDT(ngf)
           IF(NN.EQ.0)NN=3
           do 687 ik=1,NN
@@ -469,8 +534,12 @@ C Copy an existing control loop.
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
         h(1)='Control functions are referenced by their index. '
+        h(2)='A cancel returns you to the main control menu. '
         CALL EASKI(ICC,' ',' Which control function index to copy? ',
-     &    1,'F',limit,'F',1,'copy control',IER,1)
+     &    1,'F',limit,'F',1,'copy control',IERI,2)
+        if(ieri.eq.-3)then
+          return
+        endif
         if(icfoc.eq.0)then
           ncf=ncf+1
           ibsn(ncf,1)=ibsn(ICC,1)
@@ -620,7 +689,7 @@ C Add or delete a building/plant/flow/global control day type.
 
       character h*72
 
-      if(icfoc.eq.0)then
+  77  if(icfoc.eq.0)then
         nn=nbcdt(ii)
       elseif(icfoc.eq.1)then
         nn=npcdt(ii)
@@ -631,13 +700,17 @@ C Add or delete a building/plant/flow/global control day type.
       endif
 
       h(1)='One of the actions which can be taken on a control.'
+      h(2)='If you select continue then you will be returned to'
+      h(3)='the main control menu without any changes. '
       CALL EASKABCD('Options: ',' ','delete day type',
-     &  'add day type','copy existing day type','continue',IW,1)
+     &  'add day type','copy existing day type','continue',IW,3)
       IF(IW.EQ.1)THEN
         ID=1
-        h(1)='Expecting an index.'
-        CALL EASKI(ID,' ',' Which day type ? ',
-     &          1,'F',MB,'F',1,'delete day type',IER,1)
+        h(1)='Expecting an index. If you select cancel then you'
+        h(2)='will be returned to the main control menu. '
+        CALL EASKI(ID,' ',' Which day type (index)? ',
+     &          1,'F',MB,'F',1,'delete day type',IERI,2)
+        if(ieri.eq.-3) return
         if(icfoc.eq.0.and.NN.ge.2)then
           do 793 IDT=ID,NN-1
             ibcdv(II,IDT,1)=ibcdv(II,IDT+1,1)
@@ -718,17 +791,24 @@ C Create a new control day type.
         h(2)='control. You can specify that there will be several'
         h(3)='periods in the day and then supply details later.'
         h(4)='You can add or delete or modify periods later.'
+        h(5)=' '
+        h(6)='If you select cancel when specifying the number of '
+        h(7)='periods in a day the options list will be redisplayed.'
         if(icfoc.eq.0.and.NN+1.LE.mbcdt)then
-          NN=NN+1
-          nbcdt(II)=NN
-          nb=nbcdt(II)
-          ibcdv(II,nb,1)=1
-          ibcdv(II,nb,2)=365
           IP=1
           CALL EASKI(IP,' How many periods in this day type? ',
      &      '(default is 1 period free floating)',
-     &      1,'F',mbcdp,'F',1,'ctl periods',IER,4)
-          nbcdp(II,nb)=IP
+     &      1,'F',mbcdp,'F',1,'ctl periods',IERI,7)
+          if(ieri.eq.-3)then
+            goto 77
+          else
+            NN=NN+1
+            nbcdt(II)=NN
+            nb=nbcdt(II)
+            ibcdv(II,nb,1)=1
+            ibcdv(II,nb,2)=365
+            nbcdp(II,nb)=IP
+          endif
           do 784 IDP=1,IP
             if(IDP.eq.1)tbcps(II,nb,IDP)=0.
             if(IDP.gt.1)tbcps(II,nb,IDP)=float(IDP)
@@ -737,16 +817,20 @@ C Create a new control day type.
             bmiscd(II,nb,IDP,1)=0.
   784     continue
         elseif(icfoc.eq.1.and.NN+1.LE.mpcdt)then
-          NN=NN+1
-          npcdt(II)=NN
-          np=npcdt(II)
-          ipcdv(II,np,1)=1
-          ipcdv(II,np,2)=365
           IP=1
           CALL EASKI(IP,' How many periods in this day type? ',
      &      '(default is 1 period free floating)',
-     &      1,'F',mpcdp,'F',1,'ctl periods',IER,4)
-          npcdp(II,np)=IP
+     &      1,'F',mpcdp,'F',1,'ctl periods',IERI,7)
+          if(ieri.eq.-3)then
+            goto 77
+          else
+            NN=NN+1
+            npcdt(II)=NN
+            np=npcdt(II)
+            ipcdv(II,np,1)=1
+            ipcdv(II,np,2)=365
+            npcdp(II,np)=IP
+          endif
           do 684 IDP=1,IP
             if(IDP.eq.1)tpcps(II,np,IDP)=0.
             if(IDP.gt.1)tpcps(II,np,IDP)=float(IDP)
@@ -755,16 +839,20 @@ C Create a new control day type.
             pmiscd(II,np,IDP,1)=0.
   684     continue
         elseif(icfoc.eq.2.and.NN+1.LE.mfcdt)then
-          NN=NN+1
-          nfcdt(II)=NN
-          nf=nfcdt(II)
-          ifcdv(II,nf,1)=1
-          ifcdv(II,nf,2)=365
           IP=1
           CALL EASKI(IP,' How many periods in this day type? ',
      &      '(default is 1 period free floating)',
-     &      1,'F',mfcdp,'F',1,'ctl periods',IER,4)
-          nfcdp(II,nf)=IP
+     &      1,'F',mfcdp,'F',1,'ctl periods',IERI,7)
+          if(ieri.eq.-3)then
+            goto 77
+          else
+            NN=NN+1
+            nfcdt(II)=NN
+            nf=nfcdt(II)
+            ifcdv(II,nf,1)=1
+            ifcdv(II,nf,2)=365
+            nfcdp(II,nf)=IP
+          endif
           do 584 IDP=1,IP
             if(IDP.eq.1)tfcps(II,nf,IDP)=0.
             if(IDP.gt.1)tfcps(II,nf,IDP)=float(IDP)
@@ -792,9 +880,13 @@ C Create a new control day type.
 
 C Copy and existing control loop day type.
         IDC=1
-        h(1)='Expecting an index.'
+        h(1)='Expecting an index. If you select cancel then no'
+        h(2)='action will be taken. '
         CALL EASKI(IDC,' ',' Which day type to copy ? ',
-     &          1,'F',MB,'F',1,'copy day type',IER,1)
+     &          1,'F',MB,'F',1,'copy day type',IERI,1)
+        if(ieri.eq.-3)then
+          goto 77
+        endif
         if(icfoc.eq.0.and.NN+1.LE.mbcdt)then
           NN=NN+1
           nbcdt(II)=NN
@@ -906,9 +998,11 @@ C for add.
       if(icfoc.eq.3)limit=ngcdp(II,ID)
       if(act(1:1).eq.'D'.or.act(1:1).eq.'d')then
         IP=1
-        h(1)='Expecting an index of the period.'
+        h(1)='Expecting an index of the period. If you select'
+        h(2)='cancel then no changes will be made to the control. '
         CALL EASKI(IP,' ',' Which period to delete ? ',
-     &          1,'F',limit,'F',1,'delete period',IER,1)
+     &          1,'F',limit,'F',1,'delete period',IERI,2)
+        if(ieri.eq.-3) return
         if(icfoc.eq.0)then
           do 794 IDP=IP,limit-1
             tbcps(II,ID,IDP)=tbcps(II,ID,IDP+1)

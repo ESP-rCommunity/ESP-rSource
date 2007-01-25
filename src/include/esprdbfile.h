@@ -4,6 +4,31 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C esprdbfile.h holds common block for database file names and units.
 
+C parameters for generic databases
+C MGDB - (integer) number of generic databases
+C MGCL - (integer) number of categories in a generic database
+C MGIT - (integer) number of items in a generic database
+      integer MGDB,MGCL,MGIT 
+      parameter (MGDB=13)
+      parameter (MGCL=30)
+      parameter (MGIT=500)
+
+C Array of generic database file names (72 char).
+      common/gendbf/gendbfn(MGDB)
+      character gendbfn*72
+
+C Array of default generic database file names (72 char).
+      common/dgendbf/dgendbfn(MGDB)
+      character dgendbfn*72
+
+C Array of file unit numbers for generic databases.
+      common/gendbfi/igendbf(MGDB)
+      integer igendbf
+
+C Array of logicals indicating generic database scanned ok.
+      common/gendb0/gendbok(MGDB)
+      logical gendbok
+
 C LAPRES - (72 char) wind pressure coefficients distribution database
 C iapres  - file unit for wind pressure coef database
       common/APRES/LAPRES,IAPRES
@@ -19,10 +44,10 @@ C IPCDB - unit number of plant template database
       common/C7/LPCDB,IPCDB
       character lpcdb*72
 
-C LPRFDB - (72 char) event profile database file name
+C LPRFDB - (144 char) event profile database file name
 C IPRODB - unit number of event profile database
       COMMON/PRODB/LPRFDB,IPRODB
-      character LPRFDB*72
+      character LPRFDB*144
 
 C LFMAT - (72 char) materials db file name
 C LFMUL - (72 char) constructions db file name
@@ -39,11 +64,11 @@ C ICLIM - unit number of climate file
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
 C DFCON - default materials, DFMUL - default constructions
-C DOPTDB - default optics, DPRFDB - default events
+C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPRFDB,DPCDB
-      character DOPTDB*144
+      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPCDB
+      character DOPTDB*144,DPRFDB*144
 
 C Define as integers.
       integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim

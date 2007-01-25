@@ -48,16 +48,16 @@ C when EITCOMMON returns.
       subroutine eitcommon(IFB,idbh,ic,iit,ino,ACT,iract,primod,IER)
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
 
-      parameter (MGCL=30)
-      parameter (MGIT=500)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -65,7 +65,7 @@ C Generic db commons:
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
 
-      character ittag*12,itmenu*32,itdate*24,itdoc*248,gendbfn*72
+      character ittag*12,itmenu*32,itdate*24,itdoc*248
       character h*72,ACT*1,outs*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
@@ -179,14 +179,12 @@ C unit IFB.
       subroutine edmat2(db,IFB,idbh,ic,iit,ACT,IER)
 #include "building.h"
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
       common/gendbtg/showtags
@@ -200,7 +198,6 @@ C Generic db commons:
       character dbnote*72,ituntstr*42,itsrcstr*1,itcnfstr*42
       character acoutag*12,colormtag*12,lcatag*12
       character acoumenu*32,colormenu*32,lcamenu*32
-      character gendbfn*72
       character unote*72,snote*248
       character ustr*12,ustra*12,ustrb*12,ustrc*12,ustrd*12,ustre*12
       character ustrf*12,ustrg*12,ustrh*12,ustri*12
@@ -483,18 +480,16 @@ C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edmat(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -513,13 +508,12 @@ C Generic db commons:
       character acoutag*12,colormtag*12,lcatag*12
       character acoumenu*32,colormenu*32,lcamenu*32
       character class*12,item*12,selitem*12,selmenu*32
-      character kact*1,head*38
-      character gendbfn*72,snote*248
+      character kact*1,head*38,snote*248
       character ustr*12,ustra*12,ustrb*12,ustrc*12,ustrd*12,ustre*12
       character ustrf*12,ustrg*12,ustrh*12,ustri*12,unote*72
       logical primod
       real misc1,misc2
-      logical gendbok,showtags
+      logical showtags
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -860,17 +854,16 @@ C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edacous(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -888,7 +881,7 @@ C Generic db commons:
       character dbnote*72,atype*4,aunit*8
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72,hold*32,kact*1,head*38
-      character gendbfn*72,snote*248,outs*124,outs248*248
+      character snote*248,outs*124,outs248*248
       logical primod,showtags
 
 C Scan the data from the common blocks. Check category type to see if
@@ -1166,17 +1159,16 @@ C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edcolour(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
@@ -1196,7 +1188,7 @@ C Generic db commons:
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,ustr*12,unote*72
       character coltype*12,colptrn*72,hold*32,kact*1
-      character gendbfn*72,snote*248,outs*124,outs248*248
+      character snote*248,outs*124,outs248*248
       logical primod,showtags
 
 C Scan the data from the common blocks.
@@ -1381,17 +1373,16 @@ C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edtransp(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1410,7 +1401,7 @@ C Generic db commons:
       character dbnote*72,ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72
       character itdat*248,itrep*248,kact*1,head*38
-      character gendbfn*72,snote*248,outs*124,outs248*248
+      character snote*248,outs*124,outs248*248
       logical primod,showtags
 
 C Scan the data from the common blocks.
@@ -1563,7 +1554,7 @@ C ************* BKITEM
 C BKITEM: Put current item in alternative common block structure for later
 C recovery.
       SUBROUTINE BKITEM(idbh,class,item,ic,iit)
-      parameter (MGIT=500)
+#include "esprdbfile.h" 
 
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/bgendb6/bittag,bitmenu
@@ -1620,7 +1611,7 @@ C Backing item common.
 C ************* RCVITEM
 C RCVITEM: Recover item from alternative common block structure.
       SUBROUTINE RCVITEM(idbh,class,item,ic,iit)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
 
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/bgendb6/bittag,bitmenu
@@ -1677,14 +1668,15 @@ C Backing item common.
 C ************* CPITEM
 C CPITEM: Copy item iitorig to catg iccopy returning index of copied item as iitcopy. 
       SUBROUTINE CPITEM(IFB,idbh,icorig,iitorig,iccopy,iitcopy,act,ier)
-      parameter (MGIT=500)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1834,12 +1826,12 @@ C ************* MVITEM
 C MVITEM: Move item iitorig in icorig to catg icmove returning index of moved 
 C item as iitmove. 
       SUBROUTINE MVITEM(IFB,idbh,icorig,iitorig,icmove,iitmove,ier)
-      parameter (MGIT=500)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1929,14 +1921,14 @@ C Because it makes use of prsmenu() the calling code may need to issue
 C a call scandbhd for the main database.
       subroutine choseitem(db,ACT,curitem,curdb,selitem,selmenu,itmsel,
      &  icatsel,IER)
-      parameter (MGIT=500)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -2061,14 +2053,14 @@ C category of the selected item. Curdb is the calling db type, ctype
 C is the requested category to select from. 
       subroutine choseitct(db,ACT,curitem,curdb,ctype,selitem,selmenu,
      &  itmsel,icatsel,IER)
-      parameter (MGIT=500)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)

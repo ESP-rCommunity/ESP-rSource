@@ -2197,8 +2197,18 @@ C If no configuration file then ask for zone number and name.
         H(1)='The zone number is required only for reporting'
         H(2)='purposes but should match the numbering expected'
         H(3)='in the system configuration file.'
+        H(4)=' '
+        H(5)='A cancel instruction lets you start the zone '
+        H(6)='creation process again. '
         CALL EASKI(IZONE,PROMPT,' Zone number?',
-     &             1,'F',MCOM,'W',1,'zone number',IER,3)
+     &             1,'F',MCOM,'W',1,'zone number',IERI,6)
+        if(ieri.eq.-3)then
+
+C User requested a cancel set izone to zero to signal that
+C nothing has been selected.
+          IZONE=0
+          RETURN
+        endif
 
         H(1)='A zone geometry file will be selected via input of the'
         H(2)='file name since no system configuration file exists.'
@@ -3298,14 +3308,21 @@ C Ask for the nodal location, first calculate a location at centre.
         h(2)='at the centre of the layer). Nodes are indexed from'
         h(3)='the outside face to the inside face and the default'
         h(4)='nodal scheme uses 3 nodes per layer. '
+        h(5)=' '
+        h(6)='A cancel leaves the model unchanged. '
         nodloca=nodloc-1
         nodlocb=nodloc+1
         nodlocd=nodloc
         call easki(nodloc,' Position material at ',' which node ? ',
-     &nodloca,'W',nodlocb,'W',nodlocd,'spm node',IER,4)
-        ilay=ino-header
-        inode=nodloc
-        return
+     &    nodloca,'W',nodlocb,'W',nodlocd,'spm node',IERI,6)
+        if(ieri.eq.-3)then
+          ier=1
+          return
+        else
+          ilay=ino-header
+          inode=nodloc
+          return
+        endif
       elseif(ino.eq.ndisp+footer-1) then
         call phelpd('Special material',2,'-',0,0,IER)
         ino=-1
