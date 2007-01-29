@@ -1425,9 +1425,11 @@ C If thermophysical property substitution then ask for misc. data.
 
 C Make assumptions about the additional data that will be required.
         H(1)='See ESP-r Data Model section 9 for details. '
-        if(IBCLAW(II,JJ,KK).eq.1.or.IBCLAW(II,JJ,KK).eq.3)then
+        if(IBCLAW(II,JJ,KK).ge.1.and.IBCLAW(II,JJ,KK).lt.5)then
 
-C Basic control or pre-heat/cool is taken care of by a call to editctlperiod.
+C Basic control (1) or pre-heat/cool (3) is taken care of by a call to editctlperiod.
+C Free-floating control (2) is taken care of by a call to editctlperiod.
+C Ideal fixed injection (4) is taken care of by a call to editctlperiod.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -1440,42 +1442,6 @@ C Basic control or pre-heat/cool is taken care of by a call to editctlperiod.
           if(ier.gt.1)then
             useold=.true.
             iclawT=ier
-            goto 77
-          endif
-          goto 92
-        elseif(IBCLAW(II,JJ,KK).eq.2)then
-
-C Free-floating control is taken care of by a call to editctlperiod.
-          nper=NBCDP(II,JJ)
-          loopdaytype=nbcdt(II)
-          if(KK.GT.1)then
-            prevstart=TBCPS(II,JJ,KK-1)
-          else
-            prevstart=0.0
-          endif
-          call editctlperiod(' Zone control period data',
-     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
-          if(ier.gt.1)then
-            useold=.true.
-            iclawt=ier
-            goto 77
-          endif
-           goto 92
-        elseif(IBCLAW(II,JJ,KK).eq.4)then
-
-C Ideal fixed injection is taken care of by a call to editctlperiod.
-          nper=NBCDP(II,JJ)
-          loopdaytype=nbcdt(II)
-          if(KK.GT.1)then
-            prevstart=TBCPS(II,JJ,KK-1)
-          else
-            prevstart=0.0
-          endif
-          call editctlperiod(' Zone control period data',
-     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
-          if(ier.gt.1)then
-            useold=.true.
-            iclawt=ier
             goto 77
           endif
           goto 92
@@ -1681,27 +1647,11 @@ C (Q=m'Cp(Ts' + Ta'))
            CALL EASKR(cm(8),' ',' Extract comp`t node ? ',
      &      0.,'F',0.,'-',1.,' extract comp`t node ',IER,0)
           ENDIF
-        elseif(IBCLAW(II,JJ,KK).eq.7)then
+        elseif(IBCLAW(II,JJ,KK).eq.7.or.IBCLAW(II,JJ,KK).eq.8)then
 
-C Multi-stage is taken care of by a call to editctlperiod.
-          nper=NBCDP(II,JJ)
-          loopdaytype=nbcdt(II)
-          if(KK.GT.1)then
-            prevstart=TBCPS(II,JJ,KK-1)
-          else
-            prevstart=0.0
-          endif
-          call editctlperiod(' Zone control period data',
-     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
-          if(ier.gt.1)then
-            useold=.true.
-            iclawt=ier
-            goto 77
-          endif
-          goto 92
-        elseif(IBCLAW(II,JJ,KK).eq.8)then
-
-C CV HAVC variable supply temperature with limit constraints.
+C Multi-stage (7) is taken care of by a call to editctlperiod.
+C CV HAVC variable supply temperature with limit constraints (8) 
+C   is taken care of by a call to editctlperiod.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -2019,32 +1969,6 @@ C and cooling (initial part of the input is similar to control 10).
           endif
           goto 92
 
-C          if(itrc.gt.0)then
-C            call edisp(iuout,' ')
-C            call edisp(iuout,'time-proportioning on-off control data:-')
-C            call edisp(iuout,' Max Htg Cap W, Max Clg Cap W,
-C     & Htg ON set-pt deg.C, Htg OFF set-pt deg.C, Clg ON set-pt deg.C, 
-C     & Clg OFF set-pt deg.C')
-C            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' ')
-C            call edisp(iuout,' Tot htg time mins, Min htg ON mins,
-C     & Min htg OFF mins, Tot clg time mins, Min clg ON mins, 
-C     & MIn clg OFF mins')     
-C            write(outs,'(6F9.2)')cm(8),cm(9),cm(10),cm(11),
-C     &        cm(12),cm(13)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' ')
-C          endif
-
-C          cm(1)=12.
-C          H(1)='Data items are in the order of the display. See the'
-C          H(2)='tutorial for more information.'
-C          do 29 MM=2,13
-C            write(outs,'(A,I3)')' time-proportioning on-off item ',MM-1
-C            CALL EASKR(cm(MM),outs,' value: ',
-C     &        0.,'-',0.,'-',1.,'miscel data',IER,2)
-C  29      continue
         elseif(IBCLAW(II,JJ,KK).eq.14)then
 
 C Floating (`three-position') control.
@@ -2567,6 +2491,8 @@ C Slave Capacity Controller
           CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Base Cool',IER)
           if(ier.ne.0)goto 101
         else
+
+C The fall-through (none of the above) control edit.
           H(1)='See ESP-r Data Model section 9 for details. '
           H(2)=' '
           H(3)='If you choose cancel the controller data will not be'
@@ -5727,7 +5653,7 @@ C individual items to be edited (in one big block).
           H(5)=' '
           H(6)='If there is a deadband then the temperature in the'
           H(7)='will float if the current sensed condition is between'
-          H(8)='the setpoings '
+          H(8)='the setpoints.'
           H(9)=' '
           H(10)='Heat delivery may be less than the max. If minimium'
           H(11)='heating > 0 then heating will continue at a re-'
@@ -5765,9 +5691,15 @@ C individual items to be edited (in one big block).
           H(41)='close to what the zone actually will need rather than'
           H(42)='a huge number. '
           H(43)=' '
-          H(44)='You are given the option to discard changes when you '
-          H(45)='exit the period. '
-          nctlhelp=45
+          H(44)='This control can generally be used with timesteps '
+          H(45)='between 1 minute and 1 hour. With large capacities'
+          H(46)='consider 15 minutes as the longest timestep. A longer'
+          H(47)='timestep tends to obscure high frequency patterns but'
+          H(48)='has no affect on total energy use over time. '
+          H(49)=' '
+          H(50)='You are given the option to discard changes when you '
+          H(51)='exit the period. '
+          nctlhelp=51
           nmenulines=12    ! set to the last cm index used.
 
 C Basic control or pre-heat/cool (first array items are never
@@ -5802,7 +5734,7 @@ C used to that the index matches the cm position.
           ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
 
 C Depending on the current number of miscel items also do humidity.
-          if(int(cm(1)).eq.7)then
+          if(int(cm(1)).eq.7.or.int(cm(1)).eq.6)then
             menu(8)=' '
             prompt1(8)=' '
             prompt2(8)=' '
