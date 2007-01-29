@@ -3741,7 +3741,8 @@ C Trace output.
       END
 
 C ******************** BCL13
-C BCL13 is time-proportioning on/off controller.
+C BCL13 is time-proportioning on/off controller. In several ways
+C it extends the functionality offered by BCL10.
 C It is suitable for use with controllers types 0,35,36,37,38,39. 
 C Heating and cooling restrictions are allowed.
 
@@ -3750,6 +3751,7 @@ C Heating and cooling restrictions are allowed.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC7/ITCNST      
@@ -3776,9 +3778,13 @@ C Fatal error test:
         call epagend
         STOP
       endif
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL13')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL13')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.0
       TFUT=TNP
@@ -3810,41 +3816,15 @@ C CYTC   = total cooling cycle period (minutes).
 C CONMIN = minimum cooling ON cycle time (minutes).
 C COFMIN = minimum cooling OFF cycle time (minutes).
 
-      CYTH=60*BMISCD(ICF,IDTYP,IPER,8)
-      HONMIN=60*BMISCD(ICF,IDTYP,IPER,9)
-      HOFMIN=60*BMISCD(ICF,IDTYP,IPER,10)
-      CYTC=60*BMISCD(ICF,IDTYP,IPER,11)
-      CONMIN=60*BMISCD(ICF,IDTYP,IPER,12)
-      COFMIN=60*BMISCD(ICF,IDTYP,IPER,13)
+      CYTH=60.0*BMISCD(ICF,IDTYP,IPER,8)
+      HONMIN=60.0*BMISCD(ICF,IDTYP,IPER,9)
+      HOFMIN=60.0*BMISCD(ICF,IDTYP,IPER,10)
+      CYTC=60.0*BMISCD(ICF,IDTYP,IPER,11)
+      CONMIN=60.0*BMISCD(ICF,IDTYP,IPER,12)
+      COFMIN=60.0*BMISCD(ICF,IDTYP,IPER,13)
 
 C Fatal error tests.
       IF(INT(BMISCD(ICF,IDTYP,IPER,1)).NE.12)GOTO 99
-      IF(HSPON.GE.HSPOFF)then
-        call edisp(iuout,
-     &    ' BCL13: heating setpoint error (HSPON > HSPOFF).')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(CSPON.LE.CSPOFF)then
-        call edisp(iuout,
-     &    ' BCL13: cooling setpoint error (CSPON < CSPOFF).')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(HONMIN+HOFMIN.GT.CYTH)then
-        call edisp(iuout,' BCL13: on/off heating cycle time error.')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(CONMIN+COFMIN.GT.CYTC)then
-        call edisp(iuout,' BCL13: on/off cooling cycle time error.')
-        call epwait
-        call epagend
-        STOP
-      endif
       
 C Note that heating and cooling proportional bands may overlap. In
 C this case simultaneous heating and cooling may result.
@@ -3890,11 +3870,9 @@ C Re-establish no. of ON time-steps for next cycle period,
       ENDIF
            
       IF(ICOUNH.LE.NTSHON)THEN
-C heating is ON,
-         QH=QHM
+         QH=QHM   ! heating is ON
       ELSE
-C heating is OFF,
-         QH=0.0
+         QH=0.0   ! heating is OFF
       ENDIF
                   
 C Cooling cycle:
@@ -3938,8 +3916,12 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,a,F6.3,a,i3,a,F6.3,
+     &                a,i3,a,F7.3)')
+     &   ' Qfuture=',QFUT,' (Ht=',QH,' Cl=',QC,
+     &   ') Ht prop=',RATIOH,' Ht cnt=',ICOUNH,
+     &   ' Cl prop=',RATIOC,' Cl cnt=',ICOUNC,
+     &   ' Tfuture=',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL13')
       END IF

@@ -1314,7 +1314,7 @@ C law can be jumped around.
           endif
         endif
         if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
-     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10)then
+     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.iclaw.eq.13)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1350,7 +1350,7 @@ C starting up the menu based control period definition.
         SALT(10)='Separate flux ON & OFF set points      '
         SALT(11)='Match sensed/recorded value (ideal)    '
         SALT(12)='Match sensed/recorded value (on/off)   '
-        SALT(13)='Time-proportioning (on/off) control    '
+        SALT(13)='Time-proportioning ON & OFF control    '
         SALT(14)='Floating `three-position` control      '
         SALT(15)='Optimum start control                  '
         SALT(16)='Optimum stop control                   '
@@ -1768,29 +1768,6 @@ C Control with separate on/off setpoints for heating and cooling.
           endif
           goto 92
 
-C          cm(1)=6.0
-C  55      WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,
-C     &      ' Maxiumu heating and cooling capacity for',
-C     &      ' separate flux controller: ',40,' 10000. 10000. ',
-C     &      ' separate flux capacity',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
-C          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Cool',IER)
-C          if(ier.ne.0)goto 55
-
-C  56      WRITE(HOLD,'(4f8.2)')cm(4),cm(5),cm(6),cm(7)
-C          H(1)='See ESP-r Data Model section 9 for details. '
-C          CALL EASKS(HOLD,' Heating ON & OFF, Cooling ON & OFF set-',
-C     &     ' points for separate flux control: ',40,' 18. 10. 100. 88.',
-C     &      'prop max min set',IER,1)
-C          K=0
-C          CALL EGETWR(HOLD,K,cm(4),-100.,100.,'F','Heat ON',IER)
-C          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat OFF',IER)
-C          CALL EGETWR(HOLD,K,cm(6),-100.,100.,'F','Cool ON',IER)
-C          CALL EGETWR(HOLD,K,cm(7),-100.,100.,'F','Cool OFF',IER)
-C          if(ier.ne.0)goto 56
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
@@ -2024,33 +2001,50 @@ C Weighted auxiliary sensors mode,
           endif 
         elseif(IBCLAW(II,JJ,KK).eq.13)then
 
-C Time-proportioning on-off control.
-          if(itrc.gt.0)then
-            call edisp(iuout,' ')
-            call edisp(iuout,'time-proportioning on-off control data:-')
-            call edisp(iuout,' Max Htg Cap W, Max Clg Cap W,
-     & Htg ON set-pt deg.C, Htg OFF set-pt deg.C, Clg ON set-pt deg.C, 
-     & Clg OFF set-pt deg.C')
-            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
-            call edisp(iuout,outs)
-            call edisp(iuout,' ')
-            call edisp(iuout,' Tot htg time mins, Min htg ON mins,
-     & Min htg OFF mins, Tot clg time mins, Min clg ON mins, 
-     & MIn clg OFF mins')     
-            write(outs,'(6F9.2)')cm(8),cm(9),cm(10),cm(11),
-     &        cm(12),cm(13)
-            call edisp(iuout,outs)
-            call edisp(iuout,' ')
+C Time proportioning control with separate on/off setpoints for heating
+C and cooling (initial part of the input is similar to control 10).
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
           endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-          cm(1)=12.
-          H(1)='Data items are in the order of the display. See the'
-          H(2)='tutorial for more information.'
-          do 29 MM=2,13
-            write(outs,'(A,I3)')' time-proportioning on-off item ',MM-1
-            CALL EASKR(cm(MM),outs,' value: ',
-     &        0.,'-',0.,'-',1.,'miscel data',IER,2)
-  29      continue
+C          if(itrc.gt.0)then
+C            call edisp(iuout,' ')
+C            call edisp(iuout,'time-proportioning on-off control data:-')
+C            call edisp(iuout,' Max Htg Cap W, Max Clg Cap W,
+C     & Htg ON set-pt deg.C, Htg OFF set-pt deg.C, Clg ON set-pt deg.C, 
+C     & Clg OFF set-pt deg.C')
+C            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' ')
+C            call edisp(iuout,' Tot htg time mins, Min htg ON mins,
+C     & Min htg OFF mins, Tot clg time mins, Min clg ON mins, 
+C     & MIn clg OFF mins')     
+C            write(outs,'(6F9.2)')cm(8),cm(9),cm(10),cm(11),
+C     &        cm(12),cm(13)
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' ')
+C          endif
+
+C          cm(1)=12.
+C          H(1)='Data items are in the order of the display. See the'
+C          H(2)='tutorial for more information.'
+C          do 29 MM=2,13
+C            write(outs,'(A,I3)')' time-proportioning on-off item ',MM-1
+C            CALL EASKR(cm(MM),outs,' value: ',
+C     &        0.,'-',0.,'-',1.,'miscel data',IER,2)
+C  29      continue
         elseif(IBCLAW(II,JJ,KK).eq.14)then
 
 C Floating (`three-position') control.
@@ -5475,8 +5469,19 @@ C yet supported with the new menu structure return to the calling subroutine.
               return
             elseif(iclaw.eq.13)then
               cmlocal(1)=12.0
-              ier=13
-              return
+              cmlocal(2)=1000.0        ! reset to default values
+              cmlocal(3)=1000.0
+              cmlocal(4)=18.0
+              cmlocal(5)=22.0
+              cmlocal(6)=26.0
+              cmlocal(7)=24.0
+              cmlocal(8)=10.0
+              cmlocal(9)=5.0
+              cmlocal(10)=5.0
+              cmlocal(11)=10.0
+              cmlocal(12)=5.0
+              cmlocal(13)=5.0
+              goto 90
             elseif(iclaw.eq.14)then
               cmlocal(1)=14.0
               ier=14
@@ -5637,7 +5642,31 @@ C If no cooling capacity then set cooling set point to 100C.
           elseif(iclaw.eq.8)then
             continue    ! no post processing required.
           elseif(iclaw.eq.10)then
-            continue    ! no post processing required.
+
+C Ensure that heating setpoint on if equal to or above heating setpoint off.
+            if(cmlocal(4).ge.cmlocal(5)) call usrmsg(
+     &          'The heating ON setpoint must be lower than',
+     &          'the heating OFF setpoint.','W')
+            if(cmlocal(6).le.cmlocal(7)) call usrmsg(
+     &          'The cooling OFF setpoint must be lower than',
+     &          'the cooling ON setpoint.','W')
+          elseif(iclaw.eq.13)then
+
+C Ensure that heating setpoint on if equal to or above heating setpoint off.
+            if(cmlocal(4).ge.cmlocal(5)) call usrmsg(
+     &        'The heating ON setpoint must be lower than',
+     &        'the heating OFF setpoint.','W')
+            if(cmlocal(6).le.cmlocal(7)) call usrmsg(
+     &        'The cooling OFF setpoint must be lower than',
+     &        'the cooling ON setpoint.','W')
+
+C Ensure that ON + OFF cycle time is not greater than total cycle time.
+            if(cmlocal(8).lt.(cmlocal(9)+cmlocal(10))) call usrmsg(
+     &        'The heating ON and OFF cycle minutes are greater than',
+     &        'the total heating cycle minutes.','W') 
+            if(cmlocal(11).lt.(cmlocal(12)+cmlocal(13))) call usrmsg(
+     &        'The cooling ON and OFF cycle minutes are greater than',
+     &        'the total cooling cycle minutes.','W') 
           else
 
 C << other control laws where processing is required... >>
@@ -6127,11 +6156,116 @@ C Control with separate on/off setpoints for heating and cooling.
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.13)then
+          
+C Time proportioning control with separate on/off setpoints for heating
+C and cooling (initial part of the input is similar to control 10).
+          h(1)='This control allows separate flux ON and flux OFF'
+          h(2)='set points to be specified for heating and cooling'
+          h(3)='and extends the functionality of the basic separate '
+          h(4)='ON OFF controller by constraining the heating and '
+          h(5)='cooling cycle times. '
+          h(6)=' '
+          h(7)='During ON periods the specified flux is applied'
+          h(8)='until the OFF setpoint is reached. When the OFF'
+          h(9)='condition has been reached the flux input is not'
+          h(10)='reactivated until and ON state is agsin reached.'
+          h(11)=' '
+          h(12)= 'Example: if the temperature goes below 18C turn on'
+          h(13)='  heating until 22C is reached and keep off until'
+          h(14)='  the temperature falls below 18C again.'
+          h(15)=' '
+          h(16)='Example: if the temperature goes above 26C turn on'
+          h(17)='  cooling until 24C is reached and keep off until'
+          h(18)='  the temperature rises to 26C.'
+          h(19)=' '
+          h(20)='Warning: if heating OFF and the cooling OFF setpoints'
+          h(21)='overlap there will be simultaneous operation.'
+          h(22)=' '
+          h(23)='This control represents equipment which is constrained'
+          h(24)='by minimum ON and OFF cycle times (minutes) as well as'
+          h(25)='a total cycle period. For example a heating battery'
+          h(26)='which must be on for at least 5 minutes and then must'
+          h(27)='be off for 10 minutes before it can be re-stared and'
+          h(28)='the mfg recommends the heating system only go through'
+          h(29)='three cycles (20 minutes) each hour. '
+          h(30)=' '
+          h(31)='The ON and OFF and total cycle times in minutes are'
+          h(32)='defined for heating and then for cooling. The number'
+          h(33)='of minutes of ON and OFF must not exceed the total'
+          h(34)='cycle minutes. '
+          h(35)=' '
+          h(36)='Note because the full heating or cooling capacity'
+          h(37)='is used when an ON state is called for a shorter'
+          h(38)='timestep should be used (typically 5 minutes or'
+          h(39)='less). Also the heating and cooling capacity should'
+          h(40)='match the demands of the room otherwise poor temp-'
+          h(41)='erature control will be obtained. '
+          h(42)=' '
+          h(43)='If the simulation timestep can be longer than the '
+          h(44)='cycle times then the heating and cooling capacity is'
+          h(45)='reduced to compensate. If the simulation timestep is'
+          h(46)='shorter than the ON OFF cycle times then it is easier'
+          h(47)='to see the control action. '
+          h(48)=' '
+          h(49)='IT IS UP TO YOU to set an appropriate simulation'
+          h(50)='timestep. '
+          h(51)=' '
+          H(52)='You are given the option to discard changes when you'
+          H(53)='exit the period. '
+          nctlhelp=53
+          nmenulines=13    ! set to the last cm index used
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Heating (fixed) capacity (W)'
+          prompt1(2)='Heating capacity (W) used for ON state'
+          prompt2(2)='(injection is at a fixed rate)'
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
+          menu(3)='Cooling (fixed) capacity (W)'
+          prompt1(3)='Cooling capacity (W) used for ON state'
+          prompt2(3)='(extraction is at a fixed rate) '
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Heating ON setpoint (C)'
+          prompt1(4)='Heating ON setpoint (C) (turn on heating if'
+          prompt2(4)='the temperature falls below this setpoint)'
+          ndec(4)=3; vmin(4)=-100.0; vmax(4)=100.0; vdef(4)=18.0
+          menu(5)='Heating OFF setpoint (C)'
+          prompt1(5)='Heating OFF setpoint (C) (turn off heating if'
+          prompt2(5)='the temperature goes above this point) '
+          ndec(5)=3; vmin(5)=-100.0; vmax(5)=100.0; vdef(5)=22.0
+          menu(6)='Cooling ON setpoint (C) '
+          prompt1(6)='Cooling ON setpoint (C) (turn on cooling if'
+          prompt2(6)='the temperature goes above this setpoint) '
+          ndec(6)=3; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=26.0
+          menu(7)='Cooling OFF setpoint (C) '
+          prompt1(7)='Cooling OFF setpoint (C) (turn off cooling if'
+          prompt2(7)='the temperature goes below this setpoint) '
+          ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
+          menu(8)='Total minutues in heating cycle'
+          prompt1(8)='Total minutues in heating cycle (must be equal'
+          prompt2(8)='or greater than the sum of ON and OFF cycles).'
+          ndec(8)=2; vmin(8)=2.0; vmax(8)=60.0; vdef(8)=10.0
+          menu(9)='Minimum heating ON minutes'
+          prompt1(9)='Minimum ON minutes in heating cycle '
+          prompt2(9)=' '
+          ndec(9)=2; vmin(9)=1.0; vmax(9)=60.0; vdef(9)=5.0
+          menu(10)='Minimum heating OFF minutes'
+          prompt1(10)='Minimum OFF minutes in heating cycle'
+          prompt2(10)=' '
+          ndec(10)=2; vmin(10)=1.0; vmax(10)=60.0; vdef(10)=5.0
+          menu(11)='Total minutues in cooling cycle'
+          prompt1(11)='Total minutues in cooling cycle (must be equal'
+          prompt2(11)='or greater than the sum of ON and OFF cycles)'
+          ndec(11)=2; vmin(11)=2.0; vmax(11)=60.0; vdef(11)=10.0
+          menu(12)='Minimum cooling ON minutes'
+          prompt1(12)='Minimum ON minutes in cooling cycle'
+          prompt2(12)=' '
+          ndec(12)=2; vmin(12)=1.0; vmax(12)=60.0; vdef(12)=5.0
+          menu(13)='Minimum cooling OFF minutes'
+          prompt1(13)='Minimum OFF minutes in cooling cycle'
+          prompt2(13)=' '
+          ndec(13)=2; vmin(13)=1.0; vmax(13)=60.0; vdef(13)=5.0
         elseif(iclaw.eq.14)then
           menu(1)=' '
           prompt1(1)=' '
@@ -6230,6 +6364,14 @@ C Control with separate on/off setpoints for heating and cooling.
           prompt1(11)=' '
           prompt2(11)=' '
           ndec(11)=2; vmin(11)=0.0; vmax(11)=100.0; vdef(11)=0.0
+          menu(12)=' '
+          prompt1(12)=' '
+          prompt2(12)=' '
+          ndec(12)=2; vmin(12)=0.0; vmax(12)=100.0; vdef(12)=0.0
+          menu(13)=' '
+          prompt1(13)=' '
+          prompt2(13)=' '
+          ndec(13)=2; vmin(13)=0.0; vmax(13)=100.0; vdef(13)=0.0
         endif
       elseif(icfoc.eq.1)then
         continue

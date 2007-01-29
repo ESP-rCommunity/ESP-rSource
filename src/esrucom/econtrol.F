@@ -2420,16 +2420,14 @@ C          call edisp248(6,message,80)
           cm(12)=bmiscd(II,JJ,KK,12)
           cm(13)=bmiscd(II,JJ,KK,13)
           write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,
-     &      a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a)') 
-     &    ' time proportioning on/off: max heating capacity ',cm(2),
-     &    'W max cooling capacity ',cm(3),'W heating on setpoint ',
-     &    cm(4),'C heating off setpoint ',cm(5),
-     &    'C cooling on setpoint ',cm(6),'C cooling off setpoint ',
-     &    cm(7),' total heating minutes',cm(8),
-     &    ' min heating On minutes',cm(9),
-     &    ' min heating OFF minutes',cm(10),
-     &    ' total cooling minutes',cm(11),' min cooling On minutes',
-     &    cm(12),' min cooling OFF minutes',cm(13),'.'
+     &      a,f3.0,a,f3.0,a,f3.0,a,f3.0,a,f3.0,a,f3.0,a)') 
+     &    ' time proportioning ON/OFF: heat cap ',cm(2),
+     &    'W cool cap ',cm(3),'W heat ON ',cm(4),
+     &    'C heat OFF ',cm(5),'C cool ON ',cm(6),
+     &    'C cool OFF ',cm(7),'C tot heat ',cm(8),
+     &    'mn min heat ON',cm(9),'mn min heat OFF',cm(10),
+     &    'mn tot cool mnts',cm(11),' min cool ON',cm(12),
+     &    'mn min cool OFF',cm(13),'mn.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.14)then
