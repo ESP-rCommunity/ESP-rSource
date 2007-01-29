@@ -124,6 +124,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_onoffpro.cfg
 *root	/usr/esru/esp-r/training/cellular_cvvt
 *item
+*name	two offices and passage with master-slave controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_master.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
 *group	realistic models
 *help	A set of models demonstrating ESP-r's basic modelling features.
 *item

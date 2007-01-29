@@ -1314,7 +1314,8 @@ C law can be jumped around.
           endif
         endif
         if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
-     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.iclaw.eq.13)then
+     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.iclaw.eq.13.or.
+     &     iclaw.eq.21)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -2458,38 +2459,54 @@ C Surface area and HTC picked up from ESP-r
         elseif(IBCLAW(II,JJ,KK).eq.21)then
  
 C Slave Capacity Controller
-          call edisp(iuout,' Slave controller:')
-          cm(1)=3.0
-  101     WRITE(HOLD,'(i5,2f8.0)') int(cm(2)),cm(3),cm(4)
-          H(1) ='Proportional capacity slave controller. Typically a'
-          h(2) ='a slave control is used to represent an environmental'
-          h(3) ='control with a thermostat in one zone and actions in'
-          h(4) ='a number of zones. Example: a residentail AC system'
-          H(5) ='with a central fan delivering to several zones.'
-          H(6) =' '
-          H(7) ='Flux is delivered to slave control when required by'
-          H(8) ='master control, at same % of base (max) capacity.'
-          H(9) =' '
-          H(10)='You are asked for three values:'
-          H(11)='  - index of control loop associated with the'
-          H(12)='    master control (which currently must be a'
-          H(13)='    basic ideal controller or a free float control).'
-          h(14)='  - base (maximum) heating capacity for slave'
-          H(15)='  - base (maximum  cooling capacity for slave.'
-          H(16)=' '
-          h(17)='Procedure - first create the master control loop'
-          h(18)='and then create slave controls. Test the controls'
-          h(19)='to ensure the scheme is balanced.'
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-          CALL EASKS(HOLD,' Index of master control loop, base heat &',
-     &      ' cooling capacity for slave control (W): ',40,
-     &      ' 1 1000. 1000. ',' mas/slv base heat cool',IER,19)
-          K=0
-          rncf = real(ncf)
-          CALL EGETWR(HOLD,K,cm(2),1.,rncf,'W','master loop indx',IER)
-          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Base Heat',IER)
-          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Base Cool',IER)
-          if(ier.ne.0)goto 101
+C          call edisp(iuout,' Slave controller:')
+C          cm(1)=3.0
+C  101     WRITE(HOLD,'(i5,2f8.0)') int(cm(2)),cm(3),cm(4)
+C          H(1) ='Proportional capacity slave controller. Typically a'
+C          h(2) ='a slave control is used to represent an environmental'
+C          h(3) ='control with a thermostat in one zone and actions in'
+C          h(4) ='a number of zones. Example: a residentail AC system'
+C          H(5) ='with a central fan delivering to several zones.'
+C          H(6) =' '
+C          H(7) ='Flux is delivered to slave control when required by'
+C          H(8) ='master control, at same % of base (max) capacity.'
+C          H(9) =' '
+C          H(10)='You are asked for three values:'
+C          H(11)='  - index of control loop associated with the'
+C          H(12)='    master control (which currently must be a'
+C          H(13)='    basic ideal controller or a free float control).'
+C          h(14)='  - base (maximum) heating capacity for slave'
+C          H(15)='  - base (maximum  cooling capacity for slave.'
+C          H(16)=' '
+C          h(17)='Procedure - first create the master control loop'
+C          h(18)='and then create slave controls. Test the controls'
+C          h(19)='to ensure the scheme is balanced.'
+
+C          CALL EASKS(HOLD,' Index of master control loop, base heat &',
+C     &      ' cooling capacity for slave control (W): ',40,
+C     &      ' 1 1000. 1000. ',' mas/slv base heat cool',IER,19)
+C          K=0
+C          rncf = real(ncf)
+C          CALL EGETWR(HOLD,K,cm(2),1.,rncf,'W','master loop indx',IER)
+C          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Base Heat',IER)
+C          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Base Cool',IER)
+C          if(ier.ne.0)goto 101
         else
 
 C The fall-through (none of the above) control edit.
@@ -5055,6 +5072,10 @@ C    deal with the dialogs using standard sequential method.
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
+     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
+     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
+     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
 C menu (32 char) menu text for each item
@@ -5087,6 +5108,7 @@ C   for control law one.
       integer icfoc,icloop,iday,iper,nper,loopdaytype  ! passed parameters
       logical close,close1,close2,close3,modval,OK,dok ! to test if variable has changed.
       real tcpst  ! for local editing.
+      integer imasctlindex    ! index of master control used by slave controller.
 
 C Set initial logical values.
       close=.true.
@@ -5316,8 +5338,10 @@ C Control law (depending on the control domain)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclaw.ne.IVALS(1))then
 
-C Control law has changed. Note: for those control laws which are not
-C yet supported with the new menu structure return to the calling subroutine.
+C Control law has changed so provide some default values for the
+C new control law prior to re-forming the menu display.
+C Note: for those control laws which are not supported with
+C the new menu structure return to the calling subroutine.
             modval=.true.
             iclaw=IVALS(1)
             write(TMP,'(a)') SALT(iclaw)  ! update string for menu
@@ -5438,8 +5462,10 @@ C yet supported with the new menu structure return to the calling subroutine.
               return
             elseif(iclaw.eq.21)then
               cmlocal(1)=3.0
-              ier=21
-              return
+              cmlocal(2)=1.0        ! reset to default values
+              cmlocal(3)=1000.0
+              cmlocal(4)=1000.0
+              goto 90
             else
 
             endif
@@ -5482,8 +5508,10 @@ C requested simply redisplay the menu.
           goto 92
         endif
 
+
 C The current value changed so do further processing depending on
-C the specific logic of the control law.
+C the specific logic of each control law. Typically warning messages
+C are given if invalid items are found.
         if(ictyp.eq.0)then
           if(iclaw.eq.1.or.iclaw.eq.3)then
             modval=.true.
@@ -5593,6 +5621,38 @@ C Ensure that ON + OFF cycle time is not greater than total cycle time.
             if(cmlocal(11).lt.(cmlocal(12)+cmlocal(13))) call usrmsg(
      &        'The cooling ON and OFF cycle minutes are greater than',
      &        'the total cooling cycle minutes.','W') 
+          elseif(iclaw.eq.21)then
+
+C For master-slave ensure that sensor of this control is non-zero and that
+C it points to the same zone as is used by the master controller.
+            imasctlindex= int(cmlocal(2))
+            if(imasctlindex.eq.0)then
+              call usrmsg('You must select a master control loop!',
+     &          '(please do this before continuing)','W')
+            elseif(imasctlindex.gt.ncf)then
+              call usrmsg('You must select a existing master control',
+     &          'loop! (please do this before continuing)','W')
+            endif
+            if(ibsn(icloop,1).gt.0.and.imasctlindex.gt.0)then
+              if(ibsn(icloop,1).eq.ibsn(imasctlindex,1))then
+                continue
+              else
+                call usrmsg(
+     &           'Slave sensor must sense the same zone as the master',
+     &           'control loop! (please do this before continuing)','W')
+              endif
+            else
+              call usrmsg(
+     &          'Slave sensor must sense the same zone as the master',
+     &          'control loop! (please update sensor location)','W')
+            endif
+            if(iban(icloop,1).gt.0)then
+              continue
+            else
+              call usrmsg(
+     &          'Slave actuator must be in the slave zone!',
+     &          '(please update actuator location)','W')
+            endif
           else
 
 C << other control laws where processing is required... >>
@@ -6240,11 +6300,74 @@ C and cooling (initial part of the input is similar to control 10).
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.21)then
+          H(1) ='Proportional capacity slave controller. Typically a'
+          h(2) ='a slave control is used to represent an environmental'
+          h(3) ='control with a thermostat in one zone and actions in'
+          h(4) ='a number of zones. Example: a residentail AC system'
+          H(5) ='with a central fan delivering to several zones.'
+          H(6) =' '
+          H(7) ='Flux is delivered to slave control when required by'
+          H(8) ='master control, at same % of base (max) capacity.'
+          H(9) =' '
+          H(10)='You are asked for three values:'
+          H(11)='  - index of control loop associated with the'
+          H(12)='    master control (which MUST use a basic ideal'
+          H(13)='    controller or a free float control and the master'
+          H(14)='    MUST also sense a specific zone in the model).'
+          H(15)=' '
+          h(16)='  - base (maximum) heating capacity for slave'
+          H(17)='  - base (maximum  cooling capacity for slave.'
+          H(18)=' '
+          h(19)='Procedure - first create the master control loop'
+          h(20)='and then create a slave loop for each other zone'
+          H(21)='in the model which acts as a slave. If the master'
+          H(22)='control loop is for weekday Saturday Sunday then'
+          H(23)='each slave control should follow this pattern and'
+          H(24)='the number of periods should also match. '
+          H(25)=' '
+          H(26)='The sensor of each slave controller MUST point to'
+          H(27)='the SAME zone that the master controller senses.'
+          H(28)=' '
+          H(29)='The actuator of each slave controller MUST point to'
+          h(30)='the slave zone. '
+          h(31)=' '
+          h(32)='The simulation timestep should typically be short '
+          h(33)='enough to reflect the cycling of the environmental'
+          h(34)='control system. '
+          h(35)=' '
+          h(36)='Example: in a house there is 4kW of heating and the'
+          h(37)='thermostat is in the lounge which has 1kW of heating'
+          h(38)='so the slave capacity in the other zones should'
+          h(39)='total to 3kW. Setting the capacity in each slave'
+          h(40)='zone can be done via different methods:'
+          h(41)=' a) as a proportion of the duct flow or radiator'
+          h(42)='    size in each zone'
+          h(43)=' b) by doing an initial simulation with each zone'
+          h(44)='    ideally controlled and noticing the ratio of'
+          h(45)='    the peak demands in each room'
+          h(46)=' c) (roughly) as a function of zone volume or floor'
+          h(47)='    area.'
+          h(48)=' '
+          H(49)='You are given the option to discard changes when you'
+          H(50)='exit the period. '
+          nctlhelp=50
+          nmenulines=4    ! set to the last cm index used
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Index of master control loop'
+          prompt1(2)='Index of master control loop (this loop should'
+          prompt2(2)='already exist) '
+          ndec(2)=0; vmin(2)=1.0; vmax(2)=100.0; vdef(2)=1.0
+          menu(3)='Max slave heating capacity (W)'
+          prompt1(3)='Maximum slave heating capacity (W) (for when'
+          prompt2(3)='the master control is at 100%) '
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Max slave cooling capacity (W) '
+          prompt1(4)='Maximum slave cooling capacity (W) (for when'
+          prompt2(4)='the master control is at 100%)'
+          ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=1000.0
         else
           h(1)=' '
           h(2)=' '

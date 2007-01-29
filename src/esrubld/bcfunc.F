@@ -5624,7 +5624,7 @@ C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
         write(outs,'(a,f9.2,a,f5.3,a,f5.3,a,f9.2,a,f9.2)')' Q master:',
-     &   QM,' %heating: ',PBH,' %cooling ',PBC,' Q slave:',Qslv,
+     &   QM,' %heat cap: ',PBH,' %cool cap ',PBC,' Q slave:',Qslv,
      &   ' QFUT (slave): ',QFUT
         call edisp(itu,outs)
         call edisp(itu,'  ')
