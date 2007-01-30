@@ -3944,6 +3944,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN    
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3970,7 +3971,10 @@ C Fatal error tests:
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL14')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL14')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
       
       QFUT=0.0
       TFUT=TNP
@@ -4124,8 +4128,11 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,5a,F8.3)')
+     &     ' Qfuture= ',QFUT,' (heating=',QH,' cooling=',QC,
+     &     ') heating prior ',LASTH(IICOMP),
+     &     ' cooling prior ',LASTC(IICOMP),
+     &     ' Tfuture= ',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL14')
       END IF

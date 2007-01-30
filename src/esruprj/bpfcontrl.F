@@ -1315,7 +1315,7 @@ C law can be jumped around.
         endif
         if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
      &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.iclaw.eq.13.or.
-     &     iclaw.eq.21)then
+     &     iclaw.eq.14.or.iclaw.eq.21)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1973,39 +1973,55 @@ C and cooling (initial part of the input is similar to control 10).
         elseif(IBCLAW(II,JJ,KK).eq.14)then
 
 C Floating (`three-position') control.
-          if(itrc.gt.0)then
-            call edisp(iuout,' ')   
-            call edisp(iuout,' Floating `3-position` control data is:')
-            call edisp(iuout,' Htg set-pt, Htg db, Htg shut diff, Htg
-     & open diff, Clg set-pt ')
-            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6) 
-            call edisp(iuout,outs)
-            call edisp(iuout,' Clg db, Clg open diff, Clg shut diff, 
-     & Max htg W, Min htg W')
-            write(outs,'(5F9.2)')cm(7),cm(8),cm(9),cm(10),cm(11)
-            call edisp(iuout,outs)
-            call edisp(iuout,'ROC htg, Max clg W, Min clg W, ROC clg')
-           write(outs,'(4F9.2)')cm(12),cm(13),cm(14),cm(15)
-            call edisp(iuout,outs)
-            call edisp(iuout,' ')
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
           endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-          cm(1)=14.
-          H(1)=' The rate of change of heating & cooling (items 11 &' 
-          H(2)=' 14) are in terms of building time-steps.'
-          H(3)=' Data requested:   (deg.C)'
-          H(4)=' Heating set-point, deadband, upper & lower diff'
-          H(5)=' Cooling set-point, deadband, upper & lower diff'
-          H(6)=' Max & Min heating capacity (W) '
-          H(7)=' Rate of change of heating  '
-          H(8)=' Max & Min cooling capacity (W) '
-          H(9)=' Rate of change of cooling  '
-          H(10)=' - Refer ESP-r Data Model section 9 '
-          do 31 MM=2,15
-            write(outs,'(A,I3)')' 3-position Item ',MM-1
-            CALL EASKR(cm(MM),outs,' value: ',
-     &        0.,'-',0.,'-',1.,'miscel data',IER,10)
-  31      continue
+C          if(itrc.gt.0)then
+C            call edisp(iuout,' ')   
+C            call edisp(iuout,' Floating `3-position` control data is:')
+C            call edisp(iuout,' Htg set-pt, Htg db, Htg shut diff, Htg
+C     & open diff, Clg set-pt ')
+C            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6) 
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' Clg db, Clg open diff, Clg shut diff, 
+C     & Max htg W, Min htg W')
+C            write(outs,'(5F9.2)')cm(7),cm(8),cm(9),cm(10),cm(11)
+C            call edisp(iuout,outs)
+C            call edisp(iuout,'ROC htg, Max clg W, Min clg W, ROC clg')
+C           write(outs,'(4F9.2)')cm(12),cm(13),cm(14),cm(15)
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' ')
+C          endif
+
+C          cm(1)=14.
+C          H(1)=' The rate of change of heating & cooling (items 11 &' 
+C          H(2)=' 14) are in terms of building time-steps.'
+C          H(3)=' Data requested:   (deg.C)'
+C          H(4)=' Heating set-point, deadband, upper & lower diff'
+C          H(5)=' Cooling set-point, deadband, upper & lower diff'
+C          H(6)=' Max & Min heating capacity (W) '
+C          H(7)=' Rate of change of heating  '
+C          H(8)=' Max & Min cooling capacity (W) '
+C          H(9)=' Rate of change of cooling  '
+C          H(10)=' - Refer ESP-r Data Model section 9 '
+C          do 31 MM=2,15
+C            write(outs,'(A,I3)')' 3-position Item ',MM-1
+C            CALL EASKR(cm(MM),outs,' value: ',
+C     &        0.,'-',0.,'-',1.,'miscel data',IER,10)
+C  31      continue
         elseif(IBCLAW(II,JJ,KK).eq.15)then
 
 C Logic Optimum Start Controller.
@@ -2395,7 +2411,7 @@ C Surface area and HTC picked up from ESP-r
             h(2)='into this zone. This requires that 1) the floor' 
             h(3)='internal convective heat transfer coefficient and '  
             h(4)='emissivity are set to small values (i.e. 0.001) '
-            h(5)='and that 2) the exte27nal boundary condition is set '
+            h(5)='and that 2) the external boundary condition is set '
             h(6)='to adiabatic. Please do this after defining the pool' 
             h(7)='data.'
             call phelpd('pool control help',7,'-',0,0,IER)       
@@ -2475,38 +2491,6 @@ C Slave Capacity Controller
           endif
           goto 92
 
-C          call edisp(iuout,' Slave controller:')
-C          cm(1)=3.0
-C  101     WRITE(HOLD,'(i5,2f8.0)') int(cm(2)),cm(3),cm(4)
-C          H(1) ='Proportional capacity slave controller. Typically a'
-C          h(2) ='a slave control is used to represent an environmental'
-C          h(3) ='control with a thermostat in one zone and actions in'
-C          h(4) ='a number of zones. Example: a residentail AC system'
-C          H(5) ='with a central fan delivering to several zones.'
-C          H(6) =' '
-C          H(7) ='Flux is delivered to slave control when required by'
-C          H(8) ='master control, at same % of base (max) capacity.'
-C          H(9) =' '
-C          H(10)='You are asked for three values:'
-C          H(11)='  - index of control loop associated with the'
-C          H(12)='    master control (which currently must be a'
-C          H(13)='    basic ideal controller or a free float control).'
-C          h(14)='  - base (maximum) heating capacity for slave'
-C          H(15)='  - base (maximum  cooling capacity for slave.'
-C          H(16)=' '
-C          h(17)='Procedure - first create the master control loop'
-C          h(18)='and then create slave controls. Test the controls'
-C          h(19)='to ensure the scheme is balanced.'
-
-C          CALL EASKS(HOLD,' Index of master control loop, base heat &',
-C     &      ' cooling capacity for slave control (W): ',40,
-C     &      ' 1 1000. 1000. ',' mas/slv base heat cool',IER,19)
-C          K=0
-C          rncf = real(ncf)
-C          CALL EGETWR(HOLD,K,cm(2),1.,rncf,'W','master loop indx',IER)
-C          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Base Heat',IER)
-C          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Base Cool',IER)
-C          if(ier.ne.0)goto 101
         else
 
 C The fall-through (none of the above) control edit.
@@ -5434,8 +5418,21 @@ C the new menu structure return to the calling subroutine.
               goto 90
             elseif(iclaw.eq.14)then
               cmlocal(1)=14.0
-              ier=14
-              return
+              cmlocal(2)=20.0        ! reset to default values
+              cmlocal(3)=2.0
+              cmlocal(4)=1.0
+              cmlocal(5)=2.0
+              cmlocal(6)=24.0
+              cmlocal(7)=2.0
+              cmlocal(8)=1.0
+              cmlocal(9)=1.0
+              cmlocal(10)=1000.0
+              cmlocal(11)=0.0
+              cmlocal(12)=1.0
+              cmlocal(13)=1000.0
+              cmlocal(14)=0.0
+              cmlocal(15)=1.0
+              goto 90
             elseif(iclaw.eq.15)then
               cmlocal(1)=6.0       ! varies (this is the smallest)
               ier=15
@@ -5621,6 +5618,8 @@ C Ensure that ON + OFF cycle time is not greater than total cycle time.
             if(cmlocal(11).lt.(cmlocal(12)+cmlocal(13))) call usrmsg(
      &        'The cooling ON and OFF cycle minutes are greater than',
      &        'the total cooling cycle minutes.','W') 
+          elseif(iclaw.eq.14)then
+             continue    ! no postprocessing (yet)
           elseif(iclaw.eq.21)then
 
 C For master-slave ensure that sensor of this control is non-zero and that
@@ -6259,11 +6258,85 @@ C and cooling (initial part of the input is similar to control 10).
           prompt2(13)=' '
           ndec(13)=2; vmin(13)=1.0; vmax(13)=60.0; vdef(13)=5.0
         elseif(iclaw.eq.14)then
+          h(1)='BCL14 is a floating action (three-position) controller'
+          h(2)='which supports the definition of an open switch and'
+          h(3)='shut switch differential (C) for heating and cooling'
+          h(4)='as well as timestep rate of change for heating and '
+          h(5)='cooling. '
+          h(6)=' '
+          h(7)='This is one of the so-called obscure zone controllers'
+          h(8)='and there might be dragons in the code so take your '
+          h(9)='time and be prepaired for some iteration. '
+          h(10)=' '
+          h(11)='The simulation timestep probably should be short e.g.'
+          h(12)='a few minutes.  The simulation trace facility will'
+          h(13)='report the current state and the prior state for'
+          h(14)='heating and cooling.'
+          h(15)=' '
+          H(16)='You are given the option to discard changes when you'
+          H(17)='exit the period. '
+          nctlhelp=17
+          nmenulines=15    ! set to the last cm index used
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
+          menu(2)='Heating set-point (C)'
+          prompt1(2)='Heating set-point (deg.C) (remember there is'
+          prompt2(2)='a deadband as well) '
+          ndec(2)=3; vmin(2)=0.0; vmax(2)=100.0; vdef(2)=20.0
+          menu(3)='Heating deadband (C)'
+          prompt1(3)='Heating deadband (C) (suggest that heating'
+          prompt2(3)='and cooling T bands do not cross) '
+          ndec(3)=3; vmin(3)=0.0; vmax(3)=10.0; vdef(3)=2.0
+          menu(4)='Heat shut switch differential C'
+          prompt1(4)='heating shut switch differential (C) '
+          prompt2(4)=' '
+          ndec(4)=3; vmin(4)=0.0; vmax(4)=10.0; vdef(4)=1.0
+          menu(5)='Heat open switch differential C'
+          prompt1(5)='heat open switch differential (C)'
+          prompt2(5)=' '
+          ndec(5)=3; vmin(5)=0.0; vmax(5)=10.0; vdef(5)=1.0
+          menu(6)='Cooling set-point (C)'
+          prompt1(6)='Cooling set-point (deg.C) (remember there is'
+          prompt2(6)='a deadband as well) '
+          ndec(6)=3; vmin(6)=0.0; vmax(6)=100.0; vdef(6)=24.0
+          menu(7)='Cooling deadband (C) '
+          prompt1(7)='Cooling deadband (deg.C) (suggest that heating'
+          prompt2(7)='and cooling T bands do not cross) '
+          ndec(7)=3; vmin(7)=0.0; vmax(7)=10.0; vdef(7)=2.0
+          menu(8)='Cool open switch differential C'
+          prompt1(8)='cooling open switch differential (C)'
+          prompt2(8)=' '
+          ndec(8)=3; vmin(8)=0.0; vmax(8)=10.0; vdef(8)=1.0
+          menu(9)='Cool shut switch differential C'
+          prompt1(9)='Cooling shut switch differential (C)'
+          prompt2(9)=' '
+          ndec(9)=3; vmin(9)=0.0; vmax(9)=10.0; vdef(9)=1.0
+          menu(10)='Maximum heating flux (W)'
+          prompt1(10)='Maximum heating flux (W)'
+          prompt2(10)=' '
+          ndec(10)=1; vmin(10)=0.0; vmax(10)=999999.0; vdef(10)=1000.0
+          menu(11)='Minimum heating flux (W) '
+          prompt1(11)='Minimum heating flux (W) (typically zero and'
+          prompt2(11)='can be non-zero for uninsulated pipes etc.)'
+          ndec(11)=1; vmin(11)=0.0; vmax(11)=999999.0; vdef(11)=0.0
+          menu(12)='Rate of change heater actuator'
+          prompt1(12)='Rate of change of heater actuator (in building'
+          prompt2(12)='timesteps) moving from one state to another'
+          ndec(12)=0; vmin(12)=0.0; vmax(12)=10.0; vdef(12)=1.0
+          menu(13)='Maximum cooling flux (W) '
+          prompt1(13)='Maximum cooling flux (W) '
+          prompt2(13)=' '
+          ndec(13)=1; vmin(13)=0.0; vmax(13)=999999.0; vdef(13)=1000.0
+          menu(14)='Minimum cooling flux (W) '
+          prompt1(14)='Minimum cooling flux (W) (typically zero and'
+          prompt2(14)='can be non-zero for uninsulated pipes etc.)'
+          ndec(14)=1; vmin(14)=0.0; vmax(14)=999999.0; vdef(14)=0.0
+          menu(15)='Rate of change cooling actuator'
+          prompt1(15)='Rate of change of cooling actuator (in building'
+          prompt2(15)='timesteps) moving from one state to another.'
+          ndec(15)=0; vmin(15)=0.0; vmax(15)=10.0; vdef(15)=1.0
         elseif(iclaw.eq.15)then
           menu(1)=' '
           prompt1(1)=' '

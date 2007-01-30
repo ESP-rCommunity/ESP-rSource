@@ -2447,17 +2447,16 @@ C          call edisp248(6,message,80)
           cm(14)=bmiscd(II,JJ,KK,14)
           cm(15)=bmiscd(II,JJ,KK,15)
           write(lmsg,'(a,f7.2,a,f5.2,a,f5.2,a,f5.2,a,f7.2,a,f5.2,
-     &      a,f5.2,a,f5.2,a,f9.2,a,f9.2,a,f5.2,a,f9.2,a,f9.2,
-     &      a,f5.2,a)') 
-     &    ' floating three position control: heating setpoint',cm(2),
-     &    'C heating deadband',cm(3),'C heating shut diff ',cm(4),
-     &    'C heating open diff ',cm(5),
-     &    'C cooling setpoint ',cm(6),'C cooling deadband ',cm(7),
-     &    'C cooling open diff',cm(8),'C cooling shut diff',cm(9),
-     &    'C max heating capacity',cm(10),'W min heating capacity',
-     &    cm(11),'W rate of change for heating',cm(12),
-     &    ' max cooling capacity',cm(13),'Wmin cooling capacity',
-     &    cm(14),' rate of change for cooling',cm(15),'.'
+     &      a,f5.2,a,f5.2,a,f9.1,a,f7.1,a,f3.0,a,f9.1,a,f7.1,
+     &      a,f3.0,a)') 
+     &    ' floating 3-pos: heat sp',cm(2),
+     &    'C ht dbd',cm(3),'C ht shut df',cm(4),
+     &    'C ht open df',cm(5),
+     &    'C cool sp',cm(6),'C cl dbd',cm(7),
+     &    'C cl open df',cm(8),'C cl shut df',cm(9),
+     &    'C max ht cap',cm(10),'W min ht cap',cm(11),
+     &    'W ROC ht',cm(12),'ts max cl cap',cm(13),
+     &    'W min cl cap',cm(14),'W ROC cl',cm(15),'ts.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.15)then
