@@ -5093,6 +5093,7 @@ C   for control law one.
       logical close,close1,close2,close3,modval,OK,dok ! to test if variable has changed.
       real tcpst  ! for local editing.
       integer imasctlindex    ! index of master control used by slave controller.
+      integer iclawcurrent    ! to remember the current control law
 
 C Set initial logical values.
       close=.true.
@@ -5234,6 +5235,9 @@ C Within the header so skip request.
             call edisp(iuout,
      &        'Data accepted (but not yet saved to file)!')
             modval=.false.
+
+C << consider this as a place to also update the control file >>
+
           endif
         endif
         RETURN
@@ -5287,7 +5291,9 @@ C the previous period is before it otherwise warn user.
         endif
       ELSEIF(IVERT.EQ.6)THEN
 
-C Control law (depending on the control domain)
+C Control law (depending on the control domain). Remember the current
+C control law to trap changes.
+        iclawcurrent=iclaw
         if(ictyp.eq.0)then
           SALT(1)= 'Basic controller for heating/cooling   '
           SALT(2)= 'Free-float controller                  '
@@ -5310,17 +5316,18 @@ C Control law (depending on the control domain)
           SALT(19)='Multi-sensor heating/cooling           '
           SALT(20)='Evaporative source (surface)           '
           SALT(21)='Slave Capacity Controller              '
-          if(iclaw.ne.0)then
-            write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
+          if(iclawcurrent.ne.0)then
+            write(outs,'(2a)') ' Current control law: ',
+     &        SALT(iclawcurrent)
             call edisp(iuout,outs)
             IX=1
           else
-            IX=iclaw
+            IX=iclawcurrent
           endif
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
      &         42,21,SALT,'control law',IER,nctlhelp)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
-          if(iclaw.ne.IVALS(1))then
+          if(iclawcurrent.ne.IVALS(1))then
 
 C Control law has changed so provide some default values for the
 C new control law prior to re-forming the menu display.
@@ -5467,6 +5474,10 @@ C the new menu structure return to the calling subroutine.
 
             endif
             goto 90
+          else
+
+C The user did not alter the control law.
+            goto 91
           endif
           goto 92
         elseif(ictyp.eq.1)then
@@ -5768,28 +5779,28 @@ C used to that the index matches the cm position.
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           menu(2)='Maximum heating capacity (W)'
-          prompt1(2)='Maximum heating capacity (W)'
-          prompt2(2)=' '
+          prompt1(2)='Maximum heating capacity (W) which is available'
+          prompt2(2)='to meet the demand. '
           ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
           menu(3)='Minimum heating capacity (W)'
-          prompt1(3)='Minimum heating capacity (W)'
-          prompt2(3)=' '
+          prompt1(3)='Minimum heating capacity (W) The flux injected'
+          prompt2(3)='will never drop below this level. '
           ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=0.0
           menu(4)='Maximum cooling capacity (W)'
-          prompt1(4)='Maximum cooling capacity (W)'
-          prompt2(4)=' '
+          prompt1(4)='Maximum cooling capacity (W) which is available'
+          prompt2(4)='to meet the demand. '
           ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=1000.0
           menu(5)='Minimum cooling capacity (W)'
-          prompt1(5)='Minimum cooling capacity (W)'
-          prompt2(5)=' '
+          prompt1(5)='Minimum cooling capacity (W) The flux extracted'
+          prompt2(5)='will never be less than this. '
           ndec(5)=1; vmin(5)=0.0; vmax(5)=999999.0; vdef(5)=0.0
           menu(6)='Heating setpoint (C)'
-          prompt1(6)='Heating setpoint (C)'
-          prompt2(6)=' '
+          prompt1(6)='Heating setpoint (C) (temperature to meet if'
+          prompt2(6)='there is sufficient capacity) '
           ndec(6)=3; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=20.0
-          menu(7)='Cooling setpoint (C) '
-          prompt1(7)='Cooling setpoint (C)'
-          prompt2(7)=' '
+          menu(7)='Cooling setpoint (C)'
+          prompt1(7)='Cooling setpoint (C (temperature to meet if)'
+          prompt2(7)='there is sufficient capacity) '
           ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
 
 C Depending on the current number of miscel items also do humidity.
