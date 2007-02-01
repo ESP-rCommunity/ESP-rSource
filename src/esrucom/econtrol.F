@@ -2231,35 +2231,35 @@ C          call edisp248(6,message,80)
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a)') 
      &      ' proportional: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'W min heating ',cm(4),'W heating spt ',cm(5),
      &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'C min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      'C min cooling ',cm(8),'W cooling spt ',cm(9),
      &      'C throttling range ',cm(10),'C.' 
           elseif(nint(cm(2)).eq.2)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a)') 
-     &      ' proportional+integral: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      ' proportional+I: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),'W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C integral action time',
      &      cm(11),'s.' 
           elseif(nint(cm(2)).eq.3)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a)') 
-     &      ' proportional+derivative: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),' Wcooling setpoint ',cm(9),
+     &      ' proportional+D: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),' W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C derivative action time',
      &      cm(11),'s.' 
           elseif(nint(cm(2)).eq.4)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a,f6.1,a)') 
-     &      ' proportional+I+D: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      ' proportional+I+D: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),'W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C integral action time',
      &      cm(11),'s derivative action time ',cm(12),'s.' 
           endif
