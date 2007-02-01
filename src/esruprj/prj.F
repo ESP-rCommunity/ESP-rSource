@@ -97,7 +97,7 @@ C Where exemplars list and default db list are kept.
       common/exemlst/exemlbl,exemfl
       common/defdb/dfdblbl,defdbfl
 
-C Defaults.
+C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
 C Images.

@@ -34,7 +34,13 @@ C SCASL: Import a profile from a profiles database to build casual
 C        gain patterns.
 C EDCASGN - edit casual gain data.
 C CDCASGN - copy/ delete casual gain data.
+C IMPORTZCASG - import a casual gain regime from zone isource to
+C               zone idest based on user instructions.
 C PLTCASGN - plot casual gain data.
+C Inscasper - inserts or deletes a casual gain period into the
+C             current P3 & elp3 data structure.
+C initcasday - does initial setup of a casual day type.
+C initcasper - supports setting up initial periods for schedules.
 
 C ********************* PRJFMK *********************
 C PRJFMK: Creates and edits a zone operations file.
@@ -90,13 +96,14 @@ C updated when the user exits).
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER oprdesc*248,ctlstr*24,zname*12,zdesc*64,tcname*248
-      CHARACTER ITEM(12)*32,H*72,LTMP*72,GFILE*72
+      CHARACTER ITEM(12)*32,choices(12)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character sfile*72,snpfile*72,fs*1,hold*48,outs*124
+      character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
-      LOGICAL OK,DOK,XST,MODOPR,browse,clkok,unixok,needtoask
+
+      LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -224,11 +231,20 @@ C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
      &      ' Operations file name: (because browse was blank)',
      &      ' ',72,GFILE,'operations file',IER,5)
         endif
+
+C Display a bit of information about this browsed file.
+        IUO=IFIL+1
+        call FINDFIL(LTMP,XST)
+        IF(XST) call ZSCHEDHINT(IUO,LTMP,IER)
+
       elseif(iclkok.eq.2)then
+        call edisp(iuout,'No file was selected so returning...')
         return
       endif
       LPROJ(ICOMP)=LTMP
-      write(6,*) 'lproj is ',lproj(icomp)
+
+C Debug.
+C      write(6,*) 'lproj is ',lproj(icomp)
 
   5   MODOPR=.FALSE.
 
@@ -284,13 +300,10 @@ C Do cursory check to see if the file is sorted.
         endif
       ELSE
 
-C File does not exist so find out how many periods for each
-C casual gain type on each day and fill in initial period info.
-
-C << place for offering a choice to the user - sometimes they   >>
-C << want to skip all of this definition because they will want >>
-C << to use the definition already defined in another zone.     >>
-        h(1)='Options: '
+C The choices for the user - sometimes they want to skip
+C all of this definition because they will want to use
+C the definition already defined in another zone.
+  19    h(1)='Options: '
         h(2)=' define from scratch - you are asked for to define all'
         h(3)='   casual gain periods for each day type as well as'
         h(4)='   schedules of infiltration and ventilation.'
@@ -307,34 +320,147 @@ C << to use the definition already defined in another zone.     >>
         h(15)='   differ.'
         h(16)=' '
         h(17)=' import air & gains - essentially both of the above'
-        h(18)=' '
-        h(19)='After the initial actions you can then edit the data'
-        h(20)='ss required. '
-        call EASKATOG('Initial options:',' ','define from scratch',
-     &    'import air schedules','import casual gains',
-     &    'import air & gains','cancel',' ',' ',IGU,20)
-        if(igu.eq.2.or.igu.eq.4)then
+        h(18)='   and you will be given the option to import the'
+        h(19)='   air schedules from a different zone as the casual'
+        h(20)='   gains come from. (you might want to keep a note of'
+        h(21)='   which zones you select for each and include this in'
+        h(22)='   the documentation of the operation file).'
+        h(23)=' '
+        h(24)=' import < pattern has the same functionality except'
+        h(25)='   that the list of operations files are from a'
+        h(26)='   `training/pattern` folder in the ESP-r distribution'
+        h(27)='   location on your machine. Files put in this folder'
+        h(28)='   can act as a resource for often-used patterns of'
+        h(29)='   casual gains and scheduled air flows.'
+        h(30)=' '
+        h(31)='If you are about to import from another zone in the'
+        h(32)='model or from a standard pattern it helps to have '
+        h(33)='prior knowledge of those sources.'
+        h(33)=' '
+        h(34)='After the initial actions you can then edit the data'
+        h(35)='as required. '
+        choices(1) ='a define from scratch '
+        choices(2) ='b air schedules < model zone'
+        choices(3) ='c casual gains  < model zone'
+        choices(4) ='d air & gains   < model zone'
+        choices(5) ='e air schedules < pattern'
+        choices(6) ='f casual gains  < pattern'
+        choices(7) ='g air & gains   < pattern'
+        choices(8) =' ________________________'
+        choices(9) ='! cancel operations     '
+        choices(10)='? help                  '
+        NIGU=10
+        IGU=-2
+        if(mmod.eq.8)then
+          CALL EMENU('Initial options',choices,NIGU,IGU)
+        else
+          CALL EMENU('Options',choices,NIGU,IGU)
+        endif
 
-C Import flow schedules from another zone. Ask which zone, then
-C confirm how muchy to copy and whether infiltration and ventilation
-C flows are to preserve ach or volume of flow.
+        if(igu.eq.0)then
+          goto 19
+        elseif(igu.eq.8)then
+          goto 19
+        elseif(igu.eq.9)then
 
-C << note this only allows a selection from files within the
-C << current model. It would be better if the user could
-C << browse any opeation file in the zones folder.
+C User said to cancel so return from the subroutine without
+C doing anything.
+          call edisp(iuout,
+     &      'You asked to cancel so returning without changes.')
+          return
+        elseif(igu.eq.10)then
 
- 38       isource=0
-          izdef=0
-          call askzone(isource,izdef,' Air pattern from which zone?',
-     &      'Source zone','-','Ventilation import requires a zone.',
-     &      ier)
-          if (IER.ne.0.or.isource.eq.ICOMP) then
-            write (OUTS,'(3a)')  'the current (',
-     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
-            call USRMSG('The selected zone should be different from',
-     &        outs,'W')
-            goto 38
+C Explain
+          CALL PHELPD('operation choices',35,'-',0,0,IER)
+          goto 19
+        endif
+
+C Section dealing with importing air flows (from whatever source).
+        if(igu.eq.2.or.igu.eq.4.or.igu.eq.5.or.igu.eq.7)then
+          if(igu.eq.4.or.igu.eq.7)then
+
+C Warn the user that the selection list is going to come up twice.
+            call edisp(iuout,
+     &        'You will be asked to select the source zone twice The.')
+            call edisp(iuout,
+     &        'first for air flow patterns and then for casual gains.')
           endif
+
+C Import flow schedules from another zone (or in the case of `e`
+C choice from standard pattern folder. Ask which zone, then
+C confirm how much to copy and whether infiltration and ventilation
+C flows are to preserve ach or volume of flow.
+          if(igu.eq.2.or.igu.eq.4)then
+ 38         isource=0
+            izdef=0
+            call askzone(isource,izdef,' Air pattern from which zone?',
+     &        'Source zone','-','Ventilation import requires a zone.',
+     &        ier)
+            if (IER.ne.0.or.isource.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 38
+            endif
+
+C Display a bit of information about this browsed file.
+            IUO=IFIL+1
+            write(LTMP,'(a)') LPROJ(isource)
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              call ZSCHEDHINT(IUO,LTMP,IER)
+            else
+              call USRMSG('The selected file could not be found.',
+     &          'Please try again.','W')
+              goto 38
+            endif
+            sfile=' '
+          elseif(igu.eq.5.or.igu.eq.7)then
+
+C Bring up a list of files ending in .opr within the pattern folder
+C of the distribution and let the user select one.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','pat','opr',sfile,snpfile,nfile,
+     &        iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+C Debug.
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+                isource=0
+              else
+
+C Nothing selected treat this as a return state.
+                call usrmsg('No file selected, try again...',' ','W')
+                goto 19
+              endif
+
+C Display a bit of information about this browsed file.
+              IUO=IFIL+1
+              call FINDFIL(sfile,XST)
+              if(XST)then
+                call ZSCHEDHINT(IUO,sfile,IER)
+              else
+                call USRMSG('The selected file could not be found.',
+     &            'Please try again.','W')
+                goto 19
+              endif
+            else
+
+C Nothing selected treat this as a return state.
+              call usrmsg('No files available, try again...',' ','W')
+              goto 19
+            endif
+          endif
+
+C Only ask these questions if the source file exists.
           CALL EASKABC('Import:',' ','all flow schedules & ctl',
      &     'infiltration only','continue',ivopt,21)
           if(ivopt.eq.1) afact='all  '
@@ -358,9 +484,12 @@ C << browse any opeation file in the zones folder.
           itrc=1
 
 C We have all of the directives, do the import.
-          call COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
+          call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
+     &      itrc,ier)
         endif
-        if(igu.eq.1.or.igu.eq.2)then
+        if(igu.eq.1.or.igu.eq.2.or.igu.eq.5)then
+
+C Each of these leaves the user to define the casual gains manually.
           ip3ver=1
           h(1)='New operations for this zone. Please check your notes'
           h(2)='and provide initial casual gain period start times'
@@ -394,26 +523,83 @@ C We have all of the directives, do the import.
           call edisp(iuout,'Casual gain details ready for editing.')
           MODOPR=.true.
           sorted=.true.
-        elseif(igu.eq.3.or.igu.eq.4)then
+        elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
+          if(igu.eq.4.or.igu.eq.7)then
+            call edisp(iuout,
+     &'And now you are being asked for the casual gains source zone...')
+          endif
 
-C Import casual gains from another zone. Ask which zone, then
-C confirm whether absolute W values are to be scaled.
+          if(igu.eq.3.or.igu.eq.4)then
 
-C << note this only allows a selection from files within the
-C << current model. It would be better if the user could
-C << browse any opeation file in the zones folder.
+C If igu is 3 or 4 import casual gains from another zone.
+C Ask which zone, then confirm whether absolute W values are to be scaled.
+ 39         isource=0
+            izdef=0
+            call askzone(isource,izdef,' Casual gains from which zone?',
+     &        'Source zone','-','Casual import requires a zone.',
+     &        ier)
+            if (IER.ne.0.or.isource.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 39
+            endif
 
- 39       isource=0
-          izdef=0
-          call askzone(isource,izdef,' Casual gains from which zone?',
-     &      'Source zone','-','Casual import requires a zone.',
-     &      ier)
-          if (IER.ne.0.or.isource.eq.ICOMP) then
-            write (OUTS,'(3a)')  'the current (',
-     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
-            call USRMSG('The selected zone should be different from',
-     &        outs,'W')
-            goto 39
+C Display a bit of information about this browsed file.
+            IUO=IFIL+1
+            write(LTMP,'(a)') LPROJ(isource)
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              call ZSCHEDHINT(IUO,LTMP,IER)
+            else
+              call USRMSG('The selected file could not be found.',
+     &          'Please try again.','W')
+              goto 39
+            endif
+            sfile=' '
+          elseif(igu.eq.6.or.igu.eq.7)then
+
+C If igu is 6 or 7 bring up a list of files ending in .opr within the pattern folder
+C of the distribution and let the user select one.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','pat','opr',sfile,snpfile,nfile,
+     &        iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+C Debug.
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+                isource=0
+              else
+
+C Nothing selected treat this as a return state.
+                call usrmsg('No file selected, try again...',' ','W')
+                goto 19
+              endif
+
+C Display a bit of information about this browsed file.
+              IUO=IFIL+1
+              call FINDFIL(sfile,XST)
+              if(XST)then
+                call ZSCHEDHINT(IUO,sfile,IER)
+              else
+                call USRMSG('The selected file could not be found.',
+     &            'Please try again.','W')
+                goto 19
+              endif
+            else
+
+C Nothing selected treat this as a return state.
+              call usrmsg('No files available, try again...',' ','W')
+              goto 19
+            endif
           endif
 
           CALL EASKABC('Casual import:',' ','preserve absolute W',
@@ -424,7 +610,7 @@ C << browse any opeation file in the zones folder.
           idest=icomp
           act='allcas'
           itrc=1
-          call IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
 
 C Remind users to check their data.
       h(1)='An automated process has been used to manage the imported'
@@ -436,12 +622,6 @@ C Remind users to check their data.
       h(7)='against the previous model and then run a short assessment'
       h(8)='to confirm that the predictions are as expected. '
       CALL PHELPD('operation import confirm',8,'-',0,0,IER)
-
-        elseif(igu.eq.5)then
-
-C User said to continue so return from the subroutine without
-C doing anything.
-          return
         endif
       ENDIF
 
@@ -969,9 +1149,13 @@ C IER=0 is OK.
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
       COMMON/P1/oprdesc,ctlstr
@@ -984,9 +1168,11 @@ C IER=0 is OK.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
-      character oprdesc*248,ctlstr*24
-      character afact*8,iflow*8,vflow*8,outs*124
+      character oprdesc*248,ctlstr*24,LTMP*72
+      character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
+      logical XST
 
 C Initial menu entry setup.
  5    MHEAD=4
@@ -1160,16 +1346,19 @@ C Add delete copy period or import from another zone.
         H(12)=' import - copies infiltration, ventilation and control'
         H(13)='   (or a subset of data) from another zone.'
         H(14)=' '
-        H(15)='When importing you can specify (for infiltration and'
-        H(16)='ventilation) whether to:'
-        H(17)=' a) preserve the ac/h being imported e.g. 1.5 ach'
-        H(18)='    in the source zone is 1.5 ach in the destination'
-        H(19)=' b) preserve the volume of air implied by the ac/h in'
-        H(20)='    the source zone e.g. 1.5ach in a 50m^3 zone becomes'
-        H(21)='    1.0714 ach in a 70m^3 zone.'
+        H(15)=' import pattern (same as import but from a file outwith'
+        H(16)='   the model).'
+        H(17)=' '
+        H(18)='When importing you can specify (for infiltration and'
+        H(19)='ventilation) whether to:'
+        H(20)=' a) preserve the ac/h being imported e.g. 1.5 ach'
+        H(21)='    in the source zone is 1.5 ach in the destination'
+        H(22)=' b) preserve the volume of air implied by the ac/h in'
+        H(23)='    the source zone e.g. 1.5ach in a 50m^3 zone becomes'
+        H(24)='    1.0714 ach in a 70m^3 zone.'
         CALL EASKATOG('Air flow period options:','(see help)',
      &    'add period','delete period','copy period',
-     &    'import from other zone','cancel',' ',' ',IW,21)
+     &    'import from other zone','import pattern ','cancel',' ',IW,24)
         if (IW.EQ.1) then 
           call EASKATOG('New air flow period for day type:','  ',
      &      'Weekdays','Saturdays','Sundays','All day types','Cancel',
@@ -1219,23 +1408,81 @@ C Add delete copy period or import from another zone.
           call CDAIRFL(1)    ! delete one or more periods
         elseif (IW.EQ.3) then
           call CDAIRFL(2)    ! copy a period
-        elseif (IW.EQ.4) then
+        elseif (IW.EQ.4.or.IW.eq.5) then
 
 C Import flow schedules from another zone. Ask which zone, then
 C confirm how muchy to copy and whether infiltration and ventilation
 C flows are to preserve ach or volume of flow.
- 38       isource=0
-          izdef=0
-          call askzone(isource,izdef,' Air pattern from which zone?',
-     &      'Source zone','-','Ventilation import requires a zone.',
-     &      ier)
-          if (IER.ne.0.or.isource.eq.ICOMP) then
-            write (OUTS,'(3a)')  'the current (',
-     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
-            call USRMSG('The selected zone should be different from',
-     &        outs,'W')
-            goto 38
+          if(iw.eq.4)then
+ 38         isource=0
+            izdef=0
+            call askzone(isource,izdef,' Air pattern from which zone?',
+     &        'Source zone','-','Ventilation import requires a zone.',
+     &        ier)
+            if (IER.ne.0.or.isource.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 38
+            endif
+
+C Display a bit of information about this browsed file.
+            IUO=IFIL+1
+            write(LTMP,'(a)') LPROJ(isource)
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              call ZSCHEDHINT(IUO,LTMP,IER)
+            else
+              call USRMSG('The selected file could not be found.',
+     &          'Please try again.','W')
+              goto 38
+            endif
+            sfile=' '
+          elseif(iw.eq.5)then
+
+C File browse from patterns.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','pat','opr',sfile,snpfile,nfile,
+     &        iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+C Debug.
+            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+                isource=0
+              else
+
+C Nothing selected treat this as a return state.
+                call usrmsg('No file selected, try again...',' ','W')
+                goto 5
+              endif
+
+C Display a bit of information about this browsed file.
+              IUO=IFIL+1
+              call FINDFIL(sfile,XST)
+              if(XST)then
+                call ZSCHEDHINT(IUO,sfile,IER)
+              else
+                call USRMSG('The selected file could not be found.',
+     &            'Please try again.','W')
+                goto 5
+              endif
+            else
+
+C Nothing selected treat this as a return state.
+              call usrmsg('No files available, try again...',' ','W')
+              goto 5
+            endif
           endif
+
+C Should only ask users these questions if the source file has been found.
           CALL EASKABC('Import:',' ','all flow schedules & ctl',
      &     'infiltration only','continue',ivopt,21)
           if(ivopt.eq.1) afact='all  '
@@ -1259,7 +1506,8 @@ C flows are to preserve ach or volume of flow.
           itrc=1
 
 C We have all of the directives, do the import.
-          call COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
+          call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
+     &      itrc,ier)
         endif
       elseif (IVERT.EQ.(MVERT-4)) then
 
@@ -1837,6 +2085,8 @@ C   e.g. 1.5 ach in source zone is also 1.5 ach in destination zone.
 C vflow = 'vol-vol' preserves volume represented by the ventilation
 C   air change rate in the source to an ach in the destination that
 C   represents the same volume flow rate.
+C sfile (char 72) name of operations file outwith the model which
+C   is used if isource is zero.
 C itrc - if zero then work silently.
 
 C << issue to be resolved later...if the user copies a pattern and
@@ -1844,7 +2094,8 @@ C << later on revises the zone geometry this might imply that a
 C << different flow rate is required. Do we need to remember the
 C << initial intent to guide later revisions?
 
-      subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,itrc,ier)
+      subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
+     &  itrc,ier)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1861,6 +2112,7 @@ C LPROJ   - zone scheduling (operation file)
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
       COMMON/P1/oprdesc,ctlstr
+      COMMON/P1C/oprdescc,ctlstrc
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
      &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
      &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
@@ -1879,18 +2131,22 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-      dimension IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
-     &   IPT1C(MA),TA1C(MA),IACS2C(MA),IACF2C(MA),ACI2C(MA),
-     &   ACV2C(MA),IPT2C(MA),TA2C(MA),IACS3C(MA),IACF3C(MA),
+C Scratch copy of air flow pattern from an operations file.
+      COMMON/P2C/NAC1C,IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
+     &   IPT1C(MA),TA1C(MA),NAC2C,IACS2C(MA),IACF2C(MA),ACI2C(MA),
+     &   ACV2C(MA),IPT2C(MA),TA2C(MA),NAC3C,IACS3C(MA),IACF3C(MA),
      &   ACI3C(MA),ACV3C(MA),IPT3C(MA),TA3C(MA)
 
-      character zname*12,zdesc*64,h*72
+      COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
+     &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
+
+      character zname*12,zdesc*64,h*72,sfile*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER oprdesc*248,ctlstr*24
+      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
-      character fs*1,GFILE*72,afact*8,iflow*8,vflow*8,ctlstrc*24
+      character docpth*24,tmppth*24,dbspth*24,ltmp*72
+      character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       LOGICAL XST,unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -1915,14 +2171,29 @@ C reading or it does not exist then return an error state.
 C If the user has asked for a verbosity list out the details of
 C the source zones air flows.
       IUO=IFIL+1
-      call FINDFIL(LPROJ(isource),XST)
+      if(isource.eq.0)then
+        call FINDFIL(sfile,XST)
+      else
+        call FINDFIL(LPROJ(isource),XST)
+      endif
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(itrc.gt.0)then
           call edisp(iuout,' ')
           call edisp(iuout,'Source zone data.... ')
         endif
-        CALL EROPER(ITRC,iuout,IUO,isource,IER)
+        if(isource.eq.0)then
+
+C Use ERZSCHED to fill P2C and P2CTLC common blocks and
+C then jump to 32 to read in the destination operations file.
+          CALL ERZSCHED(IUO,sfile,IER)
+          goto 32
+        else
+
+C Read the source operations file from within the model and
+C if this is successful the instanciate the P2C and P2CTLC
+          CALL EROPER(ITRC,IUOUT,IUO,isource,IER)
+        endif
         if(ier.ne.0)then
           call edisp(iuout,'Source operation file not clean...')
           ier=1
@@ -1991,6 +2262,7 @@ C Copy air flow control into local variables.
 
 C Scan in the destination operations file, if it does not exist
 C then clear casual gain data structure and create a new file.
+  32  continue
       call FINDFIL(LPROJ(idest),XST)
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
@@ -2009,11 +2281,12 @@ C then clear casual gain data structure and create a new file.
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
         endif
+        write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         h(1)='This is the suggested name for the file that will'
         h(2)='hold the imported air flow schedules data. '
-        CALL EASKS(GFILE,' New zone operations file: (confirm) ',
-     &    ' ',72,'new.opr','new operations file',IER,2)
-        LPROJ(idest)=GFILE
+        CALL EASKS(ltmp,' New zone operations file: (confirm) ',
+     &    ' ',72,GFILE,'new operations file',IER,2)
+        LPROJ(idest)=ltmp
 
 C Clear the 'new' destination operations casual gain data structures
 C and assign the new file name to that zone.
@@ -2022,7 +2295,7 @@ C << later this might be disabled. >>
         NCAS2=0
         NCAS3=0
         ctlstr='no control of air flow  '
-        oprdesc='no operations notes (yet)'
+        oprdesc='Flow schedules imported. No other notes (yet).'
         lodlabel(idest,1)='Occupt'
         lodlabel(idest,2)='Lights'
         lodlabel(idest,3)='Equipt'  
@@ -2037,15 +2310,30 @@ C And any new file will be in the sorted format.
 
 C Copy the local array data into the common blocks overwriting
 C the data implied by 'afact'. Also act on the iflow vflow directives.
+      if(isource.eq.0)then
+        VAL=10.0
+        h(1)='Because this is a pattern file there is no associated'
+        h(2)='zone and to do a ratio we need an assumed volume. '
+        CALL EASKR(VAL,' ',' Assumed volume of source ? ',
+     &      0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
+      endif
       if(iflow(1:7).eq.'ach-ach')then
         ratioif=1.0
       elseif(iflow(1:7).eq.'vol-vol')then
-        ratioif=VOL(isource)/VOL(idest)
+        if(isource.eq.0)then
+          ratioif=VAL/VOL(idest)
+        else
+          ratioif=VOL(isource)/VOL(idest)
+        endif
       endif
       if(vflow(1:7).eq.'ach-ach')then
         ratiovf=1.0
       elseif(vflow(1:7).eq.'vol-vol')then
-        ratiovf=VOL(isource)/VOL(idest)
+        if(isource.eq.0)then
+          ratiovf=VAL/VOL(idest)
+        else
+          ratiovf=VOL(isource)/VOL(idest)
+        endif
       endif
       if(afact(1:5).eq.'all  '.or.afact(1:5).eq.'infil')then
         if(NAC1C.gt.0)then
@@ -2117,7 +2405,7 @@ C Save the destination operation file.
       call usrmsg(
      &  'Updating model to reflect changes',
      &  'in destination operation data or file name...','-')
-      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,iuout,IER)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes',
@@ -2825,6 +3113,7 @@ C ITRC is the trace level, IER=0 is OK.
 #include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
@@ -2854,11 +3143,11 @@ C How many of each gain type is there each zone/gaintype/daytype.
       common/loadcnt/loadcount(mcom,7,3),loadm2count(mcom,7,3),
      &               loadmixed(mcom,7,3)
       common/loadall/load24(7,3,2)
-      logical load24,browse,ok,silent,dok
+      logical load24,browse,ok,silent,dok,XST
       logical sorted,modopr
 
-      CHARACTER vert(35)*33,outs*124,KEY*1
-      character lodlabel*6, typstr*6,H*72
+      CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
+      character lodlabel*6,typstr*6,H*72
       character zname*12,zdesc*64,title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3354,16 +3643,20 @@ C Add delete copy period or import full set of casual gains.
         H(12)=' import - imports casual gain patterns for all gains'
         H(13)='   and day types from another zone (overwrites).'
         H(14)=' '
-        H(15)='When importing you can specify whether to:'
-        H(16)=' a) preserve the absolute W being imported e.g. 123W'
-        H(17)='    in the source zone is is also 123W in destination'
-        H(18)=' b) preserves W/m^2 implied by the source zone and'
-        H(19)='    destination zone base areas e.g. 123W in source'
-        H(20)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
-        H(21)='    zone.'
+        H(15)=' import pattern - imports casual gain patterns for all'
+        H(16)='   gains and day types from file outwith the model '
+        H(17)='   (overwrites)'
+        H(18)=' '
+        H(19)='When importing you can specify whether to:'
+        H(20)=' a) preserve the absolute W being imported e.g. 123W'
+        H(21)='    in the source zone is is also 123W in destination'
+        H(22)=' b) preserves W/m^2 implied by the source zone and'
+        H(23)='    destination zone base areas e.g. 123W in source'
+        H(24)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
+        H(25)='    zone.'
         CALL EASKATOG('Casual gain period options:','(see help)',
      &    'add period','delete period','copy period',
-     &    'import from other zone','cancel',' ',' ',IW,21)
+     &    'import from other zone','import pattern ','cancel',' ',IW,25)
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
@@ -3470,28 +3763,68 @@ C If there are no sunday loads of this type make a default one.
           sorted=.false.
           modopr=.true.
           goto 5
-        elseif (IW.EQ.4) then
+        elseif (IW.EQ.4.or.IW.EQ.5) then
 
 C Import casual gains from another zone. Ask which zone, then
 C confirm whether absolute W values are to be scaled.
-
-C << note this only allows a selection from files within the
-C << current model. It would be better if the user could
-C << browse any opeation file in the zones folder.
-
- 39       isource=0
-          izdef=0
-          call askzone(isource,izdef,' Casual gains from which zone?',
-     &      'Source zone','-','Casual import requires a zone.',
+          if(IW.eq.4)then
+ 39         isource=0
+            izdef=0
+            call askzone(isource,izdef,' Casual gains from which zone?',
+     &        'Source zone','-','Casual import requires a zone.',
      &      ier)
-          if (IER.ne.0.or.isource.eq.ICOMP) then
-            write (OUTS,'(3a)')  'the current (',
-     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
-            call USRMSG('The selected zone should be different from',
-     &        outs,'W')
-            goto 39
+            if (IER.ne.0.or.isource.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 39
+            endif
+            sfile=' '
+          elseif(IW.EQ.5) then
+
+C File browsing from pattern folder.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','pat','opr',sfile,snpfile,nfile,
+     &        iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+C Debug.
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+                isource=0
+              else
+
+C Nothing selected treat this as a return state.
+                call usrmsg('No file selected, try again...',' ','W')
+                goto 5
+              endif
+
+C Display a bit of information about this browsed file.
+              IUO=IFIL+1
+              call FINDFIL(sfile,XST)
+              if(XST)then
+                call ZSCHEDHINT(IUO,sfile,IER)
+              else
+                call USRMSG('The selected file could not be found.',
+     &            'Please try again.','W')
+                goto 5
+              endif
+            else
+
+C Nothing selected treat this as a return state.
+              call usrmsg('No files available, try again...',' ','W')
+              goto 5
+            endif
           endif
 
+C User should only get to this point if there is a source file to use.
           CALL EASKABC('Casual import:',' ','preserve absolute W',
      &       'convert abs W for base area','continue',ivntv,21)
           if(ivntv.eq.1) iwatt='W-W    '
@@ -3500,7 +3833,7 @@ C << browse any opeation file in the zones folder.
           idest=icomp
           act='allcas'
           itrc=1
-          call IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
 
 C Remind users to check their data.
       h(1)='An automated process has been used to manage the imported'
@@ -4445,6 +4778,8 @@ C iwatt= 'W-m2-W' preserves implied W/m^2 base area implied by
 C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
+C sfile (char 72) is the name of operations file outwith the model
+C   which is used is isource is zero.
 C itrc - if zero then work silently.
 
 C This subroutine does not alter the air flow schedules in the
@@ -4455,7 +4790,7 @@ C << later on revises the zone geometry this might imply that a
 C << different flow rate is required. Do we need to remember the
 C << initial intent to guide later revisions?
 
-      subroutine IMPORTZCASG(isource,idest,act,iwatt,itrc,ier)
+      subroutine IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -4471,6 +4806,7 @@ C LPROJ   - zone scheduling (operation file)
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
       COMMON/P1/oprdesc,ctlstr
+      COMMON/P1C/oprdescc,ctlstrc
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
      &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
      &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
@@ -4491,31 +4827,38 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
+      common/loadlabelc/lodlabelc(7)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
 C Base area for zones.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
 
-C Local storage arrays for weekdays, saturdays, sundays
-      dimension ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
+C Storage arrays for weekdays, saturdays, sundays
+      common/P3WK/NCAS1C,ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
      &          RADC1C(MC),CONC1C(MC)
-      dimension ICGS2C(MC),ICGF2C(MC),CMGS2C(MC),CMGL2C(MC),
+      common/P3SA/NCAS2C,ICGS2C(MC),ICGF2C(MC),CMGS2C(MC),CMGL2C(MC),
      &          RADC2C(MC),CONC2C(MC)
-      dimension ICGS3C(MC),ICGF3C(MC),CMGS3C(MC),CMGL3C(MC),
+      common/P3SU/NCAS3C,ICGS3C(MC),ICGF3C(MC),CMGS3C(MC),CMGL3C(MC),
      &          RADC3C(MC),CONC3C(MC)
-      dimension ICGT1C(MC),ICGT2C(MC),ICGT3C(MC)
-      dimension pf1c(mc),ipf1c(mc),pwr1c(mc),bvolt1c(mc),iphas1c(mc)
-      dimension pf2c(mc),ipf2c(mc),pwr2c(mc),bvolt2c(mc),iphas2c(mc)
-      dimension pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),iphas3c(mc)
+      COMMON/P3TYPEC/ICGT1C(MC),ICGT2C(MC),ICGT3C(MC)
 
-      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,h*72
+      common/elecflgc/ielfc
+      common/elp3wk/nel1c,pf1c(mc),ipf1c(mc),pwr1c(mc),bvolt1c(mc),
+     &  iphas1c(mc)
+      common/elp3sa/nel2c,pf2c(mc),ipf2c(mc),pwr2c(mc),bvolt2c(mc),
+     &  iphas2c(mc)
+      common/elp3su/nel3c,pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),
+     &  iphas3c(mc)
+
+      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
+      character h*72,sfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
-      character lodlabel*6
+      character docpth*24,tmppth*24,dbspth*24,ltmp*72
+      character lodlabel*6,lodlabelc*6
       character zname*12,zdesc*64,fs*1,GFILE*72,act*8,iwatt*8
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      LOGICAL XST,unixok
+      LOGICAL XST,unixok,dok,ok
 
 C Flags noting whether casual gain periods are currently sorted.
       logical problem,MODOPR
@@ -4543,18 +4886,38 @@ C reading or it does not exist then return an error state.
 C If the user has asked for a verbosity list out the details of
 C the source zones air flows.
       IUO=IFIL+1
-      call FINDFIL(LPROJ(isource),XST)
+      if(isource.eq.0)then
+        call FINDFIL(sfile,XST)
+      else
+        call FINDFIL(LPROJ(isource),XST)
+      endif
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(itrc.gt.0)then
           call edisp(iuout,' ')
           call edisp(iuout,'Source zone data.... ')
         endif
-        CALL EROPER(ITRC,ITRU,IUO,isource,IER)
-        if(ier.ne.0)then
-          call edisp(iuout,'Source operation file not clean...')
-          ier=1
-          return
+        if(isource.eq.0)then
+
+C Use ERZSCHED to fill P2C and P2CTLC common blocks and
+C then jump to 32 to read in the destination operations file.
+          CALL ERZSCHED(IUO,sfile,IER)
+          if(ier.ne.0)then
+            call edisp(iuout,'Source operation file not clean...')
+            ier=1
+            return
+          endif
+          goto 32
+        else
+
+C Read the source operations file from within the model and
+C if this is successful the instanciate the P2C and P2CTLC
+          CALL EROPER(ITRC,iuout,IUO,isource,IER)
+          if(ier.ne.0)then
+            call edisp(iuout,'Source operation file not clean...')
+            ier=1
+            return
+          endif
         endif
       else
         call edisp(iuout,'Source operation file not found...')
@@ -4628,16 +4991,23 @@ C Copy the casual gains into the local arrays for weekdays, saturdays, sundays.
 
 C Scan in the destination operations file, if it does not exist
 C then clear casual gain data structure and create a new file.
+  32  continue
       call FINDFIL(LPROJ(idest),XST)
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
-        CALL EROPER(ITRC,ITRU,IUO,idest,IER)
+        CALL EROPER(ITRC,iuout,IUO,idest,IER)
         if(ier.ne.0)then
           call edisp(iuout,'Destination operation file not clean...')
           ier=1
           return
         endif
       else
+
+C Usually if the user has already nominated a new name for the
+C zone operations file nothing will have been written to it and
+C so this dialog is brought up to remind the user. The string
+C buffer ltmp holds the nominated new name and GFILE the standard
+C name based on the zone name.
         call edisp(iuout,'Destination operation file not found...')
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(GFILE,'(2a)') 
@@ -4646,11 +5016,12 @@ C then clear casual gain data structure and create a new file.
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
         endif
+        write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         h(1)='This is the suggested name for the file that will'
         h(2)='hold the imported casual gain data. '
-        CALL EASKS(GFILE,' New zone operations file: (confirm) ',
-     &    ' ',72,'new.opr','new operations file',IER,2)
-        LPROJ(idest)=GFILE
+        CALL EASKS(ltmp,' New zone operations file: (confirm) ',
+     &    ' ',72,GFILE,'new operations file',IER,2)
+        LPROJ(idest)=ltmp
 
 C This subroutine does not deal with importing air schedules or
 C controls so, in the case of a new file ensure nothing but a default
@@ -4671,9 +5042,19 @@ C And any new file will be in the sorted format.
 C Copy the local array data into the common blocks overwriting
 C the data implied by 'act'. Also act on the iwatt directive.
 C Note: if the casual gain type is negative then the units are
-C already per m2 so no need for conversion.
+C already per m2 so no need for conversion.  If isource is zero
+C then we do not know the ratio set to 1.0 and inform user.
       if(iwatt(1:6).eq.'W-m2-W')then
-        ratioarea=ZBASEA(isource)/ZBASEA(idest)
+        if(isource.eq.0)then
+          VAL=10.0
+          h(1)='Because this is a pattern file there is no associated'
+          h(2)='zone and to do a ratio we need an assumed area. '
+          CALL EASKR(VAL,' ',' Assumed floor area of source ? ',
+     &        0.10,'F',9999.0,'W',0.0,'assumed floor area',IER,2)
+          ratioarea=VAL/ZBASEA(idest)
+        else
+          ratioarea=ZBASEA(isource)/ZBASEA(idest)
+        endif
       else
         ratioarea=1.0
       endif
@@ -4754,19 +5135,44 @@ C already per m2 so no need for conversion.
             endif
   31      continue
         endif
+
+C << could also offer this copy process when importing air flow
+C << patterns (however it would probably work better to have a
+C << separate documentation string for air flows and casual gains.
+        call edisp(iuout,' ')
+        call edisp(iuout,' Current operation notes:')
+        call edisp248(iuout,oprdesc,80)
+        call edisp(iuout,' ')
+        call edisp(iuout,' Source operation notes:')
+        call edisp248(iuout,oprdescc,80)
+        call edisp(iuout,' ')
+        dok=.true.
+        call askok('Use the source documentation?',' ',OK,DOK,0)
+        if(ok) oprdesc=oprdescc
+
         H(1)='Notes (<248 char) for schedules of zone air flow and' 
         H(2)='casual gains can be included in the model. Use this'
         H(3)='facility to clarify what is happening in the zone.'
-        CALL EASKS248(oprdescc,'Operations notes (please edit):',
+        CALL EASKS248(oprdesc,'Operations notes (please edit):',
      &    ' ',72,'base_case','operation notes',IER,3)
         if(oprdescc(1:2).ne.'  ')oprdesc=oprdescc
-        lodlabel(idest,1)=lodlabel(isource,1)
-        lodlabel(idest,2)=lodlabel(isource,2)
-        lodlabel(idest,3)=lodlabel(isource,3)
-        lodlabel(idest,4)=lodlabel(isource,4)
-        lodlabel(idest,5)=lodlabel(isource,5)
-        lodlabel(idest,6)=lodlabel(isource,6)
-        lodlabel(idest,7)=lodlabel(isource,7)
+        if(isource.eq.0)then
+          lodlabel(idest,1)=lodlabelc(1)
+          lodlabel(idest,2)=lodlabelc(2)
+          lodlabel(idest,3)=lodlabelc(3)
+          lodlabel(idest,4)=lodlabelc(4)
+          lodlabel(idest,5)=lodlabelc(5)
+          lodlabel(idest,6)=lodlabelc(6)
+          lodlabel(idest,7)=lodlabelc(7)
+        else
+          lodlabel(idest,1)=lodlabel(isource,1)
+          lodlabel(idest,2)=lodlabel(isource,2)
+          lodlabel(idest,3)=lodlabel(isource,3)
+          lodlabel(idest,4)=lodlabel(isource,4)
+          lodlabel(idest,5)=lodlabel(isource,5)
+          lodlabel(idest,6)=lodlabel(isource,6)
+          lodlabel(idest,7)=lodlabel(isource,7)
+        endif
       endif
 
 C If the user has asked for verbosity list out the result.
