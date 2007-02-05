@@ -1990,8 +1990,8 @@ C Trace output.
 
 C ******************** BCL05
 
-C Proportional+intergral+derivative (PID) control action suitable for 
-C use with controller types 0,35,36,37,38,39.
+C Proportional+intergral+derivative (P or P+I or P+D or PID) control action
+C suitable for use with controller types 0,35,36,37,38,39.
 
       SUBROUTINE BCL05
 #include "building.h"
@@ -2009,8 +2009,8 @@ C use with controller types 0,35,36,37,38,39.
      &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
       COMMON/BLGPID/BPID(MCF,6),NSINCR
-      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       
       character outs*124
 
@@ -2040,20 +2040,20 @@ C Trace output
       QFUT=0.0
       TFUT=TNP
 
-C IMO  =  1: proportional control
-C  "   =  2: P+I control
-C  "   =  3: P+D control
-C  "   =  4: P+I+D control
-c QHMX =  max htg capacity (W)
-c QHMN =  min htg capacity (W),
-c HSP  =  htg set point temp (deg.C),
-c HTR  =  htg throttling range  (deg.C),
-c QCMX =  max clg capacity (W),
-c QCMN =  min clg capacity (W),
-c CSP  =  clg set point temp. (deg.C),
-c CTR  =  clg throttling range  (deg.C),
-c TI   =  integral action time (secs),
-c TD   =  derivative action time (secs).
+C IMO  =  1: proportional control mode
+C  "   =  2: P+I control mode
+C  "   =  3: P+D control mode
+C  "   =  4: P+I+D control mode
+c QHMX =  max heating capacity (W)
+c QHMN =  min heating capacity (W),
+c HSP  =  heating set point temp (deg.C),
+c HTR  =  heating throttling range or proportional band  (deg.C),
+c QCMX =  max cooling capacity (W),
+c QCMN =  min cooling capacity (W),
+c CSP  =  cooling set point temp. (deg.C),
+c CTR  =  cooling throttling range or proportional band  (deg.C),
+c TI   =  integral (reset) action time (secs),
+c TD   =  derivative (rate) action time (secs).
 
 c It is assumed that the set points are at the mid-points
 c of the throttling ranges.
@@ -2074,53 +2074,68 @@ c of the throttling ranges.
   
 C Fatal error tests:      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).LT.1.OR.
-     &INT(BMISCD(ICF,IDTYP,IPER,2)).GT.4)GOTO 99 
+     &   INT(BMISCD(ICF,IDTYP,IPER,2)).GT.4)GOTO 99 
      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.1.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.9)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.9)GOTO 981 
 
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.2.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 982 
      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.3.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 983 
 
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.4.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.11)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.11)GOTO 984 
      
-      IF((IMO.EQ.2.OR.IMO.EQ.4).AND.TI.LT.1.)GOTO 96
+      IF((IMO.EQ.2.OR.IMO.EQ.4).AND.TI.LT.1.0)GOTO 96
 
-c HTU = upper htg temperature limit
-c HTL = lower htg temperature limit
+C Set setpoint to be at the mid range of the proportional band
+c HTU = upper heating temperature limit
+c HTL = lower heating temperature limit
       HTU=HSP+(HTR/2.0)
       HTL=HSP-(HTR/2.0)
 
-c CTU = upper clg temperature limit
-c CTL = lower clg temperature limit
+C Set setpoint to be at the mid range of the proportional band
+c CTU = upper cooling temperature limit
+c CTL = lower cooling temperature limit
       CTU=CSP+(CTR/2.0)
       CTL=CSP-(CTR/2.0)
 
 C Set time-step increment required for integral and derivative action,
       TDELTA=3600/NTSTEP
 
-C Update variables used in recursive algorithms.
+C << consider in the future to revise code to only restart the
+C << integral action when the new setpont is attained.
+C << especially to reduce overshoot so the current code does
+C << not match what happens in physical devices.
+
       IF(NSINC.EQ.(NSINCR+1))THEN
+
+C If we are still within a control period (no setpoint changes) then
+C use the following logic:
+C Update variables used in recursive algorithms.
 C Save values in common bpid(icf,?)
-C bpid(icf,1)= htg error at present time-step,
-C bpid(icf,2)= htg error at previous time-step,
-C bpid(icf,3)= time-integral of the htg error,
-C bpid(icf,4)= clg error at present time-step,
-C bpid(icf,5)= clg error at previous time-step,
-C bpid(icf,6)= time-integral of the clg error,
+C bpid(icf,1)= heating error at present time-step,
+C bpid(icf,2)= heating error at previous time-step,
+C bpid(icf,3)= time-integral of the heating error,
+C bpid(icf,4)= cooling error at present time-step,
+C bpid(icf,5)= cooling error at previous time-step,
+C bpid(icf,6)= time-integral of the cooling error,
+
+C Take the average heating error at the two timesteps.
          BPID(ICF,3)=BPID(ICF,3)
      &+(0.5*(BPID(ICF,2)*TDELTA+BPID(ICF,1)*TDELTA))
          BPID(ICF,2)=BPID(ICF,1)
+
+C Take the average cooling error at the two timesteps.
          BPID(ICF,6)=BPID(ICF,6)
      &+(0.5*(BPID(ICF,5)*TDELTA+BPID(ICF,4)*TDELTA))
          BPID(ICF,5)=BPID(ICF,4)
       ELSE
+
 C If inside first time increment of a new control period re-set the integral error
-C term
+C term.
          BPID(ICF,3)=0.
          BPID(ICF,2)=BPID(ICF,1)
          BPID(ICF,6)=0.        
@@ -2132,45 +2147,44 @@ C Determine sensed temperature.
       if(ier.eq.2)then
         return
       endif
-C       TCTL=TFA(IICOMP)
 
 C Establish the errors at the present time-step;
-C heating error,
-      BPID(ICF,1)=HSP-TCTL
-C Changed from TCTL-HSP
-C cooling error,
-      BPID(ICF,4)=CSP-TCTL
+C The convention is that a positive error happens when
+C you are below the setpoint. 
+C Changed from TCTL-HSP 
+      BPID(ICF,1)=HSP-TCTL   ! heating error
+
 C Changed from TCTL-CSP
+      BPID(ICF,4)=CSP-TCTL   ! cooling error
 
 C Heating cycle;      
-C Set flux,
-      QH=0.0
+      QH=0.0    ! Set flux to zero,
       
-C Determine htg flux at set point assuming linear relationship.
+C Determine heating flux at set point assuming linear relationship.
       QSPH=(QHMX+QHMN)/2.0
 
-C Determine the htg integral action,
+C Determine the heating integral action (P+I or PID),
       IF(IMO.EQ.2.OR.IMO.EQ.4)THEN
-        RINTH=(1./TI)*(BPID(ICF,3))
+        RINTH=(1.0/TI)*(BPID(ICF,3))
       ELSE
         RINTH=0.0
       ENDIF
                 
       IF(TCTL.GT.HTU)THEN
-         QH=QHMN        
+        QH=QHMN        
       ELSEIF(TCTL.LT.HTL)THEN
-         QH=QHMX    
+        QH=QHMX    
       ELSEIF(TCTL.GE.HTL.AND.TCTL.LE.HTU)THEN        
-C The temperature is within the throttling range:
 
-C Determine the gain for htg,
+C The temperature is within the throttling range (proportional band):
+C Determine the gain for heating,
         RKPH=(QHMX-QHMN)/(HTU-HTL)
 
 C Determine the derivative action for htg,
         IF(IMO.EQ.3.OR.IMO.EQ.4)THEN
-         RDRVH=(TD/TDELTA)*(BPID(ICF,1)-BPID(ICF,2))
+          RDRVH=(TD/TDELTA)*(BPID(ICF,1)-BPID(ICF,2))
         ELSE
-           RDRVH=0.0
+          RDRVH=0.0
         ENDIF
 
 C The heating flux magnitude,
@@ -2192,28 +2206,29 @@ C Set flux,
 C Determine clg flux at set point assuming linear relationship.
       QSPC=(QCMX+QCMN)/2.0
 
-C Determine the clg integral action, 
+C Determine the clg integral action.
+C RINTC is the integral term () 
       IF(IMO.EQ.2.OR.IMO.EQ.4)THEN
-         RINTC=(TDELTA/TI)*(BPID(ICF,6))
+        RINTC=(TDELTA/TI)*(BPID(ICF,6))
       ELSE
-         RINTC=0.0
+        RINTC=0.0
       ENDIF
                 
       IF(TCTL.GT.CTU)THEN
-         QC=QCMX
+        QC=QCMX
       ELSEIF(TCTL.LT.CTL)THEN
-         QC=QCMN    
+        QC=QCMN    
       ELSEIF(TCTL.GE.CTL.AND.TCTL.LE.CTU)THEN        
-C The temperature is within the throttling range:
 
+C The temperature is within the throttling range (proportional band):
 C Determine the gain for clg,
         RKPC=(QCMN-QCMX)/(CTU-CTL)
 
 C Determine the derivative action for clg,
         IF(IMO.EQ.3.OR.IMO.EQ.4)THEN
-           RDRVC=(TD/TDELTA)*(BPID(ICF,4)-BPID(ICF,5))
+          RDRVC=(TD/TDELTA)*(BPID(ICF,4)-BPID(ICF,5))
         ELSE
-           RDRVC=0.0
+          RDRVC=0.0
         ENDIF
 C The cooling flux magnitude,
         QC=QSPC+(RKPC*(BPID(ICF,4)+RINTC+RDRVC))
@@ -2247,34 +2262,49 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(2(A,F10.3,A,F10.3))') ' Qfuture = ',QFUT,
-     &    ' Tfuture = ',TFUT,' Tctl = ',TCTL,' TFA = ',TFA(IICOMP)
+         write(outs,'(A,F10.3,A,F8.3,A,F8.3,A,F8.3,A,F10.3,A,F8.3)') 
+     &    ' Qfuture=',QFUT,' Tfuture=',TFUT,' Tctl=',TCTL,
+     &    ' TDelta=',TDELTA,' Q ht=',QH,' ht err=',BPID(ICF,1)
          call edisp(itu,outs)
-         write(outs,'(2(A,F10.3,A,F10.3))') ' QH = ',QH,
-     &    ' error = ',BPID(ICF,1),' setpoint = ',HSP,' spu = ',HTU
+         write(outs,'(A,F8.3,A,F8.3,A,F8.3,A,F10.3,A,F9.3,A,F9.3)') 
+     &     ' ht spt=',HSP,' ht stp U=',HTU,' ht sp L= ',HTL,
+     &     ' ht gain=',RKPH,' ht intgrl=',RINTH,' deriv=',RDRVH
          call edisp(itu,outs)
-         write(outs,'(2(A,F10.3,A,F10.3))') ' spl = ',HTL,
-     &    ' gain = ',RKPH,' int = ',RINTH,' deriv = ',RDRVH
+         write(outs,'(A,F10.3,3(A,F8.3),A,F10.3,A,F9.3,A,F9.3)') 
+     &    ' Q cl=',QC,' cl spt=',CSP,' cl stp U=',CTU,' cl sp L=',CTL,
+     &    ' cl gain=',RKPC,' cl intgrl=',RINTC,' deriv=',RDRVC
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL05')
       END IF
       
       RETURN
 
-96    call edisp(iuout,' BCL05: fatal error Int Act Tme must be > 0.0 ')
+96    call edisp(iuout,'BCL05: fatal error Int Act Time must be > 1.s')
       call epwait
       call epagend
       STOP  
 
-97    call edisp(iuout,' BCL05: fatal error on controller type.')
+97    call edisp(iuout,'BCL05: fatal error on controller type.')
       call epwait
       call epagend
       STOP
-98    call edisp(iuout,' BCL05: incorrect number of data items.')
+981   call edisp(iuout,'BCL05: proportional should have 9 data items.')
       call epwait
       call epagend
       STOP
-99    call edisp(iuout,' BCL05: incorrect entry for BPID mode flag.')
+982   call edisp(iuout,'BCL05: prop + I should have 10 data items.')
+      call epwait
+      call epagend
+      STOP
+983   call edisp(iuout,'BCL05: prop + D should have 10 data items.')
+      call epwait
+      call epagend
+      STOP
+984   call edisp(iuout,'BCL05: prop +I+D should have 11 data items.')
+      call epwait
+      call epagend
+      STOP
+99    call edisp(iuout,'BCL05: BPID mode flag outwith 1 to 4 range.')
       call epwait
       call epagend
       STOP

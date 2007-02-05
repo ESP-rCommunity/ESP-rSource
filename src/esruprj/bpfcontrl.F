@@ -1313,9 +1313,9 @@ C law can be jumped around.
             goto 62
           endif
         endif
-        if(iclaw.eq.1.or.iclaw.eq.2.or.iclaw.eq.3.or.iclaw.eq.4.or.
-     &     iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.iclaw.eq.13.or.
-     &     iclaw.eq.14.or.iclaw.eq.21)then
+        if((iclaw.ge.1.and.iclaw.lt.6).or.
+     &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
+     &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.21)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1426,11 +1426,12 @@ C If thermophysical property substitution then ask for misc. data.
 
 C Make assumptions about the additional data that will be required.
         H(1)='See ESP-r Data Model section 9 for details. '
-        if(IBCLAW(II,JJ,KK).ge.1.and.IBCLAW(II,JJ,KK).lt.5)then
+        if(IBCLAW(II,JJ,KK).ge.1.and.IBCLAW(II,JJ,KK).lt.6)then
 
 C Basic control (1) or pre-heat/cool (3) is taken care of by a call to editctlperiod.
 C Free-floating control (2) is taken care of by a call to editctlperiod.
 C Ideal fixed injection (4) is taken care of by a call to editctlperiod.
+C PID controller (5) is taken care of by a call to editctlperiod.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -1446,104 +1447,7 @@ C Ideal fixed injection (4) is taken care of by a call to editctlperiod.
             goto 77
           endif
           goto 92
-        elseif(IBCLAW(II,JJ,KK).eq.5)then
 
-C PID controller.
-          if(itrc.gt.0)then
-            call edisp(iuout,' ')
-            call edisp(iuout,' Current PID control data is:')
-            call edisp(iuout,' Mode, Max Htg W, Min Htg W, Htg SP, 
-     &       Htg TR')
-            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
-            call edisp(iuout,outs)
-            call edisp(iuout,' Max Clg W, Min Clg W, Clg SP, Clg TR') 
-            write(outs,'(4F9.2)')cm(7),cm(8),cm(9),cm(10)
-            call edisp(iuout,outs)
-
-            I2=INT(cm(2))
-            if(I2.eq.2)then
-              call edisp(iuout,' Integral action time [secs]')
-              write(outs,'(F9.2)')cm(11)
-              call edisp(iuout,outs)
-            elseif(I2.eq.3)then
-              call edisp(iuout,' Derivative action time [secs]')
-              write(outs,'(F9.2)')cm(11)
-              call edisp(iuout,outs)            
-            elseif(I2.eq.4)then
-              call edisp(iuout,' IAT [s]. DAT [s]')
-              write(outs,'(2F9.2)')cm(11),cm(12)
-              call edisp(iuout,outs)
-            endif
-            call edisp(iuout,' ')
-          endif
-
-C Define mode, number of items, std items, then mode specific items.
-          H(1)=' Mode options are:'
-          H(2)='   1: Proportional control'
-          H(3)='   2: P+I control'
-          H(4)='   3: P+D control'          
-          H(5)='   4: P+I+D control'
-          H(6)='                   '
-          H(7)=' The number of data items required is in the range'
-          H(8)=' 9 to 11 and depends on the PID mode selected, i.e.,'
-          H(9)='   P   -   9 items required,'
-          H(10)='   PI  -   10 items required,'
-          H(11)='   PD  -   10 items required,'
-          H(12)='   PID -   11 items required,'
-          H(13)=' - Refer ESP-r Data Model section 9 '
-          CALL EASKR(cm(2),' ',' PID mode ? ',
-     &      1.,'F',4.,'F',1.,' PID mode',IER,13)
-          CALL ECLOSE(cm(2),1.0,0.001,close1)
-          CALL ECLOSE(cm(2),2.0,0.001,close2)
-          CALL ECLOSE(cm(2),3.0,0.001,close3)
-          CALL ECLOSE(cm(2),4.0,0.001,close4)
-          if(close1)cm(1)=9.
-          if(close2)cm(1)=10.
-          if(close3)cm(1)=10.
-          if(close4)cm(1)=11.
-
- 146      WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
-          H(1)='Heat delivery may be less than the max. If minimium'
-          H(2)='heating > 0 then heating will continue at a re- '
-          H(3)='duced level even when the setpoint is reached. '
-          CALL EASKS(HOLD,
-     &      ' Max & Min heating cap [W], Heat set pt, throtl range',
-     &      ' for PID control: ',40,' 1000. 0.  20. 1. ',
-     &      'PID max min heat cool',IER,3)
-          K=0
-          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Max Heat',IER)
-          CALL EGETWR(HOLD,K,cm(4),0.,999999.,'F','Min Heat',IER)
-          CALL EGETWR(HOLD,K,cm(5),-100.,100.,'F','Heat setp',IER)
-          CALL EGETWR(HOLD,K,cm(6),0.,999999.,'F','Throt rng',IER)
-          if(ier.ne.0)goto 146
-
- 147      WRITE(HOLD,'(2f8.0,2f7.2)')cm(7),cm(8),cm(9),cm(10)
-          H(1)='If you do not wish cooling use a high clg set point.'
-          H(2)='A 0 deg.C cooling setpoint does NOT turn it off. '
-          CALL EASKS(HOLD,
-     &      ' Max & Min cooling cap [W], Cooling set pt, throtl range',
-     &      ' for PID control: ',40,' 1000. 0.  100. 1. ',
-     &      'PID max min cool cool',IER,3)
-          K=0
-          CALL EGETWR(HOLD,K,cm(7),0.,999999.,'F','Max Cool',IER)
-          CALL EGETWR(HOLD,K,cm(8),0.,999999.,'F','Min Cool',IER)
-          CALL EGETWR(HOLD,K,cm(9),-100.,100.,'F','Cool setp',IER)
-          CALL EGETWR(HOLD,K,cm(10),0.,100.,'F','Throt range',IER)
-          if(ier.ne.0)goto 147
-                
-          I2=INT(cm(2))        
-          if(I2.eq.2)then         
-            CALL EASKR(cm(11),' ',' Integral action time [seconds]?',
-     &         1.,'F',0.,'-',1.,' integral action time',IER,0)
-          else if(I2.eq.3)then
-            CALL EASKR(cm(11),' ',' Derivative action time [seconds]?', 
-     &         0.,'F',0.,'-',1.,' derivative action time',IER,0)
-          else if(I2.eq.4)then
-            CALL EASKR(cm(11),' ',' Integral action time [seconds]?',
-     &         1.,'F',0.,'-',1.,' integral action time',IER,0)
-            CALL EASKR(cm(12),' ','Derivative action time [seconds]?',
-     &         0.,'F',0.,'-',1.,' derivative action time',IER,0)
-          endif
         elseif(IBCLAW(II,JJ,KK).eq.6)then
 
 C Zone - plant connector.
@@ -5094,6 +4998,7 @@ C   for control law one.
       real tcpst  ! for local editing.
       integer imasctlindex    ! index of master control used by slave controller.
       integer iclawcurrent    ! to remember the current control law
+      integer ivalue,imini,imaxi,idefa  ! local values for editing as integer
 
 C Set initial logical values.
       close=.true.
@@ -5344,6 +5249,10 @@ C the new menu structure return to the calling subroutine.
               cmlocal(5)=0.0
               cmlocal(6)=20.0
               cmlocal(7)=24.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
               goto 90
             elseif(iclaw.eq.2)then
               cmlocal(1)=0.0        ! this swap is supported, major menu change.
@@ -5354,11 +5263,27 @@ C the new menu structure return to the calling subroutine.
               cmlocal(3)=1000.0
               cmlocal(4)=20.0
               cmlocal(5)=24.0
+              cmlocal(6)=0.0
+              cmlocal(7)=0.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
               goto 90
             elseif(iclaw.eq.5)then
-              cmlocal(1)=9.0        ! varies (this is the smallest) no yet supported.
-              ier=5
-              return
+              cmlocal(1)=10.0        ! varies (this is the smallest) no yet supported.
+              cmlocal(2)=1.0        ! reset to default values
+              cmlocal(3)=1000.0
+              cmlocal(4)=0.0
+              cmlocal(5)=20.0
+              cmlocal(6)=2.0
+              cmlocal(7)=1000.0
+              cmlocal(8)=0.0
+              cmlocal(9)=24.0
+              cmlocal(10)=2.0
+              cmlocal(11)=600.0
+              cmlocal(12)=600.0
+              goto 90
             elseif(iclaw.eq.6)then
               cmlocal(1)=5.0        ! varies (this is the smallest)
               ier=6
@@ -5386,6 +5311,10 @@ C the new menu structure return to the calling subroutine.
               cmlocal(5)=18.0
               cmlocal(6)=24.0
               cmlocal(7)=0.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
               goto 90
             elseif(iclaw.eq.9)then
               cmlocal(1)=9.0
@@ -5399,6 +5328,10 @@ C the new menu structure return to the calling subroutine.
               cmlocal(5)=22.0
               cmlocal(6)=26.0
               cmlocal(7)=24.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
               goto 90
             elseif(iclaw.eq.11)then
               cmlocal(1)=10.0        ! varies (this is the smallest)
@@ -5469,6 +5402,13 @@ C the new menu structure return to the calling subroutine.
               cmlocal(2)=1.0        ! reset to default values
               cmlocal(3)=1000.0
               cmlocal(4)=1000.0
+              cmlocal(5)=0.0
+              cmlocal(6)=0.0
+              cmlocal(7)=0.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
               goto 90
             else
 
@@ -5489,28 +5429,41 @@ C The user did not alter the control law.
 
 C Edit data item identified by KEYIND
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
-C        ifoc=ifoc+1
 
 C prompt1 (72 char) first easkr prompt
 C prompt2 (72 char) second easkr prompt
-C ndec (int) number of decimal places to display (-1 does not ask user)
+C ndec (int) number of decimal places to display
 C vmin (real) minimum value acceptable
 C vmax (real) maximum value acceptable
 C vdef (real) initial/default value
         if(ndec(ifoc).eq.-1)then
+
+C If ndec was a negative one then do not edit this number.
           call edisp(iuout,'Nothing to edit...')
           goto 92
+        elseif(ndec(ifoc).eq.0)then
+
+C If ndec was a zero then edit this number as an integer.
+          ivalue=nint(cmlocal(ifoc))
+          imini=nint(vmin(ifoc))
+          imaxi=nint(vmax(ifoc))
+          idefa=nint(vdef(ifoc))
+          CALL EASKI(ivalue,prompt1(ifoc),prompt2(ifoc),
+     &      imini,'F',imaxi,'F',idefa,menu(ifoc),IER,nctlhelp)
+          if(ier.eq.-3) goto 92
+          cmlocal(ifoc)=real(ivalue)
+        else
+
+C If ndec was greater than zero then edit this number as a real.
+          CALL EASKR(cmlocal(ifoc),prompt1(ifoc),prompt2(ifoc),
+     &      vmin(ifoc),'F',vmax(ifoc),'F',vdef(ifoc),menu(ifoc),
+     &      IER,nctlhelp)
+          if(ier.eq.-3) goto 92
         endif
-        CALL EASKR(cmlocal(ifoc),prompt1(ifoc),prompt2(ifoc),
-     &    vmin(ifoc),'F',vmax(ifoc),'F',vdef(ifoc),menu(ifoc),
-     &    IER,nctlhelp)
 
 C If there were no errors and the value has changed then update the
 C menu (in case a different set of items is required). If cancel
 C requested simply redisplay the menu.
-        if(ier.eq.-3)then
-          goto 92
-        endif
         call eclose(cmlocal(ifoc),cm(ifoc),0.001,close)
         if(close)then
           goto 92
@@ -5565,6 +5518,53 @@ C User altered the cooling capacity so check to see if cooling setpoint needs re
             continue    ! no post processing required.
           elseif(iclaw.eq.4)then
             continue    ! no post processing required.
+            modval=.true.
+          elseif(iclaw.eq.5)then
+            if(ifoc.eq.2)then
+
+C If the user has switched between P PI PD PID modes adjust.
+              if(int(cmlocal(ifoc)).eq.1)then
+                cmlocal(1)=9.0
+                cmlocal(11)=0.0
+                cmlocal(12)=0.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              elseif(int(cmlocal(ifoc)).eq.2)then
+                cmlocal(1)=10.0
+                cmlocal(11)=600.0
+                cmlocal(12)=0.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              elseif(int(cmlocal(ifoc)).eq.3)then
+                cmlocal(1)=10.0
+                cmlocal(11)=600.0
+                cmlocal(12)=0.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              elseif(int(cmlocal(ifoc)).eq.4)then
+                cmlocal(1)=11.0
+                cmlocal(11)=600.0
+                cmlocal(12)=600.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              endif
+            elseif(ifoc.eq.7.or.ifoc.eq.9)then
+
+C User altered the cooling capacity so check to see if cooling setpoint needs resetting.
+              modval=.true.
+              CALL ECLOSE(cmlocal(7),0.0,0.001,close1)
+              CALL ECLOSE(cmlocal(9),0.0,0.001,close2)
+              if(close1.and.close2)then
+                call edisp(iuout,' ')
+                call edisp(iuout,
+     &    ' Zero cooling capacity - setting cooling setpoint to 100C.')
+                cmlocal(9)=100.0
+                goto 91   ! minor change
+              endif
+            else
+              modval=.true.
+              goto 91   ! minor change
+            endif
           elseif(iclaw.eq.7)then
 
 C Warn user if stage capacities do not increment.
@@ -5926,11 +5926,153 @@ C Depending on the current number of miscel items also do humidity.
           prompt2(5)='be called for '
           ndec(5)=3; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=24.0
         elseif(iclaw.eq.5)then
+          h(1)='This implements an ideal proportional controller with'
+          h(2)='optional integral (reset) action and/or derivative'
+          h(3)='(rate) action time or to represent full PID.'
+          h(4)=''
+          h(5)='A proportional action produces an output in proportion'
+          h(6)='to the error sensed so there is usally an offset from'
+          h(7)='the desired setpoint. Simple to implement and stable'
+          h(8)='under most conditions. '
+          h(9)=' '
+          h(10)='A proportional with integral action (reset) is often '
+          h(11)='used to elimitate the offset error. This would avoid '
+          h(12)='thermostats being adjusted by the user an an attempt '
+          h(13)='to correct the offset error. '
+          h(14)=' '
+          h(15)='A proportional with derivitive action might be used'
+          h(16)='where the heating or cooling has a fast response'
+          h(17)='to an actuating signal. This helps avoid overshoot.'
+          h(18)=' '
+          h(19)='A PID combines these actions and (guess what) there '
+          h(20)='are lots of ways for it to go haywire. However with '
+          h(21)='correct tuning an near-ideal control of the sensed '
+          h(22)='variable should be achievable. '
+          h(23)=' '
+          h(24)='As with real PID controllers this controller needs'
+          h(25)='to be tuned to the zone and:'
+          h(26)='  * overshoots can be caused by excessive integral'
+          h(27)='    action.'
+          h(28)='  * continuous oscillations can be caused by excessive'
+          h(29)='    derivitive action'
+          h(30)=' '
+          h(31)='These controls are best used in the context of a short'
+          h(32)='simulation time step. Consider the response time of'
+          h(33)='the system. The building side can go as low as one  '
+          h(34)='minute. '
+          h(35)=' '
+          h(36)='A typical integral time might be 600s for a goal of'
+          h(37)='settling in 20 minutes. Increasing the time constant'
+          h(38)='will reduce the integral action effect. '
+          h(39)=' '
+          h(40)='A typical derivitive time might be 600s. Reduce this '
+          h(41)='to reduce the derivitive action effect. '
+          h(42)=' '
+          H(43)='The number of data items required is:'
+          H(44)='   P   -   9 items required,'
+          H(45)='   PI  -   10 items required,'
+          H(46)='   PD  -   10 items required,'
+          H(47)='   PID -   11 items required,'
+          h(48)=' '
+          H(49)='Heat delivery may be less than the max. If minimium'
+          H(50)='heating > 0 then heating will continue at a re- '
+          H(51)='duced level even when the setpoint is reached. '
+          h(52)=' '
+          H(53)='If you do not wish cooling use a high clg set point.'
+          H(54)='A 0 deg.C cooling setpoint does NOT turn it off. '
+          H(55)=' '
+          H(56)='You are given the option to discard changes when you '
+          H(57)='exit the period. '
+          nctlhelp=57
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
+          if(nint(cm(2)).eq.1)then
+            menu(2)='Mode >> Proportioanl'
+            nmenulines=10    ! set to the last cm index used
+          elseif(nint(cm(2)).eq.2)then
+            menu(2)='Mode >> Proportioanl +integral'
+            nmenulines=11    ! set to the last cm index used
+          elseif(nint(cm(2)).eq.3)then
+            menu(2)='Mode >> Proportioanl +derivitive'
+            nmenulines=11    ! set to the last cm index used
+          elseif(nint(cm(2)).eq.4)then
+            menu(2)='Mode >>Proportioanl P+I+D'
+            nmenulines=12    ! set to the last cm index used
+          endif
+          prompt1(2)='Proportioanl is one, for P+I use two,'
+          prompt2(2)='for P+D use three, for P+I+D use four.'
+          ndec(2)=0; vmin(2)=0.0; vmax(2)=4.0; vdef(2)=0.0
+          menu(3)='Maximum heating capacity (W) '
+          prompt1(3)='Maximum heating capacity (W) '
+          prompt2(3)=' '
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Minimum heating capacity (W) '
+          prompt1(4)='Minimum heating capacity (W) (will not go below'
+          prompt2(4)='this amount e.g. for uninsulated pipes)'
+          ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=0.0
+          menu(5)='Heating setpoint (C)'
+          prompt1(5)='Heating setpoint (C) '
+          prompt2(5)='(in the middle of the proportional band) '
+          ndec(5)=3; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=20.0
+          menu(6)='Heating throttling range (C) '
+          prompt1(6)='Heating throttling range (proportional band) (C)'
+          prompt2(6)=' '
+          ndec(6)=3; vmin(6)=0.0; vmax(6)=20.0; vdef(6)=2.0
+          menu(7)='Maximum cooling capacity (W)'
+          prompt1(7)='Maximum cooling capacity (W) '
+          prompt2(7)=' '
+          ndec(7)=1; vmin(7)=0.0; vmax(7)=999999.0; vdef(7)=1000.0
+          menu(8)='Minimum cooling capacity (W)'
+          prompt1(8)='Minimum cooling capacity (W) (will not drop below'
+          prompt2(8)='this amount) '
+          ndec(8)=1; vmin(8)=0.0; vmax(8)=999999.0; vdef(8)=0.0
+          menu(9)='Cooling setpoint (C) '
+          prompt1(9)='Cooling setpoint (C) '
+          prompt2(9)='(in the middle of the proportional band) '
+          ndec(9)=3; vmin(9)=0.0; vmax(9)=100.0; vdef(9)=24.0
+          menu(10)='Cooling throttling range (C) '
+          prompt1(10)='Cooling throttling range (proportional band) (C)'
+          prompt2(10)=' '
+          ndec(10)=3; vmin(10)=0.0; vmax(10)=10.0; vdef(10)=2.0
+          if(nint(cm(2)).eq.1)then
+            menu(11)=' '
+            prompt1(11)=' '
+            prompt2(11)=' '
+            ndec(11)=-1; vmin(11)=0.0; vmax(11)=0.0; vdef(11)=0.0
+            menu(12)=' '
+            prompt1(12)=' '
+            prompt2(12)=' '
+            ndec(12)=-1; vmin(12)=0.0; vmax(12)=0.0; vdef(12)=0.0
+          elseif(nint(cm(2)).eq.2)then
+            menu(11)='Integral action time [secs] '
+            prompt1(11)='Integral action time [secs] '
+            prompt2(11)=' '
+            ndec(11)=1; vmin(11)=0.0; vmax(11)=10000.0; vdef(11)=600.0
+            menu(12)=' '
+            prompt1(12)=' '
+            prompt2(12)=' '
+            ndec(12)=-1; vmin(12)=1.0; vmax(12)=0.0; vdef(12)=0.0
+          elseif(nint(cm(2)).eq.3)then
+            menu(11)='Derivative action time [secs] '
+            prompt1(11)='Derivative action time [secs] '
+            prompt2(11)='(see help) '
+            ndec(11)=1; vmin(11)=1.0; vmax(11)=10000.0; vdef(11)=600.0
+            menu(12)=' '
+            prompt1(12)=' '
+            prompt2(12)=' '
+            ndec(12)=-1; vmin(12)=0.0; vmax(12)=0.0; vdef(12)=0.0
+          elseif(nint(cm(2)).eq.4)then
+            menu(11)='Integral action time [secs] '
+            prompt1(11)='Integral action time [secs] '
+            prompt2(11)='(see help) '
+            ndec(11)=1; vmin(11)=1.0; vmax(11)=10000.0; vdef(11)=600.0
+            menu(12)='Derivative action time [secs] '
+            prompt1(12)='Derivative action time [secs] '
+            prompt2(12)='(see help) '
+            ndec(12)=1; vmin(12)=1.0; vmax(12)=10000.0; vdef(12)=600.0
+          endif
         elseif(iclaw.eq.6)then
           menu(1)=' '
           prompt1(1)=' '
