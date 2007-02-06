@@ -38,19 +38,19 @@ sourcesnoX:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_ask.F
 
 the_libGTK:
-	ar ruv $(LIBGTK) $(LD_FLAGS) $(OBJECTSGTK) $(GTK_OBJ)
+	ar ruv $(LIBGTK) $(OBJECTSGTK) $(GTK_OBJ)
 	if test -s /usr/bin/ranlib ; \
 	then ranlib $(LIBGTK) ; \
 	fi
 
 the_libX11:
-	ar ruv $(LIBX11) $(LD_FLAGS) $(OBJECTSX11) 
+	ar ruv $(LIBX11) $(OBJECTSX11) 
 	if test -s /usr/bin/ranlib ; \
 	then ranlib $(LIBX11) ; \
 	fi
 
 the_libnoX:
-	ar ruv $(LIBnoX) $(LD_FLAGS) $(OBJECTSnoX) 
+	ar ruv $(LIBnoX) $(OBJECTSnoX) 
 	if test -s /usr/bin/ranlib ; \
 	then ranlib $(LIBnoX) ; \
 	fi
