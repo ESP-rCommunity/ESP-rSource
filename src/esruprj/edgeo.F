@@ -2576,7 +2576,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
-      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*32
+      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*36
       character outs*124,headv*48
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
 
@@ -2746,7 +2746,7 @@ C Show the new point on the current wireframe.
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -2883,7 +2883,7 @@ C Present distance, azimuth and elevation then parse data from HOLD.
             H(2)='+ degrees clockwise, elevation 90 is vertical. '
  342        CALL EASKS(HOLD,
      &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
+     &      ' ',36,' 1. 0. 0. ','dist azim elev',IER,2)
             K=0
             CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
             CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
@@ -2936,7 +2936,7 @@ C Show the new point on the current wireframe.
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 543            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3334,7 +3334,7 @@ C be a new vertex and update the wireframe.
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
-  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+  43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3505,7 +3505,7 @@ C Present vertex coords for editing then parse data from HOLD.
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
- 146          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
+ 146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
@@ -3539,7 +3539,7 @@ C Present vertex coords for editing then parse data from HOLD.
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
-  42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',IER,2)
+  42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
