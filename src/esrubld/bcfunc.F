@@ -4176,7 +4176,7 @@ C Trace output.
 
 C ******************** BCL15
 
-C Logic Optimum Start Controller.
+C Logic Optimum Start (rewind) Controller.
 C Suitable for use with controller types 0,35,36,37,38,39. 
 
       SUBROUTINE BCL15
@@ -4184,6 +4184,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -4200,7 +4201,6 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
-      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
 
       LOGICAL tsclaw,rewnd,pasone,close
@@ -4242,7 +4242,7 @@ C A2      =  EXT TEMP. "       "   "     "        "     "
       timdif=bmiscd(icf,idtyp,iper,6)
       initim=int(bmiscd(icf,idtyp,iper,7))
       if(initim.eq.1)then
-         stinit=4.         
+         stinit=4.    
       else if(initim.eq.2)then
          stinit=bmiscd(icf,idtyp,iper,8)
       else if(initim.eq.3)then
@@ -4257,7 +4257,10 @@ C FATAL ERROR TESTS,
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL15')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL15')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C SET COMFORT TEMPERATURE UPPER AND LOWER LIMITS;
       thi=dtmp+(0.5*tr)
@@ -4428,17 +4431,9 @@ C CONVERT FROM (/M^2) IF NECESSARY.
 C TRACE OUTPUT,
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(41).ne.0) then
-         write(outs,'(A,F10.3,A,F10.3)')
-     & ' Subroutine BCL15:  Qfuture = ',qfut,' Tfuture = ',tfut
-         call edisp(itu,outs)
-         call edisp(itu,' ')    
-     
-         write(outs,'(A,F10.3,A,F10.3,A,F10.3)')
-     & ' Subroutine BCL15: STFUT = ',stfut,' STPRES = ',stpres,
-     & '  TIMOPT = ',timopt
-         call edisp(itu,outs)
-         call edisp(itu,' ')
-         
+         write(outs,'(A,F10.3,A,F8.3,A,F10.3,A,F10.3,A,F10.3)')
+     & ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
+     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL15')
       endif

@@ -1315,7 +1315,8 @@ C law can be jumped around.
         endif
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
-     &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.21)then
+     &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
+     &      iclaw.eq.21)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1344,21 +1345,21 @@ C starting up the menu based control period definition.
         SALT(3)= 'Basic pre-heat or pre-cool controller  '
         SALT(4)= 'Fixed heat injection and extraction    '
         SALT(5)= 'PID control action for heating/cooling '
-        SALT(6)= 'Flux connection between zone & plant   '
+        SALT(6)= ' Flux connection between zone & plant  '
         SALT(7)= 'Multi-stage control with hysteresis    '
         SALT(8)= 'Variable supply temp with constraints  '
-        SALT(9)= 'Heat pipe from `outside` to inside     '
+        SALT(9)= ' Heat pipe from `outside` to inside    '
         SALT(10)='Separate flux ON & OFF set points      '
-        SALT(11)='Match sensed/recorded value (ideal)    '
-        SALT(12)='Match sensed/recorded value (on/off)   '
-        SALT(13)='Time-proportioning ON & OFF control    '
+        SALT(11)=' Match sensed/recorded value (ideal)   '
+        SALT(12)=' Match sensed/recorded value (on/off)  '
+        SALT(13)='Time-proportioning separate (on/off)   '
         SALT(14)='Floating `three-position` control      '
-        SALT(15)='Optimum start control                  '
-        SALT(16)='Optimum stop control                   '
-        SALT(17)='Fuzzy Logic PI-PD control              '
-        SALT(18)='Null controller.                       '
-        SALT(19)='Multi-sensor heating/cooling           '
-        SALT(20)='Evaporative source (surface)           '
+        SALT(15)='Optimum start (with rewind) control    '
+        SALT(16)=' Optimum stop control                  '
+        SALT(17)=' Fuzzy Logic PI-PD control             '
+        SALT(18)=' Null controller.                      '
+        SALT(19)=' Multi-sensor heating/cooling          '
+        SALT(20)=' Evaporative source (surface)          '
         SALT(21)='Slave Capacity Controller              '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
@@ -1367,9 +1368,66 @@ C starting up the menu based control period definition.
         else
           IX=iclaw
         endif
-        H(1)='See ESP-r Data Model section 9 for details. '
+        H(1)='The zone basic controller is an ideal controller which'
+        H(2)='will inject or extract sufficient heat (subject to '
+        H(3)='the defined heating and cooling capacity) to meet a '
+        H(4)='heating and/or cooling setpoint.  '
+        H(5)=' '
+        h(6)='A free float controller allows the zone temperature to'
+        h(7)='reach whatever temperature is consistent with the '
+        h(8)='heat gains and losses in the zone. No environmental '
+        h(9)='control is applied. '
+        H(10)=' '
+        H(11)='The ideal fixed injection controller represents '
+        H(12)='systems which operate at a fixed rate if heating '
+        H(13)='or cooling is requested. '
+        H(14)=' '
+        H(15)='An ideal proportional controller with optional'
+        H(16)='integral (reset) action and/or derivative (rate)'
+        H(17)='action time or to represent full PID. '
+        H(18)=' '
+        H(19)='A control which links a zone with a detailed system'
+        H(20)='network component.'
+        H(21)=' '
+        H(22)='A multi-stage controller with hysteresis has a '
+        H(23)='base heating and cooling capacity and, for each '
+        H(24)='three stages of increating capacity.'
+        H(25)=' '
+        H(26)='Variable supply temperature with limit constraints '
+        H(27)='is an idealised air based control that delivers air'
+        H(28)='at a fixed flow rate (same for heating & cooling '
+        H(29)='operation). The heating supply temperature varies '
+        H(30)='up to a maximum setpoint and the cooling supply '
+        H(31)='temperature varies down to a minimum setpoint. '
+        H(32)=' '
+        H(33)='Control with separate on/off setpoints allows '
+        H(34)='separate flux ON and flux OFF set points for '
+        H(35)='heating and cooling via ON until OFF point logic.'
+        H(36)=' '
+        H(37)='Time proportioning control with separate on/off '
+        H(38)='setpoints for heating and cooling extends the '
+        H(39)='functionality with cycle time limits. '
+        H(40)=' '
+        H(41)='The floating action (three-position) controller'
+        H(42)='uses an open switch and shut switch differential (C)'
+        H(43)='for heating and cooling as well as timestep rate of '
+        H(44)='change for heating and cooling.'
+        H(45)=' '
+        H(46)='The optimum start controller allows for three modes '
+        H(47)='of operation (each with rewind): '
+        H(48)=' (1) Default start at 4AM '
+        H(49)=' (2) Start at user defined time '
+        H(50)=' (3) Birtles & John equation time estimate'
+        H(51)=' '
+        H(52)='Proportional capacity slave controller. Typically a '
+        H(53)='slave control is used to represent an environmental '
+        H(54)='control with a thermostat in one zone and actions in '
+        H(55)='a number of zones. '
+        H(56)=' '
+        H(57)='Further details within each control law interface.'
+        H(58)=' '
   63    CALL EPICKS(IX,IVALS,' ',' Control law: ',
-     &         40,21,SALT,'control law',IER,1)
+     &    40,21,SALT,'control law (indented=old or obscure)',IER,58)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -1893,108 +1951,92 @@ C Floating (`three-position') control.
           endif
           goto 92
 
-C          if(itrc.gt.0)then
-C            call edisp(iuout,' ')   
-C            call edisp(iuout,' Floating `3-position` control data is:')
-C            call edisp(iuout,' Htg set-pt, Htg db, Htg shut diff, Htg
-C     & open diff, Clg set-pt ')
-C            write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6) 
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' Clg db, Clg open diff, Clg shut diff, 
-C     & Max htg W, Min htg W')
-C            write(outs,'(5F9.2)')cm(7),cm(8),cm(9),cm(10),cm(11)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,'ROC htg, Max clg W, Min clg W, ROC clg')
-C           write(outs,'(4F9.2)')cm(12),cm(13),cm(14),cm(15)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' ')
-C          endif
-
-C          cm(1)=14.
-C          H(1)=' The rate of change of heating & cooling (items 11 &' 
-C          H(2)=' 14) are in terms of building time-steps.'
-C          H(3)=' Data requested:   (deg.C)'
-C          H(4)=' Heating set-point, deadband, upper & lower diff'
-C          H(5)=' Cooling set-point, deadband, upper & lower diff'
-C          H(6)=' Max & Min heating capacity (W) '
-C          H(7)=' Rate of change of heating  '
-C          H(8)=' Max & Min cooling capacity (W) '
-C          H(9)=' Rate of change of cooling  '
-C          H(10)=' - Refer ESP-r Data Model section 9 '
-C          do 31 MM=2,15
-C            write(outs,'(A,I3)')' 3-position Item ',MM-1
-C            CALL EASKR(cm(MM),outs,' value: ',
-C     &        0.,'-',0.,'-',1.,'miscel data',IER,10)
-C  31      continue
         elseif(IBCLAW(II,JJ,KK).eq.15)then
 
 C Logic Optimum Start Controller.
-          if(itrc.gt.0)then
-            call edisp(iuout,' ')
-            call edisp(iuout,' Logic Optimum Start control data is:')
-            call edisp(iuout,' Htg cpcy, Set pt, Temp Diff, DTOA,
-     & Min time diff, Init. Guess Opt.')
-            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
-            call edisp(iuout,outs)
-            call edisp(iuout,' ')
-            
-            I7=INT(cm(7))
-            IF(I7.EQ.1)THEN
-              call edisp(iuout,' Init. Guess')
-              write(outs,'(1F9.2)')4.
-            ELSEIF(I7.EQ.2)THEN
-              call edisp(iuout,' Init. Guess')
-              write(outs,'(1F9.2)')cm(8)
-            ELSEIF(I7.EQ.3)THEN
-              call edisp(iuout,' B&J Cofts.')
-              write(outs,'(3F9.2)')cm(8),cm(9),cm(10)
-            ENDIF
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
           endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawt=ier
+            goto 77
+          endif
+          goto 92
 
-          H(1)=' The number of data items required is in the range'
-          H(2)=' 6 to 8 and depends on the initial guess selected:'
-          H(3)=' If initial guess user-defined  - 6 items required;'
-          H(4)=' If Birtles & John Eqn. estimate - 8 items rqd.' 
-          H(5)=' - Refer ESP-r Data Model section 9 '
-          CALL EASKR(cm(1),' ',' No. of misc data items ?',
-     &      6.,'F',8.,'F',6.,'no. of misc data items',IER,5)
-          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
-     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
-          CALL EASKR(cm(3),' ',' Heating set-point [deg.C] ? ',
-     &      -100.,'F',100.,'F',20.,' htg set-point',IER,0)
-          CALL EASKR(cm(4),' ',' Temp differential ? ',
-     &      0.,'F',0.,'-',2.,'temp diffnl',IER,0)
-          CALL EASKR(cm(5),' ',' Desired time of arrival (DTAO) ? ',
-     &      0.,'F',0.,'-',4.,' DTOA',IER,0)
+C          if(itrc.gt.0)then
+C            call edisp(iuout,' ')
+C            call edisp(iuout,' Logic Optimum Start control data is:')
+C            call edisp(iuout,' Htg cpcy, Set pt, Temp Diff, DTOA,
+C     & Min time diff, Init. Guess Opt.')
+C            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' ')
+            
+C            I7=INT(cm(7))
+C            IF(I7.EQ.1)THEN
+C              call edisp(iuout,' Init. Guess')
+C              write(outs,'(1F9.2)')4.
+C            ELSEIF(I7.EQ.2)THEN
+C              call edisp(iuout,' Init. Guess')
+C              write(outs,'(1F9.2)')cm(8)
+C            ELSEIF(I7.EQ.3)THEN
+C              call edisp(iuout,' B&J Cofts.')
+C              write(outs,'(3F9.2)')cm(8),cm(9),cm(10)
+C            ENDIF
+C          endif
 
-          H(1)=' If the difference between successive estimates is'
-          H(2)=' less then the `Min. Time Diff`, then the earliest'
-          H(3)=' time is accepted as the `Optimum Start Time`.'
-          CALL EASKR(cm(6),' ',' Min time diff. ? ',
-     &      0.,'F',0.,'-',0.1,' Min time diff.',IER,3)
+C          H(1)=' The number of data items required is in the range'
+C          H(2)=' 6 to 8 and depends on the initial guess selected:'
+C          H(3)=' If initial guess user-defined  - 6 items required;'
+C          H(4)=' If Birtles & John Eqn. estimate - 8 items rqd.' 
+C          H(5)=' - Refer ESP-r Data Model section 9 '
+C          CALL EASKR(cm(1),' ',' No. of misc data items ?',
+C     &      6.,'F',8.,'F',6.,'no. of misc data items',IER,5)
+C          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
+C     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
+C          CALL EASKR(cm(3),' ',' Heating set-point [deg.C] ? ',
+C     &      -100.,'F',100.,'F',20.,' htg set-point',IER,0)
+C          CALL EASKR(cm(4),' ',' Temp differential ? ',
+C     &      0.,'F',0.,'-',2.,'temp diffnl',IER,0)
+C          CALL EASKR(cm(5),' ',' Desired time of arrival (DTAO) ? ',
+C     &      0.,'F',0.,'-',4.,' DTOA',IER,0)
 
-          H(1)=' The initial guess may be one of the following'
-          H(2)=' 3 options:-'
-          H(2)=' 1 = Default of 4.00 a.m.;'
-          H(3)=' 2 = User-Defined time;'
-          H(4)=' 3 = Birtles & John Eqn. estimate.'
-          CALL EASKR(cm(7),' ',' Initial Guess ? ',
-     &      0.,'F',3.,'-',1.,' Initial Guess',IER,4)
+C          H(1)=' If the difference between successive estimates is'
+C          H(2)=' less then the `Min. Time Diff`, then the earliest'
+C          H(3)=' time is accepted as the `Optimum Start Time`.'
+C          CALL EASKR(cm(6),' ',' Min time diff. ? ',
+C     &      0.,'F',0.,'-',0.1,' Min time diff.',IER,3)
 
-          I7=INT(cm(7))
-          IF(I7.EQ.1)THEN
-             cm(8)=4.
-          ELSEIF(I7.EQ.2)THEN
-             CALL EASKR(cm(8),' ',' Initial Guess ? ',
-     &       0.,'F',24.,'F',4.,'Initial Guess',IER,0)
-          ELSEIF(I7.EQ.3)THEN
-             CALL EASKR(cm(8),' ',' B&J Eqn 1st Coeft ? ',
-     &       0.,'-',0.,'-',1.,'B&J Eqn 1st Coeft ',IER,0)
-             CALL EASKR(cm(9),' ',' B&J Eqn 2nd Coeft ? ',
-     &       0.,'-',0.,'-',1.,'B&J Eqn 2nd Coeft ',IER,0)
-             CALL EASKR(cm(10),' ',' B&J Eqn 3rd Coeft ? ',
-     &       0.,'-',0.,'-',1.,'B&J Eqn 3rd Coeft ',IER,0)
-          ENDIF
+C          H(1)=' The initial guess may be one of the following'
+C          H(2)=' 3 options:-'
+C          H(2)=' 1 = Default of 4.00 a.m.;'
+C          H(3)=' 2 = User-Defined time;'
+C          H(4)=' 3 = Birtles & John Eqn. estimate.'
+C          CALL EASKR(cm(7),' ',' Initial Guess ? ',
+C     &      0.,'F',3.,'-',1.,' Initial Guess',IER,4)
+
+C          I7=INT(cm(7))
+C          IF(I7.EQ.1)THEN
+C             cm(8)=4.
+C          ELSEIF(I7.EQ.2)THEN
+C             CALL EASKR(cm(8),' ',' Initial Guess ? ',
+C     &       0.,'F',24.,'F',4.,'Initial Guess',IER,0)
+C          ELSEIF(I7.EQ.3)THEN
+C             CALL EASKR(cm(8),' ',' B&J Eqn 1st Coeft ? ',
+C     &       0.,'-',0.,'-',1.,'B&J Eqn 1st Coeft ',IER,0)
+C             CALL EASKR(cm(9),' ',' B&J Eqn 2nd Coeft ? ',
+C     &       0.,'-',0.,'-',1.,'B&J Eqn 2nd Coeft ',IER,0)
+C             CALL EASKR(cm(10),' ',' B&J Eqn 3rd Coeft ? ',
+C     &       0.,'-',0.,'-',1.,'B&J Eqn 3rd Coeft ',IER,0)
+C          ENDIF
+
         elseif(IBCLAW(II,JJ,KK).eq.16)then
 
 C Logic Optimum Stop Controller.
@@ -5205,21 +5247,21 @@ C control law to trap changes.
           SALT(3)= 'Basic pre-heat or pre-cool controller  '
           SALT(4)= 'Fixed heat injection and extraction    '
           SALT(5)= 'PID control action for heating/cooling '
-          SALT(6)= 'Flux connection between zone & plant   '
+          SALT(6)= ' Flux connection between zone & plant  '
           SALT(7)= 'Multi-stage control with hysteresis    '
           SALT(8)= 'Variable supply temp with constraints  '
-          SALT(9)= 'Heat pipe from `outside` to inside     '
+          SALT(9)= ' Heat pipe from `outside` to inside    '
           SALT(10)='Separate flux ON & OFF set points      '
-          SALT(11)='Match sensed/recorded value (ideal)    '
-          SALT(12)='Match sensed/recorded value (on/off)   '
-          SALT(13)='Time-proportioning (on/off) control    '
+          SALT(11)=' Match sensed/recorded value (ideal)   '
+          SALT(12)=' Match sensed/recorded value (on/off)  '
+          SALT(13)='Time-proportioning separate (on/off)   '
           SALT(14)='Floating `three-position` control      '
-          SALT(15)='Optimum start control                  '
-          SALT(16)='Optimum stop control                   '
-          SALT(17)='Fuzzy Logic PI-PD control              '
-          SALT(18)='Null controller.                       '
-          SALT(19)='Multi-sensor heating/cooling           '
-          SALT(20)='Evaporative source (surface)           '
+          SALT(15)='Optimum start (with rewind) control    '
+          SALT(16)=' Optimum stop control                  '
+          SALT(17)=' Fuzzy Logic PI-PD control             '
+          SALT(18)=' Null controller.                      '
+          SALT(19)=' Multi-sensor heating/cooling          '
+          SALT(20)=' Evaporative source (surface)          '
           SALT(21)='Slave Capacity Controller              '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
@@ -5229,8 +5271,68 @@ C control law to trap changes.
           else
             IX=iclawcurrent
           endif
+
+C Re-instanciate help specifically for summary of control laws.
+          H(1)='The zone basic controller is an ideal controller which'
+          H(2)='will inject or extract sufficient heat (subject to '
+          H(3)='the defined heating and cooling capacity) to meet a '
+          H(4)='heating and/or cooling setpoint.  '
+          H(5)=' '
+          h(6)='A free float controller allows the zone temperature to'
+          h(7)='reach whatever temperature is consistent with the '
+          h(8)='heat gains and losses in the zone. No environmental '
+          h(9)='control is applied. '
+          H(10)=' '
+          H(11)='The ideal fixed injection controller represents '
+          H(12)='systems which operate at a fixed rate if heating '
+          H(13)='or cooling is requested. '
+          H(14)=' '
+          H(15)='An ideal proportional controller with optional'
+          H(16)='integral (reset) action and/or derivative (rate)'
+          H(17)='action time or to represent full PID. '
+          H(18)=' '
+          H(19)='A control which links a zone with a detailed system'
+          H(20)='network component.'
+          H(21)=' '
+          H(22)='A multi-stage controller with hysteresis has a '
+          H(23)='base heating and cooling capacity and, for each '
+          H(24)='three stages of increating capacity.'
+          H(25)=' '
+          H(26)='Variable supply temperature with limit constraints '
+          H(27)='is an idealised air based control that delivers air'
+          H(28)='at a fixed flow rate (same for heating & cooling '
+          H(29)='operation). The heating supply temperature varies '
+          H(30)='up to a maximum setpoint and the cooling supply '
+          H(31)='temperature varies down to a minimum setpoint. '
+          H(32)=' '
+          H(33)='Control with separate on/off setpoints allows '
+          H(34)='separate flux ON and flux OFF set points for '
+          H(35)='heating and cooling via ON until OFF point logic.'
+          H(36)=' '
+          H(37)='Time proportioning control with separate on/off '
+          H(38)='setpoints for heating and cooling extends the'
+          H(39)='functionality with cycle time limits.'
+          H(40)=' '
+          H(41)='The floating action (three-position) controller'
+          H(42)='uses an open switch and shut switch differential (C)'
+          H(43)='for heating and cooling as well as timestep rate of'
+          H(44)='change for heating and cooling.'
+          H(45)=' '
+          H(46)='The optimum start controller allows for three modes'
+          H(47)='of operation (each with rewind): '
+          H(48)=' (1) Default start at 4AM '
+          H(49)=' (2) Start at user defined time '
+          H(50)=' (3) Birtles & John equation time estimate'
+          H(51)=' '
+          H(52)='Proportional capacity slave controller. Typically a'
+          H(53)='slave control is used to represent an environmental'
+          H(54)='control with a thermostat in one zone and actions in'
+          H(55)='a number of zones. '
+          H(56)=' '
+          H(57)='Further details within each control law interface.'
+          H(58)=' '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &         42,21,SALT,'control law',IER,nctlhelp)
+     &      42,21,SALT,'control law (indented=old or obscure)',IER,58)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -5374,9 +5476,17 @@ C the new menu structure return to the calling subroutine.
               cmlocal(15)=1.0
               goto 90
             elseif(iclaw.eq.15)then
-              cmlocal(1)=6.0       ! varies (this is the smallest)
-              ier=15
-              return
+              cmlocal(1)=6.0        ! varies (this is the smallest) no yet supported.
+              cmlocal(2)=1000.0      ! reset to default values
+              cmlocal(3)=20.0
+              cmlocal(4)=1.0
+              cmlocal(5)=8.0
+              cmlocal(6)=0.5
+              cmlocal(7)=1.0
+              cmlocal(8)=4.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              goto 90
             elseif(iclaw.eq.16)then
               cmlocal(1)=9.0
               ier=16
@@ -5631,6 +5741,33 @@ C Ensure that ON + OFF cycle time is not greater than total cycle time.
      &        'the total cooling cycle minutes.','W') 
           elseif(iclaw.eq.14)then
              continue    ! no postprocessing (yet)
+          elseif(iclaw.eq.15)then
+            if(ifoc.eq.7)then
+
+C If the user has switched between startup modes adjust.
+              if(int(cmlocal(ifoc)).eq.1)then
+                cmlocal(1)=6.0
+                cmlocal(8)=4.0
+                cmlocal(9)=0.0
+                cmlocal(10)=0.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              elseif(int(cmlocal(ifoc)).eq.2)then
+                cmlocal(1)=7.0
+                cmlocal(8)=4.0
+                cmlocal(9)=0.0
+                cmlocal(10)=0.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              elseif(int(cmlocal(ifoc)).eq.3)then
+                cmlocal(1)=9.0
+                cmlocal(8)=1.0
+                cmlocal(9)=1.0
+                cmlocal(10)=1.0
+                modval=.true.
+                goto 90    ! major change so menu needs to change
+              endif
+            endif
           elseif(iclaw.eq.21)then
 
 C For master-slave ensure that sensor of this control is non-zero and that
@@ -6491,11 +6628,131 @@ C and cooling (initial part of the input is similar to control 10).
           prompt2(15)='timesteps) moving from one state to another.'
           ndec(15)=0; vmin(15)=0.0; vmax(15)=10.0; vdef(15)=1.0
         elseif(iclaw.eq.15)then
+          h(1)='The optimum start controller allows for three modes '
+          h(2)='of operation: '
+          h(3)=' (1) Default start at 4AM'
+          h(4)=' (2) Start at user defined time'
+          h(5)=' (3) Birtles & John equationq estimate which is '
+          h(6)='     based on A New Optimum Start Control Algorithm'
+          h(7)='     in Proceedings of International Symposium'
+          h(8)='     on Control and Operation of Building HVAC'
+          h(9)='     Systems in 1985 Trondheim, Norway'
+          h(10)=' '
+          h(11)='Note this control is designed for optimum start '
+          h(12)='of heating only. It is one of the lesser used '
+          h(13)='controls - pay attention to the predicted performance.'
+          h(14)=' '
+          h(15)='Heating capacity is in W to be used during the'
+          h(16)='optimum startup period. '
+          h(17)=' '
+          h(18)='The heating setpoint (C) is the desired temperature'
+          h(19)='at the desired-time-of-arrival. '
+          h(20)=' '
+          h(21)='The band of acceptable temperatures (C) is applied'
+          h(22)='to the heating setpoint to provide an upper and '
+          h(23)='lower setpoints. A small band will force tighter'
+          h(24)='control. '
+          h(25)=' '
+          h(26)='If the optimal control does not reach the band of'
+          h(27)='acceptable temps at the desired-time-of-arrival '
+          h(28)='then it will rewind and try again. You can control '
+          h(29)='the time difference between successive trails by '
+          h(30)='setting a minimum-time-difference. '
+          h(30)=' '
+          h(31)='The Birtles & John Eqn. asks for three coefficients '
+          h(32)='the first is a heating constant, the second is a '
+          h(33)='building constant and the third is an exterior '
+          h(34)='temperature constant. Please review the paper '
+          h(35)='in order to understand these coefficients. '
+          h(36)=' '
+          h(37)='This control uses a rewind action that resets the'
+          h(38)='simulation timestep and `tries again`. During the'
+          h(39)='simulation the `monitor` facility will get confused'
+          h(40)='and some graphs in the results module might not '
+          h(41)='plot correctly.  Use this control with care. '
+          h(42)=' '
+          H(43)='You are given the option to discard changes when you'
+          H(44)='exit the period. '
+          nctlhelp=44
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          continue
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
+          menu(2)='Heating capacity (W) '
+          prompt1(2)='Heating capacity (W) available during the '
+          prompt2(2)='startup period. '
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
+          menu(3)='Heating setpoint (desired) (C) '
+          prompt1(3)='Heating setpoint (C) which we desire to '
+          prompt2(3)='reach by the desired time-of-arrival '
+          ndec(3)=3; vmin(3)=0.0; vmax(3)=100.0; vdef(3)=20.0
+          menu(4)='Temperature differential (C) '
+          prompt1(4)='Temperature differential (C) to be applied to'
+          prompt2(4)='the setpoint to create an acceptable band'
+          ndec(4)=3; vmin(4)=0.0; vmax(4)=10.0; vdef(4)=1.0
+          menu(5)='Desired time-of-arrival (hours) '
+          prompt1(5)='Desired time-of-arrival (hours) when the '
+          prompt2(5)='temperatrure should be within the accept band.'
+          ndec(5)=2; vmin(5)=0.0; vmax(5)=24.0; vdef(5)=8.0
+          menu(6)='Minimum time difference (hours) '
+          prompt1(6)='Minimum time difference (hours) to try before '
+          prompt2(6)='or after guess. '
+          ndec(6)=3; vmin(6)=0.1; vmax(6)=2.0; vdef(6)=0.2
+          if(nint(cm(7)).eq.1)then
+            nmenulines=8    ! set to the last cm index used
+            menu(7)='Start >> Default of 4.00 a.m.'
+            prompt1(7)='Default of 4.00 a.m. (value one), User start'
+            prompt2(7)='(value two) and Birtles (value three) '
+            ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
+            menu(8)=' '
+            prompt1(8)=' '
+            prompt2(8)=' '
+            ndec(8)=-1; vmin(8)=0.0; vmax(8)=0.0; vdef(8)=0.0
+            menu(9)=' '
+            prompt1(9)=' '
+            prompt2(9)=' '
+            ndec(9)=-1; vmin(9)=0.0; vmax(9)=0.0; vdef(9)=0.0
+            menu(10)=' '
+            prompt1(10)=' '
+            prompt2(10)=' '
+            ndec(10)=-1; vmin(10)=0.0; vmax(10)=0.0; vdef(10)=0.0
+          elseif(nint(cm(7)).eq.2)then
+            nmenulines=8    ! set to the last cm index used
+            menu(7)='Start >> User defined start'
+            prompt1(7)='User start (value two ),4.00 a.m. (value one)'
+            prompt2(7)='and Birtles (value three) '
+            ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
+            menu(8)='Initial guess for start time (hours) '
+            prompt1(8)='Initial guess for start time (hours) '
+            prompt2(8)=' '
+            ndec(8)=3; vmin(8)=0.0; vmax(8)=24.0; vdef(8)=4.0
+            menu(9)=' '
+            prompt1(9)=' '
+            prompt2(9)=' '
+            ndec(9)=-1; vmin(9)=0.0; vmax(9)=0.0; vdef(9)=0.0
+            menu(10)=' '
+            prompt1(10)=' '
+            prompt2(10)=' '
+            ndec(10)=-1; vmin(10)=0.0; vmax(10)=0.0; vdef(10)=0.0
+          elseif(nint(cm(7)).eq.3)then
+            nmenulines=10    ! set to the last cm index used
+            menu(7)='Start >> Birtles & John Eqn.'
+            prompt1(7)='Birtles & John Eqn. (value three),4.00 a.m.'
+            prompt2(7)='(value one), User start (value two)'
+            ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
+            menu(8)='Birtles & John Eqn. heating coef'
+            prompt1(8)='Birtles & John Eqn. heating coef '
+            prompt2(8)='(see the referenced paper) '
+            ndec(8)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
+            menu(9)='Birtles & John Eqn. building coef'
+            prompt1(9)='Birtles & John Eqn. building coef '
+            prompt2(9)='(see the referenced paper) '
+            ndec(9)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
+            menu(10)='Birtles & John Eqn. building coef'
+            prompt1(10)='Birtles & John Eqn. building coef '
+            prompt2(10)='(see the referenced paper) '
+            ndec(10)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
+          endif
         elseif(iclaw.eq.16)then
           menu(1)=' '
           prompt1(1)=' '
@@ -6527,7 +6784,7 @@ C and cooling (initial part of the input is similar to control 10).
           continue
         elseif(iclaw.eq.21)then
           H(1) ='Proportional capacity slave controller. Typically a'
-          h(2) ='a slave control is used to represent an environmental'
+          h(2) ='slave control is used to represent an environmental'
           h(3) ='control with a thermostat in one zone and actions in'
           h(4) ='a number of zones. Example: a residentail AC system'
           H(5) ='with a central fan delivering to several zones.'
