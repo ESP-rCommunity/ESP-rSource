@@ -968,7 +968,7 @@ C Generate a brief description.
       h(11)='HIGH limit: point above which (optional) 2nd stage'
       h(12)=' flow regime takes effect. (set to 100C to keep it'
       h(13)=' from being used).'
- 100  WRITE(HOLD,'(3f8.2)')TLO(ICOMP),TUP(ICOMP),THI(ICOMP)
+ 100  WRITE(HOLD,'(3f8.2,a)')TLO(ICOMP),TUP(ICOMP),THI(ICOMP),'  '
       CALL EASKS(HOLD,
      &  ' Lower, middle (1st stage), high (2nd stage) setpoints :',
      &  ' ',40,' 15.0  22.0  26.0  ','flow stages ',IER,13)
@@ -1615,7 +1615,7 @@ C If new period then set defaults otherwise get data from common.
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (HOLD,'(2i5)') IACS,IACF
+      write (HOLD,'(2i5,a)') IACS,IACF,'  '
       h(1)='Period during which air flow applies.'
       CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
       K=0
@@ -3158,7 +3158,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
       logical sorted,modopr
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
-      character lodlabel*6,typstr*6,H*72
+      character lodlabel*6,typstr*8,H*72
       character zname*12,zdesc*64,title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3859,6 +3859,8 @@ C Remind users to check their data.
 
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
+
+C Provide a bit of editing space (8 char) for the  char string.
         dok=.false.
         h(1)='Casual gains have initial type labels which may not'
         h(2)='be appropriate for your project. You can adapt the '
@@ -3869,10 +3871,10 @@ C Remind users to check their data.
           h(2)='i.e. equip - equipment, light - lighting etc..   '
           DO 567 ITYPE=1,3
             write(outs,'(a,i2)') 'Label for type ',ITYPE
-            TYPSTR=lodlabel(icomp,ITYPE)
-            call easks(TYPSTR,' ',outs,6,
+            write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
+            call easks(TYPSTR,' ',outs,8,
      &                 lodlabel(icomp,ITYPE),' Type label',IER,2)
-            lodlabel(icomp,ITYPE)=TYPSTR
+            write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:6)
  567      CONTINUE
           goto 5
         endif
@@ -4012,7 +4014,7 @@ C Identify nature of casual gain
       h(6)='in the main operations menu.'
       CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGT,6)
 
- 100  WRITE(HOLD,'(2f9.0,2f8.2)')PS,PL,RAD,CON
+ 100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
 
 C << this would be a good place to expand the logic so that lighting
 C << and small power can be entered in terms of W/m2.
@@ -4260,7 +4262,7 @@ C If silent jump to insertion logic.
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (hold,'(2i5)') ICGS,ICGF
+      write (hold,'(2i5,a)') ICGS,ICGF,'  '
       h(1)='Period during which casual gains applies.'
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       K=0
@@ -4288,10 +4290,10 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 
 C Gain as W - require gain only.
  20     if (ICGT.lt.-1) then
-          write (HOLD,'(2f8.1)') CMGS*real(ZBASEA(ICOMP)),
-     &                           CMGL*real(ZBASEA(ICOMP))
+          write (HOLD,'(2f8.1,a)') CMGS*real(ZBASEA(ICOMP)),
+     &                           CMGL*real(ZBASEA(ICOMP)),'  '
         else
-          write (HOLD,'(2f8.1)') CMGS,CMGL
+          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Sensible and latent gain (W):',
@@ -4307,10 +4309,10 @@ C Gain as W - require gain only.
 
 C Gain as W/m^2 - require gain per square meter.
         if (ICGT.gt.0) then
-          write (HOLD,'(2f8.1)') CMGS/real(ZBASEA(ICOMP)),
-     &                           CMGL/real(ZBASEA(ICOMP))
+          write (HOLD,'(2f8.1,a)') CMGS/real(ZBASEA(ICOMP)),
+     &                           CMGL/real(ZBASEA(ICOMP)),'  '
         else
-          write (HOLD,'(2f8.1)') CMGS,CMGL
+          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
@@ -4330,6 +4332,7 @@ C Gain as W/m^2 - require gain per square meter.
       elseif (IGU.eq.3) then
 
 C Gain as W/object - require no of objects and gain per object.
+C << convert to easki >>
         NOBJ=1
  40     write (OUTS,'(A)') 'Number of objects (e.g. people)?'
         write (hold,'(i5)') NOBJ
@@ -4338,10 +4341,10 @@ C Gain as W/object - require no of objects and gain per object.
         CALL EASKS(hold,outs,' ',24,'  1 ','no. objects',IER,2)
         K=0
         CALL EGETWI(hold,K,NOBJ,0,100,'W','no. of objects',IER)
-        write (HOLD,'(2f8.1)') CMGS/real(NOBJ),CMGL/real(NOBJ)
+        write (HOLD,'(2f8.1,a)') CMGS/real(NOBJ),CMGL/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'  0.   0. ','casual gn info',IER,1)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4372,8 +4375,8 @@ C Gain as m^2/object - floor area of an object and gain per object.
 C << Why is CMGL set to zero? >>
           CMGL=0.
         else
-          write (HOLD,'(2f8.1)') CMGS/(ZBASEA(ICOMP)/FLA),
-     &                           CMGL/(ZBASEA(ICOMP)/FLA)
+          write (HOLD,'(2f8.1,a)') CMGS/(ZBASEA(ICOMP)/FLA),
+     &                           CMGL/(ZBASEA(ICOMP)/FLA),'  '
           h(1)='Supply the sensible and latent gain in Watts/object.'
           call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,1)
@@ -4388,7 +4391,7 @@ C << Why is CMGL set to zero? >>
       endif
 
 C Ask for rad/ conv split.
- 70   write (HOLD,'(2f7.3)') RADC,CONC
+ 70   write (HOLD,'(2f7.3,a)') RADC,CONC,'  '
       h(1)='Supply the radiant and convective fraction for'
       h(2)='the sensible load (should be <=1.00) '
       call EASKS(HOLD,' Radiant & convective fraction:',
@@ -5929,7 +5932,7 @@ C << Note change to real when casual gains data structure improves >>
       endif
 
 C Make up an editing string for the start of each period.
-      CSTR=' '
+      CSTR='                                                        '
       K=1
       DO 60 J=1,nper
         K1=K+5
