@@ -508,7 +508,18 @@ C Each of these leaves the user to define the casual gains manually.
           H(15)='       0   7  10:    13  14  18    24 '
           H(16)=' '
           H(17)='The above schedule includes 6 periods. '
-          CALL PHELPD('operation setup',17,'-',0,0,IER)
+          H(18)=' '
+          H(19)='The default assumption is that there is one period'
+          H(20)='(from 0h to 24h) with zero sensible and latent gains'
+          H(21)='for each casual gain type on each day type. This'
+          H(22)='ensures that nothing is happening in the zone until'
+          H(23)='you provide additional information (e.g. insert a'
+          H(24)='period or change the zero gains). '
+          H(25)=' '
+          H(26)='If there is no gain of a particular type then accept'
+          H(27)='the default starting time of zero hours for that '
+          H(28)='gain type and day type. '
+          CALL PHELPD('operation setup',28,'-',0,0,IER)
 
           call edisp(iuout,' ')
           call edisp(iuout,'For Weekdays....')
@@ -517,10 +528,10 @@ C Each of these leaves the user to define the casual gains manually.
           call initcasday('sa',ier)
           call edisp(iuout,'For Sundays....')
           call initcasday('su',ier)
-          call edisp(iuout,'Sorting...')
-          call PROCESSOLDCAS(ICOMP,0,iuout,IER)
-          call edisp(iuout,'Sorting...completed.')
           call edisp(iuout,'Casual gain details ready for editing.')
+
+C debug
+C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
@@ -1454,8 +1465,8 @@ C File browse from patterns.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -5706,18 +5717,20 @@ C 'su' for sunday.
       h(16)='Periods start times should be in ascending order.'
 
       if(act(1:2).eq.'wk')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of weekday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0    ',
      &    'nb weekday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5763,18 +5776,20 @@ C Increment ipcount for each new period.
         endif
         NCAS1=NCAS1+nbocper+nbltper+nbspper
       elseif(act(1:2).eq.'sa')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of saturday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0   ',
      &    'nb saturday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5820,18 +5835,20 @@ C Increment ipcount for each new period.
         endif
         NCAS2=NCAS2+nbocper+nbltper+nbspper
       elseif(act(1:2).eq.'su')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of Sunday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0   ',
      &    'nb sunday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5877,7 +5894,7 @@ C Increment ipcount for each new period.
         endif
         NCAS3=NCAS3+nbocper+nbltper+nbspper
       endif
-
+C      write(6,*) 'ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
       return
       end
 
