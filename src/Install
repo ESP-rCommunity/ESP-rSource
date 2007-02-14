@@ -2009,7 +2009,7 @@ if [ "$delete_temp_files" = "yes" ]; then
   make EXE=${EXE} clean
   echo "  "
   echo "Removing binary materials db from exemplars ..."
-  cd ${SRCdir}/training
+  cd ${SRCdir}/
   rm -f training/glenview/databases/constr.db1
   rm -f training/cellular_furn/dbs/cellular.materials
   rm -f training/cellular_hires/dbs/cellular.materials
@@ -2019,11 +2019,17 @@ if [ "$delete_temp_files" = "yes" ]; then
   rm -f training/cellular_natv/dbs/cellular.materials
   rm -f training/cellular_bc/dbs/cellular.materials
   rm -f training/cellular_cvvt/dbs/cellular.materials
+  rm -f training/cellular_pv/dbs/cellular_pv.materials
   rm -f training/house/svph/dbs/linford.materialdb
   rm -f training/cellular_shd/dbs/cellular.materials
   rm -f training/glenview/databases/constr.db1
   rm -f training/constr/tp_sub/dbs/tp_sub.material
+  rm -f training/plant/wch/dbs/db_prc
+  rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
   rm -f validation/CEN/13791/databases/prim.db
+  rm -f validation/CEN/13791/databases/WM_A.clm
+  rm -f validation/CEN/13791/databases/WM_B.clm
+  rm -f validation/CEN/13791/databases/Cond.clm
 fi
 
 echo " "
