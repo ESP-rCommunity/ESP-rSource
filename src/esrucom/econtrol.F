@@ -2139,9 +2139,11 @@ C Ideal Control law.
           cm(5)=bmiscd(II,JJ,KK,5)
           cm(6)=bmiscd(II,JJ,KK,6)
           cm(7)=bmiscd(II,JJ,KK,7)
-
-C << nothing yet done with cm(8) value when making up report >>
           cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          cm(10)=bmiscd(II,JJ,KK,10)
+          cm(11)=bmiscd(II,JJ,KK,11)
+          cm(12)=bmiscd(II,JJ,KK,12)
           if(nint(cm(1)).eq.6)then
 
 C Older control files might only have 6 items for basic controller.
@@ -2155,7 +2157,7 @@ C Older control files might only have 6 items for basic controller.
 
 C Newer control files have an extra item related to humidity control.
             write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
-     &        msg1,' max heating capacity ',cm(2),
+     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
      &        'W min heating capacity ',cm(3),'W max cooling capacity ',
      &        cm(4),'W min cooling capacity ',cm(5),
      &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
@@ -2164,27 +2166,34 @@ C Newer control files have an extra item related to humidity control.
             if(nint(cm(12)).eq.1)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &          msg1,' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min cooling capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),
-     &          'C cooling setpoint ',cm(7),
-     &          'C and moisture inj humidity control with upper sp',
+     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &          'W min heating cap ',cm(3),
+     &          'W max cooling cap ',cm(4),
+     &          'W min cooling cap ',cm(5),
+     &          'W. Heating sp ',cm(6),
+     &          'C cooling sp ',cm(7),
+     &          'C and moisture inj RH control with upper sp',
      &          cm(8),'(%) lower sp ',cm(9),
      &          '(%) max humidification rate ',cm(10),
-     &          '(g/s) max dehujidification rage ',cm(11),'(g/s).'
+     &          '(g/s) max dehumidification rate ',cm(11),'(g/s).'
             elseif(nint(cm(12)).eq.2)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a)') 
-     &          msg1,' max heating capacity ',cm(2),
-     &          'W min heating capacity ',cm(3),
-     &          'W max cooling capacity ',cm(4),
-     &          'W min heaing capacity ',cm(5),
-     &          'W. Heating setpoint ',cm(6),
-     &          'C cooling setpoint ',cm(7),
-     &          'C abd temp based humidity control with upper sp ',
+     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
+     &          'W min heating cap ',cm(3),
+     &          'W max cooling cap ',cm(4),
+     &          'W min heaing cap ',cm(5),
+     &          'W. Heating sp ',cm(6),
+     &          'C cooling sp ',cm(7),
+     &          'C and T based RH ctl with upper sp ',
      &          cm(8),'(%) lower sp ',cm(9),'(%).'
+            elseif(nint(cm(12)).eq.0)then
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
+     &        msg1(1:lnblnk(msg1)),' max heating capacity ',cm(2),
+     &        'W min heating capacity ',cm(3),'W max cooling capacity ',
+     &        cm(4),'W min cooling capacity ',cm(5),
+     &        'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &        cm(7),'C. with incomplete RH control.'
             endif
           endif
           call SDELIM(lmsg,message,'S',IW)
@@ -2222,35 +2231,35 @@ C          call edisp248(6,message,80)
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a)') 
      &      ' proportional: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
+     &      'W min heating ',cm(4),'W heating spt ',cm(5),
      &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'C min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      'C min cooling ',cm(8),'W cooling spt ',cm(9),
      &      'C throttling range ',cm(10),'C.' 
           elseif(nint(cm(2)).eq.2)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a)') 
-     &      ' proportional+integral: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      ' proportional+I: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),'W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C integral action time',
      &      cm(11),'s.' 
           elseif(nint(cm(2)).eq.3)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a)') 
-     &      ' proportional+derivative: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),' Wcooling setpoint ',cm(9),
+     &      ' proportional+D: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),' W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C derivative action time',
      &      cm(11),'s.' 
           elseif(nint(cm(2)).eq.4)then
             write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f9.1,a,f9.1,
      &        a,f7.2,a,f5.2,a,f6.1,a,f6.1,a)') 
-     &      ' proportional+I+D: max heating ',cm(3),
-     &      'W min heating ',cm(4),'W heating setpoint ',cm(5),
-     &      'C throttling range ',cm(6),'C. Max cooling ',cm(7),
-     &      'W min cooling ',cm(8),'W cooling setpoint ',cm(9),
+     &      ' proportional+I+D: max heat ',cm(3),
+     &      'W min heat ',cm(4),'W heat spt ',cm(5),
+     &      'C throttling range ',cm(6),'C. Max cool ',cm(7),
+     &      'W min cool ',cm(8),'W cool spt ',cm(9),
      &      'C throttling range ',cm(10),'C integral action time',
      &      cm(11),'s derivative action time ',cm(12),'s.' 
           endif
@@ -2330,15 +2339,15 @@ C          call edisp248(6,message,80)
           cm(10)=bmiscd(II,JJ,KK,10)
           cm(11)=bmiscd(II,JJ,KK,11)
           cm(12)=bmiscd(II,JJ,KK,12)
-          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,
-     &      a,f9.1,a,f9.1,a,f7.2,a,f5.2,a,f7.2,a,f5.2,a)') 
-     &    ' multistage: heating off ',cm(2),
-     &    'W heating stage 1 ',cm(3),'W heating stage 2 ',cm(4),
-     &    'W heating stage 3 ',cm(5),'W cooling off ',cm(6),
-     &    'W cooling stage 1 ',cm(7),'W cooling stage 2 ',cm(8),
-     &    'W cooling stage 3 ',cm(9),'W heating setpoint ',cm(10),
-     &    'C heating deadband ',cm(11),'C cooling setpoint ',cm(12),
-     &    'C cooling deadband ',cm(13),'C.' 
+          write(lmsg,'(a,f7.1,a,f9.1,a,f9.1,a,f9.1,a,f7.1,a,f9.1,
+     &      a,f9.1,a,f9.1,a,f6.2,a,f5.2,a,f6.2,a,f5.2,a)') 
+     &    ' multistage: heat off',cm(2),
+     &    'W heat stg 1 ',cm(3),'W heat stg 2 ',cm(4),
+     &    'W heat stg 3 ',cm(5),'W cool off',cm(6),
+     &    'W cool stg 1 ',cm(7),'W cool stg 2 ',cm(8),
+     &    'W cool stg 3 ',cm(9),'W heat sp ',cm(10),
+     &    'C heat db ',cm(11),'C cool sp ',cm(12),
+     &    'C cool db ',cm(13),'C.' 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.8)then
@@ -2352,9 +2361,9 @@ C          call edisp248(6,message,80)
           if(nint(cm(7)).eq.1) msg1='C no cooling available.'
           write(lmsg,'(a,f7.2,a,f7.2,a,f9.4,a,f6.2,a,f6.2,a)') 
      &    ' variable supply temp: max supply T',cm(2),
-     &    'C min supply T',cm(3),'C air flow rate  ',cm(4),
-     &    '(m^3/s) heating setpoint ',cm(5),'C cooling setpoint',cm(6),
-     &    msg1 
+     &    'C min supply T',cm(3),'C air flow rate ',cm(4),
+     &    '(m^3/s) room heating setpoint ',cm(5),
+     &    'C room cooling setpoint',cm(6),msg1 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.9)then
@@ -2384,10 +2393,10 @@ C          call edisp248(6,message,80)
           cm(6)=bmiscd(II,JJ,KK,6)
           cm(7)=bmiscd(II,JJ,KK,7)
           write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,a)') 
-     &    ' separate ON/OFF flux: max heating capacity ',cm(2),
-     &    'W max cooling capacity ',cm(3),'W heating on at ',cm(4),
-     &    'C heating off at ',cm(5),'C cooling on at ',cm(6),
-     &    'C cooling off at ',cm(7),'C.'
+     &    ' separate ON/OFF flux: heating capacity ',cm(2),
+     &    'W cooling capacity ',cm(3),'W heating on below ',cm(4),
+     &    'C heating off above ',cm(5),'C cooling on above ',cm(6),
+     &    'C cooling off below ',cm(7),'C.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.11)then
@@ -2411,16 +2420,14 @@ C          call edisp248(6,message,80)
           cm(12)=bmiscd(II,JJ,KK,12)
           cm(13)=bmiscd(II,JJ,KK,13)
           write(lmsg,'(a,f9.2,a,f9.2,a,f6.2,a,f6.2,a,f6.2,a,f6.2,
-     &      a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a,f5.1,a)') 
-     &    ' time proportioning on/off: max heating capacity ',cm(2),
-     &    'W max cooling capacity ',cm(3),'W heating on setpoint ',
-     &    cm(4),'C heating off setpoint ',cm(5),
-     &    'C cooling on setpoint ',cm(6),'C cooling off setpoint ',
-     &    cm(7),' total heating minutes',cm(8),
-     &    ' min heating On minutes',cm(9),
-     &    ' min heating OFF minutes',cm(10),
-     &    ' total cooling minutes',cm(11),' min cooling On minutes',
-     &    cm(12),' min cooling OFF minutes',cm(13),'.'
+     &      a,f3.0,a,f3.0,a,f3.0,a,f3.0,a,f3.0,a,f3.0,a)') 
+     &    ' time proportioning ON/OFF: heat cap ',cm(2),
+     &    'W cool cap ',cm(3),'W heat ON ',cm(4),
+     &    'C heat OFF ',cm(5),'C cool ON ',cm(6),
+     &    'C cool OFF ',cm(7),'C tot heat ',cm(8),
+     &    'mn min heat ON',cm(9),'mn min heat OFF',cm(10),
+     &    'mn tot cool mnts',cm(11),' min cool ON',cm(12),
+     &    'mn min cool OFF',cm(13),'mn.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.14)then
@@ -2440,17 +2447,16 @@ C          call edisp248(6,message,80)
           cm(14)=bmiscd(II,JJ,KK,14)
           cm(15)=bmiscd(II,JJ,KK,15)
           write(lmsg,'(a,f7.2,a,f5.2,a,f5.2,a,f5.2,a,f7.2,a,f5.2,
-     &      a,f5.2,a,f5.2,a,f9.2,a,f9.2,a,f5.2,a,f9.2,a,f9.2,
-     &      a,f5.2,a)') 
-     &    ' floating three position control: heating setpoint',cm(2),
-     &    'C heating deadband',cm(3),'C heating shut diff ',cm(4),
-     &    'C heating open diff ',cm(5),
-     &    'C cooling setpoint ',cm(6),'C cooling deadband ',cm(7),
-     &    'C cooling open diff',cm(8),'C cooling shut diff',cm(9),
-     &    'C max heating capacity',cm(10),'W min heating capacity',
-     &    cm(11),'W rate of change for heating',cm(12),
-     &    ' max cooling capacity',cm(13),'Wmin cooling capacity',
-     &    cm(14),' rate of change for cooling',cm(15),'.'
+     &      a,f5.2,a,f5.2,a,f9.1,a,f7.1,a,f3.0,a,f9.1,a,f7.1,
+     &      a,f3.0,a)') 
+     &    ' floating 3-pos: heat sp',cm(2),
+     &    'C ht dbd',cm(3),'C ht shut df',cm(4),
+     &    'C ht open df',cm(5),
+     &    'C cool sp',cm(6),'C cl dbd',cm(7),
+     &    'C cl open df',cm(8),'C cl shut df',cm(9),
+     &    'C max ht cap',cm(10),'W min ht cap',cm(11),
+     &    'W ROC ht',cm(12),'ts max cl cap',cm(13),
+     &    'W min cl cap',cm(14),'W ROC cl',cm(15),'ts.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.15)then

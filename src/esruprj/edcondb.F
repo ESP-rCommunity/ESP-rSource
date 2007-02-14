@@ -171,7 +171,7 @@ C all the information.
           WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &          (ICLN(I),I=1,30)
           H(1)='This description may be up to 72 char. '
-          CALL EASKS(IDESC,' Classification name ?',' ',
+          CALL EASKS(IDESC,' Classification name (<72 char)?',' ',
      &      72,' ','class name',IER,1)
           ILNE=1
           IDBE(ILNE)=(NCLASS*20-19)+1
@@ -307,7 +307,7 @@ C all the information.
 C Edit classification name.
           H(1)='A classification has a descriptive name (up to '
           H(2)='72 char).'
-          CALL EASKS(IDESC,' ',' Classification name ? ',
+          CALL EASKS(IDESC,' ',' Classification name (<72 char)?',
      &      72,' ','class name',IER,2)
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
           GOTO 2
@@ -585,8 +585,8 @@ C If this parameter is changed also change it in subroutine GVALUE
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch
 
-      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12,PROMP1*56
-      CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56
+      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
+      CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*72,tg*1,delim*1,outs*124,TITL*72,NAM*72
       CHARACTER STGLP(7)*56
@@ -839,6 +839,7 @@ C Copy an existing construction to a new one at end of list.
   792     CONTINUE
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
+C When editing the construction name use a slightly wider string buffer.
           call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
@@ -846,11 +847,13 @@ C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
           else
             MLCSYM='NONSYMMETRIC'
           endif
-          T12=MLCN
+          write(T14,'(2a)') MLCN(1:12),'  '
           h(1)='Each construction in the database should have a unique'
-          h(2)='name. Please change the name.'
-          CALL EASKS(T12,' ',' Name of new construction? ',
-     &      12,' ','New construction name',IER,2)
+          h(2)='name. Please edit the name (12 character or less) with'
+          h(3)='no spaces or unprintable characters. '
+          CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
+     &      14,' ','New construction name',IER,3)
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           WRITE(DESC(NMLC),89)MLCN,OTF,OPT,MLCSYM
 
@@ -888,16 +891,19 @@ C If there is space attach an "_i" to the end of the name to save the
 C user this task. Get user to confirm the name and then use st2name to
 C remove any wild card charaters.
           if(lnblnk(T12).le.8)then
-            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv'
+            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv  '
           elseif(lnblnk(T12).gt.9.and.lnblnk(T12).le.10)then
-            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i'
+            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i  '
           endif
           write(outs,'(3a)') '(original name ',
      &      T12OTH(1:lnblnk(T12OTH)),')'
           h(1)='Typically the original and interted constructions have'
-          h(2)='similar names with one indicating its inverted state. '
-          CALL EASKS(T12,'Name of inverted construction?',outs,
-     &      12,' ','Inverted construction name',IER,2)
+          h(2)='similar names with one indicating its inverted state.'
+          h(3)='The name should be less than or equal to 12 characters'
+          h(4)='and not use spaces or unprintable characters. '
+          CALL EASKS(T14,'Name of inverted construction (<12 char)?',
+     &      outs,14,' ','Inverted construction name',IER,4)
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           if(T12.ne.MLCN)then
             write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected name ',
@@ -1030,30 +1036,33 @@ C For each nonair layer ask for reflectance, tranmittance and emissivity
 *            STGLP(5)='0.390 0.450 0.310 0.250 0.837 hi perf reflecting'
             STGLP(6)='manual / user defined'
             CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
-     &                50,6,STGLP,' ',IER,15)
+     &                56,6,STGLP,' ',IER,15)
             IF(IER.NE.0)RETURN
             IPKD=IVALS(1)
             IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
-              OUTS=STGLP(IPKD)(1:29)
+
+C Copy the numbers section of STGLP array item.
+              write(T72,'(a)') STGLP(IPKD)(1:29)
             ELSEIF(IPKD.EQ.6)THEN
-              CALL EASKS(OUTS,
+              T72='  '
+              CALL EASKS(T72,
      &        'enter trnt, reft, op-reft, ems and op-ems (see help)',
-     &        ' ',72,' ','Construction name',IER,10)
+     &        ' ',72,' ','Optical data for g-value',IER,15)
             ELSE
               CALL EDISP(IUOUT,'No choice made ... returning')
               RETURN
             ENDIF
             K=0
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','trans',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','trans',IER)
             TRNT(IPN)=VAL
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','reflect',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','reflect',IER)
             REF(IPN)=VAL
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-reflect',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-reflect',IER)
             OREF(IPN)=VAL
 
 C emissivity value not required
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','emiss',IER)
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-emiss',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','emiss',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-emiss',IER)
             OEMS(IPN)=VAL 
  501      CONTINUE
 
@@ -1135,8 +1144,8 @@ C << if needed.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
-      character T12OTH*12
-      CHARACTER outs*124,MLED*38,PNAM*72,T12*12,MMLAY*38,MLCSYM*12
+      character T12OTH*12,T12*12,T14*14
+      CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -1607,8 +1616,10 @@ C If they do then warn the user.
             goto 3
           endif
         endif
-        CALL EASKS(T12,' ',' Name of construction? ',
-     &      12,' ','Construction name',IER,2)
+        write(T14,'(2a)') T12(1:12),'  '
+        CALL EASKS(T14,' ',' Name of construction? ',
+     &      14,' ','Construction name',IER,2)
+        write(T12,'(a)') T14(1:12)
         call st2name(T12,MLCN)
         if(MLCSYM(1:9).EQ.'SYMMETRIC')then
           continue

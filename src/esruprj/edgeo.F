@@ -95,12 +95,12 @@ C the floor area (one) or it was calculated (zero).
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10)
-      CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*32
+      CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*36
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48,DESCRC*25
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER D12*12,T12*12,LTMP*72,GFILE*72
+      CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
       CHARACTER ITEMS*33,ITEMSS*32,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
@@ -521,11 +521,12 @@ C Report on model contiguity changes.
 C Zone name, make sure it has no illegal characters.
         H(1)='The name of the zone is used both for descriptive and'
         H(2)='bookkeeping purposes.  Each name should be unique.'
-        T12=' '
-        D12='new_zone'
-        CALL EASKS(T12,' ',' Descriptive name for zone? ',
-     &    12,D12,'zone name',IER,2)
-        if(T12.NE.' ')then
+        T14=' '
+        D14='new_zone'
+        CALL EASKS(T14,' ',' Descriptive name for zone (12 char)? ',
+     &    14,D14,'zone name',IER,2)
+        if(T14(1:2).NE.'  ')then
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,zname(ICOMP))
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
             WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
@@ -844,14 +845,22 @@ C LINSTY of selected surface to 2 (i.e. thick lines) and redraw.
               MODIFY=.TRUE.
               MODGEO=.TRUE.
               CALL ADJVIEW(ITRC,IER)
-              T12='  '
-              write(D12,'(a12)')SNAME(ICOMP,ISS)
+
+C Use a slightly wider editing box than the name. Take the string
+C (T14) and ensure that there are no spaces or strange characters.
+              T14='  '
+              write(D14,'(2a)')SNAME(ICOMP,ISS),'  '
               H(1)='Use this attribute to inform about the nature of '
-              H(2)='the surface (make it easy for others to understand)'
-              write (outs,'(4a)')'Surface name (default=',D12,') for ',
+              H(2)='the surface (for others to understand)!'
+              H(3)=' '
+              H(4)='Each surface in a zone should have a unique name'
+              H(5)='and the name should not have any spaces or un- '
+              H(6)='printable characters in it. '
+              write (outs,'(4a)')'Surface name (default=',D14,') for ',
      &                           'highlighted surface'
- 52           CALL EASKS(T12,outs,'(unique word <=12 char):',
-     &                    12,D12,'surface name',IER,2)
+ 52           CALL EASKS(T14,outs,'(unique name <=12 char):',
+     &                   14,D14,'surface name',IER,6)
+              write(T12,'(a)') T14(1:12)
               call st2name(T12,D12)
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
@@ -1200,8 +1209,8 @@ C Rotate any obstructions associated with this zone.
           call tstamp('>','PRJ: do zone translation')
           H(1)='Transform shifts the zone by a given amount in'
           H(2)='each axis.'
-          hold = ' 0.0  0.0  0.0'
-  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',32,
+          hold = ' 0.000  0.000  0.000  '
+  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
      &      ' 0. 0. 0.','transforms XYZ',IER,2)
           K=0
           CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
@@ -1762,7 +1771,7 @@ C Optical and geometric properties.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
-      CHARACTER SALT*33,H*72,SN*12,SN2*12
+      CHARACTER SALT*33,H*72,SN*12,SN2*12,T14*14
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SSPARENT*12
 
@@ -1886,11 +1895,12 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
         CALL ADJVIEW(ITRC,IER)
         return
       ELSEIF(INODA.EQ.1)THEN
-        write(SN,'(a12)')SNAME(ICOMP,IS)
+        write(T14,'(2a)')SNAME(ICOMP,IS),'  '
         H(1)='Use this attribute to inform about the nature of the '
         H(2)='surface (make it easy for others to understand). '
- 52     CALL EASKS(SN,' Surface name ','(unique word <=12 char):',
-     &    12,'new_surface','surface name',IER,2)
+ 52     CALL EASKS(T14,' Surface name ','(unique word <=12 char):',
+     &    14,'new_surface','surface name',IER,2)
+        write(SN,'(a)') T14(1:12)
         call st2name(SN,SN2)
         call snamdup(SN2,icomp,is,nameok)
         if(nameok)then
@@ -2576,7 +2586,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
-      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*32
+      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*36
       character outs*124,headv*48
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
 
@@ -2746,7 +2756,7 @@ C Show the new point on the current wireframe.
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -2883,7 +2893,7 @@ C Present distance, azimuth and elevation then parse data from HOLD.
             H(2)='+ degrees clockwise, elevation 90 is vertical. '
  342        CALL EASKS(HOLD,
      &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
+     &      ' ',36,' 1. 0. 0. ','dist azim elev',IER,2)
             K=0
             CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
             CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
@@ -2936,7 +2946,7 @@ C Show the new point on the current wireframe.
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 543            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3334,7 +3344,7 @@ C be a new vertex and update the wireframe.
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
-  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+  43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3505,7 +3515,7 @@ C Present vertex coords for editing then parse data from HOLD.
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
- 146          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
+ 146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
@@ -3539,7 +3549,7 @@ C Present vertex coords for editing then parse data from HOLD.
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
-  42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',IER,2)
+  42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
@@ -3610,7 +3620,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION VERT(36)
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER VERT*34,KEY*1,HOLD*72,H*72,DESC*48,SN*12
+      CHARACTER VERT*34,KEY*1,HOLD*72,H*72,DESC*48,SN*12,T14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -3784,7 +3794,7 @@ C Shift along normal and copy transformed points back to XX,YY,ZZ array.
 
 C Transform all surface vertices.
           call tstamp('>','PRJ: do surface vertex tranform')
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000 '
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
      &      36,' 0. 0. 0.  ','offsets',IER,9)
           K=0
@@ -4034,7 +4044,7 @@ C Get vertical rectangular surface orgin.
           call tstamp('>','PRJ: add vertical surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000  '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
      &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
           K=0
@@ -4043,7 +4053,7 @@ C Get vertical rectangular surface orgin.
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get azimuth and length and height.
-          HOLDS= ' 180.0   1.0  1.0 '
+          HOLDS= ' 180.00   1.000  1.000  '
           h(1)='Azimuth 0.0 is north, 180 is south, 270 is west. '
           h(2)='Length and height are in metres.'
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
@@ -4095,7 +4105,7 @@ C Get horizontal rectangular surface orgin.
           call tstamp('>','PRJ: add horizontal surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000  '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
      &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
           K=0
@@ -4104,7 +4114,7 @@ C Get horizontal rectangular surface orgin.
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get rotation and length and height.
-          HOLDS= ' 0.0    1.0  1.0 '
+          HOLDS= ' 0.0    1.000  1.000  '
           h(1)='Rotation is in relation to the first edge along the '
           h(2)='`length` edge and the X axis (positive is anticlockwise'
           h(3)='and negative is clockwise.'
@@ -4231,9 +4241,13 @@ C its future position via `one connection past the current last
   251     CONTINUE
           NTV=NTV+4
           NZTV(icomp)=NTV
+          T14=' '
           SN=' '
-          CALL EASKS(SN,' ',' Inserted surface name: ',
-     &      12,'new_door','surface name',IER,0)
+          h(1)='Well named surfaces (e.g. call a door a door) '
+          h(2)='can help you understand a model better! '
+          CALL EASKS(T14,'Inserted surface name (12 char max):','  ',
+     &      14,'new_door','surface name',IER,2)
+          write(SN,'(a)') T14(1:12)
           call st2name(SN,SNAME(ICOMP,NSUR))
 
           SOTF(NSUR)='OPAQ'

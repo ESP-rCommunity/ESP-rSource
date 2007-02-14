@@ -2103,7 +2103,13 @@ C << this may need to be in a do while loop >>
 
 C If a flow network and contaminant file have been defined then call the
 C subroutine to fill in contaminant common blocks
-      IF(IAIRN.GT.0.AND.NOCNTM.EQ.1)CALL CTREAD
+      IF(IAIRN.GT.0.AND.NOCNTM.EQ.1)then
+        CALL CTREAD(iier)
+        if(iier.ne.0)then
+          outs='There was a problem with scanning contaminants file.'
+          call edisp(iuout,outs)
+        endif
+      endif
 
 C Associations between temporal file and configuration file are
 C no longer checked in ersys, instead they are part of the routine

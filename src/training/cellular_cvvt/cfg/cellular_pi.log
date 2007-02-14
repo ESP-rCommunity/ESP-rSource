@@ -1,0 +1,13 @@
+Project notes for cellular_pi.cfg
+Description: model of two adjacent cellular offices with P+I controllers
+In folder: training/cellular_cvvt
+By: jon
+Date: Fri Jan 26 11:00:00 2007
+For: 
+Project reference: 
+Notes: 
+_____________________________
+Derived from the cellular base case model. Used to test
+out ideal zone control law 5 proportional + integral
+for heating and cooling.
+ 

@@ -421,19 +421,19 @@ C If specified file is a new (not created) file
         ENDIF
       ELSE
         CNTMFIL=CTMF
-        outs='Scanning contaminates file...'
+        outs='Scanning contaminants file...'
         call edisp(iuout,outs)
         CALL CTREAD(iier)
         if(iier.ne.0)then
-          outs='There was a problem with scanning contaminates file.'
+          outs='There was a problem with scanning contaminants file.'
           call edisp(iuout,outs)
         else
-          outs='Scanning contaminates file...done.'
+          outs='Scanning contaminants file...done.'
           call edisp(iuout,outs)
         endif
         DOK=.false.
-        h(1)='A listing of the contaminate model is a good way to '
-        h(2)='review the contaminate regime in this zone. '
+        h(1)='A listing of the contaminant model is a good way to '
+        h(2)='review the contaminant regime in this zone. '
         CALL ASKOK('Display a synopsis of the contaminant model ?',
      &    ' ',OK,DOK,2)
         IF(OK) THEN
@@ -827,9 +827,9 @@ C Now put in filter efficiencies if any
 
 C Ask if changes need to be saved
  5000 DOK=.true.
-      h(1)='You probably changed the contaminate data. This is your'
+      h(1)='You probably changed the contaminant data. This is your'
       h(2)='chance to save these changes. If you say no then the'
-      h(3)='zone contaminate file will not be re-written. '
+      h(3)='zone contaminant file will not be re-written. '
       CALL ASKOK('Do you want to save any changes?',' ',OK,DOK,3)
       IF(OK)THEN
         IF(NTSTEPC.LE.0)GOTO 7000
@@ -851,7 +851,7 @@ C Ask if changes need to be saved
 
 C Update the configuration file so that contmainant information is known
       DOK=.true.
-      h(1)='There is a relationship between the contaminate description'
+      h(1)='There is a relationship between the contaminant description'
       h(2)='and the mass flow network. Changing one without the other '
       h(3)='can cause problems. '
       CALL ASKOK(' Update the model mass flow links ',
@@ -1250,14 +1250,14 @@ C ISPMNU is ??
       integer iadc   ! local variable signaling edit choice.
 
 C If the ispmnu parameter is non-zero then give the user the option
-C to edit the contaminate details. If ispmnu is zero details should
+C to edit the contaminant details. If ispmnu is zero details should
 C not be edited (just allow add copy delete).
       IF(ISPMNU.NE.0)THEN
         EDIT=.TRUE.
         IADC=1
         DOK=.false.
         h(1)='This is your chance to backup and not change the details'
-        h(2)='of this contaminate source. '
+        h(2)='of this contaminant source. '
         CALL ASKOK('Edit this source/sink?',' ',OK,DOK,2)
         IF(.NOT.OK)RETURN        
       ELSE
@@ -1284,7 +1284,7 @@ C editing then also use this facility.
      &     (EDIT.AND.(SSID(1:12).EQ.SSNAME(ISPMNO)(1:12)
      &     .AND.ISPMNO.NE.ISPMNU)))THEN
             DOK=.true.
-            h(1)='Contaminate descriptions should not include'
+            h(1)='contaminant descriptions should not include'
             h(2)='duplicate names of sources or sinks. '
             CALL ASKOK('This a duplicate source or sink name...',
      &        'Try again?',OK,DOK,2)
@@ -1864,7 +1864,7 @@ C Get source/sink name
           DO 9 ISPMNO=1,NSPMNO
             IF(SSID(1:12).EQ.SSNAME(ISPMNO)(1:12))THEN
               DOK=.false.
-              h(1)='Contaminate descriptions should not include '
+              h(1)='contaminant descriptions should not include '
               h(2)='duplicate names for sources and/or sinks. '
               CALL ASKOK('This a duplicate source or sink name.',
      &          'Try again ?',OK,DOK,2)
@@ -1958,7 +1958,7 @@ C Get Contaminant name and check to be unique
           IF(CNTMID(1:12).EQ.CONTMNAM(ICONTM)(1:12).AND.ICONTM.NE.
      &      MEDIT)THEN
             DOK=.true.
-            h(1)='Contaminate descriptions should not include '
+            h(1)='contaminant descriptions should not include '
             h(2)='duplicate names for containments. '
             CALL ASKOK('This a duplicate containment name.',
      &        'Try again?',OK,DOK,2)
@@ -2195,7 +2195,7 @@ C Get Contaminant name and check to be unique
             IF(CNTMID(1:12).EQ.CONTMNAM(ICONTM)(1:12))THEN
               DOK=.true.
               h(1)='Duplicate containment names are not allowed in a '
-              h(2)='contaminate description. '
+              h(2)='contaminant description. '
               CALL ASKOK('This a duplicate containment name.',
      &          'Try again ?',OK,DOK,2)
               IF(.NOT.OK)RETURN

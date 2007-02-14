@@ -33,7 +33,7 @@ C      BCL04: fixed heat injection/extraction control.
 C      BCL05: proportional+integral+derivative control action.
 C      BCL06: plant to building linker.
 C      BCL07: multi-stage controller with hysteresis.
-C      BCL08: variable supply temperature system.
+C      BCL08: CV HAVC variable supply temperature system.
 C      BCL09: heat pipe.
 C      BCL10: on/off control.
 C      BCL11: temperature brought to multi-sensor value (ideal).
@@ -1990,8 +1990,8 @@ C Trace output.
 
 C ******************** BCL05
 
-C Proportional+intergral+derivative (PID) control action suitable for 
-C use with controller types 0,35,36,37,38,39.
+C Proportional+intergral+derivative (P or P+I or P+D or PID) control action
+C suitable for use with controller types 0,35,36,37,38,39.
 
       SUBROUTINE BCL05
 #include "building.h"
@@ -2009,8 +2009,8 @@ C use with controller types 0,35,36,37,38,39.
      &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
       COMMON/BLGPID/BPID(MCF,6),NSINCR
-      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       
       character outs*124
 
@@ -2040,20 +2040,20 @@ C Trace output
       QFUT=0.0
       TFUT=TNP
 
-C IMO  =  1: proportional control
-C  "   =  2: P+I control
-C  "   =  3: P+D control
-C  "   =  4: P+I+D control
-c QHMX =  max htg capacity (W)
-c QHMN =  min htg capacity (W),
-c HSP  =  htg set point temp (deg.C),
-c HTR  =  htg throttling range  (deg.C),
-c QCMX =  max clg capacity (W),
-c QCMN =  min clg capacity (W),
-c CSP  =  clg set point temp. (deg.C),
-c CTR  =  clg throttling range  (deg.C),
-c TI   =  integral action time (secs),
-c TD   =  derivative action time (secs).
+C IMO  =  1: proportional control mode
+C  "   =  2: P+I control mode
+C  "   =  3: P+D control mode
+C  "   =  4: P+I+D control mode
+c QHMX =  max heating capacity (W)
+c QHMN =  min heating capacity (W),
+c HSP  =  heating set point temp (deg.C),
+c HTR  =  heating throttling range or proportional band  (deg.C),
+c QCMX =  max cooling capacity (W),
+c QCMN =  min cooling capacity (W),
+c CSP  =  cooling set point temp. (deg.C),
+c CTR  =  cooling throttling range or proportional band  (deg.C),
+c TI   =  integral (reset) action time (secs),
+c TD   =  derivative (rate) action time (secs).
 
 c It is assumed that the set points are at the mid-points
 c of the throttling ranges.
@@ -2074,53 +2074,68 @@ c of the throttling ranges.
   
 C Fatal error tests:      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).LT.1.OR.
-     &INT(BMISCD(ICF,IDTYP,IPER,2)).GT.4)GOTO 99 
+     &   INT(BMISCD(ICF,IDTYP,IPER,2)).GT.4)GOTO 99 
      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.1.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.9)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.9)GOTO 981 
 
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.2.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 982 
      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.3.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.10)GOTO 983 
 
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).EQ.4.AND.
-     &INT(BMISCD(ICF,IDTYP,IPER,1)).NE.11)GOTO 98 
+     &   INT(BMISCD(ICF,IDTYP,IPER,1)).NE.11)GOTO 984 
      
-      IF((IMO.EQ.2.OR.IMO.EQ.4).AND.TI.LT.1.)GOTO 96
+      IF((IMO.EQ.2.OR.IMO.EQ.4).AND.TI.LT.1.0)GOTO 96
 
-c HTU = upper htg temperature limit
-c HTL = lower htg temperature limit
+C Set setpoint to be at the mid range of the proportional band
+c HTU = upper heating temperature limit
+c HTL = lower heating temperature limit
       HTU=HSP+(HTR/2.0)
       HTL=HSP-(HTR/2.0)
 
-c CTU = upper clg temperature limit
-c CTL = lower clg temperature limit
+C Set setpoint to be at the mid range of the proportional band
+c CTU = upper cooling temperature limit
+c CTL = lower cooling temperature limit
       CTU=CSP+(CTR/2.0)
       CTL=CSP-(CTR/2.0)
 
 C Set time-step increment required for integral and derivative action,
       TDELTA=3600/NTSTEP
 
-C Update variables used in recursive algorithms.
+C << consider in the future to revise code to only restart the
+C << integral action when the new setpont is attained.
+C << especially to reduce overshoot so the current code does
+C << not match what happens in physical devices.
+
       IF(NSINC.EQ.(NSINCR+1))THEN
+
+C If we are still within a control period (no setpoint changes) then
+C use the following logic:
+C Update variables used in recursive algorithms.
 C Save values in common bpid(icf,?)
-C bpid(icf,1)= htg error at present time-step,
-C bpid(icf,2)= htg error at previous time-step,
-C bpid(icf,3)= time-integral of the htg error,
-C bpid(icf,4)= clg error at present time-step,
-C bpid(icf,5)= clg error at previous time-step,
-C bpid(icf,6)= time-integral of the clg error,
+C bpid(icf,1)= heating error at present time-step,
+C bpid(icf,2)= heating error at previous time-step,
+C bpid(icf,3)= time-integral of the heating error,
+C bpid(icf,4)= cooling error at present time-step,
+C bpid(icf,5)= cooling error at previous time-step,
+C bpid(icf,6)= time-integral of the cooling error,
+
+C Take the average heating error at the two timesteps.
          BPID(ICF,3)=BPID(ICF,3)
      &+(0.5*(BPID(ICF,2)*TDELTA+BPID(ICF,1)*TDELTA))
          BPID(ICF,2)=BPID(ICF,1)
+
+C Take the average cooling error at the two timesteps.
          BPID(ICF,6)=BPID(ICF,6)
      &+(0.5*(BPID(ICF,5)*TDELTA+BPID(ICF,4)*TDELTA))
          BPID(ICF,5)=BPID(ICF,4)
       ELSE
+
 C If inside first time increment of a new control period re-set the integral error
-C term
+C term.
          BPID(ICF,3)=0.
          BPID(ICF,2)=BPID(ICF,1)
          BPID(ICF,6)=0.        
@@ -2132,45 +2147,44 @@ C Determine sensed temperature.
       if(ier.eq.2)then
         return
       endif
-C       TCTL=TFA(IICOMP)
 
 C Establish the errors at the present time-step;
-C heating error,
-      BPID(ICF,1)=HSP-TCTL
-C Changed from TCTL-HSP
-C cooling error,
-      BPID(ICF,4)=CSP-TCTL
+C The convention is that a positive error happens when
+C you are below the setpoint. 
+C Changed from TCTL-HSP 
+      BPID(ICF,1)=HSP-TCTL   ! heating error
+
 C Changed from TCTL-CSP
+      BPID(ICF,4)=CSP-TCTL   ! cooling error
 
 C Heating cycle;      
-C Set flux,
-      QH=0.0
+      QH=0.0    ! Set flux to zero,
       
-C Determine htg flux at set point assuming linear relationship.
+C Determine heating flux at set point assuming linear relationship.
       QSPH=(QHMX+QHMN)/2.0
 
-C Determine the htg integral action,
+C Determine the heating integral action (P+I or PID),
       IF(IMO.EQ.2.OR.IMO.EQ.4)THEN
-        RINTH=(1./TI)*(BPID(ICF,3))
+        RINTH=(1.0/TI)*(BPID(ICF,3))
       ELSE
         RINTH=0.0
       ENDIF
                 
       IF(TCTL.GT.HTU)THEN
-         QH=QHMN        
+        QH=QHMN        
       ELSEIF(TCTL.LT.HTL)THEN
-         QH=QHMX    
+        QH=QHMX    
       ELSEIF(TCTL.GE.HTL.AND.TCTL.LE.HTU)THEN        
-C The temperature is within the throttling range:
 
-C Determine the gain for htg,
+C The temperature is within the throttling range (proportional band):
+C Determine the gain for heating,
         RKPH=(QHMX-QHMN)/(HTU-HTL)
 
 C Determine the derivative action for htg,
         IF(IMO.EQ.3.OR.IMO.EQ.4)THEN
-         RDRVH=(TD/TDELTA)*(BPID(ICF,1)-BPID(ICF,2))
+          RDRVH=(TD/TDELTA)*(BPID(ICF,1)-BPID(ICF,2))
         ELSE
-           RDRVH=0.0
+          RDRVH=0.0
         ENDIF
 
 C The heating flux magnitude,
@@ -2192,28 +2206,29 @@ C Set flux,
 C Determine clg flux at set point assuming linear relationship.
       QSPC=(QCMX+QCMN)/2.0
 
-C Determine the clg integral action, 
+C Determine the clg integral action.
+C RINTC is the integral term () 
       IF(IMO.EQ.2.OR.IMO.EQ.4)THEN
-         RINTC=(TDELTA/TI)*(BPID(ICF,6))
+        RINTC=(TDELTA/TI)*(BPID(ICF,6))
       ELSE
-         RINTC=0.0
+        RINTC=0.0
       ENDIF
                 
       IF(TCTL.GT.CTU)THEN
-         QC=QCMX
+        QC=QCMX
       ELSEIF(TCTL.LT.CTL)THEN
-         QC=QCMN    
+        QC=QCMN    
       ELSEIF(TCTL.GE.CTL.AND.TCTL.LE.CTU)THEN        
-C The temperature is within the throttling range:
 
+C The temperature is within the throttling range (proportional band):
 C Determine the gain for clg,
         RKPC=(QCMN-QCMX)/(CTU-CTL)
 
 C Determine the derivative action for clg,
         IF(IMO.EQ.3.OR.IMO.EQ.4)THEN
-           RDRVC=(TD/TDELTA)*(BPID(ICF,4)-BPID(ICF,5))
+          RDRVC=(TD/TDELTA)*(BPID(ICF,4)-BPID(ICF,5))
         ELSE
-           RDRVC=0.0
+          RDRVC=0.0
         ENDIF
 C The cooling flux magnitude,
         QC=QSPC+(RKPC*(BPID(ICF,4)+RINTC+RDRVC))
@@ -2247,34 +2262,49 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(2(A,F10.3,A,F10.3))') ' Qfuture = ',QFUT,
-     &    ' Tfuture = ',TFUT,' Tctl = ',TCTL,' TFA = ',TFA(IICOMP)
+         write(outs,'(A,F10.3,A,F8.3,A,F8.3,A,F8.3,A,F10.3,A,F8.3)') 
+     &    ' Qfuture=',QFUT,' Tfuture=',TFUT,' Tctl=',TCTL,
+     &    ' TDelta=',TDELTA,' Q ht=',QH,' ht err=',BPID(ICF,1)
          call edisp(itu,outs)
-         write(outs,'(2(A,F10.3,A,F10.3))') ' QH = ',QH,
-     &    ' error = ',BPID(ICF,1),' setpoint = ',HSP,' spu = ',HTU
+         write(outs,'(A,F8.3,A,F8.3,A,F8.3,A,F10.3,A,F9.3,A,F9.3)') 
+     &     ' ht spt=',HSP,' ht stp U=',HTU,' ht sp L= ',HTL,
+     &     ' ht gain=',RKPH,' ht intgrl=',RINTH,' deriv=',RDRVH
          call edisp(itu,outs)
-         write(outs,'(2(A,F10.3,A,F10.3))') ' spl = ',HTL,
-     &    ' gain = ',RKPH,' int = ',RINTH,' deriv = ',RDRVH
+         write(outs,'(A,F10.3,3(A,F8.3),A,F10.3,A,F9.3,A,F9.3)') 
+     &    ' Q cl=',QC,' cl spt=',CSP,' cl stp U=',CTU,' cl sp L=',CTL,
+     &    ' cl gain=',RKPC,' cl intgrl=',RINTC,' deriv=',RDRVC
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL05')
       END IF
       
       RETURN
 
-96    call edisp(iuout,' BCL05: fatal error Int Act Tme must be > 0.0 ')
+96    call edisp(iuout,'BCL05: fatal error Int Act Time must be > 1.s')
       call epwait
       call epagend
       STOP  
 
-97    call edisp(iuout,' BCL05: fatal error on controller type.')
+97    call edisp(iuout,'BCL05: fatal error on controller type.')
       call epwait
       call epagend
       STOP
-98    call edisp(iuout,' BCL05: incorrect number of data items.')
+981   call edisp(iuout,'BCL05: proportional should have 9 data items.')
       call epwait
       call epagend
       STOP
-99    call edisp(iuout,' BCL05: incorrect entry for BPID mode flag.')
+982   call edisp(iuout,'BCL05: prop + I should have 10 data items.')
+      call epwait
+      call epagend
+      STOP
+983   call edisp(iuout,'BCL05: prop + D should have 10 data items.')
+      call epwait
+      call epagend
+      STOP
+984   call edisp(iuout,'BCL05: prop +I+D should have 11 data items.')
+      call epwait
+      call epagend
+      STOP
+99    call edisp(iuout,'BCL05: BPID mode flag outwith 1 to 4 range.')
       call epwait
       call epagend
       STOP
@@ -2911,6 +2941,7 @@ C with limit constraints.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -2925,14 +2956,16 @@ C with limit constraints.
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       
       character outs*124
-c
-c Fatal error test.
-c
+
+C Fatal error test if there are less than 6 misecel items.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL08')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL08')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -2942,12 +2975,13 @@ C Trace output
       CALL MZMIXT(IZ,TMRT,TCTL)
   101 IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.0)TCTL=TF
       IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.1)TCTL=SOLAIR(TF,QFF,QDF)
-c TSM = max supply air temperature (deg.C)
-c TSN = min supply air temperature (deg.C)
-c AFR = air volume flow rate (m3/s)
-c HSP = heating set point temp. (deg.C)
-c CSP = cooling set point temp. (deg.C)
-c IFC = cooling availability index (0; cooling, 1; no cooling)
+
+C TSM = max supply air temperature (deg.C)
+C TSN = min supply air temperature (deg.C)
+C AFR = air volume flow rate (m3/s)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
+C IFC = cooling availability index (0; cooling, 1; no cooling)
       TSM=BMISCD(ICF,IDTYP,IPER,2)
       TSN=BMISCD(ICF,IDTYP,IPER,3)
       AFR=BMISCD(ICF,IDTYP,IPER,4)
@@ -2957,10 +2991,10 @@ c IFC = cooling availability index (0; cooling, 1; no cooling)
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)GOTO 3
       D=AFR*1.2*1006.0
 
-c Is temp. too high ?
+c Is temperature above the cooling setpoint?
       IF(TCTL.GT.CSP)GOTO 1
 
-c Too low, establish Tsupply to heat air to HSP.
+c Too low, establish Tsupply to heat air to heating set point (HSP).
       TS=(BB3-(BB1-(BB2*D))*HSP)/(BB2*D)
 
 c Is this supply temperature available ?
@@ -2988,6 +3022,8 @@ c Is this supply temperature available ?
 
 C Enter gain due to mechanical system here
 C mechanical system mass flow rate * moisture content.
+C << what does GEXTF the future ambient humidity ratio 
+C << have to do with this component ??
     3 ZMBI(IICOMP,3)=AFR*1.2*GEXTF
 
 C Total mass flow rate lost from the zone (no moisture included).
@@ -2996,8 +3032,11 @@ C Total mass flow rate lost from the zone (no moisture included).
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F8.3,A,F8.3,A,F10.3)') 
+     &     ' Qfuture = ',QFUT,
+     &     ' Tfuture = ',TFUT,
+     &     ' Tsupply = ',TS,
+     &     ' Flow loss from zone = ',ZMBI(IICOMP,4)
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL08')
       END IF
@@ -3193,6 +3232,7 @@ C ON condition is reached.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3212,7 +3252,10 @@ c Fatal error test.
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL10')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL10')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -3223,8 +3266,8 @@ C Determine sensed temperature.
         return
       endif
 
-c QHM = max heating capacity (W)
-c QCM = max cooling capacity (W)
+c QHM = fixed heating capacity (W)
+c QCM = fixed cooling capacity (W)
 c HSPON = heating ON set point temp. (deg.C)
 c HSPOFF = heating OFF set point temp. (deg.C)
 c CSPON = cooling ON set point temp. (deg.C)
@@ -3280,8 +3323,11 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,5a,F8.3)')
+     &     ' Qfuture= ',QFUT,' (heating=',QH,' cooling=',QC,
+     &     ') heating prior ',LASTH(IICOMP),
+     &     ' cooling prior ',LASTC(IICOMP),
+     &     ' Tfuture= ',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL10')
       END IF
@@ -3725,7 +3771,8 @@ C Trace output.
       END
 
 C ******************** BCL13
-C BCL13 is time-proportioning on/off controller.
+C BCL13 is time-proportioning on/off controller. In several ways
+C it extends the functionality offered by BCL10.
 C It is suitable for use with controllers types 0,35,36,37,38,39. 
 C Heating and cooling restrictions are allowed.
 
@@ -3734,6 +3781,7 @@ C Heating and cooling restrictions are allowed.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC7/ITCNST      
@@ -3760,9 +3808,13 @@ C Fatal error test:
         call epagend
         STOP
       endif
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL13')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL13')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.0
       TFUT=TNP
@@ -3794,41 +3846,15 @@ C CYTC   = total cooling cycle period (minutes).
 C CONMIN = minimum cooling ON cycle time (minutes).
 C COFMIN = minimum cooling OFF cycle time (minutes).
 
-      CYTH=60*BMISCD(ICF,IDTYP,IPER,8)
-      HONMIN=60*BMISCD(ICF,IDTYP,IPER,9)
-      HOFMIN=60*BMISCD(ICF,IDTYP,IPER,10)
-      CYTC=60*BMISCD(ICF,IDTYP,IPER,11)
-      CONMIN=60*BMISCD(ICF,IDTYP,IPER,12)
-      COFMIN=60*BMISCD(ICF,IDTYP,IPER,13)
+      CYTH=60.0*BMISCD(ICF,IDTYP,IPER,8)
+      HONMIN=60.0*BMISCD(ICF,IDTYP,IPER,9)
+      HOFMIN=60.0*BMISCD(ICF,IDTYP,IPER,10)
+      CYTC=60.0*BMISCD(ICF,IDTYP,IPER,11)
+      CONMIN=60.0*BMISCD(ICF,IDTYP,IPER,12)
+      COFMIN=60.0*BMISCD(ICF,IDTYP,IPER,13)
 
 C Fatal error tests.
       IF(INT(BMISCD(ICF,IDTYP,IPER,1)).NE.12)GOTO 99
-      IF(HSPON.GE.HSPOFF)then
-        call edisp(iuout,
-     &    ' BCL13: heating setpoint error (HSPON > HSPOFF).')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(CSPON.LE.CSPOFF)then
-        call edisp(iuout,
-     &    ' BCL13: cooling setpoint error (CSPON < CSPOFF).')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(HONMIN+HOFMIN.GT.CYTH)then
-        call edisp(iuout,' BCL13: on/off heating cycle time error.')
-        call epwait
-        call epagend
-        STOP
-      endif
-      IF(CONMIN+COFMIN.GT.CYTC)then
-        call edisp(iuout,' BCL13: on/off cooling cycle time error.')
-        call epwait
-        call epagend
-        STOP
-      endif
       
 C Note that heating and cooling proportional bands may overlap. In
 C this case simultaneous heating and cooling may result.
@@ -3874,11 +3900,9 @@ C Re-establish no. of ON time-steps for next cycle period,
       ENDIF
            
       IF(ICOUNH.LE.NTSHON)THEN
-C heating is ON,
-         QH=QHM
+         QH=QHM   ! heating is ON
       ELSE
-C heating is OFF,
-         QH=0.0
+         QH=0.0   ! heating is OFF
       ENDIF
                   
 C Cooling cycle:
@@ -3922,8 +3946,12 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,a,F6.3,a,i3,a,F6.3,
+     &                a,i3,a,F7.3)')
+     &   ' Qfuture=',QFUT,' (Ht=',QH,' Cl=',QC,
+     &   ') Ht prop=',RATIOH,' Ht cnt=',ICOUNH,
+     &   ' Cl prop=',RATIOC,' Cl cnt=',ICOUNC,
+     &   ' Tfuture=',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL13')
       END IF
@@ -3946,6 +3974,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN    
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3972,7 +4001,10 @@ C Fatal error tests:
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL14')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL14')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
       
       QFUT=0.0
       TFUT=TNP
@@ -4126,8 +4158,11 @@ C Convert from (/m^2) if necessary.
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
+         write(outs,'(A,F10.3,A,F10.3,A,F10.3,5a,F8.3)')
+     &     ' Qfuture= ',QFUT,' (heating=',QH,' cooling=',QC,
+     &     ') heating prior ',LASTH(IICOMP),
+     &     ' cooling prior ',LASTC(IICOMP),
+     &     ' Tfuture= ',TFUT
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL14')
       END IF
@@ -4141,7 +4176,7 @@ C Trace output.
 
 C ******************** BCL15
 
-C Logic Optimum Start Controller.
+C Logic Optimum Start (rewind) Controller.
 C Suitable for use with controller types 0,35,36,37,38,39. 
 
       SUBROUTINE BCL15
@@ -4149,6 +4184,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -4165,7 +4201,6 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
-      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
 
       LOGICAL tsclaw,rewnd,pasone,close
@@ -4207,7 +4242,7 @@ C A2      =  EXT TEMP. "       "   "     "        "     "
       timdif=bmiscd(icf,idtyp,iper,6)
       initim=int(bmiscd(icf,idtyp,iper,7))
       if(initim.eq.1)then
-         stinit=4.         
+         stinit=4.    
       else if(initim.eq.2)then
          stinit=bmiscd(icf,idtyp,iper,8)
       else if(initim.eq.3)then
@@ -4222,7 +4257,10 @@ C FATAL ERROR TESTS,
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL15')
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL15')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C SET COMFORT TEMPERATURE UPPER AND LOWER LIMITS;
       thi=dtmp+(0.5*tr)
@@ -4393,17 +4431,9 @@ C CONVERT FROM (/M^2) IF NECESSARY.
 C TRACE OUTPUT,
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(41).ne.0) then
-         write(outs,'(A,F10.3,A,F10.3)')
-     & ' Subroutine BCL15:  Qfuture = ',qfut,' Tfuture = ',tfut
-         call edisp(itu,outs)
-         call edisp(itu,' ')    
-     
-         write(outs,'(A,F10.3,A,F10.3,A,F10.3)')
-     & ' Subroutine BCL15: STFUT = ',stfut,' STPRES = ',stpres,
-     & '  TIMOPT = ',timopt
-         call edisp(itu,outs)
-         call edisp(itu,' ')
-         
+         write(outs,'(A,F10.3,A,F8.3,A,F10.3,A,F10.3,A,F10.3)')
+     & ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
+     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL15')
       endif
@@ -5626,7 +5656,7 @@ C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
         write(outs,'(a,f9.2,a,f5.3,a,f5.3,a,f9.2,a,f9.2)')' Q master:',
-     &   QM,' %heating: ',PBH,' %cooling ',PBC,' Q slave:',Qslv,
+     &   QM,' %heat cap: ',PBH,' %cool cap ',PBC,' Q slave:',Qslv,
      &   ' QFUT (slave): ',QFUT
         call edisp(itu,outs)
         call edisp(itu,'  ')

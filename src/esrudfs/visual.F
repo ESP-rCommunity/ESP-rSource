@@ -611,7 +611,7 @@ C Ask which contaminant to plot
               INO=-1
 
 C Help text for the menu.
- 331          h(1)='The contaminate selection menu does not yet have'
+ 331          h(1)='The contaminant selection menu does not yet have'
               h(2)='any help associated with it. '
               CALL EMENU('Choose Contaminant',ITEM,NITMS,INO)
               IF(INO.EQ.NITMS)RETURN

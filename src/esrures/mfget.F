@@ -1057,7 +1057,7 @@ C If timestep listing go back to see if any other data should be included.
           endif
         ELSE
 
-C There are some contaminates so fill the arrays and generate
+C There are some contaminants so fill the arrays and generate
 C appropriate labels.
           IF(NNPK.GT.0)THEN
             DO 11 I=1,NNPK

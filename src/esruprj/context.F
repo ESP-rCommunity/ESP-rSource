@@ -97,7 +97,7 @@ C ITEMS is menu for site/context items.
       character doit*248,tmode*8,cfgroot*24,LCFGF*72
       character longtfile*144,longtfiledos*144
       character imgfmt*4,imgfoc*4,limgfil*72
-      character hold24*24,act*1,GTNAME*15
+      character hold32*32,act*1,GTNAME*15
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
@@ -651,24 +651,24 @@ C Set eye point at standard place and viewed point at cog.
         elseif(IW.EQ.3)then
           H(1)='The eyepoint is in metres in the coordinate system '
           H(2)='of the site. '
- 143      WRITE(HOLD24,'(1x,3f7.1)')EYEM(1),EYEM(2),EYEM(3)
-          CALL EASKS(HOLD24,' Eye point  X  Y  Z (in metres): ',
-     &     '  ',24,' -100. -100. 100. ','eye point coord',IER,2)
+ 143      WRITE(HOLD32,'(1x,3f8.2)')EYEM(1),EYEM(2),EYEM(3)
+          CALL EASKS(HOLD32,' Eye point  X  Y  Z (in metres): ',
+     &     '  ',32,' -100.0 -100.0 100.0 ','eye point coord',IER,2)
           K=0
-          CALL EGETWR(HOLD24,K,EYEMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD24,K,EYEMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD24,K,EYEMI(3),0.,999.,'W','eye Zcord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(1),-999.,999.,'W','Xcord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(2),-999.,999.,'W','Ycord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(3),0.,999.,'W','eye Zcord',IER)
           if(ier.ne.0)goto 143
           H(1)='The viewpoint is in metres in the coordinate system'
           H(2)='of the site and defaults to the centre of gravity '
           H(3)='of the body. '
- 141      WRITE(HOLD24,'(1x,3f7.1)')VIEWM(1),VIEWM(2),VIEWM(3)
-          CALL EASKS(HOLD24,' Viewpoint  X  Y  Z (in metres): ',
-     &     '  ',24,' 2. 2. 1. ','viewpoint coord',IER,3)
+ 141      WRITE(HOLD32,'(1x,3f8.2)')VIEWM(1),VIEWM(2),VIEWM(3)
+          CALL EASKS(HOLD32,' Viewpoint  X  Y  Z (in metres): ',
+     &     '  ',32,' 2.0 2.0 1.0 ','viewpoint coord',IER,3)
           K=0
-          CALL EGETWR(HOLD24,K,VIEWMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD24,K,VIEWMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD24,K,VIEWMI(3),0.,999.,'W','v Zcord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(1),-999.,999.,'W','Xcord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(2),-999.,999.,'W','Ycord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(3),0.,999.,'W','v Zcord',IER)
           if(ier.ne.0)goto 141
           H(1)='The angle of view is in degrees, allowable values'
           H(2)='are from 1 to 89 degrees. '
@@ -1771,7 +1771,7 @@ C Confirm capacities.
             H(8)='the control may not work properly.'
             CALL EASKS(HOLD,
      &      ' Max & Min heat capacity, Max & Min cool capacity for',
-     &      ' matching another temp: ',40,' 10000. 0. 10000. 0. ',
+     &      ' matching another temp: ',40,' 10000. 0.0 10000. 0.0 ',
      &      ' track another max min heat cool',IER,8)
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
@@ -1990,7 +1990,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.10)then
    95   hold = ' '
-        WRITE(HOLD,'(3F9.2)')phtco2,phtnox,phtsox
+        WRITE(HOLD,'(3F10.3)')phtco2,phtnox,phtsox
         CALL EASKS(HOLD,'Heating related emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','heat emiss',IIER,41)
         K=0
@@ -2001,7 +2001,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.11)then
    96   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pclco2,pclnox,pclsox
+        WRITE(HOLD,'(3F10.3)')pclco2,pclnox,pclsox
         CALL EASKS(HOLD,'Cooling related emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','cool emiss',IIER,41)
         K=0
@@ -2012,7 +2012,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.12)then
    97   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pltco2,pltnox,pltsox
+        WRITE(HOLD,'(3F10.3)')pltco2,pltnox,pltsox
         CALL EASKS(HOLD,'Lighting related emissions [gr/kWh primary]:',
      &   'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','light emiss',IIER,41)
         K=0
@@ -2023,7 +2023,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.13)then
    98   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pfnco2,pfnnox,pfnsox
+        WRITE(HOLD,'(3F10.3)')pfnco2,pfnnox,pfnsox
         CALL EASKS(HOLD,'Fan & pump emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','fan emiss',IIER,41)
         K=0
@@ -2034,7 +2034,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.14)then
    99   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pspco2,pspnox,pspsox
+        WRITE(HOLD,'(3F10.3)')pspco2,pspnox,pspsox
         CALL EASKS(HOLD,'Small power emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,'612.   2.06  7.5 ','smlp emiss',IIER,41)
         K=0
@@ -2045,7 +2045,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.15)then
    94   hold = ' '
-        WRITE(HOLD,'(3F9.2)')phwco2,phwnox,phwsox
+        WRITE(HOLD,'(3F10.3)')phwco2,phwnox,phwsox
         CALL EASKS(HOLD,'Hot water emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','dhw emiss',IIER,41)
         K=0
