@@ -1582,6 +1582,13 @@ C  IPER period (=0 then new)
 
       character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
 
+C Working variables
+      real ACI,ACV,TA,XTA,XACH
+      integer IACS,IACF,IPT
+
+C << This subroutine will need further code changes to implement
+C << user cancel actions.
+
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
         IACS=0
@@ -1637,44 +1644,58 @@ C Can be specified as:ac/h or m^3/s.
       if (IGU.eq.1) then
 
 C Flow as ac/h.
-C << why not use easkr?? >>
- 20     write (HOLD,'(f6.2)') ACI
+ 20     XACH=ACI
         h(1)='Supply the fresh air flow rate in ac/hr.'
-        call EASKS(HOLD,'Infiltration rate (ac/hr):',
-     &   ' ',16,'0.   0. ','infil info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','infil rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 20
-        ACI=XACH
- 22     write (HOLD,'(f6.2)') ACV
+        call EASKR(XACH,'Infiltration rate (ac/hr):',
+     &   ' ',0.0,'F',10.0,'W',0.5,'infil rate ach',IERI,1)
+        if(IERI.eq.0)then
+          ACI=XACH
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 20
+        endif
+        
+ 22     XACH=ACV
         h(1)='Supply the ventilation air flow rate in ac/hr'
         h(2)='(in terms of the receiving zone volume).'
-        call EASKS(HOLD,'Ventilation rate (ac/hr):',
-     &    ' ',16,'0.   0. ','vent info',IER,2)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','vent rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 22
-        ACV=XACH
+        call EASKR(XACH,'Ventilation rate (ac/hr):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'vent rate ach',IERI,2)
+        if(IERI.eq.0)then
+          ACV=XACH
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 22
+        endif
       elseif (IGU.eq.2) then
 
 C Flow as m^3/s.
- 30     write (HOLD,'(f6.4)') ACI*VOL(ICOMP)/3600.
+ 30     XACH=ACI*VOL(ICOMP)/3600.
         h(1)='Supply the fresh air flow rate in m^3/s.'
-        call EASKS(HOLD,'Infiltration rate (m^3/s):',
-     &    ' ',16,'0.   0. ','infil info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','infil rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 30
-        ACI=XACH*3600.0/VOL(ICOMP)
- 32     write (HOLD,'(f6.4)') ACV*VOL(ICOMP)/3600.
+        call EASKR(XACH,'Infiltration rate (m^3/s):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'inf rate m3s',IERI,1)
+        if(IERI.eq.0)then
+          ACI=XACH*3600.0/VOL(ICOMP)
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 30
+        endif
+
+        XACH= ACV*VOL(ICOMP)/3600.
         h(1)='Supply the ventilation air flow rate in m^3/s.'
-        call EASKS(HOLD,'Ventilation rate (m^3/s):',
-     &    ' ',16,'0.   0. ','vent info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','vent rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 32
-        ACV=XACH*3600.0/VOL(ICOMP)
+        call EASKR(XACH,'Ventilation rate (m^3/s):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'vent rate m3s',IERI,2)
+        if(IERI.eq.0)then
+          ACV=XACH*3600.0/VOL(ICOMP)
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 30
+        endif
       endif
+
       if (ACV.gt.0.0) then
 
 C Ask for source zone/ temperature.
@@ -1708,15 +1729,18 @@ C Present zone list.
         elseif (IGU.eq.2) then
 
 C Ask for source temperature.
- 40     write (HOLD,'(f6.2)') TA
+ 40       XTA=  TA
           h(1)='Supply the ventilation air temperature in degrees C.'
-          call EASKS(HOLD,'Supply temperature (degC):',
-     &      ' ',16,'0.   0. ','vent temp',IER,1)
-          K=0
-          call EGETWR(HOLD,K,XTA,0.,50.0,'W','vent src temp',IER)
-          if (IER.ne.0) goto 40
-          IPT=0
-          TA=XTA
+          call EASKR(XTA,'Supply temperature (degC):',
+     &      ' ',0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
+          if(IERI.eq.0)then
+            IPT=0
+            TA=XTA
+          elseif(ieri.eq.-3)then
+            call edisp(iuout,'Cancel not yet implemented.')
+          else
+            goto 40
+          endif
         elseif (IGU.eq.3) then
 
 C Set vent to zero and increase infiltration.
@@ -4233,7 +4257,7 @@ C Base area for zones.
       character OUTS*124,hold*24,h*72
 
       integer IV,ipft,IPHAST  ! for local editing.
-      real pft,pwrt,bvoltt   ! for local editing.
+      real pft,pwrt,bvoltt,xfla   ! for local editing.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4331,16 +4355,22 @@ C Gain as W/m^2 - require gain per square meter.
         endif
       elseif (IGU.eq.3) then
 
-C Gain as W/object - require no of objects and gain per object.
-C << convert to easki >>
+C Gain as W/object - require no of objects and gain per object. If
+C user cancels go back to initial question.
+C << an actual cancel option not yet implemented >>
         NOBJ=1
- 40     write (OUTS,'(A)') 'Number of objects (e.g. people)?'
-        write (hold,'(i5)') NOBJ
-        h(1)='The number of objects for the current gain type is '
+ 40     h(1)='The number of objects for the current gain type is '
         h(2)='required. For example the number of people or computers.'
-        CALL EASKS(hold,outs,' ',24,'  1 ','no. objects',IER,2)
-        K=0
-        CALL EGETWI(hold,K,NOBJ,0,100,'W','no. of objects',IER)
+        CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
+     &    0,'W',100,'W',1,'no. objects',IERI,2)
+        if(ieri.eq.0)then
+          continue
+        elseif(ieri.eq.-3)then
+          goto 10
+        else
+          goto 40
+        endif
+
         write (HOLD,'(2f8.1,a)') CMGS/real(NOBJ),CMGL/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Object sensible and latent gain (W):',
@@ -4355,38 +4385,42 @@ C << convert to easki >>
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
+C If user cancels go back to initial question.
         NOBJ=1
- 50     write (OUTS,'(A)') 'Floor area per object (e.g. people)?'
-        if (ICGT.eq.-1) then
+ 50     if (ICGT.eq.-1) then
           FLA=CMGS
         else
           FLA=10.
         endif
-        write (hold,'(f7.1)') FLA
+        XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
         h(2)='required. For example the area per person.'
-        CALL EASKS(hold,outs,' ',24,'  1 ','area per object',IER,2)
-        K=0
-        CALL EGETWR(hold,K,FLA,0.1,100.,'W','area per object',IER)
-        if (iabs(ICGT).eq.1) then
-          ICGT=-1
-          CMGS=FLA
-
-C << Why is CMGL set to zero? >>
-          CMGL=0.
-        else
-          write (HOLD,'(2f8.1,a)') CMGS/(ZBASEA(ICOMP)/FLA),
-     &                           CMGL/(ZBASEA(ICOMP)/FLA),'  '
-          h(1)='Supply the sensible and latent gain in Watts/object.'
-          call EASKS(HOLD,'Sensible and latent gain (W/object):',
+        call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
+     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,2)
+        if(IERI.eq.0)then
+          FLA=XFLA
+          if (iabs(ICGT).eq.1) then
+            ICGT=-1
+            CMGS=FLA
+            CMGL=0.   ! Why is CMGL set to zero?
+          else
+            write (HOLD,'(2f8.1,a)') CMGS/(ZBASEA(ICOMP)/FLA),
+     &                             CMGL/(ZBASEA(ICOMP)/FLA),'  '
+            h(1)='Supply the sensible and latent gain in Watts/object.'
+            call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,1)
-          K=0
-          call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-          call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
-          if (IER.ne.0) goto 50
-          if (ICGT.gt.1) ICGT=ICGT*(-1)
-          CMGS=XSEN*ZBASEA(ICOMP)/FLA
-          CMGL=XLAT*ZBASEA(ICOMP)/FLA
+            K=0
+            call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
+            call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+            if (IER.ne.0) goto 50
+            if (ICGT.gt.1) ICGT=ICGT*(-1)
+            CMGS=XSEN*ZBASEA(ICOMP)/FLA
+            CMGL=XLAT*ZBASEA(ICOMP)/FLA
+          endif
+        elseif(ieri.eq.-3)then
+          goto 10
+        else
+          goto 50
         endif
       endif
 

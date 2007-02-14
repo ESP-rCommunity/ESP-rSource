@@ -2869,11 +2869,18 @@ C a final period for the current casual gain type.
             ihcg=ip
 
 C Adjust for area based, for m2 per person just divide floor area by
-C the number of persons to get back to the original CMGSA.
+C the number of persons to get back to the original CMGSA. For the
+C case of mixed absolute and per unit area npersn might be zero so
+C trap for this case and set CMGSA to zero.
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR
@@ -2978,11 +2985,18 @@ C a final period for the current casual gain type.
             NCASsat=NCASsat+1
             ihcg=ip-24 
 
-C Adjust area based gains. 
+C Adjust area based gains. For the case of mixed absolute and
+C per unit area npersn might be zero so trap for this case and
+C set CMGSA to zero. 
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR
@@ -3080,11 +3094,18 @@ C a final period for the current casual gain type.
             NCASsun=NCASsun+1
             ihcg=ip-48  
 
-C Adjust area based gains. 
+C Adjust area based gains. For the case of mixed absolute and
+C per unit area npersn might be zero so trap for this case and
+C set CMGSA to zero.  
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR
