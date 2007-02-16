@@ -1874,6 +1874,10 @@ C do not allow this set name to be changed.
           endif 
         endif
       elseif(MITEM.eq.23.and.INO.EQ.4)then
+
+C The simulation timestep. Edit local variable and if not canceling
+C instanciate it and also ask about results integration if more than
+C one timestep in the hour.
         if(itdflg.ne.0)then
           write(outs,'(2a,i3,a)') 'The model includes a temporal file',
      &      ' with ',ntsph,' per hour frequency. Please use the same.'
@@ -1890,6 +1894,7 @@ C do not allow this set name to be changed.
         if(ieri.eq.-3)then
           continue
         else
+          isbnstep=isbnstept
           if(isbnstep.gt.1)then
             if(itdflg.ne.0)then
 
