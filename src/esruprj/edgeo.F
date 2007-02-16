@@ -527,7 +527,13 @@ C Zone name, make sure it has no illegal characters.
      &    14,D14,'zone name',IER,2)
         if(T14(1:2).NE.'  ')then
           write(T12,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+          write(zname(ICOMP),'(a)') T12
+#else
           call st2name(T12,zname(ICOMP))
+#endif
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
             WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &        '.geo'
@@ -912,7 +918,13 @@ C (T14) and ensure that there are no spaces or strange characters.
  52           CALL EASKS(T14,outs,'(unique name <=12 char):',
      &                   14,D14,'surface name',IER,6)
               write(T12,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+              write(D12,'(a)') T14(1:12)
+#else
               call st2name(T12,D12)
+#endif
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
                 SNAME(ICOMP,ISS)=D12
@@ -1260,7 +1272,7 @@ C Rotate any obstructions associated with this zone.
           call tstamp('>','PRJ: do zone translation')
           H(1)='Transform shifts the zone by a given amount in'
           H(2)='each axis.'
-          hold = ' 0.000  0.000  0.000  '
+          hold = ' 0.000  0.000  0.000    '
   43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
      &      ' 0. 0. 0.','transforms XYZ',IER,2)
           K=0
@@ -1952,7 +1964,13 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
  52     CALL EASKS(T14,' Surface name ','(unique word <=12 char):',
      &    14,'new_surface','surface name',IER,2)
         write(SN,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+        write(SN2,'(a)') T14(1:12)
+#else
         call st2name(SN,SN2)
+#endif
         call snamdup(SN2,icomp,is,nameok)
         if(nameok)then
           SNAME(ICOMP,IS)=SN2
@@ -2854,7 +2872,7 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+                WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -2990,12 +3008,12 @@ C Distance between two vertices.
             iwhich=IVLST(1)
 
 C Present distance, azimuth and elevation then parse data from HOLD.
-            write(hold,'(f10.4,f9.3,f8.3)') V1,AZ,EL
+            write(hold,'(f10.4,f9.3,f8.3,a)') V1,AZ,EL,'   '
             H(1)='Distance is in metres, azimuth assumes north=0 '
             H(2)='+ degrees clockwise, elevation 90 is vertical. '
  342        CALL EASKS(HOLD,
      &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',36,' 1. 0. 0. ','dist azim elev',IER,2)
+     &      ' ',36,' 1.0  0.0  0.0 ','dist azim elev',IER,2)
             K=0
             CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
             CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
@@ -3044,7 +3062,7 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+                WRITE(HOLD,'(1x,3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -3442,7 +3460,7 @@ C be a new vertex and update the wireframe.
             elseif(INVT.eq.2)then
               NTV=NTV+1
               NZTV(icomp)=NTV
-              WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+              WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -3612,7 +3630,7 @@ C Select (possibly via mouse) and then edit.
               ifoc=IVLST(ij)
 
 C Present vertex coords for editing then parse data from HOLD.
-              WRITE(HOLD,'(1x,3f10.5)')X(IFOC),Y(IFOC),Z(IFOC)
+              WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
@@ -3647,7 +3665,7 @@ C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
 
 C Present vertex coords for editing then parse data from HOLD.
-        WRITE(HOLD,'(1x,3f10.5)')X(IFOC),Y(IFOC),Z(IFOC)
+        WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
@@ -3722,10 +3740,11 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION VERT(36)
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER VERT*34,KEY*1,HOLD*72,H*72,DESC*48,SN*12,T14*14
+      CHARACTER VERT*34,KEY*1,H*72,DESC*48,SN*12,T14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character hold64*64,t248*248
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -3896,9 +3915,9 @@ C Shift along normal and copy transformed points back to XX,YY,ZZ array.
 
 C Transform all surface vertices.
           call tstamp('>','PRJ: do surface vertex tranform')
-          HOLDS= ' 0.000  0.000  0.000 '
+          HOLDS= ' 0.000  0.000  0.000    '
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &      36,' 0. 0. 0.  ','offsets',IER,9)
+     &      36,' 0.00  0.00  0.00  ','offsets',IER,9)
           K=0
           CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
           CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -4034,7 +4053,7 @@ C Delete a surface. If number of surfaces changed then update cfg.
         CALL EPMENRC
         IF(IS.EQ.0)goto 92
         LASTS=NSUR
-        iopt=0
+        iopt=0    ! offer editing box with mouse click.
         CALL ADDSUR(ITRC,ICOMP,IS,'D','V',iopt,IER)
         if(LASTS.ne.NSUR)then
           CALL EMKCFG('-',IER)
@@ -4087,29 +4106,44 @@ C Add/insert a surface.
         H(29)='If you are working in a graphics display you can use'
         H(30)='mouse clicks on the existing vertices.'
 
+C Note if running in GTK or in pure text mode then should not offer
+C the mouse click option.
         irt=0
         ilrt=irt
         idrt=3
-        call MENUATOL(' ','new surface options',
-     &   'a made from existing vertices',
-     &   'b made from existing vertices (mouse)',
-     &   'c inserted into a surface',
-     &   'd copy surface(s) in this zone',
-     &   'e copy surface(s) from another zone ',
-     &   'f vertical rectangle (origin&azim)',
-     &   'g horizontal rectangle (origin&rot)',' ',
-     &   ' ',' ',' ',' ',irt,idrt,30)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call MENUATOL(' ','new surface options',
+     &     'a made from existing vertices',
+     &     'b made from existing vertices (mouse)',
+     &     'c inserted into a surface',
+     &     'd copy surface(s) in this zone',
+     &     'e copy surface(s) from another zone ',
+     &     'f vertical rectangle (origin&azim)',
+     &     'g horizontal rectangle (origin&rot)',' ',
+     &     ' ',' ',' ',' ',irt,idrt,30)
+        elseif(iglib.eq.2.or.iglib.eq.3)then
+          call MENUATOL(' ','new surface options',
+     &     'a made from existing vertices',
+     &     'b mouse option NOT available',
+     &     'c inserted into a surface',
+     &     'd copy surface(s) in this zone',
+     &     'e copy surface(s) from another zone ',
+     &     'f vertical rectangle (origin&azim)',
+     &     'g horizontal rectangle (origin&rot)',' ',
+     &     ' ',' ',' ',' ',irt,idrt,30)
+        endif
         call usrmsg(' ',' ','-')
         IF(ilrt.eq.irt)GOTO 92
         IF(irt.eq.0.or.irt.eq.8)GOTO 92
         LASTS=NSUR
         if(IRT.eq.1)then
           call tstamp('>','PRJ: insert surface via vertex')
-          iopt=0
+          iopt=0     ! offer editing box and mouse click option.
           CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
         elseif(IRT.eq.2)then
           call tstamp('>','PRJ: insert surface via vertex')
-          iopt=1
+          iopt=1     ! offer mouse click directly
           CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
         elseif(IRT.eq.3)then
           CALL EPMENSV
@@ -4129,11 +4163,11 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
           CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
-          iopt=2
+          iopt=2      ! offer copy of local surfaces 
           CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
         elseif(IRT.eq.5)then
           call tstamp('>','PRJ: copy another zone surfaces')
-          iopt=1
+          iopt=1      ! offer mouse click directly ??
           CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
         elseif(IRT.eq.6)then
 
@@ -4146,16 +4180,16 @@ C Get vertical rectangular surface orgin.
           call tstamp('>','PRJ: add vertical surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.000  0.000  0.000  '
+          HOLDS= ' 0.000  0.000  0.000    '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-     &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
+     &      36,' 0.0  0.0   0.0   ','origin XYZ',IER,2)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get azimuth and length and height.
-          HOLDS= ' 180.00   1.000  1.000  '
+          HOLDS= ' 180.00   1.000  1.000   '
           h(1)='Azimuth 0.0 is north, 180 is south, 270 is west. '
           h(2)='Length and height are in metres.'
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
@@ -4207,21 +4241,21 @@ C Get horizontal rectangular surface orgin.
           call tstamp('>','PRJ: add horizontal surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.000  0.000  0.000  '
+          HOLDS= ' 0.000  0.000  0.000   '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-     &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
+     &      36,' 0.00  0.00  0.00  ','origin XYZ',IER,2)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get rotation and length and height.
-          HOLDS= ' 0.0    1.000  1.000  '
+          HOLDS= ' 0.0    1.000  1.000    '
           h(1)='Rotation is in relation to the first edge along the '
           h(2)='`length` edge and the X axis (positive is anticlockwise'
           h(3)='and negative is clockwise.'
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
-     &      ' ',36,' 180.0 1.0 1.0  ','rotation length height',IER,3)
+     &      ' ',36,' 180.0  1.0  1.0  ','rotation length height',IER,3)
           K=0
           CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
@@ -4350,7 +4384,13 @@ C its future position via `one connection past the current last
           CALL EASKS(T14,'Inserted surface name (12 char max):','  ',
      &      14,'new_door','surface name',IER,2)
           write(SN,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+          write(SNAME(ICOMP,NSUR),'(a)') T14(1:12)
+#else
           call st2name(SN,SNAME(ICOMP,NSUR))
+#endif
 
           SOTF(NSUR)='OPAQ'
           if(IRT.eq.5) SVFC(NSUR)='VERT'
@@ -4434,7 +4474,7 @@ C a thick line.
         izgfoc=ICOMP
         CALL ADJVIEW(ITRC,IER)
 
-        H(1)='The list of associated vertices should be given in'
+   93   H(1)='The list of associated vertices should be given in'
         H(2)='anticlockwise order as one faces the outside of the'
         H(3)='surface.  If one is looking at the inside face then'
         H(4)='think of the list in clockwise order.  It is a con-'
@@ -4442,42 +4482,26 @@ C a thick line.
         H(6)='bottom-left corner of the surface (looking from the'
         H(7)='outside) with the next vertex moving horizontally.'
         H(8)='It helps to follow a consistent pattern!'
-   93   HOLD=' '
         NV=NVER(IFOC)
 
-C Incrementally write out vertex information (within 72 chars).
-C Use alternative logic if NTV >99
-        ix=1
-        lc=2
-        do 42 j=1,nv
-          ixl=ix+lc
-          if(j.lt.NV.and.ixl.le.72)then
-            write(hold(ix:ixl),'(i3)')JVN(IFOC,j)
-            if(JVN(IFOC,j).le.99)then
-              ix=ix+lc+1
-            else
-              ix=ix+lc+1+1
-            endif
-          elseif(j.eq.NV.and.ixl.le.72)then
-            write(hold(ix:ixl),'(i3)')JVN(IFOC,j)
-          else
-            continue
-          endif
-  42    continue
-  43    CALL EASKS(HOLD,' Associated vertices: ',
-     &     '  ',72,' ','associated vertices',IIER,8)
-        CALL CHITMS(hold,NV)
-C debug        write(6,*) 'found nv ',NV
+C Set up a long string buffer for editing vertex list for the
+C surface. 
+        hold64='                                                      '
+        write(t248,'(4a)') hold64,hold64,hold64,'                     '
+        WRITE(t248,'(24I4)')(JVN(IFOC,j),J=1,nv)
+        CALL EASKS248(t248,' Associated vertices (type the indices)?',
+     &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,8)
+        CALL CHITMS(t248,NV)
         K=0
         DO 94 J=1,NV
 
 C Read an index, check if within range and if so add to JVN().
-          CALL EGETWI(hold,K,JV,1,NTV,'W','vertex list',IIER)
+          CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IIER)
           IF(IIER.NE.0)GOTO 93
           if(JV.eq.0.or.JV.gt.NTV)then
             call edisp(iuout,
      &        'At least one of the vertex indices was out of range!')
-            goto 43
+            goto 93
           endif
           JVN(IFOC,J)=JV
    94   CONTINUE
