@@ -43,7 +43,6 @@ use Cwd;
 use Cwd 'chdir';
 use File::Find;
 use Math::Trig;
-use Net::SMTP;
 # Load Simple package --- needed to parse xml output.
 # Simple.pm is not part of the standard perl distribution,
 # and must be shipped with tester.pl. It can be
@@ -1283,6 +1282,10 @@ if ( $gTest_params{"create_archive"} ){
   create_historical_archive();
 }
 
+#------------------------------------------------------------------------
+# Mail results if desired.
+#------------------------------------------------------------------------
+ESPR_Results_mailer();
 #-----------------------------------------------------------------------
 # Clean up
 #-----------------------------------------------------------------------
@@ -1307,7 +1310,6 @@ if ( $gTest_params{"compare_to_archive"} && $gTest_paths{"old_archive"} ) {
 
 # delete local files folder
 execute ("rm -fr $gTest_paths{\"local_models\"}");
-
 
 
 
@@ -3298,10 +3300,10 @@ sub format_my_number($$$){
 }
 
 sub mail_message($$$$$){
-
+my $worked;
+if ( eval "require Net::SMTP;" ) {
 my ($smtp_server,$To,$From,$Subject,$Message) = @_;
 my $smtp;
-my $worked;
 if ( $smtp = Net::SMTP->new($smtp_server) )
   {
     # use the sender's address here
@@ -3339,7 +3341,12 @@ else
     #Set return status.
     $worked = 0 ;
   }
-
+}
+else
+{
+print "NET::smtp not available. Cannot mail\n";
+  $worked = 0 ;
+}
 #Return status. 
 return $worked;
  }
