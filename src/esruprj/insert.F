@@ -856,14 +856,8 @@ C Fill default attributes.
      &      14,'new_surf','surface name',IER,0)
         write(SN,'(a)') T14(1:12)
 
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-        SN2=SN
-        call snamdup(SN2,icomp,NSUR,nameok)
-#else
         call st2name(SN,SN2)
         call snamdup(SN2,icomp,NSUR,nameok)
-#endif
         if(nameok)then
           SNAME(ICOMP,NSUR)=SN2
         else
@@ -1681,13 +1675,7 @@ C surface in the zone`. ICONO is the connection for the parent surface.
       CALL EASKS(T14,' ',' Inserted surface name (12 char max):',
      &  14,'new_door','surface name',IER,2)
       write(SN,'(a)') T14(1:12)
-
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-      SNAME(ICOMP,NSUR)=SN
-#else
       call st2name(SN,SNAME(ICOMP,NSUR))
-#endif
 
       SOTF(NSUR)=SOTF(IS)
       SVFC(NSUR)=SVFC(IS)

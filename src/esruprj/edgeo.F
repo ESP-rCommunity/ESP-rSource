@@ -527,13 +527,8 @@ C Zone name, make sure it has no illegal characters.
      &    14,D14,'zone name',IER,2)
         if(T14(1:2).NE.'  ')then
           write(T12,'(a)') T14(1:12)
-
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-          write(zname(ICOMP),'(a)') T12
-#else
           call st2name(T12,zname(ICOMP))
-#endif
+
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
             WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &        '.geo'

@@ -1132,6 +1132,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
       character prompt*144
       LOGICAL OK,DOK
+      integer last    ! last blank (or one) in the string.
 
    20 IER=0
       WORD=' '
@@ -4058,29 +4059,26 @@ C ************ c2fstr
 C Convert c function returned string to fortran format.
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
+
+C Noticed problems in the native windows compile with null
+C characters. This might be because of the direct copy was
+C used if windows detected and this preserves unprintable
+C characters. Revised to use the same logic for both Unix and
+C Dos.
       SUBROUTINE c2fstr(cstr,fstr)
       CHARACTER*(*) cstr,fstr
-      logical unixok
 
-      call isunix(unixok)
-      if(.NOT.unixok)then
-
-C For NT copy one string to the other.
-        write(fstr,'(a)',iostat=ios,err=1) cstr
-        return
-      else
-        fstr = ' '
-        K=0
-        DO 99 I=1,LEN(cstr)
-          IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
-C           WRITE(6,'(a,I4)')cstr(I:I),ichar(cstr(I:I))
-            if(ichar(cstr(I:I)).lt.32)goto 100
-            K=K+1
-            if(K.gt.LEN(fstr))goto 100
-            fstr(K:K)=cstr(I:I)
-          ENDIF
- 99     CONTINUE
-      endif
+      fstr = ' '    ! clear the return string
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+C         WRITE(6,'(a,I4)')cstr(I:I),ichar(cstr(I:I))
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          if(K.gt.LEN(fstr))goto 100
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
  100  return
 
    1  write(6,*) 'c2fstr: error writing: ',cstr
