@@ -1,0 +1,37 @@
+*Operations 1.0
+*date Fri Aug 19 15:03:02 2005  # latest file modification 
+# operations of manager_a defined in: 
+# ../zones/manager.opr
+The office has one occupant during office hours, lighting at 10W/m2 and one computer in the room. . and the client ask for use to check these numbers for compilance with standards
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     1   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.330    0.000    0    0.000
+     7   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,      0.0,      0.0, 0.500, 0.500
+    1,   7,   8,     20.0,     10.0, 0.500, 0.500
+    1,   8,   9,     60.0,     30.0, 0.500, 0.500
+    1,   9,  12,    100.0,     50.0, 0.500, 0.500
+    1,  12,  14,     65.0,     32.5, 0.500, 0.500
+    1,  14,  17,    100.0,     50.0, 0.500, 0.500
+    1,  17,  24,      0.0,      0.0, 0.500, 0.500
+     7   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,      0.0,      0.0, 0.500, 0.500
+    1,   7,   8,     20.0,     10.0, 0.500, 0.500
+    1,   8,   9,     60.0,     30.0, 0.500, 0.500
+    1,   9,  12,    100.0,     50.0, 0.500, 0.500
+    1,  12,  14,     65.0,     32.5, 0.500, 0.500
+    1,  14,  17,    100.0,     50.0, 0.500, 0.500
+    1,  17,  24,      0.0,      0.0, 0.500, 0.500
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt
