@@ -18,8 +18,19 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C << missing functionality for dispersed demands:
+C << a) facility to sort dispersed demand periods
+C << b) facility to define sub-hour periods
+C << c) it would be good to know overall floor area or to
+C <<    define floor areas by selecting relevant zones.
+C << d) there are no graphs of the gains
+
+C << Figuring out these functions would indicate the resource
+C << required to update zone casual gains to work with more day
+C << types and casual gain types.
+
 C -------- PRJDMDS ----------
-C PRJDMDS: Creates and edits a project demands file which holds
+C PRJDMDS: Creates and edits a dispersed demands file which holds
 C information on building wide demands related to occupants, lighting,
 C fans, pumps, lifts, domestic hot water.
 C ITRC is the trace level, ITRU is the ouput channel, IUO is the
@@ -28,6 +39,7 @@ C file unit for the demands file. IER=0 is OK.
 
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
@@ -35,6 +47,7 @@ C file unit for the demands file. IER=0 is OK.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Demands notes and file name.
       COMMON/BL1/dmdsdesc,bdmds
@@ -43,14 +56,18 @@ C Floor area (optionally) associated with each demand type.
       COMMON/BL2/dmdfla(7)
       common/IPVDMD/idmdinc(7)
 
-C Demands for weekdays/saturdays/sundays.
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-C Types associated with each period in weekdays/saturdays/sundays.
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+C Support for up to 10 calendar day types
+C NBCAS() number of gains on each day type.
+C IBCGS(),IBCGF() - start and finish hours of each demand
+C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
+C BRADC(),BCONC(), - radiant and convective portions of each demand
+C IBCGT() - type of gain for each day type and period
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
@@ -65,13 +82,14 @@ C Descriptive label for each project demands type.
       character cfgroot*24,LCFGF*72,hold*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
+      character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
 
 C GFILE is the default file name for project gains file.
       if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
         WRITE(GFILE,'(A,A5)') cfgroot(1:lnblnk(cfgroot)),'.dmds'
       else
-        WRITE(GFILE,'(A,A,A,A5)') ctlpth(1:lnblnk(ctlpth)),'/',
+        WRITE(GFILE,'(3A,A5)') ctlpth(1:lnblnk(ctlpth)),'/',
      &    cfgroot(1:lnblnk(cfgroot)),'.dmds'
       endif
       if(bdmds(1:7).eq.'UNKNOWN'.or.bdmds(1:2).eq.'  ')then
@@ -80,30 +98,75 @@ C GFILE is the default file name for project gains file.
 
       MODOPR=.FALSE.
 
-      NBCAS1=0
-      NBCAS2=0
-      NBCAS3=0
-      iwss=1
+C If the model calendar has not yet been setup confirm what to
+C do with the user.
+      if(nbdaytype.eq.0)then
+        h(1)='Each model has a master calendar which indicates the'
+        h(2)='day type for each Julian day (initially based on the'
+        h(3)='year and a basic Weekday Saturday Sunday scheme. '
+        h(4)=' '
+        h(5)='No calendar has been defined so if you want the basic '
+        h(6)='Weekday Saturday Sunday scheme it will be created. If '
+        h(7)='you want to setup a more specific calendar then you '
+        h(8)='should do that first. '
+        CALL EASKABC('Calendar options','(see help) :',
+     &    'accept basic calendar','setup custom calendar','abort',IW,8)
+        if(IW.eq.1)then
+          call calenmanage('i',ier)
+          call edisp(iuout,'A reminder of current day types...')
+          loop=4
+          loopst=1
+          if(MMOD.eq.8)then
+            call calenprint(iuout,'g',iyear,loopst,loop,ier)
+          else
+            call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          endif
+        elseif(IW.eq.2)then
+          call usrmsg('Go to the Model context -> calendar option',
+     &      'and when the calendar is defined return here.','W')
+          return
+        elseif(IW.eq.3)then
+          return
+        endif
+      else
+
+C List out the initial months of the calendar.
+        call edisp(iuout,'A reminder of current day types...')
+        loop=4
+        loopst=1
+        if(MMOD.eq.8)then
+          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+        else
+          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+        endif
+      endif
+        
+C Clear all of the possible day types.
+      do 12 idt = 1,10
+        NBCAS(idt)=0
+  12  continue
+
+      iwss=1     ! assume weekdays initially
       dmdsdesc='no dispersed demands notes (yet)'
       IER=0
 
 C Set the default demand type labels
-      blodlabel(1)='Occup'
+      blodlabel(1)='Occup '
       dmdfla(1)= 1.0
       blodlabel(2)='Lights'
       dmdfla(2)= 1.0
       blodlabel(3)='SmPowr'      
       dmdfla(3)= 1.0
-      blodlabel(4)='Fans'
+      blodlabel(4)='Fans  '
       dmdfla(4)= 1.0
-      blodlabel(5)='Pumps'
+      blodlabel(5)='Pumps '
       dmdfla(5)= 1.0
-      blodlabel(6)='Lifts'      
+      blodlabel(6)='Lifts '      
       dmdfla(6)= 1.0
-      blodlabel(7)='DHW'      
+      blodlabel(7)='DHW   '      
       dmdfla(7)= 1.0
 
-C Initial demand inclusion to IPV set to zero.
+C Initial IPV demand inclusion for each type set to zero.
       do 343 ij=1,7
         idmdinc(ij)=0
  343  continue
@@ -133,14 +196,11 @@ C default data.
       ITEM(5)=                'c edit project demands           '
       ITEM(6)=                'd zeroise project demands        '
       if(iwss.eq.1)then
-        item(3) =             'b focus on >> weekdays           '
+        write(item(3),'(3a)') 'b focus on >> ',calentag(iwss),'        '
         ITEM(7)=              '                                 '
-      elseif(iwss.eq.2)then
-        item(3) =             'b focus on >> saturdays          '
-        ITEM(7)=              'e copy weekday project demands   '
-      elseif(iwss.eq.3)then
-        item(3) =             'b focus on >> sundays            '
-        ITEM(7)=              'e copy saturday project demands  '
+      elseif(iwss.gt.1)then
+        write(item(3),'(3a)') 'b focus on >> ',calentag(iwss),'        '
+        write(item(7),'(3a)') 'e copy ',calentag(iwss-1),' demands     '
       endif
       ITEM(8)=                '  _________________________      '
       ITEM(9)=                'l list project demands   '
@@ -151,24 +211,38 @@ C default data.
       NITEMS=13
 
 C Help text for this menu.
-      H(1) ='   Project demands file input '
-      H(2) ='   ========================== '
-      H(3) =' '
-      H(4) ='The data requirements are summarized below :- '
-      H(5) =' 1) Description '
-      H(6) ='  '
-      H(7) =' 2) Weekday, Saturday and Sunday demands data:'
-      H(8) ='       Start and finish hours for each period'
-      H(9) ='       Casual gain type:'
-      H(10) ='         type 1: usually occupant demands'
-      H(11) ='         type 2: usually lighting demands'
-      H(12) ='         type 3: usually small power demands'
-      H(13) ='         type 4: usually fan demands'
-      H(14) ='         type 5: usually pump demands'
-      H(15) ='         type 6: usually lift demands'
-      H(16) ='         type 7: usually DHW demands'
-      H(17) ='       Sensible and Latent magnitudes'
-      H(18) ='       Radiant and Convective portions'
+      H(1) ='Dispersed demands are casual gains which are not'
+      H(2) ='associated with a specific zone in the model.'
+      H(3) ='Examples are fans and lifts and their electrical'
+      H(4) ='requirements are often taken into account in '
+      H(5) ='reports on building energy use. '
+      H(6) =' '
+      H(7) ='This facility allows you to define schedules for'
+      H(8) ='seven types of dispersed gains either as W/m2 '
+      H(9) ='or in absolute W. '
+      H(10)=' '
+      H(11)='If the calendar of the model (see Model context)'
+      H(12)='includes the standard Weekday Saturday Sunday day '
+      H(13)='types then you may work at that resolution. If you'
+      H(14)='have also defined holidays then dispersed gains can '
+      H(15)='also be assigned (UNDER TESTING) '
+      H(16)=' '
+      H(17)=' '
+      H(18)='The data requirements are summarized below :- '
+      H(19)=' 1) Description '
+      H(20)=' 2) For each calendar day type e.g. Weekday, Saturday,'
+      H(21)='    Sunday, holiday (etc.) demands data:'
+      H(22)='       Start and finish hours for each period'
+      H(23)='       Casual gain type:'
+      H(24)='         type 1: usually occupant demands'
+      H(25)='         type 2: usually lighting demands'
+      H(26)='         type 3: usually small power demands'
+      H(27)='         type 4: usually fan demands'
+      H(28)='         type 5: usually pump demands'
+      H(29)='         type 6: usually lift demands'
+      H(30)='         type 7: usually DHW demands'
+      H(31)='       Sensible and Latent magnitudes'
+      H(32)='       Radiant and Convective portions'
 
       INO=-2
 30    CALL EMENU('Project demands',ITEM,NITEMS,INO)
@@ -209,14 +283,17 @@ C Edit loads description.
       ELSEIF(INO.EQ.2)THEN
 
 C Floor area associated with each demand type.
-        WRITE(hold,'(7f8.1)')dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
-     &    dmdfla(5),dmdfla(6),dmdfla(7)
+C << echo the floor area of the various zones >>
+C << to be done... >>
+        WRITE(hold,'(7f8.1,a)')dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
+     &    dmdfla(5),dmdfla(6),dmdfla(7),'  '
         h(1)='Optional base area associated with each demand type. '
         h(2)='This will be used to support IPV creation for period '
         h(3)='data which is per m^2. '
         CALL EASKS(hold,
      &    'Area (m^2) for occup lights sm power fans pumps lifts DHW',
-     &    ' : ',60,' 1. 1. 1. 1. 1. 1. 1. ','dmd floor area',IER,3)
+     &    ' : ',60,' 1.0 1.0 1.0 1.0 1.0 1.0 1.0 ','dmd floor area',
+     &    IER,3)
         K=0
         CALL EGETWR(hold,K,dmdfla(1),0.,99999.,'F','occup fla',IER)
         CALL EGETWR(hold,K,dmdfla(2),0.,99999.,'F','light fla',IER)
@@ -227,9 +304,9 @@ C Floor area associated with each demand type.
         CALL EGETWR(hold,K,dmdfla(7),0.,99999.,'F','DHW fla',IER)
       ELSEIF(INO.EQ.3)THEN
 
-C Toggle day type.
+C Toggle day type within the range defined in the model calendar.
         iwss=iwss+1
-        if(iwss.gt.3)iwss=1
+        if(iwss.gt.nbdaytype)iwss=1
       ELSEIF(INO.EQ.5)THEN
 
 C Edit project demands, save current menu status.
@@ -240,47 +317,33 @@ C Edit project demands, save current menu status.
       ELSEIF(INO.EQ.6)THEN
 
 C Zero demands.
-        if(iwss.eq.1)NBCAS1=0
-        if(iwss.eq.2)NBCAS2=0
-        if(iwss.eq.3)NBCAS3=0
+        if(iwss.ge.1.and.iwss.le.nbdaytype)then
+          NBCAS(iwss)=0
+        endif
         call edisp(iuout,' Profile set to zero ')
         MODOPR=.true.
       ELSEIF(INO.EQ.7)THEN
 
-C Set same as previous values (where possible) ie
-C   Saturday = Weekday
-C   Sunday   = Saturday
+C Set same as previous values (where possible) i.e.
+C   Saturday = Weekday or Sunday   = Saturday
 C   Weekday cannot be set by this method.
         IF(IWSS.EQ.1)THEN
           call edisp(iuout,' Weekdays cannot be set by this method !')
-        ELSEIF(IWSS.EQ.2)THEN
-          NBCAS2=NBCAS1
-          IF(NBCAS2.EQ.0)GOTO 67
-          DO 782 KK=1,NBCAS2
-            IBCGS2(KK)=IBCGS1(KK)
-            IBCGF2(KK)=IBCGF1(KK)
-            IBCGT2(KK)=IBCGT1(KK)
-            CBMGS2(KK)=CBMGS1(KK)
-            CBMGL2(KK)=CBMGL1(KK)
-            BRADC2(KK)=BRADC1(KK)
-            BCONC2(KK)=BCONC1(KK)
-  782     CONTINUE
+        ELSEIF(IWSS.gt.1.and.IWSS.le.nbdaytype)THEN
+          NBCAS(iwss)=NBCAS(iwss-1)
+          IF(NBCAS(iwss).gt.0)then
+            DO 782 KK=1,NBCAS(iwss)
+              IBCGS(iwss,KK)=IBCGS(iwss-1,KK)
+              IBCGF(iwss,KK)=IBCGF(iwss-1,KK)
+              IBCGT(iwss,KK)=IBCGT(iwss-1,KK)
+              CBMGS(iwss,KK)=CBMGS(iwss-1,KK)
+              CBMGL(iwss,KK)=CBMGL(iwss-1,KK)
+              BRADC(iwss,KK)=BRADC(iwss-1,KK)
+              BCONC(iwss,KK)=BCONC(iwss-1,KK)
+  782       CONTINUE
+          ENDIF
           MODOPR=.true.
-        ELSE
-          NBCAS3=NBCAS2
-          IF(NBCAS3.EQ.0)GOTO 67
-          DO 783 KK=1,NBCAS3
-            IBCGS3(KK)=IBCGS2(KK)
-            IBCGF3(KK)=IBCGF2(KK)
-            IBCGT3(KK)=IBCGT2(KK)
-            CBMGS3(KK)=CBMGS2(KK)
-            CBMGL3(KK)=CBMGL2(KK)
-            BRADC3(KK)=BRADC2(KK)
-            BCONC3(KK)=BCONC2(KK)
-  783     CONTINUE
         ENDIF
-        MODOPR=.true.
-   67   CONTINUE
       ELSEIF(INO.EQ.9)THEN
 
 C List contents.
@@ -334,7 +397,7 @@ C and save the system configuration file if not browsing.
       ELSEIF(INO.EQ.12)THEN
 
 C Explain
-        CALL PHELPD('demands help 1',18,'-',0,0,IER)
+        CALL PHELPD('demands help 1',35,'-',0,0,IER)
       ELSE
         INO=-1
         GOTO 30
@@ -346,8 +409,8 @@ C Explain
 
 
 C -------- EDBCAS ----------
-C EDBCAS: Edits model (non zone specific) demands.
-C Returns: IBCGS*(),IBCGF*(),CBMGS*(),CBMGL*(),BRADC*(),BCONC*() common
+C EDBCAS: Edits dispersed demands.
+C Returns: IBCGS(),IBCGF(),CBMGS(),CBMGL(),BRADC(),BCONC() common
 C based on the day type passed.
 C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
       SUBROUTINE EDBCAS(ITRU,IWSS,IER)
@@ -360,24 +423,27 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
+
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
       common/IPVDMD/idmdinc(7)
 
-      dimension IBCGS(MC),IBCGF(MC),CBMGS(MC),CBMGL(MC),BRADC(MC)
-      dimension IBCGT(MC),BCONC(MC)
+C Local editing arrays.
+      dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
+      dimension IEBCGT(MC),BECONC(MC)
       dimension vert(35),X(5)
       CHARACTER vert*43,head*28,H*72,outs*124,KEY*1,hold*40
 
 C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
       character blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
+      character calename*32,calentag*12,calendayname*32
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)
@@ -388,80 +454,49 @@ C Labels for loads.
       write(ll6,'(1x,a6,1x)') blodlabel(6)
       write(ll7,'(1x,a6,1x)') blodlabel(7)
 
-C Defaults.
-      NGC=1
-      IBCGS(1)=0
-      IBCGF(1)=24
-      IBCGT(1)=1
-      CBMGS(1)=0.
-      CBMGL(1)=0.
-      BRADC(1)=0.5
-      BCONC(1)=0.5
+C Defaults for any new gains.
+      if(iwss.eq.1)idt = 1
+      NEGC=1
+      IEBCGS(1)=0
+      IEBCGF(1)=24
+      IEBCGT(1)=1
+      CEBMGS(1)=0.
+      CEBMGL(1)=0.
+      BERADC(1)=0.5
+      BECONC(1)=0.5
 
 C Assign to local vars depending on day type.
-  780 IF(IWSS.EQ.1)THEN
+  780 IF(iwss.GE.1.and.iwss.LE.nbdaytype)THEN
         if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Weekdays (',NBCAS1,')'
+          write(head,'(3a,i2,a)') '  Demands: ',calentag(iwss),
+     &      ' (',NBCAS(iwss),')'
         else
-          write(head,'(a,i2,a)') '  Weekdays (',NBCAS1,')'
+          write(head,'(2x,2a,i2,a)') calentag(iwss),
+     &      ' (',NBCAS(iwss),')'
         endif
-        IF(NBCAS1.EQ.0)GOTO 265
-        NGC=NBCAS1
-        DO 781 KK=1,NBCAS1
-          IBCGS(KK)=IBCGS1(KK)
-          IBCGF(KK)=IBCGF1(KK)
-          IBCGT(KK)=IBCGT1(KK)
-          CBMGS(KK)=CBMGS1(KK)
-          CBMGL(KK)=CBMGL1(KK)
-          BRADC(KK)=BRADC1(KK)
-          BCONC(KK)=BCONC1(KK)
+        IF(NBCAS(iwss).EQ.0)GOTO 265
+        NEGC=NBCAS(iwss)
+        DO 781 KK=1,NBCAS(iwss)
+          IEBCGS(KK)=IBCGS(iwss,KK)
+          IEBCGF(KK)=IBCGF(iwss,KK)
+          IEBCGT(KK)=IBCGT(iwss,KK)
+          CEBMGS(KK)=CBMGS(iwss,KK)
+          CEBMGL(KK)=CBMGL(iwss,KK)
+          BERADC(KK)=BRADC(iwss,KK)
+          BECONC(KK)=BCONC(iwss,KK)
   781   CONTINUE
-      ELSEIF(IWSS.EQ.2)THEN
-        if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Saturdays (',NBCAS2,')'
-        else
-          write(head,'(a,i2,a)') '  Saturdays (',NBCAS2,')'
-        endif
-        IF(NBCAS2.EQ.0)GOTO 265
-        NGC=NBCAS2
-        DO 782 KK=1,NBCAS2
-          IBCGS(KK)=IBCGS2(KK)
-          IBCGF(KK)=IBCGF2(KK)
-          IBCGT(KK)=IBCGT2(KK)
-          CBMGS(KK)=CBMGS2(KK)
-          CBMGL(KK)=CBMGL2(KK)
-          BRADC(KK)=BRADC2(KK)
-          BCONC(KK)=BCONC2(KK)
-  782   CONTINUE
-      ELSEIF(IWSS.EQ.3)THEN
-        if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Sundays (',NBCAS3,')'
-        else
-          write(head,'(a,i2,a)') '  Sundays (',NBCAS3,')'
-        endif
-        IF(NBCAS3.EQ.0)GOTO 265
-        NGC=NBCAS3
-        DO 783 KK=1,NBCAS3
-          IBCGS(KK)=IBCGS3(KK)
-          IBCGF(KK)=IBCGF3(KK)
-          IBCGT(KK)=IBCGT3(KK)
-          CBMGS(KK)=CBMGS3(KK)
-          CBMGL(KK)=CBMGL3(KK)
-          BRADC(KK)=BRADC3(KK)
-          BCONC(KK)=BCONC3(KK)
-  783   CONTINUE
       ENDIF
 
 C Setup for multi-page menu.
   265 MHEAD=4
       MCTL=6
-      ILEN=NGC
+      ILEN=NEGC
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
    92 IER=0
-      ILEN=NGC
+      ILEN=NEGC
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -471,36 +506,25 @@ C current menu line index. Build up text strings for the menu.
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M-MHEAD,KEY,IER)
-          if(IBCGT(L).gt.0)then
-            WRITE(VERT(M),303)KEY,IBCGS(L),IBCGF(L),
-     &       blodlabel(IABS(IBCGT(L))),'W  ',CBMGS(L),CBMGL(L),BRADC(L),
-     &       BCONC(L)
+          if(IEBCGT(L).gt.0)then
+            WRITE(VERT(M),303)KEY,IEBCGS(L),IEBCGF(L),
+     &       blodlabel(IABS(IEBCGT(L))),'W  ',CEBMGS(L),CEBMGL(L),
+     &       BERADC(L),BECONC(L)
           else
-            WRITE(VERT(M),303)KEY,IBCGS(L),IBCGF(L),
-     &       blodlabel(IABS(IBCGT(L))),'Wm2',CBMGS(L),CBMGL(L),BRADC(L),
-     &       BCONC(L)
+            WRITE(VERT(M),303)KEY,IEBCGS(L),IEBCGF(L),
+     &       blodlabel(IABS(IEBCGT(L))),'Wm2',CEBMGS(L),CEBMGL(L),
+     &       BERADC(L),BECONC(L)
           endif
   303     FORMAT(A1,I5,I3,1x,A6,A3,F7.0,F7.0,F5.2,F5.2)
         ENDIF
    10 CONTINUE
 
-      if(IWSS.EQ.1)then
+      if(iwss.ge.1.and.iwss.le.nbdaytype)then
         if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Weekdays (',NGC,')'
+          write(head,'(3a,i2,a)') '  Demands: ',calentag(iwss),
+     &      ' (',NEGC,')'
         else
-          write(head,'(a,i2,a)') '  Weekdays (',NGC,')'
-        endif
-      elseif(IWSS.EQ.2)then
-        if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Saturdays (',NGC,')'
-        else
-          write(head,'(a,i2,a)') '  Saturdays (',NGC,')'
-        endif
-      elseif(IWSS.EQ.3)then
-        if(mmod.eq.8)then
-          write(head,'(a,i2,a)') '  Demands: Sundays (',NGC,')'
-        else
-          write(head,'(a,i2,a)') '  Sundays (',NGC,')'
+          write(head,'(2x,2a,i2,a)') calentag(iwss),' (',NEGC,')'
         endif
       endif
       write(VERT(1),'(A)') head
@@ -550,12 +574,8 @@ C Now display the menu.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('gains menu',14,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
-        IF(IWSS.EQ.1)THEN
-          IN=NBCAS1
-        ELSEIF(IWSS.EQ.2)THEN
-          IN=NBCAS2
-        ELSEIF(IWSS.EQ.3)THEN
-          IN=NBCAS3
+        IF(IWSS.ge.1.and.iwss.le.nbdaytype)THEN
+          IN=NBCAS(iwss)
         ENDIF
         CALL SBCASL(IN,IWSS,IER)
         goto 780
@@ -564,14 +584,14 @@ C Now display the menu.
         h(2)='particular casual gain type (useful for parametric '
         h(3)='studies on profiles which have been imported).'
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
-     &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IBCGTS,3)
+     &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IEBCGTS,3)
         VAL=1.0
         CALL EASKR(VAL,' ',' Factor to be applied (0.1 to 5.0) ',
      &       0.1,'F',5.0,'F',1.0,'scaling factor',IER,3)
-        do 33 i=1,NGC
-          if(IABS(IBCGT(I)).eq.IBCGTS)then
-            CBMGS(I)=CBMGS(I)*VAL
-            CBMGL(I)=CBMGL(I)*VAL
+        do 33 i=1,NEGC
+          if(IABS(IEBCGT(I)).eq.IEBCGTS)then
+            CEBMGS(I)=CEBMGS(I)*VAL
+            CEBMGL(I)=CEBMGL(I)*VAL
           endif
  33     continue
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
@@ -587,17 +607,17 @@ C which one, then collapse the period list.
           CALL EMENU('Demand: Delete',VERT,MVERT,IVERT)
           CALL KEYIND(MVERT,IVERT,IWHICH,INOUT)
           IF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
-            IF(NGC.LT.2)GOTO 92
-            DO 65 I=IWHICH,NGC-1
-              IBCGS(I)=IBCGS(I+1)
-              IBCGF(I)=IBCGF(I+1)
-              IBCGT(I)=IBCGT(I+1)
-              CBMGS(I)=CBMGS(I+1)
-              CBMGL(I)=CBMGL(I+1)
-              BRADC(I)=BRADC(I+1)
-              BCONC(I)=BCONC(I+1)
+            IF(NEGC.LT.2)GOTO 92
+            DO 65 I=IWHICH,NEGC-1
+              IEBCGS(I)=IEBCGS(I+1)
+              IEBCGF(I)=IEBCGF(I+1)
+              IEBCGT(I)=IEBCGT(I+1)
+              CEBMGS(I)=CEBMGS(I+1)
+              CEBMGL(I)=CEBMGL(I+1)
+              BERADC(I)=BERADC(I+1)
+              BECONC(I)=BECONC(I+1)
    65       CONTINUE
-            NGC=NGC-1
+            NEGC=NEGC-1
           ELSE
             GOTO 265
           ENDIF
@@ -608,7 +628,7 @@ C Re-establish menu.
 
 C To insert a period redisplay the menu and allow user to indicate
 C which one, then expand the period list and insert default info.
-          if(NGC+1.GT.MC)then
+          if(NEGC+1.GT.MC)then
             call usrmsg(' ',' Sorry.. to many periods.','W')
             goto 92
           endif
@@ -616,25 +636,25 @@ C which one, then expand the period list and insert default info.
           CALL EMENU('Demand: Insert',VERT,MVERT,IVERT)
           CALL KEYIND(MVERT,IVERT,IWHICH,INOUT)
           IF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
-            NGC=NGC+1
-            I=NGC+1
+            NEGC=NEGC+1
+            I=NEGC+1
    45       CONTINUE
             I=I-1
-            IBCGS(I)=IBCGS(I-1)
-            IBCGF(I)=IBCGF(I-1)
-            IBCGT(I)=IBCGT(I-1)
-            CBMGS(I)=CBMGS(I-1)
-            CBMGL(I)=CBMGL(I-1)
-            BRADC(I)=BRADC(I-1)
-            BCONC(I)=BCONC(I-1)
+            IEBCGS(I)=IEBCGS(I-1)
+            IEBCGF(I)=IEBCGF(I-1)
+            IEBCGT(I)=IEBCGT(I-1)
+            CEBMGS(I)=CEBMGS(I-1)
+            CEBMGL(I)=CEBMGL(I-1)
+            BERADC(I)=BERADC(I-1)
+            BECONC(I)=BECONC(I-1)
             IF(I.GT.IWHICH+1)GOTO 45
-            IBCGS(IWHICH)=0
-            IBCGF(IWHICH)=24
-            IBCGT(IWHICH)=1
-            CBMGS(IWHICH)=0.
-            CBMGL(IWHICH)=0.
-            BRADC(IWHICH)=0.5
-            BCONC(IWHICH)=0.5
+            IEBCGS(IWHICH)=0
+            IEBCGF(IWHICH)=24
+            IEBCGT(IWHICH)=1
+            CEBMGS(IWHICH)=0.
+            CEBMGL(IWHICH)=0.
+            BERADC(IWHICH)=0.5
+            BECONC(IWHICH)=0.5
           ELSE
              GOTO 265
           ENDIF
@@ -655,14 +675,14 @@ C Edit block identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,I,IO)
 
         WRITE(OUTS,'(A,I2)') ' Start and finish hours for period ',I
-        WRITE(hold,'(2i8)')ibcgs(i),ibcgf(i)
+        WRITE(hold,'(2i8)')iebcgs(i),iebcgf(i)
         h(1)='Period during which demand applies. '
         CALL EASKS(hold,outs,' : ',40,' 0 24 ','st-fn hr',IER,1)
         K=0
         CALL EGETWI(hold,K,iv1,0,24,'F','period start',IER)
         CALL EGETWI(hold,K,iv,iv1,24,'F','period end',IER)
-        ibcgs(I)=IV1
-        ibcgf(I)=IV
+        iebcgs(I)=IV1
+        iebcgf(I)=IV
 
 C Establish the nature of the casual gain
         H(1)='The type of demand can be one of those listed in the '
@@ -674,9 +694,10 @@ C Depending on type set relevant idmdinc value.
         idmdinc(IWM)=1
 
         call easkab('Are values',' ','absolute','per m^2',IW,8)
-        if(IW.eq.1)IBCGT(I)=IWM
-        if(IW.eq.2)IBCGT(I)=-1*IWM
- 100    WRITE(HOLD,'(2f9.0,2f8.2)')CBMGS(I),CBMGL(I),BRADC(I),BCONC(I)
+        if(IW.eq.1)IEBCGT(I)=IWM
+        if(IW.eq.2)IEBCGT(I)=-1*IWM
+ 100    WRITE(HOLD,'(2f9.0,2f8.2,a)')CEBMGS(I),CEBMGL(I),BERADC(I),
+     &    BECONC(I),'  '
         H(1)='Sensible and latent demands are specified in '
         h(2)='Watts. '
         h(3)='Also supply the radiant and convective fraction for'
@@ -689,11 +710,11 @@ C Depending on type set relevant idmdinc value.
         CALL EGETWR(HOLD,K,PL,0.,999999.,'F','latent',IER)
         CALL EGETWR(HOLD,K,RAD,0.0,1.0,'F','rad frac',IER)
         CALL EGETWR(HOLD,K,CON,0.0,1.0,'F','conv frac',IER)
-        CBMGS(I)=PS
-        CBMGL(I)=PL
-        BRADC(I)=RAD
-        BCONC(I)=CON
-        X(5)=BRADC(I)+BCONC(I)
+        CEBMGS(I)=PS
+        CEBMGL(I)=PL
+        BERADC(I)=RAD
+        BECONC(I)=CON
+        X(5)=BERADC(I)+BECONC(I)
         IF(X(5).LT..98.OR.X(5).GT.1.02)THEN
           call usrmsg(' Sum of radiant and convective',
      &                      ' fractions not close to 1.0! ','W')
@@ -707,42 +728,18 @@ C Depending on type set relevant idmdinc value.
       GOTO 92
 
 C Assign to common depending on day type.
-   80 IF(IWSS.EQ.1)THEN
-        NBCAS1=NGC
-        IF(NBCAS1.EQ.0)GOTO 66
-        DO 81 KK=1,NBCAS1
-          IBCGS1(KK)=IBCGS(KK)
-          IBCGF1(KK)=IBCGF(KK)
-          IBCGT1(KK)=IBCGT(KK)
-          CBMGS1(KK)=CBMGS(KK)
-          CBMGL1(KK)=CBMGL(KK)
-          BRADC1(KK)=BRADC(KK)
-          BCONC1(KK)=BCONC(KK)
+   80 IF(IWSS.ge.1.and.iwss.le.nbdaytype)THEN
+        NBCAS(iwss)=NEGC
+        IF(NBCAS(iwss).EQ.0)GOTO 66
+        DO 81 KK=1,NBCAS(iwss)
+          IBCGS(iwss,KK)=IEBCGS(KK)
+          IBCGF(iwss,KK)=IEBCGF(KK)
+          IBCGT(iwss,KK)=IEBCGT(KK)
+          CBMGS(iwss,KK)=CEBMGS(KK)
+          CBMGL(iwss,KK)=CEBMGL(KK)
+          BRADC(iwss,KK)=BERADC(KK)
+          BCONC(iwss,KK)=BECONC(KK)
    81   CONTINUE
-      ELSEIF(IWSS.EQ.2)THEN
-        NBCAS2=NGC
-        IF(NBCAS2.EQ.0)GOTO 66
-        DO 82 KK=1,NBCAS2
-          IBCGS2(KK)=IBCGS(KK)
-          IBCGF2(KK)=IBCGF(KK)
-          IBCGT2(KK)=IBCGT(KK)
-          CBMGS2(KK)=CBMGS(KK)
-          CBMGL2(KK)=CBMGL(KK)
-          BRADC2(KK)=BRADC(KK)
-          BCONC2(KK)=BCONC(KK)
-   82   CONTINUE
-      ELSEIF(IWSS.EQ.3)THEN
-        NBCAS3=NGC
-        IF(NBCAS3.EQ.0)GOTO 66
-        DO 83 KK=1,NBCAS3
-          IBCGS3(KK)=IBCGS(KK)
-          IBCGF3(KK)=IBCGF(KK)
-          IBCGT3(KK)=IBCGT(KK)
-          CBMGS3(KK)=CBMGS(KK)
-          CBMGL3(KK)=CBMGL(KK)
-          BRADC3(KK)=BRADC(KK)
-          BCONC3(KK)=BCONC(KK)
-   83   CONTINUE
       ENDIF
 
    66 RETURN
@@ -761,21 +758,23 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
       common/IPVDMD/idmdinc(7)
+
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
       DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
       DIMENSION  NO(100),DESC(100),IPRVAL(100)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
+      character calename*32,calentag*12,calendayname*32
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)
@@ -810,8 +809,8 @@ C Labels for loads.
 C Present a list of profiles to select from.
       H(1)='Any one of the profiles may be selected.'
       IX=1
-      CALL EPICKS(IX,IPRVAL,' ',' Profiles in db: ',
-     &         40,NITEMS,DESC,'db profiles',IER,1)
+      CALL EPICKS(IX,IPRVAL,' ',' Profiles in database: ',
+     &         40,NITEMS,DESC,'event database profiles',IER,1)
       IF(IX.EQ.0)RETURN
 
       N=IPRVAL(1)
@@ -841,7 +840,7 @@ C Depending on type set relevant idmdinc value.
       call easkab('Are values',' ','absolute','per m^2',IW,5)
       if(IW.eq.2)ICGT=-1*ICGT
 
- 100  WRITE(HOLD,'(2f9.0,2f8.2)')PS,PL,RAD,CON
+ 100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
       H(1)='In order to expand the profile into energy values the'
       H(2)='sensible and latent load in Watts equivalent to 100% is'
       h(3)=' required. '
@@ -866,45 +865,19 @@ C Depending on type set relevant idmdinc value.
       ENDIF
       call usrmsg(' ',' ','-')
           
-      if(IDAY .EQ. 1)then
+      if(IDAY.ge.1.and.IDAY.le.nbdaytype)then
 
-C Weekday gains.
-        NBCAS1 = NBCAS1 + NCG
+C The current calendar day type gains.
+        NBCAS(iday) = NBCAS(iday) + NCG
         DO 140 I = 1,NCG
-          IBCGS1(I+IN) = ICGS(I)
-          IBCGF1(I+IN) = ICGF(I)
-          CBMGS1(I+IN) = CGS(I)*PS/100.0
-          CBMGL1(I+IN) = CGL(I)*PL/100.0
-          BRADC1(I+IN) = RAD
-          BCONC1(I+IN) = CON
-          IBCGT1(I+IN) = ICGT
+          IBCGS(iday,I+IN) = ICGS(I)
+          IBCGF(iday,I+IN) = ICGF(I)
+          CBMGS(iday,I+IN) = CGS(I)*PS/100.0
+          CBMGL(iday,I+IN) = CGL(I)*PL/100.0
+          BRADC(iday,I+IN) = RAD
+          BCONC(iday,I+IN) = CON
+          IBCGT(iday,I+IN) = ICGT
 140     CONTINUE
-      elseif(IDAY .EQ. 2)then
-
-C Saturday gains.
-        NBCAS2 = NBCAS2 + NCG
-        DO 141 I = 1,NCG
-          IBCGS2(I+IN) = ICGS(I)
-          IBCGF2(I+IN) = ICGF(I)
-          CBMGS2(I+IN) = CGS(I)*PS/100.0
-          CBMGL2(I+IN) = CGL(I)*PL/100.0
-          BRADC2(I+IN) = RAD
-          BCONC2(I+IN) = CON
-          IBCGT2(I+IN) = ICGT
-141     CONTINUE
-      elseif(IDAY .EQ. 3)then
-
-C Sunday gains.
-        NBCAS3 = NBCAS3 + NCG
-        DO 142 I = 1,NCG
-          IBCGS3(I+IN) = ICGS(I)
-          IBCGF3(I+IN) = ICGF(I)
-          CBMGS3(I+IN) = CGS(I)*PS/100.0
-          CBMGL3(I+IN) = CGL(I)*PL/100.0
-          BRADC3(I+IN) = RAD
-          BCONC3(I+IN) = CON
-          IBCGT3(I+IN) = ICGT
-142     CONTINUE
       endif
 
   999 CALL ERPFREE(IPRODB,ISTAT)
@@ -929,27 +902,8 @@ C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
 C Common block variables are:
 C dmdsdesc      - dispersed demands description
 
-C NBCAS1,NBCAS2 - number of demand sets during a typical Weekday,
-C & NBCAS3        Saturday and Sunday respectively.
-
-C IBCGT1,IBCGT2 - Demand set type (weekdays/saturdays/sundays) :
-C IBCG3T          1. Occup, 2. Lighting, 3. Small power, 4. Fans, 
-C                 5. Pumps, 6. Lifts, 7. DHW
-C                -1. Occup w/m2, -2. Lighting w/m2, -3. Sml power w/m2,
-C                -4 Fan per w/m2, -5. Pumps per w/m2  -6. Lifts w/m^2,  
-C                -7. DHW w/m^2
-
-C IBCGS1,IBCGF1, - start and finish hours of each of the above demands
-C IBCGS2,IBCGF2,   periods
-C IBCGS3 & IBCGF3
-
-C CBMGS1,CBMGL1, - sensible and latent magnitude (in Watts) of
-C CBMGS2,CBMGL2,   each demand
-C CBMGS3 & CBMGL3
-
-C BRADC1,BCONC1, - radiant and convective portions (proportion
-C BRADC2,BCONC2,   of 1) of each demand
-C BRADC3,BCONC3
+C NBCAS()  - number of demand sets during a typical Weekday,
+C            Saturday and Sunday etc respectively.
 
 C Maximum number of demands/day       MC=20
 
@@ -960,18 +914,27 @@ C Maximum number of demands/day       MC=20
 
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+
+C Support for up to 10 calendar day types
+C IBCGS(),IBCGF() - start and finish hours of each demand
+C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
+C BRADC(),BCONC(), - radiant and convective portions of each demand
+C IBCGT() - type of gain (1-7)
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
       common/IPVDMD/idmdinc(7)
 
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      character calename*32,calentag*12,calendayname*32
       CHARACTER*6 blodlabel
+      integer idt  ! local counter of day type.
 
       IER=0
 
@@ -989,93 +952,44 @@ C it into words. Use long strip for notes line.
       IF(IER.NE.0)RETURN
       dmdsdesc=LOUTSTR
 
-C Weekdays.
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday demand periods',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,NBCAS1,0,MC,'W','Week periods',IER)
-      IF(NBCAS1.EQ.0)goto 5
-      DO 40 I=1,NBCAS1
-        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+C Loop through all of the calendar day types.
+      do 30 idt=1,nbdaytype
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'day type demand periods',IER)
         K=0
-        if(ND.eq.7)then
-          CALL EGETWI(OUTSTR,K,IBCGT1(I),-7,7,'W','wkd type',IER)
-        else
-          IBCGT1(I)=1
-        endif
+        CALL EGETWI(OUTSTR,K,NBCAS(idt),0,MC,'W','periods in day',IER)
+        IF(NBCAS(idt).EQ.0)goto 30
+        DO 40 I=1,NBCAS(idt)
+          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+          K=0
+          if(ND.eq.7)then
+            CALL EGETWI(OUTSTR,K,IBCGT(idt,I),-7,7,'W','casual type',
+     &        IER)
+          else
+            IBCGT(idt,I)=1
+          endif
 
 C Set related IPV inclusion index to 1.
-        idmdinc(iabs(IBCGT1(I)))=1
-        CALL EGETWI(OUTSTR,K,IBCGS1(I),0,24,'W','wkd gain st',IER)
-        CALL EGETWI(OUTSTR,K,IBCGF1(I),0,24,'W','wkd gain fn',IER)
-        CALL EGETWR(OUTSTR,K,CBMGS1(I),0.,0.,'-','wkd sens',IER)
-        CALL EGETWR(OUTSTR,K,CBMGL1(I),0.,0.,'-','wkd latent',IER)
-        CALL EGETWR(OUTSTR,K,BRADC1(I),0.0,1.,'W','wkd rad fr',IER)
-        CALL EGETWR(OUTSTR,K,BCONC1(I),0.0,1.,'W','wkd conv fr',IER)
-        IF(IBCGS1(I).GT.IBCGF1(I))goto 1006
-        X=BRADC1(I)+BCONC1(I)
-        IF(X.GT.1.)goto 1015
-        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+          idmdinc(iabs(IBCGT(idt,I)))=1
+          CALL EGETWI(OUTSTR,K,IBCGS(idt,I),0,24,'W','cas gain start',
+     &      IER)
+          CALL EGETWI(OUTSTR,K,IBCGF(idt,I),0,24,'W','cas gain finsh',
+     &      IER)
+          CALL EGETWR(OUTSTR,K,CBMGS(idt,I),0.,0.,'-','cas sensible',
+     &      IER)
+          CALL EGETWR(OUTSTR,K,CBMGL(idt,I),0.,0.,'-','cas latent',
+     &      IER)
+          CALL EGETWR(OUTSTR,K,BRADC(idt,I),0.0,1.,'W','cas rad frac',
+     &      IER)
+          CALL EGETWR(OUTSTR,K,BCONC(idt,I),0.0,1.,'W','cas conv frac',
+     &      IER)
+          IF(IBCGS(idt,I).GT.IBCGF(idt,I))goto 1006
+          X=BRADC(idt,I)+BCONC(idt,I)
+          IF(X.GT.1.)goto 1015
+          IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
      &                            ' Demand rad:con sum < 1.0')
-   40 CONTINUE
-      IF(IER.NE.0)RETURN
-
-C Saturdays.
-   5  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday demand periods',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,NBCAS2,0,MC,'W','Sat periods',IER)
-      IF(NBCAS2.EQ.0)GOTO 6
-      DO 50 I=1,NBCAS2
-        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
-        K=0
-        if(ND.eq.7)then
-          CALL EGETWI(OUTSTR,K,IBCGT2(I),-7,7,'W','Sat type',IER)
-        else
-          IBCGT2(I)=1
-        endif
-
-C Set related IPV inclusion index to 1.
-        idmdinc(iabs(IBCGT2(I)))=1
-        CALL EGETWI(OUTSTR,K,IBCGS2(I),0,24,'W','Sat gain st',IER)
-        CALL EGETWI(OUTSTR,K,IBCGF2(I),0,24,'W','Sat gain fn',IER)
-        CALL EGETWR(OUTSTR,K,CBMGS2(I),0.,0.,'-','Sat sens',IER)
-        CALL EGETWR(OUTSTR,K,CBMGL2(I),0.,0.,'-','Sat latent',IER)
-        CALL EGETWR(OUTSTR,K,BRADC2(I),0.0,1.0,'W','Sat rad fr',IER)
-        CALL EGETWR(OUTSTR,K,BCONC2(I),0.0,1.0,'W','Sat conv fr',IER)
-        IF(IBCGS2(I).GT.IBCGF2(I))goto 1006
-        X=BRADC2(I)+BCONC2(I)
-        IF(X.GT.1.)goto 1015
-        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
-     &                            ' Demand rad:con sum < 1.0')
-   50 CONTINUE
-
-C Sundays.
-   6  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday demand periods',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,NBCAS3,0,MC,'W','Sun periods',IER)
-      IF(NBCAS3.EQ.0)GOTO 8
-      DO 60 I=1,NBCAS3
-        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period details',IER)
-        K=0
-        if(ND.eq.7)then
-          CALL EGETWI(OUTSTR,K,IBCGT3(I),-7,7,'W','Sun type',IER)
-        else
-          IBCGT3(I)=1
-        endif
-
-C Set related IPV inclusion index to 1.
-        idmdinc(iabs(IBCGT3(I)))=1
-        CALL EGETWI(OUTSTR,K,IBCGS3(I),0,24,'W','Sun gain st',IER)
-        CALL EGETWI(OUTSTR,K,IBCGF3(I),0,24,'W','Sun gain fn',IER)
-        CALL EGETWR(OUTSTR,K,CBMGS3(I),0.,0.,'-','Sun sens',IER)
-        CALL EGETWR(OUTSTR,K,CBMGL3(I),0.,0.,'-','Sun latent',IER)
-        CALL EGETWR(OUTSTR,K,BRADC3(I),0.0,1.0,'W','Sun rad fr',IER)
-        CALL EGETWR(OUTSTR,K,BCONC3(I),0.0,1.0,'W','Sun conv fr',IER)
-        IF(IBCGS3(I).GT.IBCGF3(I))goto 1006
-        X=BRADC3(I)+BCONC3(I)
-        IF(X.GT.1.)goto 1015
-        IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
-     &                            ' Demand rad:con sum < 1.0')
-   60 CONTINUE
+   40   CONTINUE
+        IF(IER.NE.0)RETURN
+   30 continue
 
 C Check to see if demand labels have been added to the end of the file
     8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
@@ -1116,14 +1030,15 @@ C Error messages.
       GOTO 7
 
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-        blodlabel(1)='Occup'
-        blodlabel(2)='Lights'
-        blodlabel(3)='SmPowr'      
-        blodlabel(4)='Fans'
-        blodlabel(5)='Pumps'
-        blodlabel(6)='Lifts'      
-        blodlabel(7)='DHW'      
+      blodlabel(1)='Occup'
+      blodlabel(2)='Lights'
+      blodlabel(3)='SmPowr'      
+      blodlabel(4)='Fans'
+      blodlabel(5)='Pumps'
+      blodlabel(6)='Lifts'      
+      blodlabel(7)='DHW'      
       goto 1235
+
  1006 call edisp(iuout,' Period start - end mismatch in the line ...')
       call edisp(iuout,outstr)
       goto 1000
@@ -1146,16 +1061,19 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
+
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
 
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+
       CHARACTER dmdsdesc*248,bdmds*72,OPFIL*72
+      character calename*32,calentag*12,calendayname*32
       CHARACTER*6 blodlabel
 
       IER=0
@@ -1168,45 +1086,33 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
-      WRITE(IUO,30,IOSTAT=ISTAT,ERR=1)
+C << consider a version number and date for this file >>
+C << also consider just putting it in the configuration file >>
+
+      WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
      &  OPFIL(:lnblnk(OPFIL))
-  30  FORMAT('# project demands defined in: ',/,'# ',a)
+  31  FORMAT('# project demands defined in: ',/,'# ',a)
 
-
-C Write the common block data to the file.
+C Write documentation.
       WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)dmdsdesc(1:lnblnk(dmdsdesc))
-      WRITE(IUO,'(1X,I5,A)',IOSTAT=ISTAT,ERR=1)NBCAS1,
-     &            '   # no Weekday demands '
-      IF (NBCAS1 .GT. 0)THEN
-        WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)
-     &    '# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac'
-        DO 1160 I = 1,NBCAS1
-          WRITE(IUO,5460,IOSTAT=ISTAT,ERR=1)IBCGT1(I),IBCGS1(I),
-     &          IBCGF1(I),CBMGS1(I),CBMGL1(I),BRADC1(I),BCONC1(I)
-1160    CONTINUE
-      ENDIF
 
-      WRITE(IUO,'(1X,I5,A)',IOSTAT=ISTAT,ERR=1)NBCAS2,
-     &            '   # no Saturday demands '
-      IF (NBCAS2 .GT. 0)THEN
-        WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)
-     &    '# Sat: type, start, stop, sens, latent, rad_frac, conv_frac'
-        DO 1180 I = 1,NBCAS2
-          WRITE(IUO,5460,IOSTAT=ISTAT,ERR=1)IBCGT2(I),IBCGS2(I),
-     &          IBCGF2(I),CBMGS2(I),CBMGL2(I),BRADC2(I),BCONC2(I)
-1180    CONTINUE
-      ENDIF
-
-      WRITE(IUO,'(1X,I5,A)',IOSTAT=ISTAT,ERR=1)NBCAS3,
-     &            '   # no Sunday demands '
-      IF (NBCAS3 .GT. 0)THEN
-        WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)
-     &    '# Sun: type, start, stop, sens, latent, rad_frac, conv_frac'
-        DO 1185 I = 1,NBCAS3
-          WRITE(IUO,5460,IOSTAT=ISTAT,ERR=1)IBCGT3(I),IBCGS3(I),
-     &          IBCGF3(I),CBMGS3(I),CBMGL3(I),BRADC3(I),BCONC3(I)
-1185    CONTINUE
-      ENDIF
+C Write the common block data to the file. Loop through all of
+C the calendar day types.
+      do 30 idt=1,nbdaytype
+        ldt=lnblnk(calentag(idt))
+        WRITE(IUO,'(1X,I5,3A)',IOSTAT=ISTAT,ERR=1)NBCAS(idt),
+     &            '   # no ',calentag(idt)(1:ldt),' demands '
+        IF (NBCAS(idt) .GT. 0)THEN
+          WRITE(IUO,'(3A)',IOSTAT=ISTAT,ERR=1)
+     &      '# ',calentag(idt)(1:ldt),
+     &      ': type, start, stop, sens, latent, rad_frac, conv_frac'
+          DO 1160 I = 1,NBCAS(idt)
+            WRITE(IUO,5460,IOSTAT=ISTAT,ERR=1)IBCGT(idt,I),
+     &        IBCGS(idt,I),IBCGF(idt,I),CBMGS(idt,I),CBMGL(idt,I),
+     &        BRADC(idt,I),BCONC(idt,I)
+1160      CONTINUE
+        ENDIF
+  30  continue
 
 5460  FORMAT(1X,3(I4,','),F11.3,',',F11.3,',',F6.3,',',F6.3)
 C Write out the type labels and associated areas.
@@ -1230,79 +1136,50 @@ C from common block data.
 
 #include "building.h"
       COMMON/BL1/dmdsdesc,bdmds
-      COMMON/BL3/NBCAS1,IBCGS1(MC),IBCGF1(MC),CBMGS1(MC),CBMGL1(MC),
-     &  BRADC1(MC),BCONC1(MC),NBCAS2,IBCGS2(MC),IBCGF2(MC),CBMGS2(MC),
-     &  CBMGL2(MC),BRADC2(MC),BCONC2(MC),NBCAS3,IBCGS3(MC),IBCGF3(MC),
-     &  CBMGS3(MC),CBMGL3(MC),BRADC3(MC),BCONC3(MC)
-      COMMON/BL3TYPE/IBCGT1(MC),IBCGT2(MC),IBCGT3(MC)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
 
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
+
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+
       CHARACTER dmdsdesc*248,outs*124,bdmds*72
       CHARACTER*6 blodlabel
+      character calename*32,calentag*12,calendayname*32
 
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')
       call edisp248(itru,dmdsdesc,72)
-      WRITE(outs,'(A,I3)')' No. of Weekday demands =',NBCAS1
-      call edisp(itru,outs)
-      IF(NBCAS1.GT.0)THEN
-        call edisp(itru,
-     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
-        call edisp(itru,
-     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
-        DO 1270 I=1,NBCAS1
-          if(IBCGT1(i).gt.0)then
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT1(I))),'W  ',
-     &      IBCGS1(I),IBCGF1(I),CBMGS1(I),CBMGL1(I),BRADC1(I),BCONC1(I)
-          else
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT1(I))),'Wm2',
-     &      IBCGS1(I),IBCGF1(I),CBMGS1(I),CBMGL1(I),BRADC1(I),BCONC1(I)
-          endif
-          call edisp(itru,outs)
-1270    CONTINUE
-      ENDIF
 
-      call edisp(itru,' ')
-      WRITE(outs,'(A,I3)')' No. of Saturday demands =',NBCAS2
-      call edisp(itru,outs)
-      IF(NBCAS2.GT.0)THEN
-        call edisp(itru,
+      do 30 idt=1,nbdaytype
+        ldt=lnblnk(calentag(idt))
+        WRITE(outs,'(3A,I3)')' No. ',calentag(idt)(1:ldt),' demands =',
+     &    NBCAS(idt)
+        call edisp(itru,outs)
+        IF(NBCAS(idt).GT.0)THEN
+          call edisp(itru,
      &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
-        call edisp(itru,
+          call edisp(itru,
      &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
-        DO 1290 I=1,NBCAS2
-          if(IBCGT2(i).gt.0)then
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT2(I))),'W  ',
-     &      IBCGS2(I),IBCGF2(I),CBMGS2(I),CBMGL2(I),BRADC2(I),BCONC2(I)
-          else
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT2(I))),'Wm2',
-     &      IBCGS2(I),IBCGF2(I),CBMGS2(I),CBMGL2(I),BRADC2(I),BCONC2(I)
-          endif
-          call edisp(itru,outs)
-1290    CONTINUE
-      ENDIF
-
-      call edisp(itru,' ')
-      WRITE(outs,'(A,I3)')' No. of Sunday demands =',NBCAS3
-      call edisp(itru,outs)
-      IF(NBCAS3.GT.0)THEN
-        call edisp(itru,
-     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
-        call edisp(itru,
-     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
-        DO 1295 I=1,NBCAS3
-          if(IBCGT3(i).gt.0)then
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT3(I))),'W  ',
-     &      IBCGS3(I),IBCGF3(I),CBMGS3(I), CBMGL3(I),BRADC3(I),BCONC3(I)
-          else
-            WRITE(outs,5360)I,blodlabel(IABS(IBCGT3(I))),'Wm2',
-     &      IBCGS3(I),IBCGF3(I),CBMGS3(I), CBMGL3(I),BRADC3(I),BCONC3(I)
-          endif
-          call edisp(itru,outs)
-1295    CONTINUE
-      ENDIF
+          DO 1270 I=1,NBCAS(idt)
+            if(IBCGT(idt,i).gt.0)then
+              WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'W  ',
+     &          IBCGS(idt,I),IBCGF(idt,I),CBMGS(idt,I),CBMGL(idt,I),
+     &          BRADC(idt,I),BCONC(idt,I)
+            else
+              WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'Wm2',
+     &          IBCGS(idt,I),IBCGF(idt,I),CBMGS(idt,I),CBMGL(idt,I),
+     &          BRADC(idt,I),BCONC(idt,I)
+            endif
+            call edisp(itru,outs)
+1270      CONTINUE
+        ENDIF
+        call edisp(itru,' ')
+  30  continue
 
 5360  FORMAT(I4,1x,A6,A3,I5,I3,F9.1,F9.1,F11.2,F11.2)
 
