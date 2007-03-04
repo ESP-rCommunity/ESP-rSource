@@ -94,6 +94,9 @@ C LPNF (72 char) plant network file name.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
+C AIM-2.
+      common/aim2def/iAIM2,LAIM2
+
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -210,7 +213,7 @@ C Remember if each zone is fully attributed.
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
-      character cdblbl*20,cdblfil*72
+      character cdblbl*20,cdblfil*72,LAIM2*72
 
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -919,6 +922,13 @@ C Context of the model.
      &'Primary energy conversions (demand kWhr to primary kWhr) used.')
         endif
       elseif(contextinfo.eq.2)then
+
+C If there is an AIM-2 descritption scan the file and then report.
+        if(iAIM2.eq.1)then
+          call AIM2_READIN
+          call AIM2_report(itu,ier)
+        endif
+
         if(ipconv.eq.1)then
           call edisp(itu,
      &'Primary energy conversions (demand kWhr to primary kWhr) are:')

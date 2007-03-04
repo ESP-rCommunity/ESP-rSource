@@ -33,6 +33,7 @@ C   AIM2_COandN             Calculates fabric leakage coefficient and flow expon
 C   AIM2_flue_size          Sets effective opening size of furnace flue.
 C   AIM2_shelter_wall_flue  Sets wall and flue shelter coefficients.
 C   AIM2_wind_correct       Calculates wind speed correction factor.
+C   AIM2_report             Report contents of AIM-2 common blocks.
 
 C *******************************************************************************
 C References:
@@ -169,7 +170,6 @@ C Declarations for local variables and variables passed in common blocks.
       INTEGER IUNIT,ISTAT,IER,ND,k,ival
       INTEGER IFLAG
       INTEGER ICOMP
-      REAL FAIM2VERSIONNUMBER
       REAL val
       LOGICAL CLOSE
       
@@ -300,7 +300,7 @@ C Read air tightness type.
 C Read in supplementary data if blower door or quick blower door input given.
       if(airtight_type.le.2)then
       
-        CALL ECLOSE(fAIM2VersionNumber, 0., 0.001, CLOSE)
+        CALL ECLOSE(fAIM2VersionNumber, 0.0, 0.001, CLOSE)
         
         if (CLOSE) then ! the old version
           CALL EGETWR(OUTSTR,K,VAL,0.1,30.,'F',' ac/h at 50Pa',IER)
@@ -1552,3 +1552,398 @@ C weather station. This is equation 27 from Bradley (1993, p8).
 
       RETURN
       END
+
+C ********************************************************************************
+C **************************** AIM2_report **************************************
+C Created by: ESRU
+C Initial Creation Date: February 28, 2007
+C Copyright 2007: ESRU
+C AIM2_report decodes the AIM-2 common blocks into a brief report.
+
+      subroutine AIM2_report(itru,ier)
+
+      IMPLICIT NONE
+#include "building.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
+
+      integer lnblnk
+
+      common/aim2def/iAIM2,LAIM2
+      INTEGER iAIM2
+      CHARACTER LAIM2 *72
+
+      COMMON/WindowControl/
+     &     fWindowSetpoint,
+     &     fACSetPoint,
+     &     bWindowControlFlag,
+     &     iWindowControlZone,
+     &     bWindowsAreOpen,
+     &     fDeltaTInttoExt,
+     &     fWindowLowSetpoint
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      character zname*12,zdesc*64
+
+      REAL fWindowSetpoint,fACSetPoint
+      INTEGER iWindowControlZone
+      LOGICAL bWindowControlFlag,bWindowsAreOpen
+      REAL  fDeltaTInttoExt,fWindowLowSetpoint
+
+C Declarations for local variables and variables passed in common blocks.
+      CHARACTER outs248*248
+      character house*32,stories*32,foundation*32    ! string buffers for details 
+      character fireplace*96,dhwphrase*48,dhwshare*48
+      character dhwinside*48,dhwsolar*32,airtight*112
+      character w_terrain*48,b_terrain*48       ! terrain at weather site and bld
+      character b_shielding*48,f_shielding*48   ! shielding of building and flue
+      character crawl*48,attic*48
+
+      INTEGER IER,ND,k,ij,itru,llna
+      REAL total
+      LOGICAL CLOSE
+
+C Decode based on definitions in AIM2_READIN.
+
+C Compose airtightness description based on the combinations of
+C parameters and version number of the file.
+      CALL ECLOSE(fAIM2VersionNumber, 0.0, 0.001, CLOSE)
+      if(airtight_type.eq.1)then
+        if (CLOSE) then ! the old v
+          write(airtight,'(a,f7.3,a,f7.3,a,f8.1,a,f7.3)') 
+     &      'a blower door test with ',
+     &      ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff. ELA cm ',ELA_cm,' ELA Cd ',ELA_Cd
+        else
+          if (blower_door_input_option .eq. 1) then
+            write(airtight,'(a,f7.3,a,f7.3,a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with flow coef',AIM2_CO,' exp n',
+     &      AIM2_n,' & ',ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff'
+          elseif(blower_door_input_option .eq. 3) then
+            write(airtight,'(a,f8.1,a,f7.3,a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with ELA',ELA_cm,' and ELA Cd',
+     &        ELA_Cd,' & ',ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff'
+          elseif(blower_door_input_option .eq. 2) then
+            write(airtight,'(a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with ',
+     &        ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,' press diff'
+          endif
+        endif
+      elseif(airtight_type.eq.2)then
+        if (CLOSE) then ! the old v
+          write(airtight,'(a,f7.3,a,f7.3,a,f8.1,a,f7.3)') 
+     &      'a quick blower door test with ',
+     &      ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff. ELA cm ',ELA_cm,' ELA Cd ',ELA_Cd
+        else
+          if (blower_door_input_option .eq. 1) then
+            write(airtight,'(a,f7.3,a,f7.3,a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with flow coef',AIM2_CO,' exp n',
+     &      AIM2_n,' & ',ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff'
+          elseif(blower_door_input_option .eq. 3) then
+            write(airtight,'(a,f8.1,a,f7.3,a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with ELA',ELA_cm,' and ELA Cd',
+     &        ELA_Cd,' & ',ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,
+     &      ' press diff'
+          elseif(blower_door_input_option .eq. 2) then
+            write(airtight,'(a,f7.3,a,f7.3,a)') 
+     &        'a blower door test with ',
+     &        ACH_50Pa,' ac/h @ 50Pa & ',ELA_deltaP,' press diff'
+          endif
+        endif
+      elseif(airtight_type.eq.3)then
+        airtight='loose airtightness'
+      elseif(airtight_type.eq.4)then
+        airtight='average airtightness'
+      elseif(airtight_type.eq.5)then
+        airtight='present airtightness'
+      elseif(airtight_type.eq.6)then
+        airtight='energy tight build quality'
+      else
+        airtight='unspecified airtightness'
+      endif
+
+      call edisp(itru,'  ')
+      outs248 = ' '
+      write(outs248,'(3a,f3.1,3a)')
+     &  'Alberta Infil Method defined in ',
+     &  LAIM2(1:lnblnk(LAIM2)),' version ',fAIM2VersionNumber,
+     &  ' based on ',airtight(1:lnblnk(airtight)),'.'
+      call edisp248(itru,outs248,90)
+
+C Describe user defined leakage distribution.
+      if(userspec_leakage.eq.1)then
+        outs248 = ' '
+        total=AIM2_ceil_frac+AIM2_wall_frac+AIM2_floor_frac
+        if(total.gt.1.0)then
+          write(outs248,'(a,f5.2,a,f5.2,a,f5.2,a)') 
+     &      'The distribution of leakage has been set as: ceiling',
+     &      AIM2_ceil_frac,' walls',AIM2_wall_frac,' floor',
+     &      AIM2_floor_frac,' (will be normalised).'
+        else
+          write(outs248,'(a,f5.2,a,f5.2,a,f5.2,a)') 
+     &      'The distribution of leakage has been set as: ceiling',
+     &      AIM2_ceil_frac,' walls',AIM2_wall_frac,' floor',
+     &      AIM2_floor_frac,'.'
+        endif
+        call edisp248(itru,outs248,90)
+      endif
+
+C Describe terrain at weather station and building site.
+      if(AIM2_terrain_weather.eq.1)then
+        w_terrain='open sea,fetch > 5 km'
+      elseif(AIM2_terrain_weather.eq.2)then
+        w_terrain='mud flats,no vegetation'
+      elseif(AIM2_terrain_weather.eq.3)then
+        w_terrain='open flat terrain, grass'
+      elseif(AIM2_terrain_weather.eq.4)then
+        w_terrain='low crops, x/H > 20'
+      elseif(AIM2_terrain_weather.eq.5)then
+        w_terrain='high crops, scattered obstacles'
+      elseif(AIM2_terrain_weather.eq.6)then
+        w_terrain='parkland, bushes, x/H ~ 10'
+      elseif(AIM2_terrain_weather.eq.7)then
+        w_terrain='suburban, forest '
+      elseif(AIM2_terrain_weather.eq.8)then
+        w_terrain='city centre '
+      else
+        w_terrain='unknown '
+      endif
+      if(AIM2_terrain_building.eq.1)then
+        b_terrain='open sea,fetch > 5 km'
+      elseif(AIM2_terrain_building.eq.2)then
+        b_terrain='mud flats,no vegetation'
+      elseif(AIM2_terrain_building.eq.3)then
+        b_terrain='open flat terrain, grass'
+      elseif(AIM2_terrain_building.eq.4)then
+        b_terrain='low crops, x/H > 20'
+      elseif(AIM2_terrain_building.eq.5)then
+        b_terrain='high crops, scattered obstacles'
+      elseif(AIM2_terrain_building.eq.6)then
+        b_terrain='parkland, bushes, x/H ~ 10'
+      elseif(AIM2_terrain_building.eq.7)then
+        b_terrain='suburban, forest '
+      elseif(AIM2_terrain_building.eq.8)then
+        b_terrain='city centre '
+      else
+        b_terrain='unknown '
+      endif
+
+C Shielding around the building and flues.
+      if(AIM2_wall_shielding.eq.1)then
+        b_shielding='no local shielding of building'
+      elseif(AIM2_wall_shielding.eq.2)then
+        b_shielding='light local shielding of building'
+      elseif(AIM2_wall_shielding.eq.3)then
+        b_shielding='heavy shielding of building'
+      elseif(AIM2_wall_shielding.eq.4)then
+        b_shielding='very heavy shielding of building'
+      elseif(AIM2_wall_shielding.eq.5)then
+        b_shielding='complete shielding of building'
+      else
+        b_shielding='shielding unspecified'
+      endif
+      if(AIM2_flue_shielding.eq.1)then
+        f_shielding='no local shielding of flues'
+      elseif(AIM2_flue_shielding.eq.2)then
+        f_shielding='light local shielding of flues'
+      elseif(AIM2_flue_shielding.eq.3)then
+        f_shielding='heavy shielding of flues'
+      elseif(AIM2_flue_shielding.eq.4)then
+        f_shielding='very heavy shielding of flues'
+      elseif(AIM2_flue_shielding.eq.5)then
+        f_shielding='complete shielding of flues'
+      else
+        f_shielding='shielding unspecified for flues'
+      endif
+
+      outs248 = ' '
+      write(outs248,'(3a,f6.1,7a)')
+     &  'Weather measurements taken ',w_terrain(1:lnblnk(w_terrain)),
+     &  ' (wind @',AIM2_anemom_height,
+     &  'm) and the building site is ',b_terrain(1:lnblnk(b_terrain)),
+     &  ' with ',b_shielding(1:lnblnk(b_shielding)),
+     &  ' and ',f_shielding(1:lnblnk(f_shielding)),'.'
+      call edisp(itru,' ')
+      call edisp248(itru,outs248,90)
+
+C Describe the house type and levels and foundation.
+      if(H2K_house_type.eq.1)then
+        house='single detached'
+      elseif(H2K_house_type.eq.2)then
+        house='double/semi-detached'
+      elseif(H2K_house_type.eq.3)then
+        house='duplex'
+      elseif(H2K_house_type.eq.4)then
+        house='triplex'
+      elseif(H2K_house_type.eq.5)then
+        house='apartment unit (Individual)'
+      elseif(H2K_house_type.eq.6)then
+        house='row house, end unit'
+      elseif(H2K_house_type.eq.7)then
+        house='mobile home '
+      elseif(H2K_house_type.eq.8)then
+        house='row house, middle unit'
+      else
+        house='unknown building type'
+      endif
+
+C Set the stories/levels.
+      if(H2K_storeys.eq.1)then
+        stories='one storey'
+      elseif(H2K_storeys.eq.2)then
+        stories='one and a half'
+      elseif(H2K_storeys.eq.3)then
+        stories='two storeys'
+      elseif(H2K_storeys.eq.4)then
+        stories='two and a half'
+      elseif(H2K_storeys.eq.5)then
+        stories='three storeys'
+      elseif(H2K_storeys.eq.6)then
+        stories='split level'
+      elseif(H2K_storeys.eq.7)then
+        stories='split entry/raised basement'
+      else
+        stories='unknown levels'
+      endif
+
+C Describe foundations.
+      if(H2K_found_num.gt.1)then
+        do 42 ij=1,H2K_found_num
+          if(H2K_found_type(ij).eq.1)then
+            foundation='not applicable'
+          elseif(H2K_found_type(ij).eq.2)then
+            foundation='basement'
+          elseif(H2K_found_type(ij).eq.3)then
+            foundation='slab-on-grade'
+          elseif(H2K_found_type(ij).eq.4)then
+            foundation='closed crawl space'
+          elseif(H2K_found_type(ij).eq.5)then
+            foundation='vented crawl space'
+          elseif(H2K_found_type(ij).eq.6)then
+            foundation='open crawl space'
+          elseif(H2K_found_type(ij).eq.7)then
+            foundation='walkout basement'
+          else
+            foundation='unknown type of'
+          endif
+  42    continue
+      else
+        foundation='unspecified'
+      endif
+
+C Describe fireplaces.
+      if(H2K_fireplace1.and.H2K_fireplace2)then
+        write(fireplace,'(a,f6.2,a,f6.2,a,f6.2,a)')
+     &    'There are two fireplaces with flue diam ',
+     &    AIM2_fire_flue1,'mm and ',AIM2_fire_flue2,
+     &    'mm. The furnace flue is ',AIM2_furnace_flue,'mm'
+      elseif(H2K_fireplace1.or.H2K_fireplace2)then
+        write(fireplace,'(a,f6.2,a,f6.2,a)')
+     &   'There is a fireplace with flue diam ',
+     &    AIM2_fire_flue1,'mm. The furnace flue is ',
+     &    AIM2_furnace_flue,'mm'
+      else
+        write(fireplace,'(2a,f6.2,a)')
+     &    'There is no fireplace in the building and the ',
+     &    'furnace flue is ',AIM2_furnace_flue,'mm'
+      endif
+
+      outs248 = ' '
+      write(outs248,'(9a)')
+     &  'The building is a ',stories(1:lnblnk(stories)),' ',
+     &  house(1:lnblnk(house)),' with a ',
+     &  foundation(1:lnblnk(foundation)),' foundation. ',
+     &  fireplace(1:lnblnk(fireplace)),'.'
+      call edisp(itru,'  ')
+      call edisp248(itru,outs248,90)
+
+C Describe DHW options.
+      if(H2K_DHW1_exist.and.H2K_DHW2_exist)then
+        dhwphrase='there are two DHW systems'
+      elseif(H2K_DHW1_exist.or.H2K_DHW2_exist)then
+        dhwphrase='there is one DHW system'
+      else
+        dhwphrase='there is no DHW'
+      endif
+
+C Describe DHW and furnace flues.
+      if(H2K_DHW1_shareflue.and.H2K_DHW2_shareflue)then
+        if(H2K_DHW1_exist.and.H2K_DHW2_exist)then
+          dhwshare='both primary and seconday DHW share furnace flue'
+        elseif(H2K_DHW1_exist.or.H2K_DHW2_exist)then
+          dhwshare='primary DHW shares furnace flue'
+        endif
+      elseif(H2K_DHW1_shareflue.and.(.NOT.H2K_DHW2_shareflue))then
+        dhwshare='primary DHW shares furnace flue'
+      elseif(.NOT.H2K_DHW1_shareflue.and.H2K_DHW2_shareflue)then
+        dhwshare='secondary DHW shares furnace flue'
+      else
+        dhwshare='DHW has separate or no flue'
+      endif
+
+C Describe if DHW is inside or outside the house.
+      if(H2K_DHW1_inside.and.H2K_DHW2_inside)then
+        if(H2K_DHW1_exist.and.H2K_DHW2_exist)then
+          dhwinside='both primary and seconday DHW are inside'
+        elseif(H2K_DHW1_exist.or.H2K_DHW2_exist)then
+          dhwinside='primary DHW is inside'
+        endif
+      elseif(H2K_DHW1_inside.and.(.NOT.H2K_DHW2_inside))then
+        dhwinside='primary DHW is inside'
+      elseif(.NOT.H2K_DHW1_inside.and.H2K_DHW2_inside)then
+        dhwinside='secondary DHW is inside'
+      else
+        dhwinside='DHW is outside'
+      endif
+
+C Is the DHW tied in with a solar collector.
+      if(H2K_DHW1_solar)then
+        dhwsolar='A solar collector feeds the DHW.'
+      else
+        dhwsolar='.'
+      endif
+
+      outs248 = ' '
+      write(outs248,'(8a)') 'Hot water: ',
+     &  dhwphrase(1:lnblnk(dhwphrase)),' where ',
+     &  dhwshare(1:lnblnk(dhwshare)),'. Location: ',
+     &  dhwinside(1:lnblnk(dhwinside)),' ',
+     &  dhwsolar(1:lnblnk(dhwsolar))
+      call edisp248(itru,outs248,90)
+
+C Describe crawl space, attic and controls.
+      if(AIM2_CrawlSpace_zone.eq.0)then
+        crawl='There is no crawl space.'
+      else
+        llna=lnblnk(zname(AIM2_CrawlSpace_zone))
+        write(crawl,'(3a)') 
+     &    'Zone ',zname(AIM2_CrawlSpace_zone)(1:llna),
+     &    ' is the crawl space.'
+      endif
+      if(AIM2_attic_zone.eq.0)then
+        attic='There is no attic space.'
+      else
+        llna=lnblnk(zname(AIM2_attic_zone))
+        write(attic,'(3a)') 
+     &    'Zone ',zname(AIM2_attic_zone)(1:llna),
+     &    ' is the attic space.'
+      endif
+
+      outs248 = ' '
+      llna=lnblnk(zname(AIM2_ref_zone))
+      write(outs248,'(3a,i2,4a)') 
+     &  'Indoor air temperatures are taken from ',
+     &  zname(AIM2_ref_zone)(1:llna),
+     &  ' and infiltration is applied to ',AIM2_num_zones_infil,
+     &  ' zones. ',crawl(1:lnblnk(crawl)),' ',attic(1:lnblnk(attic))
+      call edisp248(itru,outs248,90)
+
+      return
+      end
+
