@@ -194,7 +194,7 @@ C Common for electrical file.
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       COMMON/rcmd/LCMDFL
       CHARACTER LCMDFL*144
-      
+
 C Additional commons for SHOCC.
       common/c20/nzsur(mcom),nztv(mcom)
 C sname - surface name
@@ -390,7 +390,7 @@ C Initialize DHW
 
 C Initialize zone<->plant casual gain coupling
       call plt_zone_gain_zero()
-      
+
 C Write simulation control information to the solutions
 C library.
       if(indcfg.ne.2)call mzls2
@@ -429,7 +429,7 @@ C day to a pre-new year day.
         issny=1
 
 C Adjust multi-year simulation start year to account for pre-new-year
-C start-up period        
+C start-up period.
         if ( bMY_sim_enabled ) then
           iMY_Start_year = iMY_Start_year - 1
         endif 
@@ -447,7 +447,7 @@ C Start year: Note: result can be less than one
 C End year: (this data is not used at present)
         iMY_end_yr_index = iMY_end_year - iMY_start_year
 
-      endif 
+      endif
 
 C Check to see if flexible boundary condition file has been defined,
 C and process file if necessary.
@@ -455,7 +455,7 @@ C and process file if necessary.
         call process_BC_data_file(ifil,autook,bBC_data_err)
         if ( bBC_data_err ) bBC_data_defined = .false.
       endif
-      
+
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
@@ -618,7 +618,7 @@ C Years
 
 C Assign global year (iYear), present year (iYear_p) & future year
 C (iYear_f)
-          iYear   = iMY_current_year        
+          iYear   = iMY_current_year
           iYear_p = iMY_current_year
           iYear_f = iMY_future_year
 
@@ -641,7 +641,7 @@ C indicies to the first/last records in the database.
           iYear_p = iYear
           iYear_f = iYear
         endif
-      
+
 C For type 6 time-step controller, loop until saved day,
         if(irew.and.i.lt.idysv)goto 10
 
@@ -664,14 +664,14 @@ C Ensure present & future day numbers are between 1 & 365
           else
             iYrShift_P = 0
           endif
-         
+
           iYrShift_F = int( float(i)/365.0 )
-         
+
           idyp = i     - 365 * iYrShift_P
           idyf = i + 1 - 365 * iYrShift_F
         endif
 
-C Save a copy of i for routines that need the 'real' day 
+C Save a copy of i for routines that need the 'real' day.
         iMY_real_day = i
 
 C What day of week is present and future day: Monday 1
@@ -695,17 +695,17 @@ C col 5: Wind direction     (clockwise deg from north)
 C col 6: Relative humidity               (Percent)
 
 C If this is a multi-year simulation, we may need to
-C open the approprate climate file. 
+C open the approprate climate file.
         if ( bMY_sim_enabled .and.
      &    .not. bMY_clm_file_open ( iMY_current_yr_index ) ) then
 
-C Close old file, if necessary     
+C Close old file, if necessary.
           if ( iMY_current_yr_index .gt. 1 ) then
             if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
      &        call ERpFree( iClim , istat )
           endif 
-  
-C Open new file          
+
+C Open new file.   
           call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
      &                144,0,IER)         
 
@@ -716,7 +716,7 @@ c If a new climate file is opened, then need to recalculate the number
 c of annual heating degree days and the average monthly temperatures based on 
 c this new climate information.
 c         call CLM_DEG_DAY
-         
+
         endif
 
 C Present day.
@@ -730,13 +730,13 @@ C approprate climate file.
 
         if ( bMY_sim_enabled .and.
      &    .not. bMY_clm_file_open ( iMY_future_yr_index ) ) then
-C Close old file, if necessary     
+C Close old file, if necessary.
           if ( iMY_future_yr_index .gt. 1 ) then
             if ( bMY_clm_file_open ( iMY_future_yr_index - 1) )
      &        call ERpFree( iClim , istat )
-          endif 
+          endif
 
-C Open new file         
+C Open new file.
           call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
      &                144,0,IER)
 
@@ -746,7 +746,7 @@ C Set flag
      
 C Future day
         irec=idyf
-      
+
 C Get values for first hour of the future day.
        read(iClim,rec=irec,iostat=istat,err=1000)
      &   idiff,itmpf,idnrf,ivelf,idirf,ihumf
@@ -915,7 +915,7 @@ C New day events in SHOCC occur when btimef first exceeds 24.0 ...
             if(btimef.gt.24.0)btimef=btimef-24.
 
 C H3Kreports: send simulation time to reporting object
-            
+
             if ( bH3K_rep_enabled() ) then
               call H3K_Report_time(
      &          btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep, 
@@ -939,14 +939,14 @@ C           call edisp(itu,outs)
 
 C Determine climatic parameters at the present and future time row. 
             call mzclmpt(1)
-            
+
             if(indcfg.eq.2)goto 401
 
 C Calculate the heat injections associated with plant
 C component heat losses to associated zone/surface/
 C containment
             call plt_zone_gain_calc()
-      
+
 C Determine for each component and surface, the defining
 C index and the adjacent space temperature and radiation
 C at the present and future time-rows.  Also set up plant
@@ -1256,7 +1256,7 @@ C Assign climate variable values.
               call mzclmpt(2)
 
 C Re-zero zone<->plant casual gain coupling arrays
-              call plt_zone_gain_zero()      
+              call plt_zone_gain_zero()
 
 C Reset flag to indicate whether iteration is required between the plant and
 C electrical domains in order to converge the solution. `plant_elec_converged'
@@ -1264,7 +1264,7 @@ C is true if no further iteration is required in order to converge the solution.
 C Iteration between the plant and electrical domains will continue as long as
 C `plant_elec_converged' remains false.
               plant_elec_converged = .FALSE.
-            
+
 C Call subroutine XXX_TimeRow_Manipulate to store present time-row
 C data, permitting the simulation to be re-wound to to the state at
 C which plant iteration is ajourned, if inter-domain iteration is active.
@@ -1280,7 +1280,7 @@ C to invoke the 'iWinding' operation are embedded inside the solution of
 C the plant and electrical domains. Thus, if either domain is called
 C outside the context of bps ( and specifically, this iteration loop )
 C the state-variables will be handled normally.
-      
+
               DO WHILE( .not. ( plant_elec_converged ) )
 
 C Set up and solve the plant matrix.
@@ -1327,7 +1327,7 @@ C be restored.
                   call Pfs_TimeRow_Manipulate(iRewinding)
                 endif
               ENDDO
-      
+
 C Store plant results.
               iday=idyp
 
@@ -1360,7 +1360,6 @@ C Call h3k reports electrical data transport routines
                 if ( bH3K_rep_enabled() )
      &                call H3K_transport_electric_data()
               endif
-      
 
 C~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 C End of solution of plant and electrical domains for the current plant time-step.
@@ -1400,7 +1399,7 @@ C For global control, increment pass counter.
 
 C Save boundary condition data, if it exists
             if ( bH3K_rep_enabled() ) call report_BC_data()
-      
+
 C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
 C.....object update function to process and
@@ -1556,7 +1555,7 @@ C Delete binary files used for numerical calculations
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
-#else      
+#else
 C write out simulation runtime - useful for investating the impact
 C of modifications on simulation times.
       CALL cpu_time(sec_b)

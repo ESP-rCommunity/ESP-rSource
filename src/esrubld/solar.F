@@ -252,7 +252,7 @@ C future for next timestep.
       common/solsmp/q1adjp(MCOM),q1outp(MCOM),q2adjp(MCOM),
      &  q2losp(MCOM),q2tmcp(MCOM),q2walp(MCOM),q2remp(MCOM)
       common/ts4/itsitr(msch),itrpas
-      
+
 C SHOCC: new common ...
 C iblnd - SHOCC blinds corresponding to ESP-r TMCs:
 C      0, no; else, a f77 index [1,~] to access
@@ -267,7 +267,7 @@ C NSTMCFL flag for each model surface (connection). A non-zero
 C   number indicates bi-directional information is available.
 C   Limited to 0 or 1 at present.
 C NSGALFL indicates which set of optical properties for the particular
-C   bi-directional glazing (indicated by NSTMCFL). 
+C   bi-directional glazing (indicated by NSTMCFL).
 C   Limited to 0 or 1 at present.
 C NGNTL number of layers in each TMC type.
 
@@ -290,13 +290,12 @@ C a particular surface has bi-directional information.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-
 C First, add a flag whether original (=0) or bi-directional (=1)
 C data is available. Check on this flag***********
 C IFLAGBI is set to 1 if the model contains bidirectional component; otherwise 0.
 C Change IFLAGBI to be an array of ITMC - probably don't need IFLAGBI
 C INTVALBI is the interval for the bidirectional data - 5deg at present.
-C 
+C
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
 
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
@@ -325,11 +324,11 @@ C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       ZAREA=ZOA(ICOMP)
-      
+
 C      write (6,*) 'solar ',btimef
 
 C ---------------- INITIALIZE ----------------
-C                  ---------- 
+C                  ----------
 C Now zero working variables and set present time-row
 C results variables to previous time-step future time-row
 C values, skip if iterating (and past first iteration).
@@ -607,7 +606,7 @@ C Maintain illuminance set point - daylight coefficient method
 C with linear interpolation of optical properties:
                   IBOFOT(ICOMP,I)=2
                   NBPONT(ICOMP,I)=K
-          
+
 C Calculate sensor illuminance - daylight coefficient method:
 C Find which daylight coefficient set to use (use stage 1 i.e.
 C maximal visible transmittance stage):
@@ -625,8 +624,8 @@ C calculate and set to zero:
                   call eclose(QDIF,0.00,0.01,closea)
                   if(closea.OR.(SALT.LT.0.))then
                     esky  = 0.
-                    esun  = 0. 
-                    ELLUM = 0.     
+                    esun  = 0.
+                    ELLUM = 0.
                   else
 
 C Direct normal and diffuse horizontal illuminance:
@@ -678,7 +677,7 @@ C If inconsistency (i.e. error) in irradiance data - plum < 0 set it to 0:
                           nzone = 7
                         elseif(npatch.eq.145)then
                           nzone = 8
-                        endif                
+                        endif
 
 C Use aproximate solution assuming uniform sky luminance distribution
 C to estimate sky patch luminance:
@@ -726,10 +725,10 @@ C thermal zone:
                     IF(TVT.GE.TVTR(ICOMP,ITMC))THEN
                       TVT = TVTR(ICOMP,ITMC) 
                     ELSEIF(TVT.LE.TVTR2(ICOMP,ITMC,K))THEN
-                      TVT = TVTR2(ICOMP,ITMC,K) 
+                      TVT = TVTR2(ICOMP,ITMC,K)
                     ENDIF
-                  ENDIF 
-           
+                  ENDIF
+
 C Calculate linear property change ratio for varying other
 C properties i.e. transmittance, absorptance and reflectance:
                   ECRAT(ICOMP,I) = (TVT - TVTR2(ICOMP,ITMC,K))/
@@ -787,8 +786,7 @@ C POO/POO2 contains shading factor on corresponding opaque surface.
           endif
         ENDIF
     4 CONTINUE
-              
-    
+
 C Update thermophysical properties here - we know the control state 
 C so call bcl99 to update thermophysical props of controlled windows.
       ICALL=0
@@ -807,7 +805,7 @@ C change needs to be applied <<JWH guess at what the logic means>>.
               ICZN=ICOMP
               IWC=0
               if (IBOFOT(ICOMP,I).EQ.1) then
-              
+
 C Glazing in controlled state so switch to alternative property.
 C << is the IWC limit of 3 a bottleneck for solar optical control >>
 C << use? and what about the case of ITPREP being zero >>
@@ -949,7 +947,7 @@ C data as the diffuse transmittance is specified.
                   YY1=AMIN + (AMAX - AMIN)*ECRAT(ICOMP,I)
                   AMIN=TMCA2(ICOMP,ITMC,J,3,KP)
                   AMAX=TMCA(ICOMP,ITMC,J,3)
-                  YY2=AMIN + (AMAX - AMIN)*ECRAT(ICOMP,I)        
+                  YY2=AMIN + (AMAX - AMIN)*ECRAT(ICOMP,I)
                 ELSEIF(IBOFOT(ICOMP,I).EQ.1)THEN
                   YY1=TMCA2(ICOMP,ITMC,J,2,KP)
                   YY2=TMCA2(ICOMP,ITMC,J,3,KP)
@@ -986,7 +984,7 @@ C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
               EXRAD(I)=SRADDO(I)*(1.-EXSHAD(I))+SRADF(I)
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
               EXDIF(I)=SRADF(I)
-              
+
               QTMCA(I,INODE,2)=QTMCA(I,INODE,2)+(DAB+FAB)/(FNNOD*2.)
               DO 45 JJ=2,NNOD
                 INODE=INODE+1
@@ -1027,7 +1025,7 @@ C If IBOFOT()=2, then linear interpolation is ON - alternative values set.
               IF(IBOFOT(ICOMP,I).EQ.2)THEN
                 TMIN=TMCT2(ICOMP,ITMC,IND1(I),KP)
                 TMAX=TMCT(ICOMP,ITMC,IND1(I))
-                XX1=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)  
+                XX1=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)
               ELSEIF(IBOFOT(ICOMP,I).EQ.1)THEN
                 XX1=TMCT2(ICOMP,ITMC,IND1(I),KP)
               ELSE
@@ -1110,6 +1108,7 @@ C data as the diffuse transmittance is specified.
               ENDIF
             ENDIF
             ZERO=0.
+
 C Now interpolate for the direct and diffuse transmitted radiation.
             IF(IBIDIR.EQ.0) THEN
 C Call MZWINP to interpolate between two values.
@@ -1161,7 +1160,7 @@ C Set TD, TFF for a type 3 surface (internal surface with adjacent zone).
             DIFT(ICOMP,I)=0.0
             AIRT(ICOMP,I)=0.0
           ENDIF
-         
+
 C------------PROCESS INTERNAL SURFACES
 C            -------------------------
 C Now we know the solar radiation (direct (TD) and diffuse (TFF))
