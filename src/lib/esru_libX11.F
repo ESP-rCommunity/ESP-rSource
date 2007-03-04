@@ -8401,6 +8401,8 @@ C south hemispheres.
     8 YY=0.0
       goto 9
    13 YY=10.0*(SDEC/CDEC)
+
+C This is one place where gfortran 4.3 complains.
     9 IF(YY-XX)3,4,5
     3 IF(SLAT.GE.0.0)goto 6
       goto 7
