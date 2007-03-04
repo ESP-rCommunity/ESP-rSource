@@ -161,14 +161,14 @@ C gains/loss or user defined.
       ENDIF
 
 C Determine the plant type for this zone.
-        NIT=0
-        ICF=ICASCF(IZONE)
-        IF(ICF.EQ.0.OR.NCF.EQ.0)goto 11
-        NIT=-1
-        IF(IBAN(ICF,1).EQ.IZONE.AND.IBAN(ICF,2).EQ.0)NIT=1
-        IF(IBAN(ICF,1).EQ.0)NIT=1
-        IF(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).EQ.IZONE)NIT=2
-   11   CONTINUE
+      NIT=0
+      ICF=ICASCF(IZONE)
+      IF(ICF.EQ.0.OR.NCF.EQ.0)goto 11
+      NIT=-1
+      IF(IBAN(ICF,1).EQ.IZONE.AND.IBAN(ICF,2).EQ.0)NIT=1
+      IF(IBAN(ICF,1).EQ.0)NIT=1
+      IF(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).EQ.IZONE)NIT=2  ! mixed Rad & Conv.
+   11 CONTINUE
 
 C Perform ZONE sums and averages.
       CALL MOZSUM(IZONE,IANZSE)
@@ -190,6 +190,10 @@ C Substitute labels for the casual gains (LABELS 6-8)
 C Print out the results.
       DO 150 I=1,16
         IF(I.LT.16)goto 82
+
+C Decode the current environmental control actuation point into
+C appropraite text. 
+C << recode without the GOTO >>
         II=NIT+2
         GOTO(812,811,82,814),II
 
@@ -213,7 +217,9 @@ C the convective portion.
 C No windows, don't bother with rows 3,4,5. If no casual gain control
 C don`t bother with rows 9,10,11.
    82   if(i.eq.3.or.i.eq.4.or.i.eq.5)then
+          continue
         elseif(ICGC(izone).eq.0.and.(i.eq.9.or.i.eq.10.or.i.eq.11))then
+          continue
         else
           IF(IANZSE.EQ.1)THEN
             if(delim.eq.'-')then
