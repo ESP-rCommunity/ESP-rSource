@@ -37,6 +37,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       integer igraphiclib  ! external definition
 
@@ -107,10 +108,16 @@ C the floor area (one) or it was calculated (zero).
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
-      character SIGSTR*12,fs*1
+      character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
+
+      real exposed,vexposed,areatran,areawall  ! local values for QA
+      real areaslproof,areafltroof,areaskylt
+      real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
+
+      integer lna,lnb
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -196,6 +203,9 @@ C initial zbasea() as FLA.
         ZBASEA(ICOMP)=0.0
       endif
       attribok=.true.
+
+C Loop through each surface and detect whether orientation of
+C the surface has changed and needs to be recognised. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
         if(SOTHER(I)(1:4).eq.'UNKN')attribok=.false.
@@ -409,7 +419,7 @@ C Read current zone back in and then update the configuration file.
       ITEMS(ITEMC+12)='i rotation & transforms        '
       ITEMS(ITEMC+13)='j                              '
       ITEMS(ITEMC+14)='  _____________________________'
-      ITEMS(ITEMC+15)='* list surface details         '
+      ITEMS(ITEMC+15)='* list zone & surface details  '
       ITEMS(ITEMC+16)='> save                         '
       IF(ITRC.EQ.0)THEN
         ITEMS(ITEMC+17)='t reporting >> silent  '
@@ -1447,6 +1457,21 @@ C << future position of linear thermophysical properties >>
       ELSEIF(INO.EQ.ITEMC+15)THEN
 
 C Surface summary: print header, followed by surface information.
+C And also report other zone summary fields as in the QA report.
+        exposed = 0.0
+        vexposed = 0.0
+        areatran = 0.0
+        areawall = 0.0
+        areaslproof = 0.0
+        areafltroof = 0.0
+        areaskylt = 0.0
+        uavgtran = 0.0
+        uavgsky = 0.0
+        uavwall = 0.0
+        uavfltroof = 0.0
+        uavslproof = 0.0
+        wallper =0.0
+
         call tstamp('>','PRJ: list zone surface summary')
         context=.true.
         CALL SURINFO(ICOMP,iuout,context)
@@ -1463,12 +1488,171 @@ C Surface summary: print header, followed by surface information.
          if(ICT(icc).eq.4.and.SSOTHER(icc)(1:5).ne.'GROUN')bndry=.false.
          if(ICT(icc).eq.5.and.SSOTHER(icc)(1:5).ne.'ADIAB')bndry=.false.
          if(ICT(icc).eq.6.and.SSOTHER(icc)(1:5).ne.'BASES')bndry=.false.
+
+         if(ICT(icc).eq.0)then 
+
+C Check the U value for each external surface.
+C exposed walls and floors, pitched roofs, flat roofs
+           UVH = 0.0
+           UVU = 0.0
+           UVD = 0.0
+           do 511 ii=1,nmlc
+             if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
+
+C Recover the ISO 6946 U values as in prjqa.F.
+               call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
+             else
+               continue
+             endif
+  511      continue
+           exposed = exposed + SSNA(icc)
+           if(SOTF(is)(1:4).eq.'OPAQ')then
+             if(SVFC(is)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
+               areawall = areawall + SSNA(icc)
+               uavwall = uavwall + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             elseif(SVFC(is)(1:4).eq.'SLOP')then
+
+C For sloped surfaces.
+               areaslproof = areaslproof + SSNA(icc)
+               uavslproof = uavslproof + (SSNA(icc) * UVH)
+             elseif(SVFC(is)(1:4).eq.'CEIL')then
+
+C For ceilings.
+               areafltroof = areafltroof + SSNA(icc)
+               uavfltroof = uavfltroof + (SSNA(icc) * UVH)
+             else
+
+C For floors.
+               areawall = areawall + SSNA(icc)
+               uavwall = uavwall + (SSNA(icc) * UVH)
+             endif
+           elseif(SOTF(is)(1:4).eq.'TRAN')then
+             if(SVFC(is)(1:4).eq.'CEIL'.or.
+     &          SVFC(is)(1:4).eq.'SLOP')then
+
+C Consider glazing on ceiling or sloped to be a skylight.
+               areaskylt = areaskylt + SSNA(icc)
+               uavgsky = uavgsky + (SSNA(icc) * UVH) 
+             elseif(SVFC(is)(1:4).eq.'VERT')then
+
+C Consider glazing on walls to be a part of facade.
+               areatran = areatran + SSNA(icc)
+               uavgtran = uavgtran + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             else
+               areatran = areatran + SSNA(icc)
+               uavgtran = uavgtran + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             endif
+           else
+             continue
+           endif
+          endif
  1243   continue
         if(.NOT.bndry)then
           call edisp(iuout,
      &   'Some surface boundary attributions did not match the master')
           call edisp(iuout,
      &   'connections list. A topology update may be required.')
+        endif
+
+C Debug...
+C        write(iuout,*) 'in zone ',icomp,' area wall = ',areawall
+C        write(iuout,*) 'area flat roof = ',areafltroof
+C        write(iuout,*) 'area sloped roof = ',areaslproof
+C        write(iuout,*) 'area skylights = ',areaskylt
+C        write(iuout,*) 'area windows = ',areatran
+C        write(iuout,*) 'floor area = ',ZBASEA(icomp)
+C        write(iuout,*) 'exposed = ',exposed
+C        write(iuout,*) 'vert exposed = ',vexposed
+
+        if(exposed.gt.0.1)then
+
+C If there is external glazing or skylights then report.
+          call rel16str(exposed,t16a,lna,ier)
+          call rel16str(vexposed,t16b,lnb,ier)
+          if(vexposed.gt.0.1)then
+            write(outs,'(5a)')' There is ',t16a(1:lna),
+     &        'm2 of exposed (to outside) surface area, ',
+     &        t16b(1:lnb),'m2 of which is vertical.'
+          else
+            write(outs,'(3a)')' There is ',
+     &        t16a(1:lna),'m2 of exposed surface area.'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(areawall.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            wallper = (areawall/ZBASEA(icomp)) * 100.
+          else
+            wallper = 1.0
+          endif
+          call rel16str(wallper,t16a,lna,ier)
+          call rel16str(uavwall,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Outside walls are ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavwall/areawall,' & UA of ',t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areaslproof.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            slproofper = (areaslproof/ZBASEA(icomp))*100.
+          else
+            slproofper = 1.0
+          endif
+          call rel16str(slproofper,t16a,lna,ier)
+          call rel16str(uavslproof,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavslproof/areaslproof,' & UA of ',
+     &      t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areafltroof.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            flatroofper = (areafltroof/ZBASEA(icomp))*100.
+          else
+            flatroofper = 1.0
+          endif
+          call rel16str(flatroofper,t16a,lna,ier)
+          call rel16str(uavfltroof,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Flat roof is ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavfltroof/areafltroof,' & UA of ',
+     &      t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areatran.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            tranper = (areatran/ZBASEA(icomp)) * 100.
+          else
+            tranper = 1.0
+          endif
+          vtranper = (areatran/vexposed) * 100.
+          call rel16str(tranper,t16a,lna,ier)
+          call rel16str(vtranper,t16b,lnb,ier)
+          call rel16str(uavgtran,t16c,lnc,ier)
+          write(outs,'(5a,F5.3,2a)')
+     &      ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
+     &      ' % facade with avg U of ',
+     &      uavgtran/areatran,' & UA of ',t16c(1:lnc)
+          call edisp(iuout,outs)
+        endif
+        if(areaskylt.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            skyper = (areaskylt/ZBASEA(icomp)) * 100.
+          else
+            skyper = 1.0
+          endif
+          call rel16str(skyper,t16a,lna,ier)
+          call rel16str(uavgsky,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Skylights are ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavgsky/areaskylt,' & UA of ',t16b(1:lnb)
+          call edisp(iuout,outs)
         endif
 
 C Check if user wishes to see construction details as well.
