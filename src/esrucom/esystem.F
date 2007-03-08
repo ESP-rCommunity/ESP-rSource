@@ -2269,14 +2269,14 @@ C reading a second line if necessary.
         if(ND.le.NCOMP)zmfn1=OUTSTR
         K=0
         DO 35 ICOMP=1,NCOMP
-          CALL EGETW(OUTSTR,K,WORD,'W','node name',IERV)
+          CALL EGETW(OUTSTR,K,WORD,'W','node name or node index',IERV)
           IF(IERV.NE.0) THEN
             K=0
             CALL EDISP(iuout,' reading continuation line...')
             CALL STRIPC(IUC,OUTSTR,0,ND,0,'2nd node-zone',IER)
             IF(IER.NE.0)goto 1
             zmfn2=OUTSTR
-            CALL EGETW(OUTSTR,K,WORD,'W','node name',IERV)
+            CALL EGETW(OUTSTR,K,WORD,'W','node name or index',IERV)
           ENDIF
           IF(IERV.NE.0) GOTO 1
           NODID=WORD(1:12)

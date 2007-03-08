@@ -2030,7 +2030,7 @@ C sub-totals as well.
         do 448 ij=1,nipvassmt
 
           call edisp(itru,' ')
-          write(outs,'(2a)') '*Seasonal_summary of ',
+          write(outs,'(3a)') '*Seasonal_summary',tab,
      &      ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
           call edisp(itru,outs)
           call edisp(itru,' ')
@@ -2060,13 +2060,13 @@ C          call eclose(ddmcool(ij),1.0,0.01,closeb)
 
 C << find an iget number for this >>
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
-     &        'performance',tab,ipvadesc(ij)
+     &        'performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(6a)') '*title',tab,'Integrated demand ',
-     &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij))),tab,'kWh/m^2'
+            write(outs,'(5a)') '*title',tab,'Integrated demand ',
+     &        tab,'kWh/m^2'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2076,7 +2076,7 @@ C << find an iget number for this >>
      &          tsmlpw,tdhw,tpv
               call eddisp(itru,outs)
             else
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2087,23 +2087,23 @@ C << find an iget number for this >>
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab.
+C Note: units follow tab (suggesstion by Luis Prazeres to not print total
+C line in the seasonal section).
             Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-            write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-            call eddisp(itru,outs)
+C            write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
+C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
 
 C Report for the total building as well
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
-     &        'building_performance',tab,ipvadesc(ij)
+     &        'building_performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(6a)') '*title',tab,
-     &        'Integrated building demand ',
-     &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij))),tab,'kWh'
+            write(outs,'(5a)') '*title',tab,
+     &        'Integrated building demand',tab,'kWh'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2113,7 +2113,7 @@ C Report for the total building as well
      &          tpumpskw,tsmlpwkw,tdhwkw,tpvkw
               call eddisp(itru,outs)
             else
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2124,13 +2124,14 @@ C Report for the total building as well
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab.
+C Note: units follow tab (suggesstion by Luis Prazeres to not print total
+C line in the seasonal section).
             Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
-            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
-            call eddisp(itru,outs)
+C            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
+C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
-            write(outs,'(2a)') '*End_seasonal_summary of ',
+            write(outs,'(3a)') '*End_seasonal_summary',tab,
      &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
             call edisp(itru,outs)
           endif
