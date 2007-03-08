@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/multicon.db3
 # based on materials db ../dbs/constr.db2
-   23     # no of composites 
+   25     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness mat descr & air gap R
@@ -144,3 +144,15 @@
   108    0.0120  White ptd Gypboard
     0    0.0500  air  0.170 0.170 0.170
   108    0.0120  White ptd Gypboard
+# layers  description   optics name   symmetry tag
+    5    switched_gl   TRAN  DCF7671_6omb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  4mm clear float
+    0    0.0100  air  0.170 0.170 0.170
+   45    0.0030  White ptd steel
+    0    0.0100  air  0.170 0.170 0.170
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    1    fictitious    TRAN  SC_fictit     SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  245    0.0040  fict

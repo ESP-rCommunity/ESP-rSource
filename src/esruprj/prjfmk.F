@@ -508,7 +508,18 @@ C Each of these leaves the user to define the casual gains manually.
           H(15)='       0   7  10:    13  14  18    24 '
           H(16)=' '
           H(17)='The above schedule includes 6 periods. '
-          CALL PHELPD('operation setup',17,'-',0,0,IER)
+          H(18)=' '
+          H(19)='The default assumption is that there is one period'
+          H(20)='(from 0h to 24h) with zero sensible and latent gains'
+          H(21)='for each casual gain type on each day type. This'
+          H(22)='ensures that nothing is happening in the zone until'
+          H(23)='you provide additional information (e.g. insert a'
+          H(24)='period or change the zero gains). '
+          H(25)=' '
+          H(26)='If there is no gain of a particular type then accept'
+          H(27)='the default starting time of zero hours for that '
+          H(28)='gain type and day type. '
+          CALL PHELPD('operation setup',28,'-',0,0,IER)
 
           call edisp(iuout,' ')
           call edisp(iuout,'For Weekdays....')
@@ -517,10 +528,10 @@ C Each of these leaves the user to define the casual gains manually.
           call initcasday('sa',ier)
           call edisp(iuout,'For Sundays....')
           call initcasday('su',ier)
-          call edisp(iuout,'Sorting...')
-          call PROCESSOLDCAS(ICOMP,0,iuout,IER)
-          call edisp(iuout,'Sorting...completed.')
           call edisp(iuout,'Casual gain details ready for editing.')
+
+C debug
+C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
@@ -957,7 +968,7 @@ C Generate a brief description.
       h(11)='HIGH limit: point above which (optional) 2nd stage'
       h(12)=' flow regime takes effect. (set to 100C to keep it'
       h(13)=' from being used).'
- 100  WRITE(HOLD,'(3f8.2)')TLO(ICOMP),TUP(ICOMP),THI(ICOMP)
+ 100  WRITE(HOLD,'(3f8.2,a)')TLO(ICOMP),TUP(ICOMP),THI(ICOMP),'  '
       CALL EASKS(HOLD,
      &  ' Lower, middle (1st stage), high (2nd stage) setpoints :',
      &  ' ',40,' 15.0  22.0  26.0  ','flow stages ',IER,13)
@@ -1454,8 +1465,8 @@ C File browse from patterns.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -1571,6 +1582,13 @@ C  IPER period (=0 then new)
 
       character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
 
+C Working variables
+      real ACI,ACV,TA,XTA,XACH
+      integer IACS,IACF,IPT
+
+C << This subroutine will need further code changes to implement
+C << user cancel actions.
+
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
         IACS=0
@@ -1604,7 +1622,7 @@ C If new period then set defaults otherwise get data from common.
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (HOLD,'(2i5)') IACS,IACF
+      write (HOLD,'(2i5,a)') IACS,IACF,'  '
       h(1)='Period during which air flow applies.'
       CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
       K=0
@@ -1626,44 +1644,58 @@ C Can be specified as:ac/h or m^3/s.
       if (IGU.eq.1) then
 
 C Flow as ac/h.
-C << why not use easkr?? >>
- 20     write (HOLD,'(f6.2)') ACI
+ 20     XACH=ACI
         h(1)='Supply the fresh air flow rate in ac/hr.'
-        call EASKS(HOLD,'Infiltration rate (ac/hr):',
-     &   ' ',16,'0.   0. ','infil info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','infil rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 20
-        ACI=XACH
- 22     write (HOLD,'(f6.2)') ACV
+        call EASKR(XACH,'Infiltration rate (ac/hr):',
+     &   ' ',0.0,'F',10.0,'W',0.5,'infil rate ach',IERI,1)
+        if(IERI.eq.0)then
+          ACI=XACH
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 20
+        endif
+        
+ 22     XACH=ACV
         h(1)='Supply the ventilation air flow rate in ac/hr'
         h(2)='(in terms of the receiving zone volume).'
-        call EASKS(HOLD,'Ventilation rate (ac/hr):',
-     &    ' ',16,'0.   0. ','vent info',IER,2)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','vent rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 22
-        ACV=XACH
+        call EASKR(XACH,'Ventilation rate (ac/hr):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'vent rate ach',IERI,2)
+        if(IERI.eq.0)then
+          ACV=XACH
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 22
+        endif
       elseif (IGU.eq.2) then
 
 C Flow as m^3/s.
- 30     write (HOLD,'(f6.4)') ACI*VOL(ICOMP)/3600.
+ 30     XACH=ACI*VOL(ICOMP)/3600.
         h(1)='Supply the fresh air flow rate in m^3/s.'
-        call EASKS(HOLD,'Infiltration rate (m^3/s):',
-     &    ' ',16,'0.   0. ','infil info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','infil rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 30
-        ACI=XACH*3600.0/VOL(ICOMP)
- 32     write (HOLD,'(f6.4)') ACV*VOL(ICOMP)/3600.
+        call EASKR(XACH,'Infiltration rate (m^3/s):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'inf rate m3s',IERI,1)
+        if(IERI.eq.0)then
+          ACI=XACH*3600.0/VOL(ICOMP)
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 30
+        endif
+
+        XACH= ACV*VOL(ICOMP)/3600.
         h(1)='Supply the ventilation air flow rate in m^3/s.'
-        call EASKS(HOLD,'Ventilation rate (m^3/s):',
-     &    ' ',16,'0.   0. ','vent info',IER,1)
-        K=0
-        call EGETWR(HOLD,K,XACH,0.,10.0,'W','vent rate',IER)
-        if (IER.ne.0.or.XACH.lt.0.0) goto 32
-        ACV=XACH*3600.0/VOL(ICOMP)
+        call EASKR(XACH,'Ventilation rate (m^3/s):',
+     &   ' ',0.0,'F',10.0,'W',0.0,'vent rate m3s',IERI,2)
+        if(IERI.eq.0)then
+          ACV=XACH*3600.0/VOL(ICOMP)
+        elseif(ieri.eq.-3)then
+          call edisp(iuout,'Cancel not yet implemented.')
+        else
+          goto 30
+        endif
       endif
+
       if (ACV.gt.0.0) then
 
 C Ask for source zone/ temperature.
@@ -1697,15 +1729,18 @@ C Present zone list.
         elseif (IGU.eq.2) then
 
 C Ask for source temperature.
- 40     write (HOLD,'(f6.2)') TA
+ 40       XTA=  TA
           h(1)='Supply the ventilation air temperature in degrees C.'
-          call EASKS(HOLD,'Supply temperature (degC):',
-     &      ' ',16,'0.   0. ','vent temp',IER,1)
-          K=0
-          call EGETWR(HOLD,K,XTA,0.,50.0,'W','vent src temp',IER)
-          if (IER.ne.0) goto 40
-          IPT=0
-          TA=XTA
+          call EASKR(XTA,'Supply temperature (degC):',
+     &      ' ',0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
+          if(IERI.eq.0)then
+            IPT=0
+            TA=XTA
+          elseif(ieri.eq.-3)then
+            call edisp(iuout,'Cancel not yet implemented.')
+          else
+            goto 40
+          endif
         elseif (IGU.eq.3) then
 
 C Set vent to zero and increase infiltration.
@@ -3147,7 +3182,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
       logical sorted,modopr
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
-      character lodlabel*6,typstr*6,H*72
+      character lodlabel*6,typstr*8,H*72
       character zname*12,zdesc*64,title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3848,6 +3883,8 @@ C Remind users to check their data.
 
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
+
+C Provide a bit of editing space (8 char) for the  char string.
         dok=.false.
         h(1)='Casual gains have initial type labels which may not'
         h(2)='be appropriate for your project. You can adapt the '
@@ -3858,10 +3895,10 @@ C Remind users to check their data.
           h(2)='i.e. equip - equipment, light - lighting etc..   '
           DO 567 ITYPE=1,3
             write(outs,'(a,i2)') 'Label for type ',ITYPE
-            TYPSTR=lodlabel(icomp,ITYPE)
-            call easks(TYPSTR,' ',outs,6,
+            write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
+            call easks(TYPSTR,' ',outs,8,
      &                 lodlabel(icomp,ITYPE),' Type label',IER,2)
-            lodlabel(icomp,ITYPE)=TYPSTR
+            write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:6)
  567      CONTINUE
           goto 5
         endif
@@ -4001,7 +4038,7 @@ C Identify nature of casual gain
       h(6)='in the main operations menu.'
       CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGT,6)
 
- 100  WRITE(HOLD,'(2f9.0,2f8.2)')PS,PL,RAD,CON
+ 100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
 
 C << this would be a good place to expand the logic so that lighting
 C << and small power can be entered in terms of W/m2.
@@ -4220,7 +4257,7 @@ C Base area for zones.
       character OUTS*124,hold*24,h*72
 
       integer IV,ipft,IPHAST  ! for local editing.
-      real pft,pwrt,bvoltt   ! for local editing.
+      real pft,pwrt,bvoltt,xfla   ! for local editing.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4249,7 +4286,7 @@ C If silent jump to insertion logic.
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (hold,'(2i5)') ICGS,ICGF
+      write (hold,'(2i5,a)') ICGS,ICGF,'  '
       h(1)='Period during which casual gains applies.'
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       K=0
@@ -4277,10 +4314,10 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 
 C Gain as W - require gain only.
  20     if (ICGT.lt.-1) then
-          write (HOLD,'(2f8.1)') CMGS*real(ZBASEA(ICOMP)),
-     &                           CMGL*real(ZBASEA(ICOMP))
+          write (HOLD,'(2f8.1,a)') CMGS*real(ZBASEA(ICOMP)),
+     &                           CMGL*real(ZBASEA(ICOMP)),'  '
         else
-          write (HOLD,'(2f8.1)') CMGS,CMGL
+          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Sensible and latent gain (W):',
@@ -4296,10 +4333,10 @@ C Gain as W - require gain only.
 
 C Gain as W/m^2 - require gain per square meter.
         if (ICGT.gt.0) then
-          write (HOLD,'(2f8.1)') CMGS/real(ZBASEA(ICOMP)),
-     &                           CMGL/real(ZBASEA(ICOMP))
+          write (HOLD,'(2f8.1,a)') CMGS/real(ZBASEA(ICOMP)),
+     &                           CMGL/real(ZBASEA(ICOMP)),'  '
         else
-          write (HOLD,'(2f8.1)') CMGS,CMGL
+          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
@@ -4318,19 +4355,26 @@ C Gain as W/m^2 - require gain per square meter.
         endif
       elseif (IGU.eq.3) then
 
-C Gain as W/object - require no of objects and gain per object.
+C Gain as W/object - require no of objects and gain per object. If
+C user cancels go back to initial question.
+C << an actual cancel option not yet implemented >>
         NOBJ=1
- 40     write (OUTS,'(A)') 'Number of objects (e.g. people)?'
-        write (hold,'(i5)') NOBJ
-        h(1)='The number of objects for the current gain type is '
+ 40     h(1)='The number of objects for the current gain type is '
         h(2)='required. For example the number of people or computers.'
-        CALL EASKS(hold,outs,' ',24,'  1 ','no. objects',IER,2)
-        K=0
-        CALL EGETWI(hold,K,NOBJ,0,100,'W','no. of objects',IER)
-        write (HOLD,'(2f8.1)') CMGS/real(NOBJ),CMGL/real(NOBJ)
+        CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
+     &    0,'W',100,'W',1,'no. objects',IERI,2)
+        if(ieri.eq.0)then
+          continue
+        elseif(ieri.eq.-3)then
+          goto 10
+        else
+          goto 40
+        endif
+
+        write (HOLD,'(2f8.1,a)') CMGS/real(NOBJ),CMGL/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'  0.   0. ','casual gn info',IER,1)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4341,43 +4385,47 @@ C Gain as W/object - require no of objects and gain per object.
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
+C If user cancels go back to initial question.
         NOBJ=1
- 50     write (OUTS,'(A)') 'Floor area per object (e.g. people)?'
-        if (ICGT.eq.-1) then
+ 50     if (ICGT.eq.-1) then
           FLA=CMGS
         else
           FLA=10.
         endif
-        write (hold,'(f7.1)') FLA
+        XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
         h(2)='required. For example the area per person.'
-        CALL EASKS(hold,outs,' ',24,'  1 ','area per object',IER,2)
-        K=0
-        CALL EGETWR(hold,K,FLA,0.1,100.,'W','area per object',IER)
-        if (iabs(ICGT).eq.1) then
-          ICGT=-1
-          CMGS=FLA
-
-C << Why is CMGL set to zero? >>
-          CMGL=0.
-        else
-          write (HOLD,'(2f8.1)') CMGS/(ZBASEA(ICOMP)/FLA),
-     &                           CMGL/(ZBASEA(ICOMP)/FLA)
-          h(1)='Supply the sensible and latent gain in Watts/object.'
-          call EASKS(HOLD,'Sensible and latent gain (W/object):',
+        call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
+     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,2)
+        if(IERI.eq.0)then
+          FLA=XFLA
+          if (iabs(ICGT).eq.1) then
+            ICGT=-1
+            CMGS=FLA
+            CMGL=0.   ! Why is CMGL set to zero?
+          else
+            write (HOLD,'(2f8.1,a)') CMGS/(ZBASEA(ICOMP)/FLA),
+     &                             CMGL/(ZBASEA(ICOMP)/FLA),'  '
+            h(1)='Supply the sensible and latent gain in Watts/object.'
+            call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,1)
-          K=0
-          call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-          call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
-          if (IER.ne.0) goto 50
-          if (ICGT.gt.1) ICGT=ICGT*(-1)
-          CMGS=XSEN*ZBASEA(ICOMP)/FLA
-          CMGL=XLAT*ZBASEA(ICOMP)/FLA
+            K=0
+            call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
+            call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+            if (IER.ne.0) goto 50
+            if (ICGT.gt.1) ICGT=ICGT*(-1)
+            CMGS=XSEN*ZBASEA(ICOMP)/FLA
+            CMGL=XLAT*ZBASEA(ICOMP)/FLA
+          endif
+        elseif(ieri.eq.-3)then
+          goto 10
+        else
+          goto 50
         endif
       endif
 
 C Ask for rad/ conv split.
- 70   write (HOLD,'(2f7.3)') RADC,CONC
+ 70   write (HOLD,'(2f7.3,a)') RADC,CONC,'  '
       h(1)='Supply the radiant and convective fraction for'
       h(2)='the sensible load (should be <=1.00) '
       call EASKS(HOLD,' Radiant & convective fraction:',
@@ -5706,18 +5754,20 @@ C 'su' for sunday.
       h(16)='Periods start times should be in ascending order.'
 
       if(act(1:2).eq.'wk')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of weekday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0    ',
      &    'nb weekday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5763,18 +5813,20 @@ C Increment ipcount for each new period.
         endif
         NCAS1=NCAS1+nbocper+nbltper+nbspper
       elseif(act(1:2).eq.'sa')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of saturday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0   ',
      &    'nb saturday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5820,18 +5872,20 @@ C Increment ipcount for each new period.
         endif
         NCAS2=NCAS2+nbocper+nbltper+nbspper
       elseif(act(1:2).eq.'su')then
-        nbocper=0
-        nbltper=0
-        nbspper=0
-        write(hold,'(3i5)') nbocper,nbltper,nbspper
+        nbocper=1
+        nbltper=1
+        nbspper=1
+        hold='                                    '
+        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         CALL EASKS(HOLD,
      &  ' Number of Sunday occupant, lighting & small power periods:',
-     &    ' ',48,'  0  0  0 ',
+     &    ' ',48,'  0  0  0   ',
      &    'nb sunday ocup lts sm pwr periods',IER,16)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
@@ -5877,7 +5931,7 @@ C Increment ipcount for each new period.
         endif
         NCAS3=NCAS3+nbocper+nbltper+nbspper
       endif
-
+C      write(6,*) 'ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
       return
       end
 
@@ -5912,7 +5966,7 @@ C << Note change to real when casual gains data structure improves >>
       endif
 
 C Make up an editing string for the start of each period.
-      CSTR=' '
+      CSTR='                                                        '
       K=1
       DO 60 J=1,nper
         K1=K+5

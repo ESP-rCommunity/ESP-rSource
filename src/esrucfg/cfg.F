@@ -1316,19 +1316,63 @@ C set connection to exterior and proceed.
                   endif
                 endif
               else
-                H(1)='The connection types you can set here are:'
-                H(2)='0 - External'
-                H(3)='1 - Internal: dynamic (similar) to this surface'
-                H(4)='2 - Internal: at a constant temperature'
-                H(6)='4 - Ground (stadard monthly profile)'
-                H(7)='    Ground (user define monthly profile)'
-                H(8)='    Ground (3D conduction ground model)'
-                H(9)='5 - Adiabatic (no heat flux)'
-                H(10)='6 - BASESIMP foundation'
-                H(11)='7 - CEN 13791 partition (section 4.4.2 CEN13791)' 
-                H(12)='UNKNOWN (at this time)'
-                H(13)='Other types via edit of individual connections'
-                H(14)='or use of the project manager.'
+
+C Setup contextural help for boundary conditions.
+        H(1) ='The boundary conditions at the other face of this sur-'
+        H(2) ='face is specified via the selection of one of these'
+        H(3) ='choices.  The default is OUTSIDE.'
+        H(4) =' '
+        H(5) =' Exterior - the other face of the surface is exposed to'
+        H(6) ='  ambient air temperature, wind and solar radiation.'
+        H(4) =' '
+        H(5) =' Dynamic/similar - the other face of the surface is'
+        H(6) ='  exposed to the same conditions as the inside face'
+        H(7) ='  (except that when direct sunlight is falling on the'
+        H(8) ='  inside face it cannot be falling on the other face'
+        H(9) ='  only the diffuse component is used on the other face.'
+        H(10)='  where both sides get the same radiation.'
+        H(11)='  A dynamic/similar connection can include an offset'
+        H(12)='  temperature (C) and radiation (W/m^2).'
+        H(13)=' '
+        H(14)=' Static - requires that a constant temperature and'
+        H(15)='  radiation be supplied. You might use this to represent'
+        H(16)='  a cold storage room.'
+        H(17)=' '
+        H(18)=' Surface in another zone - the other face of the surface'
+        H(19)='  gets its boundary conditions from the last known state'
+        H(20)='  of the other surface. There is a thermophysical con-'
+        H(21)='  nection established between the two zones.'
+        H(22)=' '
+        H(23)=' Ground (standard profile) - the other face of the'
+        H(24)='  surface is in direct contact with one of the standard'
+        H(25)='  monthly temperature profiles embedded in ESP-r.'
+        H(26)=' '
+        H(27)=' Ground (user defined profile) - the other face of the'
+        H(28)='  surface is in direct contact with a monthly profile'
+        H(29)='  previously created by the user (in the model context)'
+        H(30)=' '
+        H(31)=' Ground (3D conduction) - the other face connects to a'
+        H(32)='  3D ground representation. This is not often used.'
+        H(33)=' '
+        H(34)=' Adiabatic boundary - typically used for back-to-back'
+        H(35)='  surfaces in a zone representing thermal mass. There'
+        H(36)='  is no heat flux passed beyond the other-face. '
+        H(37)=' '
+        H(38)=' BASESIMP is used to represent one of several basement'
+        H(39)='  configurations and precalculated patterns of heat'
+        H(40)='  transfer. For this to be useful there must be a'
+        H(41)='  basesimp file created for the zone giving a number'
+        H(42)='  of dimensions and computational parameters.'
+        H(43)=' '
+        H(44)=' CEN 13791 partition which is like the SIMILAR'
+        H(45)='  but for CEN 13791 test. The offset temperauture'
+        H(46)='  and radiation (W/m^2) in SIMILAR is not available'
+        H(47)='  for the CEN 13791 partition type. For details see'
+        H(48)='  section 4.4.2 CEN 13791 standard. '
+        H(49)=' '
+        H(50)='There is a module of ESP-r which uses polygon adjacency'
+        H(51)='to automatically link partitions together. '
+        H(52)=' '
                 if(ICT(IC).eq.3)then
                   write(outs,'(a,a)') 
      &              'Partition, but no geometric match found. Is ',
@@ -1346,7 +1390,7 @@ C set connection to exterior and proceed.
      &  'g adiabatic (no heat flux)  ','h BASESIMP foundation       ',
      &  'i CEN 13791 partition       ',
      &  'j UNKNOWN (at this time)    ','k accept current            ',
-     &   ' ',iart,idno,14)
+     &   ' ',iart,idno,52)
                 if(IART.eq.0)then
                   continue
                 elseif(IART.eq.1)then

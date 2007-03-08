@@ -566,6 +566,8 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gchar *reply_local;
    gchar *question_local;
    gint result;
+   gint menu_pix_hi;
+   gint menu_pix_wd;
    int no_valid_event;
    int lnq1;	/* for non-blank length */
    long int ibx,iby,more;	/* set default position of help */
@@ -599,6 +601,10 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gtk_text_buffer_insert (buffer, &end, reply_local, -1);     /* insert text in the buffer */
    gtk_text_buffer_get_start_iter (buffer, &start);            /* re-establish start and end of buffer */
    gtk_text_buffer_get_end_iter (buffer, &end);
+
+   menu_pix_wd = 420;    /* try 420 pixel wide popup */
+   menu_pix_hi = 200;    /* try 200 pixel wide popup */
+   gtk_widget_set_size_request (askbox, menu_pix_wd, menu_pix_hi);
 
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);

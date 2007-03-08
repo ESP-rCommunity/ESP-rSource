@@ -32,6 +32,10 @@ C Method checks for minimally linked vertices.  MODE
 C passed `V` is verbose and asks for confirmation, `A`
 C is automatic and proceeds with minimal interaction
 C as in deletion of an entire zone.
+C ISCOPT signals how to treat the copy of a surface as follows:
+C   iscopt = 0 offer editing box and option to click on mouse for vertices
+C   iscopt = 1 use the mouse click directly to specify vertices
+C   iscopt = 2 offer copy of local (in the same zone) surfaces 
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
 #include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -74,9 +78,10 @@ C as in deletion of an entire zone.
       CHARACTER SNAME1*12,SMLCN1*12,SVFC1*4,SOTF1*4,SNAMED*12
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
-      CHARACTER H*72,ACTION*1,MODE*1,HOLD*72,outs*124,SN*12,SN2*12
+      CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character holds*36,ZSDES*28,zname*12,zdesc*64
+      character ZSDES*28,zname*12,zdesc*64,T14*14,D14*14
+      character HOLD*72,hold64*64,holds*36,t248*248
     
       IER=0
       DDOK=.false.
@@ -321,7 +326,7 @@ C Generate a new surface name and default, then check to see if
 C if is a duplicate. 
 C << note: does not check name against the most recently copied
 C << surface.
-        if(same)then
+  141   if(same)then
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
           write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
         else
@@ -330,8 +335,18 @@ C << surface.
         endif
         call snamdup(SNAME1,icomp,0,nameok)
         if(.NOT.nameok)then
-          CALL EASKS(SNAME1,'Revised surface name','(duplicate found)',
-     &    12,SNAMED,'surface name',IER,2)
+
+C Copy to a slightly longer buffer for editing and ensure that
+C the final name uses the allowed character set.
+          write(T14,'(2a)') SNAME1(1:12),'  '
+          write(D14,'(2a)') SNAMED(1:12),'  '
+          CALL EASKS(T14,'Revised surface name','(duplicate found)',
+     &    14,D14,'surface name',IER,2)
+          if(T14(1:2).NE.'  ')then
+            write(SNAME1,'(a)') T14(1:12)
+          else
+            goto 141
+          endif
         endif
         SOTF1=SOTF(IS)
         SMLCN1=SMLCN(IS)
@@ -377,6 +392,8 @@ C Generate combined name for dialog.
         endif
         if(IRT.eq.5)then
           if(.NOT.DDOK)then
+
+C Create string buffer for variables with space at the end.
             H(1)='Distance along the normal (+=out) in metres.'
             H(2)='Transform vertices by X,Y,Z metres.'
             H(3)='Rotate surface about one of its vertices (index).'
@@ -384,19 +401,22 @@ C Generate combined name for dialog.
             H(5)=' '
             H(6)='If you leave transform values and/or rotation as'
             H(7)='zero then that transform will have no effect. '
-            write(hold,'(f9.4,2x,3f9.3,i4,f9.3)') vdis,valx,valy,valz,
-     &        irv,ang
- 552        CALL EASKS(HOLD,
+            hold64='                                                  '
+            write(hold64,'(f9.4,2x,3f9.3,i4,f9.3,a)') vdis,valx,valy,
+     &        valz,irv,ang,'   '
+ 552        CALL EASKS(hold64,
      &'Distance along normal, X Y & Z offsets, vertex, rotation angle:',
-     &      ' ',72,' 0. 0. 0. 0. 1 0.','combined transforms',IER,7)
+     &' ',64,' 0.0  0.0  0.0 0. 1  0.0  ','combined transforms',IER,7)
             if(ier.ne.0)goto 552
             K=0
-            CALL EGETWR(HOLD,K,Vdis,-9.0,9.0,'W','normal distance',IER)
-            CALL EGETWR(HOLD,K,VALX,-50.0,50.0,'W','X off',IER)
-            CALL EGETWR(HOLD,K,VALY,-50.0,50.0,'W','Y off',IER)
-            CALL EGETWR(HOLD,K,VALZ,-50.0,50.0,'W','Z off',IER)
-            CALL EGETWI(HOLD,K,irv,0,nver1,'W','vertex index',IER)
-            CALL EGETWR(HOLD,K,ang,-359.0,359.0,'W','rotation ang',IER)
+            CALL EGETWR(HOLD64,K,Vdis,-9.0,9.0,'W','normal distance',
+     &        IER)
+            CALL EGETWR(HOLD64,K,VALX,-50.0,50.0,'W','X off',IER)
+            CALL EGETWR(HOLD64,K,VALY,-50.0,50.0,'W','Y off',IER)
+            CALL EGETWR(HOLD64,K,VALZ,-50.0,50.0,'W','Z off',IER)
+            CALL EGETWI(HOLD64,K,irv,0,nver1,'W','vertex index',IER)
+            CALL EGETWR(HOLD64,K,ang,-359.0,359.0,'W','rotation ang',
+     &        IER)
           endif
 
 C Do each of the transforms in order.
@@ -451,9 +471,9 @@ C Shift along normal and copy transformed points back to X1,Y1,Z1 array.
 
 C Transform all surface vertices.
           if(.NOT.DDOK)then
-            HOLDS= ' 0.  0.  0. '
+            HOLDS= '  0.0   0.0   0.0    '
  152        CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &        36,' 0. 0. 0. ','offsets',IER,9)
+     &        36,'  0.0   0.0   0.0   ','offsets',IER,9)
             K=0
             CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
             CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -716,7 +736,7 @@ C surface in the zone`.
 C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
 C the individual vertex numbers from the list.
-   41   HOLD=' '
+   41   HOLD='                                                     '
         H(1)='The number of vertices must be less than 24. '
         H(2)='A surface is composed of a list of vertices. Type'
         H(3)='this list in order (anticlockwise viewed from the'
@@ -727,76 +747,115 @@ C the individual vertex numbers from the list.
         h(8)='` e `. A match is assumed if within 5 pixels.'
         h(9)='You will be given an oportunity to confirm the list. '
         if(MMOD.ne.8)then
+          HOLD='                                                  '
           CALL EASKS(HOLD,
      &     ' Give vertices (order anticlockwise viewed from outside)',
      &     '  ',72,' ','associated vertices',IER,5)
+          CALL CHITMS(HOLD,NV)
+          K=0
+          DO 94 J=1,NV
+            CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
+            JVN(NSUR,J)=JV
+   94     CONTINUE
+          NVER(NSUR)=NV
         else
 
 C If user did not explicitly specify that the mouse should be used
 C present editing of vertices with the option for mouse.
-          if(ISCOPT.eq.0)then  
-            CALL EASKSCMD(HOLD,
-     &      ' Give vertices (order anticlockwise viewed from outside)',
-     &      ' ','via mouse',clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
-          elseif(ISCOPT.eq.1)then
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            if(ISCOPT.eq.0)then  
+              hold64='                                                '
+              write(t248,'(4a)') hold64,hold64,hold64,'               '
+              WRITE(t248,'(24I4)')(JJVN(J),J=1,ijvn)
+              CALL EASKS248(t248,' Associated vertices (type indices)?',
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
+              CALL CHITMS(t248,NV)
+              K=0
+              DO 943 J=1,NV
+                CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
+                JVN(NSUR,J)=JV
+  943         CONTINUE
+              NVER(NSUR)=NV
+            elseif(ISCOPT.eq.1)then
 
 C User has specified clicking from mouse so just do that.
-            clkok=.true.
-          endif
-          if(clkok)then
-            ijvn=0
-            call edisp(iuout,
-     &        'Select points via cursor...type `e` to finish.')
-  46        CALL trackview(ii,ixx,iyy)
-            if(ii.eq.69.or.ii.eq.101)goto 47
-            found=.false.
-            do 45 i=1,NTV
-              COG1(1)=X(I)
-              COG1(2)=Y(I)
-              COG1(3)=Z(I)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              ixd=ix-ixx
-              iyd=iy-iyy
-              if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
-                if(found)then
-                  call edisp(iuout,'Close points...try again.')
+              clkok=.true.
+            endif
+            if(clkok)then
+              ijvn=0
+              call edisp(iuout,
+     &          'Select points via cursor...type `e` to finish.')
+  46          CALL trackview(ii,ixx,iyy)
+              if(ii.eq.69.or.ii.eq.101)goto 47
+              found=.false.
+              do 45 i=1,NTV
+                COG1(1)=X(I)
+                COG1(2)=Y(I)
+                COG1(3)=Z(I)
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),ix,iy)
+                ixd=ix-ixx
+                iyd=iy-iyy
+                if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
+                  if(found)then
+                    call edisp(iuout,'Close points...try again.')
+                    goto 46
+                  endif
+                  WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
+     &                                ' & y=',iyy,' matches vertex ',i
+                  call edisp(iuout,outs)
+                  found=.true.
+                  ijvn=ijvn+1
+                  jjvn(ijvn)=i
                   goto 46
                 endif
-                WRITE(outs,'(a,i5,a,i5,a,i3)')' The point @ x=',ixx,
-     &                                ' & y=',iyy,' matches vertex ',i
-                call edisp(iuout,outs)
-                found=.true.
-                ijvn=ijvn+1
-                jjvn(ijvn)=i
-                goto 46
+  45          continue
+              if(.NOT.found)goto 46
+  47          if(ijvn.lt.3)then
+                call edisp(iuout,'Not enough points to make a surface.')
+                 goto 41
               endif
-  45        continue
-            if(.NOT.found)goto 46
-  47        if(ijvn.lt.3)then
-              call edisp(iuout,'Not enough points to make a surface.')
-               goto 41
+              hold64='                                                '
+              write(t248,'(4a)') hold64,hold64,hold64,'               '
+              WRITE(t248,'(24I4)')(JJVN(J),J=1,ijvn)
+              CALL EASKS248(t248,' Associated vertices (type indices)?',
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
+              CALL CHITMS(t248,NV)
+              K=0
+              DO 945 J=1,NV
+                CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
+                JVN(NSUR,J)=JV
+  945         CONTINUE
+              NVER(NSUR)=NV
             endif
-            HOLD=' '
-            WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
-            CALL EASKS(HOLD,' Associated vertices (confirm):',
-     &        '  ',72,' ','associated vertices',IIER,8)
+          elseif(iglib.eq.2)then
+         
+C For the GTK version there is no mouse click so offer a long blank editing
+C string. Fill the string first with spaces (MSYS should like this approach
+            hold64='                                                  '
+            write(t248,'(4a)') hold64,hold64,hold64,'                 '
+            CALL EASKS248(t248,'Associated vertices (type indices)?',
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
+            CALL CHITMS(t248,NV)
+            K=0
+            DO 944 J=1,NV
+              CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
+              JVN(NSUR,J)=JV
+  944       CONTINUE
+            NVER(NSUR)=NV
           endif
         endif
-        CALL CHITMS(HOLD,NV)
-        K=0
-        DO 94 J=1,NV
-          CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
-          JVN(NSUR,J)=JV
-   94   CONTINUE
-        NVER(NSUR)=NV
 
 C Fill default attributes.
         CALL FILSUR(iuout,ICOMP,NSUR)
-        SN=SNAME(ICOMP,NSUR)
- 52     CALL EASKS(SN,'Surface name','(unique word <=12char):',
-     &      12,'new_surf','surface name',IER,0)
+        T14=' '
+        write(T14,'(2a)') SNAME(ICOMP,NSUR),'  '
+ 52     CALL EASKS(T14,'Surface name','(unique word <=12char):',
+     &      14,'new_surf','surface name',IER,0)
+        write(SN,'(a)') T14(1:12)
+
         call st2name(SN,SN2)
         call snamdup(SN2,icomp,NSUR,nameok)
         if(nameok)then
@@ -922,9 +981,9 @@ C vertex.
         IADD=NUM
         DO 18 I=1,IADD
           if(I.eq.1)then
-            HOLD = ' 0.000  0.000  0.000 '
+            HOLD = ' 0.000  0.000  0.000    '
           else
-            WRITE(HOLD,'(1x,3f8.3)')X1(I-1),Y1(I-1),Z1(I-1)
+            WRITE(HOLD,'(3f9.3,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
           endif
           H(1)='The vertex coordinates should be in metres. '
           H(2)='It is not advisable for Z to be negative.'
@@ -1038,7 +1097,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 C Copy vertex index and then increment NTV and present vertex coords 
 C then parse into new vertex.
         call tstamp('>','PRJ: copy vertex')
-        WRITE(HOLD,'(1x,3f8.3)')X(NUM),Y(NUM),Z(NUM)
+        WRITE(HOLD,'(3f9.3,a)')X(NUM),Y(NUM),Z(NUM),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='Exact duplicate vertices should be avoided.'
         H(3)='It is not advisable for Z to be negative.'
@@ -1328,7 +1387,7 @@ C << written at the end of the process. This has yet to be done.
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character SSPARENT*12,act*2
+      character SSPARENT*12,act*2,T14*14
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
 C Depending on act.
@@ -1490,7 +1549,7 @@ C edited to a thick line if currently in graphics mode.
         H(7)='outside) to the bottom of the new surface. '
         H(8)=' '
         H(9)='The opening width and height are in metres. '
-        write(hold,'(4f8.4)') XO,ZO,XW,ZH
+        write(hold,'(4f8.3,a)') XO,ZO,XW,ZH,'  '
         CALL EASKS(hold,'Insert: X offset, Z offset, Width, Height:',
      &    ' ',36,' 0.1 0.1 1.0 1.0','Xoff Zoff width height',IER,9)
         K=0
@@ -1504,7 +1563,7 @@ C edited to a thick line if currently in graphics mode.
         H(3)='outside) to the left side of the new surface. '
         H(4)=' '
         H(5)='The opening width and height are in metres. '
-        write(hold,'(3f8.4)') XO,XW,ZH
+        write(hold,'(3f8.3,a)') XO,XW,ZH,'  '
         CALL EASKS(hold,'Insert: X offset, Width, Height (m):',
      &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,5)
         K=0
@@ -1609,9 +1668,13 @@ C surface in the zone`. ICONO is the connection for the parent surface.
         Z(NTV+J)=ZA(J)
         JVN(NSUR,J)=NTV+J
   151 CONTINUE
+      T14=' '
       SN=' '
-      CALL EASKS(SN,' ',' Inserted surface name: ',
-     &  12,'new_door','surface name',IER,0)
+      h(1)='Well named surfaces (e.g. call a door a door) '
+      h(2)='can help you understand a model better! '
+      CALL EASKS(T14,' ',' Inserted surface name (12 char max):',
+     &  14,'new_door','surface name',IER,2)
+      write(SN,'(a)') T14(1:12)
       call st2name(SN,SNAME(ICOMP,NSUR))
 
       SOTF(NSUR)=SOTF(IS)
