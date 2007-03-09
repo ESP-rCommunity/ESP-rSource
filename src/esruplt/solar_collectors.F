@@ -134,14 +134,14 @@ C     only 50% glycol mixtures
       WRITE(IUOUT,*) ' component ', IPCOMP, ' is not set to 0. or '
       WRITE(IUOUT,*) ' 50%. Model is only currently able to deal '
       WRITE(IUOUT,*) ' with these concentrations of glycol'
-      STOP ' simple_solar_coll_coeff_gen: unresolvable error'
+      STOP ' simple_solar_coll_static: unresolvable error'
       ENDIF
 
 C---- Check that containment exists
 
       CALL ECLOSE(PCNTMF(IPCOMP),-99.00,0.001,CLOSEA)
       IF(CLOSEA) THEN
-        WRITE(IUOUT,*) 'simple_solar_coll_coeff_gen : A containment '
+        WRITE(IUOUT,*) 'simple_solar_coll_static : A containment '
         WRITE(IUOUT,*) 'must be specified for component ',IPCOMP
         WRITE(IUOUT,*) ' and all components of the same type'
         ERROR_FLAG2 = .true.
@@ -191,14 +191,14 @@ C---- given in accending order of incidence angle
       WRITE(IUOUT,*) ' simple_solar_coll_static: incidence angle '
       WRITE(IUOUT,*) ' modifiers for component',IPCOMP, ' not entered '
       WRITE(IUOUT,*) ' in increasing order of incidence angles'
-      STOP ' simple_solar_coll_coeff_gen: unresolvable error'
+      STOP ' simple_solar_coll_static: unresolvable error'
           ENDIF ! Matches to IF(IAM_CORR_DATA(2*ICOUNTER-1) ...
         END DO
       ENDIF ! Matches to IF(closea)
 
 C---- Check that two adjacent data pairs for incidence angle correction do 
 C     not have the same angle of incidence. This will help prevent division by 0.
-C     in subroutine "simple_solar_coll_coeff_gen"
+C     in subroutine "simple_solar_coll_static"
 
       IF(IAM_CORR_METHOD.EQ.2) THEN
         DO ICOUNTER = 2,IAM_CORR_NUM_DATA_PAIRS
@@ -209,7 +209,7 @@ C     in subroutine "simple_solar_coll_coeff_gen"
       WRITE(IUOUT,*) ' modifiers for component',IPCOMP, ' have '
       WRITE(IUOUT,*) ' two consecutive data pairs with the same '
       WRITE(IUOUT,*) ' angle of incidence '
-      STOP ' simple_solar_coll_coeff_gen: unresolvable error'
+      STOP ' simple_solar_coll_static: unresolvable error'
           ENDIF ! Matches to IF(CLOSEA)
        END DO
       ENDIF ! Matches to IF(IAM_CORR_METHOD.EQ.2) 

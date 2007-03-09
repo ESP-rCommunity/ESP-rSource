@@ -40,9 +40,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-C#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
       
       
 !Function Type Declaration
@@ -163,145 +164,6 @@ c Electricity and SOLAR do not have a flue so it is set to Zero.
       END
 
 c *********************************************************************
-c The following 4 functions are used to calculate the cold mains water 
-c inlet temperature:
-c   - fDHW_DepthAmplitudeMod()
-c   - fDHW_LimitMeanGroundTemp()
-c   - iDHW_GroundOffset()
-c   - fDHW_ColdMainTemp()
-c They are used in several component models and were calculated separately for each.
-c These functions have been moved to a central location
-c /cetc/ground_temp_mains.F
-
-c *********************************************************************
-c fDHW_DepthAmplitudeMod ****CURRENTLY UNUSED!******
-c Returns the Depth Amplitude Modifier.
-c This Formula was obtained originally from 
-c SAR Engineerings LTD report on 'Domestic Hot Water Simulation Algorithms' by Ken Cooper for NRCan
-c Section 4.2 Appendix. Where AMod = 0.2+0.04*(TGMean-5.0)
-c Created by: Phylroy A. Lopez
-c Initial Creation Date:  March 23th 2001
-c Copyright 2000: NRCan Buildings Group
-c INPUTS:
-c   REAL fMeanGroundTemp Mean Ground Temp from weather data
-c OUTPUTS:
-c   REAL fDHW_DepthAmplitudeMod  Depth Amplitude Modifier
-c----56--1---------2---------3---------4---------5---------6---------7---------8
- 
-           
-      FUNCTION fDHW_DepthAmplitudeMod()
-!Variables Used From Module
-      
-      
-      IMPLICIT NONE
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-
-!This line was obtained from B.Bradeley H2KDHW.F  line 205 and is related to the Ken Cooper model.
-        fDHW_DepthAmplitudeMod = 0.2 
-     &                           + 0.04  
-     &                           * ( fDHW_LimitMeanGroundTemp()
-     &                           - 5.0 )
-      
-      END
-
-
-c *********************************************************************
-c FUNCTION fDHW_LimitMeanGroundTemp
-c Returns GroundTemp in Limit Bounds Ground Temp is rarely beyond these values. 
-c This is reference in the Ken Cooper model as well as B.Bradley's code in H2KDHW.F line 205-206
-c Created by: Phylroy A. Lopez
-c Initial Creation Date:  March 23th 2001
-c Copyright 2000: NRCan Buildings Group
-c INPUTS:
-c   REAL fMeanGroundTemp Mean Ground Temp from weather data
-C
-c OUTPUTS:
-c   REAL fDHW_LimitMeanGroundTemp limits Values of fMeangroundTemp to <15.0 and >5.0 C.
-c----56--1---------2---------3---------4---------5---------6---------7---------8
-        FUNCTION fDHW_LimitMeanGroundTemp()
-        
-        IMPLICIT NONE
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-
-        fDHW_LimitMeanGroundTemp = fMeanGroundTemp
-        
-        IF (fMeanGroundTemp.lt.5.0) THEN
-          fDHW_LimitMeanGroundTemp = 5.0
-        ENDIF
-
-        IF (fMeanGroundTemp.gt.20.0) THEN 
-          fDHW_LimitMeanGroundTemp = 20.0
-        ENDIF
-        
-      END
-
-c *********************************************************************
-c INTEGER FUNCTION iDHW_GroundOffset(fMeanGroundTemp)
-c Returns the ground temperature offset value. This formula was obtained from 
-c SAR Engineerings LTD report on 'Domestic Hot Water Simulation Algorithms' by Ken Cooper for NRCan
-c Section 4.2 Appendix
-c Created by: Phylroy A. Lopez
-c Initial Creation Date:  March 23th 2001
-c Copyright 2000: NRCan Buildings Group
-c INPUTS:
-c   REAL fMeanGroundTemp Mean Ground Temp from weather data
-c
-c OUTPUTS:
-c   INTEGER iDHW_GroundOffset   Offset to account for depth temp. variance
-c----56--1---------2---------3---------4---------5---------6---------7---------8
-
-        FUNCTION iDHW_GroundOffset()
-        
-        IMPLICIT NONE
-#include "dhw_parameters.h"
-#include "dhw_common.h"        
-
-c Select Offset Modifier based on Mean Ground Temperature
-         IF (fMeanGroundTemp.lt.5.0) THEN
-           iDHW_GroundOffset = 6
-         
-         ELSEIF (fMeanGroundTemp.gt.15.0) THEN
-          iDHW_GroundOffset = 8
-       
-         ELSE 
-          iDHW_GroundOffset = 7
-        
-         ENDIF 
-      END
-
-c *********************************************************************
-c FUNCTION fDHW_ColdMainTemp
-c Returns the cld main value in C. This formula was obtain from 
-c SAR Engineerings LTD report on 'Domestic Hot Water Simulation Algorithms' by Ken Cooper for NRCan
-c Section 4.2 Appendix
-c Created by: Phylroy A. Lopez
-c Initial Creation Date:  March 23th 2001
-c Copyright 2000: NRCan Buildings Group
-c
-c OUTPUTS:
-c  fDHW_ColdMainTemp   cold water main temperature C
-c----56--1---------2---------3---------4---------5---------6---------7---------8
-
-      FUNCTION fDHW_ColdMainTemp()
-      
-      IMPLICIT NONE
-#include "dhw_parameters.h"
-#include "dhw_common.h"      
-
-c Variable Definition        
-c Formula  This is based on Ken Coopers Cold water model and B.Bradley's model used in H2KDHW.F 
-c line 250     
-        fDHW_ColdMainTemp =
-     &     11.1 
-     &     + 3.0 
-     &     + fAmpGroundTempVar
-     &     * SIN(PI/6*(REAL(iMonth) + REAL(iDHW_GroundOffset())))             
-
-      END
-
-c *********************************************************************
 c FUNCTION fDHW_WaterDraw()
 c Returns Water demand per timestep.  This formula was obtained from
 c SAR Engineerings LTD report on 'Domestic Hot Water Simulation Algorithms' by Ken Cooper for NRCan
@@ -316,9 +178,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_WaterDraw()
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its           
@@ -329,18 +192,13 @@ c This calulates the amount of water  used based on the the number of occupants
         fLitresforNumOccupants = 85.0 + ( 35.0 * fNumOfOccupants ) 
 c This normalises the water draw based on a standard usage temperature (currently a parameter 
 c of 60C. This is from B.Bradley'd H2KDHW.F line 254.
-        fNormalizedDailyWaterDraw = (0.75 
+        fNormalizedDailyWaterDraw = ( 0.75 
      &                   * fLitresforNumOccupants
-     &                   * ( ( fUsageTemp - fDHW_ColdMainTemp() )
-     &                   / ( fHotSupplyTemp - fDHW_ColdMainTemp()))
+     &                   * ( (fUsageTemp 
+     &                           - fDHW_ColdMainTemp(iMonth))
+     &                   / (fHotSupplyTemp 
+     &                          - fDHW_ColdMainTemp(iMonth)) )
      &                   + 0.25 * fLitresforNumOccupants )
-c        fNormalizedDailyWaterDraw = ( 0.75 
-c     &                   * fLitresforNumOccupants
-c     &                   * ( (fUsageTemp 
-c     &                           - fDHW_ColdMainTemp(iMonth))
-c     &                   / (fHotSupplyTemp 
-c     &                          - fDHW_ColdMainTemp(iMonth)) )
-c     &                   + 0.25 * fLitresforNumOccupants )
        
       IF (iH2K.eq.1) then ! treat it like H2K 
         fDHW_WaterDraw = fNormalizedDailyWaterDraw
@@ -375,9 +233,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"      
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
 
 !Local Variables
@@ -393,8 +252,7 @@ c If the draw is more than the tank then assume that the temperature of the wate
 c tank is equal to the cold water temp.
       IF (fHotWaterVolumeRemaining.le.0.0) then 
         fHotWaterVolumeRemaining = 0.0   
-        fDHW_StartTemp = fDHW_ColdMainTemp()
-c    fDHW_StartTemp = fDHW_ColdMainTemp(iMonth)
+        fDHW_StartTemp = fDHW_ColdMainTemp(iMonth)
       ELSE    
 
 C Energy in Tank
@@ -402,14 +260,11 @@ C Energy in Joules of Hot water in tank
         fEnergyInHotWaterPortion =
      &    fDHW_WaterEnergyFromTemp(fOldFinalWaterTemp,
      &                             fHotWaterVolumeRemaining)
+
 c Energy in Joules of Cold water in tank
         fEnergyInColdWaterPortion =
-     &     fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(),
-     &                              fWaterDraw) 
-
-C Future form for mains water temp calculation
-C        fEnergyInColdWaterPortion =
-C    &     fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),fWaterDraw)
+     &   fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),
+     &                              fWaterDraw)
 
 
 c This sums the energy present in tank (hot and cold water) and subtracts the tank losses 
@@ -440,9 +295,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"      
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 !Local Variables
 
       
@@ -469,9 +325,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
 
         IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 
 !Local Variables
@@ -507,9 +364,10 @@ c Variables Used From Module
 
 
        IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"       
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 c Local Variables
        REAL   fWaterTemp
@@ -545,9 +403,10 @@ c Variables Used From Module
 
 
        IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"       
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 
 c Local Variables
@@ -578,9 +437,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
        
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"            
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
                       
 c Formula simply mutliply the power by the timestep (in seconds)
         fDHW_PilotEnergy = fPilotEnergyRate
@@ -607,9 +467,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"      
-c#include "ground_temp_mains_common.h"    
+#include "ground_temp_mains_common.h"    
       
 c This formua determines the energy injected to room by the pilot light by
 c multplying the pilot energy to space factor by the Pilot energy expending during the timestep.         
@@ -632,9 +493,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_FuelEnergyRequired()
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
       REAL   fEnergy
       
@@ -689,9 +551,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_EnergyToZone()
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 c Formula         
 c Parasitic losses to room from water in tank losing energy. 
@@ -721,29 +584,21 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_PipeGains()
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
 c Formula         
 
 c Pipe gains to Cold Water Main from space obtained from Brian bradley's H2K model 
 c H2KDHW.F Line 857
-
         fDHW_PipeGains = ( -3.7 + 0.37 * 
-     &                   ( fDHW_ColdMainTemp() - 10. ) -
+     &                   ( fDHW_ColdMainTemp(iMonth) - 10. ) -
      &                 0.83 * ( fNumOfOccupants - 3.5 ) )
      &                 / fSecondsINDAY
      &                 * fSecondsInHour/iNTSTEP
-     &                 * 1e6  ! MJ to Joules
-
-C Future form for calculation using monthly water mains temperature.
-C        fDHW_PipeGains = ( -3.7 + 0.37 * 
-C    &                   ( fDHW_ColdMainTemp(iMonth) - 10. ) -
-C    &                 0.83 * ( fNumOfOccupants - 3.5 ) )
-C    &                 / fSecondsINDAY
-C    &                 * fSecondsInHour/iNTSTEP
-C    &                 * 1e6   ! MJ to Joules
+     &                 * 1e6   ! MJ to Joules
      
 
       END
@@ -765,9 +620,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_PipeLosses()
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 c Formula         
 c PipeLoss in Watts from Hot Water pipes this was obtain from Ken coopers report and in Brian Bradley's code for Hot2000
@@ -796,9 +652,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 cVariables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"       
+#include "ground_temp_mains_common.h"       
 
 c Local variables
 
@@ -913,9 +770,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       
      
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
       
 
       SELECT CASE (iTankType)
@@ -977,9 +835,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"       
+#include "ground_temp_mains_common.h"       
 
     
 !Local Variables      
@@ -1014,9 +873,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 c Variables Use from Modules      
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
 
       REAL   fWaterDrawGreaterThanTank
@@ -1046,19 +906,8 @@ c If not, it determines how much burner energy is required.
      &                                     fTankSize)
      &        +fDHW_WaterEnergyFromTemp(fHotSupplyTemp,
      &                              fWaterDrawGreaterThanTank)
-     &        -fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(),
+     &        -fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),
      &                              fWaterDrawGreaterThanTank)
-
-C Future form of calulation using monthly mains water temperature
-C        fDHW_EnergyRequired =
-C     &        fDHW_WaterEnergyFromTemp( fHotSupplyTemp , 
-C     &                                       fTankSize )
-C     &        - fDHW_WaterEnergyFromTemp(fDHW_StartTemp(), 
-C     &                                     fTankSize)
-C     &        +fDHW_WaterEnergyFromTemp(fHotSupplyTemp,
-C     &                              fWaterDrawGreaterThanTank)
-C     &        -fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),
-C     &                              fWaterDrawGreaterThanTank)
          
         fEnergyRequired = fDHW_EnergyRequired 
       ENDIF
@@ -1077,9 +926,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
            
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
 !Local Vars
       REAL   fMaxOutputOfInjectorPerTstep
@@ -1113,9 +963,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
 !Local Variables 
       REAL   fTotalEnergyInTank
@@ -1132,14 +983,9 @@ c If so set Hot water volume remaining to zero.
         fHotWaterVolumeRemaining = 0.0
 c Determine energy in volume of water draw after heat injection for burner
         fEnergyInTank = 
-     &    fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(),
+     &    fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),
      &                             fWaterDraw)
      &    + fDHW_EnergyInputWater()
-
-C Future form of calculation with mains monthly water temperatures
-C        fEnergyInTank = 
-C     &    fDHW_WaterEnergyFromTemp(fDHW_ColdMainTemp(iMonth),
-C     &                             fWaterDraw)
 
 c Determine temperature in volume of water.   
         fDHW_FinalWaterTemp = 
@@ -1176,9 +1022,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
         
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 c Local variables
       REAL   fMaxOutputOfInjectorPerTstep
@@ -1213,9 +1060,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 c Local variables
       SELECT CASE (iFuelType)
@@ -1241,9 +1089,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1321,10 +1170,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
 !Calculated Values
 
@@ -1349,9 +1198,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
  
 C Note this should be changed to the zone temperature that  the tank is in. 
       fRoomTemp = 20.0
@@ -1373,9 +1223,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1438,9 +1289,10 @@ C ------------------------------------------------------------------------------
       SUBROUTINE DHW_READIN
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h" 
+#include "ground_temp_mains_common.h" 
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1453,245 +1305,325 @@ C Declarations for local variables and variables passed in common blocks.
       integer IUOUT,IUIN,IFIL,IUNIT,ISTAT,IER,ND,k,ival
       real val
       INTEGER   iTankNumber
-
-c  REAL fDHWVersionNumber ! version number of DHW input file      
+      REAL fDHWVersionNumber ! version number of DHW input file      
+      logical error_flag, close, close2
 
   
 C Set the version number
-c      fDHWVersionNumber = 0.      
+      fDHWVersionNumber = 0.      
+
+C Set error flag to false
+      error_flag = .false.
+
 C Open DHW input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
       IUNIT=IFIL+10
       CALL ERPFREE(IUNIT,ISTAT)
       CALL EFOPSEQ(IUNIT,sDHW_InputFileName,1,IER)
-      IF(ier.ne.0)goto 1000
+      IF(ier.ne.0) error_flag = .true.
 
 c Addition of version number to DHW input file (October 2005). This is required
-c for backward file compatability, because the ground properties are no longer 
-c read in from this file. 
-c They are calculated in /cetc/ground_temp_main.F from the climate data 
-c (and DD calculations) based on Moore's method.
+c for backward file compatability. 
+c If there is a version number > 0 at the top of the dhw file, the ground temperature 
+c variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are calculated in 
+c file /esrubld/ground_temp_main.F from the climate data (and DD calculations) 
+c based on Moore's method. 
 
 c Determine the version number of this file.
-c If it is an old file (with no version number), then we will read in the 
-c values of fMeanGroundTemp and fAmpGroundTempVar but they won't be used anywhere.
-c For newer versions, these values won't be read in at all. 
+c If it is an old file (with no version number or version number = 0), then we 
+c will read in the values of fDHW_ground_temp_avg and fDHW_ground_temp_amp. 
+c For newer versions, these values won't be read in at all and they are
+c calculated internally instead. 
 
-c Get first line.
-c      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' DHW data',IER)
-c      IF(IER.NE.0)goto 1000
-c      K=0
+c Get first line.  
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' DHW data',IER)
+      IF(IER.NE.0) error_flag = .true.
+      K=0
 
 c-----Read the file version number, if applicable
-c      if ( outstr(1:13).eq.'* FileVersion' ) then
-c        k = 13
-c        call egetwr(outstr,k,fDHWVersionNumber,0.01,100.,'F',
-c     &              'version number',IER)
+      if ( outstr(1:12).eq.'*FileVersion' ) then
+        k = 12
+        call egetwr(outstr,k,fDHWVersionNumber,0.01,100.,'F',
+     &              'version number',IER)
 c-------if there is a version number, then we need to read in the next line of the input
 c-------to read in the number of hot water tanks.
-c        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' DHW data',IER)
-c      ELSE   
-c-------if there is no version number, continue with reading in the BASESIMP data
-c        continue
-c      ENDIF
-        
-C Read  Number of Hot Water Tanks.
-      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-      IF(IER.NE.0)goto 1000
-      K=0
+        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' DHW data',IER)
+        k=0
+      ELSE   
+c-------if there is no version number, continue with reading dhw data
+        continue
+      ENDIF
 
-      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' # of Hot Water Tanks ',IER)
-      if(IER.NE.0)then
-        call edisp(IUOUT,' Cannot read DHW Number of Tanks.')
-        goto 1000
+      if(.not. error_flag) then
+        CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' # of Hot Water Tanks ',IER)
+        if(IER.NE.0)then 
+          call edisp(IUOUT,' Cannot read DHW Number of Tanks.')
+          error_flag = .true.
+        endif
+        iNumberOfTanks = IVAL
       endif
-      iNumberOfTanks = IVAL
 
 C Read  fNumOfOccupants of DHW.
-      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-      IF(IER.NE.0)goto 1000
-      K=0
-      CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fNumOfOccupants ',IER)
-      if(IER.NE.0)then
-        call edisp(IUOUT,' Cannot read DHW fNumOfOccupants.')
-        goto 1000
+      if(.not. error_flag) then
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+        IF(IER.NE.0) error_flag = .true.
+        K=0
       endif
-      fNumOfOccupants = VAL
+
+      if(.not. error_flag) then
+        CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fNumOfOccupants ',IER)
+        if(IER.NE.0)then
+          call edisp(IUOUT,' Cannot read DHW fNumOfOccupants.')
+          error_flag = .true.
+        endif
+        fNumOfOccupants = VAL
+      endif
 
 c ***********************************************************************
-c This ground temperature information (fMeanGroundTemp and fAmpGroundTempVar) 
-c is no longer read in from the .dhw input file. It is calculated in 
-c /cetc/ground_temp_main.F based on Moore's method from the climate data.
+c This ground temperature information (fDHW_ground_temp_avg and 
+c fDHW_ground_temp_amp) is read in and used in the calculations only
+c when the dhw input file format is of an older version (0. in this case)
+c or the top of the dhw input file does not contains a "FileVersion" at all.
 c************************************************************************
-c-----If there is no version number associated with the BASESIMP input file, then 
-c-----the variables fMeanGroundTemp and are fAmpGroundTempVar read in, but not used
-c-----in the simulation
-c      IF(fDHWVersionNumber .EQ. 0.) then 
-c Read  fMeanGroundTemp of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-C Update by Julia Purdy (November 5, 2003)
-C Update to allow for negative mean ground temperatures. Some parts of
-C the North will have negative ground temperatures (permafrost). 
-        CALL EGETWR(OUTSTR,K,VAL, -10.,100.,'F',' fMeanGroundTemp ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fMeanGroundTemp.')
-          goto 1000
-        endif    
-        fMeanGroundTemp = VAL   
-
-C Read  fAmpGroundTempVar of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' fAmpGroundTempVar ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fAmpGroundTempVar.')
-          goto 1000
+c-----If there is no version number associated with the dhw input file, then 
+c-----the variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are read in
+      CALL ECLOSE(fDHWVersionNumber,0.0,0.0001,CLOSE)
+      CALL ECLOSE(fDHWVersionNumber,1.0,0.0001,CLOSE2)
+      IF(CLOSE) then 
+c Read  fDHW_ground_temp_avg of DHW.
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fAmpGroundTempVar = VAL 
 
-c-----If there is a version number associated with the BASESIMP input file, then 
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL, -10.,100.,'F',' 
+     &                fDHW_ground_temp_avg ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,
+     &      ' Cannot read DHW fDHW_ground_temp_avg')
+            error_flag = .true.
+          endif    
+          fDHW_ground_temp_avg = VAL
+        endif
+
+C Read  fDHW_ground_temp_amp of DHW.
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
+         endif
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' 
+     &                fDHW_ground_temp_amp ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,
+     &      ' Cannot read DHW fDHW_ground_temp_amp')
+            error_flag = .true.
+          endif
+          fDHW_ground_temp_amp = VAL
+        endif
+
+c In this case the ground temperature evaluation method is based on user inputs
+c Set flag to 0
+        iDHW_ground_temp_cal_flag = 0
+
+c-----If there is a version number associated with the dhw input file, then 
 c-----continue reading in the rest of the .dhw input file as normal.
-c      ELSE
-c        continue
-c      END IF  
-      
+c-----In this case the ground average temperature and amplitude are based on
+c-----calculations using the weather file. Values for the ground temperatue
+c-----average and amplitude are stored in common Ground_Temp in the include
+c-----file "ground_temp_mains_common"
+      ELSEIF(CLOSE2) THEN
+c In this case the ground temperature evaluation method flag is set to 1
+        iDHW_ground_temp_cal_flag = 1
+        continue
+      END IF  
+     
 C Read  fHotSupplyTemp of DHW.
-      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-      IF(IER.NE.0)goto 1000
-      K=0
-      CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fHotSupplyTemp ',IER)
-      if(IER.NE.0)then
-        call edisp(IUOUT,' Cannot read DHW fHotSupplyTemp.')
-        goto 1000
+      if(.not. error_flag) then
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+        IF(IER.NE.0) error_flag = .true.
+        K=0
       endif
-      fHotSupplyTemp = VAL 
 
-    
+      if(.not. error_flag) then
+        CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fHotSupplyTemp ',IER)
+        if(IER.NE.0)then
+          call edisp(IUOUT,' Cannot read DHW fHotSupplyTemp.')
+          error_flag = .true.
+        endif
+        fHotSupplyTemp = VAL 
+      endif
       
 c loop through tanks  (only one tank supported)  
       DO iTankNumber=1 , 1
 
 C Read  DHW Zone Location.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-
-        CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' DHW Zone Location ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW Zone Location.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        iDHWZoneLocation = IVAL
+
+        if(.not. error_flag) then
+          CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' DHW Zone Location ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW Zone Location.')
+            error_flag = .true.
+          endif
+          iDHWZoneLocation = IVAL
+        endif
 
 C Read  DHW type.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-
-        CALL EGETWI(OUTSTR,K,IVAL,1,6,'F',' DHW type ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW type.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        iFuelType = IVAL
+
+        if(.not. error_flag) then
+          CALL EGETWI(OUTSTR,K,IVAL,1,6,'F',' DHW type ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW type.')
+            error_flag = .true.
+          endif
+          iFuelType = IVAL
+        endif
 
 C Read  DHW Tank type.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-
-        CALL EGETWI(OUTSTR,K,IVAL,1,20,'F',' DHW tanktype ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW Tank type.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        iTankType = IVAL
+
+        if(.not. error_flag) then
+          CALL EGETWI(OUTSTR,K,IVAL,1,20,'F',' DHW tanktype ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW Tank type.')
+            error_flag = .true.
+          endif
+          iTankType = IVAL
+        endif
 
 C Read  DOEEF of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,2.,'F',' DHW EF ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DOEEF.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fDOEEF = VAL
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,2.,'F',' DHW EF ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DOEEF.')
+            error_flag = .true.
+          endif
+          fDOEEF = VAL
+        endif
 
 C Read  fHeatInjectorPower of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,1000000.,'F',
-     &             ' DHW Heat Injector Power ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fHeatInjectorPower.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fHeatInjectorPower = VAL      
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,1000000.,'F',
+     &             ' DHW Heat Injector Power ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW fHeatInjectorPower.')
+            error_flag = .true.
+          endif
+          fHeatInjectorPower = VAL
+        endif      
           
 C Read  fPilotEnergyRate of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,10000.,'F',' fPilotEnergyRate ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fPilotEnergyRate.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fPilotEnergyRate = VAL      
+ 
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,10000.,'F',' 
+     &                fPilotEnergyRate ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW fPilotEnergyRate.')
+            error_flag = .true.
+          endif
+          fPilotEnergyRate = VAL
+        endif     
     
 C Read  fTankSize of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,5000.,'F',' fTankSize ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fTankSize.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fTankSize = VAL       
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,5000.,'F',' fTankSize ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW fTankSize.')
+            error_flag = .true.
+          endif
+          fTankSize = VAL
+        endif      
 
 C Read  fTemperatureBand of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fTemperatureBand ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fTemperatureBand.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fTemperatureBand = VAL
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fTemperatureBand ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW fTemperatureBand.')
+            error_flag = .true.
+          endif
+          fTemperatureBand = VAL
+        endif
 
 C Read  fBlanket Insulation of DHW.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fBlanketRSI ',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' Cannot read DHW fBlanketRSI.')
-          goto 1000
+        if(.not. error_flag) then
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
+          IF(IER.NE.0) error_flag = .true.
+          K=0
         endif
-        fBlanketRSI = VAL
+
+        if(.not. error_flag) then
+          CALL EGETWR(OUTSTR,K,VAL,0.,99.,'F',' fBlanketRSI ',IER)
+          if(IER.NE.0)then
+            call edisp(IUOUT,' Cannot read DHW fBlanketRSI.')
+            error_flag = .true.
+          endif
+          fBlanketRSI = VAL
+        endif
 
       END DO
       
 C Close DHW input data file.
-      CALL ERPFREE(IUNIT,ISTAT)
-      goto 1001
+      if(.not.error_flag) then
+        CALL ERPFREE(IUNIT,ISTAT)
+      endif
 
 C Error handling.
- 1000 IER=1
-      write(outs,7)
-    7 format(' DHW input file error.DHW SIM CANCELLED')
-      call edisp(iuout,outs)
-      iDHW_Flag = 0 !sets flag not to perform DHW simulation. 
-
+      if(error_flag) then
+        IER=1
+        write(outs,7)
+    7   format(' DHW input file error.DHW SIM CANCELLED')
+        call edisp(iuout,outs)
+        iDHW_Flag = 0 !sets flag not to perform DHW simulation.
+      endif
       
- 1001 RETURN
+      RETURN
       END
       
       
@@ -1708,9 +1640,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -1747,8 +1680,7 @@ c#include "ground_temp_mains_common.h"
         fSumPilotEnergyToRoom(iMonth) = 
      &    fSumPilotEnergyToRoom(iMonth) + fDHW_PilotEnergyToRoom()
      
-        fCold_Main_Temp(iMonth) =  fDHW_ColdMainTemp()    
-c        fCold_Main_Temp(iMonth) =  fDHW_ColdMainTemp(iMonth)    
+        fCold_Main_Temp(iMonth) =  fDHW_ColdMainTemp(iMonth)    
     
         fSumWaterLoad(iMonth)=
      &    fSumWaterLoad(iMonth) + fWaterDraw
@@ -1776,9 +1708,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
        
       
       IMPLICIT NONE
+#include "building.h"
 #include "dhw_parameters.h"
 #include "dhw_common.h"  
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
     
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       DIMENSION MTHNAM(12)
@@ -1821,10 +1754,7 @@ c#include "ground_temp_mains_common.h"
      &      '(a3,1x,f10.3,1x,f10.3,1x,f10.3,1x,f10.3,1x,
      &        f10.3,1x,f10.3,1x,f10.3,1x,f10.3,1x,f10.3,1x,
      &        f10.3,1x,f10.3,1x,f10.3,1x,f10.3,1x,f10.3,1x,f10.3)')
-C Future form:
-c     &         MTHNAM(imonth),fDHW_ColdMainTemp(iMonth),
-C Present form:
-     &        MTHNAM(imonth),fDHW_ColdMainTemp(),
+     &         MTHNAM(imonth),fDHW_ColdMainTemp(iMonth),
      &        fSumWaterLoad(iMonth),fFGas,fFTank,fUA,    
      &        fSumEnergyInputWater(iMonth)/1e6-
      &        fSumStandByTankLosses(iMonth)/1e6,
@@ -1849,11 +1779,11 @@ C Present form:
       call edisp(IWU,outs)
       WRITE (outs,'(a20,1x,f10.2)')'#fNumOfOccupants',fNumOfOccupants
       call edisp(IWU,outs)
-      WRITE (outs,'(a20,1x,f10.2)')'#Mean Ground Temp',fMeanGroundTemp
-c      WRITE (outs,'(a20,1x,f10.2)')'#Mean Ground Temp',fTemp_Ground_Avg
+      WRITE (outs,'(a20,1x,f10.2)')'#Mean Ground Temp',
+     &                              fDHW_ground_temp_avg
       call edisp(IWU,outs)
-      WRITE (outs,'(a20,1x,f10.2)')'#Ground Temp Amp',fAmpGroundTempVar
-c      WRITE (outs,'(a20,1x,f10.2)')'#Ground Temp Amp',fTemp_Ground_Amp
+      WRITE (outs,'(a20,1x,f10.2)')'#Ground Temp Amp',
+     &                              fDHW_ground_temp_amp
       call edisp(IWU,outs)
       WRITE (outs,'(a20,1x,f10.2)')'#fHotSupplyTemp',fHotSupplyTemp
       call edisp(IWU,outs)

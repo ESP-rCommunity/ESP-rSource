@@ -8,6 +8,7 @@ TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
+BLDdir = $(SRCdir)/esrubld
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -28,7 +29,7 @@ OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
 	  sendflt.o senrwl.o sensa.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
 	  aim2_pretimestep.o DHW_module.o exlgrad.o DG_controller_menu.o \
-	  MultiYear_climate.o
+	  MultiYear_climate.o ground_temp_mains.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -202,6 +203,10 @@ DHW_module.F:
 	rm -f DHW_module.F
 	ln -s $(CETCdir)/DHW_module.F .
 
+ground_temp_mains.F:
+	rm -f ground_temp_mains.F
+	ln -s $(BLDdir)/ground_temp_mains.F .
+
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
 
@@ -215,7 +220,9 @@ clean:
 	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
 	stndrds.F startup.F tdfile.F \
 	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
-	MultiYear_climate.F $(INCLdir)/espinstalldir.h
+	MultiYear_climate.F $(INCLdir)/espinstalldir.h ground_temp_mains.F
+
+
 
 
 
