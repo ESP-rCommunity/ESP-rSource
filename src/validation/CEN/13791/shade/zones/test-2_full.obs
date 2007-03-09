@@ -1,0 +1,8 @@
+# site obstruction file defined in zones/test-2_full.obs
+# associated with zone geometry file zones/Zone-2.geo
+ 0. 0.   # dummy values for site position
+    1    # no obstruction blocks
+# origin X Y Z, width, depth, height, rot angle, descr, material
+7.000 -1.000 0.000 4.000 0.999 3.000 0.000 First NONE # block 1
+# grid opq X opq Z win X win Z
+    20 20    10    10
