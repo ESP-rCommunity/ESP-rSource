@@ -1,0 +1,196 @@
+ 
+Notes on compiling ESP-r for Windows 
+ 
+These notes are intended for ESP-r developers 
+who wish to work on computers running W2K or 
+WinXP.  
+ 
+The windows port of ESP-r is currently 
+setup to compile with the GNU compilers and 
+the development environment provided by two 
+packages - MinGW (Minimalist GNU for Windows) 
+which is a Windows port of the GNU C and Fortran 
+compilers and MSYS (Minimal SYStem) which provides 
+basic shell, make, and install utilities needed 
+to support MinGW. 
+ 
+MSYS and MinGW are hosted on SourceForge and 
+documentation and links are available at 
+ <http://www.mingw.org> 
+ 
+There are a number of packages you need to 
+download to setup MSYS and MinGW on your 
+computer. One the download page <http://www.mingw.org/download.shtml> 
+look for the 'Current section'. Note the file names 
+might be slightly different from what is listed below. 
+ 
+A good place to put the downloaded files is C:\TEMP 
+ 
+The files you want in the GCC section are: 
+gcc-g77-3.4.2-20040916-1.tar.gz 
+gcc-core-3.4.2-20040916-1.tar.gz 
+ 
+From the 'MSYS Developer Tool Kit ' section take 
+msysDTK-1.0.1.exe 
+ 
+From the 'MSYS' section take MSYS-1.0.10.exe 
+ 
+From the 'MinGW runtime' take mingw-runtime-3.9.tar.gz 
+ 
+From the 'MinGW Utilities' take mingw-utils-0.3.tar.gz 
+ 
+From the 'TclTk' section take tcltk-8.4.1-1.exe 
+ 
+From the 'gdb' section take gdb-5.2.1-1.exe 
+ 
+From the 'w32api' section take w32api-3.5.tar 
+ 
+From the 'binutils' section take binutils-2.15.91-20040904-1.tar 
+ 
+And find and take mingw32-make-3.80.0-3.exe 
+ 
+Once you have downloaded the files invoke the MSYS-1.0.10 
+installer and follow the prompts. The default location is 
+C:\msys then run the msysDTK-1.0.1 installer and the other 
+exe based installers. 
+ 
+You should find that the msys folder has the following 
+structure: 
+C:\msys 
+   1.0 
+     bin  
+     doc 
+     etc 
+     home 
+     lib 
+     mingw 
+       bin 
+       doc 
+       include 
+       info 
+       lib 
+       libexec 
+       man 
+       mingw32 
+       src 
+     share 
+     uninstall 
+ 
+At the end of the MSYS install there should be a MSYS 
+icon. Click on this and you get the Minimal System 
+Shell which supports a set of Unix-like commands. 
+ 
+If the c:\msys\1.0\home folder does not exist create it. 
+ 
+If the c:\msys\1.0\mingw folder does not exist create it. 
+ 
+In the MSYS shell copy the following tar.gz files from C:\TEMP  
+to c:\msys\1.0\mingw 
+binutils, gcc-core, gcc-g77, mingw-runtime, mingw-utils, 
+w32api and unzip and extract them. 
+ 
+This should provide you with basic shell (cp rm mkdir cat 
+vi) and compile facilities (make). 
+ 
+Additional windows ports of applications and libraries 
+can be found at <http://gnuwin32.sourceforge.net> 
+From this site you want to grab the following: 
+LibArt (runtime and developer), zlib  
+ 
+ESP-r on Windows requires a number of files from the 
+GTK (for windows) sites <http://www.gtk.org/downloads>, 
+<http://www.gimp.org/~tml/gimp/win32> and 
+<http://www.gimp.org/~tml/gimp/win32/downloads> 
+ 
+There are run-time and developer versions of most 
+of the files. If you want to compile download 
+both. The following files should be downloaded 
+into c:/TEMP. The zip files will, by default 
+extract to c:\GTK (which is ok because the Windows 
+path is going to be updated to point to the GTK  
+facilities). 
+ 
+(Note the file names might change over time): 
+atk-1.8.0.zip, atk-dev-1.8.0.zip 
+cairo-1.0.2.zip, cairo-dev-1.0.2.zip 
+gettext-0.14.5.zip, gettext-dev-1.14.5.zip 
+glib-2.4.7.zip, glib-dev-2.4.7.zip (or 2.8.6) 
+gtk+-2.4.14.zip, gtk+-dev-2.4.14.zip (or 2.6) 
+dirent.zip, libxml2, zlib1.2.3, 
+fontconfig-2.2.2-20040412.zip, fontconfig-dev-2.2.2-20040412.zip 
+GNU libiconv, libart_lgpl-2.3.14.zip and libart_lgpl-dev-2.3.14.zip 
+libexif-0.6.11.zip, libexif-dev-0.6.11.zip 
+libgsf-1.8.2-20040121.zip, libgsf-dev-1.8.2.zip 
+pkg-config-0.20.zip,tiff-3.8.0.exe, 
+libiconv-1.9.1.bin, pibpng-1.2.8 
+pango-1.4.1.zip, pango-dev-1.4.1.zip 
+ 
+When in doubt - choose the older stable versions. 
+ 
+Pkg-config is used by the compiler to denote where 
+the GTK libraries and include files are located on 
+your machine. You will need to add an environment 
+variable to your Windows setup: 
+PKG_CONFIG_PATH   C:/GTK/lib/pkgconfig 
+ 
+You will need to append to the Path environment 
+variable ;C:\Esru\esp-r\bin;C:\GTK\bin 
+ 
+The msys 'home' folder (c:\msys\1.0\home) is equivalent to 
+the home folder on Linux and Unix machines. 
+It is a good place for the ESP-r (and other packages) 
+source code. By default there should be an Administrator 
+folder in home, if not create one. It would 
+also be useful to create an esru folder in home 
+and in the esru a Src folder and in the Src folder an 
+esp-r folder (where the esp-r source distribution  
+can be placed). 
+ 
+Note: newer versions of ESP-r Install scripts have 
+an option for Windows native so select this 
+option. 
+ 
+A few hints for use of ESP-r on Windows machines: 
+ 
+a) path lengths in ESP-r are limited and to ensure 
+   that model file names are not truncated you should 
+   place models in a location other than the users 
+   desktop. C:\Esru\Models would be a good location. 
+ 
+   Note that when you browse models and whish to 
+   'own them' they will be copied to your Windows 
+   default home location.  If you try to re-access 
+   these models you might have problems - a work-around 
+   is to move such models to a folder with a shorter 
+   path. 
+ 
+b) Windows allows you to write files almost anywere 
+   and this can be problematic. After ESP-r has 
+   bin installed look for a file esp-r.cmd and 
+   copy this to the location where you would like 
+   models to be created (e.g. c:\Esru\Models) and 
+   then you can click on that cmd file to start up 
+   ESP-r. 
+ 
+c) ESP-r assumes that real numbers use a . to mark 
+   decimal places and that a comma is a token 
+   separator. It gets seriously confused in locales 
+   where decimals are defined with commas. Please 
+   switch locales before running ESP-r. 
+ 
+d) ESP-r assumes that so-called corporate databases 
+   can not be overwritten by normal users of ESP-r. 
+   On Windows machines this protection is not 
+   absolute and can cause potential problems. 
+ 
+e) The Windows version is a Beta release. There are 
+   a few facilities that have not yet been implemented 
+   (e.g. click-on-bitmap, select via mouse). Not 
+   every exemplar model has been tested. When the 
+   unexpected happens we urge you to forward comments 
+   to ESRU (esru@strath.ac.uk) and/or Jon Hand 
+   (jon@esru.strath.ac.uk) 
+ 
+f) The Windows version will evolve so check the 
+   download site for updates. 
+ 
