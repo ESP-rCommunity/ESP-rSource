@@ -782,6 +782,7 @@ C    PCTP(i)     present temperature of sending node for connection `i'
 C    PCTF(i)     future temperature of sending node for connection `i'
 C---------------------------------------------------------------------------------
          T_1a_present = PCTP(con1a)
+
 C--------If space-heat flag set, then second connection is real: otherwise make temp zero.
          IF( tank_space_heat.eq.tank_yes_heat )THEN
            T_1b_present = PCTP(con1b)
@@ -1149,12 +1150,6 @@ C             constant and time-step (this is the default treatment);
 C             4= steady state.
 C    RATIMP   user-specified implicit weighting fraction
 C    TIMSEC   the time-step in the explicit plant domain (seconds)
-C
-C Although for IMPEXP = 3 the model calculates the required alpha, it is not
-C recommended to use different values for alpha during a single simulation run,
-C due to the likely introduction of errors in the simulation results.
-C The user is therefore warned in case the model decides to change alpha from the
-C default value to fully implicit (alpha = 1) due to a too small a time constant.
 C---------------------------------------------------------------------------------
 C-------Fully implicit.
         IF( IMPEXP.eq.1 ) THEN
@@ -1166,12 +1161,6 @@ C-------General case: implicit/explicit with calculated weighting.
         ELSE IF( IMPEXP .eq. 3 ) THEN
           IF( TIMSEC>0.63*TC(IPCOMP) ) THEN
             alpha = 1.
-            WRITE(IUOUT,*) ' FC_tank_fuel_coeff_gen: '
-            WRITE(IUOUT,*) ' The time constant of the tank is too '
-            WRITE(IUOUT,*) ' small compared to the current simulation '
-            WRITE(IUOUT,*) ' time step.'
-            WRITE(IUOUT,*) ' Choose a smaller time step to prevent '
-            WRITE(IUOUT,*) ' erroneous results.'
           ELSE
             alpha = RATIMP
           END IF
@@ -1259,7 +1248,6 @@ C---------No exhaust: make exhaust temperature equal room temperature.
           COUT(4) = 1.
           COUT(9) = Troom_future
         END IF
-
 
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********
@@ -1410,8 +1398,6 @@ C    idyp                    day number (1-365) at present time-row (from common
 C    idyf                    day number (1-365) at future time-row (from common/simtim)
 C    T_node1                 `present' temperature of water in tank (oC)
 C    IUOUT                   output channel to feedback to user
-C    FC_ground_amp           annual amplitude of ground temp (oC) (from MODULE FC_tanks)
-C    FC_ground_offset        shift in ground temp sine wave (months) (from MODULE FC_tanks)
 C    tank_DHW_draw           flag indicating DHW draw treatment (from MODULE FC_tanks)
 C    tank_no_DHW             ditto
 C    tank_CSA_DHW            ditto
@@ -1430,12 +1416,12 @@ C    T_makeup_future     temperature (oC) of make-up water (from mains) at futur
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE FC_DHW_load(T_tank)
-C     &                   DHW_draw_present,DHW_draw_future,
-C     &                   T_makeup_present,T_makeup_future)
+
       IMPLICIT NONE
+#include "building.h"
 #include "cogen_tanks.h"
-c#include "ground_temp_mains_common.h"
-c#include "dhw_common.h"
+#include "ground_temp_mains_common.h"
+#include "dhw_common.h"
 
       COMMON/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -1460,39 +1446,13 @@ C-------------------------------------------------------------------------------
       LOGICAL close_to_zero
       REAL PI
 
-
-C--------------------------------------------------------------------------------------------
-C Determine the mains temperature.  This is the DHW make-up water temperature.  This uses
-C the formula from the HOT2000 bin model.  This can be improved upon in the future, but
-C the HOT2000 bin formulation is used here to allow the tank component model to be compared
-C directly to the HOT3000 DHW model.
-C Variables used:
-C    fAmpGroundTempVar  amplitude of the ground temperature annual sine wave (oC);
-C                       specified in .dhw file.
-C--------------------------------------------------------------------------------------------
 C-----Determine the month number at the present and future time-rows.
       CALL EDAYR(idyp,iday_p,imonth_p)
       CALL EDAYR(idyf,iday_f,imonth_f)
-C-----Calculate the make-up water temperature using the formula applied in the HOT2000
-C-----bin model.
-
-C-----This calculation has been updated. The mains ground temperature is now calculated in
-C-----/cetc/ground_temp_mains.F - a central location for all components
-
-      PI = 3.141592
-      T_makeup_present = 11.1 + 3.
-     &                   + FC_ground_amp
-     &                   * SIN ( PI/6.*
-     &                          (REAL(imonth_p)+REAL(FC_ground_offset))
-     &                         )
-      T_makeup_future  = 11.1 + 3.
-     &                   + FC_ground_amp
-     &                   * SIN ( PI/6.*
-     &                          (REAL(imonth_f)+REAL(FC_ground_offset))
-     &                         )
-
-c	  T_makeup_present = fDHW_ColdMainTemp(imonth_p)
-c      T_makeup_future  = fDHW_ColdMainTemp(imonth_f)
+C-----Calculate the make-up water temperature using the Moore model implemented in
+C-----file /esrubps/ground_temp_mains.F.
+      T_makeup_present = fDHW_ColdMainTemp(imonth_p)
+      T_makeup_future  = fDHW_ColdMainTemp(imonth_f)
 
 C--------------------------------------------------------------------------------------------
 C This may be a: combo system; a space-heating system; or a DHW system. If the tank supplies
@@ -1996,8 +1956,6 @@ C-------------------------------------------------------------------------------
       REAL Rinv,alpha
       REAL q_element
       REAL part1,part2,part3,part4,part5,part6,part7,part8
-C      REAL DHW_draw_present,DHW_draw_future,T_makeup_present,
-C     &     T_makeup_future,mdotCp_DHW_present,mdotCp_DHW_future
 
       INTEGER IPCOMP
       INTEGER ISTATS
@@ -2216,8 +2174,7 @@ C
 C    Modification: Check to see if the tank 
 C---------------------------------------------------------------------------------
         CALL FC_DHW_load(T_node1_future)
-C     &                   DHW_draw_present,DHW_draw_future,
-C     &                   T_makeup_present,T_makeup_future)
+
         mdotCp_DHW_present = DHW_draw_present
      &                     * RHOFLD(3,T_makeup_present)
      &                     * SHTFLD( 3,T_makeup_present )
@@ -2357,6 +2314,12 @@ C-------Node 1 energy balance given by Beausoleil-Morrison (2001b) eq 7 & 17.
      &          + part5
      &          + part8
 
+C---------------------------------------------------------------------------------
+C Save the `additional' output variables for outputting on time-step basis.
+C---------------------------------------------------------------------------------
+      NAPDAT(IPCOMP)    = 1                    ! number of additional outputs
+      PCAOUT(IPCOMP,1)  = q_element            ! output of heating element (W)
+           
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********
 C*********************************************************************************
@@ -2392,15 +2355,6 @@ C*******************************************************************************
 C Record the electrical draw (W) of the electric resistance heater for use by the
 C fuel cell controller.
       FCctl_elec_water_tank = q_element
-
-
-
-C---------------------------------------------------------------------------------
-C Save the `additional' output variables for outputting on time-step basis.
-C---------------------------------------------------------------------------------
-      NAPDAT(IPCOMP)    = 1                    ! number of additional outputs
-      PCAOUT(IPCOMP,1)  = q_element            ! output of heating element (W)
-
 
 C---------------------------------------------------------------------------------
 C Store results to calculate monthly averages and (optionally) to produce an
@@ -2647,6 +2601,13 @@ C.....Plant component present/future variables
 
       real pctf,pcrf,puaf,pcqf,pcntmf,pctp, pcrp, puap, pcqp, pcntmp
 
+C.....Common contaning diversion ratios for plant network connections
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     & IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1,IPN1,IPCT,IPC2,IPN2
+
+      REAL PCONDR,PCONSD
+
 C.....Local Variables
       CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
       character*128 root_name    ! root name of component node 
@@ -2678,7 +2639,7 @@ C.....References:
       real SHTFLD     
 
 C.....Update future row values using most recently calcuated data obtained
-C.....from state vbariables
+C.....from state variables
 
 C.....Connection temperatures
       PCTF(con1a) = H3K_connect_property( con1a, iTemperature )
@@ -2706,7 +2667,8 @@ C.....-> set name
 
 C.....Connection 1 heat injection
 C.....Heat injection = flow rate * ( T_in - T_tank)
-      fConn_heat_injection = H3K_connect_property(con1a,i1st_flow)
+      fConn_heat_injection = pcondr(con1a)  
+     &     * H3K_connect_property(con1a,i1st_flow)
      &     * SHTFLD(3,(H3K_connect_property(con1a,iTemperature)
      &                + fWater_temperature )/2.0)
      &     * ( H3K_connect_property(con1a,iTemperature) -  
@@ -2725,7 +2687,8 @@ C.....-> set name
 
 C.....Connection 2 heat injection
 C.....Heat injection = flow rate * Cp * ( T_in - T_tank)
-      fConn_heat_injection = H3K_connect_property(con1b,i1st_flow)
+      fConn_heat_injection = pcondr(con1b)
+     &     * H3K_connect_property(con1b,i1st_flow)
      &     * SHTFLD(3,(H3K_connect_property(con1b,iTemperature)
      &                + fWater_temperature )/2.0)
      &     * ( H3K_connect_property(con1b,iTemperature) -  
@@ -2849,6 +2812,7 @@ C.......-> set name
       WRITE(H3K_rep_NAME,'(A,A)') 
      &     root_name(1:lnblnk(root_name)), 
      &     '/heat_transfer_to_water'
+
       call add_to_xml_reporting(
      &     q_capture_future,
      &     H3K_rep_NAME, 

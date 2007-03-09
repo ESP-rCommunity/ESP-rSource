@@ -376,7 +376,7 @@ C External Longwave Radiation
 
 C GSHP
 C Flag indicating presence of GSHP models:
-C igshpflag=1 indicates GSHP models are active; 0 indicates no GSHP models.
+C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
       common/gshpinfo/igshp
       common/gshpfile/gshpfile
 
@@ -1718,7 +1718,7 @@ C and if it does so set bZoneSHOCCed(icomp) to true.
         elseif(WORD(1:4).eq.'*bsm')then
 
 C A BASESIMP description is included in the model. Check if it
-C exists an set iBSIMP(icomp) to one if it does.
+C exists and set iBSIMP(icomp) to one if it does.
           LBSIMP(icomp)=text(1:72)
           XST=.FALSE.
           call FINDFIL(LBSIMP(icomp),XST)

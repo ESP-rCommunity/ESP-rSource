@@ -1321,8 +1321,6 @@ C    idyp                    day number (1-365) at present time-row (from common
 C    idyf                    day number (1-365) at future time-row (from common/simtim)
 C    T_node1                 `present' temperature of water in tank (oC)
 C    IUOUT                   output channel to feedback to user
-C    FC_ground_amp           annual amplitude of ground temp (oC) (from MODULE FC_tanks)
-C    FC_ground_offset        shift in ground temp sine wave (months) (from MODULE FC_tanks)
 C    AIMS_tank1_DHW_draw     flag indicating DHW draw treatment (from MODULE AIMS_tank1)
 C    AIMS_tank1_no_DHW       ditto
 C    AIMS_tank1_CSA_DHW      ditto
@@ -1345,6 +1343,7 @@ C ------------------------------------------------------------------------------
       IMPLICIT NONE
 #include "aims_common.h"
 #include "cogen_tanks.h"
+#include "dhw_common.h"
       
        COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
        INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS 
@@ -1360,39 +1359,17 @@ C ------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declare local variables.
 C---------------------------------------------------------------------------------
-      REAL PI, T_tank
+      REAL T_tank
       REAL adjust_p,adjust_f
       INTEGER hour_p,hour_f,iday_p,imonth_p,iday_f,imonth_f
 
-C Future work will move calculation of the mains temperature 
-C to /cetc/ground_temp_mains.F
-C
-C--------------------------------------------------------------------------------------------
-C Determine the mains temperature.  This is the DHW make-up water temperature.  This uses
-C the formula from the HOT2000 bin model.  This can be improved upon in the future, but
-C the HOT2000 bin formulation is used here to allow the tank component model to be compared
-C directly to the HOT3000 DHW model.
-C Variables used:
-C    fAmpGroundTempVar  amplitude of the ground temperature annual sine wave (oC);
-C                       specified in .dhw file.
-C--------------------------------------------------------------------------------------------
 C-----Determine the month number at the present and future time-rows.
       CALL EDAYR(idyp,iday_p,imonth_p)
       CALL EDAYR(idyf,iday_f,imonth_f)
-C-----Calculate the make-up water temperature using the formula applied in the HOT2000
-C-----bin model.
-      PI = 3.141592
-      T_makeup_present = 11.1 + 3.
-     &                   + FC_ground_amp
-     &                   * SIN ( PI/6.*
-     &                          (REAL(imonth_p)+REAL(FC_ground_offset))
-     &                         )
-      T_makeup_future  = 11.1 + 3.
-     &                   + FC_ground_amp
-     &                   * SIN ( PI/6.*
-     &                          (REAL(imonth_f)+REAL(FC_ground_offset))
-     &                         )
-
+C-----Calculate the make-up water temperature using the Moore model implemented
+C-----in file /esrubps/ground_temp_mains.F
+      T_makeup_present = fDHW_ColdMainTemp(imonth_p)
+      T_makeup_future  = fDHW_ColdMainTemp(imonth_f)
 
 C--------------------------------------------------------------------------------------------
 C This may be a: combo system; a space-heating system; or a DHW system. If the tank supplies

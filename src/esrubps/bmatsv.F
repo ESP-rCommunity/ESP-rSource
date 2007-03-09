@@ -44,7 +44,7 @@ C HOT3000: Fuel cell.
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 C CWEC Degree Day and ground temperature parameters
-C#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -257,6 +257,17 @@ C Indicies of start, end, current & future indicies
       integer iMY_start_yr_index, iMY_end_yr_index,
      &        iMY_current_yr_index, iMY_future_yr_index
 
+C BASESIMP.
+      common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+C Flag for whether there is basesimp file
+      logical bsm_flag
+
+C Plant network data
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
+C Flag for whether plant network has storage tank that uses mains make up 
+C water
+      logical itank_flag
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -590,11 +601,40 @@ C Setting SHOCC new day events ...
 C Open the file for  structured mesh temperatures.
       IF(InSvST.EQ.1)open(unit=ISTemp,file='dump3d',status='unknown')
 
+C Flag for whether there is a basesimp file set to false
+      bsm_flag = .false.
+C Check and see whether there is actually bsm file and set flag to true      
+      do 11 ibsm_counter = 1,mcom
+        if(iBSIMP(ibsm_counter).eq.1) then
+          bsm_flag = .true.
+        endif
+ 11   continue
+
+C Check whether plant network has a storage tank that uses mains make up
+C water
+      itank_flag = .false.
+      do 12 itank_counter = 1,npcomp
+        iplant_comp_type = NPCDAT(itank_counter,4) 
+        if((iplant_comp_type.eq.81).or.
+     &     (iplant_comp_type.eq.82).or.
+     &      (iplant_comp_type.eq.83).or.
+     &     (iplant_comp_type.eq.113).or.
+     &      (iplant_comp_type.eq.114)) then
+          itank_flag = .true.
+        endif 
+ 12   continue
+
 C If this is a single year simulation, open the climate file. During
 C multi-year simulations, the climate files will be opened inside
 C the simulation loop
       if ( .not. bMY_sim_enabled ) 
      &   call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
+
+C In the case that we have a gshp input file, dhw input file, and/or basesimp 
+C input file, then call routines to determine degree days and ground temperature
+C parameters
+      if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
+     &    bsm_flag.or.itank_flag) then
 
 C Degree Days and Monthly Average Ambient Temperature
 c Call to subroutine that calculates the number of annual heating degree days
@@ -602,7 +642,11 @@ c and the average monthly temperatures based on the climate file chosen.
 c These values are required to calculate the mains water temperature.
 c This calculation is performed once per simulation or once per climate file - in the 
 c case of multi-year simulations.
-c         call CLM_DEG_DAY
+         call CLM_DEG_DAY
+
+C Initialize ground temperature profile parameters
+         call Ground_Temp_Profile
+      endif
 
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
@@ -711,11 +755,20 @@ C Open new file.
 
 C set flag      
           bMY_clm_file_open ( iMY_current_yr_index ) = .true.
-         
+
+C In the case that we have a gshp input file, dhw input file, and/or basesimp 
+C input file, then call routines to determine degree days and ground temperature
+C parameters
+          if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
+     &        bsm_flag.or.itank_flag) then         
 c If a new climate file is opened, then need to recalculate the number 
 c of annual heating degree days and the average monthly temperatures based on 
 c this new climate information.
-c         call CLM_DEG_DAY
+            call CLM_DEG_DAY
+
+C Initialize ground temperature profile parameters
+            call Ground_Temp_Profile
+          endif
 
         endif
 
@@ -1507,7 +1560,6 @@ C The GSHP simulation routine is called only once per day, if a
 C GSHP system is defined.
        if(igshp.eq.1) then
          call GSHPSIM
-
        endif
 
 C Day loop now complete.

@@ -2350,8 +2350,6 @@ C-------------------------------------------------------------------------------
       REAL Rinv,alpha
       REAL q_element
       REAL part1,part2,part3,part4,part5,part6,part7,part8,part9
-C      REAL DHW_draw_present,DHW_draw_future,T_makeup_present,
-C     &     T_makeup_future,mdotCp_DHW_present,mdotCp_DHW_future
 
       REAL  H3K_Connect_property   !- function used to return temperature of most recently
                                    !- calculated temperature (oC)
@@ -2596,8 +2594,6 @@ C
 C    Modification: Check to see if the tank 
 C---------------------------------------------------------------------------------
         CALL FC_DHW_load(T_node1_future)
-C     &                   DHW_draw_present,DHW_draw_future,
-C     &                   T_makeup_present,T_makeup_future)
         mdotCp_DHW_present = DHW_draw_present
      &                     * RHOFLD(3,T_makeup_present)
      &                     * SHTFLD( 3,T_makeup_present )

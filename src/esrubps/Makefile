@@ -54,7 +54,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
-	  solar_collectors.o
+	  solar_collectors.o ground_temp_mains.o
 
 
 
@@ -492,7 +492,7 @@ FC_functions.F:
 	ln -s $(CETCdir)/FC_functions.F .
 water_tanks.F:
 	rm -f water_tanks.F
-	ln -s $(CETCdir)/water_tanks.F .
+	ln -s $(PLTdir)/water_tanks.F .
 h3k_utils.F:
 	rm -f h3k_utils.F
 	ln -s $(CETCdir)/h3k_utils.F .
@@ -525,7 +525,7 @@ SetDllParms.F:
 	ln -s $(CETCdir)/SetDllParms.F .
 AIMS.F:
 	rm -f AIMS.F
-	ln -s $(CETCdir)/AIMS.F .
+	ln -s $(PLTdir)/AIMS.F .
 TAC.F:
 	rm -f TAC.F
 	ln -s $(CETCdir)/TAC.F .
@@ -642,6 +642,9 @@ ADS_controller.F:
 solar_collectors.F:
 	rm -f solar_collectors.F
 	ln -s $(PLTdir)/solar_collectors.F .
+ground_temp_mains.F:
+	rm -f ground_temp_mains.F
+	ln -s $(BLDdir)/ground_temp_mains.F .
 
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
@@ -682,7 +685,8 @@ clean:
 	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
-	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F
+	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
+	ground_temp_mains.F
 
 
 

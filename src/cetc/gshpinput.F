@@ -81,7 +81,7 @@ C Declaration of local variables
        INTEGER ival
        REAL val
 
-c       REAL fGSHPVersionNumber   ! version number of GSHP input file
+       REAL fGSHPVersionNumber   ! version number of GSHP input file
                   
        character gshpfile*72
 
@@ -95,10 +95,8 @@ C functions STRIPC,EGETWI,and EGETWR.
        IUNIT = 99
 
 C Set the version number
-c       fGSHPVersionNumber = 0.
+       fGSHPVersionNumber = 0.
                       
-c       Call GET_NEXT_UNIT (IUNIT,IER)
-
        IF ( IER .eq. 0 ) THEN 
          CALL ERPFREE(IUNIT,ISTAT)
          CALL EFOPSEQ(IUNIT,gshpfile,1,IER)
@@ -123,11 +121,11 @@ C to write an error message.
 
 
 C Versioning Control - Determine the version number of this file.
-c If it is an old file (with no version number), then we will read in the 
-c values of Tmean, Atemp and DAYo (in subroutine GSHP_GLOBAL_READ), 
-c but they won't be used anywhere. For newer versions, these values won't be 
-c read in at all. 
-c This is required for backward file compatability.
+c If it is an old file (with no version number or version number is 0.), 
+c then we will read in the values of Tmean, Atemp and DAYo 
+c (in subroutine GSHP_GLOBAL_READ) 
+c For newer versions (version number > 0), these values won't be read 
+c in at all. This is required for backward file compatability.
 
 c Get first line.
        IF ( IER .eq. 0 ) THEN
@@ -135,29 +133,26 @@ c Get first line.
        ENDIF
 
 C-----Read the file version number, if applicable
-c       IF ( outstr(1:13).eq.'* FileVersion' ) then
-c         call stripc(iunit,outstr,99,nd,0,'file ver',ier)
-c         k = 13
-c         call egetwr(outstr,k,fGSHPVersionNumber,0.01,100.,'F',
-c     &              'version number',IER)
+       IF ( outstr(1:12).eq.'*FileVersion' ) then
+         k = 12
+         call egetwr(outstr,k,fGSHPVersionNumber,0.01,100.,'F',
+     &              'version number',IER)
 c--------if there is a version number present, then we need to skip to the next line
 c--------to read in the next value in the GSHP file, the GSHP system type.
-c         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GSHP_input',IER)
-c       ELSE   
+         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GSHP_input',IER)
+       ELSE   
 c--------if there is no version number, continue with reading in the BASESIMP data
-c         continue    
-c       ENDIF
-       
+         continue    
+       ENDIF
+
 C Read the type of the gshp system igshp_type
        IF ( IER .eq. 0 ) THEN
          K = 0
          CALL MSG_EGETWI(OUTSTR,K,ival,0,4,'F','igshp_type',IUOUT, IER)
          igshp_type = ival
        ENDIF
-
 C call subroutine to read in all the general GSHP input from the .gshp file
-       CALL GSHP_GLOBAL_READ(IUNIT)
-c       CALL GSHP_GLOBAL_READ(IUNIT,fGSHPVersionNumber)
+       CALL GSHP_GLOBAL_READ(IUNIT,fGSHPVersionNumber)
 
 C The data required to simulate the performance of the gshp system depends
 C on the gshp system type. For each type of gshp system, call the appropriate
@@ -700,15 +695,16 @@ C  for the simulation.
 C
 C ****************************************************************************
 
-       SUBROUTINE GSHP_GLOBAL_READ(IUNIT)
-c       SUBROUTINE GSHP_GLOBAL_READ(IUNIT,fGSHPVersionNumber)
+       SUBROUTINE GSHP_GLOBAL_READ(IUNIT,fGSHPVersionNumber)
 
 
 
        IMPLICIT NONE
 C Initiates reading of global variables (common for all)
+#include "building.h"
 #include "hvac_parameters.h"
 #include "gshp_common.h"
+#include "ground_temp_mains_common.h"
 
        COMMON /OUTIN/ IUOUT, IUIN
        common/gshpinfo/igshp
@@ -719,13 +715,15 @@ C Initiates reading of global variables (common for all)
        INTEGER igshp
        INTEGER ival, IUNIT, ISTAT, IER, ND, K, i
        INTEGER IUOUT, IUIN      
-c      REAL fGSHPVersionNumber   ! Version number of GSHP file
+       REAL fGSHPVersionNumber   ! Version number of GSHP file
        
        
 C Define the characters variables associated with the utility 
 C functions STRIPC,EGETWI,and EGETWR.
        character gshpfile*72
        character OUTSTR*124,word*124
+
+       LOGICAL CLOSE,CLOSE2
    
 C Pipe Sizing and Properties
        IF ( IER .eq. 0 ) THEN 
@@ -788,49 +786,65 @@ C Read in the heat exchanger flow rate
           Flow = val
        ENDIF
 
-c***********************************************************************
-c These references to ground temperature have been removed from the gshp
-c input file. The ground temperatures are now calculated from the climate
-c data in /cetc/ground_temp_mains_common.h
-c***********************************************************************       
-
 c------If there is a version number associated with the GSHP input file, then 
-c------the variables Tmean, Atemp and DAYo are not read in, and the subroutine
-c------returns to the calling subroutine.
-C       IF(fGSHPVersionNumber .NE. 0.) RETURN
+c------the variables Tmean and Atemp are not read in. Only the variable DAYo 
+c------will be in this case
+       CALL ECLOSE(fGSHPVersionNumber,0.,0.0001,CLOSE)
+       CALL ECLOSE(fGSHPVersionNumber,1.,0.0001,CLOSE2)
+       IF(CLOSE2) THEN
+         IF ( IER .eq. 0 ) THEN
+           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GSHP_ground',IER)
+         ENDIF
+
+C Read in the time of the minimum surface temperature (DAYo)
+         IF ( IER .eq. 0 ) THEN
+          k = 0
+          CALL MSG_EGETWI(OUTSTR,K,ival,1,365,'F','DAYo',IUOUT,IER)
+          DAYo = ival
+        ENDIF
+
+c Set flag indicating that ground temperature parameters set based on weather
+c file and Moore model
+        gshp_grd_temp_cal_flag = 2
+
+        RETURN
+      ENDIF
 
 c------If there is no version number associated with the GSHP input file, 
-c------then, these values are read in, but are not used in the simulation.
 
-C Read annually-averaged soil temperature.
+c Set flag indicating that ground temperature parameters are based on weather
+c file and Moore model
+      gshp_grd_temp_cal_flag = 1
+  
+c Read annually-averaged soil temperature.
 
-C New record in .gshp file.
-C Local ground properties
-        IF ( IER .eq. 0 ) THEN
-          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GSHP_ground',IER)
-        ENDIF
-c
+c New record in .gshp file.
+c Local ground properties
+      IF ( IER .eq. 0 ) THEN
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'GSHP_ground',IER)
+      ENDIF
+
 c Read in the mean ground temperature (Tmean)
-        IF ( IER .eq. 0 ) THEN
-          K = 0
-          CALL MSG_EGETWR(OUTSTR,K,val,0.,100.,'F','Tmean',IUOUT,IER)
-         Tmean = val
-        ENDIF
-c
-C Read in the surface temperature amplitude(Atemp)
-        IF ( IER .eq. 0 ) THEN
-          CALL MSG_EGETWR(OUTSTR,K,val,0.,100.,'F','Atemp',IUOUT, IER)
-         Atemp = val
-        ENDIF
-c
-C Read in the time of the minimum surface temperature (DAYo)
-        IF ( IER .eq. 0 ) THEN
-          CALL MSG_EGETWI(OUTSTR,K,ival,1,365,'F','DAYo',IUOUT,IER)
-         DAYo = ival 
-        ENDIF
+      IF ( IER .eq. 0 ) THEN
+        K = 0
+        CALL MSG_EGETWR(OUTSTR,K,val,0.,100.,'F','Tmean',IUOUT,IER)
+        Tmean = val
+      ENDIF
 
-       return
-       end
+C Read in the surface temperature amplitude(Atemp)
+      IF ( IER .eq. 0 ) THEN
+        CALL MSG_EGETWR(OUTSTR,K,val,0.,100.,'F','Atemp',IUOUT, IER)
+        Atemp = val
+      ENDIF
+
+C Read in the time of the minimum surface temperature (DAYo)
+      IF ( IER .eq. 0 ) THEN
+        CALL MSG_EGETWI(OUTSTR,K,ival,1,365,'F','DAYo',IUOUT,IER)
+        DAYo = ival 
+      ENDIF
+
+      return
+      end
 
 
 c *********************************************************************
