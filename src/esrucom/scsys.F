@@ -829,7 +829,7 @@ C If 6 items on line also read whether to save only 1stph.
             bMY_sim_sps = .false.
             CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           endif
-          
+
 C Set flag indicating if set describes a multi-year period
           bMY_period_support (iss) = bMY_sim_sps
 
