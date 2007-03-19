@@ -788,19 +788,23 @@ C Remind user of current surface boundary attributes.
               H(5)='be 2degC cooler then use a -2 offset. '
               H(6)=' '
               H(7)='(units are in whole degC and whole W) '
+              H(8)=' '
+              H(9)='Use care when setting a high offset temperatures.'
               VALT=0.0
               VALW=0.0
               CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &          '(see help) ',-99.,'F',99.,'F',0.0,'offset temp',IER,7)
+     &          '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
               CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &          '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,7)
+     &          '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
             elseif(IOS.EQ.3)then
               H(1)='A constant (type 2) connection requires that a '
               H(2)='constant temperature and radiation (W/m^2).'
+              H(3)=' '
+              H(4)='Use care when fixing the temperature above 100C.'
               CALL EASKR(VALT,' ',' Constant temperature? ',
-     &         -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &         -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
               CALL EASKR(VALW,' ',' Constant radiation source (W/m^2)?',
-     &        0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,2)
+     &        0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,4)
             elseif(IOS.EQ.5)then
 
 C List out standard profiles, assuming that if June is 0.0, then the
@@ -2514,12 +2518,14 @@ C Determine the match in the system topology and update it.
           H(5)='be 2degC cooler then use a -2 offset. '
           H(6)=' '
           H(7)='(units are in whole degC and whole W) '
+          H(8)=' '
+          H(9)='Use care when setting a high offset temperature.'
           VALT=0.0
           VALW=0.0
           CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &      '(see help) ',-99.,'F',99.,'F',0.0,'offset temp',IER,7)
+     &      '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
           CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,7)
+     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
           IC2(IC)=INT(VALT)
           IE2(IC)=INT(VALW)
           showother=.false.
@@ -2529,8 +2535,10 @@ C Determine the match in the system topology and update it.
           ICT(IC)=2
           H(1)='A type 2 connection requires that a constant temp-'
           H(2)='erature and radiation (W/m^2) be entered.'
+          H(3)=' '
+          H(4)='Use care when setting a high adjacent temperature.'
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &      -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
           IC2(IC)=INT(VAL)
 
           CALL EASKR(VAL,' ',' Constant radiation source (W/m^2) ? ',
