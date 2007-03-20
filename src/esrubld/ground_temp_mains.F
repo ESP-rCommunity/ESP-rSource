@@ -578,11 +578,9 @@ C==========================================================================
       IMPLICIT NONE
 #include "building.h"           
 #include "ground_temp_mains_common.h"
-
-C Climate file data
-      COMMON/C22/ICLIM,LCLIM
-      character*72 LCLIM     ! climate file associated with model
-      integer iclim          ! the file unit for the climate database
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C ICLIM,LCLIM (for climate file)
 
       INTEGER j     ! hour counter, 1-24
       INTEGER irec, iday_number
@@ -757,7 +755,5 @@ C Write average ambient temperature to the array for the last day of the year
       Temp_Ambient_Avg(IMONTH)= monthly_DB_sum / HRTOT 
        
       return
-      END SUBROUTINE CLM_DEG_DAY
+      END ! of CLM_DEG_DAY
       
-      
-
