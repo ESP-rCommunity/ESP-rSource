@@ -2092,7 +2092,7 @@ C
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
       CHARACTER H*72,LTMP*72,LASCI*72,DFILE*72,lltmp*144,lprev*144
@@ -2101,7 +2101,7 @@ C
       CHARACTER OUTS*124,OUTS248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      character DESCP*40
+      character PDBDESC*40
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2309,21 +2309,21 @@ C a new db, populate it and present editing facility.
 C Create a minimal events databases.
         moddb=.true.
         call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
-        NITEMS = 1
+        NPDBITEMS = 1
         NO(1) = 2
         NCG(1)= 1
-        DESCP(1)='Always ON 100%'
+        PDBDESC(1)='Always ON 100%'
         ICGS1(1)=0
         ICGF1(1)=24
         CGS1(1)=100.0
         CGL1(1)=100.0
         lastrec=4
         IREC = 1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NITEMS
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NPDBITEMS
         IREC=NO(1)
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(1)
         IREC=IREC+1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESCP(1)
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(1)
         IREC=IREC+1
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
      &        ICGS1(1),ICGF1(1),CGS1(1),CGL1(1)
@@ -2672,7 +2672,7 @@ C database contents.
       IF(ier.eq.0)then
         CALL USRMSG(' opened profiles db...',' ','-')
         IREC=1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NPDBITEMS
         CALL USRMSG(' opened profiles db...ok',' ','-')
         CALL ERPFREE(IPRODB,ISTAT)
 

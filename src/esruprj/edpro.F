@@ -44,11 +44,18 @@ C   control information to the configuration control file.
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
+
+C NPDBITEMS (integer) is the number of profiles in the database.
+C lastrec (integer) is the next available record in the database.
+C NCG() (integer) is the number of periods in a profile.
+C NO() (integer) record where profile X starts.
+C PDBDESC() (char*40) description of the profile.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(35)
-      CHARACTER DESC*40,outs*124,KEY*1,H*72,ITEM*38,L144*144,LASCI*72
+      CHARACTER PDBDESC*40,outs*124,KEY*1,H*72,ITEM*42,L144*144
+      character LASCI*72
       character ermsg*48  ! for read error messages
 
       logical asciupdate   ! to signal if user has edited data.
@@ -58,23 +65,23 @@ C L144 is a longer string buffer.
       llt=lnblnk(L144)
 
 C Attempt to open the binary file and if successful scan the header
-C for the number of items and their periods and descriptions to
+C for the number of profiles and their periods and descriptions to
 C include in the menu. If a problem found with the file warn the
 C user and return.
   77  call EFOPRAN(IPRODB,L144,10,1,IER)
       IF(ier.eq.0)THEN
         CALL USRMSG(' opened profiles db',' ','-')
-        ermsg='reading record one number of items '
+        ermsg='reading record one number of profiles '
         IREC=1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
-        DO 58 I=1,NITEMS
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NPDBITEMS
+        DO 58 I=1,NPDBITEMS
           IREC=IREC+1
           NO(I)=IREC
-          ermsg='reading number events in each profile '
+          ermsg='reading number periods in each profile '
           READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(I)
           IREC=IREC+1
           ermsg='reading profile description '
-          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESC(I)
+          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(I)
           IREC=IREC+NCG(I)
    58   CONTINUE
         lastrec=IREC+1
@@ -90,13 +97,13 @@ C user and return.
 C Setup for multi page menu.
       MHEAD=3
       MCTL=5
-      ILEN=NITEMS
+      ILEN=NPDBITEMS
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Menu call back loop start point.
    92 IER=0
-      ILEN=NITEMS
+      ILEN=NPDBITEMS
       INO=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -106,14 +113,14 @@ C current menu line index. Build up text strings for the menu.
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(L,KEY,IER)
-          WRITE(ITEM(M),303)KEY,NCG(L),DESC(L)(1:32)
+          WRITE(ITEM(M),303)KEY,NCG(L),PDBDESC(L)(1:36)
   303     FORMAT(A1,I3,2X,A)
         ENDIF
    10 CONTINUE
 
-      write(ITEM(1),'(A,I3)')'  number of profiles: ',NITEMS
-      ITEM(2)=               '  __________________________________ '
-      ITEM(3)=               '  events| description                '
+      write(ITEM(1),'(A,I3)')' number of profiles: ',NPDBITEMS
+      ITEM(2)=               ' __________________________________ '
+      ITEM(3)=               ' periods| description               '
 
 C Number of actual items displayed.
       MVERT=M+MCTL
@@ -155,22 +162,22 @@ C If a long list include page facility text.
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
 C List contents of database.
-        WRITE(outs,345)NITEMS
+        WRITE(outs,345) NPDBITEMS
   345   FORMAT(' There are ',I4,' profiles in this database')
         call edisp(iuout,outs)
         call edisp(iuout,' their order and description now follow:')
         call edisp(iuout,' ')
         call edisp(iuout,' Profile|events|description')
-        DO 158 I=1,NITEMS
-          WRITE(outs,'(I7,I7,3X,A40)')I,NCG(I),DESC(I)
+        DO 158 I=1,NPDBITEMS
+          WRITE(outs,'(I7,I7,3X,A40)')I,NCG(I),PDBDESC(I)
           call edisp(iuout,outs)
   158   CONTINUE
         call tstamp('>','PRO: list database contents')
       ELSEIF(INO.EQ.(MVERT-3))THEN
 
 C Insert a profile. (lastrec is next available record).
-        NITEMS = NITEMS + 1
-        WRITE(outs,'(a,I4)') ' Profile  ',NITEMS
+        NPDBITEMS = NPDBITEMS + 1
+        WRITE(outs,'(a,I3)') ' Profile  ',NPDBITEMS
         call edisp(iuout,outs)
 
         H(1)='Between 1 and 35 events can be acommodated.'
@@ -178,25 +185,25 @@ C Insert a profile. (lastrec is next available record).
         H(3)='associated values. '
         H(4)=' '
         H(5)='A cancel request leaves the model unchanged.'
-        IV=NCG(NITEMS)
+        IV=NCG(NPDBITEMS)
         CALL EASKI(IV,' ',' Number of events in profile: ',
      &       1,'F',MC,'F',1,'no events',IERI,5)
         if(ieri.eq.-3) then
-          NITEMS = NITEMS - 1
+          NPDBITEMS = NPDBITEMS - 1
           goto 92
         else
 
 C Instanciate the data.
-          NO(NITEMS+1)=lastrec
-          NCG(NITEMS)=IV
-          DESC(NITEMS)='New profile'
+          NO(NPDBITEMS+1)=lastrec
+          NCG(NPDBITEMS)=IV
+          PDBDESC(NPDBITEMS)='New profile'
           IPACT=CREATE
           CALL EKPAGE(IPACT)
           CALL EPMENSV
 
 C Because we are creating a new profile set asciupdate true.
           asciupdate=.true.
-          CALL EDPROF(NITEMS,'N',asciupdate,IER)
+          CALL EDPROF(NPDBITEMS,'N',asciupdate,IER)
           if(asciupdate)then
 
 C If update needed free the binary file, do conversion and
@@ -271,13 +278,13 @@ C a fresh ASCII version file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(30)
       character NFLAG*1
-      CHARACTER DESC*40,KEY*1,TMP*40
+      CHARACTER PDBDESC*40,KEY*1,TMP*40
       character ITEM*33,H*72,cstr*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
@@ -288,14 +295,14 @@ C Initailly set asciupdate toggle to false (no changes made yet).
 
 C If existing - read data for the profile and display.
       if(NFLAG.EQ.'E')then
-        write(ermsg,'(a,i2)') 'reading number events in profile ',ITM
+        write(ermsg,'(a,i3)') 'reading number periods in profile ',ITM
         IREC = NO(ITM)
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  NCG(ITM)
-        write(ermsg,'(a,i2)') 'reading description of profile ',ITM
+        write(ermsg,'(a,i3)') 'reading description of profile ',ITM
         IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  DESC(ITM)
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  PDBDESC(ITM)
         DO 270 I = 1,NCG(ITM)
-          write(ermsg,'(a,i2,a,i2)') 'reading data of profile ',ITM,
+          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',ITM,
      &      ' at period ',i
           IREC = IREC + 1
           READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
@@ -374,8 +381,8 @@ C current menu line index. Build up text strings for the menu.
         ENDIF
    10 CONTINUE
 
-      write(ITEM(1),'(A,A20)') 'a profile: ',DESC(ITM)(1:20)
-      write(ITEM(2),'(A,I3)')'  no. of events: ',NCG(ITM)
+      write(ITEM(1),'(A,A20)') 'a profile: ',PDBDESC(ITM)(1:20)
+      write(ITEM(2),'(A,I3)')'  nb. of periods: ',NCG(ITM)
       ITEM(3)=               '  ______________________________'
       ITEM(4)=               '  event|from-to |sensible|latent'         
 
@@ -402,7 +409,7 @@ C If in graphic mode graph the current profile.
 
 C Display information about the profile.
       if(NFLAG.EQ.'E')then
-        WRITE(outs,5120)  ITM,DESC(ITM)
+        WRITE(outs,5120)  ITM,PDBDESC(ITM)
         call edisp(iuout,outs)
         WRITE(outs,5130)  NCG(ITM)
         call edisp(iuout,outs)
@@ -419,7 +426,7 @@ C Display information about the profile.
 
 C Help text for this menu.
       H(1)='You may alter the start and/or stop times of any '
-      H(2)='event as well as the associated values.  For casual'
+      H(2)='period as well as the associated values. For casual'
       H(3)='gain type profiles the first value is the sensible '
       H(4)='and the second is the latent. '
       H(5)=' '
@@ -444,18 +451,18 @@ C Update the database.
         IREC=NO(ITM)
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(ITM)
         IREC=IREC+1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESC(ITM)
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(ITM)
         DO 232 I=1,NCG(ITM)
         IREC=IREC+1
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
      &          ICGS1(I),ICGF1(I),CGS1(I),CGL1(I)
   232   CONTINUE
 
-C If a new profile update lastrec and the number of items in record 1.
+C If a new profile update lastrec and the number of profiles in record 1.
         if(NFLAG.eq.'N')then
           lastrec = IREC + 1
           IREC = 1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  NITEMS
+          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  NPDBITEMS
         endif
 
 C And signal that a fresh ASCII version needs to be written out.
@@ -463,11 +470,11 @@ C And signal that a fresh ASCII version needs to be written out.
       ELSEIF(INO.EQ.(MVERT-3))THEN
 
 C List current profile.
-        WRITE(outs,5120)  ITM,DESC(ITM)
+        WRITE(outs,5120)  ITM,PDBDESC(ITM)
 5120    FORMAT(' Profile ',I3,5X,A40)
         call edisp(iuout,outs)
         WRITE(outs,5130)  NCG(ITM)
-5130    FORMAT(' Number of distinct events = ',I4)
+5130    FORMAT(' Number of periods = ',I4)
         call edisp(iuout,outs)
         call edisp(iuout,' ')
         call edisp(iuout,
@@ -489,12 +496,12 @@ C If there are enough items allow paging control via EKPAGE.
       elseif(INO.EQ.1)then
 
 C New profile name...
-        TMP=DESC(ITM)
+        TMP=PDBDESC(ITM)
         H(1)='The description (up to 40 char) is provided as a way '
         H(2)='to select a profile.  It helps to make it unique.'
         CALL EASKS(TMP,' Description ? ',
      &    ' ',40,'new profile','profile descr',IER,2)
-        DESC(ITM)=TMP
+        PDBDESC(ITM)=TMP
         CALL USRMSG(' ',' ','-')
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(MVERT-MCTL+1))THEN
 
@@ -516,19 +523,20 @@ C Error messsages.
 C ************* EDEVENT
 C EDEVENT: Edit details of a profile event.
       SUBROUTINE EDEVENT(IPR,IFOC,IER)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       PARAMETER  (MC=35)
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
-      character outs*124,H*72,DESC*40
+      character outs*124,H*72,PDBDESC*40
       logical OK,shiftnext
 
 C Set notification of need to shift next period start to false
       shiftnext=.false.
 
   10  IER=0
-      WRITE(outs,'(A,I4,A,A)') ' Event  - ',IFOC,' in ',DESC(IPR)
+      WRITE(outs,'(A,I4,A,A)') ' Event  - ',IFOC,' in ',PDBDESC(IPR)
       call edisp(iuout,' ')
       call edisp(iuout,outs)
 
@@ -602,9 +610,9 @@ C LPRFDB,IPRODB (for event profile database)
 C espriou.h provides currentfile.
 
       common/pophelp/h(60)
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER DESC*40,OUTSTR*124,LASCI*72,h*72
+      CHARACTER PDBDESC*40,OUTSTR*124,LASCI*72,h*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
       LOGICAL OK,dok
@@ -637,28 +645,28 @@ C Proceed.
       CALL STRIPC(IFA,OUTSTR,0,ND,1,'no items',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETWI(OUTSTR,K,NITEMS,0,0,'-','no items',IER)
+      CALL EGETWI(OUTSTR,K,NPDBITEMS,0,0,'-','no items',IER)
 
-      ermsg='writing record one number of items '
+      ermsg='writing record one nb of profiles '
       IREC = 1
-      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NITEMS
+      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
 C Get number of events and description of profile (EGETRM gets the
 C remainder of the line after the first word (NCG).
-      DO 10 I = 1,NITEMS
-        CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCG,DESC',IER)
+      DO 10 I = 1,NPDBITEMS
+        CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCG,PDBDESC',IER)
         IF(IER.NE.0)RETURN
         K=0
         CALL EGETWI(OUTSTR,K,NCG(I),0,0,'-','NCG',IER)
-        CALL EGETRM(OUTSTR,K,DESC(I),'W','profile descr',IER)
+        CALL EGETRM(OUTSTR,K,PDBDESC(I),'W','profile descr',IER)
 
-        write(ermsg,'(a,i2)') 'writing number events in profile ',I
+        write(ermsg,'(a,i3)') 'writing nb of periods in profile ',I
         IREC = IREC + 1
         NO(I)=IREC
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
-        write(ermsg,'(a,i2)') 'writing description of profile ',I
+        write(ermsg,'(a,i3)') 'writing description of profile ',I
         IREC = IREC + 1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  DESC(I)
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
         DO 20 J = 1,NCG(I)
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'IS,IF,A,B',IER)
@@ -668,16 +676,16 @@ C remainder of the line after the first word (NCG).
           CALL EGETWI(OUTSTR,K,IF,0,0,'-','Finish',IER)
           CALL EGETWR(OUTSTR,K,A,0.,0.,'-','VAL 1',IER)
           CALL EGETWR(OUTSTR,K,B,0.,0.,'-','VAL 2',IER)
-          write(ermsg,'(a,2i3)') 'writing data of profile ',I,J
+          write(ermsg,'(a,2i4)') 'writing data of profile ',I,J
           IREC = IREC + 1
           WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
    20   CONTINUE
    10 CONTINUE
 
-      ermsg='writing record one number of items and last rec '
+      ermsg='writing record one nb of profiles & last rec '
       IR=IREC+1
       IREC = 1
-      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NITEMS,IR
+      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS,IR
 
   99  CALL ERPFREE(IPRODB,ISTAT)
       CALL ERPFREE(IFA,ISTAT)
@@ -697,8 +705,8 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
 #include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
-      CHARACTER DESC*40,OUTSTR*124,LASCI*72
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      CHARACTER PDBDESC*40,OUTSTR*124,LASCI*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
 
@@ -708,10 +716,10 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
       call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
       if(ier.ne.0)return
 
-      ermsg='reading record one number of items '
+      ermsg='reading record one number of profiles '
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NITEMS
-      IF(NITEMS.LE.0)THEN
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
+      IF(NPDBITEMS.LE.0)THEN
         CALL USRMSG(' ',' Events profiles db is empty !','W') 
         RETURN
       ENDIF
@@ -730,28 +738,28 @@ C Write out a file header.
   30  FORMAT('# events profiles db defined in ',A)
 
 C Proceed
-      ermsg='reading record one number of items '
+      ermsg='reading record one number of profiles '
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NITEMS
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
-      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NITEMS
-   21 FORMAT(I5,'    # Number of items')
+      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
+   21 FORMAT(I5,'    # Number of profiles')
 
-      DO 10 I = 1,NITEMS
+      DO 10 I = 1,NPDBITEMS
         write(ermsg,'(a,i2)') 'reading number events in profile ',I
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
         write(ermsg,'(a,i2)') 'reading description of profile ',I
         IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  DESC(I)
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
-        WRITE(IFA,22)NCG(I),DESC(I)
+        WRITE(IFA,22)NCG(I),PDBDESC(I)
    22   FORMAT(I5,3X,A40,'  # No periods & description',/,
      &                   '# start finish data data')
 
 C For each period.
         DO 20 J = 1,NCG(I)
-          write(ermsg,'(a,i2,a,i2)') 'reading data of profile ',I,
+          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
      &      ' at period ',J
           IREC = IREC + 1
           READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
@@ -777,20 +785,21 @@ C For each period.
 C *********** PROGRF
 C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       SUBROUTINE PROGRF(IPRO)
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER DESC*40,ETEXT*72
+      CHARACTER PDBDESC*40,ETEXT*72
 
       DIMENSION VAL1(25),VAL2(25)
 
-      IF(IPRO.LT.1.OR.IPRO.GT.NITEMS)then
+      IF(IPRO.LT.1.OR.IPRO.GT.NPDBITEMS)then
         call usrmsg(' ',' Profile requested not within db','W')
         return
       endif
@@ -810,7 +819,7 @@ C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)
 
 C Print header
-      WRITE(ETEXT,16)IPRO,DESC(IPRO)
+      WRITE(ETEXT,16)IPRO,PDBDESC(IPRO)
    16 FORMAT('Profile ',I3,': ',A40)
       call viewtext(ETEXT,1,0,IFS)
 
