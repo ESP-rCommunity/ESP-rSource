@@ -69,6 +69,10 @@ C IBCGT() - type of gain for each day type and period
       COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
+C idmdver is the version of dispersed demands.
+C idmdver =0 standard, idmdver =1 with header
+      common/b3ver/idmdver
+
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
 
@@ -188,6 +192,10 @@ C default data.
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
         CALL ERBDMD(ITRC,ITRU,IUO,IER)
+      ELSE
+
+C << place for future user choices >>
+        idmdver=1
       ENDIF
 
   20  write(ITEM(1),'(A,A25)')'a notes: ',dmdsdesc(1:25)
@@ -349,6 +357,8 @@ C   Weekday cannot be set by this method.
 C List contents.
         call BDMDINF(iuout,IER)
       ELSEIF(INO.EQ.11)THEN
+
+C Save common block information to file. 
         call edisp(ITRU,' ')
         if(bdmds(1:2).EQ.'  '.or.bdmds(1:7).eq.'UNKNOWN')then
           LTMP=GFILE
@@ -359,13 +369,24 @@ C List contents.
    9    H(1)='A project demands file contains building level info'
         H(2)='on fans, pumps, lifts, DHW casual gains which may '
         H(3)='be applied to an integrated performance view. '
-        CALL EASKS(LTMP,' Demands file name: ',
+        CALL EASKS(LTMP,' Dispersed demands file name: ',
      &    ' ',72,GFILE,'demands file',IER,3)
         IF(LTMP(1:2).NE.'  ')THEN
           bdmds=LTMP
         ELSE
           GOTO 9
         ENDIF
+
+C If older version check with user about upgrade.
+        if(idmdver.eq.0)then
+          dok=.true.
+          h(1)='Older file format does not include a date stamp.'
+          h(2)='If you say ok then a newer format will be used. '
+          CALL askok(
+     &      ' Older format (without date stamp) detected. Do you wish',
+     &      ' to save changes with current format ?',OK,dok,2)
+          if(ok) idmdver=1
+        endif
 
 C Merge current information into a descriptive file
 C and save the system configuration file if not browsing.
@@ -909,6 +930,8 @@ C Maximum number of demands/day       MC=20
 
       SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -926,31 +949,74 @@ C IBCGT() - type of gain (1-7)
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
       common/IPVDMD/idmdinc(7)
+      common/b3ver/idmdver
 
 C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
+C Error subroutine and error details for dll mode.
+      common/dllerr/dllsubr,dllmesg
+
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      character dllsubr*12,dllmesg*124,WORD*20,outs*124
       character calename*32,calentag*12,calendayname*32
+      character dstmp*24
       CHARACTER*6 blodlabel
       integer idt  ! local counter of day type.
+      logical dll
 
       IER=0
+
+C Check if running in dll mode.
+      call isadll(dll)
 
 C Initialise project data file.
       CALL EFOPSEQ(IUO,bdmds,1,IER)
       IF(IER.NE.0)THEN
-        IER=1
-        RETURN
+        write(outs,'(3a)') 'Dispersed demands file ',
+     &    bdmds(1:lnblnk(bdmds)),' could not be opened.'
+        if(dll)then
+          dllsubr='ERBDMD'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          IER=1
+          RETURN
+        endif
       ENDIF
-
+      write(currentfile,'(a)') bdmds(1:lnblnk(bdmds))
+      
 C Read lines from file, discarding comments. To allow for operation
 C names with spaces copy directly from OUTSTR rather than parsing
 C it into words. Use long strip for notes line. 
       CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
       IF(IER.NE.0)RETURN
-      dmdsdesc=LOUTSTR
+
+C Detect header and set a version number.
+      if(loutstr(1:10).eq.'*Dispersed')then
+        if(loutstr(12:14).eq.'1.0')then
+          idmdver=1
+        elseif(loutstr(12:14).eq.'2.0')then
+          idmdver=2
+        endif
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
+        IF(IER.NE.0) goto 1002
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
+        IF(IER.NE.0) goto 1002
+        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+        endif
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
+        dmdsdesc=LOUTSTR
+      else
+        dmdsdesc=LOUTSTR
+        idmdver=0
+      endif
+
 
 C Loop through all of the calendar day types.
       do 30 idt=1,nbdaytype
@@ -982,13 +1048,48 @@ C Set related IPV inclusion index to 1.
      &      IER)
           CALL EGETWR(OUTSTR,K,BCONC(idt,I),0.0,1.,'W','cas conv frac',
      &      IER)
-          IF(IBCGS(idt,I).GT.IBCGF(idt,I))goto 1006
+          if(IBCGS(idt,I).GT.IBCGF(idt,I))then
+
+C If periods are out of sync then return with a warning.
+            write(outs,'(3a)') ' Period start-end mismatch in...',
+     &        OUTSTR(1:50),'...'
+            if(dll)then
+              dllsubr='ERBDMD'
+              dllmesg=outs
+              ier=2
+              CALL ERPFREE(IUO,ISTAT)
+              return
+            else
+              call edisp(iuout,outs)
+              IER=1
+              CALL ERPFREE(IUO,ISTAT)
+              RETURN
+            endif
+          endif
+
           X=BRADC(idt,I)+BCONC(idt,I)
-          IF(X.GT.1.)goto 1015
-          IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
+          if(X.GT.1.02)then
+
+C If radiant plus convective is over unity warn.
+            write(outs,'(3a)') ' Radiant & convec frc>1.02 in...',
+     &        OUTSTR(1:50),'...'
+            if(dll)then
+              dllsubr='ERBDMD'
+              dllmesg=outs
+              ier=2
+              CALL ERPFREE(IUO,ISTAT)
+              return
+            else
+              call edisp(iuout,outs)
+              IER=1
+              CALL ERPFREE(IUO,ISTAT)
+              RETURN
+            endif
+          endif
+          IF(X.LT.0.95.AND.ITRC.GT.1)call edisp(iuout,
      &                            ' Demand rad:con sum < 1.0')
    40   CONTINUE
-        IF(IER.NE.0)RETURN
+        IF(IER.NE.0) goto 1002
    30 continue
 
 C Check to see if demand labels have been added to the end of the file
@@ -1015,36 +1116,39 @@ C Check for areas associated with each demand label.
  1233   CONTINUE
       ENDIF      
 
- 1235 CONTINUE
+ 1235 CONTINUE    ! jump back point if types were not found.
 
-C Deman reporting if requested.
+C Distributed demands reporting if requested.
       if(ITRC.GE.1)call BDMDINF(iuout,IER)
 
 C Now free project data file.
-    7 CALL ERPFREE(IUO,ISTAT)
+      CALL ERPFREE(IUO,ISTAT)
       RETURN
 
 C Error messages.
- 1000 IER=1
-      call edisp(iuout,' Project demands file error.')
-      GOTO 7
-
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup'
+      blodlabel(1)='Occup '
       blodlabel(2)='Lights'
       blodlabel(3)='SmPowr'      
-      blodlabel(4)='Fans'
-      blodlabel(5)='Pumps'
-      blodlabel(6)='Lifts'      
-      blodlabel(7)='DHW'      
+      blodlabel(4)='Fans  '
+      blodlabel(5)='Pumps '
+      blodlabel(6)='Lifts '      
+      blodlabel(7)='DHW   '      
       goto 1235
 
- 1006 call edisp(iuout,' Period start - end mismatch in the line ...')
-      call edisp(iuout,outstr)
-      goto 1000
- 1015 call edisp(iuout,' Radiant & convec fractions > 1.0 in...')
-      call edisp(iuout,outstr)
-      goto 1000
+ 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+      if(dll)then
+        dllsubr='ERBDMD'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUO,ISTAT)
+        return
+      else
+        call edisp(iuout,outs)
+        IER=1
+        CALL ERPFREE(IUO,ISTAT)
+        RETURN
+      endif
 
       END
 
@@ -1064,6 +1168,7 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 
       COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
+      common/b3ver/idmdver
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
@@ -1075,6 +1180,7 @@ C Calendar commons.
       CHARACTER dmdsdesc*248,bdmds*72,OPFIL*72
       character calename*32,calentag*12,calendayname*32
       CHARACTER*6 blodlabel
+      character dstmp*24
 
       IER=0
 
@@ -1086,12 +1192,24 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
-C << consider a version number and date for this file >>
+C Write version number and date for this file if newer.
 C << also consider just putting it in the configuration file >>
-
-      WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
-     &  OPFIL(:lnblnk(OPFIL))
-  31  FORMAT('# project demands defined in: ',/,'# ',a)
+      call dstamp(dstmp)
+      if(idmdver.eq.0)then
+        WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
+     &    OPFIL(:lnblnk(OPFIL))
+  31    FORMAT('# project demands defined in: ',/,'# ',a)
+      elseif(idmdver.eq.1)then
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
+     &    '*Dispersed 1.0  # dispersed demands for model'
+        WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
+     &  '  # latest file modification '
+      elseif(idmdver.eq.2)then
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
+     &    '*Dispersed 2.0 # dispersed demands for model'
+        WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
+     &  '  # latest file modification '
+      endif
 
 C Write documentation.
       WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)dmdsdesc(1:lnblnk(dmdsdesc))
