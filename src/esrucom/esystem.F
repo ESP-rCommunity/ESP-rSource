@@ -830,15 +830,15 @@ C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
           CALL EGETWI(OUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
   442   CONTINUE
-      
+
       elseif(WORD(1:5).eq.'*sndf')then
 
 C Snow depth file (if ground refl. model 3)
         CALL EGETRM(OUTSTR,K,SNFNAM,'W','snow depth file',IER)
-      
+
       elseif(WORD(1:4).eq.'*bcd')then
 
-C Flexible boundry condition data definition      
+C Flexible boundry condition data definition.  
         call EGETRM(OUTSTR,K,cTemp,'W','BC data file', IER)
         cBC_data_file_name = cTemp(1:lnblnk(cTemp))
         bBC_data_defined = .true.
@@ -1699,7 +1699,7 @@ C If a DFD file exists, open it and get the conflation type.
           MSTRZN(icomp)=.true.
           LMOIST(icomp)=text(1:72)
           MSTROK=.TRUE.
-        
+
         elseif(WORD(1:4).eq.'*shz')then
 
 C A SHOCC zone file is included, check and see if it exists
@@ -1714,7 +1714,7 @@ C and if it does so set bZoneSHOCCed(icomp) to true.
      &        SHOCCshzFile(icomp)(1:lnblnk(SHOCCshzFile(icomp))),
      &        ' was referenced but not found.'
           endif
-        
+
         elseif(WORD(1:4).eq.'*bsm')then
 
 C A BASESIMP description is included in the model. Check if it
@@ -1921,7 +1921,7 @@ C Include SHOCC zone file name in the report.
      &          SHOCCshzFile(ICOMP)(1:LNBLNK(SHOCCshzFile(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
-          
+
           IF(iBSIMP(ICOMP).EQ.1)THEN
             WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' BASESIMP inputs : ',
      &          LBSIMP(ICOMP)(1:LNBLNK(LBSIMP(ICOMP)))

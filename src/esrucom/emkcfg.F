@@ -455,8 +455,8 @@ C Multiyear climate database
       if ( bMY_climates_defined ) then 
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*myclm ',
      &    cMY_climate_db_name(1:lnblnk(cMY_climate_db_name))
-      endif 
-     
+      endif
+
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
 

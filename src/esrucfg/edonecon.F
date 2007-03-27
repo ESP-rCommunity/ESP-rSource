@@ -301,12 +301,14 @@ C Editing of items.
           H(5)='be 2degC cooler then use a -2 offset. '
           H(6)=' '
           H(7)='(units are in whole degC and whole W) '
+          H(8)=' '
+          H(9)='Use care when setting a high offset temperature.'
           VALT=0.0
           VALW=0.0
           CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &      '(see help) ',-99.,'F',99.,'F',0.0,'offset temp',IER,7)
+     &      '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
           CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,7)
+     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
           IC2(IFOC)=INT(VALT)
           IE2(IFOC)=INT(VALW)
           if(SO(1:7).ne.'SIMILAR')then
@@ -318,8 +320,10 @@ C Editing of items.
           ICT(IFOC)=2
           H(1)='A type 2 connection requires that a constant '
           H(2)='temperature and radiation (Watts) be entered.'
+          H(3)=' '
+          H(4)='Use care when setting a high adjacent temperature.'
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &      -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
           IC2(IFOC)=INT(VAL)
 
           CALL EASKR(VAL,' ',

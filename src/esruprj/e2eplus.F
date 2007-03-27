@@ -18,13 +18,17 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C ESRU EnergyPlus translator to version 1.2.2.
-C Current version October 2005.
+C ESRU EnergyPlus translator to version 1.2.2 to version 2.0 (for testing).
+C Current version March 2007.
 
 C E2eplus: Inside and outside materials and composition and schedules generation.
 
-C ******* Translate esp data to EnergyPlus file geom and materials.
-      SUBROUTINE e2eplus(itrc,ioout,IER)
+C ******* Translate esp data to EnergyPlus file geom and materials for version 1.4
+      SUBROUTINE e2eplus(itrc,ioout,ver,IER)
+
+C itrc (integer) =0 turns off reporting, =1 brief
+C ioout (integer) is the file unit to write to
+C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -127,8 +131,8 @@ C Note: EnergyPlus holds each glazing layer properties independently
 C       rather than for the whole construction.
 C soltrn is singular layer solar transmittance (normal)
 C solrefl is singular layer solar reflectance (normal)
-C vistrn is singular layer visable trans (normal)
-C visrefl is singular layer visable reflectance (normal)
+C vistrn is singular layer visible trans (normal)
+C visrefl is singular layer visible reflectance (normal)
       dimension iprndx(100),thkiprndx(100),optndx(100),iglassndx(100)
       dimension riair(100),soltrn(100),solrefl(100),vistrn(100)
       dimension visrefl(100),nameiprndx(100)
@@ -141,14 +145,15 @@ C of the material that was created or found for it.
 C To hold coordinates at the corners of surfaces (in case a complex
 C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
-      real loadcasp
+      real loadcasp,ver  ! file version passed to subroutine
+      integer iver    ! file version as integer
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
       character zname*12,zdesc*64,act*1,layname*25
       character T25*25,T25a*25,t12a*12
       character*10 wkday(7)
       character*9 RAMONTH(12)
 
-      logical found,close,close1,foundmlc,closea,closeb,closec
+      logical found,close,close1,foundmlc,closea,closeb,closec,closed
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
       logical loadonday,ok,dok
 
@@ -170,6 +175,17 @@ C Set character variable com to be a single comma and sim to be a
 C simicolon. 
       com=','
       sim=';'
+
+C Check the version number and set iver.
+      iver = 00
+      call eclose(ver,1.2,0.001,closea)
+      call eclose(ver,1.3,0.001,closeb)
+      call eclose(ver,1.4,0.001,closec)
+      call eclose(ver,2.0,0.001,closed)
+      if(closea) iver = 12
+      if(closeb) iver = 13
+      if(closec) iver = 14
+      if(closed) iver = 20
 
 C Open the primitive and mlc db.
       call opendb(ier)
@@ -208,8 +224,19 @@ C Write header of file.
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- ',LSNAM(1:lnblnk(LSNAM))
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- DATE: ',dstmp
       WRITE(ioout,'(a)',iostat=ios,err=2)  ' '
-      WRITE(ioout,'(5a)',iostat=ios,err=2) 'VERSION',com,'1.2.2',sim,
-     &  '   !- Version'
+      if(iver.eq.12)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) 'VERSION',com,'1.2',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.13)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) 'VERSION',com,'1.3',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.14)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) 'VERSION',com,'1.4',sim,
+     &  '   !- Version Identifier'
+      elseif(iver.eq.20)then
+        WRITE(ioout,'(5a)',iostat=ios,err=2) 'VERSION',com,'2.0',sim,
+     &  '   !- Version Identifier (for testing only)'
+      endif
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 'BUILDING',com
       WRITE(ioout,'(4a)',iostat=ios,err=2) '  ',
@@ -243,8 +270,13 @@ C Interpret site position.
         WRITE(ioout,'(3a)',iostat=ios,err=2) '  ',com,
      &    '   !- Terrain (user specified in ESP-r)'
       endif
-      WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.04',com,
-     &  '   !- Loads Convergence Tolerance Value {W}'
+      if(iver.lt.14)then
+        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.04',com,
+     &    '   !- Loads Convergence Tolerance Value {W}'
+      else
+        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.04',com,
+     &    '   !- Loads Convergence Tolerance Value (frac of load)'
+      endif
       WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.4',com,
      &  '   !- Temperature Convergence Tolerance Value {deltaC}'
 
@@ -312,25 +344,28 @@ C << note there is also a zone field to over-ride >>
      &    '   !- [please check equivalent ESP-r HC regime]'
       else
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Detailed',sim,
-     &    '   !- (default)'
+     &    '   !- Algorithm (default)'
       endif
 
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &  'OUTSIDE CONVECTION ALGORITHM',com
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Detailed',sim,
-     &    '   !- (default)'
+     &    '   !- Algorithm (default)'
 
 C Interpret air flow model. If ESP-r has a flow network set to
-C `COMIS` otherwise set to `Simple`.
-      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
-      WRITE(ioout,'(2a)',iostat=ios,err=2) 'AIRFLOW MODEL',com
-      if(IAIRN.ge.1)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','COMIS',sim,
-     &    '   !- (ESP-r includes flow network)'
-      else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Simple',sim,
-     &    '   !- (default)'
+C `COMIS` otherwise set to `Simple`. This is only an applicable
+C option for versions before 1.3.
+      if(iver.lt.13)then
+        WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+        WRITE(ioout,'(2a)',iostat=ios,err=2) 'AIRFLOW MODEL',com
+        if(IAIRN.ge.1)then
+          WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','COMIS',sim,
+     &      '   !- (ESP-r includes flow network)'
+        else
+          WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Simple',sim,
+     &      '   !- (default)'
+        endif
       endif
 
 C Solution - assume no moisture solution.
@@ -516,8 +551,8 @@ C If the construction is transparent then the materials need
 C to be marked as WindowGlass. Curently ESP-r holds optics for
 C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
-C quite correct. Assume that visable reflection is based on
-C visable trans and solar absorb.
+C quite correct. Assume that visible reflection is based on
+C visible trans and solar absorb.
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         if(opt(1:6).eq.'OPAQUE')then
           continue
@@ -680,13 +715,13 @@ C Take up to 12 char from NAM and the remove any blanks via st2name.
      &        '   !- Solar Reflectance at Normal Incidence: Back'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
      &        vistrn(iy),com,
-     &        '   !- Visable Transmittance at Normal Incidence'
+     &        '   !- Visible Transmittance at Normal Incidence'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
      &        visrefl(iy),com,
-     &        '   !- Visable Reflectance at Normal Incidence: Front'
+     &        '   !- Visible Reflectance at Normal Incidence: Front'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
      &        visrefl(iy),com,
-     &        '   !- Visable Reflectance at Normal Incidence: Back'
+     &        '   !- Visible Reflectance at Normal Incidence: Back'
             WRITE(ioout,'(4a)',iostat=ios,err=3) '  ','0.00',com,
      &        '   !- IR Transmittance at Normal Incidence'
             WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',E,com,
@@ -922,6 +957,15 @@ C No schedules for this zone, write out place-holders and continue.
      &      ' has no schedules (place holder NOTHING used) ======= '
           WRITE(ioout,'(a)',iostat=ios,err=7) ' '
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'LIGHTS',com
+
+          if(iver.gt.12)then
+
+C The "Name" field was added after the 1.23 version of EnergyPlus
+C For previous versions comment this field
+            WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+     &        zname(mz)(1:lnblnk(zname(mz))),'Lights',com,
+     &        '   !- Name'
+          endif  
           WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &      zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
           WRITE(ioout,'(6a)',iostat=ios,err=5) '  NOTHING',com,
@@ -938,6 +982,8 @@ C No schedules for this zone, write out place-holders and continue.
      &      '0.0',com,'   !- Fraction Visible'
           WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &      '0.0',com,'   !- Fraction Replaceable'
+
+C << V2.0 has an end-use subcategory here >>
           WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
      &      sim,'   !- LightsEndUseKey'
 
@@ -959,8 +1005,10 @@ C Write out a place-holder small power for the zone.
      &      radsplit,com,'   !- Radiant fraction'
           WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &      '0.0',com,'   !- Fraction lost'
+
+C << V2.0 includes General as the End-Use Subcategory
           WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
-     &      sim,'   !- EndUse Category'
+     &      sim,'   !- EndUse Subcategory'
           goto 13
         ENDIF
 
@@ -968,7 +1016,7 @@ C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(3a)',iostat=ios,err=7) 
      &    '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
-     &    ' schedules follow ======= '
+     &    ' schedules follow ======='
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
      &    '! ',oprdesc(1:lnblnk(oprdesc))
 
@@ -1229,6 +1277,15 @@ C then write the AllOtherDays line as well.
 C Write the light objects for this zone.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'LIGHTS',com
+
+        if(iver.gt.12)then
+
+C The "Name" field was added after the 1.23 version of EnergyPlus
+C For previous versions comment this field
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+     &      zname(mz)(1:lnblnk(zname(mz))),'Lights',com,
+     &      '   !- Name'
+        endif  
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
@@ -1245,7 +1302,7 @@ C Further logic required if there is more than one radiant/convective split.
         WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
      &    radsplit,com,'   !- Radiant fraction'
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &    '0.0',com,'   !- Fraction visable'
+     &    '0.0',com,'   !- Fraction visible'
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &    '0.0',com,'   !- Fraction replacable'
         WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
@@ -1394,6 +1451,15 @@ C the only write a brief note and jump to people.
         endif
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
+
+        if(iver.gt.12)then
+
+C The "Name" field was added after the 1.23 version of EnergyPlus
+C For previous versions comment this field
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+     &      zname(mz)(1:lnblnk(zname(mz))),'EQUIPMENT',com,
+     &      '   !- Name'
+        endif
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
@@ -1622,6 +1688,15 @@ C for one person as oneperson.
 C Now write out the people.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'PEOPLE',com
+
+        if(iver.gt.12)then
+
+C The "Name" field was added after the 1.23 version of EnergyPlus
+C For previous versions comment this field
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+     &      zname(mz)(1:lnblnk(zname(mz))),'People',com,
+     &      '   !- Name'
+        endif
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
      &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
         WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '  ',vpeople,com,
@@ -1637,9 +1712,21 @@ C Further logic required if there is more than one radiant/convective split.
         WRITE(ioout,'(5a)',iostat=ios,err=5) '  ',
      &    'Activity level ',zname(mz)(1:lnblnk(zname(mz))),com,
      &    '   !- Activity level schedule name (W/person)'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,'  !- Group name'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
-     &    '  !- MRT Calculation Type'
+          
+        if(iver.le.12)then
+
+C For old EPlus versions: include line for the Group name
+C (also no name at the start of this category is needed)
+          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+     &      '  !- Group name'
+        endif
+        if(iver.lt.20)then
+          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+     &      '  !- MRT Calculation Type'
+        else
+          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ZoneAveraged',com,
+     &      '  !- MRT Calculation Type'
+        endif
         WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
      &    '  !- Surface Name/Angle Factor List Name'
         WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
@@ -1947,8 +2034,40 @@ C Generate combined zone & generate surface names as identifiers.
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Base Surface Name'
             WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &        '   !- OutsideFaceEnvironment Object'
-            WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
-     &        '   !- View Factor to Ground'
+
+C Also include viewfactor to ground value depending on orientation
+C and site exposure.
+            if(ixpos.ne.8)then
+              if(SSVFC(icc)(1:4).eq.'VERT')then
+                WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
+     &            PROPG(IXPOS),com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
+     &            com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
+     &               SSVFC(icc)(1:4).eq.'UNKN')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
+     &            com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'FLOR')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',
+     &            com,'   !- View Factor to Ground'
+              endif
+            else
+              if(SSVFC(icc)(1:4).eq.'VERT')then
+                WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
+     &           GRDR,com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
+     &            com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
+     &               SSVFC(icc)(1:4).eq.'UNKN')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
+     &            com,'   !- View Factor to Ground'
+              elseif(SSVFC(icc)(1:4).eq.'FLOR')then
+                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',
+     &            com,'   !- View Factor to Ground'
+              endif
+            endif      
             WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &        '   !-   Name of shading control'
             WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
@@ -2007,8 +2126,10 @@ C Other face environment.
      &              com,'   !-  OutsideFaceEnvironment'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &              '   !- OutsideFaceEnvironment Object'
-                  WRITE(ioout,'(6a)',iostat=ios,err=6) '  ',
-     &              'SunExposed',com,'WindExposed',com,'   !- Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+     &              'SunExposed',com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+     &              'WindExposed',com,'   !- Wind Exposure'
                   if(ixpos.ne.8)then
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
@@ -2056,8 +2177,10 @@ C A constant connection still has to be resolved.
                   WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
      &              ZSDES(1:lnblnk(ZSDES)),com,
      &              '   !- OutsideFaceEnvironment Object'
-                  WRITE(ioout,'(6a)',iostat=ios,err=6) '  ','NoSun',
-     &              com,'NoWind',com,'   !- Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoSun',
+     &              com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoWind',
+     &              com,'   !- Wind Exposure'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.4.or.ICT(icc).eq.6)then
@@ -2065,8 +2188,10 @@ C A constant connection still has to be resolved.
      &              com,'   !-  OutsideFaceEnvironment'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &              '   !- OutsideFaceEnvironment Object'
-                  WRITE(ioout,'(6a)',iostat=ios,err=6) '  ','NoSun',
-     &              com,'NoWind',com,'   !- Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoSun',
+     &              com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoWind',
+     &              com,'   !- Wind Exposure'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &              '   !- View Factor to Ground'
                 endif
@@ -2109,6 +2234,9 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
 
 C Vertex information. If there were more than 4 vertices, but
 C not a wall with a hole in it then write them out.
+
+C << move towards no space between coordinates >>
+
           if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
             nvertex=iedgcnt
             WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) '  ',nvertex,
@@ -2209,6 +2337,13 @@ C Reports - report details and dxf for surfaces
       WRITE(ioout,'(8a)',iostat=ios,err=2) '  ','Surfaces',com,
      &  'DXF',com,'Thick Polyline',sim,
      &  '   !- Type, Name and Specifications for reports'
+
+C Include directive for EnergyPlus to dump out additional diagnotics
+C for geometry. 
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+      WRITE(ioout,'(5a)',iostat=ios,err=2) 'DIAGNOSTICS',com,
+     &  'DisplayExtraWarnings',sim,'   !- Extra diagnostics'
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
      
       return
 
