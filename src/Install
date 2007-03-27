@@ -1309,7 +1309,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
-    echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
     echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
     echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -1331,7 +1331,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
-    echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
     echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
     echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -1353,7 +1353,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
-    echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
     echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
     echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -1375,7 +1375,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
-    echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
     echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
     echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -1397,7 +1397,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
-    echo "*evn ${ESPdir}/databases/profiles.db1" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
     echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
     echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
