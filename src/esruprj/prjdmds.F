@@ -79,6 +79,9 @@ C Descriptive label for each project demands type.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Flags noting whether casual gain periods are currently sorted.
+      logical sorted,problem
+
       DIMENSION ITEM(13)
       CHARACTER dmdsdesc*248,tcname*248,bdmds*72
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
@@ -100,6 +103,8 @@ C GFILE is the default file name for project gains file.
         bdmds=GFILE
       endif
 
+C Initially assume periods are not sorted.
+      sorted=.false.
       MODOPR=.FALSE.
 
 C If the model calendar has not yet been setup confirm what to
@@ -192,6 +197,30 @@ C default data.
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
         CALL ERBDMD(ITRC,ITRU,IUO,IER)
+
+C Do cursory check to see if the file is sorted.
+        sorted=.true.
+        problem=.false.
+        call dmdchecksort(1,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Weekday demands might be unsorted or not span whole day.')
+        endif
+        problem=.false.
+        call dmdchecksort(2,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Saturday demands might be unsorted or not span whole day.')
+        endif
+        problem=.false.
+        call dmdchecksort(3,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Sunday demands might be unsorted or not span whole day.')
+        endif
       ELSE
 
 C << place for future user choices >>
@@ -256,6 +285,43 @@ C Help text for this menu.
 30    CALL EMENU('Project demands',ITEM,NITEMS,INO)
 
       IF(INO.EQ.NITEMS)THEN
+
+C If not sorted then warn the user prior to exiting.
+        sorted=.true.
+        problem=.false.
+        call dmdchecksort(1,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Weekday demands might be unsorted or not span whole day.')
+        endif
+        problem=.false.
+        call dmdchecksort(2,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Saturday demands might be unsorted or not span whole day.')
+        endif
+        problem=.false.
+        call dmdchecksort(3,problem,ier)
+        if(problem)then
+          sorted=.false.
+          call edisp(iuout,
+     &      'Sunday demands might be unsorted or not span whole day.')
+        endif
+        if(.NOT.sorted)then
+          dok=.true.
+          h(1)='The dispersed demand periods do not cover the entire'
+          h(2)='day or might have gaps or overlaps. You should correct'
+          h(3)='this prior to leaving this facility. If you say no then'
+          h(4)='the dispersed demands might be mis-interpreted. '
+          CALL askok(
+     &      ' Periods might not cover entire day or have gaps. Do you',
+     &      ' want to edit the periods at this time?',OK,dok,4)
+          IF(OK) goto 20
+        endif
+
+C If the file changed then warn the user about lost data.
         if(MODOPR)then
           if(browse)return
           dok=.true.
@@ -1303,3 +1369,199 @@ C Calendar commons.
 
       RETURN
       END
+
+C ************* dmdcheckcascount
+C checkcascount scans current P3 & P3TYPE commons and refreshes 
+C dmdloadcount() & dmdload24() in common blocks dmdloadcnt & dmdloadall
+C Parameters:
+C   ier - set to 1 if there was a problem
+      subroutine dmdcheckcascount(ier)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Support for up to 10 calendar day types
+C NBCAS() number of gains on each day type.
+C IBCGS(),IBCGF() - start and finish hours of each demand
+C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
+C BRADC(),BCONC(), - radiant and convective portions of each demand
+C IBCGT() - type of gain for each day type and period
+      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
+     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
+
+C dmdloadcount(gaintype,daytype) - nb of each gain type (whether
+C   absolute or W/m2).
+C dmdloadm2count(gaintype,daytype) - nb of each m2 gain types.
+C dmdloadmixed(gaintype,daytype) - if zero then nothing, if one
+C   then all non-zero are absolute, if two then all (non-zero) are in
+C   W/m2 or person/m2, if three then non-zero are mixed.
+C Does each gain type on each day:
+C   start at zero dmdload24(gaintype,daytype,1)=.true.
+C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
+
+C How many of each dispersed demands for each gaintype/daytype.
+      integer dmdloadcount,dmdloadm2count,dmdloadmixed
+      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
+     &               dmdloadmixed(7,10)
+
+      common/dmdloadall/dmdload24(7,10,2)
+      logical dmdload24
+
+C Keep track of how many non-zero positive and negative casual
+C gain types - in order to figure out value of loadmixed.
+      integer dmdloadnonzero,dmdloadm2nonzero
+      dimension dmdloadnonzero(7,10),dmdloadm2nonzero(7,10)
+
+      integer ij,ik   ! for counters
+      integer idtype  ! for the type of dispersed demand
+      integer idindex ! for neagtive types of dispersed demand
+
+C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
+      do 40 ij=1,7
+        do 41 ik=1,10
+          dmdloadcount(ij,ik)=0
+          dmdloadm2count(ij,ik)=0
+          dmdloadm2nonzero(ij,ik)=0
+          dmdloadmixed(ij,ik)=0
+          dmdload24(ij,ik,1)=.false.
+          dmdload24(ij,ik,2)=.false.
+ 41     continue
+ 40   continue
+
+C Debug..
+      write(6,*) 'Nb of daytype periods for dispersed demands...'
+
+C Loope through each possible day type (ik) and period (ij).
+      do 42 ik=1,10
+        if(NBCAS(ik).gt.0)then
+          do 43 ij=1,NBCAS(ik)
+            idtype=IBCGT(ik,ij)
+            if(idtype.gt.0.and.idtype.le.7)then
+              dmdloadcount(idtype,ik)=dmdloadcount(idtype,ik)+1
+              if(CBMGS(ik,ij).gt.0.0)then
+                dmdloadnonzero(idtype,ik)=dmdloadnonzero(idtype,ik)+1
+              endif
+              if(IBCGS(ik,ij).eq.0)dmdload24(idtype,ik,1)=.true. 
+              if(IBCGF(ik,ij).eq.24)dmdload24(idtype,ik,2)=.true. 
+
+C Determine if any of the casual gain types were mixed.
+              if(dmdloadnonzero(idtype,ik).eq.0.and.
+     &           dmdloadm2nonzero(idtype,ik).eq.0)then
+                dmdloadmixed(idtype,ik)=0
+              elseif(dmdloadnonzero(idtype,ik).gt.0.and.
+     &               dmdloadm2nonzero(idtype,ik).eq.0)then
+                dmdloadmixed(idtype,ik)=1
+              elseif(dmdloadnonzero(idtype,ik).eq.0.and.
+     &               dmdloadm2nonzero(idtype,ik).gt.0)then
+                dmdloadmixed(idtype,ik)=2
+              elseif(dmdloadnonzero(idtype,ik).ne.
+     &               dmdloadm2nonzero(idtype,ik))then
+                dmdloadmixed(idtype,ik)=3
+              endif
+            elseif(idtype.lt.0)then
+              idindex=iabs(idtype)
+              dmdloadcount(idindex,ik)=dmdloadcount(idindex,ik)+1
+              dmdloadm2count(idindex,ik)=dmdloadm2count(idindex,ik)+1
+              if(CBMGS(ik,ij).gt.0.0)then
+                dmdloadm2nonzero(idindex,ik)=
+     &            dmdloadm2nonzero(idindex,ik)+1
+              endif
+              if(IBCGS(ik,ij).eq.0)dmdload24(idindex,ik,1)=.true. 
+              if(IBCGF(ik,ij).eq.24)dmdload24(idindex,ik,2)=.true. 
+
+C Determine if any of the casual gain types were mixed.
+              if(dmdloadnonzero(idindex,ik).eq.0.and.
+     &           dmdloadm2nonzero(idindex,ik).eq.0)then
+                dmdloadmixed(idindex,ik)=0
+              elseif(dmdloadnonzero(idindex,ik).gt.0.and.
+     &               dmdloadm2nonzero(idindex,ik).eq.0)then
+                dmdloadmixed(idindex,ik)=1
+              elseif(dmdloadnonzero(idindex,ik).eq.0.and.
+     &               dmdloadm2nonzero(idindex,ik).gt.0)then
+                dmdloadmixed(idindex,ik)=2
+              elseif(dmdloadnonzero(idindex,ik).ne.
+     &               dmdloadm2nonzero(idindex,ik))then
+                dmdloadmixed(idindex,ik)=3
+              endif
+            endif
+ 43       continue
+
+C Debug..
+          write(6,*) ik,' loadcount loadm2count loadmixed'
+          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
+     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
+     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
+          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
+     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
+     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
+          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
+     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
+     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
+        endif
+ 42   continue
+      return
+      end
+
+C ******************* dmdchecksort *********************
+C dmdchecksort does a quick check of dispersed demands for sorted state.
+C not extensive, but should catch most issues.
+      subroutine dmdchecksort(idaytype,problem,ier)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Calendar commons.
+      common/calena/calename,calentag(10),calendayname(10)
+
+      common/b3ver/idmdver
+
+C Descriptive label for each project demands type.
+      common/bloadlabel/blodlabel(7)
+
+C How many of each dispersed demands for each gaintype/daytype.
+      integer dmdloadcount,dmdloadm2count,dmdloadmixed
+      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
+     &               dmdloadmixed(7,10)
+
+C Does each gain type on each day:
+C   start at zero dmdload24(gaintype,daytype,1)=.true.
+C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
+      common/dmdloadall/dmdload24(7,10,2)
+      logical dmdload24
+
+C logical problem set to true if daytype might not be sorted.
+      logical problem
+      character outs*124
+      character calename*32,calentag*12,calendayname*32
+      CHARACTER*6 blodlabel
+
+      if(idmdver.eq.0)then
+        call edisp(iuout,'older format dispersed demands file detected')
+        problem = .true.
+        return
+      endif
+
+C Check how many distributed demands there are for each type on each day type.
+      call dmdcheckcascount(ier)
+
+C How many for each type?
+      do 42 igt=1,7
+        n1=dmdloadcount(igt,idaytype)
+
+C See if first period is 0hr or 1hr and last period is 24.
+        if(n1.gt.0.and.(.NOT.dmdload24(igt,idaytype,1)))then
+          write(outs,'(4a)')'Initial ',blodlabel(igt),
+     &      ' period does not start at zero for ',calentag(idaytype)
+          call edisp(iuout,outs)
+          problem = .true.
+        endif
+
+        if(n1.gt.0.and.(.NOT.dmdload24(igt,idaytype,2)))then
+          write(outs,'(4a)') 'Last ',blodlabel(igt),
+     &      ' period not 24 for daytype ',calentag(idaytype)
+          call edisp(iuout,outs)
+          problem = .true.
+        endif
+  42  continue
+      return
+      end
