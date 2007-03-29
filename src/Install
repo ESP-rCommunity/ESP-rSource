@@ -741,18 +741,22 @@ case $xLibs in
        if [ -r $XINSTALLDIR/include/X11/X.h ]; then
          X11INCLUDEDIR=$XINSTALLDIR/include
        else
-         echo " "
-         echo " ERROR:"
-         echo " The X-window libraries were found at $XINSTALLDIR,"
-         echo " but the X11 header files (e.g. X.h) could not be"
-         echo " found at $XINSTALLDIR/include/X11."
-         echo " "
-         echo " This may indicate that you're missing the X11 header"
-         echo " files necessary to compile the X11 version of ESP-r."
-         echo " Check to see if you've installed the X11 development"
-         echo " package (usually called xfree86-devel, xorg-X11-devel,"
-         echo " or libX11-devel.)"
-         exit       
+         if [ -r /usr/include/X11/X.h ]; then
+           X11INCLUDEDIR=/usr/include
+         else
+           echo " "
+           echo " ERROR:"
+           echo " The X-window libraries were found at $XINSTALLDIR,"
+           echo " but the X11 header files (e.g. X.h) could not be"
+           echo " found at $XINSTALLDIR/include/X11."
+           echo " "
+           echo " This may indicate that you're missing the X11 header"
+           echo " files necessary to compile the X11 version of ESP-r."
+           echo " Check to see if you've installed the X11 development"
+           echo " package (usually called xfree86-devel, xorg-X11-devel,"
+           echo " or libX11-devel.)"
+           exit
+         fi       
        fi
      ;;
   noX) XINSTALLDIR="";;
