@@ -530,8 +530,8 @@ C If dll write version, otherwise do standard banner.
         CALL EDISP(IUOUT, cBpsVersion)
       else
         write(outs,'(2a)')
-     &    ' ESP-r Simulator: Version 10.7 of November 2006.',
-     &    ' Copyright 2001-6 Energy'
+     &    ' ESP-r Simulator: Version 10.8 of April 2007.',
+     &    ' Copyright 2001-7 Energy'
         call edisp(IUOUT,outs)
         write(outs,'(2a)')
      &   ' Systems Research Unit, University of',
