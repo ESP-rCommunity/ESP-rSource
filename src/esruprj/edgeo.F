@@ -95,20 +95,20 @@ C the floor area (one) or it was calculated (zero).
       LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
-      DIMENSION SALT(10)
+      DIMENSION SALT(10),trnalt(17),IVLST(MTV)
       CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*36
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48,DESCRC*25
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
-      CHARACTER ITEMS*33,ITEMSS*32,outs*124
+      CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
-      character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16
+      character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
@@ -444,7 +444,8 @@ C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
       CALL ADJVIEW(ITRC,IER)
 
 C Test edge adjacencies and subsurfaces if it is the first time
-C in to the zone or if the geometry has benn modified. 
+C in to the zone or if the geometry has benn modified.
+
 C << test check parent and child by changing act='c' >>
 C << NOTE: parent - child not yet held in geometry file >>
       if(.NOT.browse)then
@@ -1014,27 +1015,28 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                     endif
                     if(updoth)then
                       CALL ESCZONE(ICOMP)
-                    call usrmsg(
+                      call usrmsg(
      &                ' Updating other side construction (remember to',
      &                ' update the other side construction file).','P')
-                    CALL EGOMIN(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
-     &                iuout,IER)
-                    SMLCN(IE2(ioc))=SSMLCN(icoth)
-                    CALL EMKGEO(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),iuout,
-     &                3,IER)
-                    IF(IER.NE.0)CALL USRMSG(
-     &               'Problem updating other surface attribute... ',
-     &               '(could not write the other geometry file).','W')
+                      CALL EGOMIN(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
+     &                  iuout,IER)
+                      SMLCN(IE2(ioc))=SSMLCN(icoth)
+                      CALL EMKGEO(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
+     &                  iuout,3,IER)
+                      IF(IER.NE.0)CALL USRMSG(
+     &                 'Problem updating other surface attribute... ',
+     &                 '(could not write the other geometry file)','W')
 
 C Read current zone back in and then update the configuration file.
-                    CALL ERCZONE(ICOMP)
-                    call usrmsg(
-     &             ' Updating other side construction...done.',' ','-')
-                    updoth=.false.
+                      CALL ERCZONE(ICOMP)
+                      call usrmsg(
+     &                  ' Updating other side construction...done.',
+     &                  ' ','-')
+                      updoth=.false.
+                    endif
                   endif
-                endif
-   7          continue
-            endif
+   7            continue
+              endif
             elseif(IRT.eq.3.and.IX.gt.0)then
 
 C Determine the match in the system topology and update it. 
@@ -1162,133 +1164,326 @@ C editing facility.
       ELSEIF(INO.EQ.ITEMC+12)THEN
 
 C Zone rotations and transforms.
-        H(1)='This set of geometric transforms and rotations are'
-        H(2)='applied to all surfaces in the zone. '
-        CALL EASKABCD(' Adjust location of current zone:',' ',
-     &    'rotate zone','transform X,Y or Z','mirror','continue',IW,2)
-        if(IW.eq.1)then
-          H(1)='The rotation is applied around vertex 1 and positive'
-          H(2)='is anticlockwise. '
+  77    continue
+        write(trnalt(1),'(a)') ' __zone rotation options__ '
+        write(trnalt(2),'(a,3f6.2)') 'a around v1',x(1),y(1),z(1)
+        write(trnalt(3),'(a)') 'b around another vertex    '
+        write(trnalt(4),'(a)') 'c around site origin       '
+        write(trnalt(5),'(a)') 'd around user specified X Y'
+        write(trnalt(6),'(a)') ' __zone transform options__'
+        write(trnalt(7),'(a)') 'e user defined X Y Z       '
+        write(trnalt(8),'(a)') 'f to vertex in this zone   '
+        write(trnalt(9),'(a)') 'g to vertex in another zone'
+        write(trnalt(10),'(a)')' __zone mirror options__   '
+        write(trnalt(11),'(a)')'h Y axis positive direction'
+        write(trnalt(12),'(a)')'i Y axis negative direction'
+        write(trnalt(13),'(a)')'j X axis positive direction'
+        write(trnalt(14),'(a)')'k X axis negative direction'
+        write(trnalt(15),'(a)')' __________________________'
+        write(trnalt(16),'(a)')'? help                     '
+        write(trnalt(17),'(a)')'- exit this menu           '
+
+C Help for rotation/transform/mirror options
+        H(1) ='The current zone geometry can be modified via rotation'
+        H(2) ='transform and mirroring options which apply to all'
+        H(3) ='surfaces in the zone and optionally to obstructions'
+        H(4) ='and mrt sensors associated with the zone.'
+        H(4) =' '
+        H(5) ='Rotation (positive degrees = anticlockwise) options:'
+        H(6) =' * rotation around vertex index 1 of the zone or '
+        H(7) ='   another vertex in the zone (you supply index)'
+        H(8) =' * rotation around the site origin (0.0 0.0 0.0)'
+        H(9) =' * rotation around a user specified X Y coordinate'
+        H(10)=' '
+        H(11)='Use zone transforms to changes all X Y or Z by the'
+        H(12)='same amount. To transform a portion of the zone use'
+        H(13)='surface transforms or vertex editing. Options are:'
+        H(14)=' * user specified transforms for each axis are given'
+        H(15)='   (a zero signals no change)'
+        H(16)=' * if two vertices in the zone define the transform'
+        H(17)='   e.g. move vertex 2 to the position of vertex 5'
+        H(18)=' * the other zone vertex option allows you to transform'
+        H(19)='   the vector defined from vertex X in this zone to'
+        H(20)='   vertex Y in another zone.'
+        H(21)=' '
+        H(22)='The mirror facility flips one axis.  You specify '
+        H(23)='which axis and the point along that axis where the '
+        H(24)='mirror is to occur. A positive Y mirror is shown. '
+        H(25)='A negative mirror is top to bottom. '
+        H(26)= '             +Y'
+        H(27)= '            |  .......'
+        H(28)= '            |  :     :.......'
+        H(29)= '            |  :     /\\     :'
+        H(30)= '            |  :.....||.....:'
+        H(31)='           -|- - - - || - - - - - -mirror line'
+        H(32)='            |  ......||......'
+        H(33)='            |  :     ||     :'
+        H(34)='            |  :     .......:'
+        H(35)='            |  :.....:'
+        H(36)=' -X_________|______________________ +X '
+        H(37)='            |'
+        H(38)='            | -Y    Positive Y mirror'
+        H(39)='  '
+        H(40)='  '
+        H(41)='A positive X mirror is shown. The negative goes from'
+        H(42)='right to left. '
+        H(43)=' '
+        H(44)='             +Y'
+        H(45)='          |            mirror line'
+        H(46)='          |           |'
+        H(47)='          | ......... | ..........'
+        H(48)='          | :     ==========>    :'
+        H(49)='          | :     ..: | :..      :'
+        H(50)='          | :.....:   |   :......:'
+        H(51)=' -X_______|___________|__________ +X '
+        H(52)='          |'
+        H(53)='          | -Y    Positive X mirror'
+        H(54)='                  '
+        H(55)='Please ensure the mirror point is at the edge of or'
+        H(56)='outside of the zone (a mirror point within does not'
+        H(57)='work well.'
+        H(58)='Take care: there is no undo facility.'
+
+        WRITE(HEAD,'(A,I2,A)')' Zone ',zname(ICOMP),' transforms'
+
+C Menu for zone rotations and transforms.
+        CALL EMENU(HEAD,trnalt,17,INOR)
+        if(INOR.EQ.17)then
+          goto 3
+        elseif(INOR.EQ.16)then
+
+C Produce help text for the menu.
+          CALL PHELPD('rotation section',58,'-',0,0,IER)
+          goto 77
+        elseif(INOR.EQ.2.or.INOR.eq.3.or.INOR.eq.4.or.INOR.eq.5)then
+
           VAL=0.
           CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
      &      -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
           if(VAL.LT.-.01.OR.VAL.GT..01)then
-
-C Rotation choices.
-            call tstamp('>','PRJ: do zone rotation')
-            H(1)='The traditional rotation is about vertex 1 of the'
-            H(2)='zone with a positive angle being anticlockwise. '
-            H(3)='You may wish to rotate a zone about the site '
-            H(4)='origin X=0., Y=0. or at a user specified point. '
-            CALL EASKABCD(' Rotation choices :',' ',
-     &        'Vert 1 of zone','Site origin',
-     &        'User specified X & Y','cancel  ?',IRT,4)
-            if(IRT.eq.1)then
-              x1=x(1)
+            if(INOR.eq.2)then
+              x1=x(1)     ! get position of vertex 1.
               y1=y(1)
               CALL ESCROT(VAL,x1,y1)
-            elseif(IRT.EQ.2)THEN
-              x1=0.
+            elseif(INOR.eq.3)then
+              inpick=1
+              call EPKVERT(INPICK,IVLST,'Rotation point vertex ',
+     &          'Select vertex to rotate around...',' ',58,ier)
+              if(inpick.eq.1)then
+                ivc=IVLST(1)
+                x1=x(ivc)     ! get position of this vertex.
+                y1=y(ivc)
+              else
+                goto 77
+              endif
+              CALL ESCROT(VAL,x1,y1)
+            elseif(INOR.eq.4)then
+              x1=0.         ! site origin is X=0. Y=0.
               y1=0.
               CALL ESCROT(VAL,x1,y1)
-            elseif(IRT.EQ.3)THEN
-              H(1)='Point is in the site coordinate system.'
+            elseif(INOR.eq.5)then
               x1=0.
               CALL EASKR(x1,' ',' X point (metres) ? ',
-     &          0.0,'-',0.0,'-',0.0,'x point',IER,1)
+     &          0.0,'-',0.0,'-',0.0,'x point',IER,58)
               y1=0.
               CALL EASKR(y1,' ',' Y point (metres) ? ',
-     &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
+     &          0.0,'-',0.0,'-',0.0,'y point',IER,58)
               CALL ESCROT(VAL,x1,y1)
-              call usrmsg(' ',' ','-')
-            elseif(IRT.EQ.4)THEN
-
-C User asked to cancel so jump back to menu setup code.
-              goto 3
             endif
-            ZBFLG(ICOMP)=0.
-            CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          else
+            goto 77
+          endif
+
+          ZBFLG(ICOMP)=0.
+          CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
 
 C Warn user if there is a flow node associated with this zone that
 C zone rotation may require boundary nodes to be updated.
-            if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
-              call usrmsg(
-     &          'Rotating a zone may require updating of flow network ',
-     &          'connections to wind boundary nodes. Please check!','W')
-            endif
-            call warnmod(ICOMP,'str')
+          if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
+            call usrmsg(
+     &        'Rotating a zone may require updating of flow network ',
+     &        'connections to wind boundary nodes. Please check!','W')
+          endif
+          call warnmod(ICOMP,'str')
 
 C Rotate any MRT sensors associated with this zone.
-            if (IVF(ICOMP).eq.1) then
-              NCUB = 0
-              CALL ERMRT(ITRC,ITRU,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
-              if (NCUB.gt.0) then
-                dok=.true.
-                h(1)='You have rotated the zone. You probably also '
-                h(2)='need to rotate the MRT sensors.'
-                call askok('Apply this rotation to MRT sensors',
-     &                     'associated with this zone? ',OK,dok,2)
-                if (OK) then
+          if (IVF(ICOMP).eq.1) then
+            NCUB = 0
+            call edisp(iuout,' Viewfactors prior to transform.')
+            CALL ERMRT(ITRC,iuout,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
+            if (NCUB.gt.0) then
+              dok=.true.
+              h(1)='You have rotated the zone. You probably also '
+              h(2)='need to rotate the MRT sensors.'
+              call askok('Apply this rotation to MRT sensors',
+     &                   'associated with this zone? ',OK,dok,2)
+              if (OK) then
 
 C Depending on which point of rotation for the zone the
 C rotation point x1 and y1 will have been set above.
-                  PI = 4.0 * ATAN(1.0)
-                  A=-VAL*PI/180.
-                  CA=COS(A)
-                  SA=SIN(A)
-                  do 76 ij=1,NCUB
-                    XXX=XOC(ij)-X1
-                    YYY=YOC(ij)-Y1
-                    XR=XXX*CA+YYY*SA
-                    YR=YYY*CA-XXX*SA
-                    XOC(ij)=XR+X1
-                    YOC(ij)=YR+Y1
-                    CANG(ij)=CANG(ij)+VAL
-  76              continue
-                  CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),
-     &                        NZSUR(ICOMP),IFIL+2,ICOMP,'v',IER)
-                endif
-              endif
-            endif
-
-C Rotate any obstructions associated with this zone.
-            if(iobs(icomp).eq.1)then
-              dok=.true.
-              h(1)='You have already rotated the zone. Probably '
-              h(2)='you will want to rotate associated obstructions.'
-              call askok('Apply this rotation to obstructions',
-     &                   'associated with this zone? ',ok,dok,2)
-              if(ok)then
-                CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,ITRU,IER)
                 PI = 4.0 * ATAN(1.0)
                 A=-VAL*PI/180.
                 CA=COS(A)
                 SA=SIN(A)
-                do 86 ij=1,NB
-                  XXX=XO(ij)-X1
-                  YYY=YO(ij)-Y1
+                do 76 ij=1,NCUB
+                  XXX=XOC(ij)-X1
+                  YYY=YOC(ij)-Y1
                   XR=XXX*CA+YYY*SA
                   YR=YYY*CA-XXX*SA
-                  XO(ij)=XR+X1
-                  YO(ij)=YR+Y1
-                  BANG(ij)=BANG(ij)+VAL
-  86            continue
-                CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
+                  XOC(ij)=XR+X1
+                  YOC(ij)=YR+Y1
+                  CANG(ij)=CANG(ij)+VAL
+  76            continue
+                CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),
+     &                      NZSUR(ICOMP),IFIL+2,ICOMP,'v',IER)
               endif
+            else
+              call edisp(iuout,
+     &          'A transform will not alter the viewfactors between')
+              call edisp(iuout,'surfaces in the zone.')
             endif
           endif
-        elseif(IW.eq.2)then
-          call tstamp('>','PRJ: do zone translation')
-          H(1)='Transform shifts the zone by a given amount in'
-          H(2)='each axis.'
-          hold = ' 0.000  0.000  0.000    '
-  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
-     &      ' 0. 0. 0.','transforms XYZ',IER,2)
-          K=0
-          CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
-          CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
-          CALL EGETWR(HOLD,K,VALZ,-99.,99.,'W','Z tr',IER)
-          if(ier.ne.0)goto 43
+
+C Rotate any obstructions associated with this zone.
+          if(iobs(icomp).eq.1)then
+            dok=.true.
+            h(1)='You have already rotated the zone. Probably '
+            h(2)='you will want to rotate associated obstructions.'
+            call askok('Apply this rotation to obstructions',
+     &                 'associated with this zone? ',ok,dok,2)
+            if(ok)then
+              call edisp(iuout,' Obstruction data prior to transform.')
+              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+              PI = 4.0 * ATAN(1.0)
+              A=-VAL*PI/180.
+              CA=COS(A)
+              SA=SIN(A)
+              do 86 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
+                XR=XXX*CA+YYY*SA
+                YR=YYY*CA-XXX*SA
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
+  86          continue
+              CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
+            endif
+          endif
+
+        elseif(INOR.eq.7.or.INOR.eq.8.or.INOR.eq.9)then
+          if(INOR.eq.7)then
+
+C Ask the user what the transform for each axis should be.
+            call tstamp('>','PRJ: do zone translation')
+            hold = ' 0.000  0.000  0.000    '
+  43        CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
+     &      ' 0. 0. 0.','transforms XYZ',IER,58)
+            K=0
+            CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
+            CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
+            CALL EGETWR(HOLD,K,VALZ,-99.,99.,'W','Z tr',IER)
+            if(ier.ne.0)goto 43
+            DOK=.true.
+            call askok(' Apply this transform?',' ',ok,dok,58)
+            if(.NOT.ok) goto 3
+          elseif(INOR.eq.8)then
+
+C Identify two points that define the vector and find the difference
+C between the two X and two Y and two Z.
+            inpick=2
+            call EPKVERT(INPICK,IVLST,
+     &        'Start and finish vertices in zone (to define vector)',
+     &        'Select start and finish vertex...',' ',58,ier)
+            if(inpick.eq.2)then
+              ivcs=IVLST(1)
+              ivcf=IVLST(2)
+            else
+              goto 77
+            endif
+            x1=x(ivcs)     ! get position of initial vertex.
+            y1=y(ivcs)
+            z1=z(ivcs)
+            x2=x(ivcf)     ! get position of initial vertex.
+            y2=y(ivcf)
+            z2=z(ivcf)
+            VALX=x2-x1
+            VALY=y2-y1
+            VALZ=z2-z1
+            write(msgv,'(a,3F8.4)') 'The transform is ',VALX,VALY,VALZ
+            DOK=.true.
+            call askok(msgv,' Is this ok?',ok,dok,58)
+            if(.NOT.ok) goto 77
+          elseif(INOR.eq.9)then
+
+C As the user for a start vertex in this zone and a final vertex in
+C another zone. This will require saving and loading geometry common
+C blocks.
+            inpick=1
+            call EPKVERT(INPICK,IVLST,'Start point vertex ',
+     &        'Select vertex to start from...',' ',58,ier)
+            if(inpick.eq.1)then
+              ivcs=IVLST(1)
+              x1=x(ivcs)     ! get position of this vertex.
+              y1=y(ivcs)
+              z1=z(ivcs)
+            else
+              goto 77
+            endif
+
+C Select the other zone, if it is a different zone then save any
+C pending changes to the current zone and draw the other zone
+C and temporarily fill the geometry common blocks in order to 
+C present the user with list of vertices to select from in the
+C other zone.
+            CALL EASKGEOF(
+     &        'Select other zone for location to transform to:',
+     &        CFGOK,IZ,'-',IER)
+            if(iz.eq.icomp)goto 3
+            if(iz.eq.0) goto 3
+            call edisp(iuout,
+     &        ' updating current zone before proceeding...')
+            CALL EMKGEO(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            MODIFY=.TRUE.
+            MODBND=.TRUE.
+            CALL INLNST(1)
+            itsnm=0
+            nzg=1
+            nznog(1)=IZ
+            izgfoc=ICOMP
+            CALL ADJVIEW(0,IER)
+            MODIFY=.TRUE.
+            MODBND=.TRUE.
+            CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+            inpick=1
+            call EPKVERT(INPICK,IVLST,'Vertex in other zone',
+     &        'Select vertex in the other zone...',' ',58,ier)
+            if(inpick.eq.1)then
+              ivcf=IVLST(1)
+              x2=x(ivcf)     ! get position of this vertex.
+              y2=y(ivcf)
+              z2=z(ivcf)
+            else
+
+C User aborted so scan the intial zone prior to returning.
+              CALL EGOMIN(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              goto 77
+            endif
+
+C Re-establish the initial zone geometry.
+            CALL EGOMIN(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
+            VALX=x2-x1
+            VALY=y2-y1
+            VALZ=z2-z1
+            write(msgv,'(a,3F8.4)') 'The transform is ',VALX,VALY,VALZ
+            DOK=.true.
+            call askok(msgv,' Is this ok?',ok,dok,58)
+            if(.NOT.ok) goto 77
+          endif
+
+C If user has not canceled then perform the transform.
           DO 62 I=1,NTV
             X(I)=X(I)+VALX
             Y(I)=Y(I)+VALY
@@ -1306,7 +1501,7 @@ C Rotate any obstructions associated with this zone.
 C Transform any MRT sensors associated with this zone.
           if (IVF(ICOMP).eq.1) then
             NCUB = 0
-            CALL ERMRT(ITRC,ITRU,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
+            CALL ERMRT(ITRC,iuout,IFIL+2,LVIEW(ICOMP),ICOMP,IER)
             if (NCUB.gt.0) then
               dok=.true.
               h(1)='You have transformed the zone. You probably also '
@@ -1322,6 +1517,10 @@ C Transform any MRT sensors associated with this zone.
                 CALL EMKMRT(LVIEW(ICOMP),LGEOM(ICOMP),
      &                      NZSUR(ICOMP),IFIL+2,ICOMP,'v',IER)
               endif
+            else
+              call edisp(iuout,
+     &          'A transform will not alter the viewfactors between')
+              call edisp(iuout,'surfaces in the zone.')
             endif
           endif
 
@@ -1333,7 +1532,8 @@ C Transform any obstructions associated with this zone.
             call askok('Apply this transform to obstructions',
      &                 'associated with this zone? ',ok,dok,2)
             if(ok)then
-              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+              call edisp(iuout,' Obstruction data prior to transform.')
+              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,iuout,IER)
               do 63 ij=1,NB
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
@@ -1342,7 +1542,7 @@ C Transform any obstructions associated with this zone.
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
             endif
           endif
-        elseif(IW.eq.3)then
+        elseif(INOR.eq.11.or.INOR.eq.12.or.INOR.eq.13.or.INOR.eq.14)then
 
 C Mirror a zone (cardinal directions only). Ask for NS SN EW WE, then
 C the mirror point on axis, warn user to save first?? Also invert
@@ -1376,17 +1576,15 @@ C each surface.
           H(27)= '          | ......... | ..........'
           H(28)= '          | :     ==========>    :'
           H(29)= '          | :     ..: | :..      :'
-          H(30)='          | :.....:   |   :......:'
-          H(31)=' -X_______|___________|__________ +X '
-          H(32)='          |'
-          H(33)='          | -Y    Positive X mirror'
-          H(34)='                  '
-          H(35)='                  '
+          H(30)= '          | :.....:   |   :......:'
+          H(31)= ' -X_______|___________|__________ +X '
+          H(32)= '          |'
+          H(33)= '          | -Y    Positive X mirror'
+          H(34)= '                  '
+          H(35)= '                  '
           CALL PHELPD('axis mirror',35,'-',0,0,IER)
-          h(1)='consult the previous help display'
-          CALL EASKATOG('Mirror along which axis & direction (+-):',' ',
-     &      'Y (+)','Y (-)','X (+)','X (-)','continue',' ',' ',IWM,1)
-          if(IWM.eq.1.or.IWM.eq.2)then
+
+          if(INOR.eq.11.or.INOR.eq.12)then
 
 C Mirror along Y axis, either positive or negative.
             call tstamp('>','PRJ: do zone mirror')
@@ -1395,16 +1593,22 @@ C Mirror along Y axis, either positive or negative.
             H(3)='object.  For -mirror the point is below it. '
             CALL EASKR(VALM,'Mirror point on the Y axis:',' ',
      &           -50.0,'W',50.0,'W',0.0,'y mirror',IER,3)
-            do 342 iwmv=1,NTV
-              if(IWM.eq.1)then
-                VALY=VALM-Y(iwmv)
-                Y(iwmv)=VALM+VALY
-              elseif(IWM.eq.2)then
-                VALY=Y(iwmv)-VALM
-                Y(iwmv)=VALM-VALY
-              endif
- 342        continue
-          elseif(IWM.eq.3.or.IWM.eq.4)then
+            dok=.true.
+            call askok('Apply the mirror transform?',' ',ok,dok,3)
+            if(ok)then
+              do 342 iwmv=1,NTV
+                if(INOR.eq.11)then
+                  VALY=VALM-Y(iwmv)
+                  Y(iwmv)=VALM+VALY
+                elseif(INOR.eq.12)then
+                  VALY=Y(iwmv)-VALM
+                  Y(iwmv)=VALM-VALY
+                endif
+ 342          continue
+            else
+              goto 77
+            endif
+          elseif(INOR.eq.13.or.INOR.eq.14)then
 
 C Mirror along X axis, either positive or negative.
             call tstamp('>','PRJ: do zone mirror')
@@ -1413,20 +1617,26 @@ C Mirror along X axis, either positive or negative.
             H(3)='the zone.  For -mirror the point is on the left.'
             CALL EASKR(VALM,'Mirror point on the X axis:',' ',
      &           -50.0,'W',50.0,'W',0.0,'y mirror',IER,2)
-            do 343 iwmv=1,NTV
-              if(IWM.eq.3)then
-                VALX=VALM-X(iwmv)
-                X(iwmv)=VALM+VALX
-              elseif(IWM.eq.4)then
-                VALX=X(iwmv)-VALM
-                X(iwmv)=VALM-VALX
-              endif
- 343        continue
-          elseif(IWM.eq.5)then
-            goto 3
+            dok=.true.
+            call askok('Apply the mirror transform?',' ',ok,dok,3)
+            if(ok)then
+              do 343 iwmv=1,NTV
+                if(INOR.eq.13)then
+                  VALX=VALM-X(iwmv)
+                  X(iwmv)=VALM+VALX
+                elseif(INOR.eq.14)then
+                  VALX=X(iwmv)-VALM
+                  X(iwmv)=VALM-VALX
+                endif
+ 343          continue
+            else
+              goto 77
+            endif
           endif
 
 C Now invert the ordering of the surfaces.
+C <<  Note: this can cause problems when exporting the
+C <<  model (e.g. for EnergyPlus) so more work is required).
           do 148, ins=1,NSUR
             do 146, iyy = 1,NVER(ins)
               jvn1(iyy)=JVN(ins,iyy)
@@ -1449,8 +1659,8 @@ C zone mirroring may require boundary nodes to be updated.
      &        'connections to wind boundary nodes. Please check!','W')
           endif
           call warnmod(ICOMP,'str')
-        elseif(IW.eq.4)then
-          goto 3
+        elseif(INOR.eq.1.or.INOR.eq.6.or.INOR.eq.10.or.INOR.eq.15)then
+          goto 77
         endif
         MODIFY=.TRUE.
         MODBND=.TRUE.
@@ -1976,6 +2186,15 @@ C ************* EDSURA
 C Edit zone surface attributes in common block G5 and allow this to be
 C saved to a geometry file ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
+
+C << add in additional menu line for external viewfactors >>
+C << add in additional menu line for external diffuse shading >>
+C << add in additional menu line for external hc correlation >>
+
+C << it would clarify the surface if it was reported which convection >>
+C << correlation is being used for inside face. And should it be >>
+C << possible to alter the inside/outside hc from this interface? >>
+
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -2052,6 +2271,9 @@ C Check perimeter.
       WRITE(ISD(7),'(A,F7.4)') 'd surface indentation (m):',Y0S(IS)
       WRITE(ISD(8),'(A,A12)')  'e construction    : ',SMLCN(IS)     
       WRITE(ISD(9),'(A,A15)')  'f environment  : ',SOTHER(IS)
+
+C << report inside and outside hc regime here >>
+
       ISD(10)        ='  ___ @ other face____________ '
       if(showother)then
         if(IC2(ioc).ne.0.and.IE2(ioc).ne.0)then
@@ -2063,12 +2285,20 @@ C Check perimeter.
         WRITE(ISD(13),'(2A)')  '   location    : ',SSVFC(icoth)
         WRITE(ISD(14),'(2A)')  '   construction: ',SSMLCN(icoth)
         WRITE(ISD(15),'(2A)')  '   environment : ',SSOTHER(icoth)
+
+C << report other faces inside and outside hc regime here >>
+
         ISD(16)=      '  ____________________________ '
         ISD(17)=      '+ add glazing/door/opening     '
         ISD(18)=      '? help                         '
         ISD(19)=      '- exit to zone description     '
         ISDN=19
       else
+
+C << add in additional menu line for external viewfactors >>
+C << add in additional menu line for external diffuse shading >>
+C << add in additional menu line for external hc correlation >>
+
         ISD(10)=      '  ____________________________ '
         ISD(11)=      '+ add glazing/door/opening     '
         ISD(12)=      '? help                         '
