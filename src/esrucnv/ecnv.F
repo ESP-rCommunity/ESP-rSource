@@ -78,12 +78,12 @@ C Where default db list are kept.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      
+
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      
+
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input

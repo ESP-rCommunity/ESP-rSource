@@ -274,6 +274,10 @@ C Define information used in generating IPV.
 C IPV description.
       common/IPVF/lipvdatf
 
+C Format of the IPV report.
+C  = 1 is human readable text, 2 is tab separated, 3 is java
+      common/IPVFORMAT/ipvform,ipvversion
+
 C  ipvtitl = main title of IPV
 C  ipvvers = version text i.e. 'base case'
 C  ipvsynop= up to 248 characters of text.
@@ -529,8 +533,15 @@ C if subroutine was called in initilisation mode.
       WRITE(ITM(2),'(2A)')     'b version : ',ipvvers(1:32)
       WRITE(ITM(3),'(2A)')     'c synopsis: ',ipvsynop(1:32)
       WRITE(ITM(4),'(A,I3)')   'd images  : ',nipvimg
-      WRITE(ITM(5),'(a)') 
-     &  ' ______________________________________________'
+      if(ipvform.eq.0)then
+        WRITE(ITM(5),'(a)')    'e report format >> unspecified'
+      elseif(ipvform.eq.1)then
+        WRITE(ITM(5),'(a)')    'e report format >> readable'
+      elseif(ipvform.eq.2)then
+        WRITE(ITM(5),'(a)')    'e report format >> tab separated'
+      elseif(ipvform.eq.3)then
+        WRITE(ITM(5),'(a)')    'e report format >> java (i2pv)'
+      endif
       WRITE(ITM(6),'(a,i2,a)') '1 performance metrics (',nms,') '
       WRITE(ITM(7),'(a,i2,a)') '2 demand sets (',neds,') '
       WRITE(ITM(8),'(a,i2,a)') '3___simulations (',nipvassmt,
@@ -818,6 +829,12 @@ C Images associated with the IPV.
           INO=-1
           goto 3
         endif
+      elseif(INO.EQ.5)then
+
+C Toggle between reporting formats.
+        ipvform=ipvform+1
+        if(ipvform.gt.3) ipvform = 0
+        goto 3
       elseif(INO.EQ.6)then
 
 C Deal with performance metrics.

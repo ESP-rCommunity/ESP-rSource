@@ -90,7 +90,7 @@ C Daylight coefficient common block data definition:
 
       CHARACTER LCGCIN*72
       character outs*124,OUTSTR*124,cgcdesc*64
-      
+
       dimension DV(MDCFV)
 
       ier=0

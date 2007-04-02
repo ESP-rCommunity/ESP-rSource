@@ -403,11 +403,29 @@ C Export to EnergyPlus IDF file (work in progress)
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.idf'
         CALL EASKS(LFIL,' EnergyPlus IDF file name ? ',
      &    ' ',72,' ','EnergyPlus export file',IER,1)
-        call edisp(iuout,' Performing model conversion.')
-        ioout=2
-        open(ioout,file=lfil,status='UNKNOWN',err=901)
-        call e2eplus(2,ioout,ier)
-        close(ioout)
+
+        ever=1.2
+        h(1)='EnergyPlus IDF files have several versions'
+        h(2)='Version 1.4 is the current. 1.2 1.3 are options.'
+        h(3)='Version 2.0 is for testing purposes only. '
+        h(4)=' '
+        h(5)='The cancel option will skip the creation of the '
+        h(6)='EnergyPlus descriptive file.'
+        evert=ever
+        CALL EASKR(evert,' IDF file version ',
+     &  '(see help) ',1.2,'F',2.0,'F',1.4,'file version',IERI,6)
+        if(ieri.eq.-3)then
+          continue
+        else
+          call edisp(iuout,' Performing model conversion.')
+          itrcc=2
+          ioout=2
+          ever=evert
+          open(ioout,file=lfil,status='UNKNOWN',err=901)
+          call e2eplus(itrcc,ioout,ever,ier)
+          close(ioout)
+        endif
+
       ELSEIF(INO1.EQ.9)THEN
 
 C Export to VRML (2.0) file.
