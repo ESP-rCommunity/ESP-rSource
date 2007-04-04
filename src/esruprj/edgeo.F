@@ -4152,15 +4152,16 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION  SBBOX(3,2)
 
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4,DESCRC*25
-      LOGICAL MODIFY,MODLEN,MODBND,OK,bound,DOK
+      LOGICAL MODIFY,MODLEN,MODBND,OK,bound,DOK,nameok
 
       DIMENSION VERT(36)
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER VERT*34,KEY*1,H*72,DESC*48,SN*12,T14*14
+      CHARACTER VERT*34,KEY*1,H*72,DESC*48,SN*12,T14*14,D14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SNAME1*12,SNAMED*12,msgv*48
       character hold64*64,t248*248
 
 C Initialise zone surface-vertex list menu size variables based on
@@ -4226,7 +4227,7 @@ C If a long list include page facility text.
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' --')
       ENDIF
-      VERT(M+2)  ='+ add / insert / copy surfaces    '
+      VERT(M+2)  ='+ add/insert/copy/extrude_from    '
       VERT(M+3)  ='* delete a surface                '
       VERT(M+4)  ='> transforms                      '
       VERT(M+5)  ='! browse surface-vertex topology  '
@@ -4263,6 +4264,45 @@ C Help text for this menu.
       H(18)='first edge of a surface is vertical. Nothing in esp-r'
       H(19)='warns you of this so get into a consistent habit of '
       H(20)='avoiding vertical first edges in surfaces. '
+      H(21)=' '
+      H(22)='There are several options for adding surfaces to a zone'
+      H(23)=' *made from existing vertices - use this if all of the'
+      H(24)='    vertices already exist within the zone.'
+      H(25)=' '
+      H(26)=' *made from existing vertices (mouse) - the same but you'
+      H(27)='    can select points by clicking on them in the wire-'
+      H(28)='    frame view.'
+      H(29)=' '
+      H(30)=' *inserted into a surface - this option would allow you'
+      H(31)='    to insert a window or a door or a grill into an'
+      H(32)='    existing surface.'
+      H(33)=' '
+      H(34)=' *copy surface(s) in this zone - this option allows you'
+      H(35)='    to replicate an existing surface and transform or'
+      H(36)='    rotate it into a new position. Useful if you have'
+      H(37)='    repeating element(s). Most attributes are preserved.'
+      H(38)=' '
+      H(39)=' *copy surface(s) from another zone - this option allows'
+      H(40)='    you to re-use surfaces defined in another zone such'
+      H(41)='    as a partition. Most surface attributes are preserved'
+      H(42)='    during the copy process. '
+      H(43)=' '
+      H(44)=' *vertical rectangle - allows you to place a rectangle'
+      H(45)='    which is vertical within or at the edge of the zone.'
+      H(46)=' '
+      H(47)=' *horizontal rectangle - allows you to place a rectangle'
+      H(48)='    in a horizontal position within or at the edge of the'
+      H(49)='    zone. E.g. to make a desk add a horizontal rectangle'
+      H(50)='    in the correct location and then copy and invert this'
+      H(51)='    surface to form two back-to-back surfaces (and give'
+      H(52)='    them either adiabetic or a partition connection to'
+      H(53)='    the other.'
+      H(54)=' '
+      H(55)=' *extrude sides and top from a base surface - can take'
+      H(56)='    an initial surface and extrude it to form a closed'
+      H(57)='    set of surfaces taking its shape. A base surface can'
+      H(58)='    be extruded up and a wall initial surface extrudes'
+      H(59)='    sideways.'
 
 C Now display the menu.
       write(head,'(A,A)')'Surface topology of ',zname(ICOMP)
@@ -4277,7 +4317,7 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the vertex menu.
-        CALL PHELPD('vertex section',20,'-',0,0,IER)
+        CALL PHELPD('vertex section',59,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Check vertex topology.
@@ -4520,8 +4560,22 @@ C Add/insert a surface.
         H(26)='warns you of this - so get into a consistent habit of'
         H(27)='avoiding vertical first edges in surfaces! '
         H(28)=' '
-        H(29)='If you are working in a graphics display you can use'
-        H(30)='mouse clicks on the existing vertices.'
+        H(29)='You may take a surface and extrude an enclosure (like'
+        H(30)='the process of creating a zone from a floor plan). With'
+        H(31)='a surface extrusion the shape of the initial surface is'
+        H(32)='repeated as a top to the extrusion Xm along the normal'
+        H(33)='vector and the sides are filled in and given default '
+        H(34)='names. '
+        H(35)=' '
+        H(36)='Hint: the extrusion value (if positive) will extrude'
+        H(37)='in the direction of the outward surface normal and if'
+        H(38)='negative it will extrude in inwards. If the original '
+        H(39)='surface is a floor position use a negative extrusion.'
+        H(40)='If the original surface is an exterior wall a negative'
+        H(41)='extrusion value will extude inwards. '
+        H(42)=' '
+        H(43)='If you are working in a graphics display you can use'
+        H(44)='mouse clicks on the existing vertices.'
 
 C Note if running in GTK or in pure text mode then should not offer
 C the mouse click option.
@@ -4537,8 +4591,9 @@ C the mouse click option.
      &     'd copy surface(s) in this zone',
      &     'e copy surface(s) from another zone ',
      &     'f vertical rectangle (origin&azim)',
-     &     'g horizontal rectangle (origin&rot)',' ',
-     &     ' ',' ',' ',' ',irt,idrt,30)
+     &     'g horizontal rectangle (origin&rot)',
+     &     'h extrude sides/top from base surface',
+     &     ' ',' ',' ',' ',irt,idrt,44)
         elseif(iglib.eq.2.or.iglib.eq.3)then
           call MENUATOL(' ','new surface options',
      &     'a made from existing vertices',
@@ -4547,12 +4602,13 @@ C the mouse click option.
      &     'd copy surface(s) in this zone',
      &     'e copy surface(s) from another zone ',
      &     'f vertical rectangle (origin&azim)',
-     &     'g horizontal rectangle (origin&rot)',' ',
-     &     ' ',' ',' ',' ',irt,idrt,30)
+     &     'g horizontal rectangle (origin&rot)',
+     &     'h extrude sides/top from base surface',
+     &     ' ',' ',' ',' ',irt,idrt,44)
         endif
         call usrmsg(' ',' ','-')
         IF(ilrt.eq.irt)GOTO 92
-        IF(irt.eq.0.or.irt.eq.8)GOTO 92
+        IF(irt.eq.0.or.irt.eq.9)GOTO 92
         LASTS=NSUR
         if(IRT.eq.1)then
           call tstamp('>','PRJ: insert surface via vertex')
@@ -4709,6 +4765,190 @@ C Now rotate around the first coordinate.
               YYW(I)=YR+YY1
   200       continue
           endif
+        elseif(IRT.eq.8)then
+
+C Identify the source surface, find out how many edges it has and
+C whether the zone can hold enough new surfaces.
+          CALL EPMENSV
+          call tstamp('>','PRJ: extrude from initial surface')
+          CALL EASKSUR(ICOMP,IS,'-','Select surface .',
+     &        ' ',IER)
+          CALL EPMENRC
+          IF(IS.EQ.0)RETURN
+          vdis=0.0
+          CALL EASKR(vdis,
+     &      ' Extrusion distance along the normal (metres): ',
+     &      '(distance should be non-zero) :',-9.999,'F',9.999,'W',
+     &      0.0,'d along normal',IER,37)
+
+C Loop once for the top and then again for each new edge.  .
+          icount=0  ! icount keeps track of which surface is being composed
+          iecount=0
+          ibaseedge=NVER(IS)  ! nb of edges in the original surface
+          ibasecount=ibaseedge  ! counter for original edges left to process
+          itopcount = 1 ! counter for top edges to process
+          iwcount=(ibaseedge)+1  ! iwcount is the total number of new surfaces
+          itopsurf=NSUR+1  ! index of the top surface
+
+ 141      icount=icount+1
+          if(icount.eq.1)then
+
+C The top surface has the same number of verticies as the base surface
+C edge-ordered in opposite direction. The new vertices are generated via
+C filling XX YY ZZ arrays with points for surface IS then call to TRANSUR.
+C vdis is the distance along the surface normal (e.g. if the initial
+C surface is the base then vdis should be negative).
+            N = ibaseedge
+            DO 241 J = 1,N
+              XX(J) = X(JVN(IS,J))
+              YY(J) = Y(JVN(IS,J))
+              ZZ(J) = Z(JVN(IS,J))
+  241       CONTINUE
+            CALL TRANSUR(ITRC,ITRU,N,XX,YY,ZZ,vdis,XT,YT,ZT,ZSDES)
+
+C Add the transformed points to the zone (later check for unique).
+            do 242 ix = 1,ibaseedge
+              if(NTV+1.le.MTV)then
+                NTV=NTV+1
+                NZTV(icomp)=NTV
+                X(NTV)=XT(ix)
+                Y(NTV)=YT(ix)
+                Z(NTV)=ZT(ix)
+                XMN=AMIN1(XMN,X(NTV))
+                YMN=AMIN1(YMN,Y(NTV))
+                ZMN=AMIN1(ZMN,Z(NTV))
+                XMX=AMAX1(XMX,X(NTV))
+                YMX=AMAX1(YMX,Y(NTV))
+                ZMX=AMAX1(ZMX,Z(NTV))
+              endif
+  242       continue
+
+C Assign edges for the top surface in reverse order of the original.
+            iecount=NTV
+            do 144 ix = 1,ibaseedge
+              JVN(itopsurf,ix)=iecount
+C Debug.
+C              write(6,*) ' top ',ix,iecount,JVN(itopsurf,ix),
+C     &          X(iecount),Y(iecount),Z(iecount)
+              iecount=iecount-1
+  144       continue
+            NVER(itopsurf)=ibaseedge
+
+C Generate a name for the top.
+            write(SNAMED,'(2a)') 't_',SNAME(ICOMP,IS)(1:10)
+            write(SNAME1,'(2a)') 't_',SNAME(ICOMP,IS)(1:10)
+          else
+
+C Begin with the last edge in the original surface and map that to
+C the transformed points. For the last surface use ibaseedge rather
+C than ibasecount and one rather than itopcount+1.
+            iv1=JVN(is,ibasecount) 
+            if(ibasecount.eq.1)then
+              iv2=JVN(is,ibaseedge)
+            else
+              iv2=JVN(is,ibasecount-1)
+            endif
+            if(itopcount.eq.ibaseedge)then
+              iv3=JVN(itopsurf,1)
+            else
+              iv3=JVN(itopsurf,itopcount+1)
+            endif 
+            iv4=JVN(itopsurf,itopcount) 
+            JVN(NSUR+1,1)=iv1
+            JVN(NSUR+1,2)=iv2
+            JVN(NSUR+1,3)=iv3
+            JVN(NSUR+1,4)=iv4
+            NVER(NSUR+1)=4
+C Debug.
+C            write(6,*) ' iv1 iv2 iv3 iv4 ',iv1,iv2,iv3,iv4
+
+            if(icount.le.9)then
+             write(SNAMED,'(a,i1,a)')'edg_',icount,SNAME(ICOMP,IS)(1:7)
+             write(SNAME1,'(a,i1,a)')'edg_',icount,SNAME(ICOMP,IS)(1:7)
+            else
+             write(SNAMED,'(a,i2,a)')'edg_',icount,SNAME(ICOMP,IS)(1:6)
+             write(SNAME1,'(a,i2,a)')'edg_',icount,SNAME(ICOMP,IS)(1:6)
+            endif
+
+C Update the counters (ibasecount decrements, itopcount increments).
+            ibasecount=ibasecount-1
+            itopcount=itopcount+1
+          endif
+
+C Check that suraface name is unique.
+          call snamdup(SNAME1,icomp,0,nameok)
+          if(.NOT.nameok)then
+
+C Copy to a slightly longer buffer for editing and ensure that
+C the final name uses the allowed character set.
+            write(T14,'(2a)') SNAME1(1:12),'  '
+            write(D14,'(2a)') SNAMED(1:12),'  '
+            CALL EASKS(T14,'Revised surface name',
+     &        '(duplicate found)',14,D14,'surface name',IER,37)
+            if(T14(1:2).NE.'  ')then
+              write(SNAME1,'(a)') T14(1:12)
+            else
+              goto 141
+            endif
+          endif
+
+C Up the surface count and zone surface attributes.
+          ICONT=IZSTOCN(icomp,nsur)+1
+          NSUR=NSUR+1
+          NZSUR(ICOMP)=NZSUR(ICOMP)+1
+          NGL(NSUR)=0
+          SNAME(ICOMP,NSUR)=SNAME1  ! << ? MINGW patch here? >>
+          SMLCN(NSUR)='UNKNOWN'
+          SVFC(NSUR)='UNKN'
+          SOTHER(NSUR)='UNKNOWN'
+          CALL EPMENSV
+          write(msgv,'(2a)') SNAME1(1:lnblnk(SNAME1)),
+     &      ' of the extrusion.'
+          if(icount.eq.1)then
+            CALL EPKMLC(ISEL,'Select one of the constructions for ',
+     &        msgv,IER)
+          else
+            CALL EPKMLC(ISEL,'Select one of the constructions for ',
+     &        msgv,IER)
+          endif
+          CALL EPMENRC
+          IF(ISEL.GT.0)then
+            WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
+            IF(DESC(ISEL)(15:18).EQ.'TRAN')SOTF(NSUR)='TRAN'
+            IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQ'
+          endif
+
+C Add surface to the connection list (icont) assuming an unknown boundary. 
+          if(NCON.LT.MCON)then
+            NCON=NCON+1
+            IX=NCON+1
+
+C Update common blocks G6 & G7
+            call adjcbg6g7('+',ix,icont)
+
+            IC1(ICONT)=ICOMP
+            IE1(ICONT)=NSUR
+            ICT(ICONT)=0
+            IC2(ICONT)=0
+            IE2(ICONT)=0
+            SSNAME(ICONT)=SNAME(ICOMP,NSUR)
+            SSOTF(ICONT)=SOTF(NSUR)
+            SSMLCN(ICONT)=SMLCN(NSUR)
+            SSVFC(ICONT)=SVFC(NSUR)
+            SSOTHER(ICONT)=SOTHER(NSUR)
+            IZSTOCN(icomp,nsur)=icont
+
+C Now update the G7 common block to reflect additional surface.
+            call zgupdate(1,icomp,ier)
+          endif
+
+C If icount is less than iwcount loop back other wise jump to point
+C where geometry and configuration is saved and re-display managed.
+          if(icount.lt.iwcount)then
+            goto 141
+          else
+            goto 77
+          endif
         endif
         if(IRT.eq.6.or.IRT.eq.7)then
 
@@ -4848,11 +5088,15 @@ C Now update the G7 common block to reflect additional surface.
             call zgupdate(1,icomp,ier)
           endif
         endif
-        if(LASTS.ne.NSUR)then
+
+C Record the recent changes and re-display
+ 77     if(LASTS.ne.NSUR)then
           CALL EMKCFG('-',IER)
           CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           call warnmod(ICOMP,'sf+')
         endif
+        MHEAD=4
+        MCTL=8
         ILEN=NSUR
         IPACT=CREATE
         CALL EKPAGE(IPACT)
