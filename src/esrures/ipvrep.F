@@ -167,7 +167,7 @@ C Make up a single quote for IPV
 
 C Read in the existing IPV description.
  42   if(.NOT.autook)then
-        h(1)='This file holds a description of an Integrated '
+        h(1)='This file holds a description of an Integrated'
         h(2)='Performance View of this model, including periods,'
         h(3)='climatic dd information and assiciated zones.'
         ltmp=lipvdatf
@@ -297,23 +297,23 @@ C Interactive commands.
       NITMS=13
 
 C Instanciate h() strings for this menu.
-      h(1) ='This facility is under development.  '
+      h(1) ='This facility is under development.'
       h(2) =' '
-      h(3) ='Produces seasonal and annual integrated performance '
-      h(4) ='views (IPV) of the current model based on data '
+      h(3) ='Produces seasonal and annual integrated performance'
+      h(4) ='views (IPV) of the current model based on data'
       h(5) ='defined in an IPV definition.  To generate a report'
-      h(6) ='for each season, toggle to the required season  '
-      h(7) ='(which matches the current results database) and '
+      h(6) ='for each season, toggle to the required season'
+      h(7) ='(which matches the current results database) and'
       h(8) ='direct report to feedback or a file.  Also set the'
       h(9) ='delimeter depending on the use of the report. Use'
-      h(10)='a comma or tab if exporting. '
+      h(10)='a comma or tab if exporting.'
       h(11)=' '
-      h(12)='Remember to toggle to the relevant season before '
-      h(13)='generating a seasonal report. '
+      h(12)='Remember to toggle to the relevant season before'
+      h(13)='generating a seasonal report.'
       h(14)=' '
-      h(15)='To generate an annual report which includes scaled '
-      h(16)='data and emissions etc., supply the file names for '
-      h(17)='each seasonal report. '
+      h(15)='To generate an annual report which includes scaled'
+      h(16)='data and emissions etc., supply the file names for'
+      h(17)='each seasonal report.'
 
       INO=-2
    4  CALL EMENU('IPV Output',ITEM,NITMS,INO)
@@ -352,7 +352,7 @@ C Toggle averaging.
           h(3)='the simulation was undertaken at a higher frequency.'
           h(4)=' '
           h(5)='Some `agents` which display IPV data are unable to'
-          h(6)='work with high frequency data. '
+          h(6)='work with high frequency data.'
           call askok(' ',
      &      ' Average results over each output interval?',ok,dok,6)
           if(ok)then
@@ -362,12 +362,12 @@ C Toggle averaging.
           endif
         endif
       elseif(INO.eq.NITMS-3)then
-        CALL EASKI(NOUT,' ',' Output time-step increment ? ',
+        CALL EASKI(NOUT,' ',' Output time-step increment ?',
      &   1,'F',60,'F',NTS,'output time-step',IER,17)
       elseif(INO.eq.NITMS-4)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
+        H(1) ='Tabular data can be sent to file with various'
         H(2) ='delimiters: '
         H(3) ='  spaces (format using spaces to lineup columns)'
         H(4) ='  single space between columns'
@@ -2062,7 +2062,7 @@ C << find an iget number for this >>
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
      &        'performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(5a)') '*title',tab,'Integrated demand ',
+            write(outs,'(5a)') '*title',tab,'Integrated demand',
      &        tab,'kWh/m^2'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
@@ -2124,11 +2124,6 @@ C Report for the total building as well
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab (suggesstion by Luis Prazeres to not print total
-C line in the seasonal section).
-            Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
-C            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
-C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
             write(outs,'(3a)') '*End_seasonal_summary',tab,
@@ -2194,7 +2189,7 @@ C << find an iget number for this >>
      &    tdhw,tpv
         call eddisp(itru,outs)
       else
-        write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
         write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2205,10 +2200,10 @@ C << find an iget number for this >>
         call eddisp(itru,outs)
       endif
         
-C Note: units follow tab.
-      Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-      write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-      call eddisp(itru,outs)
+C Note: units follow tab. Luis Prazeres suggests to remove Total line.
+C      Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
+C      write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
+C      call eddisp(itru,outs)
       call edisp(itru,'*end_report')
       call edisp(itru,' ')
 
