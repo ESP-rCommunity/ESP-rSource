@@ -193,6 +193,7 @@ C List database.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
+          write(xfile,'(a)') 'optical_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
           write(outs248,'(2a)') 'In the optical database: ',
      &      LOPTDB(1:lnblnk(LOPTDB))
@@ -204,6 +205,8 @@ C List database.
         SOPT='ALL'
         CALL EROPTDB(1,itu,SOPT,GDESCR,IER)
         if(irpt.eq.2)then
+
+C Toggle the export file closed.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db',IER)
         endif
       ELSEIF(INO.EQ.NITMS-3)THEN

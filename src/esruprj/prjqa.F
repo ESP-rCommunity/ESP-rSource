@@ -261,8 +261,10 @@ C Check if Unix-based or DOS based.
       endif
 
 C Assume file names not included and destination to screen (zero)
+C and itu set so QA report is written to screen.
       fileinfo=0
       destination=0
+      itu = iuout
 
 C Setup the selection menu.
     3 INO=-4

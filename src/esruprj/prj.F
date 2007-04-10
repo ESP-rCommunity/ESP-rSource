@@ -3461,18 +3461,36 @@ C in lib/esp_draw.c
 C CTLEXP ***********
 C CTLEXP: Control feedback to export wireframe or text feedback area.
 C Assign user-specified export file - checking if local or remote.
-C tg is a character T or G specifying text or graphic 
-C info being saved.
+C tg is a character T, X, or G specifying text, tabular or graphic 
+C   info being saved.
+C xfile (width variable) is the initial name of the file to be exported
+C msg (width variable) is prepended to dialog as export happens
+C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
+C ixunit is the file unit number for the export file.
+C ixloc signals whether path will is local or remote and is passed back
+C   to common block for retention until the second call to ctlexp
       subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/rpath/path
 
+C << need to find equivalent to autook common block variable >>
+C << outs probably needs to be longer if xfile is longer >>
       character*(*) msg,xfile
       character H*72,path*72,outs*124,tg*1,tfile*72
+      character ixpfile*72
       character longtfile*144,longtfiledos*144
-      logical concat,unixok
+      logical concat,remote,unixok
+      integer lenxfile
+
+C Initial name for export parameter file is xfile+par.
+      lenxfile=lnblnk(xfile)
+      if(xfile(1:1).ne.' '.and.lenxfile.gt.2)then
+        write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
+      else
+        ixpfile = 'data.grt.par'
+      endif
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -3483,8 +3501,10 @@ C file. For the graphics ask if file should be further converted.
       if(ixopen.GT.1)ixopen=0
       if(ixopen.eq.0)then
         write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
-        if(tg.eq.'T')then
+        call edisp(iuout,outs)
+        if(tg.eq.'X')then
+          CALL ERPFREE(ixunit,ISTAT)
+        elseif(tg.eq.'T')then
           CALL ERPFREE(ixunit,ISTAT)
         elseif(tg.eq.'G')then
           if(ixloc.eq.1)then
@@ -3508,7 +3528,16 @@ C and change any / to \.
         endif
       elseif(ixopen.eq.1)then
         ixloc=0
-        if(path.ne.'./'.and.path.ne.' ')then
+        remote=.false.
+        call isunix(unixok)
+        if(unixok)then
+          if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')remote=.true.
+        else
+          if(path(1:2).ne.'  ')remote=.true.
+          if(ichar(path(1:1)).eq.46.and.
+     &       ichar(path(2:2)).eq.92)remote=.false.
+        endif
+        if(remote)then
            write(outs,'(A,A)') ' The current path is: ',path
            call edisp(iuout,outs)
          h(1)='If using path then the export file will be placed in'
@@ -3521,6 +3550,8 @@ C and change any / to \.
            CALL EASKABC(outs,' place export file:',
      &       'in the model folder','user defined folder','continue',
      &       ixloc,6)
+        else
+          ixloc = 2   ! ixloc needs to be non-zero for subsequent code to work.
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '
@@ -3529,9 +3560,12 @@ C and change any / to \.
 
         write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                       ' for export.'
-        call usrmsg(outs,' ','p')
+        call edisp(iuout,outs)
         if(ixloc.eq.1)then
-          if(tg.eq.'T')then
+          if(tg.eq.'X')then
+            call efopseq(ixunit,xfile,4,IER)
+            if(ier.ne.0)return
+          elseif(tg.eq.'T')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
           elseif(tg.eq.'G')then
@@ -3556,13 +3590,17 @@ C and change any / to \.
             call wwcsetstart
           endif
         elseif(ixloc.eq.2)then
-          if(tg.eq.'T')then
+          if(tg.eq.'X')then
+            CALL ERPFREE(ixunit,ISTAT)
+            call FPOPEN(ixunit,ISTAT,1,3,xfile)
+            if(ISTAT.lt.0)return
+          elseif(tg.eq.'T')then
             CALL ERPFREE(ixunit,ISTAT)
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
             if(ISTAT.lt.0)return
           elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
             call wwcsetstart
           endif
         elseif(ixloc.eq.3)then
@@ -3570,7 +3608,7 @@ C and change any / to \.
         endif
         write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &    ' >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','p')
+        call edisp(iuout,outs)
       endif
       RETURN
       END

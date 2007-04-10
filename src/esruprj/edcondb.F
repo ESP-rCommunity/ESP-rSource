@@ -111,7 +111,7 @@ C List one or more classifications.
         INPIC=NCLASS
         h(1)='You may select one or more classes to list. '
         CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
-     &        36,NCLASS,CLSSEL,'Primative classes',IER,1)
+     &        36,NCLASS,CLSSEL,'Material classes',IER,1)
         IF(INPIC.EQ.0)GOTO 40
         h(1)=' Summary reporting can be shown in the text feedback'
         h(2)=' or a text file.'
@@ -121,6 +121,7 @@ C List one or more classifications.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
+          write(xfile,'(a)') 'material_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
         elseif(irpt.eq.3)then
           goto 40
@@ -158,6 +159,8 @@ C List one or more classifications.
         call edisp(itu,' Units: Conduct W/(m deg.C), Density kg/m**3')
         call edisp(itu,'        Specific Heat J/(kg deg.C) ')
         if(irpt.eq.2)then
+
+C Call ctlexp a 2nd time to close the file.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
         endif
       ELSEIF(ICO.EQ.(NCO-3))THEN
@@ -725,6 +728,7 @@ C List database.
           itu = iuout
         elseif(irpt.eq.2.or.irpt.eq.3)then
           itu = ixunit
+          write(xfile,'(a)') 'construction_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','MLC db text',IER)
         endif
         call edisp(itu,'In the MLC database: ')
@@ -744,6 +748,8 @@ C List database.
         call edisp(itu,
      &  '                  and Rsi = 0.123m**2deg.C/W')
         if(irpt.eq.2)then
+
+C Call ctlexp a 2nd time to close the file.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
         endif
       ELSEIF(INO.EQ.NITMS-4)THEN
