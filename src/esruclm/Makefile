@@ -8,8 +8,8 @@ PROG = clm$(EXE)
 
 OBJECTS = clm.o c2fdum.o cfiles.o cfrqdis.o chead.o clmgrf.o clmint.o \
           clmpsychart.o clmmmm.o clmper.o clmseq.o clmsyn.o \
-	  clmxmn.o clpred.o dossupport.o psychro.o rcdblist.o rrite.o \
-	  startup.o
+	  clmxmn.o clpred.o ctlexp.o dossupport.o psychro.o rcdblist.o \
+	  rrite.o startup.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -17,6 +17,9 @@ $(PROG): $(OBJECTS)
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
+ctlexp.F:
+	rm -f ctlexp.F
+	ln -s $(COMdir)/ctlexp.F .
 dossupport.F:
 	rm -f dossupport.F
 	ln -s $(COMdir)/dossupport.F .
@@ -35,4 +38,4 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	c2fdum.F dossupport.F psychro.F rcdblist.F startup.F 
+	c2fdum.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F 

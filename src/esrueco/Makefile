@@ -8,8 +8,8 @@ PROG= eco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = eco.o arrow.o c2fdum.o common3dv.o cread3dv.o dossupport.o e3dviews.o \
-	  ecocalc.o ecoesp.o readBCF.o econstr.o edatabase.o edcondb.o \
+OBJECTS = eco.o arrow.o c2fdum.o common3dv.o cread3dv.o ctlexp.o dossupport.o \
+	  e3dviews.o ecocalc.o ecoesp.o readBCF.o econstr.o edatabase.o edcondb.o \
 	  egeometry.o eroper.o esru_misc.o plelev.o startup.o sort.o scsys.o
 
 $(PROG): $(OBJECTS)
@@ -27,6 +27,9 @@ common3dv.F:
 cread3dv.F:
 	rm -f cread3dv.F
 	ln -s $(COMdir)/cread3dv.F .
+ctlexp.F:
+	rm -f ctlexp.F
+	ln -s $(COMdir)/ctlexp.F .
 dossupport.F:
 	rm -f dossupport.F
 	ln -s $(COMdir)/dossupport.F .
@@ -72,7 +75,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F blcond.F c2fdum.F common3dv.F cread3dv.F dossupport.F e3dviews.F \
-        ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
-	emkcfg.F eroper.F esru_misc.F inside.F plelev.F \
+	arrow.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
+        e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F \
+	egtgeom.F emkcfg.F eroper.F esru_misc.F inside.F plelev.F \
 	scsys.F sort.F startup.F 
