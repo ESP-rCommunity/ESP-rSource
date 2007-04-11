@@ -2213,7 +2213,7 @@ C Write out Units and Sources.
       endif
       if(nbsrc(idbh).gt.0.and.itrc.gt.1)then
         do 5 inbsrc=1,nbsrc(idbh)
-          write(outs,'(2a)')'Source:',tab,srcchr(inbsrc)(1:1)
+          write(outs,'(3a)')'Source:',tab,srcchr(inbsrc)(1:1)
           call edisp(itu,outs)
           call edisp248(itu,srcnote(inbsrc),80)
   5     continue

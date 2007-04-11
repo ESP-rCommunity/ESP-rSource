@@ -1499,7 +1499,11 @@ C CTLEXP ***********
 C CTLEXP: Control feedback to export file or text feedback area.
 C Assign user-specified export file - checking if local or remote.
 C tg is a character T, X, or G specifying text, tabular or graphic 
-C info being saved.
+C   info being saved.
+C xfile (width variable) is the initial name of the file to be exported
+C msg (width variable) is prepended to dialog as export happens
+C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
+C ixunit is the file unit number for the export file.
       subroutine ctlexp(xfile,ixopen,ixunit,ixpunit,tg,msg,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1508,6 +1512,8 @@ C info being saved.
       common/rpath/path
 
 C Simulator parameters.
+C autook if .true. then assume that the user does not need to confirm
+C   the file name.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg,xfile
@@ -1594,7 +1600,7 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to c graphic calls. Check if Unix-based or DOS based.
             call isunix(unixok)
-            tfile=xfile
+            tfile=xfile   ! << this needs to change if xfile not 72 char >>
             longtfile=' '
             if(unixok)then
               call addpath(tfile,longtfile,concat)

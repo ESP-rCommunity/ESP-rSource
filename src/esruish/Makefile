@@ -7,7 +7,7 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ish.o arrow.o c2fdum.o common3dv.o comput.o cread3dv.o e3dviews.o \
+OBJECTS = ish.o arrow.o c2fdum.o common3dv.o comput.o cread3dv.o dossupport.o e3dviews.o \
 	  edatabase.o egeometry.o eroper.o esru_misc.o files.o graph.o inscom.o \
 	  miscel.o plelev.o scsys.o shdcon.o silist.o sort.o startup.o \
 	  synop.o tfiles.o trnsf.o trnsfi.o winshd.o wshad.o
@@ -27,6 +27,9 @@ common3dv.F:
 cread3dv.F:
 	rm -f cread3dv.F
 	ln -s $(COMdir)/cread3dv.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
@@ -60,5 +63,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F common3dv.F cread3dv.F e3dviews.F edatabase.F egeometry.F esru_misc.F \
+	arrow.F c2fdum.F common3dv.F cread3dv.F dossupport.F e3dviews.F edatabase.F egeometry.F esru_misc.F \
 	eroper.F plelev.F scsys.F sort.F startup.F 

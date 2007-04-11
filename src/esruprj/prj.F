@@ -3478,8 +3478,7 @@ C   to common block for retention until the second call to ctlexp
 C << need to find equivalent to autook common block variable >>
 C << outs probably needs to be longer if xfile is longer >>
       character*(*) msg,xfile
-      character H*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72
+      character H*72,path*72,outs*124,tg*1,ixpfile*72
       character longtfile*144,longtfiledos*144
       logical concat,remote,unixok
       integer lenxfile

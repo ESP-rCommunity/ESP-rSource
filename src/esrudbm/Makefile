@@ -8,7 +8,7 @@ PROG = dbm$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = jdbm.o bcffile.o c2fdum.o ctread.o dbmedit.o edprof.o egeometry.o \
+OBJECTS = jdbm.o bcffile.o c2fdum.o ctread.o dbmedit.o dossupport.o edprof.o egeometry.o \
 	emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o gendbb.o \
 	hyged.o implegadb.o item.o mfcdat.o mlced.o nwkrewr.o pltcfg.o prsitem.o \
 	sort.o startupg.o tdfile.o
@@ -22,6 +22,9 @@ c2fdum.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F
@@ -63,5 +66,5 @@ install :
 	strip $(PROG);cp $(PROG) $(ESPbin)
 
 clean :
-	rm -f core $(PROG) $(OBJECTS) c2fdum.F ctread.F edatabase.F egeometry.F emfnetw.F \
+	rm -f core $(PROG) $(OBJECTS) c2fdum.F ctread.F dossupport.F edatabase.F egeometry.F emfnetw.F \
 	emkcfgg.F eroper.F esru_misc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F tdfile.F

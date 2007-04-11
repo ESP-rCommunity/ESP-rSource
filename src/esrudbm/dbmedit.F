@@ -552,6 +552,12 @@ C List one or more categories.
             delim = 'C'
           endif
           itu = ixunit
+          lnfile=lnblnk(gendbfn(idbh))
+          if(lnfile.lt.60)then
+            write(xfile,'(2a)') gendbfn(idbh)(1:lnfile),'.report'
+          else
+            write(xfile,'(2a)') gendbfn(idbh)(1:60),'.report'
+          endif
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','db text',IER)
         elseif(irpt.eq.3)then
           goto 40
