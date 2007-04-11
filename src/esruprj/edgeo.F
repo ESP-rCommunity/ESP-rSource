@@ -4359,8 +4359,8 @@ C Shift along normal and copy transformed points back to XX,YY,ZZ array.
           H(1)='Distance along the normal (+=out) in metres.'
           vdis=0.0
           CALL EASKR(vdis,' Distance along the normal (metres): ',
-     &      '(0.0 = none) :',-9.999,'F',9.999,'W',0.0,'d along normal',
-     &      IER,1)
+     &      '(0.0 = none) :',-99.999,'F',99.999,'W',0.0,
+     &      'd along normal',IER,1)
           CALL TRANSUR(ITRC,ITRU,N,XX,YY,ZZ,vdis,XT,YT,ZT,ZSDES)
           do 151 nt1=1,N
             XX(nt1)=XT(nt1)
@@ -4778,8 +4778,8 @@ C whether the zone can hold enough new surfaces.
           vdis=0.0
           CALL EASKR(vdis,
      &      ' Extrusion distance along the normal (metres): ',
-     &      '(distance should be non-zero) :',-9.999,'F',9.999,'W',
-     &      0.0,'d along normal',IER,37)
+     &      '(should be non-zero and is typically negative)',
+     &      -99.999,'F',99.999,'W',-2.0,'d along normal',IER,37)
 
 C Loop once for the top and then again for each new edge.  .
           icount=0  ! icount keeps track of which surface is being composed
