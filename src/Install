@@ -15,6 +15,7 @@
 # Linux   Gentoo / NRCan:c.monster  aferguso     578   gcc3.4.6    P     P     P     P
 #                                                      gcc4.1.1    P     P     P     P
 #                                                      gcc32       P     P     P     P
+#         Mandrake 10.0             jhand        578   gcc3.4      P     P     -     P
 #         -----------------------------------------------------------------------------
 #         Fedora Core 5             A.Horsford   489   gcc32       P     -     -     -
 #                                                480   gcc4.1.0    X     -     -     -
@@ -26,8 +27,10 @@
 # MINGW   NT5.1                     aferguso     578   gcc3.4.2    -     P     P     -
 # -------------------------------------------------------------------------------------
 # Solaris SunOS 4 / NRCan:nrn7      aferguso     578   sunCC       X (b) -     P     -
+# Solaris SunOS 5.10                jhand        578   sunCC       P     -     -     -
+# Solaris SunOS 5.10                jhand        578   gcc3.4      P     P     -     -
 # -------------------------------------------------------------------------------------
-# Mac OSX 
+# Mac OSX 10.4                      jhand        578   gcc3.3      P     P     -     -
 # =====================================================================================
 # Notes:
 #  P  : pass - all ESP-r binaries compiled successfully, ancillary files installed
@@ -201,6 +204,8 @@ if [ $help -eq 1 ]; then
   echo "        compiler binaries. For instance, to invoke the compiler"
   echo "        binaries gcc-3.4.6, g++-3.4.6, and g77-3.4.6, specify "
   echo "        '--compiler_version -3.4.6'."
+  echo "        compilation on Apple PPC machines should typically use"
+  echo "        '--compiler_version -3.3'."
   echo " "
   echo "    -d <PATH>,  --destination <PATH>: Install "
   echo "        ESP-r in <PATH>/esp-r directory. The "
@@ -426,17 +431,13 @@ fi
 
 #-----------------------------------------------------------
 #  Architcture is now known. If architecture is sun, prompt
-#  for compiler. On macs, default to gcc3.3. Otherwise,
-#  use GNU set. 
+#  for compiler. On macs, users should use --compiler_version -3.3
+#  directive. Otherwise, use GNU set. 
 #-----------------------------------------------------------
 if [ "$platform" = "sun" ] && [ "$mode" = "interactive" ]; then
   compiler=prompt
 else
   compiler=GNU
-  # Flag exception for gcc-3.3 on mac
-  if [ "$platform" = "mac" ] && [ "$gnu_version" = "gcc3" ]; then
-    gnu_version="gcc3Mac"
-  fi 
 fi
 
 if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
@@ -479,6 +480,7 @@ if [ "$mode" = "interactive" ]; then
    if [ "$platform" = "linux" ]  ||
       [ "$platform" = "cygwin" ] ||
       [ "$platform" = "mingw" ]  ||
+      [ "$platform" = "mac" ]  ||
       [ "$platform" = "sun" ] ; then
       # XML available on platform
       if [ "${xml_libs_found}" = "no" ]; then
@@ -771,7 +773,6 @@ case $compiler in
    GNU) case $gnu_version in
            gcc3)     CC=gcc;   CPL=g++;    FC=g77       ;;
            gcc32)    CC=gcc32; CPL=g++32;  FC=g77       ;;
-           gcc3Mac)  CC=gcc-3.3; CPL=g++;  FC=g77       ;;
            gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
 esac
@@ -1799,6 +1800,9 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
 
    echo "... Kwangju ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Kwangju_IWEC -act asci2bin silent KOR_Kwangju_IWEC.a
+
+   echo "... Seoul..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_SeoulAB -act asci2bin silent KOR_SeoulAB.a
 
    echo "... London Gatwick ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_gatwick -act asci2bin silent uk_gatwick_iwec.a
