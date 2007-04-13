@@ -99,7 +99,7 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character tfile*72,longtfile*144
       character outs248*248,LTMP*144
       character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
-      character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
+      character dfdblbl*20,defdbfl*72,xfile*144,tg*1,delim*1,cfgroot*24
       character curfile*72,dba*12,act*1,action*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24

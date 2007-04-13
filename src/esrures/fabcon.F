@@ -46,7 +46,7 @@ C of inter-fabric temperature and condensation conditions.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
-      character H*72,xfile*72,tg*1,delim*1,act*1
+      character H*72,xfile*144,tg*1,delim*1,act*1
 
 C Setup for menu.
    3  ITEM(1) ='2 select result set    '
@@ -256,7 +256,7 @@ C timestep.
 
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
-      character outs*124,xfile*72,TDESCR*5,DESCR1*10,DESCR*7
+      character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
       character zname*12,zdesc*64,tg*1,delim*1
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       logical found
@@ -773,7 +773,7 @@ C IPRZ is primitive db ref for each layer.
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
-      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*72,zname*12,zdesc*64
+      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

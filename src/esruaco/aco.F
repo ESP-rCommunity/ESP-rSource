@@ -133,7 +133,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
       CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
-      CHARACTER tg*1,delim*1,xfile*72,dstmp*24,LabFreq*4
+      CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
 C Initial assumptions (summary reporting).

@@ -39,7 +39,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       CHARACTER ACTION*1,CLSSEL*36
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
       CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -111,7 +111,7 @@ C List one or more classifications.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','mat db text',IER)
         elseif(irpt.eq.3)then
           goto 40
         endif

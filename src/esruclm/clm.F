@@ -82,7 +82,7 @@ C Climate list common.
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
-      character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1
+      character path*72,upath*72,esprc*72,xfile*144,tg*1,delim*1
       character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
@@ -852,12 +852,14 @@ C Toggle trace level.
       ELSEIF(INO.EQ.19)THEN
 
 C Feedback channel. Suggest an initial name for the export file.
+C Currently LCLIM is only 72 characters but once it is 144 char
+C then the 130 logic can be added into the 2nd write statement.
         if(ixopen.eq.0)then
           llt=lnblnk(LCLIM)
-          if(llt.lt.60)then
-            write(xfile,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.report'
+          if(llt.lt.130)then
+            write(xfile,'(2a)') LCLIM(1:llt),'.report'
           else
-            write(xfile,'(2a)') LCLIM(1:60),'.report'
+            write(xfile,'(2a)') LCLIM(1:72),'.report'
           endif
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Data',IER)
@@ -924,7 +926,7 @@ C hour in any specified day.
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
-      character outs*124,xfile*72,tg*1,delim*1,h*72
+      character outs*124,xfile*144,tg*1,delim*1,h*72
       logical ok,dok
 
 C If in type 8 terminal make the text display area larger before

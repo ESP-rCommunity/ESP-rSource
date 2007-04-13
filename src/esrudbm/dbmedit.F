@@ -81,7 +81,7 @@ C Backup of documentation (for editing).
 
       character CLDES*38,action*1,KEY*1,tab*1,catlist*32
       character head*37,h*72,t72*72,t12*12,c8*8,t248*248
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
@@ -553,10 +553,13 @@ C List one or more categories.
           endif
           itu = ixunit
           lnfile=lnblnk(gendbfn(idbh))
-          if(lnfile.lt.60)then
+
+C Note: when gendbfn moves from 72 to 144 chare then the 2nd write
+C statement should be altered.
+          if(lnfile.lt.130)then
             write(xfile,'(2a)') gendbfn(idbh)(1:lnfile),'.report'
           else
-            write(xfile,'(2a)') gendbfn(idbh)(1:60),'.report'
+            write(xfile,'(2a)') gendbfn(idbh)(1:72),'.report'
           endif
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','db text',IER)
         elseif(irpt.eq.3)then

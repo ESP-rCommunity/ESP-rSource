@@ -51,7 +51,7 @@ C exportcad: controls model export facilities.
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
-      character xfile*72,tg*1,delim*1,ffile*72
+      character xfile*144,tg*1,delim*1,ffile*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
       character longtfile*144,longtfiledos*144

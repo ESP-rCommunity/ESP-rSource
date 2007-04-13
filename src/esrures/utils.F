@@ -1517,15 +1517,17 @@ C   the file name.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg,xfile
-      character H*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*144
+      character H*72,path*72,outs*124,tg*1,outs248*248
+      character ixpfile*144,ttext*42,LCMDFL*144
       character longtfile*144,longtfiledos*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
+      integer lenxfile
 
 C Initial name for export parameter file is xfile+par.
-      if(xfile(1:1).ne.' ')then
-        write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
+      lenxfile=lnblnk(xfile)
+      if(xfile(1:1).ne.' '.and.lenxfile.gt.2)then
+        write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
       else
         ixpfile = 'data.grt.par'
       endif
@@ -1534,12 +1536,14 @@ C Each call is a toggle.
       ixopen=ixopen+1
       if(ixopen.GT.1)ixopen=0
       if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
+        write(outs248,'(2a)') 'closing export file: ',xfile
+        call edisp248(iuout,outs248,100)
         if(tg.eq.'X')then
           CALL ERPFREE(ixunit,ISTAT)
           CALL ERPFREE(ixpunit,ISTAT)
-          write(outs,'(a,a)') 'closing export parameter file: ',ixpfile
+          write(outs248,'(2a)') 'closing export parameter file: ',
+     &      ixpfile
+          call edisp248(iuout,outs248,100)
           call usrmsg(outs,'reporting >> to display ','-')
         elseif(tg.eq.'T')then
           CALL ERPFREE(ixunit,ISTAT)
@@ -1563,35 +1567,60 @@ C Each call is a toggle.
           write(outs,'(A,A)') ' The current path is: ',path
           call edisp(iuout,outs)
           h(1)='If using path then the export file will be placed in'
-          h(2)='the model folder. Otherwise nominate a folder and file'
-          h(3)='name for the export file (i.e. /tmp/junk.exp or'
+          h(2)='the model folder. Otherwise nominate a folder and'
+          h(3)='file name for the export file (i.e. /tmp/junk.exp or'
           h(4)='/home/ralph/reports/junk.exp) '
+          h(5)=' '
+          h(6)='If you selected this option in error click continue.'
           if (autook) then
             IW=2
           else
             write(outs,'(A,A)') ' The model is in folder ',path
-            CALL EASKAB(outs,' place export file:','in model folder',
-     &        'user defined folder',IW,4)
+            CALL EASKABC(outs,' place export file:',
+     &        'in the model folder','user defined folder','continue',
+     &        iw,6)
+            if(iw.eq.3)then
+              ixopen=0
+              return    ! does ixopen need to be reset?
+            endif
           endif
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '
         if (.NOT.autook) then
-          call easks(xfile,' export file name: ',' ',72,
-     &               ' ','export file name',IER,2)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          llt=lnblnk(xfile)
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',96,'export.txt','export file name',IER,2)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',124,'export.txt','export file name',IER,2)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',144,'export.txt','export file name',IER,2)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',144,'export.txt','export file name',IER,2)
+          else
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',96,'export.txt','binary events db',IER,2)
+          endif
         endif
-        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                    ' for export.'
-        call usrmsg(outs,' ','-')
+        write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                       ' for export.'
+        call edisp248(iuout,outs248,100)
         if(iw.eq.1)then
           if(tg.eq.'X')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
-            write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
+            write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
             call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                        ' for export parameters.'
-            call usrmsg(outs,' ','-')
+            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                           ' for export parameters.'
+            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
@@ -1600,15 +1629,14 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to c graphic calls. Check if Unix-based or DOS based.
             call isunix(unixok)
-            tfile=xfile   ! << this needs to change if xfile not 72 char >>
             longtfile=' '
             if(unixok)then
-              call addpath(tfile,longtfile,concat)
+              call addpath(xfile,longtfile,concat)
             else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-              call addpath(tfile,longtfile,concat)
+              call addpath(xfile,longtfile,concat)
               call cmdfiledos(longtfile,longtfiledos,ier)
               longtfile=' '
               longtfile=longtfiledos
@@ -1624,9 +1652,9 @@ C and change any / to \.
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             CALL ERPFREE(ixpunit,ISTAT)
             call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                        ' for export parameters.'
-            call usrmsg(outs,' ','-')
+            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                           ' for export parameters.'
+            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             CALL ERPFREE(ixunit,ISTAT)
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
@@ -1636,9 +1664,9 @@ C and change any / to \.
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
-     &    ' reporting >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','-')
+        write(outs248,'(1x,3A)') msg(1:lnblnk(msg)),
+     &    ' >> to ',xfile(1:lnblnk(xfile))
+        call edisp248(iuout,outs248,100)
 
 C If tabular info then create the headder to the xvgr parameter file.
         if(tg.eq.'X')then

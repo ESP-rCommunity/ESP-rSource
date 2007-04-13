@@ -96,8 +96,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      character filname*72,filname2*72,filname1*72,repfile*40
-      character inf*72,ouf*72,layname*72,instring*72,lf*72
+      character filname*144,filname2*144,filname1*144,repfile*40
+      character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -109,7 +109,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
       character htmlfile*72
-      character ltobs*72,outs*124
+      character ltobs*72,outs*248
       logical OPND,match,doobs,unixok
 
 C System parameter initializing. Use ioin for the input file,
@@ -178,21 +178,18 @@ C Assume there are no obstructions.
       doobs=.FALSE.
 
       call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Data Conversion: Version 2.5a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
+      write(outs,'(3a)')
+     & ' ESP-r Data Conversion: Version 2.5a of January 2006.',
+     & ' Copyright 2001-6 Energy Systems Research Unit, University',
+     & ' of Strathclyde, Glasgow, Scotland.'
+      call edisp248(IUOUT,outs,100)
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,iotmp2,0,IIER)
 
@@ -200,8 +197,8 @@ C Convert from "c" strings to fortran strings, if unknown then exit.
 
 C Get input file and format.
       filname=inf
-      write(outs,'(a,a)')'Input file is: ',filname(1:lnblnk(filname))
-      call edisp(iuout,outs)
+      write(outs,'(2a)')'Input file is: ',filname(1:lnblnk(filname))
+      call edisp248(iuout,outs,100)
       if(iformat(1:3).eq.'dxf')then
 
 C Determine root name of dxf file (to make layer file from).
@@ -225,7 +222,7 @@ C Determine root name of dxf file (to make layer file from).
         stop 'ecnv aborted.'
       endif     
 
-      if(filname.eq.' '.or.filname.eq.'UNKNOWN')then
+      if(filname(1:2).eq.'  '.or.filname(1:7).eq.'UNKNOWN')then
         call edisp(iuout,'ecnv_error unknown_input_file')
         stop 'ecnv aborted.'
       endif     
@@ -233,29 +230,29 @@ C Determine root name of dxf file (to make layer file from).
 C Get output format. If viewer then use a single file, if
 C ESP-r then a series of files will be opened.
       filname2=ouf
-      if(filname2.eq.' '.or.filname2.eq.'UNKNOWN')then
+      if(filname2(1:2).eq.'  '.or.filname2(1:7).eq.'UNKNOWN')then
         call edisp(iuout,'ecnv_error unknown_output_file')
         stop 'ecnv aborted.'
       endif
       if(oformat(1:6).eq.'viewer')then
-        write(outs,'(a,a)')'The viewer output file will be: ',
+        write(outs,'(2a)')'The viewer output file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:5).eq.'tsbi3')then
-        write(outs,'(a,a)')'The tsbi3 output file will be: ',
+        write(outs,'(2a)')'The tsbi3 output file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:4).eq.'vrml')then
-        write(outs,'(a,a)')'The vrml world will be: ',
+        write(outs,'(2a)')'The vrml world will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:3).eq.'esp')then
 
 C If esp then also find its path so zone files can be
 C placed in the same folder.
-        write(outs,'(a,a)')'The esp-r configuration file will be: ',
+        write(outs,'(2a)')'The esp-r configuration file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         call fdroot(filname2,path,LCFGF)
         if(upgcfg(1:7).ne.'UNKNOWN')then
 
@@ -279,21 +276,21 @@ C to update commons for configuration.
 
 C If AutoCAD then also find its path so that support files can be
 C placed in the same folder.
-        write(outs,'(a,a)')'The AutoCAD DXF file will be: ',
+        write(outs,'(2a)')'The AutoCAD DXF file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:6).eq.'zip')then
-        write(outs,'(a,a)')'The zip output file will be: ',
+        write(outs,'(2a)')'The zip output file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:4).eq.'xfig')then
-        write(outs,'(a,a)')'The xfig output file will be: ',
+        write(outs,'(2a)')'The xfig output file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       elseif(oformat(1:3).eq.'THF'.or.oformat(1:3).eq.'thf')then
-        write(outs,'(a,a)')'The THF output file will be: ',
+        write(outs,'(2a)')'The THF output file will be: ',
      &                  filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
       else
         call edisp(iuout,'ecnv_error unknown_output_format')
         stop 'ecnv aborted.'
@@ -648,9 +645,9 @@ C  Write the picture name in .vew file
         write(ioout,'(a)') 'END'
         call edisp(iuout, ' ')
         call edisp(iuout, 'ecnv conversion is complete.')
-        write(outs,'(a,a)') 'dxf2v_finished ',
+        write(outs,'(2a)') 'dxf2v_finished ',
      &                    filname2(1:lnblnk(filname2))
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
 
 C Close the files, remove temporary files if not to be kept.
         close(ioout)
@@ -783,13 +780,13 @@ C Dump out layer names and equivalent number.
       STOP
 
 C Error messages.
- 900  write(outs,'(a,a)') 'Error opening "OLD" file :',
+ 900  write(outs,'(2a)') 'Error opening "OLD" file :',
      &     filname1(:lnblnk(filname1))
-      call edisp(iuout,outs)
+      call edisp248(iuout,outs,100)
       goto 999
- 901  write(outs,'(a,a)') 'Error opening "NEW" file :',
+ 901  write(outs,'(2a)') 'Error opening "NEW" file :',
      &     filname2(:lnblnk(filname2))
-      call edisp(iuout,outs)
+      call edisp248(iuout,outs,100)
       goto 999
 
  903  call edisp(iuout,'Error opening or writing temp obstr file.')

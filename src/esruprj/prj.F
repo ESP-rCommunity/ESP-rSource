@@ -2120,7 +2120,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character ltpath*72,filen*72,ltmp*72,upath*72
       character basefile*144,variantfile*144,outs*124,outsd*124
       character word1*20,word2*40,word3*20,outstr*124
-      character xfile*72,tg*1,delim*1,tab*1,fs*1
+      character xfile*144,tg*1,delim*1,tab*1,fs*1
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2

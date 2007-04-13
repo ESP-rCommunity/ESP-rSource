@@ -2137,7 +2137,7 @@ C Generic db commons:
 
       dimension ICATSEL(MGCL)
 
-      character BFIL*72,tab*1,xfile*72,tg*1,delim*1
+      character BFIL*72,tab*1,xfile*144,tg*1,delim*1
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,itdoc*248
       character itdat*248,itrep*248,ittag*12,itmenu*32,itdate*24

@@ -47,7 +47,7 @@ C held within the transitional shading file.
 
       CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12,h*72
       CHARACTER MTHNAM*3,BLKNAME*8,BLKMAT*12,outs*124,SN*12
-      character tg*1,delim*1,xfile*72
+      character tg*1,delim*1,xfile*144
       logical OK,dok
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -192,7 +192,7 @@ C surfaces insolated.
 
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      character tg*1,delim*1,xfile*72
+      character tg*1,delim*1,xfile*144
 
       character*3 month(12)
       character outs*124,SN*12
@@ -289,7 +289,7 @@ C from the point of view of an insolation analysis.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       character*3 month(12)
-      character outs*124,H*72,tg*1,delim*1,xfile*72
+      character outs*124,H*72,tg*1,delim*1,xfile*144
       logical OK,dok,close1,close2
 
       dimension ps(24),ishd(12),igc(ms),isadd(12),ntmc(ms)

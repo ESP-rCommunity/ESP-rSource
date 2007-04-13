@@ -159,7 +159,7 @@ C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8, Oldunit*8
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
 
       INTEGER IWHICH

@@ -90,7 +90,7 @@ C Simulator parameters.
       character graftitle*64,grlbl*24,t24*24,LTIME*5
       character LAPROB*72,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character xfile*72,tg*1,delim*1,tab*1
+      character xfile*144,tg*1,delim*1,tab*1
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)

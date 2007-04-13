@@ -56,7 +56,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER H*72,OPTITM*54,DSOPT*12
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
       dimension RVA(20),IVA(24)
 

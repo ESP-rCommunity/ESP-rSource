@@ -73,7 +73,7 @@ C Pre calculated data (filtered).
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
-      character xfile*72,ITEMS*25,tg*1,delim*1,act*1
+      character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok

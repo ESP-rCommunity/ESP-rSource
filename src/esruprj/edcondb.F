@@ -46,7 +46,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
       character ACTION*1,CLSSEL*36
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
       CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -591,7 +591,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
-      CHARACTER xfile*72,tg*1,delim*1,outs*124,TITL*72,NAM*72
+      CHARACTER xfile*144,tg*1,delim*1,outs*124,TITL*72,NAM*72
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)

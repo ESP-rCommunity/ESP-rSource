@@ -135,7 +135,7 @@ C Significant figure reporting limit (NSIGFIG).
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       logical silent,unixok,there,context,existing
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/

@@ -87,7 +87,7 @@ C               5=misc ??)
 
       dimension mcomp(mpcom), ipcndx(mpcom), ivals(15)
       CHARACTER ITEM(26)*23
-      character outs*124,xfile*72,tg*1,delim*1,MTITLE*22,h*72
+      character outs*124,xfile*144,tg*1,delim*1,MTITLE*22,h*72
       character pcname*15,pcnam1(mpcom)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14

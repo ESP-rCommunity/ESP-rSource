@@ -433,7 +433,7 @@ C TDF commons.
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
-      character H*72,xfile*72,tg*1,delim*1
+      character H*72,xfile*144,tg*1,delim*1
       character SLABEL*32,GLABEL*20,SUFFIX*8,lodlabel*6
       character ll1*8,ll2*8,ll3*8
       CHARACTER zname*12,zdesc*64,outs*124,pifltog*4,lpifl*72
