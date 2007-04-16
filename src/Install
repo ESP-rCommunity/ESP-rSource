@@ -1768,6 +1768,9 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
    echo "... Dublin ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/irl_dublin_iwec -act asci2bin silent irl_dublin_iwec.a
 
+   echo "... Dijon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/FRA_Dijon -act asci2bin silent FRA_Dijon.a
+
    echo "... Duluth ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_MN_Duluth_iwec -act asci2bin silent USA_MN_Duluth_iwec.a
 
