@@ -53,7 +53,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
-	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
+	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o
 
 
@@ -616,9 +616,9 @@ Hydrogen_appliances.F:
 wind_turbine_profile_model.F:
 	rm -f wind_turbine_profile_model.F
 	ln -s $(PFSdir)/wind_turbine_profile_model.F
-SOFC_Annex42.F:
-	rm -f SOFC_Annex42.F
-	ln -s $(PLTdir)/SOFC_Annex42.F .
+Annex42_fuel_cell.F:
+	rm -f Annex42_fuel_cell.F
+	ln -s $(PLTdir)/Annex42_fuel_cell.F .
 shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
@@ -674,7 +674,7 @@ clean:
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
-	SOFC_Annex42.F spmatl.F \
+	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \

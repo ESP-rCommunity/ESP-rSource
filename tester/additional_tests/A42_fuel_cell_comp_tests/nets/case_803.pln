@@ -1,0 +1,127 @@
+# Plant component data base:
+../databases/plant_cetc.db1
+# Project title:
+fuel cell charges stand-alone heating and dhw tank
+# Total no. of specified components and simulation type
+   6    3
+# START plant component 01
+#->  01, 7-node SOFC-cogeneration model
+  fuel-cell         77
+    2    
+    1.000
+    0.750
+# number of ADATA inputs, electrical data inputs
+ 134 5
+# Component ADATA inputs
+0.3  1.1E-4  -2.E-8  0.  0. 0. 1000.  5000.      # elec performance (peakier)
+0.5  0.3                                         # transient
+3600.  0.2  6.0  0.                              # start-up
+3600.  0.2  6.0                                  # cool-down
+50.  1.5E+7                                      # ancillaries
+0.  0.949  0.025  0.002  0.0006  0.0001          # fuel mixture
+0.0001  0.  0.  0.007  0.016  0.0002             # fuel mixture (continued)
+1.0 20.  0.  0.  0.  0.5                         # compressor
+0.7728  0.2073  0.0104  0.0092  0.0003           # air mixture
+2.0  5.E-5 1.5E-7  1.1E-12  0.0                  # excess air
+1.0 50. 4.E5  0.  0.  0.5                        # blower
+1.E-7  2.  5.E+4                                 # water supply
+1.0  10.  0.  0.  0.  0.05                       # pump
+1.0  0.8                                         # HX method and fixed eff
+0.  0.  0.  0.  0.                               # HX "s" coefficients
+0.  0.  0.  0.  0.  0.  0.  0.  0.               # HX method 3
+0.  0.  0.                                       # HX condensation
+1.0  0.  0.  0.  0.                              # skin losses
+0.  0. 0.  0.  0.  0.  0. 0.  0.                 # auxiliary burner
+0.  0.  0.  0.                                   # dilution air system
+0.  0.  0.  0.                                   # HRV
+1.0E+7  2000.  1000.  1.0  1.0  0.25         1.  # battery
+0.9  5.0E-6  1.25E-9                         1.  # PCU
+0.                                               # PEM cooling loop present?
+0.  0.                                           # PEM stack temp
+0.  0.  0.  0.                                   # PEM stack cooling
+0.  0.  0.  0.  0.  0.  0.  0.                   # PEM external HX
+0.  0.  0.                                       # PEM air cooler
+0.  0.                                           # PEM pump
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+  1.000  -1   0.000   120.00 4 
+# FINISH plant component 01: fuel-cell
+# START plant component 02
+#->  02, three node description of residential gas-fired hot water tank
+  hot-water-tank         57
+    1
+    1.000
+# number of ADATA inputs, electrical data inputs
+  14 0
+# Component ADATA inputs
+  300.0 4180.0 1.1750 11700. 0. 85.0
+165.0 0.17600E-01 0.55000E-02 0.94760E-00 0.27000E-01 0.23000E-02
+1 1 
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+# FINISH plant component 02: hot-water-tank
+# START plant component 03
+#->  03, One node pump model circulating water through fuel cell
+  fc-pump         15
+    1
+    1.26000E-04 
+# number of ADATA inputs, electrical data inputs
+  6 5
+# Component ADATA inputs
+  5.0 2250.0 0.20 150.0 1.26E-04 0.70
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+  1.000 -1 0.000 120.00 4
+# FINISH plant component 03: fc-pump
+# START plant component 04
+#->  04, One node pump model cicrulating water from tank to heating coil
+  coil-pump         15
+    1
+    3.0000E-04
+# number of ADATA inputs, electrical data inputs
+  6 5
+# Component ADATA inputs
+  5.0 2250.0 0.20 150.0 3.0E-04 0.70
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+  1.000 -1 0.000 120.00 4
+# FINISH plant component 04: coil-pump
+# START plant component 05
+#->  05, One node fan model circulating air through heating coil
+  coil-fan         3
+    1
+    0.310000
+# number of ADATA inputs, electrical data inputs
+  6 5
+# Component ADATA inputs
+  10.0 500.0 7.0 200.0 0.310 0.70
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+  1.000 -1 0.000 120.00 4 
+# FINISH plant component 05: coil-fan
+# START plant component 06
+#->  06, two node heating coil model
+  heating-coil         21
+    0
+# number of ADATA inputs, electrical data inputs
+  9 0
+# Component ADATA inputs
+  15.0 500.0 3.5  2.0  15.0 0.33 
+ 0.25 0.1E-02  0.15E-01 
+# Component electrical data (power factor, lag/lead flag, default real power, base voltage)
+# FINISH plant component 06: heating-coil
+# The following is a list of component connections.
+ 9          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  fc-pump        1 3 hot-water-tank 1 0.500    
+  fuel-cell     14 3 fc-pump        1 1.000    
+  fuel-cell      6 3 fuel-cell     14 1.000
+  hot-water-tank 1 3 fuel-cell      6 1.000    
+  coil-pump      1 3 hot-water-tank 1 0.500    
+  heating-coil   3 3 coil-pump      1 1.000    
+  hot-water-tank 1 3 heating-coil   3 1.000    
+  coil-fan       1 4 heating-coil   2 1.000 2  
+  heating-coil   2 3 coil-fan       1 1.000    
+# The following is a list of containment temperatures.
+  2          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  fuel-cell      3 1 0. 0.
+  hot-water-tank 3 1 0. 0.
+# No mass flow network defined.
+  0
