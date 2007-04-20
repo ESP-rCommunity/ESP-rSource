@@ -14,7 +14,7 @@ C Max no matrix coefficients = n * IRECLN
       PARAMETER (MAXMTX = 80)
 
 C Max no items misc data = n * IRECLN
-      PARAMETER (MAXMSC = 120)
+      PARAMETER (MAXMSC = 140)
 
 C Max header records in database = 2+MAXPC/IRECLN
       PARAMETER (MHEADR = 25)
