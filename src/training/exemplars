@@ -116,8 +116,12 @@
 *cfg	/usr/esru/esp-r/training/cellular_flh/cfg/cellular_flh.cfg
 *root	/usr/esru/esp-r/training/cellular_flh
 *item
-*name	two offices and passage with simple CV HVAC controller
+*name	two offices and passage with simple CAV HVAC controller
 *cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_cvvt.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with ideal VAV/CAV HVAC controller
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_vav.cfg
 *root	/usr/esru/esp-r/training/cellular_cvvt
 *item
 *name	two offices and passage with separate ON OFF controller

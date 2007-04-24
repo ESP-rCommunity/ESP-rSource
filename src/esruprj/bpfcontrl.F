@@ -1156,7 +1156,7 @@ C Edit building control function II.
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      DIMENSION SALT(21),IVALS(21)
+      DIMENSION SALT(22),IVALS(22)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
@@ -1316,7 +1316,7 @@ C law can be jumped around.
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
-     &      iclaw.eq.21)then
+     &      iclaw.eq.21.or.iclaw.eq.22)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1361,6 +1361,7 @@ C starting up the menu based control period definition.
         SALT(19)=' Multi-sensor heating/cooling          '
         SALT(20)=' Evaporative source (surface)          '
         SALT(21)='Slave Capacity Controller              '
+        SALT(22)='VAV cooling with CAV reheat (BETA)     '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1427,7 +1428,7 @@ C starting up the menu based control period definition.
         H(57)='Further details within each control law interface.'
         H(58)=' '
   63    CALL EPICKS(IX,IVALS,' ',' Control law: ',
-     &    40,21,SALT,'control law (indented=old or obscure)',IER,58)
+     &    40,22,SALT,'control law (indented=old or obscure)',IER,58)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -1969,74 +1970,6 @@ C Logic Optimum Start Controller.
             goto 77
           endif
           goto 92
-
-C          if(itrc.gt.0)then
-C            call edisp(iuout,' ')
-C            call edisp(iuout,' Logic Optimum Start control data is:')
-C            call edisp(iuout,' Htg cpcy, Set pt, Temp Diff, DTOA,
-C     & Min time diff, Init. Guess Opt.')
-C            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' ')
-            
-C            I7=INT(cm(7))
-C            IF(I7.EQ.1)THEN
-C              call edisp(iuout,' Init. Guess')
-C              write(outs,'(1F9.2)')4.
-C            ELSEIF(I7.EQ.2)THEN
-C              call edisp(iuout,' Init. Guess')
-C              write(outs,'(1F9.2)')cm(8)
-C            ELSEIF(I7.EQ.3)THEN
-C              call edisp(iuout,' B&J Cofts.')
-C              write(outs,'(3F9.2)')cm(8),cm(9),cm(10)
-C            ENDIF
-C          endif
-
-C          H(1)=' The number of data items required is in the range'
-C          H(2)=' 6 to 8 and depends on the initial guess selected:'
-C          H(3)=' If initial guess user-defined  - 6 items required;'
-C          H(4)=' If Birtles & John Eqn. estimate - 8 items rqd.' 
-C          H(5)=' - Refer ESP-r Data Model section 9 '
-C          CALL EASKR(cm(1),' ',' No. of misc data items ?',
-C     &      6.,'F',8.,'F',6.,'no. of misc data items',IER,5)
-C          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
-C     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
-C          CALL EASKR(cm(3),' ',' Heating set-point [deg.C] ? ',
-C     &      -100.,'F',100.,'F',20.,' htg set-point',IER,0)
-C          CALL EASKR(cm(4),' ',' Temp differential ? ',
-C     &      0.,'F',0.,'-',2.,'temp diffnl',IER,0)
-C          CALL EASKR(cm(5),' ',' Desired time of arrival (DTAO) ? ',
-C     &      0.,'F',0.,'-',4.,' DTOA',IER,0)
-
-C          H(1)=' If the difference between successive estimates is'
-C          H(2)=' less then the `Min. Time Diff`, then the earliest'
-C          H(3)=' time is accepted as the `Optimum Start Time`.'
-C          CALL EASKR(cm(6),' ',' Min time diff. ? ',
-C     &      0.,'F',0.,'-',0.1,' Min time diff.',IER,3)
-
-C          H(1)=' The initial guess may be one of the following'
-C          H(2)=' 3 options:-'
-C          H(2)=' 1 = Default of 4.00 a.m.;'
-C          H(3)=' 2 = User-Defined time;'
-C          H(4)=' 3 = Birtles & John Eqn. estimate.'
-C          CALL EASKR(cm(7),' ',' Initial Guess ? ',
-C     &      0.,'F',3.,'-',1.,' Initial Guess',IER,4)
-
-C          I7=INT(cm(7))
-C          IF(I7.EQ.1)THEN
-C             cm(8)=4.
-C          ELSEIF(I7.EQ.2)THEN
-C             CALL EASKR(cm(8),' ',' Initial Guess ? ',
-C     &       0.,'F',24.,'F',4.,'Initial Guess',IER,0)
-C          ELSEIF(I7.EQ.3)THEN
-C             CALL EASKR(cm(8),' ',' B&J Eqn 1st Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 1st Coeft ',IER,0)
-C             CALL EASKR(cm(9),' ',' B&J Eqn 2nd Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 2nd Coeft ',IER,0)
-C             CALL EASKR(cm(10),' ',' B&J Eqn 3rd Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 3rd Coeft ',IER,0)
-C          ENDIF
-
         elseif(IBCLAW(II,JJ,KK).eq.16)then
 
 C Logic Optimum Stop Controller.
@@ -2418,9 +2351,9 @@ C Surface area and HTC picked up from ESP-r
             cm(11)=ubasw                     
           endif
         
-        elseif(IBCLAW(II,JJ,KK).eq.21)then
+        elseif(IBCLAW(II,JJ,KK).eq.21.or.IBCLAW(II,JJ,KK).eq.22)then
  
-C Slave Capacity Controller
+C Slave Capacity Controller or VAV controller.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -5026,7 +4959,7 @@ C   for control law one.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
-      DIMENSION VERT(35),SALT(21),IVALS(21)
+      DIMENSION VERT(35),SALT(22),IVALS(22)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -5249,7 +5182,7 @@ C control law to trap changes.
           SALT(5)= 'PID control action for heating/cooling '
           SALT(6)= ' Flux connection between zone & plant  '
           SALT(7)= 'Multi-stage control with hysteresis    '
-          SALT(8)= 'Variable supply temp with constraints  '
+          SALT(8)= 'CAV variable supply T with constraints '
           SALT(9)= ' Heat pipe from `outside` to inside    '
           SALT(10)='Separate flux ON & OFF set points      '
           SALT(11)=' Match sensed/recorded value (ideal)   '
@@ -5263,6 +5196,7 @@ C control law to trap changes.
           SALT(19)=' Multi-sensor heating/cooling          '
           SALT(20)=' Evaporative source (surface)          '
           SALT(21)='Slave Capacity Controller              '
+          SALT(22)='VAV cooling with CAV reheat (BETA)     '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -5332,7 +5266,7 @@ C Re-instanciate help specifically for summary of control laws.
           H(57)='Further details within each control law interface.'
           H(58)=' '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,21,SALT,'control law (indented=old or obscure)',IER,58)
+     &      42,22,SALT,'control law (indented=old or obscure)',IER,58)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -5514,6 +5448,19 @@ C the new menu structure return to the calling subroutine.
               cmlocal(4)=1000.0
               cmlocal(5)=0.0
               cmlocal(6)=0.0
+              cmlocal(7)=0.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
+              goto 90
+            elseif(iclaw.eq.22)then
+              cmlocal(1)=6.0
+              cmlocal(2)=1000.0        ! reset to default values
+              cmlocal(3)=12.0
+              cmlocal(4)=20.0
+              cmlocal(5)=1.0
+              cmlocal(6)=0.20
               cmlocal(7)=0.0
               cmlocal(8)=0.0
               cmlocal(9)=0.0
@@ -5800,6 +5747,8 @@ C it points to the same zone as is used by the master controller.
      &          'Slave actuator must be in the slave zone!',
      &          '(please update actuator location)','W')
             endif
+          elseif(iclaw.eq.22)then
+            continue    ! no postprocessing (yet)
           else
 
 C << other control laws where processing is required... >>
@@ -6066,7 +6015,7 @@ C Depending on the current number of miscel items also do humidity.
           h(1)='This implements an ideal proportional controller with'
           h(2)='optional integral (reset) action and/or derivative'
           h(3)='(rate) action time or to represent full PID.'
-          h(4)=''
+          h(4)=' '
           h(5)='A proportional action produces an output in proportion'
           h(6)='to the error sensed so there is usally an offset from'
           h(7)='the desired setpoint. Simple to implement and stable'
@@ -6722,8 +6671,8 @@ C and cooling (initial part of the input is similar to control 10).
             prompt1(7)='User start (value two ),4.00 a.m. (value one)'
             prompt2(7)='and Birtles (value three) '
             ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
-            menu(8)='Initial guess for start time (hours) '
-            prompt1(8)='Initial guess for start time (hours) '
+            menu(8)='Initial guess for start (hr)'
+            prompt1(8)='Initial guess for start time (hours)'
             prompt2(8)=' '
             ndec(8)=3; vmin(8)=0.0; vmax(8)=24.0; vdef(8)=4.0
             menu(9)=' '
@@ -6741,17 +6690,17 @@ C and cooling (initial part of the input is similar to control 10).
             prompt2(7)='(value one), User start (value two)'
             ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
             menu(8)='Birtles & John Eqn. heating coef'
-            prompt1(8)='Birtles & John Eqn. heating coef '
+            prompt1(8)='Birtles & John Eqn. heating coef'
             prompt2(8)='(see the referenced paper) '
             ndec(8)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
-            menu(9)='Birtles & John Eqn. building coef'
-            prompt1(9)='Birtles & John Eqn. building coef '
+            menu(9)='Birtles & John Eqn. build coef'
+            prompt1(9)='Birtles & John Eqn. build coef'
             prompt2(9)='(see the referenced paper) '
-            ndec(9)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
-            menu(10)='Birtles & John Eqn. building coef'
-            prompt1(10)='Birtles & John Eqn. building coef '
+            ndec(9)=2; vmin(9)=0.0; vmax(9)=99999.0; vdef(9)=1.0
+            menu(10)='Birtles & John Eqn. build coef'
+            prompt1(10)='Birtles & John Eqn. building coef'
             prompt2(10)='(see the referenced paper) '
-            ndec(10)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
+            ndec(10)=2; vmin(10)=0.0; vmax(10)=99999.0; vdef(10)=1.0
           endif
         elseif(iclaw.eq.16)then
           menu(1)=' '
@@ -6851,6 +6800,76 @@ C and cooling (initial part of the input is similar to control 10).
           prompt1(4)='Maximum slave cooling capacity (W) (for when'
           prompt2(4)='the master control is at 100%)'
           ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=1000.0
+        elseif(iclaw.eq.22)then
+
+C Variable supply volume cooling control which reverts to a CAV system
+C using reheat for heating mode.
+          h(1)='This control represents an ideal air based '
+          h(2)='environmental control system that delivers air '
+          h(3)='at a variable flow rate and a fixed supply temp'
+          h(4)='for cooling to a desired setpoint.'
+          h(5)=' '
+          h(6)='In heating mode it reverts to a CAV system at the'
+          h(7)='minimal supply flow rate with reheat applied up to a '
+          h(8)='maximum flux to reach the desired setpoint.'
+          h(9)=' '
+          h(10)='There is a single desired room setpoint (C) so'
+          h(11)='the control law will cycle between VAV and CAV '
+          h(12)='model under low-load conditions. '
+          h(13)=' '
+          h(14)='It is recommended that a short timestep be used with'
+          h(15)='this control ( 1 - 5 minutes). '
+          h(16)=' '
+          h(17)='This control law can be used to check whether an '
+          h(18)='air based system is able to meet demand patterns in '
+          h(19)='a room prior to specification of a detailed component'
+          h(20)='model. If flow rates or supply temperature are not '
+          h(21)='well sepecified then the room temperature will drift '
+          h(22)='as expected. '
+          h(23)=' '
+          h(24)='Specification of minimum flow rate is a compromise '
+          h(25)='between what is required for CAV heating and excess '
+          h(26)='cooling in low-load conditions. '
+          h(27)=' '
+          h(28)='Typically the maximum flow rate would be equivalent '
+          h(29)='to 12-20ach in the zone. Low max flow rates can result'
+          h(30)='in failure to meet the desired temperature. And high'
+          h(31)='minimum flow rates can result in overcooling in mild '
+          h(32)='conditions. '
+          h(33)=' '
+          h(34)='Additional performance data (e.g. flow rates, reheat)'
+          h(35)='if you invoke control trace at simulation time.'
+          h(36)=' '
+          h(37)='NOTE: THIS LAW SHOULD BE CONSIDERED BETA version.'
+          h(38)=' '
+          H(39)='You are given the option to discard changes when you '
+          H(40)='exit the period. '
+          nctlhelp=40
+          nmenulines=6    ! set to the last cm index used.
+          menu(1)=' '
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Reheat maximum capacity (W)'
+          prompt1(2)='Reheat maximum capacity (W) is injected into '
+          prompt2(2)='the CAV supply stream. '
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=99999.0; vdef(2)=1000.0
+          menu(3)='Supply air temperature (C)'
+          prompt1(3)='Supply air temperature (C)'
+          prompt2(3)=' '
+          ndec(3)=3; vmin(3)=-10.0; vmax(3)=100.0; vdef(3)=12.0
+          menu(4)='Desired room air temp (C)'
+          prompt1(4)='Desired room air temperature (C)'
+          prompt2(4)=' '
+          ndec(4)=3; vmin(4)=-10.0; vmax(4)=100.0; vdef(4)=20.0
+          menu(5)='Air supply flow max rate (m^3/s)'
+          prompt1(5)='Air supply flow maximum rate (m^3/sec) '
+          prompt2(5)=' '
+          ndec(5)=4; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=1.0
+          menu(6)='Air supply flow min rate (m^3/s)'
+          prompt1(6)='Air supply flow minimum rate (m^3/sec) '
+          prompt2(6)=' '
+          ndec(6)=4; vmin(6)=0.0; vmax(6)=100.0; vdef(6)=0.5
         else
           h(1)=' '
           h(2)=' '

@@ -1,0 +1,30 @@
+Project notes for cellular_vav.cfg
+Description: model of two adjacent cellular offices with simple VAV HVAC
+In folder: training/cellular_cvvt
+By: jon
+Date: Thu 22 09:28:27 2007
+For: 
+Project reference: 
+Notes: 
+_____________________________
+Derived from the cellular base case model. Used to test
+out ideal zone control law 22 which represents a VAV HVAC
+system with fall-back to CAV for heating mode. 
+ 
+Desired temperature in manager_a and manager_b is 20C
+and in VAV mode the air flow rate throttles over a range
+of 20ach to 5ach with a supply temperature of 11C and
+a maximum terminal reheat of 700W.
+
+The summer standard assessment shows expected performane
+in mild weather - there is switching between VAV and CAV
+at startup and at the end of office hours. The reheat
+is undercapacity (intentionally) for some hours.
+
+Note: currently the only way to find out the flow rates
+used and the reheat required is to turn on the simulation
+trace option for control.
+
+This model could be used at an early design stage to
+explore variants on throttling range and supply temperature.
+
