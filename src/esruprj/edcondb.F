@@ -2012,17 +2012,22 @@ C Proceed.
         IC=ICLN(I)
         IREC=IC*20-19
         READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-        WRITE(IFA,12)IC,NE,IDESC(1:lnblnk(IDESC))
-   12   FORMAT('# class|no materials|description',/,I5,I5,3X,A)
-        IF(NE.LE.0)goto 10
-        DO 20 J=1,NE
-          IREC=IREC+1
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
-     &         NDESC
-          NCODE=IREC-1
-          WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
-   13     FORMAT( I5,3X,A,/,F13.3,2(', ',F8.3),2(', ',F6.3),', ',F10.3)
-   20   CONTINUE
+        WRITE(IFA,'(a)') '# class|no materials|description'
+        WRITE(IFA,'(2a)') 
+     &    '# for each item index|description| conduc. density. ',
+     &    'specific ht, emis. abs. diffusion res.'
+        WRITE(IFA,'(I5,I5,3X,A)')IC,NE,IDESC(1:lnblnk(IDESC))
+        IF(NE.GT.0)then
+          DO 20 J=1,NE
+            IREC=IREC+1
+            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+     &        NDESC
+            NCODE=IREC-1
+            WRITE(IFA,'(I5,3X,A)') NCODE,NDESC(1:lnblnk(NDESC))
+            WRITE(IFA,13) (VAL(K),K=1,6)
+   13       FORMAT(F13.3,2(', ',F9.3),2(', ',F6.3),', ',F10.3)
+   20     CONTINUE
+        ENDIF
    10 CONTINUE
 
   99  CALL ERPFREE(IFA,ISTAT)
