@@ -3371,7 +3371,7 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
-      character outs*124
+      character outs*248
       
       DIMENSION SNWGHT(MSEN)  
 
@@ -3423,14 +3423,44 @@ C ISM = 4: TDIF = (ref sensor)-(weighting of auxiliary sensors).
       ISM=INT(BMISCD(ICF,IDTYP,IPER,7))
 
 C SNWGHT() is the sensor weighting when ISM=4.
-C If only one sensor read attributes and then set scaling.
+C If only one sensor read attributes and then get scaling and offset
+C based on whether there is weighting or not. This follows the same
+C logic used in econtrol.F subroutine EVCNTRLAW.
       if(NSEN(ICF).eq.1)then
         IBMSN(ICF,1,1)=INT(BMISCD(ICF,IDTYP,IPER,8))
         IBMSN(ICF,1,2)=INT(BMISCD(ICF,IDTYP,IPER,9))
         IBMSN(ICF,1,3)=INT(BMISCD(ICF,IDTYP,IPER,10))
         IBMSN(ICF,1,4)=INT(BMISCD(ICF,IDTYP,IPER,11))
-        SCALEF=1.0
-        OFFSET=0.0
+        IF(ISM.EQ.4)THEN
+          SNWGHT(1)=BMISCD(ICF,IDTYP,IPER,12)
+          SNWTOT=SNWGHT(1)
+          SCALEF=BMISCD(ICF,IDTYP,IPER,13)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,14)
+        ELSE
+          SCALEF=BMISCD(ICF,IDTYP,IPER,12)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,13)
+C          SCALEF=1.0
+C          OFFSET=0.0
+        ENDIF
+      elseif(NSEN(ICF).eq.2)then
+        IBMSN(ICF,1,1)=INT(BMISCD(ICF,IDTYP,IPER,8))
+        IBMSN(ICF,1,2)=INT(BMISCD(ICF,IDTYP,IPER,9))
+        IBMSN(ICF,1,3)=INT(BMISCD(ICF,IDTYP,IPER,10))
+        IBMSN(ICF,1,4)=INT(BMISCD(ICF,IDTYP,IPER,11))
+        IBMSN(ICF,2,1)=INT(BMISCD(ICF,IDTYP,IPER,12))
+        IBMSN(ICF,2,2)=INT(BMISCD(ICF,IDTYP,IPER,13))
+        IBMSN(ICF,2,3)=INT(BMISCD(ICF,IDTYP,IPER,14))
+        IBMSN(ICF,2,4)=INT(BMISCD(ICF,IDTYP,IPER,15))
+        IF(ISM.EQ.4)THEN
+          SNWGHT(1)=BMISCD(ICF,IDTYP,IPER,16)
+          SNWGHT(2)=BMISCD(ICF,IDTYP,IPER,17)
+          SNWTOT=SNWGHT(1)+SNWGHT(2)
+          SCALEF=BMISCD(ICF,IDTYP,IPER,18)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,19)
+        ELSE
+          SCALEF=BMISCD(ICF,IDTYP,IPER,16)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,17)
+        ENDIF
       else
         DO 10 L=1,NSEN(ICF)           
           IBMSN(ICF,L,1)=INT(BMISCD(ICF,IDTYP,IPER,8+4*(L-1)))
@@ -3440,15 +3470,15 @@ C If only one sensor read attributes and then set scaling.
 
 C << If using +4* logic, how does 12+ and 13+  fit? >>
           IF(ISM.EQ.4)THEN
-           SNWGHT(L)=BMISCD(ICF,IDTYP,IPER,12+(L-1)+4*(NSEN(ICF)-1))
-           SNWTOT=SNWTOT+SNWGHT(L)
+            SNWGHT(L)=BMISCD(ICF,IDTYP,IPER,12+(L-1)+4*(NSEN(ICF)-1))
+            SNWTOT=SNWTOT+SNWGHT(L)
           ENDIF
           IF(ISM.GE.1.AND.ISM.LT.4.AND.L.EQ.NSEN(ICF))THEN
-             SCALEF=BMISCD(ICF,IDTYP,IPER,12+4*(L-1))
-             OFFSET=BMISCD(ICF,IDTYP,IPER,13+4*(L-1))
+            SCALEF=BMISCD(ICF,IDTYP,IPER,12+4*(L-1))
+            OFFSET=BMISCD(ICF,IDTYP,IPER,13+4*(L-1))
           ELSEIF(ISM.EQ.4.AND.L.EQ.NSEN(ICF))THEN
-             SCALEF=BMISCD(ICF,IDTYP,IPER,13+(L-1)+4*(NSEN(ICF)-1))
-             OFFSET=BMISCD(ICF,IDTYP,IPER,14+(L-1)+4*(NSEN(ICF)-1))
+            SCALEF=BMISCD(ICF,IDTYP,IPER,13+(L-1)+4*(NSEN(ICF)-1))
+            OFFSET=BMISCD(ICF,IDTYP,IPER,14+(L-1)+4*(NSEN(ICF)-1))
           ENDIF    
 10      CONTINUE
       endif
@@ -3508,17 +3538,17 @@ C      write(6,*) '*OFFSET,SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT',OFFSET,
 C     & SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT
 
       IF(ISM.EQ.1)THEN
-         TDIF=ABS(TEMPHI-TNP)
-         TSEN=TEMPHI
+        TDIF=ABS(TEMPHI-TNP)
+        TSEN=TEMPHI
       ELSEIF(ISM.EQ.2)THEN
-         TDIF=ABS(TEMPLO-TNP)
-         TSEN=TEMPLO
+        TDIF=ABS(TEMPLO-TNP)
+        TSEN=TEMPLO
       ELSEIF(ISM.EQ.3)THEN
-         TDIF=ABS(TEMPAV-TNP)
-         TSEN=TEMPAV
+        TDIF=ABS(TEMPAV-TNP)
+        TSEN=TEMPAV
       ELSEIF(ISM.EQ.4)THEN 
-         TDIF=ABS(TEMPWT-TNP)
-         TSEN=TEMPWT
+        TDIF=ABS(TEMPWT-TNP)
+        TSEN=TEMPWT
       ENDIF
  
       IF(TDIF.LT.0.001)RETURN
@@ -3538,22 +3568,22 @@ C Convert from (/m^2) if necessary.
 C Is this capacity available ?
 
       IF(TSEN.GE.TNP)THEN
-         IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 1
-         IF(QQ.GT.QHM)GOTO 2
-         Q=QHN
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
-    2    Q=QHM
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
+        IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 1
+        IF(QQ.GT.QHM)GOTO 2
+        Q=QHN
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
+    2   Q=QHM
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
       ELSEIF(TSEN.LT.TNP)THEN
-         IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 1
-         IF(QQ.LT.QCM)GOTO 3
-         Q=QCN
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
-    3    Q=QCM
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 1
+        IF(QQ.LT.QCM)GOTO 3
+        Q=QCN
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
+    3   Q=QCM
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
       ENDIF
 
     1 TFUT=(BB3-BB2*Q)/BB1
@@ -3567,9 +3597,13 @@ C Is this capacity available ?
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
-         call edisp(itu,outs)
+         write(outs,'(6(A,F10.3),7(A,F5.2))') ' Qfuture=',QFUT,
+     &     'W Tfuture=',TFUT,'C Max ht cp=',QHM,'W Min ht cp=',QHN,
+     &     'W Max cl cp=',QCM,'W Min cl cp=',QCN,
+     &     'W Scale=',SCALEF,' Offset=',OFFSET,
+     &     'C T hi=',TEMPHI,'C T lo=',TEMPLO,'C T avg=',TEMPAV,
+     &     'C T wtd=',TEMPWT,' T sensed=',TSEN
+         call edisp248(itu,outs,110)
          call edisp(itu,' Leaving subroutine BCL11')
       END IF
      

@@ -1160,10 +1160,13 @@ C Edit building control function II.
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
-      character outsa*84,outsb*84,outsc*84,ltmp*248
+      character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48
       logical close1,close2,close3,close4,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
+      dimension icsn(4)! for passing sensor location to
+      integer icsn
+      integer lastndx  ! to keep track of last data position used.
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -1701,16 +1704,26 @@ C << defined in a temporal file.
             ndx=0
             if(I6.gt.2) I6=2
             DO 123 L=1,I6              
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
               ndx=8+4*(L-1)
               call edisp(iuout,' Auxliary Sensor Details')              
               write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
-             call edisp(iuout,outs)
-             if(INT(cm(7)).eq.4)then
-              ndx=12+(L-1)+4*(I6-1)         
-              write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
               call edisp(iuout,outs)
-             endif
-123        continue   
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
+              if(INT(cm(7)).eq.4)then
+                ndx=12+(L-1)+4*(I6-1)         
+                write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
+                call edisp(iuout,outs)
+              endif
+123         continue   
           endif
 
           H(1)=' The number of data items required is in the range'
@@ -1727,8 +1740,8 @@ C << defined in a temporal file.
           H(12)='   `   `  `    `     `                2       14 '
           H(13)=' weighting of aux`y sensors           2       16 '
           H(14)=' '
-          H(15)='plus 1 item for scaling factor (i.e. a % offset)'
-          H(16)='plus 1 item for offset factor (absolute offset) '
+          H(15)='PLUS 1 item for scaling factor (i.e. a % offset)'
+          H(16)='PLUS 1 item for offset factor (absolute offset) '
           H(17)=' - Refer ESP-r Data Model section 9 '
           CALL EASKR(cm(1),' ',' No. of misc data items ',
      &      10.,'F',18.,'F',10.,'no. of misc data items',IER,17)
@@ -1763,7 +1776,7 @@ C << defined in a temporal file.
           H(3)=' 2: (ref sensor)-(least value of aux sensors)'
           H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
           H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
-          CALL EASKR(cm(7),' ',' Multi-sensor mode ? ',
+          CALL EASKR(cm(7),' ',' Multi-sensor mode (see help)?',
      &      1.,'F',4.,'F',0.,' multi-sensor mode',IER,5)
           
 C Auxiliary sensor details,
@@ -1778,37 +1791,63 @@ C Auxiliary sensor details,
           H(8)='        3 = wind dir, 4 = diffuse rad, '
           H(9)='        5 = direc norm rad, 6 = RH'
           h(10)=' '
-          H(11)=' - Refer ESP-r Data Model section 9 '
+          h(11)=' 2nd item is used to further specify the location '
+          h(12)=' 3rd item is used to further specify the location '
+          h(13)=' 4th item is always zero '
+          H(14)=' - Refer ESP-r Data Model section 9 '
           DO 125 L=1,I6
             ndx=8+4*(L-1)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
             CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,13)
+     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,14)
             CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,13)          
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,14)          
             CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,13)          
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,13)
-125       continue          
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,14)          
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sen detail 4th item (always use zero)?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,14)
+125       continue 
+          lastndx=ndx+4         
           
           I7=INT(cm(7))
           if(I7.eq.4)then
-           DO 126 L=1,I6
+            DO 126 L=1,I6
 C Weighted auxiliary sensors mode,
-            ndx=12+(L-1)+4*(I6-1)         
-            H(1)=' The sensor weightings must total exactly 100.0'
-            CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
-     &        0.,'F',100.,'F',50.,' Aux sensor weighting',IER,1)
-126        continue
+              ndx=lastndx  ! set to next slot after aux senor data.        
+              H(1)='The sensor weightings must total exactly 100.0'
+              H(2)='This allows you to discount one of the sensors.'
+              if(i6.eq.1) cm(ndx)=100.0  ! if only one sensor.
+              CALL EASKR(cm(ndx),' ',
+     &          'Sensor weighting (between 0.0 & 100.0)?',
+     &          0.,'F',100.,'F',50.,' Aux sensor weighting',IER,2)
+126         continue
+          else
+            ndx=nint(cm(1))  ! set this so scaling next to last entry. 
+            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1)   
           endif
 
-C At end of data add in scaling factor and offset.
-          H(1)=' The sensor weightings must total exactly 100.0'
-          CALL EASKR(cm(ndx+1),' ',' Scaling factor ? ',
-     &        0.,'F',10.,'F',1.,' scaling factor',IER,1)
-          H(1)=' The sensor weightings must total exactly 100.0'
+C At end of data add in scaling factor and offset. Typically
+C a scaling factor is 1.0
+          H(1)='The sensor scaling factor is applied to the sensed'
+          H(2)='value at each timestep e.g. (20C sensed x 1.1) would'
+          H(3)='request a 10% rise over measured. '
+          if(cm(ndx).lt.0.01) cm(ndx+1)=1.0
+          CALL EASKR(cm(ndx),' ',' Scaling factor ? ',
+     &        0.,'F',10.,'F',1.,' scaling factor',IER,3)
+          H(1)='The sensor offset allows you to modify the sensed'
+          H(2)='value by a fixed amount. '
           CALL EASKR(cm(ndx+1),' ',' Offset factor ? ',
-     &        0.,'F',10.,'F',1.,' offset factor',IER,1)
+     &        -10.,'F',10.,'F',1.,' offset factor',IER,2)
         elseif(IBCLAW(II,JJ,KK).eq.12)then
 
 C Match temp to a function of multi-sensor values (on-off mode).
@@ -1828,6 +1867,16 @@ C Match temp to a function of multi-sensor values (on-off mode).
               call edisp(iuout,' Auxiliary Sensor Details')
               write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
               call edisp(iuout,outs)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
               if(INT(cm(7)).eq.4)then
                 ndx=12+(L-1)+4*(I6-1)         
                 write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
@@ -1888,18 +1937,41 @@ C Match temp to a function of multi-sensor values (on-off mode).
 
 C Auxiliary sensor details,
           I6=INT(cm(6))          
-          H(1)='The items are essentially the same as required in a'
-          H(2)=' control point sensor. '
+          H(1)='The sensor details are essentially the same as '
+          H(2)='required in a control point sensor ie. '
+          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(4)='   = -1 measuring plant component,  '
+          H(5)='   = -2 measuring mix air:radiant,'
+          H(6)='   = -3 ambient where the 2nd item is:'
+          H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
+          H(8)='        3 = wind dir, 4 = diffuse rad, '
+          H(9)='        5 = direc norm rad, 6 = RH'
+          h(10)=' '
+          h(11)=' 2nd item is used to further specify the location '
+          h(12)=' 3rd item is used to further specify the location '
+          h(13)=' 4th item is always zero '
+          H(14)=' - Refer ESP-r Data Model section 9 '
           DO 135 L=1,I6
             ndx=8+4*(L-1)
-            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-     &        -3.,'F',0.,'-',0.,' Aux sen detail 1st item',IER,2)
-            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,2)          
-            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,2)
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,2)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
+            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ?',
+     &        -3.,'F',0.,'-',0.,' Aux sen detail 1st item',IER,14)
+            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,14)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,14)
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sen detail 4th item (always use zero)?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,14)
 135       continue 
 
           I7=INT(cm(7))
@@ -2193,6 +2265,16 @@ C If no cooling capacity then set cooling set point to 100C.
               write(outs,'(6F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),
      &                             cm(ndx+3),cm(ndx+4),cm(ndx+5)
               call edisp(iuout,outs)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
 140         continue   
           endif
 
@@ -2215,7 +2297,7 @@ C If no cooling capacity then set cooling set point to 100C.
           H(17)='altered and you will be returned to the main menu. '
 
           I8=int(cm(8))
-          CALL EASKI(I8,' ',' No. of aux sensors ',
+          CALL EASKI(I8,' ',' Number of aux sensors (see help)',
      &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,17)
           if(ieri.eq.-3) goto 92
           cm(1)=7.+6.*I8
@@ -2239,22 +2321,33 @@ C Auxiliary sensor details,
           H(16)='that auxiliary sensor.'
           DO 141 L=1,I8
             ndx=9+6*(L-1)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
             call edisp(iuout,' ')
             WRITE(outs,'(a,i2,a)')' For aux sensor ',L,' define....'
             call edisp(iuout,outs)
-            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
+            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ?',
      &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,16)
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,16)
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,16)
-            CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sensor detail 4th item (always use zero)?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,16)
 
-            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ? ',
+            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ?',
      &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,16)
 
-            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ? ',
+            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ?',
      &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,16)
 141       continue
  
@@ -3197,7 +3290,8 @@ C Auxiliary sensor details,
      &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,3)          
             CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
      &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,3)          
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sen detail 4th item (always use zero)? ',
      &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,3)
  93       CONTINUE    
           
