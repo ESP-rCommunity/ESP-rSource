@@ -4874,14 +4874,13 @@ C terminal type 8.
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
       character tut_path*25,ltut*72,IA*3
       logical extra,XST
-#include "espinstalldir.h"
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
       extra = .false.
       if(OTHER(1:1).ne.'-')then
-        write(LTUT,'(A,A)') instpath(1:lnblnk(instpath)), 
-     &                      '/tutorial/esp-r.tut'
+        tut_path='/usr/esru/tutorial/'
+        write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
         XST=.FALSE.
