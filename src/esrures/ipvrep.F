@@ -130,7 +130,7 @@ C Pre calculated data (filtered).
       character ipvtitl*40,ipvvers*40,ipvsynop*248,metgroup*12
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
-      character xfile*72,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
+      character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
       character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
       CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
@@ -167,7 +167,7 @@ C Make up a single quote for IPV
 
 C Read in the existing IPV description.
  42   if(.NOT.autook)then
-        h(1)='This file holds a description of an Integrated '
+        h(1)='This file holds a description of an Integrated'
         h(2)='Performance View of this model, including periods,'
         h(3)='climatic dd information and assiciated zones.'
         ltmp=lipvdatf
@@ -209,7 +209,9 @@ C parameter sets known then check for seasonal ipv report file name.
       if(paction(1:8).eq.'ipv_win '.or.paction(1:8).eq.'ipv_win1'.or.
      &   paction(1:8).eq.'ipv_ann ')then
         iseas = 1
-        if(nsset.ge.1)xfile=sipvres
+        if(nsset.ge.1)then
+          write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
+        endif
         call ipvexp(xfile,ixopen,ixunit,'o','T','IPV intermediate',IER)
         usermode=.false.
         goto 49
@@ -218,25 +220,33 @@ C parameter sets known then check for seasonal ipv report file name.
 
 C In this case the data will be appended to an earlier file. 
         iseas = 2
-        if(nsset.ge.1)xfile=sipvres
+        if(nsset.ge.1)then
+          write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
+        endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV reopened',IER)
         usermode=.false.
         goto 49
       elseif(paction(1:7).eq.'ipv_sum')then
         iseas = 3
-        if(nsset.ge.1)xfile=sipvres
+        if(nsset.ge.1)then
+          write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
+        endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
         usermode=.false.
         goto 49
       elseif(paction(1:7).eq.'ipv_aut')then
         iseas = 4
-        if(nsset.ge.1)xfile=sipvres
+        if(nsset.ge.1)then
+          write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
+        endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
         usermode=.false.
         goto 49
       elseif(paction(1:8).eq.'ipv_win2')then
         iseas = 5
-        if(nsset.ge.1)xfile=sipvres
+        if(nsset.ge.1)then
+          write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
+        endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
         usermode=.false.
         goto 49
@@ -297,23 +307,23 @@ C Interactive commands.
       NITMS=13
 
 C Instanciate h() strings for this menu.
-      h(1) ='This facility is under development.  '
+      h(1) ='This facility is under development.'
       h(2) =' '
-      h(3) ='Produces seasonal and annual integrated performance '
-      h(4) ='views (IPV) of the current model based on data '
+      h(3) ='Produces seasonal and annual integrated performance'
+      h(4) ='views (IPV) of the current model based on data'
       h(5) ='defined in an IPV definition.  To generate a report'
-      h(6) ='for each season, toggle to the required season  '
-      h(7) ='(which matches the current results database) and '
+      h(6) ='for each season, toggle to the required season'
+      h(7) ='(which matches the current results database) and'
       h(8) ='direct report to feedback or a file.  Also set the'
       h(9) ='delimeter depending on the use of the report. Use'
-      h(10)='a comma or tab if exporting. '
+      h(10)='a comma or tab if exporting.'
       h(11)=' '
-      h(12)='Remember to toggle to the relevant season before '
-      h(13)='generating a seasonal report. '
+      h(12)='Remember to toggle to the relevant season before'
+      h(13)='generating a seasonal report.'
       h(14)=' '
-      h(15)='To generate an annual report which includes scaled '
-      h(16)='data and emissions etc., supply the file names for '
-      h(17)='each seasonal report. '
+      h(15)='To generate an annual report which includes scaled'
+      h(16)='data and emissions etc., supply the file names for'
+      h(17)='each seasonal report.'
 
       INO=-2
    4  CALL EMENU('IPV Output',ITEM,NITMS,INO)
@@ -352,7 +362,7 @@ C Toggle averaging.
           h(3)='the simulation was undertaken at a higher frequency.'
           h(4)=' '
           h(5)='Some `agents` which display IPV data are unable to'
-          h(6)='work with high frequency data. '
+          h(6)='work with high frequency data.'
           call askok(' ',
      &      ' Average results over each output interval?',ok,dok,6)
           if(ok)then
@@ -362,12 +372,12 @@ C Toggle averaging.
           endif
         endif
       elseif(INO.eq.NITMS-3)then
-        CALL EASKI(NOUT,' ',' Output time-step increment ? ',
+        CALL EASKI(NOUT,' ',' Output time-step increment ?',
      &   1,'F',60,'F',NTS,'output time-step',IER,17)
       elseif(INO.eq.NITMS-4)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
+        H(1) ='Tabular data can be sent to file with various'
         H(2) ='delimiters: '
         H(3) ='  spaces (format using spaces to lineup columns)'
         H(4) ='  single space between columns'
@@ -1934,7 +1944,7 @@ C           3 is java
       dimension WDHWD(MSPS),WPVD(MSPS),WHC(MSPS),WCC(MSPS)
       dimension WLC(MSPS),WFC(MSPS),WSPC(MSPS),WDHWC(MSPS),WPVC(MSPS)
       character outs*124,outsd*124,outsn*124
-      character xfile*72,tg*1,delim*1,h*72,tab*1,OUTSTR*124,sq*1
+      character xfile*144,tg*1,delim*1,h*72,tab*1,OUTSTR*124,sq*1
       CHARACTER dmdsdesc*248,bdmds*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
@@ -2014,7 +2024,7 @@ C Recover the distribution of resultant temperature in each bin for each season.
       CALL  ERPFREE(ifu,ISTAT)
 
 C Append the summary to the intermediate report to create finished report.
-      xfile=sipvres
+      write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
       call ipvexp(xfile,ixopen,ixunit,'a','T','IPV summay',IER)
       itru = icout
       if(ixopen.eq.1)then
@@ -2062,7 +2072,7 @@ C << find an iget number for this >>
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
      &        'performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(5a)') '*title',tab,'Integrated demand ',
+            write(outs,'(5a)') '*title',tab,'Integrated demand',
      &        tab,'kWh/m^2'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
@@ -2124,11 +2134,6 @@ C Report for the total building as well
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab (suggesstion by Luis Prazeres to not print total
-C line in the seasonal section).
-            Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
-C            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
-C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
             write(outs,'(3a)') '*End_seasonal_summary',tab,
@@ -2194,7 +2199,7 @@ C << find an iget number for this >>
      &    tdhw,tpv
         call eddisp(itru,outs)
       else
-        write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
         write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2205,10 +2210,10 @@ C << find an iget number for this >>
         call eddisp(itru,outs)
       endif
         
-C Note: units follow tab.
-      Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-      write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-      call eddisp(itru,outs)
+C Note: units follow tab. Luis Prazeres suggests to remove Total line.
+C      Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
+C      write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
+C      call eddisp(itru,outs)
       call edisp(itru,'*end_report')
       call edisp(itru,' ')
 
@@ -3161,7 +3166,7 @@ C << is this required? >>
       common/spm55/pvdayhr(2*MTS)
 
       dimension edput(7,MTS)
-      character tab*1,outs*124,xfile*72,tg*1,delim*1
+      character tab*1,outs*124,xfile*144,tg*1,delim*1
       character SLABEL*32,GLABEL*20
       logical pvok
 
@@ -3471,7 +3476,12 @@ C      endif
 C IPVEXP ***********
 C IPVEXP: Control feedback to export file or text feedback area. This
 C is a variant of ctlexp which does not create a separate parameter
-C file and allows appending to an existing file.
+C file and allows appending to an existing file.  This is a variant
+C of esrucom/ctlexp.F subroutine ctlexp.F The idea of an act command
+C might be of interest in the standard version. This subroutine might
+C move into esrucom/ctlexp.F in the future (once there is no name
+C clash with the two variants of ctlexp (res version and everything else).
+
 C Assign user-specified export file - checking if local or remote.
 C act = 'o' to open new file, act = 'a' to append to an existing
 C file. tg is a character T text or X tabular info being saved.
@@ -3482,21 +3492,25 @@ C file. tg is a character T text or X tabular info being saved.
       common/rcmd/LCMDFL
       common/rpath/path
 
-C Simulator parameters.
+C Simulator parameters. autook signals silent operation.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72,act*1
+      character H*72,xfile*144,path*72,outs*124,outs248*248
+      character tg*1,tfile*72,act*1
       character LCMDFL*144,longtfile*144,longtfiledos*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Each call is a toggle.
       ixopen=ixopen+1
       if(ixopen.GT.1)ixopen=0
       if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
+        write(outs248,'(2a)') 'closing export file: ',xfile
+        call edisp248(iuout,outs248,100)
         if(tg.eq.'X')then
           CALL ERPFREE(ixunit,ISTAT)
           call usrmsg(' ','reporting >> to display ','-')
@@ -3506,7 +3520,6 @@ C Each call is a toggle.
       elseif(ixopen.eq.1)then
         iw=0
         remote=.false.
-        call isunix(unixok)
         if(unixok)then
           if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')remote=.true.
         else
@@ -3517,27 +3530,52 @@ C Each call is a toggle.
         if(remote)then
           write(outs,'(A,A)') ' The current path is: ',path
           call edisp(iuout,outs)
-          h(1)='If using path then the export file will be placed in'
-          h(2)='the model folder. Otherwise nominate a folder and file'
-          h(3)='name for the export file (i.e. /tmp/junk.exp or'
-          h(4)='/home/ralph/reports/junk.exp) '
           if (autook) then
-            IW=2
+            IW=2   ! iw needs to be non-zero for subsequent code to work.
           else
+            h(1)='If using path then the export file will be placed in'
+            h(2)='the model folder. Otherwise nominate a folder and'
+            h(3)='file name for the export file (i.e. /tmp/junk.exp or'
+            h(4)='/home/ralph/reports/junk.exp) '
+            h(5)=' '
+            h(6)='If you selected this option in error click continue.'
             write(outs,'(A,A)') ' The model is in folder ',path
-            CALL EASKAB(outs,' place export file:','in model folder',
-     &        'user defined folder',IW,4)
+            CALL EASKABC(outs,' place export file:',
+     &        'in the model folder','user defined folder','continue',
+     &        iw,6)
+            if(iw.eq.3)then
+              ixopen=0
+              return    ! does ixopen need to be reset?
+            endif
           endif
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '
         if (.NOT.autook) then
-          call easks(xfile,' export file name: ',' ',72,
-     &      ' ','export file name',IER,2)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          llt=lnblnk(xfile)
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',96,'export.txt','export file name',IER,2)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',124,'export.txt','export file name',IER,2)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',144,'export.txt','export file name',IER,2)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',144,'export.txt','export file name',IER,2)
+          else
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',96,'export.txt','binary events db',IER,2)
+          endif
         endif
-        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+        write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                    ' for export.'
-        call usrmsg(outs,' ','-')
+        call edisp248(iuout,outs248,100)
         if(iw.eq.1)then
           if(tg.eq.'X'.or.tg.eq.'T')then
             if(act.eq.'o'.or.act.eq.'O')then
@@ -3576,7 +3614,7 @@ C and change any / to \.
               if(ier.ne.0)return
             endif
           endif
-        else
+        elseif(iw.eq.2)then
           if(tg.eq.'X'.or.tg.eq.'T')then
             if(act.eq.'o'.or.act.eq.'O')then
               CALL ERPFREE(ixunit,ISTAT)
@@ -3604,15 +3642,17 @@ C open it with APPEND option. Ifedf for F77 or F90.
               if(ier.ne.0)return
             endif
           endif
+        elseif(iw.eq.3)then
+          return
         endif
         if(iw.eq.1)then
-          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
+          write(outs248,'(1x,3A)') msg(1:lnblnk(msg)),
      &      ' reporting >> to ',longtfile(1:lnblnk(longtfile))
         else
-          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
+          write(outs248,'(1x,3A)') msg(1:lnblnk(msg)),
      &      ' reporting >> to ',xfile(1:lnblnk(xfile))
         endif
-        call usrmsg(outs,' ','-')
+        call edisp248(iuout,outs248,100)
       endif
       RETURN
 

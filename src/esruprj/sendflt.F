@@ -41,7 +41,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       character CLSSEL*36
       character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
 
 C Define material types.

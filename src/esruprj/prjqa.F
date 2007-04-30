@@ -197,7 +197,7 @@ C Remember if each zone is fully attributed.
       character SSPARENT*12
       character zname*12,SNAME*12,cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*72,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
@@ -261,8 +261,10 @@ C Check if Unix-based or DOS based.
       endif
 
 C Assume file names not included and destination to screen (zero)
+C and itu set so QA report is written to screen.
       fileinfo=0
       destination=0
+      itu = iuout
 
 C Setup the selection menu.
     3 INO=-4

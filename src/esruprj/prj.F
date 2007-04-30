@@ -23,7 +23,6 @@ C   MAIN: it does what it says on the box.
 C   simula: commissions technical assessments and analysis.
 C   checkmodel: check model prior to commissioning a simulation.
 C   imgdisp: displays images associated with start-up or at specific points
-C   CTLEXP: Control feedback to export wireframe or text feedback area.
 C   CFGVER: supports the creation of model variants.
 C   VERMAN: copies various esp-r files and names them uniquely
 C          in order to build multiple variants of a base case model
@@ -766,8 +765,10 @@ C Present opening menu.
           h(1)='If you exit without saving, recent changes could be'
           h(2)='lost. If you select continue then you will be returned'
           h(3)='to the interface.'
+          h(4)=' '
+          h(5)='If you selected this option in error click continue. '
           CALL EASKABC('There are unsaved changes in the model.',
-     &      'options:','exit w/o saving','save & exit','continue',IW,3)
+     &      'options:','exit w/o saving','save & exit','continue',IW,5)
           if(iw.eq.3)then
             goto 3
           elseif(iw.eq.2)then
@@ -843,8 +844,10 @@ C loaded << double check that this is true >>
 C Open an exemplar or existing model.
         h(1)='A list of example (exemplar) models is available or'
         h(2)='you can specify another existing model.'
+        h(3)=' '
+        h(4)='If you selected this option in error click continue. '
         CALL EASKABC(' Model opening options:','  ',
-     &    'open an exemplar','open another model','continue',IW,2)
+     &    'open an exemplar','open another model','continue',IW,4)
         if(iw.eq.3)then
           continue
         elseif(iw.eq.1)then
@@ -960,10 +963,12 @@ C Something was passed in via the command line so offer choice.
             H(3)='of the composing files.  Such a file has been'
             H(4)='passed to the Project Manager as a command line'
             H(5)='argument.'
+            H(6)=' '
+            H(7)='If you selected this option in error click continue. '
             write(outs,'(a,a)') ' The command line included: ',
      &      LCMDFL(1:lnblnk(LCMDFL))
-            CALL EASKAB(outs,' ','use it as the model',
-     &        'specify another',IW,5)
+            CALL EASKABC(outs,' ','use it as the model',
+     &        'specify another','continue',IW,7)
 
 C Find the path and local file name.
             if(IW.eq.1)then
@@ -981,11 +986,14 @@ C Find the path and local file name.
               confirm=.false.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-            else
+            elseif(IW.eq.2)then
               itisanexemplar=.false.
               confirm=.true.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            elseif(IW.eq.3)then
+              INO=-2
+              GOTO 3
             endif
 C Debug.
 C            write(6,*) ' browse status is ',browse
@@ -1450,10 +1458,18 @@ C Invoke simulator.
           h(1)='Interactive mode uses simulation parameters as defaults'
           h(2)='which can be overwritten. The silent running mode '
           h(3)='uses the parameters to run in automatic mode. '
-          CALL EASKAB('Simulation interaction options: (see help)',' ',
-     &       'run interactively','silent running mode',isauto,3)
-          if(isauto.eq.1)aut=' interactive'
-          if(isauto.eq.2)aut=' silent'
+          h(4)=' '
+          h(5)='If you selected this option in error click continue.'
+          CALL EASKABC('Simulation interaction options: (see help)',' ',
+     &      'run interactively','silent running mode','continue',
+     &      isauto,5)
+          if(isauto.eq.1)then
+            aut=' interactive'
+          elseif(isauto.eq.2)then
+            aut=' silent'
+          else
+            goto 3
+          endif
           call tstamp('>','PRJ: beginning simulation with param set')
           doit = ' '
           call tchild(ICPMOD)
@@ -1555,8 +1571,10 @@ C an offset from prj start position.
         H(11)='not computed, buoyancy effects are time invariant.'
         H(12)='For models where this assumption is inappropriate'
         H(13)='the `Integrated` simulation option should be used.'
+        H(14)=' '
+        H(15)='If you selected this option in error click continue.'
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
-     &      'Computational Fluid Dynamics','cancel',IW,13)
+     &      'Computational Fluid Dynamics','continue',IW,15)
         IF(IW.EQ.1)THEN
 
 C Execute mfs.
@@ -2102,7 +2120,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character ltpath*72,filen*72,ltmp*72,upath*72
       character basefile*144,variantfile*144,outs*124,outsd*124
       character word1*20,word2*40,word3*20,outstr*124
-      character xfile*72,tg*1,delim*1,tab*1,fs*1
+      character xfile*144,tg*1,delim*1,tab*1,fs*1
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
@@ -2211,23 +2229,31 @@ C IPV for the actual number of simulations required.
       h(27)='  and for the whole model (kW/a)'
       h(28)=' *difference in heating, therms and cooling by area and'
       h(29)='  for the whole building.'
+      h(30)=' '
+      h(31)='If you selected this in error click on continue. '
       CALL EASKABCD('IPV options: (see help)',' ',
      &  'run required simulations','extract reports',
-     &  'compare reports','continue',irs,29)
+     &  'compare reports','continue',irs,31)
       if(irs.eq.1)then
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
-        CALL EASKAB('Simulation interaction options: (see help)',
-     &    ' ','run interactively','silent running mode',isauto,3)
+        h(4)=' '
+        h(5)='If you selected this option in error click continue.'
+        CALL EASKABC('Simulation interaction options: (see help)',
+     &    ' ','run interactively','silent running mode',
+     &    'continue',isauto,5)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        if(isauto.eq.1)aut=' default'
-        if(isauto.eq.2)then
+        if(isauto.eq.1)then
+          aut=' default'
+        elseif(isauto.eq.2)then
           aut=' silent '
           tmode='text'
+        elseif(isauto.eq.3)then
+          return
         endif
 
 C Temporarily assume no browsing if in ipv mode.
@@ -2288,16 +2314,22 @@ C an offset from prj start position.
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
-        CALL EASKAB('IPV extraction options: (see help)',
-     &    ' ','run interactively','silent running mode',isauto,3)
+        h(4)=' '
+        h(5)='If you selected this option in error click continue.'
+        CALL EASKABC('IPV extraction options: (see help)',' ',
+     &    'run interactively','silent running mode','continue',
+     &    isauto,5)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        if(isauto.eq.1)aut=' default'
-        if(isauto.eq.2)then
+        if(isauto.eq.1)then
+          aut=' default'
+        elseif(isauto.eq.2)then
           aut=' silent '
           tmode='text'
+        elseif(isauto.eq.3)then
+          return
         endif
         h(1)='IPV recovery assumes that the relevant results '
         h(2)='libraries for each simulation are available. '
@@ -3425,118 +3457,6 @@ C in lib/esp_draw.c
       return
       end
 
-C CTLEXP ***********
-C CTLEXP: Control feedback to export wireframe or text feedback area.
-C Assign user-specified export file - checking if local or remote.
-C tg is a character T or G specifying text or graphic 
-C info being saved.
-      subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      common/rpath/path
-
-      character*(*) msg,xfile
-      character H*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*144,longtfiledos*144
-      logical concat,unixok
-
-C Check if Unix-based or DOS based.
-      call isunix(unixok)
-
-C Each call is a toggle. If open then close text or graphics command
-C file. For the graphics ask if file should be further converted.
-      ixopen=ixopen+1
-      if(ixopen.GT.1)ixopen=0
-      if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
-        if(tg.eq.'T')then
-          CALL ERPFREE(ixunit,ISTAT)
-        elseif(tg.eq.'G')then
-          if(ixloc.eq.1)then
-            longtfile=' '
-            if(unixok)then
-              call addpath(xfile,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(xfile,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
-          else
-            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
-          endif
-          call wwcsetend
-          call wwcclose(longtfile)
-        endif
-      elseif(ixopen.eq.1)then
-        ixloc=0
-        if(path.ne.'./'.and.path.ne.' ')then
-           write(outs,'(A,A)') ' The current path is: ',path
-           call edisp(iuout,outs)
-         h(1)='If using path then the export file will be placed in'
-         h(2)='the model folder. Otherwise nominate a folder and file'
-         h(3)='name for the export file (i.e. /tmp/junk.exp or'
-         h(4)='/home/ralph/reports/junk.exp) '
-           write(outs,'(A,A)') ' The model is in folder ',path
-           CALL EASKAB(outs,' place export file:','in the model folder',
-     &      'user defined folder',ixloc,4)
-        endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
-        call easks(xfile,' export file name: ',' ',72,
-     &    ' ','export file name',IER,2)
-
-        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
-        call usrmsg(outs,' ','p')
-        if(ixloc.eq.1)then
-          if(tg.eq.'T')then
-            call efopseq(ixunit,xfile,4,IER)
-            if(ier.ne.0)return
-          elseif(tg.eq.'G')then
-
-C Writing remotely, add the path to the given file name before
-C passing request to wwlib.c
-            longtfile=' '
-            if(unixok)then
-              call addpath(xfile,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(xfile,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
-            call edisp248(iuout,longtfile,100)
-            call edisp248(iuout,xfile,100)
-            call wwcopen(longtfile)
-            call wwcsetstart
-          endif
-        else
-          if(tg.eq.'T')then
-            CALL ERPFREE(ixunit,ISTAT)
-            call FPOPEN(ixunit,ISTAT,1,3,xfile)
-            if(ISTAT.lt.0)return
-          elseif(tg.eq.'G')then
-            tfile=xfile
-            call wwcopen(tfile)
-            call wwcsetstart
-          endif
-        endif
-        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
-     &    ' >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','p')
-      endif
-      RETURN
-      END
-
 C ********************* CFGVER 
 C CFGVER supports the creation of model variants.
 C It copies a project and gives it a new name   
@@ -4427,8 +4347,10 @@ C View factors and radiant sensors
           nbvalsv=0
           h(1)='Area weighted calculations are the default treatment.'
           h(2)='Ray tracing is more accurate and time consuming.'
+          h(3)=' '
+          h(4)='If you selected this option in error click continue. '
           CALL EASKABC('Viewfactor options:',' ',
-     &      'area weighted (quick)','ray traced','continue',IW,2)
+     &      'area weighted (quick)','ray traced','continue',IW,4)
 
 C Updating viewfactors can require configuration file to be updated
 C before calling mrt.
@@ -4543,9 +4465,11 @@ C pressure distributions
         H(9) = 'flow network description. Invoking this facility '
         H(10)= 'copies the database, renames it and optionally allows'
         H(11)= 'you to edit it.'
+        H(12)=' '
+        H(13)='If you selected this option in error click continue. '
         msg1='updating model for pressure db changes...'
         CALL EASKABC('Change to be made to ... (see help) ',
-     &  ' ','building parameters','database','abort',IW,11)
+     &  ' ','building parameters','database','continue',IW,13)
         IF(IW.EQ.3)THEN
           RETURN
         ELSEIF(IW.EQ.2)THEN

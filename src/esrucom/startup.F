@@ -1837,8 +1837,8 @@ C Parse command line paramters for ecnv.
       integer termtype
       integer i,itrc,itmprm,iobs,ichop
       real conv
-      character argument*72,prog*48,inf*72,outs*124,appn*24
-      character iform*24,oform*24,ouf*72,ucfg*72,mode*8
+      character argument*72,prog*48,inf*144,outs*248,appn*24
+      character iform*24,oform*24,ouf*144,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'
       iform = 'UNKNOWN'
@@ -1936,9 +1936,9 @@ C If one parameter.
         write(outs,'(4a)') 'Starting ecnv in ',
      &    oform(1:lnblnk(oform)),' mode with in file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
-C        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         return
       endif
       end

@@ -790,7 +790,9 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       LOGICAL  CFGOK,OK,dok
-      DIMENSION IVALS(MCOM),JGVNT(MGRT,8)
+
+C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
+      DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
@@ -840,13 +842,21 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
             goto 83
           ENDIF
 
+C Backup JVN to JVNZ
+          do 121 J=1,nsur
+            K=NVER(J)
+            do 122 L=1,K
+              JVNZ(J,L)=JVN(J,L)
+  122       continue
+  121     continue
+
 C Write surface information to the viewer file. First invert edges.
           DO 120 J=1,NSUR
             K=NVER(J)
             DO 130 L=1,K/2
-              ITEMP=JVN(J,L)
-              JVN(J,L)=JVN(J,K+1-L)
-              JVN(J,K+1-L)=ITEMP
+              ITEMP=JVNZ(J,L)
+              JVNZ(J,L)=JVNZ(J,K+1-L)
+              JVNZ(J,K+1-L)=ITEMP
   130       CONTINUE
   120     CONTINUE
 
@@ -858,7 +868,7 @@ C Write to output file.
             WRITE(IUO,'(3F8.3)')X(J),Y(J),Z(J)
    40     CONTINUE
           DO 50 J=1,NSUR
-            WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVNZ(J,K),K=1,NVER(J))
    50     CONTINUE
         ENDIF
 

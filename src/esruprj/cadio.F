@@ -51,7 +51,7 @@ C exportcad: controls model export facilities.
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
-      character xfile*72,tg*1,delim*1,ffile*72
+      character xfile*144,tg*1,delim*1,ffile*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
       character longtfile*144,longtfiledos*144
@@ -277,42 +277,45 @@ C Toggle output redirection to xfig.
      &      'and then re-select this option.','W')
           goto 33
         endif
-        if(ixopen.eq.1)then
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
-        else
-          CALL EASKABC('Feedback redirection:',' ','graphic',
-     &                                            'text','cancel',IW,4)
-          if (IW.eq.1.and.MMOD.eq.8) then
-            write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_wire'
-            call ctlexp(xfile,ixopen,ixloc,ixunit,'G','wire frame',IER)
-            call usrmsg('sending wireframe... ',' ','-')
-            MODIFY=.TRUE.
-            CALL ADJVIEW(ITRC,IER)
-            call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &                               iicfgz,iicfgn,iicfgc,iicfgdfn)
-            call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &                               iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
-            call usrmsg('sending wireframe...done.',' ','-')
-            call ctlexp(xfile,ixopen,ixloc,ixunit,'G','Wire frame',IER)
-            MODIFY=.TRUE.
+
+        if (MMOD.eq.8) then
+
+C User is in graphic mode so open the export file and then request that
+C the wireframe is redrawn (in the C code the low level calls will be
+C writing out the vector information to the export file.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_wire'
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'G','wire frame',IER)
+          call usrmsg('sending wireframe... ',' ','-')
+          MODIFY=.TRUE.
+          CALL ADJVIEW(ITRC,IER)
+          call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
+     &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
+          call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
+     &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
+          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          CALL viewtext(ETEXT,1,1,1)
+
+C Toggle the wirefram export file closed.
+          call usrmsg('sending wireframe...done.',' ','-')
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'G','Wire frame',IER)
+          MODIFY=.TRUE.
 
 C Check if conversion to xfig wanted.
-            dok=.true.
-            h(1)='Assuming the export was sucessful you can proceed.'
-            call askok(' ','Convert output to xfig format?',ok,dok,1)
-            if(ok)then
-              write(ffile,'(a,a4)') xfile(1:lnblnk(xfile)),'.fig'
-              doit = ' '
-              write(doit,'(4a)') 'ecnv -if ww -in ',
-     &               xfile(1:lnblnk(xfile)),' -of xfig -out ',
-     &               ffile(1:lnblnk(ffile))
-              call usrmsg('Starting xfig conversion via',doit,'-')
-              call runit(doit,'-')
-            endif
-          elseif (IW.eq.2) then
-            call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
+          dok=.true.
+          h(1)='Assuming the export was sucessful you can proceed.'
+          call askok(' ','Convert output to xfig format?',ok,dok,1)
+          if(ok)then
+            write(ffile,'(a,a4)') xfile(1:lnblnk(xfile)),'.fig'
+            doit = ' '
+            write(doit,'(4a)') 'ecnv -if ww -in ',
+     &        xfile(1:lnblnk(xfile)),' -of xfig -out ',
+     &        ffile(1:lnblnk(ffile))
+            call usrmsg('Starting xfig conversion via',doit,'-')
+            call runit(doit,'-')
+
+C << still to be done - remove the initial _wire file after fig file
+C << has been created
+
           endif
         endif
       ELSEIF(INO1.EQ.6)THEN
