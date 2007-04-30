@@ -32,6 +32,7 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "tdf2.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -47,23 +48,21 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/rpath/path
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,XST,ok,dok
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
 
 C The common code method of reading in a system configuration file
 C uses the same common blocks as MOINIT so there is no convenient way

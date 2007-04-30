@@ -179,7 +179,7 @@ C Read number of nodes, components, interconnections and wind reduction.
         CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','no of nodes',IER)
         CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','no of compnt',IER)
         CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connct',IER)
-        CALL EGETWR(OUTSTR,K,WRED,0.,1.,'F','wind reduction',IER)
+        CALL EGETWR(OUTSTR,K,WRED,0.,10.,'F','wind reduction',IER)
         IF(IER.NE.0) GOTO 1001
       ELSE
         CALL USRMSG('looking for at least 4 items in',OUTSTR,'W')
@@ -496,6 +496,25 @@ C Type 10 power law volume flow resistance component.
      &    call MFERR(ICMP,' Negative flow coef not allowed.',IER)
         if(SUPCMP(ICMP,3).LT.0.)
      &    call MFERR(ICMP,' Negative flow exponent not allowed.',IER)
+      ELSE IF(ITPCMP(ICMP).EQ. 11) THEN
+
+C Type 11 - trickle ventilator (see notes in esrumfs/mfmach.F MF011C).
+        if(NSDC.EQ.4.OR.NSDC.EQ.10)CALL CNTERR(ICMP,3)
+        if((NSDC.NE.3).OR.ISDCNN(ICMP).NE.0)
+     &    call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
+        if(IS1.LT.1.OR.IS1.GT.2)
+     &    call MFERR(ICMP,' Fluid type must be 1 or 2. ',IER)
+        CALL ECLOSE(SUPCMP(ICMP,2),15.0,0.01,close1)
+        CALL ECLOSE(SUPCMP(ICMP,2),30.0,0.01,close2)
+        if(close1)then
+          continue
+        elseif(close2)then
+          continue
+        else
+          call MFERR(ICMP,' Device rating should be 15.0 or 30.0',IER)
+        endif
+        if(SUPCMP(ICMP,3).LE.0.)
+     &    call MFERR(ICMP,' Number of devices cannot be zero.',IER)
       ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
 
 C Type 15 power law mass flow resistance component.
@@ -658,6 +677,26 @@ C Type 210 general flow conduit.
      &    call MFERR(ICMP,' Conduit length out of range.',IER)
         if(SUPCMP(ICMP,5).LT.0..OR.SUPCMP(ICMP,5).GE.SUPCMP(ICMP,2)/2.)
      &    call MFERR(ICMP,' Roughness factor out of range.',IER)
+      ELSE IF(ITPCMP(ICMP).EQ.211) THEN
+
+C Type 211 - Cowl roof ventilator (typical ceramic unit).
+        if(NSDC.EQ.7.OR.NSDC.EQ.13)CALL CNTERR(ICMP,6)
+        if((NSDC.NE.6).OR.ISDCNN(ICMP).NE.0)then
+          call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
+          goto 999
+        endif
+
+C Error checks.
+        if(IS1.NE.1)
+     &    call MFERR(ICMP,' Fluid type must be 1.',IER)
+        if(SUPCMP(ICMP,2).LT.0.001)
+     &    call MFERR(ICMP,' Cowl hydraulic diam < 0.001.',IER)
+        if(SUPCMP(ICMP,4).LT.0.001)
+     &    call MFERR(ICMP,' Cowel coefficien B < 0.001.',IER)
+        if(SUPCMP(ICMP,5).LT.0.001)
+     &    call MFERR(ICMP,' Cowel coefficien n < 0.001.',IER)
+        if(SUPCMP(ICMP,6).LT.-0.1.OR.SUPCMP(ICMP,6).GT.1.1)
+     &    call MFERR(ICMP,' Include wind effects not zero or one.',IER)
       ELSE IF(ITPCMP(ICMP).EQ.220) THEN
 
 C Type 220 flow conduit ending in 3-leg junction.
@@ -871,10 +910,10 @@ C MFLIST Fluid flow file: list common block contents.
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
       COMMON/C1/NCOMP,NCON
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,zname*12,zdesc*64
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER LAPROB*72
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4
       logical written
 
@@ -950,6 +989,11 @@ C Provide a heading string for each different component type.
      &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
           CALL EDISP(itru,outs)
           written=.true.
+        ELSE IF(ITPCMP(ICMP).EQ. 11) THEN
+          WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
+     &      ' Rated flow ',SUPCMP(ICMP,2),' Nb devices ',SUPCMP(ICMP,3)
+          CALL EDISP(itru,outs)
+          written=.true.
         ELSE IF(ITPCMP(ICMP).EQ. 15) THEN
           WRITE(outs,'(a,F4.1,2(a,G12.5))')' Fluid ',SUPCMP(ICMP,1),
      &      ' coef a ',SUPCMP(ICMP,2),' exponent b ',SUPCMP(ICMP,3)
@@ -1015,6 +1059,9 @@ C Provide a heading string for each different component type.
         ELSE IF(ITPCMP(ICMP).EQ.210) THEN
           call edisp(itru,
      &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
+        ELSE IF(ITPCMP(ICMP).EQ.211) THEN
+          call edisp(itru,
+     &  '   Fluid, cowl hyd dia, loc loss, coef B coef n, include wind')
         ELSE IF(ITPCMP(ICMP).EQ.220) THEN
           call edisp(itru,
      &  '   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.')
@@ -1097,7 +1144,6 @@ C<< Plant and air flow node mapping to be added
           CALL EDISP(ITRU,OUTS)
         ENDIF
  234  CONTINUE
-      
 
   100 RETURN
 

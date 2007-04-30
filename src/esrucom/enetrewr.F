@@ -99,7 +99,7 @@ C *********************************************************************
       SUBROUTINE ENETREAD(MODE)
 
 #include "power.h"
-C
+#include "espriou.h"
 C Common Blocks
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -151,9 +151,6 @@ C Node and component names
      &HYCOMTYPSTR(MHYCOM),POWCOMNAM(MPOWCOM),POWCDATS(MPOWCOM,MPCDS),
      &CONECOMNAM(MCONECOM)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
 C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
 
@@ -201,7 +198,7 @@ C Characters
       character HYCOMNAM*12,POWCOMNAM*12,CONECOMNAM*12,PHTYPSTR*12
       CHARACTER ENDESC*72,HYDESC*72,POWCOMDESC*72,POWCDATS*72
       character CONECOMDESC*72,ENTFLNAM*72,LFIL*72,DEFLNAM*72,H*72
-      character currentfile*72,OUTSTR*124,OUTS*124
+      character OUTSTR*124,OUTS*124
 
       LOGICAL OK,DOK,CONT
 
@@ -292,7 +289,7 @@ C Open the electrical network file.
       WRITE(OUTS,'(A,A)') 
      &' Opened electrical network file: ',LFIL(1:LNBLNK(LFIL)) 
       CALL USRMSG(OUTS,' ','-')  
-      currentfile=LFIL   
+      write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
         
 C Read the rest of the file.
  20   CALL STRIPC(IEUNIT,OUTSTR,99,ND,0,'check file',IER)

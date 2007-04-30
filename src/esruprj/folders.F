@@ -28,6 +28,8 @@ C ********** pregist
 C Register a new project. Parameter act = 'i' then initial pass.
       subroutine pregist(act,ier)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -60,16 +62,13 @@ C Images.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
       dimension nwlistf(50)
 
-      logical XST,OK,dok,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok
 
       character dstmp*24,LCFTMP*24
@@ -77,15 +76,17 @@ C Calendar.
       character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
       character LCFGF*72,H*72,cfgroot*24
       character*72 DFCFG
-      character doit*248,tfile*72,longtfile*144
+      character doit*248,tfile*72,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
       character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*1
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character docpth*24,tmppth*24,dbspth*24
       character*72 listf(50),listfc(50)
       character subpath*72,action*3,outs*124
+
+      integer iyeart    ! for local editing
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -313,7 +314,7 @@ C information.
           IF(OK)GOTO 53
         ENDIF
       else
-        currentfile=LPRJLG
+        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(a,a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
@@ -344,7 +345,20 @@ C << which uses GTK facilities.
       h(6)='is to provide documentation on the model. '
       CALL ASKOK(' ',' Edit the log file?',OK,dok,6)
       IF(OK)then
-        call addpath(LPRJLG,longtfile,concat)
+
+C Check if Unix-based or DOS based.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LPRJLG,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LPRJLG,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
@@ -422,19 +436,30 @@ C Ask for site position.
      &       -15.0,'W',15.0,'W',0.0,'site londitude',IER,3)
         IF(IER.EQ.0)XLON=SLON
 
-C Ask for year, initialise and then print out the calendar.
+C Ask for year, initialise and then print out the calendar if the
+C user does not cancel the operation.
         H(1)='The project controls and scheduling uses a year'
         H(2)='index. You can use the one specified with the climate'
         H(3)='file or give the current year.'
-        CALL EASKI(IYEAR,' ',' Year for schedules and assessments?',
-     &       1900,'W',2010,'W',2000,'year',IER,3)
-        call calenmanage('i',ier)
-        loop=8
-        loopst=1
-        call calenprint(iuout,'t',iyear,loopst,loop,ier)
-        call edisp(iuout,' ')
-        call calenprint(iuout,'g',iyear,loopst,loop,ier)
-        call edisp(iuout,' ')
+        H(4)=' '
+        H(5)='A camcel request allows you to proceed without changing'
+        H(6)='the schedules year (it does not yet cancel the creation'
+        H(7)='of a new model.'
+        iyeart=iyear
+        CALL EASKI(IYEART,' ',' Year for schedules and assessments?',
+     &       1900,'W',2010,'W',2000,'year',IERI,7)
+        if(ieri.eq.-3) then
+          call calenmanage('i',ier)
+        else
+          iyear=iyeart
+          call calenmanage('i',ier)
+          loop=8
+          loopst=1
+          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call edisp(iuout,' ')
+          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+          call edisp(iuout,' ')
+        endif
 
         H(1)='Other site related information such as ground '
         H(2)='reflection and wind exposure can be found in the '
@@ -456,6 +481,7 @@ C information.
 C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
+#include "espriou.h"
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -469,26 +495,24 @@ C Maintain model folders.
 C External text editor.
       common/texted/tedlbl,teditor
 
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/user/browse
-
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
 
 C Remember width of file/folder names passed back from getfilelist.
       dimension nwlistf(50)
-      logical OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character doit*248,tfile*72,sfile*72,snpfile*72,longtfile*144
+      character doit*248,tfile*72,sfile*72,snpfile*72
+      character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
       character*33 ITEMS(19)
       character*72 listf(50),listfc(50)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,currentfile*72
+      character docpth*24,tmppth*24,dbspth*24
       character subpath*72,action*3
 
 C Set folder separator (fs) to \ or / as required.
@@ -808,7 +832,18 @@ C If vi then spawn a new window to do the editing in.
         H(2)='defined text editor.'
         CALL EASKS(LFIL,' ASCII file to edit ? ',
      &    ' ',72,' ','ASCII file',IER,2)
-        call addpath(LFIL,longtfile,concat)
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LFIL,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LFIL,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),

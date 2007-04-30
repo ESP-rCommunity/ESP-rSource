@@ -1,0 +1,16 @@
+The standard regression tests exercised by 'tester.pl'
+are located in the directory 'test_suite'.  The directory
+'additional_tests' contains additional tests that can
+optionally be exercised by 'tester.pl'.  For example,
+'additional_tests/A42_fuel_cell_comp_tests' contains
+the suite of 50 tests that form the IEA/ECBCS Annex 42
+comparative test suite for its fuel cell cogeneration 
+model.
+
+The inclusion of these additional tests in 'test_suite'
+would have unduly lengthened routine regression testing,
+and hence they have been located in 'additional_tests'.
+These additional tests can be exercised by using 'tester.pl's
+'--file' option, e.g.
+
+ ./tester.pl --path ../additional_tests reference_bps test_bps

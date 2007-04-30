@@ -28,10 +28,12 @@ C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -60,7 +62,7 @@ C Use file unit IPRODB temporarily.
       common/pmchange/comold,tmcold,vwfold,ishold
 
       dimension IVALB(MB)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*33 VERT(35)
       character*30 PICK(MB)
@@ -70,9 +72,13 @@ C Use file unit IPRODB temporarily.
       character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
       character doit*248,tmode*8,tfile*72,LCFGF*72,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,longtfile*144
+      character docpth*24,tmppth*24,dbspth*24
+      character longtfile*144,longtfiledos*144
       LOGICAL MODIFY,MODLEN,MODBND,concat,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,silent
+      LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check for obstructions. If file exists ask user to confirm
 C it or dereference it. If it does not exist ask user for
@@ -239,7 +245,17 @@ C to include the path and create a string to drive ish.
            doit = ' '
            call tchild(ICPMOD)
            call termode(ICPMOD,tmode)
-           call addpath(LCFGF,longtfile,concat)
+           if(unixok)then
+             call addpath(LCFGF,longtfile,concat)
+           else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+             call addpath(LCFGF,longtfile,concat)
+             call cmdfiledos(longtfile,longtfiledos,ier)
+             longtfile=' '
+             longtfile=longtfiledos
+           endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.  If existing db out of date the
@@ -1047,9 +1063,9 @@ C IRS is the selected surface, AZI is its asimuth, RTK is the thickness
 C of the reveal (adj wall), OWID is the width of the obstruction block.
       SUBROUTINE EREVEAL(ICOMP,IRS,azim,elev,RTK,OWID,blkroot,mat,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -1061,7 +1077,7 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
 
       logical clx0,cly0,clx1,cly1,clxm1,clym1
       CHARACTER BLKNAME*8,BLKMAT*12,blkroot*6,mat*12,HOLDS*36,H*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LPRFDB
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Check if ok to add 4 obstructions.
       IUF=IPRODB

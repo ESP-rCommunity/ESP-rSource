@@ -591,11 +591,17 @@ C      end
       return
       end
       
+C A zero says there is neither X11 or GTK available.
       integer function iXavail()
       iXavail = 0
       return
       end
 
+C A three says that this is the text only version.
+      integer function igraphiclib()
+      igraphiclib = 3
+      return
+      end
       
       
       

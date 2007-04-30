@@ -97,15 +97,15 @@ C icffs   - fluid flow network node associated with each plant component.
 C           NB fluid flow network and plant energy network need not be matched
 
 C laprob  - fluid flow description file
-C lapres  - wind pressure coefficients distribution database
-C lafres  - fluid flow network results file
 
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
 #include "plant.h"
 #include "tdf2.h"
+#include "esprdbfile.h"
       PARAMETER (MSTMC=1)
+      integer igraphiclib  ! external definition
 
       common/er1/ier1
       common/trc/itrc
@@ -124,26 +124,21 @@ C Path to model and command line file name.
       common/c6/indcfg
       common/CFGV/icfgv
 
-      common/afn/iairn,laprob,lapres,lafres,icaas(mcom)
+      common/afn/iairn,laprob,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
 
       common/prec7/itcnst
       COMMON/DNORGH/IRTYPE
-      COMMON/C22/ICLIM,LCLIM
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
-C MLC commons.
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -180,22 +175,20 @@ C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
  
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144
-      CHARACTER LTDF*72,LTDFA*72,LFMUL*72,LFCON*72,LCMDFL*144
-      character*72 laprob,lapres,lafres,path,ENTFLNAM
-      character LCLIM*72
+      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
+      character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
       character hvacfile*72,LAIM2*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,XST
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       logical dll
 
@@ -226,24 +219,29 @@ C and return to the main menu.
         L144=LCMDFL
         llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &    'config file name',IER,8)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &    'config file name',IER,8)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &        'config file name',IER,8)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+     &        'config file name',IER,8)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
+     &        'config file name',IER,8)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,8)
+     &      'config file name',IER,8)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,8)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,8)
-#endif
+
         if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
           LCMDFL=L144
         else
@@ -427,9 +425,9 @@ C Specify ground simulation start-up period.
       ENDIF
 
 C If materials db not yet defined or has not yet been opened do so.
-C Use the unit IFCON=IFIL+5 for this via common condb.
-      IF(.NOT.CONDBOK)THEN
-  55    call EFOPRAN(IFCON,LFCON,40,1,IER)
+C Use the unit IFMAT=IFIL+5 for this via common condb.
+      IF(.NOT.MATDBOK)THEN
+  55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(ier.ne.0)THEN
           if(dll)then
             dllsubr='mzinpt'
@@ -440,18 +438,18 @@ C Use the unit IFCON=IFIL+5 for this via common condb.
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            ltmp=LFCON
+            ltmp=LFMAT
   56        CALL EASKS(ltmp,' Primitive material db? ',
      &        ' ',72,DFCON,'primitive constr db file name',IER,2)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-              LFCON=ltmp
+              LFMAT=ltmp
               goto 55
             else
               goto 56
             endif
           endif
         endif
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Read in the multilayer construction database so that it's
@@ -1184,6 +1182,8 @@ C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -1203,7 +1203,6 @@ C Timestep zone airflow is handled by tdf.
       COMMON/CHANNL/NOCHAN
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       common/dllerr/dllsubr,dllmesg
-      common/curfile/currentfile
 
 C Residential hydrogen cogen: control file
       common/resh2ctl/iresh2ctl,resh2flnam
@@ -1217,7 +1216,6 @@ C Residential hydrogen cogen: control file
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
-      character currentfile*72
       LOGICAL dll
 
 C Reset warning flag and check and see if running in dll mode.
@@ -1321,16 +1319,17 @@ C USESPS uses configuration presimuilation data.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+C lafres  - fluid flow network results file
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical dll,match
 
-      character RFILE*72,PFILE*72,MSTRFILE*72
-      character*72 LAPROB,LAPRES,LAFRES
+      character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character LAPROB*72
       character outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8

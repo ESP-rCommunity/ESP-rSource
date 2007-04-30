@@ -21,6 +21,10 @@ C Boston, MA 02111-1307 USA.
 C eroper.f provides the following facilities:
 C  EROPER:   Reads all zone project data from a user-constructed
 C            datafile.
+C  ERZSCHED: Reads air and casual gain schedules from an operations
+C            file outside the model.
+C ZSCHEDHINT: Scans documentation in an operation file and reports 
+C            so a user can decide if they want to use it.
 C  EMKOPER:  Write zone operation common block data to file. 
 C  VNTINFO:  English description of scheduled air flow and
 C            control from zone operation common block data.
@@ -127,6 +131,8 @@ C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -160,13 +166,11 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER oprdesc*248,ctlstr*24,outstr*124,outs*124,lodlabel*6
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,currentfile
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
       logical havehi,dll
@@ -193,7 +197,7 @@ C Initialise project data file.
           RETURN
         endif
       ENDIF
-      currentfile=LPROJ(ICOMP)
+      write(currentfile,'(a)') LPROJ(ICOMP)(1:lnblnk(LPROJ(ICOMP)))
       ip3ver=0
 
 C Initialise the iphase arrays to avoid zero array elements in precal.
@@ -329,11 +333,11 @@ C Weekdays.
         IF(IACS1(I).GT.IACF1(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Weekday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Weekday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         IF(IPT1(I).EQ.ICOMP)GOTO 1009
@@ -356,11 +360,11 @@ C Saturdays.
         IF(IACS2(I).GT.IACF2(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Saturday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Saturday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
 
@@ -385,11 +389,11 @@ C Sundays.
         IF(IACS3(I).GT.IACF3(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Sunday vent start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Sunday vent start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         IF(IPT3(I).EQ.ICOMP)goto 1009
@@ -424,20 +428,20 @@ C Weekdays.
         IF(ICGS1(I).GT.ICGF1(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Weekday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Weekday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC1(I)+CONC1(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Weekday rad & conv fractions > 1.0 in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Weekday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
@@ -477,20 +481,20 @@ C Saturdays.
         IF(ICGS2(I).GT.ICGF2(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Saturday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Saturday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC2(I)+CONC2(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Saturday rad & conv fractions > 1.0 in..',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Saturday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
@@ -527,20 +531,20 @@ C Sundays.
         IF(ICGS3(I).GT.ICGF3(I))then
 
 C Found a period out of order, warn user and carry on.
-          write(outs,'(2a)')' Sunday gains start-end mismatch in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Sunday gains start-end mismatch in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           IER=1
         endif
         X=RADC3(I)+CONC3(I)
         IF(X.GT.1.1)then
-          write(outs,'(2a)')' Sunday rad & conv fractions > 1.0 in...',
-     &      outstr(1:50)
-          call edisp(iuout,outs)
-          write(outs,'(2a)')' of operation file ',currentfile
-          call edisp(iuout,outs)
+          write(loutstr,'(4a)')
+     &      ' Sunday rad & conv fractions > 1.0 in...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
           ier=1
         endif
         IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
@@ -624,6 +628,688 @@ C Error messages.
 
       END
 
+C ******************** ERZSCHED 
+C ERZSCHED reads air and casual gain schedules from an operations
+C        file outside the model into scratch data structure.
+
+C Common block variables are:
+
+C oprdesc      - operation notes (248 char)
+
+C ITCTLC       - Thermostatic control index :
+C                    control on zone coupled air temperature
+C                    control on zone air temperature
+C                  0 no control
+C                    control on zone air temperature and infiltration
+C                    control on zone coupled air and infiltration
+C ACILC, ACVLC,  - low level (i.e. if below a setpoint) for control.
+C IVLC, TALC     
+C ACIUC, ACVUC,  - mid level (i.e. if above a setpoint) 1st stage options
+C IVUC, TAUC       for control.
+C ACIHC, ACVHC,  - high level (2nd stage options) for control.
+C IVHC, TAHC    
+
+C NAC1C, NAC2C & - number of distinct air change periods during Weekdays,
+C NAC3C           Saturdays and Sundays respectively.
+
+C IACS1C,IACF1C, - start and finish hours of each of the above air change
+C IACS2C,IACF2C,   periods relating to Weekdays, Saturdays and Sundays
+C IACS3C & IACF3C  respectively.
+
+C ACI1C, ACI2C   - natural infiltration air changes/hour for each period
+C & ACI3C          relating to Weekdays, Saturdays and Sundays
+C                  respectively.
+
+C ACV1C, ACV2C   - additional incoming air changes/hour for each period
+C & ACV3C          relating to Weekdays, Saturdays and Sundays
+C                  respectively.
+
+C IPT1C, IPT2C   - the additional incoming air (corresponding to ACV1,
+C & IPT3C          ACV2 & ACV3) can either be at constant temperature -
+C                 changing, if required, between each period - or set
+C                 at the time-dependent temperature of some coupled
+C                 zone. The IPT? variable controls this, where:
+C                 IPT?=0 signifies a constant temperature will be specified
+C                 IPT?=N (N>0) signifies that incoming air is at the
+C                        time-dependent temperature of zone N.
+
+C TA1C,TA2C &    - correspond to IPT?=0 and define the temperature of the
+C TA3C             incoming air for each period relating to Weekdays,
+C                  Saturdays and Sundays respectively.
+
+
+C NCAS1C,NCAS2C  - number of casual gains during a typical Weekday,
+C & NCAS3C        Saturday and Sunday respectively.
+
+C ICGT1C,ICGT2C  - Casual gain type:
+C ICG3TC           1. Occupancy
+C                 2. Lights
+C                 3. Equipment
+C                 4. User controllable gain (not fully utilised as yet)
+C                -1. Occupancy as floor area per person
+C                -2. Lights in w/m^2 per floor area
+C                -3. Equipment in w/m^2 per floor area
+
+C ICGS1C,ICGF1C, - start and finish hours of each of the above casual gain
+C ICGS2C,ICGF2C,   periods
+C ICGS3C & ICGF3C
+
+C CMGS1C,CMGL1C, - sensible and latent magnitude (in Watts) of
+C CMGS2C,CMGL2C,   each casual gain
+C CMGS3C & CMGL3C
+
+C RADC1C,CONC1C, - radiant and convective portions (proportion
+C RADC2C,CONC2C,   of 1) of each casual gain
+C RADC3C,CONC3C
+
+C pf1-3C        - power factor of electrical load.
+C ipf1-3C       - nature of load lagging (reactive), leading (capacative),
+C                or unity (pure resistive).
+C pwr1-3C       - real power consumption of the load (W).
+C bvolt1-3C     - operational voltage of the load.
+C iphas1-3C     - which phase the load is connected to (1-3) or
+C                all 3 (4).
+
+C Maximum number of air change periods/day MA=5
+C Maximum number of casual gains/day       MC=20
+
+      SUBROUTINE ERZSCHED(IUO,FILE,IER)
+#include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/P1C/oprdescc,ctlstrc
+
+C Scratch copy of air flow pattern from an operations file.
+      COMMON/P2C/NAC1C,IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
+     &   IPT1C(MA),TA1C(MA),NAC2C,IACS2C(MA),IACF2C(MA),ACI2C(MA),
+     &   ACV2C(MA),IPT2C(MA),TA2C(MA),NAC3C,IACS3C(MA),IACF3C(MA),
+     &   ACI3C(MA),ACV3C(MA),IPT3C(MA),TA3C(MA)
+
+      COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
+     &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
+
+C Storage arrays for weekdays, saturdays, sundays
+      common/P3WK/NCAS1C,ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
+     &          RADC1C(MC),CONC1C(MC)
+      common/P3SA/NCAS2C,ICGS2C(MC),ICGF2C(MC),CMGS2C(MC),CMGL2C(MC),
+     &          RADC2C(MC),CONC2C(MC)
+      common/P3SU/NCAS3C,ICGS3C(MC),ICGF3C(MC),CMGS3C(MC),CMGL3C(MC),
+     &          RADC3C(MC),CONC3C(MC)
+      COMMON/P3TYPEC/ICGT1C(MC),ICGT2C(MC),ICGT3C(MC)
+
+C Version of operations file. ip3verc=0 standard, =1 sorted with header
+      common/p3verc/ip3verc
+
+C Electrical data flag and elctrical data.
+      common/elecflgc/ielfc
+      common/elp3wk/nel1c,pf1c(mc),ipf1c(mc),pwr1c(mc),bvolt1c(mc),
+     &  iphas1c(mc)
+      common/elp3sa/nel2c,pf2c(mc),ipf2c(mc),pwr2c(mc),bvolt2c(mc),
+     &  iphas2c(mc)
+      common/elp3su/nel3c,pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),
+     &  iphas3c(mc)
+
+C Descriptive label for a zone load or casual gain types.
+      common/loadlabelc/lodlabelc(7)
+
+C Error subroutine and error details for dll mode.
+      common/dllerr/dllsubr,dllmesg
+
+      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124,lodlabelc*6
+      CHARACTER FILE*72
+      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
+      character dstmp*24
+      logical havehi,dll
+
+      IER=0
+
+C Check if running in dll mode.
+      call isadll(dll)
+
+C Initialise project data file.
+      CALL EFOPSEQ(IUO,FILE,1,IER)
+      IF(IER.NE.0)THEN
+        write(outs,'(3a)') 'Operations file ',
+     &    FILE(1:lnblnk(FILE)),' could not be opened.'
+        if(dll)then
+          dllsubr='ERZSCHED'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          IER=1
+          RETURN
+        endif
+      ENDIF
+      write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+      ip3verc=0
+
+C Initialise the iphase arrays to avoid zero array elements.
+      do 909 iph=1, mc
+        iphas1c(iph)=1
+        iphas2c(iph)=1
+        iphas3c(iph)=1
+ 909  continue
+
+C Read lines from file, discarding comments. Look for header on
+C newer files. Older files will begin with a description. To allow for
+C description with spaces copy directly from OUTSTR rather than parsing
+C it into words.  
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
+      IF(IER.NE.0) goto 1002
+      if(outstr(1:11).eq.'*Operations')then
+        if(outstr(13:15).eq.'1.0')then
+          ip3verc=1
+        elseif(outstr(13:15).eq.'2.0')then
+          ip3verc=2
+        endif
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
+        IF(IER.NE.0) goto 1002
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
+        IF(IER.NE.0) goto 1002
+        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+        endif
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+        oprdescc=LOUTSTR
+      else
+        oprdescc=OUTSTR
+      endif
+
+C Thermostatic control data. If 4th item then
+      havehi = .false.
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
+      CALL EGETWR(OUTSTR,K,TLOC,0.,0.,'-','lower temp',IER)
+      CALL EGETWR(OUTSTR,K,TUPC,0.,0.,'-','mid temp',IER)
+      if(nd.eq.4)then
+        havehi=.true.
+        CALL EGETWR(OUTSTR,K,THIC,0.,0.,'-','hi temp',IER)
+      else
+        THIC=100.0
+      endif
+      IF(IER.NE.0) goto 1002
+
+C Generate a brief descrition and proceed acording to control type.
+      IY=ITCTLC
+      if(IY.eq.-14)then
+        ctlstrc='infil only: wind speed  '
+      elseif(IY.eq.-13)then
+        ctlstrc='infil only: ext db temp '
+      elseif(IY.eq.-12)then
+        ctlstrc='infil only: adj zone tmp'
+      elseif(IY.eq.-11)then
+        ctlstrc='infil only: zone temp   '
+      elseif(IY.eq.-4)then
+        ctlstrc='vent only: wind speed   '
+      elseif(IY.eq.-3)then
+        ctlstrc='vent only: ext db temp  '
+      elseif(IY.eq.-2)then
+        ctlstrc='vent only: adj zone temp'
+      elseif(IY.eq.-1)then
+        ctlstrc='vent only: zone temp    '
+      elseif(IY.eq.4)then
+        ctlstrc='infil & vent: wind speed'
+      elseif(IY.eq.3)then
+        ctlstrc='infil & vent: ext db T  '
+      elseif(IY.eq.2)then
+        ctlstrc='infil & vent: adj zone T'
+      elseif(IY.eq.1)then
+        ctlstrc='infil & vent: zone T    '
+      elseif(IY.eq.0)then
+        ctlstrc='no control of air flow  '
+        goto 22
+      else
+        ctlstrc='unknown flow control   '
+        goto 1022
+      endif
+
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
+      K=0
+      CALL EGETWR(OUTSTR,K,ACILC,0.,2000.,'W','l infil',IER)
+      CALL EGETWR(OUTSTR,K,ACVLC,0.,2000.,'W','l vent',IER)
+      CALL EGETWI(OUTSTR,K,IVLC,0,MCOM,'W','l vent zn',IER)
+      CALL EGETWR(OUTSTR,K,TALC,0.,0.,'-','l vent tmp',IER)
+
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
+      K=0
+      CALL EGETWR(OUTSTR,K,ACIUC,0.,2000.,'W','m infil',IER)
+      CALL EGETWR(OUTSTR,K,ACVUC,0.,2000.,'W','m vent',IER)
+      CALL EGETWI(OUTSTR,K,IVUC,0,MCOM,'W','m vent zn',IER)
+      CALL EGETWR(OUTSTR,K,TAUC,0.,0.,'-','m vent tmp',IER)
+      IF(IER.NE.0) goto 1002
+      if(havehi)then
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
+        K=0
+        CALL EGETWR(OUTSTR,K,ACIHC,0.,2000.,'W','h inf',IER)
+        CALL EGETWR(OUTSTR,K,ACVHC,0.,2000.,'W','h vent',IER)
+        CALL EGETWI(OUTSTR,K,IVHC,0,MCOM,'W','h vent zn',IER)
+        CALL EGETWR(OUTSTR,K,TAHC,0.,0.,'-','h vent tmp',IER)
+        IF(IER.NE.0) goto 1002
+      else
+        ACIHC=0.
+        ACVHC=0.
+        IVHC=0
+        TAHC=0.
+      endif
+
+C Air change information.
+
+C Weekdays.
+   22 CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC1C,0,MA,'W','Weekday periods',IER)
+      IF(NAC1C.EQ.0)goto 2
+      DO 10 I=1,NAC1C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,IACS1C(I),0,24,'W','w flow start',IER)
+        CALL EGETWI(OUTSTR,K,IACF1C(I),0,24,'W','w flow end',IER)
+        CALL EGETWR(OUTSTR,K,ACI1C(I),0.,2000.,'W','w infil',IER)
+        CALL EGETWR(OUTSTR,K,ACV1C(I),0.,2000.,'W','w vent',IER)
+        CALL EGETWI(OUTSTR,K,IPT1C(I),0,100,'W','w vent z',IER)
+        CALL EGETWR(OUTSTR,K,TA1C(I),0.,0.,'-','w vent tmp',IER)
+   10 CONTINUE
+
+C Saturdays.
+   2  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC2C,0,MA,'W','Sat periods',IER)
+      IF(NAC2C.EQ.0)GOTO 3
+      DO 20 I=1,NAC2C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,IACS2C(I),0,24,'W','Sat flow str',IER)
+        CALL EGETWI(OUTSTR,K,IACF2C(I),0,24,'W','Sat flow end',IER)
+        CALL EGETWR(OUTSTR,K,ACI2C(I),0.,2000.,'W','Sat infil',IER)
+        CALL EGETWR(OUTSTR,K,ACV2C(I),0.,2000.,'W','Sat vent',IER)
+        CALL EGETWI(OUTSTR,K,IPT2C(I),0,100,'W','Sat vent z',IER)
+        CALL EGETWR(OUTSTR,K,TA2C(I),0.,0.,'-','Sat vent tmp',IER)
+   20 CONTINUE
+      IF(IER.NE.0) goto 1002
+
+C Sundays.
+   3  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC3C,0,MA,'W','Sat periods',IER)
+      IF(NAC3C.EQ.0)GOTO 4
+      DO 30 I=1,NAC3C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,IACS3C(I),0,24,'W','Sun flow str',IER)
+        CALL EGETWI(OUTSTR,K,IACF3C(I),0,24,'W','Sun flow end',IER)
+        CALL EGETWR(OUTSTR,K,ACI3C(I),0.,2000.,'W','Sun infil',IER)
+        CALL EGETWR(OUTSTR,K,ACV3C(I),0.,2000.,'W','Sun vent',IER)
+        CALL EGETWI(OUTSTR,K,IPT3C(I),0,100,'W','Sun vent z',IER)
+        CALL EGETWR(OUTSTR,K,TA3C(I),0.,0.,'-','Sun vent tmp',IER)
+   30 CONTINUE
+      IF(IER.NE.0) goto 1002
+
+C Casual gains.
+
+C Weekdays.
+   4  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS1C,0,MC,'W','Week periods',IER)
+      IF(NCAS1C.EQ.0)goto 5
+      DO 40 I=1,NCAS1C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+        K=0
+        if(ND.eq.7.or.ND.eq.12)then
+          CALL EGETWI(OUTSTR,K,ICGT1C(I),-3,5,'W','wkd type',IER)
+        else
+          ICGT1C(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,ICGS1C(I),0,24,'W','wkd gain st',IER)
+        CALL EGETWI(OUTSTR,K,ICGF1C(I),0,24,'W','wkd gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CMGS1C(I),0.,0.,'-','wkd sens',IER)
+        CALL EGETWR(OUTSTR,K,CMGL1C(I),0.,0.,'-','wkd latent',IER)
+        CALL EGETWR(OUTSTR,K,RADC1C(I),0.,1.,'W','wkd rad fr',IER)
+        CALL EGETWR(OUTSTR,K,CONC1C(I),0.,1.,'W','wkd conv fr',IER)
+
+C Check if electrical data has also been saved.
+        if(ND.eq.12)then
+         CALL EGETWR(OUTSTR,K,PF1C(I),0.,1.0,'W','wkd pf',IER)
+         CALL EGETWI(OUTSTR,K,IPF1C(I),-1,1,'W','wkd lag lead',IER)
+         CALL EGETWR(OUTSTR,K,PWR1C(I),0.,1000.,'-','wkd power',IER)
+         CALL EGETWR(OUTSTR,K,BVOLT1C(I),0.,1000.,'-','wkd vlt',IER)
+         CALL EGETWI(OUTSTR,K,IPHAS1C(I),1,4,'W','wkd phase',IER)
+         IELFC=1
+        endif
+   40 CONTINUE
+      IF(IER.NE.0) goto 1002
+
+C Saturdays.
+   5  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS2C,0,MC,'W','Sat periods',IER)
+      IF(NCAS2C.EQ.0)GOTO 6
+      DO 50 I=1,NCAS2C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
+        K=0
+        if(ND.eq.7.or.ND.eq.12)then
+          CALL EGETWI(OUTSTR,K,ICGT2C(I),-3,5,'W','Sat type',IER)
+        else
+          ICGT2C(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,ICGS2C(I),0,24,'W','Sat gain st',IER)
+        CALL EGETWI(OUTSTR,K,ICGF2C(I),0,24,'W','Sat gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CMGS2C(I),0.,0.,'-','Sat sens',IER)
+        CALL EGETWR(OUTSTR,K,CMGL2C(I),0.,0.,'-','Sat latent',IER)
+        CALL EGETWR(OUTSTR,K,RADC2C(I),0.,1.,'W','Sat rad fr',IER)
+        CALL EGETWR(OUTSTR,K,CONC2C(I),0.,1.,'W','Sat conv fr',IER)
+        if(ND.eq.12)then
+         CALL EGETWR(OUTSTR,K,PF2C(I),0.,1.0,'W','Sat pf',IER)
+         CALL EGETWI(OUTSTR,K,IPF2C(I),-1,1,'W','Sat lag lead',IER)
+         CALL EGETWR(OUTSTR,K,PWR2C(I),0.,1000.,'-','Sat power',IER)
+         CALL EGETWR(OUTSTR,K,BVOLT2C(I),0.,1000.,'-','Sat vlt',IER)
+         CALL EGETWI(OUTSTR,K,IPHAS2C(I),1,4,'W','Sat phase',IER)
+         IELFC=1
+        endif
+   50 CONTINUE
+
+C Sundays.
+   6  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS3C,0,MC,'W','Sun periods',IER)
+      IF(NCAS3C.EQ.0)GOTO 8
+      DO 60 I=1,NCAS3C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
+        K=0
+        if(ND.eq.7.or.ND.eq.12)then
+          CALL EGETWI(OUTSTR,K,ICGT3C(I),-3,5,'W','Sun type',IER)
+        else
+          ICGT3C(I)=1
+        endif
+        CALL EGETWI(OUTSTR,K,ICGS3C(I),0,24,'W','Sun gain st',IER)
+        CALL EGETWI(OUTSTR,K,ICGF3C(I),0,24,'W','Sun gain fn',IER)
+        CALL EGETWR(OUTSTR,K,CMGS3C(I),0.,0.,'-','Sun sens',IER)
+        CALL EGETWR(OUTSTR,K,CMGL3C(I),0.,0.,'-','Sun latent',IER)
+        CALL EGETWR(OUTSTR,K,RADC3C(I),0.,1.,'W','Sun rad fr',IER)
+        CALL EGETWR(OUTSTR,K,CONC3C(I),0.,1.,'W','Sun conv fr',IER)
+        if(ND.eq.12)then
+         CALL EGETWR(OUTSTR,K,PF3C(I),0.,1.0,'W','Sun pf',IER)
+         CALL EGETWI(OUTSTR,K,IPF3C(I),-1,1,'W','Sun lag lead',IER)
+         CALL EGETWR(OUTSTR,K,PWR3C(I),0.,1000.,'-','Sun power',IER)
+         CALL EGETWR(OUTSTR,K,BVOLT3C(I),0.,1000.,'-','Sun vlt',IER)
+         CALL EGETWI(OUTSTR,K,IPHAS3C(I),1,4,'W','Sun phase',IER)
+         IELFC=1
+        endif
+   60 CONTINUE
+
+C Check to see if gain labels have been added to the end of the file
+    8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
+      IF(ND.NE.3.OR.IERV.ne.0) THEN
+        goto 1001
+      ELSE
+        K=0
+        DO 1234 ITYP=1,3
+          CALL EGETW(OUTSTR,K,lodlabelc(ITYP),'W','type label',IER) 
+ 1234   CONTINUE
+      ENDIF      
+
+ 1235 CONTINUE
+
+C Now free project data file.
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
+
+C Error messages.
+ 1000 if(dll)then
+        dllsubr='ERZSCHED'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUO,ISTAT)
+        return
+      else
+        call edisp(iuout,outs)
+        IER=1
+        CALL ERPFREE(IUO,ISTAT)
+        RETURN
+      endif
+
+ 1001 call usrmsg(' ',
+     &  ' No casual gains type names found ...supplying defaults.','-')
+        lodlabelc(1)='Occupt'
+        lodlabelc(2)='Lights'
+        lodlabelc(3)='Equipt' 
+        lodlabelc(4)='NA    ' 
+        lodlabelc(5)='AnnEl ' 
+        lodlabelc(6)='NA    ' 
+        lodlabelc(7)='NA    ' 
+      goto 1235
+
+ 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+      if(dll)then
+        dllsubr='ERZSCHED'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUNIT,ios)
+        return
+      else
+        call edisp(iuout,outs)
+        IER=1
+        CALL ERPFREE(IUNIT,ios)
+        RETURN
+      endif
+
+ 1022 write(outs,'(2a)')' Scheduled infiltration control unknown in',
+     &  outstr(1:50)
+      goto 1000
+
+      END
+
+
+C ******************** ZSCHEDHINT 
+C ZSCHEDHINT scans documentation in an operation file and reports on
+C it so a user can decide if they want to use it. It is written to
+C not alter any common blocks.
+
+      SUBROUTINE ZSCHEDHINT(IUO,FILE,IER)
+#include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Error subroutine and error details for dll mode.
+      common/dllerr/dllsubr,dllmesg
+
+      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124
+      CHARACTER FILE*72
+      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
+      character dstmp*24
+      logical havehi,dll
+
+      IER=0
+      IELFC=0
+
+C Check if running in dll mode.
+      call isadll(dll)
+
+C Initialise project data file.
+      CALL EFOPSEQ(IUO,FILE,1,IER)
+      IF(IER.NE.0)THEN
+        write(outs,'(3a)') 'Operations file ',
+     &    FILE(1:lnblnk(FILE)),' could not be opened.'
+        if(dll)then
+          dllsubr='ERZSCHED'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          IER=1
+          RETURN
+        endif
+      ENDIF
+      write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+
+C Read lines from file, discarding comments. Look for header on
+C newer files. Older files will begin with a description. To allow for
+C description with spaces copy directly from OUTSTR rather than parsing
+C it into words.  
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
+      if(outstr(1:11).eq.'*Operations')then
+        if(outstr(13:15).eq.'1.0')then
+          ip3verc=1
+        elseif(outstr(13:15).eq.'2.0')then
+          ip3verc=2
+        endif
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
+        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+        endif
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+        oprdescc=LOUTSTR
+      else
+        oprdescc=OUTSTR
+      endif
+      call edisp(iuout,' Source operation notes:')
+      call edisp248(iuout,oprdescc,80)
+
+C Thermostatic control data. If 4th item then
+      havehi = .false.
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
+      if(nd.eq.4)havehi=.true.
+
+C Generate a brief descrition and proceed acording to control type.
+      IY=ITCTLC
+      if(IY.eq.-14)then
+        ctlstrc='infil only: wind speed  '
+      elseif(IY.eq.-13)then
+        ctlstrc='infil only: ext db temp '
+      elseif(IY.eq.-12)then
+        ctlstrc='infil only: adj zone tmp'
+      elseif(IY.eq.-11)then
+        ctlstrc='infil only: zone temp   '
+      elseif(IY.eq.-4)then
+        ctlstrc='vent only: wind speed   '
+      elseif(IY.eq.-3)then
+        ctlstrc='vent only: ext db temp  '
+      elseif(IY.eq.-2)then
+        ctlstrc='vent only: adj zone temp'
+      elseif(IY.eq.-1)then
+        ctlstrc='vent only: zone temp    '
+      elseif(IY.eq.4)then
+        ctlstrc='infil & vent: wind speed'
+      elseif(IY.eq.3)then
+        ctlstrc='infil & vent: ext db T  '
+      elseif(IY.eq.2)then
+        ctlstrc='infil & vent: adj zone T'
+      elseif(IY.eq.1)then
+        ctlstrc='infil & vent: zone T    '
+      elseif(IY.eq.0)then
+        ctlstrc='no control of air flow  '
+        write(outs,'(a,a)') ' Control: ',ctlstrc
+        call edisp(iuout,outs) 
+        goto 22
+      else
+        ctlstrc='unknown flow control   '
+      endif
+      write(outs,'(a,a)') ' Control: ',ctlstrc
+      call edisp(iuout,outs) 
+
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
+
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
+      if(havehi)then
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
+      endif
+
+C Air change information.
+
+C Weekdays.
+   22 CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC1C,0,MA,'W','Weekday periods',IER)
+      IF(NAC1C.EQ.0)goto 2
+      DO 10 I=1,NAC1C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+   10 CONTINUE
+
+C Saturdays.
+   2  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC2C,0,MA,'W','Sat periods',IER)
+      IF(NAC2C.EQ.0)GOTO 3
+      DO 20 I=1,NAC2C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+   20 CONTINUE
+
+C Sundays.
+   3  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday flow periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NAC3C,0,MA,'W','Sat periods',IER)
+      IF(NAC3C.EQ.0)GOTO 4
+      DO 30 I=1,NAC3C
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+   30 CONTINUE
+
+  4   WRITE(outs,'(A,3I3)')
+     &  ' Number of Weekday Sat Sun air change periods =',
+     &  NAC1C,NAC2C,NAC3C
+      call edisp(iuout,outs)
+
+C Casual gains.
+C Weekdays.
+      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Weekday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS1C,0,MC,'W','Week periods',IER)
+      IF(NCAS1C.EQ.0)goto 5
+      DO 40 I=1,NCAS1C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+
+C Check if electrical data has also been saved.
+        if(ND.eq.12)IELFC=1
+   40 CONTINUE
+
+C Saturdays.
+   5  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Saturday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS2C,0,MC,'W','Sat periods',IER)
+      IF(NCAS2C.EQ.0)GOTO 6
+      DO 50 I=1,NCAS2C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
+        if(ND.eq.12)IELFC=1
+   50 CONTINUE
+
+C Sundays.
+   6  CALL STRIPC(IUO,OUTSTR,0,ND,1,'Sunday gain periods',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NCAS3C,0,MC,'W','Sun periods',IER)
+      DO 60 I=1,NCAS3C
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain details',IER)
+        if(ND.eq.12)IELFC=1
+   60 CONTINUE
+
+      WRITE(outs,'(A,3I3)')' Number of Weekday Sat Sun casual gains=',
+     &  NCAS1C,NCAS2C,NCAS3C
+      call edisp(iuout,outs)
+      if(IELFC.eq.1)then
+        call edisp(iuout,
+     &    'Electrical data has been defined for some periods.')
+      endif
+      if(ip3verc.eq.0) call edisp(iuout,
+     &    'Operations file is an out of date format.')
+      call edisp(iuout,' ')
+
+C Now free project data file.
+      CALL ERPFREE(IUO,ISTAT)
+      RETURN
+
+      END
+
 C --------- EMKOPER
 C Write zone operation common block data to file. It is assumed
 C that this information has been checked.  OPFIL is the name of
@@ -632,6 +1318,7 @@ C ICOMP is the zone number.
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -662,10 +1349,9 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
-      common/curfile/currentfile
 
       character OPFIL*72,zname*12,oprdesc*248,ctlstr*24,lodlabel*6
-      character zdesc*64,currentfile*72
+      character zdesc*64
       character dstmp*24
       logical Vldtng
 
@@ -675,10 +1361,10 @@ C Open any existing file by this name (ask user for confirmation to
 C over-write) or create a new file.
       if(Vldtng)then
         CALL EFOPSEQ(IUO,OPFIL,3,IER)
-        currentfile=OPFIL
+        write(currentfile,'(a)') OPFIL(1:lnblnk(OPFIL))
       else
         CALL EFOPSEQ(IUO,OPFIL,4,IER)
-        currentfile=OPFIL
+        write(currentfile,'(a)') OPFIL(1:lnblnk(OPFIL))
       endif
       IF(IER.LT.0)THEN
         IER=1
@@ -2183,11 +2869,18 @@ C a final period for the current casual gain type.
             ihcg=ip
 
 C Adjust for area based, for m2 per person just divide floor area by
-C the number of persons to get back to the original CMGSA.
+C the number of persons to get back to the original CMGSA. For the
+C case of mixed absolute and per unit area npersn might be zero so
+C trap for this case and set CMGSA to zero.
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR
@@ -2292,11 +2985,18 @@ C a final period for the current casual gain type.
             NCASsat=NCASsat+1
             ihcg=ip-24 
 
-C Adjust area based gains. 
+C Adjust area based gains. For the case of mixed absolute and
+C per unit area npersn might be zero so trap for this case and
+C set CMGSA to zero. 
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR
@@ -2394,11 +3094,18 @@ C a final period for the current casual gain type.
             NCASsun=NCASsun+1
             ihcg=ip-48  
 
-C Adjust area based gains. 
+C Adjust area based gains. For the case of mixed absolute and
+C per unit area npersn might be zero so trap for this case and
+C set CMGSA to zero.  
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
-                CMGLA(IP,ITYP) = 0.0
+                if(NPERSN(IP,ITYP).gt.0)then
+                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                  CMGLA(IP,ITYP) = 0.0
+                else
+                  CMGSA(IP,ITYP) = 0.0
+                  CMGLA(IP,ITYP) = 0.0
+                endif
               elseif(ICGTYP(IP,ITYP).lt.-1)then
                 CMGSA(IP,ITYP) = CMGSA(IP,ITYP)/FLOOR
                 CMGLA(IP,ITYP) = CMGLA(IP,ITYP)/FLOOR

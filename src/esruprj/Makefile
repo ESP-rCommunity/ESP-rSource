@@ -8,6 +8,7 @@ TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
+BLDdir = $(SRCdir)/esrubld
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -16,9 +17,10 @@ PROG = prj$(EXE)
 
 OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfgmsc.o cfgrid.o cgd.o \
-	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o e2eplus.o e3dviews.o ecasctl.o econstr.o \
+	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o dossupport.o \
+	  e2eplus.o e3dviews.o ecasctl.o econstr.o \
 	  econtrol.o edatabase.o edcasctl.o edcfd.o edcfg.o edcon.o edcondb.o \
-	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edspmtl.o edtopol.o \
+	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edpro.o edspmtl.o edtopol.o \
 	  edzone.o egeometry.o egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o \
 	  enetprj.o enetrewr.o eroper.o esru_misc.o esystem.o filelist.o \
 	  folders.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o mcdbscn.o \
@@ -27,7 +29,7 @@ OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
 	  sendflt.o senrwl.o sensa.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
 	  aim2_pretimestep.o DHW_module.o exlgrad.o DG_controller_menu.o \
-	  MultiYear_climate.o
+	  MultiYear_climate.o ground_temp_mains.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -65,6 +67,9 @@ ctprob.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
@@ -198,20 +203,26 @@ DHW_module.F:
 	rm -f DHW_module.F
 	ln -s $(CETCdir)/DHW_module.F .
 
+ground_temp_mains.F:
+	rm -f ground_temp_mains.F
+	ln -s $(BLDdir)/ground_temp_mains.F .
+
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	anlytc.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F cfgrid.F cgd.F common3dv.F ctprob.F \
-	ctread.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
+	ctread.F e3dviews.F dossupport.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F \
 	esru_misc.F esystem.F filelist.F h3k_utils.F initalc.F item.F mcdbscn.F mfcdat.F \
 	mfelst.F mfnmsc.F mfrlst.F mvalid.F net2pdf.F newnet.F nwkrewr.F plelev.F \
 	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
 	stndrds.F startup.F tdfile.F \
 	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
-	MultiYear_climate.F $(INCLdir)/espinstalldir.h
+	MultiYear_climate.F $(INCLdir)/espinstalldir.h ground_temp_mains.F
+
+
 
 
 

@@ -23,17 +23,17 @@ C Environmental construction impacts display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvci(IFB,idbh,ic,iit,ACT,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "espriou.h"
+C espriou.h provides currentfile.
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -55,12 +55,12 @@ C Generic db commons:
       character itdat*248,itrep*248,selmenu*32,trntag*12,trnmenu*32
       character lassurm*32,lasperm*32,asitm1*32,asitm2*32,lasm1*32
       character lasm2*32
-      character gendbfn*72,snote*248,currentfile*72
-      logical primod,gendbok
+      character snote*248
+      logical primod
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
 
@@ -357,17 +357,14 @@ C display and editing. If ACT='T' then produce a tabular listing
 C and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvi(IFB,idbh,ic,iit,ACT,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -388,12 +385,12 @@ C Generic db commons:
       character selitem*12,item*12,class*12
       character itdat*248,itrep*248
       character selmenu*32,trntag*12,trnmenu*32,kact*1
-      character gendbfn*72,snote*248,currentfile*72
-      logical primod,gendbok
+      character snote*248
+      logical primod
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
 
@@ -588,17 +585,14 @@ C Environmental material effects display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvf(IFB,idbh,ic,iit,ACT,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb0/gendbok(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -620,12 +614,12 @@ C Generic db commons:
       character selmenu*32,trntag*12,trnmenu*32,kact*1
       character trnmen1*32,trnmen2*32,trnmen3*32
       character rnmenu*32,inmenu*32,dnmenu*32
-      character gendbfn*72,snote*248,currentfile*72
-      logical primod,gendbok
+      character snote*248
+      logical primod
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
 
@@ -929,16 +923,14 @@ C prefabrication assembly display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvp(IFB,idbh,ic,iit,ACT,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendbfi/igendbf(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -958,12 +950,12 @@ C Generic db commons:
       character dbnote*72,outs*124,ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*724,ct*8,tag*1
       character itdat*248,itrep*248,kact*1
-      character gendbfn*72,snote*248,currentfile*72
+      character snote*248
       logical primod,showtags
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       IFB=igendbf(idbh)
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
@@ -1141,13 +1133,12 @@ C Environmental impact item popup display.
 C Assumes that current database is open on unit IFB.
 C << this might need to rescan header of IFB >>
       subroutine epopenv(IFB,idbh,ic,iit,ACT,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
-      common/gendbfi/igendbf(13)
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),

@@ -26,10 +26,12 @@ C SDDFLT001 set defaults based on material type.
       subroutine SDDFLT001
 #include "building.h"
 #include "uncertainty.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -38,8 +40,7 @@ C SDDFLT001 set defaults based on material type.
       DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
 
       character CLSSEL*36
-      character CLSDES*48,IDESC*72,H*72
-      character LFCON*72,LFMUL*72,KEY*1,outs*124
+      character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
       character xfile*72,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
 
@@ -85,7 +86,7 @@ C Add uncertainty percentages to foot of list.
 C Check that the material db is not empty.
     4 IER=0
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' Materials db is empty.',' ','W')
         IER=1
@@ -100,7 +101,7 @@ C Gather the names of the various classes and present this list.
       DO 44 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         write(CLSSEL(I),'(A)') IDESC(1:36)
         IF(NE.GT.0)THEN
           M=M+1

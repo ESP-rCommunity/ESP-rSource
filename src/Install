@@ -74,8 +74,8 @@ compiler_version="none"    # append string to compilers?
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dfs c2e cfg clm e2r ecnv eco grd ish mfs mld mrt pdb prj pro res tdf vew"
-# (bld plt, net and vww are not currently built)
+programs="aco b2e bps dbm dfs c2e cfg clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+# (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -741,18 +741,22 @@ case $xLibs in
        if [ -r $XINSTALLDIR/include/X11/X.h ]; then
          X11INCLUDEDIR=$XINSTALLDIR/include
        else
-         echo " "
-         echo " ERROR:"
-         echo " The X-window libraries were found at $XINSTALLDIR,"
-         echo " but the X11 header files (e.g. X.h) could not be"
-         echo " found at $XINSTALLDIR/include/X11."
-         echo " "
-         echo " This may indicate that you're missing the X11 header"
-         echo " files necessary to compile the X11 version of ESP-r."
-         echo " Check to see if you've installed the X11 development"
-         echo " package (usually called xfree86-devel, xorg-X11-devel,"
-         echo " or libX11-devel.)"
-         exit       
+         if [ -r /usr/include/X11/X.h ]; then
+           X11INCLUDEDIR=/usr/include
+         else
+           echo " "
+           echo " ERROR:"
+           echo " The X-window libraries were found at $XINSTALLDIR,"
+           echo " but the X11 header files (e.g. X.h) could not be"
+           echo " found at $XINSTALLDIR/include/X11."
+           echo " "
+           echo " This may indicate that you're missing the X11 header"
+           echo " files necessary to compile the X11 version of ESP-r."
+           echo " Check to see if you've installed the X11 development"
+           echo " package (usually called xfree86-devel, xorg-X11-devel,"
+           echo " or libX11-devel.)"
+           exit
+         fi       
        fi
      ;;
   noX) XINSTALLDIR="";;
@@ -1262,7 +1266,6 @@ BPS=bps
 CLM=clm
 ISH=ish
 PRJ=prj
-PRO=pro
 PDB=pdb
 if [ -f esrubps/bps ] ; then
   BPS=${SRCdir}/esrubps/bps
@@ -1275,9 +1278,6 @@ if [ -f esruish/ish ] ; then
 fi
 if [ -f esruprj/prj ] ; then
   PRJ=${SRCdir}/esruprj/prj
-fi
-if [ -f esrupro/pro ] ; then
-  PRO=${SRCdir}/esrupro/pro
 fi
 if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
@@ -1426,7 +1426,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = lin ]; then
@@ -1444,7 +1444,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = cygw ]; then
@@ -1462,7 +1462,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = osx ]; then
@@ -1480,7 +1480,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = mingw ]; then
@@ -1498,7 +1498,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
-    echo "*validation_stds,Validation standards,${ESPdir}/validation/standards/stds_list" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   fi
@@ -1524,6 +1524,8 @@ if [ "$install_training" = "yes" ]; then
      ./bin/materials_db_conv training/cellular_hvac/dbs cellular.materials.a cellular.materials
      ./bin/materials_db_conv training/cellular_natv/dbs cellular.materials.a cellular.materials 
      ./bin/materials_db_conv training/cellular_flh/dbs cellular.materials.a cellular.materials 
+     ./bin/materials_db_conv training/cellular_cvvt/dbs cellular.materials.a cellular.materials 
+     ./bin/materials_db_conv training/cellular_earth/dbs cellular.materials.a cellular.materials 
      ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
      ./bin/materials_db_conv training/glenview/databases constr.asc constr.db1
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
@@ -1540,19 +1542,19 @@ if [ "$install_training" = "yes" ]; then
      echo " "
      echo "Updating materials and climate databases in validation models..."
      echo " "
-     cd ${SRCdir}/validation/standards/CEN/13791/databases
+     cd ${SRCdir}/validation/CEN/13791/databases
      $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a
      $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a
      $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a
      cd ${SRCdir}
-     ./bin/materials_db_conv validation/standards/CEN/13791/databases prim.db.a prim.db
+     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db
      echo " "
      echo "... done."
      echo "Copying training and validation models ..."
      cp -r ${SRCdir}/training ${ESPdir}/training
   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
      cp -r ${SRCdir}/validation ${ESPdir}/validation
-  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/standards/stds_list > ${ESPdir}/validation/standards/stds_list
+  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/stds_list > ${ESPdir}/validation/stds_list
      echo "  "
      echo "Editing training and validation models for current system ..."
   
@@ -1657,26 +1659,26 @@ if [ "$install_dbs" = "yes" ]; then
   
      cd ${SRCdir}/databases
   
-     echo "Creating binary event profiles database ..."
-     $PRO -mode text >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/profiles.db1
-y
-~
+     echo "Creating binary event profiles databases ..."
+     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
+g
+f
 profiles.db1.a
 ${DESTdir}/esp-r/databases/profiles.db1
 y
 -
+-
 zzz
 
-   $PRO -mode text >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/profiles.db2
-y
-~
+     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
+g
+f
 profiles.db2.a
 ${DESTdir}/esp-r/databases/profiles.db2
 y
+-
 -
 zzz
    echo "... done."
@@ -2012,7 +2014,7 @@ if [ "$delete_temp_files" = "yes" ]; then
   make EXE=${EXE} clean
   echo "  "
   echo "Removing binary materials db from exemplars ..."
-  cd ${SRCdir}/training
+  cd ${SRCdir}/
   rm -f training/glenview/databases/constr.db1
   rm -f training/cellular_furn/dbs/cellular.materials
   rm -f training/cellular_hires/dbs/cellular.materials
@@ -2021,9 +2023,19 @@ if [ "$delete_temp_files" = "yes" ]; then
   rm -f training/cellular_flh/dbs/cellular.materials
   rm -f training/cellular_natv/dbs/cellular.materials
   rm -f training/cellular_bc/dbs/cellular.materials
+  rm -f training/cellular_cvvt/dbs/cellular.materials
+  rm -f training/cellular_pv/dbs/cellular_pv.materials
   rm -f training/house/svph/dbs/linford.materialdb
   rm -f training/cellular_shd/dbs/cellular.materials
+  rm -f training/cellular_earth/dbs/cellular.materials
   rm -f training/glenview/databases/constr.db1
+  rm -f training/constr/tp_sub/dbs/tp_sub.material
+  rm -f training/plant/wch/dbs/db_prc
+  rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
+  rm -f validation/CEN/13791/databases/prim.db
+  rm -f validation/CEN/13791/databases/WM_A.clm
+  rm -f validation/CEN/13791/databases/WM_B.clm
+  rm -f validation/CEN/13791/databases/Cond.clm
 fi
 
 echo " "

@@ -156,7 +156,7 @@ C to the fabric temperature or condensation information.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
@@ -165,7 +165,8 @@ C to the fabric temperature or condensation information.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RFILE*72,RSNAME*40
+      CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character zname*12,zdesc*64,TSTR*6,ZN*12,SN*12,DS*7,DS1*10
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
 
@@ -362,6 +363,9 @@ C multilayered construction at any user-specified time.
 
       SUBROUTINE MOINTC(IZ)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -377,9 +381,8 @@ C multilayered construction at any user-specified time.
 C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
-      character outs*124,H*72,NAM*72,TITL*72,LFCON*72,LFMUL*72
+      character outs*124,H*72,NAM*72,TITL*72
       logical ok,dok
 
       IPICK=0
@@ -402,7 +405,7 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for ..........')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        CALL ERPCDB(IFCON,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,A,DRVAL,TITL,NAM)
         H(1)='Diffusion resistance factors are found in the'
         H(2)='primitive construction database.'
@@ -737,6 +740,7 @@ C period.
 
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -757,7 +761,6 @@ C period.
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -771,7 +774,7 @@ C IPRZ is primitive db ref for each layer.
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*72,zname*12,zdesc*64
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFCON,LFMUL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1
 
@@ -828,7 +831,7 @@ C Determine diffusion resistance factor for each element
 C from primitive db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          CALL ERPCDB(IFCON,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,A,DRVAL,TITL,NAM)
           VDIF(I)=DRVAL
    24   CONTINUE

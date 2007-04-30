@@ -620,11 +620,15 @@ C thermal data file.
         IF(INDEX1.EQ.1)THEN
           H(1)='A listing of the thermal data file can be obtained'
           H(2)='by selecting the appropriate menu option.'
+          H(3)='If you cancel then the menu will be re-displayed. '
           MNUM=MLIN/2
           CALL EASKI(INUM,
      &         ' Code for the thermal equation to be added',
      &         ' from the thermal data file?',
-     &               1,'F',MNUM,'F',1,'equation number',IER,2)
+     &               1,'F',MNUM,'F',1,'equation number',IERI,2)
+          if(ieri.eq.-3)then
+            goto 10
+          endif
           ILIN=INUM*2
           REWIND(IUNIT,ERR=999)
           DO 60 I4=1,ILIN-1

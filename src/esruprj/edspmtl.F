@@ -340,6 +340,10 @@ C Data items.
 #include "building.h"
 #include "power.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -359,11 +363,10 @@ C Data items.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
@@ -373,14 +376,13 @@ C Special materials file flag
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
 
       logical ok,dok, SPREPT
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL MODIFY,MODLEN,MODBND,XST
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL MODIFY,MODLEN,MODBND
       integer header,footer
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character*72 LAPROB,LAPRES,LAFRES
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
-      CHARACTER TITL*72,SNAME*12,LFCON*72,LFMUL*72,DADESC*72,spitem2*32
+      CHARACTER TITL*72,SNAME*12,DADESC*72,spitem2*32
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
@@ -538,10 +540,7 @@ C Get data items for special component.
       h(3)='data.                                             '
       call phelpd('Special mat data',3,'-',0,0,IER)
       nspdat=nnodat(ispmn)
-C      call easki(nspdat,' ',' Number of data items ?',1,'F',
-C     &     mspmdat,'W',idfspdat,'special mat. data',IER,16)
       if(ier.eq.0) then
-C        nnodat(ispmn)=nspdat
         datsp=0.0   
 
 C Enter the data items depending on the type of component the ducted wind
@@ -681,144 +680,144 @@ C Store the surface and zone information.
 C Determine the surface type
 C Create a menu showing the available database items. 
 C Allow user to select one. Begin by reading current database.
-          CALL ERPRCDB(LAPRES,0,3,IER)
-          if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,
+        CALL ERPRCDB(LAPRES,0,3,IER)
+        if (ier.ne.0) THEN
+          CALL EDISP(IUOUT,
      &'Error opening pressure coefficients database.')
-            RETURN
-          endif
+          RETURN
+        endif
 
 C Setup multi-page menu. 
-          MHEAD=2
-          MCTL=4
-          ILEN=NPRE
-          IPACT=CREATE
-          CALL EKPAGE(IPACT)
+        MHEAD=2
+        MCTL=4
+        ILEN=NPRE
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
- 71       IER=0
-          ILEN=NPRE
-          IVERT=-3
+ 71     IER=0
+        ILEN=NPRE
+        IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
-          PCITM(1)=' W:H  |  Exposure  |  Pitch (roof)'
-          PCITM(2)='  (W:H = width to height ratio)   '
-          M=MHEAD
-          DO 202 IM=1,NPRE
-            IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
-              M=M+1
-              CALL EMKEY(M,KEY,IER)   
-              WRITE(PCITM(M),'(A1,1X,A)')KEY,DEPRE(IM)
-            ENDIF
-  202     CONTINUE
+        PCITM(1)=' W:H  |  Exposure  |  Pitch (roof)'
+        PCITM(2)='  (W:H = width to height ratio)   '
+        M=MHEAD
+        DO 202 IM=1,NPRE
+          IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
+            M=M+1
+            CALL EMKEY(M,KEY,IER)   
+            WRITE(PCITM(M),'(A1,1X,A)')KEY,DEPRE(IM)
+          ENDIF
+  202   CONTINUE
 
 C Number of actual items displayed.
-          NITMS=M+MCTL
+        NITMS=M+MCTL
 
 C If a long list include page facility text.      
-          IF(IPFLG.EQ.0)THEN
-            PCITM(M+1)='  ________________________  '
-          ELSE
-            WRITE(PCITM(M+1),16)IPM,MPM 
+        IF(IPFLG.EQ.0)THEN
+          PCITM(M+1)='  ________________________  '
+        ELSE
+          WRITE(PCITM(M+1),16)IPM,MPM 
  16       FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
-          ENDIF
-          PCITM(M+2)=' '
-          PCITM(M+3)='? help                   '
-          PCITM(M+4)='- exit this menu         '
-          IVERT=-1
+        ENDIF
+        PCITM(M+2)=' '
+        PCITM(M+3)='? help                   '
+        PCITM(M+4)='- exit this menu         '
+        IVERT=-1
 
 C Help text for this menu.
-          H(1)='To enable the calculation of wind-induced surface'
-          H(2)='pressures (as required by the ducted wind turbine'
-          H(3)='model), a database of angle dependent pressure'
-          H(4)='coefficients is provided.'
-          H(5)='The default ESP-r set contains wind pressure coeffi-'
-          H(6)='cients for surfaces in typical positions and within '
-          H(7)='several different exposure categories.'
-          H(8)='They can be used (with care) for low-rise buildings.'
-          H(9)='See the ESP manual for additional info.'
-          h(10)=' '
-          h(11)='It is also possible to calculate pressure coeffi-' 
-          h(12)='cients using CpCalc (see database maintenance).'
-          h(13)=' '
-          h(14)='Select the pressure coefficient from this list, ' 
-          h(15)='which is most appropriate for the location of the '
-          h(16)='ducted wind turbine.'
-          h(17)=' '
-          h(18)='Notes about pressure coefficients: '
-          H(19)='The first 27 data sets in the standard pressure coef'
-          H(20)='database are from the Air Infiltration & Ventilation'
-          H(21)='Centre Handbook called <Air Infiltration Calculation'
-          H(22)='Techniques - An Applications Guide>. The 27 data '
-          H(23)='sets are only applicable for buildings up to 3 '
-          H(24)='storeys andcome with the usual warnings about usage'
-          H(25)='of the data. '
-          H(26)=' '
-          H(27)='Each data set is described with the following terms:'
-          H(28)=' a) facade or roof at different roof pitch angles'
-          H(29)=' b) the ratio of the building length to width and'
-          H(30)='    for a non square building there will be a long'
-          H(31)='    and a short wall to select'
-          H(32)=' c) site shielding as follows:'
-          H(33)='   exposed - open countryside with no obstructions'
-          H(34)='   simi-exposed - rural with some obstructions'
-          H(35)='   sheltered - urban, surrounded on all sides by'
-          H(36)='     obstructions of similar size.'
+        H(1)='To enable the calculation of wind-induced surface'
+        H(2)='pressures (as required by the ducted wind turbine'
+        H(3)='model), a database of angle dependent pressure'
+        H(4)='coefficients is provided.'
+        H(5)='The default ESP-r set contains wind pressure coeffi-'
+        H(6)='cients for surfaces in typical positions and within '
+        H(7)='several different exposure categories.'
+        H(8)='They can be used (with care) for low-rise buildings.'
+        H(9)='See the ESP manual for additional info.'
+        h(10)=' '
+        h(11)='It is also possible to calculate pressure coeffi-' 
+        h(12)='cients using CpCalc (see database maintenance).'
+        h(13)=' '
+        h(14)='Select the pressure coefficient from this list, ' 
+        h(15)='which is most appropriate for the location of the '
+        h(16)='ducted wind turbine.'
+        h(17)=' '
+        h(18)='Notes about pressure coefficients: '
+        H(19)='The first 27 data sets in the standard pressure coef'
+        H(20)='database are from the Air Infiltration & Ventilation'
+        H(21)='Centre Handbook called <Air Infiltration Calculation'
+        H(22)='Techniques - An Applications Guide>. The 27 data '
+        H(23)='sets are only applicable for buildings up to 3 '
+        H(24)='storeys andcome with the usual warnings about usage'
+        H(25)='of the data. '
+        H(26)=' '
+        H(27)='Each data set is described with the following terms:'
+        H(28)=' a) facade or roof at different roof pitch angles'
+        H(29)=' b) the ratio of the building length to width and'
+        H(30)='    for a non square building there will be a long'
+        H(31)='    and a short wall to select'
+        H(32)=' c) site shielding as follows:'
+        H(33)='   exposed - open countryside with no obstructions'
+        H(34)='   simi-exposed - rural with some obstructions'
+        H(35)='   sheltered - urban, surrounded on all sides by'
+        H(36)='     obstructions of similar size.'
 
 C Now display the menu.
-          call USRMSG('Select the pressure coefficient set which',
-     &'best matches this surface. (see help) ','-') 
-          CALL EMENU('Pressure Coefficient Sets:',PCITM,NITMS,IVERT)
-          IF(IVERT.EQ.NITMS)THEN
-            CALL USRMSG(
+        call USRMSG('Select the pressure coefficient set which',
+     &    'best matches this surface. (see help) ','-') 
+        CALL EMENU('Pressure Coefficient Sets:',PCITM,NITMS,IVERT)
+        IF(IVERT.EQ.NITMS)THEN
+          CALL USRMSG(
      &      'You must select one pressure coefficient set!',' ','W')
-            GOTO 71
-          ELSEIF(IVERT.EQ.NITMS-1)THEN
-            CALL PHELPD('databases overview',36,'-',0,0,IER)
-            GOTO 71
-          ELSEIF(IVERT.EQ.NITMS-3)THEN
+          GOTO 71
+        ELSEIF(IVERT.EQ.NITMS-1)THEN
+          CALL PHELPD('databases overview',36,'-',0,0,IER)
+          GOTO 71
+        ELSEIF(IVERT.EQ.NITMS-3)THEN
 
 C If there are enough items allow paging control via EKPAGE.
-            IF(IPFLG.EQ.1)THEN
-              IPACT=EDIT
-              CALL EKPAGE(IPACT)
-            ENDIF
-            GOTO 71
-          ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(NITMS-MCTL+1))THEN
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+          GOTO 71
+        ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(NITMS-MCTL+1))THEN
 
 C Let user select a pc set.
-            CALL KEYIND(NITMS,IVERT,IFOC,IO)
+          CALL KEYIND(NITMS,IVERT,IFOC,IO)
 C            SUPNOD(IFNOD,1)=IFOC
-             ISPMLOC(ispmn,3)=IFOC
-          ELSE
-            IVERT=-1
-            GOTO 71
-          ENDIF
+           ISPMLOC(ispmn,3)=IFOC
+        ELSE
+          IVERT=-1
+          GOTO 71
+        ENDIF
 
 C Ask whether choice is OK.
-          dok=.true.
-          h(1)='A chance to correct selection error.'
-          write(t72,'(a,a)')'Use ',DEPRE(IFOC)
-          CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
-          IF(.NOT.OK)GOTO 71
+        dok=.true.
+        h(1)='A chance to correct selection error.'
+        write(t72,'(a,a)')'Use ',DEPRE(IFOC)
+        CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
+        IF(.NOT.OK)GOTO 71
 
 C Input angle external node.
-          H(1)='This angle is used to derive the boundary pressure, '
-          H(2)='which is angular dependent, from the pressure coef db'
-          H(3)='and the current wind speed and direction.'
+        H(1)='This angle is used to derive the boundary pressure, '
+        H(2)='which is angular dependent, from the pressure coef db'
+        H(3)='and the current wind speed and direction.'
 
 C Ask the user to select the external surface associated with the node.
 C and extract the azimuth info. 
-          IF(IZ.EQ.0) THEN
-            VAL=SPMDAT(ISPMN,4)
-          ELSE
-            VAL=PAZI(ISO)
-          ENDIF
-          CALL EASKR(VAL,' ',
-     &       'Surface azimuth angle (degrees clockwise from north): ',
-     &        0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
-          SPMDAT(ISPMN,4)=VAL
+        IF(IZ.EQ.0) THEN
+          VAL=SPMDAT(ISPMN,4)
+        ELSE
+          VAL=PAZI(ISO)
+        ENDIF
+        CALL EASKR(VAL,' ',
+     &     'Surface azimuth angle (degrees clockwise from north): ',
+     &      0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
+        SPMDAT(ISPMN,4)=VAL
       ENDIF
 
 C For ducted wind turbine - select the position of the DWT outlet      
@@ -884,119 +883,119 @@ c      IVAL=IFOC
 
 C Create a menu showing the available database items. 
 C Allow user to select one. Begin by reading current database.
-          CALL ERPRCDB(LAPRES,0,3,IER)
-          if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,
-     &'Error opening pressure coefficients database.')
-            RETURN
-          endif
+        CALL ERPRCDB(LAPRES,0,3,IER)
+        if (ier.ne.0) THEN
+          CALL EDISP(IUOUT,'Error opening pressure coefficients file.')
+          RETURN
+        endif
 
 C Setup multi-page menu. 
-          MHEAD=2
-          MCTL=4
-          ILEN=NPRE
-          IPACT=CREATE
-          CALL EKPAGE(IPACT)
+        MHEAD=2
+        MCTL=4
+        ILEN=NPRE
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
- 70       IER=0
-          ILEN=NPRE
-          IVERT=-3
+ 70     IER=0
+        ILEN=NPRE
+        IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
-          PCITM(1)=' W:H  |  Exposure  |  Pitch (roof)'
-          PCITM(2)='  (W:H = width to height ratio)   '
-          M=MHEAD
-          DO 201 IM=1,NPRE
-            IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
-              M=M+1
-              CALL EMKEY(M,KEY,IER)   
-              WRITE(PCITM(M),'(A1,1X,A)')KEY,DEPRE(IM)
-            ENDIF
-  201     CONTINUE
+        PCITM(1)=' W:H  |  Exposure  |  Pitch (roof)'
+        PCITM(2)='  (W:H = width to height ratio)   '
+        M=MHEAD
+        DO 201 IM=1,NPRE
+          IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
+            M=M+1
+            CALL EMKEY(M,KEY,IER)   
+            WRITE(PCITM(M),'(A1,1X,A)')KEY,DEPRE(IM)
+          ENDIF
+  201   CONTINUE
 
 C Number of actual items displayed.
-          NITMS=M+MCTL
+        NITMS=M+MCTL
 
 C If a long list include page facility text.      
-          IF(IPFLG.EQ.0)THEN
-            PCITM(M+1)='  ________________________  '
-          ELSE
-            WRITE(PCITM(M+1),15)IPM,MPM 
- 15       FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
-          ENDIF
-          PCITM(M+2)=' '
-          PCITM(M+3)='? help                   '
-          PCITM(M+4)='- exit this menu         '
-          IVERT=-1
+        IF(IPFLG.EQ.0)THEN
+          PCITM(M+1)='  ________________________  '
+        ELSE
+          WRITE(PCITM(M+1),15)IPM,MPM 
+ 15     FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
+        ENDIF
+        PCITM(M+2)=' '
+        PCITM(M+3)='? help                   '
+        PCITM(M+4)='- exit this menu         '
+        IVERT=-1
 
 C Help text for this menu.
-          H(1)='To enable the calculation of wind-induced surface'
-          H(2)='pressures (as required by the ducted wind turbine'
-          H(3)='model), a database of angle dependent pressure'
-          H(4)='coefficients is provided.'
-          H(5)='The default ESP-r set contains wind pressure coeffi-'
-          H(6)='cients for surfaces in typical positions and within '
-          H(7)='several different exposure categories.'
-          H(8)='They can be used (with care) for low-rise buildings.'
-          H(9)='See the ESP manual for additional info.'
-          h(10)=' '
-          h(11)='It is also possible to calculate pressure coeffi-' 
-          h(12)='cients using CpCalc (see database maintenance).'
-          h(13)=' '
-          h(14)='Select the pressure coefficient from this list, ' 
-          h(15)='which is most appropriate for the location of the '
-          h(16)='ducted wind turbine.'
+        H(1)='To enable the calculation of wind-induced surface'
+        H(2)='pressures (as required by the ducted wind turbine'
+        H(3)='model), a database of angle dependent pressure'
+        H(4)='coefficients is provided.'
+        H(5)='The default ESP-r set contains wind pressure coeffi-'
+        H(6)='cients for surfaces in typical positions and within '
+        H(7)='several different exposure categories.'
+        H(8)='They can be used (with care) for low-rise buildings.'
+        H(9)='See the ESP manual for additional info.'
+        h(10)=' '
+        h(11)='It is also possible to calculate pressure coeffi-' 
+        h(12)='cients using CpCalc (see database maintenance).'
+        h(13)=' '
+        h(14)='Select the pressure coefficient from this list, ' 
+        h(15)='which is most appropriate for the location of the '
+        h(16)='ducted wind turbine.'
 
 C Now display the menu.
-          call USRMSG('Select the pressure coefficient set which',
-     &      'best matches this surface. (see help) ','-') 
-          CALL EMENU('Pressure Coefficient Sets:',PCITM,NITMS,IVERT)
-          IF(IVERT.EQ.NITMS)THEN
-            CALL USRMSG(
+        call USRMSG('Select the pressure coefficient set which',
+     &    'best matches this surface. (see help) ','-') 
+        CALL EMENU('Pressure Coefficient Sets:',PCITM,NITMS,IVERT)
+        IF(IVERT.EQ.NITMS)THEN
+          CALL USRMSG(
      &     'You must select one pressure coefficient set!',' ','W')
-            GOTO 70
-          ELSEIF(IVERT.EQ.NITMS-1)THEN
-            CALL PHELPD('databases overview',16,'-',0,0,IER)
-            GOTO 70
-          ELSEIF(IVERT.EQ.NITMS-3)THEN
+          GOTO 70
+        ELSEIF(IVERT.EQ.NITMS-1)THEN
+          CALL PHELPD('databases overview',16,'-',0,0,IER)
+          GOTO 70
+        ELSEIF(IVERT.EQ.NITMS-3)THEN
 
 C If there are enough items allow paging control via EKPAGE.
-            IF(IPFLG.EQ.1)THEN
-              IPACT=EDIT
-              CALL EKPAGE(IPACT)
-            ENDIF
-            GOTO 70
-          ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(NITMS-MCTL+1))THEN
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+          GOTO 70
+        ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(NITMS-MCTL+1))THEN
 
 C Let user select a pc set.
-            CALL KEYIND(NITMS,IVERT,IFOC,IO)
+          CALL KEYIND(NITMS,IVERT,IFOC,IO)
 C            SUPNOD(IFNOD,1)=IFOC
-             SPMDAT(ispmn,3)=IFOC
-          ELSE
-            IVERT=-1
-            GOTO 70
-          ENDIF
+           SPMDAT(ispmn,3)=IFOC
+        ELSE
+          IVERT=-1
+          GOTO 70
+        ENDIF
 
 C Ask whether choice is OK.
-          dok=.true.
-          h(1)='A chance to correct selection made in error. '
-          write(t72,'(a,a)')'Use ',DEPRE(IFOC)
-          CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
-          IF(.NOT.OK)GOTO 70   
+        dok=.true.
+        h(1)='A chance to correct selection made in error. '
+        write(t72,'(a,a)')'Use ',DEPRE(IFOC)
+        CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
+        IF(.NOT.OK)GOTO 70   
 
 C Ask the user to select the external surface associated with the node.
 C and extract the azimuth info. 
-          IF(IZ.EQ.0)THEN
-            VAL=SPMDAT(ISPMN,4)
-          ELSE
-            VAL=PAZI(ISO)
-          ENDIF
-          CALL EASKR(VAL,' ',
-     &       'Surface azimuth angle (degrees clockwise from north): ',
-     &        0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
-          SPMDAT(ISPMN,5)=VAL
+        IF(IZ.EQ.0)THEN
+          VAL=SPMDAT(ISPMN,4)
+        ELSE
+          VAL=PAZI(ISO)
+        ENDIF
+        CALL EASKR(VAL,' ',
+     &    'Surface azimuth angle (degrees clockwise from north): ',
+     &     0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
+        SPMDAT(ISPMN,5)=VAL
+
 C Set the nodal location to 0 for the DWT - this information is not needed.
 c        ispmloc(ispmn,3)=0 
       else
@@ -1004,13 +1003,13 @@ c        ispmloc(ispmn,3)=0
 C Check composite name of surface with composite name in MLC common.
         imatch=0
         do 5 i=1,nmlc
-         if(SMLCN(iso)(1:12).eq.DESC(i)(1:12)) then
-           imatch=i          
-         endif
+          if(SMLCN(iso)(1:12).eq.DESC(i)(1:12)) then
+            imatch=i          
+          endif
   5     continue
         if(imatch.eq.0) then
-           call edisp(iuout,'Error: probably no MLC defined!')
-           return
+          call edisp(iuout,'Error: probably no MLC defined!')
+          return
         endif
 
 C Write menu displaying a list of layer names
@@ -1023,7 +1022,7 @@ C Write menu displaying a list of layer names
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          CALL ERPCDB(IFCON,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
           IF(IER.EQ.1) THEN
              call edisp(iuout,' Found an error reading PCDB!')
@@ -1064,10 +1063,15 @@ C Ask for the nodal location. Firstly calculate the default
           h(5)='If a PV component is chosen and the ALL the '
           h(6)='construction layers are opaque then the node should'
           h(7)='be placed at the outside surface (node no. 1).'
+          H(8)=' '
+          H(9)='A cancel request leaves the model unchanged.'
           nodlocd=nodloc
           call easki(nodloc,' Position component at ',
      &      ' which node (for PV material see help) ? ',
-     &      nodloc-1,'W',nodloc+1,'W',nodlocd,'spm node',IER,3)
+     &      nodloc-1,'W',nodloc+1,'W',nodlocd,'spm node',IERI,9)
+          if(ieri.eq.-3)then
+            goto 7
+          endif
 
 C Check if the node has an existing special component.
           if(nspmnod.eq.0)then

@@ -1,10 +1,10 @@
-ESP-r version 11.2 comprising:
+ESP-r version 11.3 comprising:
 aco 2.3a
 b2e 1.3a
 bld 5.5
-bps 10.7
+bps 10.8
 cfg 1.13a
-clm 6.22a
+clm 6.22b
 cnv 2.5a
 dbm 2.2a
 dfs 3.14a
@@ -18,8 +18,8 @@ mrt 2.14a
 net 1.9a
 pdb 2.6a
 plt 2.3
-prj 5.8
+prj 5.9
 pro 4.5a
-res 7.41
+res 7.5
 tdf 1.16a
 vew 1.5a

@@ -125,6 +125,9 @@ C attributes are known.
 
       SUBROUTINE GZPDBE(ICOMP,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -136,19 +139,18 @@ C IPRZ is primitive db ref for each layer.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      CHARACTER LFCON*72,LFMUL*72,outs*124,DESC*48,NAM*72,TITL*72
+      CHARACTER outs*124,DESC*48,NAM*72,TITL*72
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
 
 C Open the primitive construction db if not already done.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
         IER=0
-        call EFOPRAN(IFCON,LFCON,40,1,IER)
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)return
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C If the common block MLC has not yet been filled the read in the
@@ -181,7 +183,7 @@ C the element was not found.
 
 C Gather information about each layer. Read in the primitive db info.
             DO 23 IL=1,LAYERS(IC)
-              CALL ERPCDB(IFCON,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
@@ -391,12 +393,13 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
 
-      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,RFILE*72
+      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SN*12
       character act*1

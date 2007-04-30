@@ -1043,6 +1043,11 @@ C    PCONDR(i)            Ratio of flow rate leaving sending node `i' that
 C                         reaches receiving node.
 C    H20LiquidCpCel(T, P) Function that returns heat capacity (J/kgK) of liquid
 C                         water at temperature `T' (oC) and pressure 'P' (Pa).
+C                         This function consumes inordinate cpu resources but
+C                         is required here because it can calculate the heat
+C                         capacity of pressurized water.  Another function,
+C                         'SHTFLD', is much more efficient and should be used
+C                         in cases where the liquid water is not pressurized.
 C    SHTFLD(3,T)          Function that returns heat capacity (J/kgK) of water (index 3)
 C                         at temperature `T'.
 C    fPressAdsFC          Pressure of adsorber-fuel cell h/x loop (kPa) (user input)

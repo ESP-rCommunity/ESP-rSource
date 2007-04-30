@@ -491,6 +491,7 @@ C *********************************************************************
       common/pophelp/h(60)
       CHARACTER H*72
       LOGICAL OK,dok
+      integer icntmt  ! local variable for editing.
 
       dok=.true.
       h(1)='This message was presented because of prior warnings '
@@ -504,9 +505,16 @@ C *********************************************************************
         H(1)=' Enter the required number of warning messages after'
         H(2)=' which the termination option will be available.'
         WRITE(H(3),'(A,I2)')' The current number is',ICNTM
-        CALL EASKI(ICNTM,' after how many re_defining warning messages',
-     &             ' do you want the TERMINATION  message to appear ?',
-     &               1,'F',20,'W',3,'termination message?',IER,3)
+        H(4)='If you cancel the value will not be altered. '
+        icntmt=ICNTM
+        CALL EASKI(ICNTMT,'After how many re_defining warning messages',
+     &    'do you want the TERMINATION  message to appear ?',
+     &    1,'F',20,'W',3,'termination message?',IERI,4)
+        if(ieri.eq.-3)then
+          return
+        else
+          ICNTM=icntmt
+        endif
       ENDIF
       RETURN
       END

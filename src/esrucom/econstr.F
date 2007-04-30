@@ -55,6 +55,8 @@ C ABSE    - solar absorptivity of external surfaces.
 
       SUBROUTINE ECONST(LCONS,IUNIT,ICOMP,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -65,14 +67,12 @@ C ABSE    - solar absorptivity of external surfaces.
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION RVC(MS)
 
-      CHARACTER OUTSTR*124,LCONS*72,currentfile*72
+      CHARACTER OUTSTR*124,LCONS*72
       character dllsubr*12,dllmesg*124,outs*124
       LOGICAL CLOSE,ILTHPS,ILTHPZ,dll
 
@@ -100,7 +100,7 @@ C Open existing ASCII construction data file as unit IUNIT.
           RETURN
         endif
       ENDIF
-      currentfile=LCONS
+      write(currentfile,'(a)') LCONS(1:lnblnk(LCONS))
 
 C Read the number of layers and number of air gaps for each surface
 C defined in the geometry file. If the constructions file is
@@ -451,6 +451,7 @@ C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -459,14 +460,13 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,DESC*48,TITL*72,LFMUL*72,LFCON*72,GDESCR*36
+      character iprtext*4,DESC*48,TITL*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then
@@ -523,7 +523,7 @@ C Get the air gap contribution to U value for reporting.
 C For each layer recover the name of material. For non-airgap layers
 C add resistance for layer (using data from constructions file)
           DO 15, IL=1,NELT
-            CALL ERPCDB(IFCON,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
      &        DBSHT,E,A,DRV,TITL,NAM)
             IF(IPR(imatch(i),IL).EQ.0)THEN
 
@@ -677,6 +677,7 @@ c         (not used in the current implementation),
 
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -699,14 +700,11 @@ c         (not used in the current implementation),
 
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
       
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       DIMENSION IVA(MS),RVC(MS)
 
       CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20,zdesc*64
-      character currentfile*72,msg*28
+      character msg*28
       LOGICAL MODGEO
 
       MODGEO=.FALSE.
@@ -716,7 +714,7 @@ C Current file (for use by low level I/O calls)
         IER=1
         goto 1000
       ENDIF
-      currentfile=LUA
+      write(currentfile,'(a)') LUA(1:lnblnk(LUA))
 
 c Read zone transparent multi-layer construction properties from file.
 C Read lines from file, discarding comments.
@@ -1140,6 +1138,7 @@ C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
       subroutine erbiwin(itrc,itru,iua,lua,ier)
 #include "building.h"
+#include "espriou.h"
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
@@ -1158,9 +1157,7 @@ C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each lay
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
       
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-      character currentfile*72,OUTSTR*124,OUTS*124,LUA*72,WORD*20
+      character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
@@ -1168,7 +1165,7 @@ C Current file (for use by low level I/O calls)
         IER=1
         goto 1000
       ENDIF
-      currentfile=LUA
+      write(currentfile,'(a)') LUA(1:lnblnk(LUA))
 
 C Read header.
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic header',IER)

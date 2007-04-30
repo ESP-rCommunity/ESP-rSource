@@ -25,6 +25,12 @@ C blank or NONE not required and not yet defined.
 
       program e2r
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -57,8 +63,6 @@ C Where default db list are kept.
       common/rcmd/LCMDFL
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C Radiance based commons.
 C rofil = `outside` objects, rzfil = is the zone (inside) composition.
@@ -93,13 +97,13 @@ C Scene configuration commons.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       CHARACTER H*72,outs*124,ITEM*30
-      CHARACTER*72 LFMUL,LFCON,LOPTDB,LDFGRID
+      CHARACTER LDFGRID*72
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
@@ -119,7 +123,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION ITEM(13)
 
-      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
@@ -146,7 +150,7 @@ C Scene configuration file IRCFG = IFIL+17.
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.
-      IFCON=IFIL+13
+      IFMAT=IFIL+13
       IFMUL=IFIL+14
       IOPTDB=IFIL+15
       iuj=IFIL+1
@@ -193,7 +197,7 @@ C Set defaults.
       KEEP=.false.
       CFGOK=.false.
       MLDBOK=.false.
-      CONDBOK=.false.
+      MATDBOK=.false.
       CTLOK=.false.
       OPTKOK=.false.
       MODIFY=.false.
@@ -433,24 +437,28 @@ C therfore get one.
         dtmp72=DFCFG
  1289   llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,
+     &        dtmp72,'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,
+     &        dtmp72,'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
+     &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
-#endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
         call st2file(L144,LCMDFL)
@@ -623,21 +631,26 @@ C ESP-r configuration file.
         l144=LCMDFL
         dtmp72=DFCFG
         llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,dtmp72,
-     &    'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,
+     &        dtmp72,'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,
+     &        dtmp72,'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
+     &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &    'config file name',IER,3)
-#endif
+
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
         call usrmsg('File selected is',l144,'-')
@@ -729,14 +742,14 @@ C Path to model.
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -851,27 +864,26 @@ C *************** opendb ***************
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      CHARACTER LFCON*72,LFMUL*72
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
 C Open currently named primitive construction db.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(a,a,a)') ' No primitive constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
 C        CALL edisp(iuout,' opened primitive materials db.')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -881,7 +893,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,ITRU,IER)
         IF(IER.NE.0)then
           write(outs,'(a,a,a)') ' Problem with multilayer constr db ',
-     &     LFCON(1:lnblnk(LFCON)),'... '
+     &     LFMAT(1:lnblnk(LFMAT)),'... '
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -890,7 +902,7 @@ C          call edisp(iuout,' opened multilayer constructions db.')
         endif
       else
         write(outs,'(a,a,a)') ' No multilayer constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
       endif
 

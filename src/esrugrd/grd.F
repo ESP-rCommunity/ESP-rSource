@@ -33,6 +33,11 @@ C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
       program grd
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -48,7 +53,6 @@ C << file names can be in place.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -68,13 +72,13 @@ C Where default db list are kept.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
-      CHARACTER*72 H,LFILE,LCFGF,LFCON,LFMUL
+      CHARACTER H*72,LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
       character dfdblbl*20,defdbfl*72
@@ -101,7 +105,7 @@ C Initialize global common data.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, updated geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
-      IFCON=IFIL+4
+      IFMAT=IFIL+4
       IFCFG=IFIL+5
       IUF=IFIL+6
       ICVS=IFIL+8
@@ -113,7 +117,7 @@ C Assume that the configuration and geometry files have not been read in.
       CFGOK=.FALSE.
       GRDOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       MODIFY=.FALSE.
 
@@ -335,25 +339,29 @@ C Define the problem.
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   289   llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Model configuration file?',' ',96,' ',
-     &      'config file name',IER,5)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Model configuration file?',' ',124,' ',
-     &      'config file name',IER,5)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Model configuration file?',' ',96,' ',
+     &        'config file name',IER,5)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Model configuration file?',' ',124,' ',
+     &        'config file name',IER,5)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Model configuration file?',' ',144,' ',
+     &        'config file name',IER,5)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,' ',
      &      'config file name',IER,5)
+        else
+          CALL EASKF(L144,' Model configuration file?',' ',96,' ',
+     &      'config file name',IER,5)
         endif
-#else
-        CALL EASKF(L144,' Model configuration file?',' ',144,' ',
-     &    'config file name',IER,5)
-#endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
         call st2file(L144,LCMDFL)
@@ -448,7 +456,7 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 
 C Exit program.
         call usrmsg(' Closing building gridding...',' ','P')
-        IF(CONDBOK)CALL ERPFREE(IFCON,ISTAT)
+        IF(MATDBOK)CALL ERPFREE(IFMAT,ISTAT)
         CALL EPAGEND
         STOP
       ENDIF
@@ -462,14 +470,14 @@ C coefficients.
 C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -477,9 +485,9 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL GRDOK
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LFCON,LFMUL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       CHARACTER VERTX*2
 
       GRDOK=.true.
@@ -509,11 +517,11 @@ C *********************************************************************
    10 CONTINUE
 
 C If primitive database not opened, do it now.
-      IF(.NOT.CONDBOK)THEN
+      IF(.NOT.MATDBOK)THEN
         IER=0
-        CALL EFOPRAN(IFCON,LFCON,40,1,IER)
+        CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
         IF(IER.NE.0)RETURN
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       ENDIF
 
 C Initialise ground coefficients.

@@ -42,7 +42,7 @@ C routines.
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
-      COMMON/RESLIB/RFILE
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -58,7 +58,8 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
-      character LTMP*72,RFILE*72,H*72,outs*124
+      character LTMP*72,H*72,outs*124
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -91,21 +92,25 @@ C assigned database.
 C Use ifdefs because the X11 version will be returning only the
 C name of the file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-        if(llt.lt.96)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
+     &      'library file',IER,7)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
+     &      'library file',IER,7)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &      'library file',IER,7)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
+     &      'library file',IER,7)
+        else
           CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
      &    'library file',IER,7)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
-     &    'library file',IER,7)
-        elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &    'library file',IER,7)
         endif
-#else
-        CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &    'library file',IER,7)
-#endif
 
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
           LCMDFL=ltmpc
@@ -784,6 +789,9 @@ C where they are first referenced.
 
       SUBROUTINE MOINIT(ISTREC)
 #include "building.h"
+#include "esprdbfile.h"
+
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -798,7 +806,6 @@ C where they are first referenced.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/RECV6/LCLIM
 C      COMMON/RECV7/ZOA(MCOM)
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
@@ -813,22 +820,20 @@ C      COMMON/RECV7/ZOA(MCOM)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/hcthry/ihct,icorexhct
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LCLIM,LCFGF,CHDUM
+      CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
       CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
-      logical XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       IUNIT=IFIL
       IREC=ISTREC+2
@@ -1075,15 +1080,20 @@ C        write(6,*) longtmp
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
-#ifdef X11
-        CALL EASKF(longtmp,' ',
-     &    ' Corresponding system configuration file name ? ',
-     &    96,' ','configuration file',IER,4)
-#else
-        CALL EASKF(longtmp,' ',
-     &    ' Corresponding system configuration file name ? ',
-     &    144,' ','configuration file',IER,4)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      144,' ','configuration file',IER,4)
+        else
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        endif
         if (longtmp.eq.' ') goto 45
       ENDIF
       
@@ -1124,13 +1134,17 @@ C Not found, might be in a remote folder.  Warn user first.
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
-#ifdef X11
-        CALL EASKF(longtmp,' Model configuration file ?',' ',96,DFCFG,
-     &    'config file name',IER,3)
-#else
-        CALL EASKF(longtmp,' Model configuration file ?',' ',144,DFCFG,
-     &    'config file name',IER,3)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &      DFCFG,'config file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' Model configuration file ?',' ',144,
+     &      DFCFG,'config file name',IER,3)
+        else
+          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &      DFCFG,'config file name',IER,3)
+        endif
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 

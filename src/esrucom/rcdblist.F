@@ -33,12 +33,12 @@ C ********* rdblist
 C Scan list of climate databases and present selection to user.
       subroutine rdblist(idblfil,cdblfil,clmdb,ier)
 #include "epara.h"
+#include "esprdbfile.h"
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/curfile/currentfile
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Typical periods win1|trn1|sum|trn2|win2 with start & finish
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
@@ -50,10 +50,9 @@ C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
      &              is2sprs,is2sprf,is1sums,is1sumf
 
       dimension name(60), mitem(35)
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character cdblfil*72, group*32,key*1,look*32,tlook*32
-      character clmdb*72,h*72,actreturn*1,currentfile*72
+      character clmdb*72,h*72,actreturn*1
 
 C Set default early winter, spring, summer, autumn, late winter periods.
       CALL EDAY(9,1,ia1wins)
@@ -94,7 +93,7 @@ C Read the header and see if '*CLIMATE_LIST' is a string.
         ier=1
         return
       endif
-      currentfile=cdblfil
+      write(currentfile,'(a)') cdblfil(1:lnblnk(cdblfil))
 
 C In the first pass, make up the display, beginning with
 C an organizational header and the `names' of each climate db.
@@ -260,18 +259,18 @@ C Parse this item of the climatelist file.
 C ********* matchcdb
 C Scan list of climate databases for name and return database.
       subroutine matchcdb(idblfil,cdblfil,alias,clmdb,ier)
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/curfile/currentfile
 
       dimension name(60)
       character name*32,OUTSTR*124,WORD*20
       character cdblfil*72, group*32,tlook*32,line*72,outs*124
-      character clmdb*72,avail*10,alias*32,currentfile*72
+      character clmdb*72,avail*10,alias*32
 
 C Open the list of climate databases.
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
       if(ier.ne.0)return
-      currentfile=cdblfil
+      write(currentfile,'(a)') cdblfil(1:lnblnk(cdblfil))
 
 C Read the header and see if '*CLIMATE_LIST' is a string.
       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'header',IER)
@@ -335,8 +334,6 @@ C Get info for db matching the alias.
             goto 4
           elseif(WORD(1:6).eq.'*avail')then
             call egetrm(outstr,K,avail,'W','db avail',IER)
-            write(outs,'(a,a)') ' Climate is : ',avail
-            call edisp(iuout,outs)
             if(avail(1:7).eq.'OFFLINE')then
               call usrmsg(
      & 'The selected climate file is not `ONLINE` and so you will have',
@@ -345,7 +342,6 @@ C Get info for db matching the alias.
               return
             elseif(avail(1:6).eq.'ONLINE')then
               CALL ERPFREE(idblfil,ISTAT)
-              write(6,*)'found match ',clmdb
               return
             endif
           elseif(WORD(1:11).eq.'*help_start')then
@@ -375,13 +371,13 @@ C Scan climatelist file of for documentation and typical periods
 C which might match the current database. Should be called if
 C the climate file was not selected via scan of climatelist.
       subroutine scancdblist(idblfil,cdblfil,clmdb,ok,ier)
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/curfile/currentfile
 
       character*(*) clmdb
       character OUTSTR*124,WORD*20
       character cdblfil*72,tlook*72
-      character actreturn*1,currentfile*72
+      character actreturn*1
       logical ok
 
 C Open the list of climate databases.
@@ -401,7 +397,7 @@ C Read the header and see if '*CLIMATE_LIST' is a string.
         ok=.false.
         return
       endif
-      currentfile=cdblfil
+      write(currentfile,'(a)') cdblfil(1:lnblnk(cdblfil))
 
 C Get info for db matching the alias.
       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'group id',IER)
@@ -717,8 +713,6 @@ C for the line used in ASKOK.
             endif
           endif
         elseif(act.eq.'s')then
-          write(outs,'(a,a)') ' Climate is : ',clmlavail
-          call edisp(iuout,outs)
           if(clmlavail(1:7).eq.'OFFLINE')then
             call usrmsg(
      & 'The selected climate file is not `ONLINE` and so you will have',
@@ -747,12 +741,12 @@ C five seasons and typical assessment periods, documentation
 C strings.
       subroutine editemclimatelist()
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
-      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -773,7 +767,7 @@ C ITM is main item editing menu.
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
       character clmlhelp*72,ltfil*72,DFILE*72,outs*124
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
-      CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72,LCLIM*72
+      CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
       
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/

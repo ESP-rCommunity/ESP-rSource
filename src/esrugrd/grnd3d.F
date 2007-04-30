@@ -704,10 +704,10 @@ C GNDMSH controls ground gridding.
 C *********************************************************************
       SUBROUTINE GNDMSH(IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
@@ -717,7 +717,7 @@ C *********************************************************************
       DIMENSION IZZ(3),VZZ(5)
 
       CHARACTER    MSG*72,FLTYP*25
-      CHARACTER*72 LFCON,LFMUL,PNAM,TITL,H,LTMP
+      CHARACTER*72 PNAM,TITL,H,LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C Initialize the connections,nodes, and control volumes counters.
@@ -773,7 +773,7 @@ C Estimate the start up period for the ground.
           RESIST=0.
           DO 30 IL=1,NDZG
             IEL=ITPGND(IX,IY,IL)
-            CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,
+            CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
      &              DBSHT,E,A,DRV,TITL,PNAM)
             IF(IER.NE.0)STOP "error (801): while reading primative db."
             DNHCVL=DNHCVL+DXG(IX)*DYG(IY)*DZG(IL)*DBDEN*DBSHT
@@ -952,9 +952,9 @@ C MKCVGX performs gridding per one material volume.
 C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
@@ -964,7 +964,7 @@ C *********************************************************************
       DIMENSION IXX(3),IYY(3),IZZ(3),VXX(5),VYY(5),VZZ(5)
       DIMENSION ACOND(3)
 
-      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
+      CHARACTER PNAM*72,TITL*72
 
       DNHC=0.
       DO 10 II=1,3
@@ -984,7 +984,7 @@ C *********************************************************************
       DO 20 I3=1,2
       IF(IXX(I1).GT.0.AND.IYY(I2).GT.0.AND.IZZ(I3).GT.0)THEN
         IEL=ITPGND(IXX(I1),IYY(I2),IZZ(I3))
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
      &              DBSHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (803): while reading primative db."
         DNHC=DNHC+VXX(I1)*VYY(I2)*VZZ(I3)*DBDEN*DBSHT

@@ -444,7 +444,6 @@ c COP when the load is zero.
          endif 
        endif 
  
-
 c If the system is a vertical single U-tube, call V1_INPUT
         if(igshp_type .eq.1 ) then
            call GSHP_HEATXV1(iPeriod)
@@ -505,14 +504,15 @@ c *********************************************************************
 
 C      USE GSHP_INPUT
 C      USE GSHP_DAILY
-C Module variables speific to vertical heat exchangers.
+C Module variables specific to vertical heat exchangers.
 C      USE GSHP_VERTICAL_INPUT
 
        IMPLICIT NONE
+#include "building.h"
 #include "hvac_parameters.h"
 #include "gshp_common.h"
 #include "gshp_v1_common.h"
-
+#include "ground_temp_mains_common.h"
 
 
 C Common for read and write statements
@@ -537,7 +537,7 @@ C ----------------------  Definition of Data Types --------------------
       REAL SINACOS, PWRFOR, PI                              
       INTEGER jPer, iPeriod, jPeriod, m, iTime, jTime
       REAL temp
-
+      REAL gshp_ground_temp_avg,gshp_ground_temp_amp
 
 C ----------------------  Variable Definitions ------------------------
 
@@ -647,17 +647,32 @@ C-------- CAMNET 1992, (Eq A.4)
 
         kWj = dQ(iPeriod) / (TimeDay * 24)
 
+C ----- Set appropriate values for ground temperature amplitude and average
+C ----- If the gshp input data file has no version number or has a 0. version 
+C ----- number, then ground temperature amplitude and average are to be read
+C ----- from input data file
+        if(gshp_grd_temp_cal_flag.eq.1) then
+          gshp_ground_temp_avg = Tmean
+          gshp_ground_temp_amp = Atemp
+C ----- In case that the gshp input data file has version number > 0, then the
+C ----- ground temperature parameters will be based on weather file and Moore model
+        elseif(gshp_grd_temp_cal_flag.eq.2) then
+          gshp_ground_temp_avg = Temp_Ground_Avg
+          gshp_ground_temp_amp = Temp_Ground_Amp
+        endif 
+        
 C ----- Calculate Tinf for period i  **
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-3)
         a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-3)        
-        b = 2 * PI / 365 * (Day - DAYo)
+        b = 2 * PI / 365 * (Day -  Dayo)
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-4)
-        dTinf = (Atemp * exp(a * Dtop))/(2 * a * (Dbottom - Dtop))
+        dTinf = (Gshp_Ground_Temp_Amp * exp(a * Dtop))/
+     &    (2 * a * (Dbottom - Dtop))
      &  * (COS(b + a * Dtop)+ SIN(b + a * Dtop))
 
 C ----- **** Calculate EWT ****
-        Tfluid = dTtot + dTinf + Tmean
+        Tfluid = dTtot + dTinf + Gshp_Ground_Temp_Avg
 
 
         EWT = Tfluid - (kWj / 2) / (Flow / 1000 * Cp * Density)
@@ -720,9 +735,12 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_HORIZONTAL_INPUT
 
       IMPLICIT NONE
+#include "building.h"
 #include "hvac_parameters.h"
 #include "gshp_common.h"
 #include "gshp_hs_common.h"
+#include "ground_temp_mains_common.h"
+
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -743,6 +761,7 @@ C ----------------------  Definition of Data Types --------------------
       ! Function Variables  
       REAL PWRFOR, SINACOS, PI
       INTEGER jPer, iPeriod, jPeriod, m, iTime, jTime
+      REAL gshp_ground_temp_avg,gshp_ground_temp_amp
 
       
 C ----------------------  Variable Definitions ------------------------
@@ -833,18 +852,33 @@ C ------- CAMNET 1992, (Eq A.5)
 
         kWi = dQ(iPeriod) / (TimeDay * 24)
 
+C ----- Set appropriate values for ground temperature amplitude and average
+C ----- If the gshp input data file has no version number or has a 0. version 
+C ----- number, then ground temperature amplitude and average are to be read
+C ----- from input data file
+        if(gshp_grd_temp_cal_flag.eq.1) then
+          gshp_ground_temp_avg = Tmean
+          gshp_ground_temp_amp = Atemp
+C ----- In case that the gshp input data file has version number > 0, then the
+C ----- ground temperature parameters will be based on weather file and Moore model
+        elseif(gshp_grd_temp_cal_flag.eq.2) then
+          gshp_ground_temp_avg = Temp_Ground_Avg
+          gshp_ground_temp_amp = Temp_Ground_Amp
+        endif   
+
 C ----- Calculate Tinf for period i
 C ----- Reference
       a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
 C ----- Reference
-      b = 2 * PI / 365 * (Day - DAYo)
+      b = 2 * PI / 365 * (Day -  Dayo)
 C ----- Reference
-      dTinf = - 1 * Atemp * EXP(a * BD) * COS(b + a * BD)
+      dTinf = 
+     &  - 1 * Gshp_Ground_Temp_Amp * EXP(a * BD) * COS(b + a * BD)
 C ----- **** Calculate EWT  ****
-      Tfluid = dTtot + dTinf + Tmean
+      Tfluid = dTtot + dTinf + Gshp_Ground_Temp_Avg
 
       CALL FREEZING (Tfluid, kWi, pipe_length, Rpipe, OD, BD, dTinf, 
-     &               Tmean, dTtot)
+     &               Gshp_Ground_Temp_Avg, dTtot)
                 
       EWT = Tfluid - (kWi / 2) / (Flow / 1000 * Cp * Density)
 
@@ -904,9 +938,11 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_HORIZONTAL_INPUT
 
        IMPLICIT NONE
+#include "building.h"
 #include "hvac_parameters.h"
 #include "gshp_common.h"
 #include "gshp_hs_common.h"
+#include "ground_temp_mains_common.h"
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -930,7 +966,7 @@ C ----------------------  Definition of Data Types --------------------
       REAL Tfluid_temp                    ![C]
       REAL PWRFOR, SINACOS, PI                  
       INTEGER jPer, idepth, iPeriod, jPeriod, m, iTime, jTime
-
+      REAL gshp_ground_temp_avg,gshp_ground_temp_amp
 
 C ----------------------  Variable Definitions ------------------------
       
@@ -1046,16 +1082,31 @@ C --------- CAMNET 1992, (EQ A.5)
 
           kWi = dQ(iPeriod) / (TimeDay * 24)
 
+C ----- Set appropriate values for ground temperature amplitude and average
+C ----- If the gshp input data file has no version number or has a 0. version 
+C ----- number, then ground temperature amplitude and average are to be read
+C ----- from input data file
+          if(gshp_grd_temp_cal_flag.eq.1) then
+            gshp_ground_temp_avg = Tmean
+            gshp_ground_temp_amp = Atemp
+C ----- In case that the gshp input data file has version number > 0, then the
+C ----- ground temperature parameters will be based on weather file and Moore model
+          elseif(gshp_grd_temp_cal_flag.eq.2) then
+            gshp_ground_temp_avg = Temp_Ground_Avg
+            gshp_ground_temp_amp = Temp_Ground_Amp
+          endif   
+
 C ------- Calculate Tinf for period i
 C ------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
           a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
 C ------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
-          b = 2 * PI / 365 * (Day - DAYo)
+          b = 2 * PI / 365 * (Day -  Dayo)
 C ------- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
-          dTinf = - Atemp * EXP(a * BD) * COS(b + a * BD)
+          dTinf = 
+     &     - Gshp_Ground_Temp_Amp * EXP(a * BD) * COS(b + a * BD)
             
 C ----- - **** Calculate EWT ****
-          Tfluid = dTtot + dTinf + Tmean
+          Tfluid = dTtot + dTinf + Gshp_Ground_Temp_Avg
 
 
         IF (idepth .EQ. 1) then
@@ -1065,7 +1116,7 @@ C ----- - **** Calculate EWT ****
         END IF
 
         CALL FREEZING (Tfluid, kWi, pipe_length, Rpipe, OD, BD,dTinf, 
-     &                   Tmean, dTtot)
+     &                   Gshp_Ground_Temp_Avg, dTtot)
 
   95    CONTINUE  ! Go to second pipe burial depth
       
@@ -1085,8 +1136,6 @@ c simulation will not stop.
 c         STOP ' GSHP HEATXH4: unresolvable error'
         END IF
 
-
-        
         RETURN
         END
 
@@ -1130,9 +1179,11 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_SLINKY_INPUT
 
        IMPLICIT NONE
+#include "building.h"
 #include "hvac_parameters.h"
 #include "gshp_common.h"
 #include "gshp_sl_common.h"
+#include "ground_temp_mains_common.h"
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1159,6 +1210,8 @@ C ----------------------  Definition of Data Types --------------------
       INTEGER jPer, iPeriod, jPeriod, iTime, jTime, NumPl
 
       INTEGER Ncount, Pcount, Numcount
+
+      REAL gshp_ground_temp_avg,gshp_ground_temp_amp
       
 C ----------------------  Variable Definitions ------------------------
             
@@ -1289,18 +1342,31 @@ C ----- Calculate Tinf for period i
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):       
         a = - sqrt(PI / (365 * 24 * 3600 * Dmean))
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
-        b = 2 * PI / 365 * (Day - DAYo)
+        b = 2 * PI / 365 * (Day -  Dayo)
 C ----- Hart & Couvillion, Earth-Coupled Heat Transfer, 1986 (EQ 10-6):
 
+C ----- Set appropriate values for ground temperature amplitude and average
+C ----- If the gshp input data file has no version number or has a 0. version 
+C ----- number, then ground temperature amplitude and average are to be read
+C ----- from input data file
+        if(gshp_grd_temp_cal_flag.eq.1) then
+          gshp_ground_temp_avg = Tmean
+          gshp_ground_temp_amp = Atemp
+C ----- In case that the gshp input data file has version number > 0, then the
+C ----- ground temperature parameters will be based on weather file and Moore model
+        elseif(gshp_grd_temp_cal_flag.eq.2) then
+          gshp_ground_temp_avg = Temp_Ground_Avg
+          gshp_ground_temp_amp = Temp_Ground_Amp
+        endif   
 
-      dTinf = - Atemp * EXP(a * BD) * COS(b + a * BD)
+      dTinf = - Gshp_Ground_Temp_Amp * EXP(a * BD) * COS(b + a * BD)
             
 C ------ **** Calculate EWT  ****
-      Tfluid = dTtot + dTinf + Tmean
+      Tfluid = dTtot + dTinf + Gshp_Ground_Temp_Avg
 
 
-      CALL FREEZING (Tfluid,kWi,pipe_length,Rpipe,OD,BD,dTinf,Tmean,
-     &                 dTtot)       
+      CALL FREEZING (Tfluid,kWi,pipe_length,Rpipe,OD,BD,dTinf,
+     &Gshp_Ground_Temp_Avg,dTtot)       
        
       EWT = Tfluid - (kWi / 2) / (Flow / 1000 * Cp * Density)
 

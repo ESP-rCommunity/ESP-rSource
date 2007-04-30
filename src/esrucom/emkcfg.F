@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -34,6 +34,14 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -56,10 +64,8 @@ C common blocks into the file and unit specified in COMMON/C21.
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Plant network.
@@ -74,11 +80,6 @@ C Project log file, paths to standard file locations.
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
-C Optical, profile and construction db.
-      COMMON/GOPTDB/LOPTDB,IOPTDB
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
@@ -92,7 +93,7 @@ C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
@@ -233,9 +234,9 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPRJLG,LCLIM
+      CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
-      CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
+      CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -421,7 +422,7 @@ C Begin writing the file.
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prm  ',
-     &      LFCON(1:lnblnk(LFCON))
+     &      LFMAT(1:lnblnk(LFMAT))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
@@ -454,8 +455,8 @@ C Multiyear climate database
       if ( bMY_climates_defined ) then 
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*myclm ',
      &    cMY_climate_db_name(1:lnblnk(cMY_climate_db_name))
-      endif 
-     
+      endif
+
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
 

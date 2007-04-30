@@ -1856,6 +1856,8 @@ C EHCMAN controls manual creation/editing of convection file.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*30 ITEM(12)
 
+      integer ihcfpt    ! for local editing.
+
    20 INO = -2
       ITEM(1) ='c Initialise fixed values  '
       ITEM(2) ='  _______________________  '
@@ -1910,14 +1912,23 @@ C Help text for this menu.
       h(35)='adjacent zone. '
       h(36)=' '
       h(37)='Remember to save any changes before you leave this menu.'
+      h(38)=' '
+      h(39)='A cancel option should leave the model unchanged (please'
+      h(40)='check to ensure the model).'
 
       CALL EMENU(' User defined or CEN values',ITEM,NITEMS,INO)
       IF(INO.EQ.1)then
 
 C Create from scratch. Initialise values to default value before
 C calling editing routine.
-        CALL EASKI(IHCFP,' ',' No of control periods ? ',
-     &          1,'F',MP,'F',1,'no periods',IER,0)
+        ihcfpt=ihcfp
+        CALL EASKI(ihcftp,' ',' Number of control periods ?',
+     &          1,'F',MP,'F',1,'no periods',IERI,40)
+        if(ieri.eq.-3)then
+          goto 20
+        elseif(ieri.eq.0)then
+          ihcfp=ihcfpt
+        endif
         NS=NZSUR(icomp)
         DO 250 I = 1,IHCFP
           hcfpdescr(I) = 'User supplied hc values'
@@ -1955,13 +1966,20 @@ C Add control period,
 
 C Change control period.
         CALL EASKI(IN,' ',' Which control period ? ',
-     &          1,'F',IHCFP,'F',1,'change period',IER,0)
-        call EPHCF(ICOMP,IN,NS,IER)
+     &          1,'F',IHCFP,'F',1,'change period',IERI,40)
+        if(ieri.eq.-3)then
+          goto 20
+        else
+          call EPHCF(ICOMP,IN,NS,IER)
+        endif
       ELSEIF(INO.EQ.6)then
 
 C Delete control period.
         CALL EASKI(IN,' ',' Delete which control period ? ',
-     &          1,'F',IHCFP,'F',1,'delete period',IER,0)
+     &          1,'F',IHCFP,'F',1,'delete period',IERI,40)
+        if(ieri.eq.-3)then
+          goto 20
+        endif
         IF (IN .EQ. IHCFP)  GOTO  790
         J01=IN+1
         DO 740 I=J01,IHCFP
@@ -2474,8 +2492,12 @@ C Selected correlations control: .
      &           SN(1:lnblnk(SN)),' inside : period',IN
           IH=IHCI(IN,J)
           CALL EASKI(IH,outs,' (-1.= simulation toggle = default) ? ',
-     &               -2,'W',100,'W',-1,'correlation inside',IER,59)
-          IHCI(IN,J)=IH
+     &               -2,'W',100,'W',-1,'correlation inside',IERI,59)
+          if(ieri.eq.-3)then
+            continue
+          else
+            IHCI(IN,J)=IH
+          endif
    71   CONTINUE
         DO 72 J=1,NS
           icc=izstocn(iz,j) 
@@ -2484,8 +2506,12 @@ C Selected correlations control: .
      &           SN(1:lnblnk(SN)),' outside : period',IN
           IH=IHCE(IN,J)
           CALL EASKI(IH,outs,' (-1.= simulation toggle = default) ? ',
-     &               -2,'W',100,'W',-1,'correlation outside',IER,59)
-          IHCE(IN,J)=IH
+     &               -2,'W',100,'W',-1,'correlation outside',IERI,59)
+          if(ieri.eq.-3)then
+            continue
+          else
+            IHCE(IN,J)=IH
+          endif
    72   CONTINUE
       ENDIF
 
@@ -2511,6 +2537,8 @@ C Adaptive control.
         H(18)='specified in the neighbouring zone will take precedence.'
         H(19)='Specify law `99` in these cases where adaptive control'
         H(20)='is not applicable. '
+        H(21)=' '
+        H(22)='A cancel leaves the current control law unchanged.'
         hcfpdescr(IN) = 'User supplied adaptive hc correlations'
         DO 81 J=1,NS
           icc=izstocn(iz,j) 
@@ -2519,23 +2547,26 @@ C Adaptive control.
           WRITE(outs,'(a,i3,1x,a,a,I2)')' Control law for surface',J,
      &           SN(1:lnblnk(SN)),' inside : period',IN
           CALL EASKI(Ilaw,outs,' (99=no control for this surface)',
-     &               0,'W',100,'W',99,'control law inside',IER,20)
+     &               0,'W',100,'W',99,'control law inside',IERI,22)
+          if(ieri.eq.-3)then
+            goto 81
+          endif
           CVdata(IN,J,1) = Ilaw
 
 C Control law 1.
           if(Ilaw.eq.1) then
-            H(1) ='Correlation for ON = correlation to use when plant '
+            H(1) ='Correlation for ON = correlation to use when plant'
             H(2) ='is heating zone. '
             H(3) =' '
-            H(4) ='Correlation for OFF = correlation to use when zone '
+            H(4) ='Correlation for OFF = correlation to use when zone'
             H(5) ='is unheated. '
             H(6) =' '
-            H(7) ='Each correlation is identified by an index.  Refer '
-            H(8) ='to /usr/esru/src/esp-r/esrubld/convect.F, '
-            H(9) ='subroutine HTBUOY, where the index numbers are '
+            H(7) ='Each correlation is identified by an index.  Refer'
+            H(8) ='to /usr/esru/src/esp-r/esrubld/convect.F,'
+            H(9) ='subroutine HTBUOY, where the index numbers are'
             H(10)='assigned to ICOR. '
             H(11)=' '
-            H(12)='-1 indicates that a correlation will be chosen '
+            H(12)='-1 indicates that a correlation will be chosen'
             H(13)='based on the simulation toggle. '
   102       CALL EASKS(stuff,' correlation indices',
      &                 ' ON & OFF states',10,' -1  -1',
@@ -2560,6 +2591,28 @@ C Other control laws not yet supported.
           else
           endif
    81   CONTINUE
+        H(1) ='It is possible for the convection calculations to '
+        H(2) ='`adapt` as the simulation progresses.  You must assign '
+        H(3) ='a `control law` for each interior surface, which '
+        H(4) ='defines how the calculations will adapt. The following '
+        H(5) ='control laws are available: '
+        H(6) =' '
+        H(7) ='Law 1: two correlations specified for each surface; '
+        H(8) ='one correlation used when plant is heating zone '
+        H(9) ='(radiation or convection); other correlation used when '
+        H(10)='zone is unheated. Appropriate when plant system alters '
+        H(11)='convection regime within zone. '
+        H(12)=' '
+        H(13)='Adaptive control is only applicable for interior '
+        H(14)='building surfaces. Control laws specified for exterior '
+        H(15)='surfaces will be ignored. As well, a control law '
+        H(16)='specified for an `outside` surface which faces the '
+        H(17)='air-point of an adjacent zone will be ignored: the law'
+        H(18)='specified in the neighbouring zone will take precedence.'
+        H(19)='Specify law `99` in these cases where adaptive control'
+        H(20)='is not applicable. '
+        H(21)=' '
+        H(22)='A cancel leaves the current control law unchanged.'
         DO 82 J=1,NS
           icc=izstocn(iz,j) 
           SN=SSNAME(icc)
@@ -2567,7 +2620,10 @@ C Other control laws not yet supported.
           WRITE(outs,'(a,i3,1x,a,a,I2)')' Control law for surface',J,
      &           SN(1:lnblnk(SN)),' outside : period',IN
           CALL EASKI(Ilaw,outs,' (99=no control for this surface)',
-     &               0,'W',100,'W',99,'control law outside',IER,20)
+     &               0,'W',100,'W',99,'control law outside',IERI,22)
+          if(ieri.eq.-3)then
+            goto 82
+          endif
           CVdata(IN,J,5) = Ilaw
 
 C Control law 1.
@@ -3019,6 +3075,8 @@ C EHTCFF reads the convection-calculation control file (usually named *.htc).
 
       SUBROUTINE EHTCFF(FILE,IUF,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -3035,16 +3093,14 @@ C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
       COMMON/HCCEN/CENLOC(MP,14)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-      character*72 FILE,currentfile
-      character hcfpdescr*72,outstr*124,word*24
+      character*72 FILE,hcfpdescr*72,outstr*124,word*24
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
       logical newer
         
       CALL EFOPSEQ(IUF,FILE,1,IER)
       IF(ier.eq.0)THEN
-        currentfile=FILE
+        write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+
 C Does the 1st and 2nd line have one item and the 3rd line have two items?
 C Or does the file start with '*HC_CTL'?
         CALL STRIPC(IUF,OUTSTR,99,num1,1,'htc line 1',IER)

@@ -41,6 +41,14 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
       PROGRAM eco
 #include "building.h"
 #include "LCA.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+C default file names for databases
+
+      integer igraphiclib  ! external definition
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -85,12 +93,11 @@ C Composites information
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -98,8 +105,6 @@ C For exporting to file
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C ECO specific commons 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -135,7 +140,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(19) 
@@ -145,8 +150,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
-      CHARACTER LFCON*72,LFMUL*72,inf*144,LCMDFL*144,LOPTDB*72
-      CHARACTER*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,esprc*72,L144*144
       CHARACTER dfdblbl*20,defdbfl*72
@@ -193,7 +197,7 @@ C Temporary IFIL+1.
       IFIL = 10
       IFCFG=IFIL+5
       IUF=IFIL+6
-      IFCON=IFIL+13
+      IFMAT=IFIL+13
       IFMUL=IFIL+14
       IOPTDB=IFIL+15
       IBCF=IFIL+22
@@ -219,7 +223,7 @@ C Set defaults.
       OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       MODIFY=.FALSE.
@@ -656,29 +660,34 @@ C Incllude break and loss in results
       elseif (INO.eq.1) then 
 
 C Select/change ESP-r configuration file.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   289   H(1)='The problem configuration file holds the definition '
         H(2)='of the building/ plant to be simulated, including the'
         H(3)='names of all of the files required.'
         L144=LCMDFL
         llt=lnblnk(L144)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
-     &      'config file name',IER,3)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
-     &      'config file name',IER,3)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
+     &        'config file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
+     &        'config file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
      &      'config file name',IER,3)
+        else
+          CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
+     &      'config file name',IER,3)
         endif
-#else
-        CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
-     &    'config file name',IER,3)
-#endif
+
         IF(L144.EQ.' ')GOTO 289
         LCMDFL=L144
         goto 42
@@ -875,7 +884,7 @@ C Display Material list and allow selection of materials.
      &                      'Select a BCF file first','W')
           goto 10
         ENDIF
-        IF (.NOT.CONDBOK) THEN
+        IF (.NOT.MATDBOK) THEN
           call usrmsg('Materials database not yet loaded,',
      &                      'unable to display list.','W')
           goto 10
@@ -883,9 +892,9 @@ C Display Material list and allow selection of materials.
 
 C Open Materials database and allow user to select material.
           IER=0
-          CALL ERPFREE(IFCON,ISTAT)
+          CALL ERPFREE(IFMAT,ISTAT)
           
-          call EFOPRAN(IFCON,LFCON,40,0,IER)
+          call EFOPRAN(IFMAT,LFMAT,40,0,IER)
           dok=.true.
           h(1)='If you happen to know the material db index you '
           h(2)='can say no. Otherwise, say yes and then browse '
@@ -917,7 +926,7 @@ C If primitive database not opened, do it now.
           ENDIF
         endif
 
-        CALL ERPCDB(IFCON,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
+        CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
      &                                                   DRV,TITL,NAM)
         
         call edisp(iuout,' ')

@@ -5,28 +5,30 @@ c Volumes are in Litres
 
 c Global DHW Variables
 
-      COMMON /DHW_DATA/ iMonth,iNTSTEP,
-     &  iNumberOfTanks,fAmpGroundTempVar,fMeanGroundTemp,
-     &  fNumOfOccupants,fWaterDraw,fCold_Main_Temp,
-     &  fHotSupplyTemp,iDHW_Flag,fWaterDrawCurveHourly,  
-     &  fWaterDrawCurveTotal,sDHW_InputFileName
+      COMMON /DHW_DATA/ iNTSTEP,
+     &  iNumberOfTanks,fNumOfOccupants,fWaterDraw,
+     &  fCold_Main_Temp,fHotSupplyTemp,iDHW_Flag,
+     &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
+     &  sDHW_InputFileName,fDHW_ground_temp_avg,
+     &  fDHW_ground_temp_amp,iDHW_ground_temp_cal_flag
 
-c Common block modified to remove fAmpGroundTempVar and fMeanGroundTemp.
-c These variables are now in the common block:
-C COMMON/Ground_Temp/Temp_Ground_Avg,Temp_Ground_Amp,Temp_Ground_phaseshift
-     
 C iDay    Contains the day of the year number.
 C iMonth  Contains the Month Number.
 C iNTSTEP Number of Timestep in one hour.
 C iNumberOfTanks Number Tanks in simulation.
-       INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks
+C iDHW_ground_temp_cal_flag 
+C             Flag for method for obtaining ground 
+C             temperature parameters. Either user 
+C             supplied in the dhw or internally calculated
+      INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks,
+     &        iDHW_ground_temp_cal_flag
 
 C fNumOfOccupants   Number of Occupants.
 C fWaterDraw        Water Draw for current time step
 C fCold_Main_Temp(12) Cold Main temp array (Monthly).
 C fHotSupplyTemp    Hot water supply (set) temperature.
-       REAL    fAmpGroundTempVar,fMeanGroundTemp,fNumOfOccupants
-c       REAL    fNumOfOccupants
+       REAL    fDHW_ground_temp_avg,fDHW_ground_temp_amp,
+     &         fNumOfOccupants
        REAL    fWaterDraw,fCold_Main_Temp(12),fHotSupplyTemp
 
 C iDHW_Flag     Flag to indicate that dhw model is active.

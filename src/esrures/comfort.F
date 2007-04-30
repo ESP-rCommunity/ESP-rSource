@@ -68,14 +68,15 @@ C Pre calculated data (filtered).
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
-      character doit*248,tmode*8,tfile*72,longtfile*144
+      character doit*248,tmode*8,tfile*72
+      character longtfile*144,longtfiledos*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
       character xfile*72,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
-      logical ok,dok,concat
+      logical ok,dok,concat,unixok
 
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
@@ -85,6 +86,9 @@ C Pre calculated data (filtered).
      &          'non-sedentary            ','out of range             '/
 
       DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
+
+C Check if Unix or Windows.
+      call isunix(unixok)
 
 C Initialise comfort variables.
       if(act.eq.'I'.or.act.eq.'V')then
@@ -138,13 +142,26 @@ C up hash list of zone:time:occupancy.
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
         write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
-        H(1)='Select a casual gain type to base occupancy on.'
-        H(2)='Labels show are from the first zone in the current'
-        H(3)='list. Type 1 usually represents casual gains from '
-        H(4)='people,although any of the three casual gain types can '
-        H(5)='be used. '
+        H(1)='To identify when during the day that comfort should be'
+        H(2)='reported you have several options: '
+        H(3)=' Always occupied - assess comfort 24/7 i.e. independent'
+        H(4)='     of the occupant schedules with the zone operation'
+        H(5)='     file.'
+        H(6)=' Labels from the zone operations file - the 2nd - 4th'
+        H(7)='     options of the in the dialog reflect what has been'
+        H(8)='     defined in the zone operations file for casual gain'
+        H(9)='     types ( if you select one of these then comfort is'
+        H(10)='     reported for non-zero sensible gain periods.'
+        H(11)=' time - you specify a start time and an end time for'
+        H(12)='     a typical day and comfort is assessed during this'
+        H(13)='     period.'
+        H(14)=' '
+        H(15)='If you have not altered the labels for the casual gains'
+        H(16)='within the zone operations file the first Type is for'
+        H(17)='occupants the second Type is lights and the third Type'
+        H(18)='is Equipment (small power).'
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
-     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
+     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,18)
         if (IOT.gt.1.and.IOT.lt.5) then
           iocut=IOT-1
         elseif(IOT.eq.1)then
@@ -328,7 +345,17 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
           write(doit,'(7a)') 'mrt -mode ',tmode,
      &       ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),

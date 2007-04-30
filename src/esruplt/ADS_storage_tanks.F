@@ -1359,6 +1359,12 @@ C             constant and time-step (this is the default treatment);
 C             4= steady state.
 C    RATIMP   user-specified implicit weighting fraction
 C    TIMSEC   the time-step in the explicit plant domain (seconds)
+C
+C Although for IMPEXP = 3 the model calculates the required alpha, it is not
+C recommended to use different values for alpha during a single simulation run,
+C due to the likely introduction of errors in the simulation results.
+C The user is therefore warned in case the model decides to change alpha from the
+C default value to fully implicit (alpha = 1) due to a too small a time constant.
 C---------------------------------------------------------------------------------
 C-------Fully implicit.
         IF( IMPEXP.eq.1 ) THEN
@@ -1370,6 +1376,12 @@ C-------General case: implicit/explicit with calculated weighting.
         ELSE IF( IMPEXP .eq. 3 ) THEN
           IF( TIMSEC.gt.0.63*TC(IPCOMP) ) THEN
             alpha = 1.
+            WRITE(IUOUT,*) ' ADS_tank_fuel_coeff_gen: '
+            WRITE(IUOUT,*) ' The time constant of the tank is too '
+            WRITE(IUOUT,*) ' small compared to the current simulation '
+            WRITE(IUOUT,*) ' time step.'
+            WRITE(IUOUT,*) ' Choose a smaller time step to prevent '
+            WRITE(IUOUT,*) ' erroneous results.'
           ELSE
             alpha = RATIMP
           END IF
@@ -2338,8 +2350,6 @@ C-------------------------------------------------------------------------------
       REAL Rinv,alpha
       REAL q_element
       REAL part1,part2,part3,part4,part5,part6,part7,part8,part9
-C      REAL DHW_draw_present,DHW_draw_future,T_makeup_present,
-C     &     T_makeup_future,mdotCp_DHW_present,mdotCp_DHW_future
 
       REAL  H3K_Connect_property   !- function used to return temperature of most recently
                                    !- calculated temperature (oC)
@@ -2584,8 +2594,6 @@ C
 C    Modification: Check to see if the tank 
 C---------------------------------------------------------------------------------
         CALL FC_DHW_load(T_node1_future)
-C     &                   DHW_draw_present,DHW_draw_future,
-C     &                   T_makeup_present,T_makeup_future)
         mdotCp_DHW_present = DHW_draw_present
      &                     * RHOFLD(3,T_makeup_present)
      &                     * SHTFLD( 3,T_makeup_present )

@@ -29,41 +29,44 @@ C This subroutine opens plant component database and
 C recovers components record pointers.
 C    mode = 1 : Read database file name and read data pointers.
 C    mode = 2 : Read data pointers only.
-C    lpcdb  -  name of plant component data base.
 
-      subroutine opnpdb(iupdb,mode)
+      subroutine opnpdb(mode)
 
 #include "plant.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C default file names for databases
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
-
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
-      COMMON/C7/LPCDB
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
 
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
-      CHARACTER ZDESC*25,h*72,buffer*72,lpcdb*72
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+      CHARACTER ZDESC*25,h*72,buffer*72,ltmp*72
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.
          h(1)='The plant component database binary file holds the'
          h(2)='description of available components.'
-  100    CALL EASKS(lpcdb,
+         ltmp=lpcdb
+  100    CALL EASKS(ltmp,
      &     ' Plant component database file name? ',' ',72,DPCDB,
      &     ' Database name ',IER,2)
-
+         if(ltmp(1:2).ne.' ') lpcdb=ltmp
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
-C 'irecln' is defined in 'plantdf.h'.
-         CALL FPRAND (iupdb,istat,irecln,3,lpcdb)
+C 'irecln' is defined in 'plantdf.h'. If plant component database
+C unit is not yet defined set it to the event profile db number.
+         if(ipcdb.eq.0) ipcdb=iprodb
+         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then
@@ -90,7 +93,7 @@ C File doesn't exist.
 
 C Old file, so check header.
          IREC = 1
-         READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
+         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
          IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
             ok=.false.
             dok=.true.
@@ -102,7 +105,7 @@ C Old file, so check header.
             if(ok) goto 100
          endif
          IREC = 2
-         READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) npcdb
+         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) npcdb
          write(buffer,72) npcdb
   72     format(' Data base contains',i5,' components.')
 
@@ -113,7 +116,7 @@ C Recover item pointers.
          DO 110 I = 3, MHEADR
             NRR = NR + IRECLN - 1
             IREC = I
-            READ (iupdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
+            READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999)
      &                          (ITMLOC(J,1),J=NR,NRR)
             NR = NR + IRECLN
   110    CONTINUE

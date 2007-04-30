@@ -34,6 +34,12 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
       SUBROUTINE EDZONE(ITRC,ICOMP,IER)
 #include "net_flow.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -67,9 +73,8 @@ C the floor area (one) or it was calculated (zero).
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -86,27 +91,33 @@ C the floor area (one) or it was calculated (zero).
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       LOGICAL MODIFY,MODLEN,MODBND,browse,context
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL DOK,OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10)
-      CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*32
+      CHARACTER H*72,zname*12,zdesc*64,HEAD*20,SNAME*12,SALT*33,hold*36
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48,DESCRC*25
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER D12*12,T12*12,LTMP*72,GFILE*72,LPRFDB*72
+      CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
       CHARACTER ITEMS*33,ITEMSS*32,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
-      character SIGSTR*12,fs*1
+      character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
+
+      real exposed,vexposed,areatran,areawall  ! local values for QA
+      real areaslproof,areafltroof,areaskylt
+      real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
+
+      integer lna,lnb
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -192,6 +203,9 @@ C initial zbasea() as FLA.
         ZBASEA(ICOMP)=0.0
       endif
       attribok=.true.
+
+C Loop through each surface and detect whether orientation of
+C the surface has changed and needs to be recognised. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
         if(SOTHER(I)(1:4).eq.'UNKN')attribok=.false.
@@ -405,7 +419,7 @@ C Read current zone back in and then update the configuration file.
       ITEMS(ITEMC+12)='i rotation & transforms        '
       ITEMS(ITEMC+13)='j                              '
       ITEMS(ITEMC+14)='  _____________________________'
-      ITEMS(ITEMC+15)='* list surface details         '
+      ITEMS(ITEMC+15)='* list zone & surface details  '
       ITEMS(ITEMC+16)='> save                         '
       IF(ITRC.EQ.0)THEN
         ITEMS(ITEMC+17)='t reporting >> silent  '
@@ -517,12 +531,14 @@ C Report on model contiguity changes.
 C Zone name, make sure it has no illegal characters.
         H(1)='The name of the zone is used both for descriptive and'
         H(2)='bookkeeping purposes.  Each name should be unique.'
-        T12=' '
-        D12='new_zone'
-        CALL EASKS(T12,' ',' Descriptive name for zone? ',
-     &    12,D12,'zone name',IER,2)
-        if(T12.NE.' ')then
+        T14=' '
+        D14='new_zone'
+        CALL EASKS(T14,' ',' Descriptive name for zone (12 char)? ',
+     &    14,D14,'zone name',IER,2)
+        if(T14(1:2).NE.'  ')then
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,zname(ICOMP))
+
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
             WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &        '.geo'
@@ -703,15 +719,66 @@ C Remind user of current surface boundary attributes.
             SALT(9)='CEN 13791 partition '
             SALT(10)='Unknown (at this time)           '
 
-            H(1)='The boundary conditions at the other face of this'
-            H(2)='surface is specified via the selection of one of '
-            H(3)='these choices.  The default is External.'
-            H(4)=' '
-            H(5)='Choices marked - - - must be attributed surface'
-            H(6)='by surface. '
+        H(1) ='The boundary conditions at the other face of this sur-'
+        H(2) ='face is specified via the selection of one of these'
+        H(3) ='choices.  The default is OUTSIDE.'
+        H(4) =' '
+        H(5) =' Exterior - the other face of the surface is exposed to'
+        H(6) ='  ambient air temperature, wind and solar radiation.'
+        H(4) =' '
+        H(5) =' Dynamic/similar - the other face of the surface is'
+        H(6) ='  exposed to the same conditions as the inside face'
+        H(7) ='  (except that when direct sunlight is falling on the'
+        H(8) ='  inside face it cannot be falling on the other face'
+        H(9) ='  only the diffuse component is used on the other face.'
+        H(10)='  where both sides get the same radiation.'
+        H(11)='  A dynamic/similar connection can include an offset'
+        H(12)='  temperature (C) and radiation (W/m^2).'
+        H(13)=' '
+        H(14)=' Static - requires that a constant temperature and'
+        H(15)='  radiation be supplied. You might use this to represent'
+        H(16)='  a cold storage room.'
+        H(17)=' '
+        H(18)=' Surface in another zone - the other face of the surface'
+        H(19)='  gets its boundary conditions from the last known state'
+        H(20)='  of the other surface. There is a thermophysical con-'
+        H(21)='  nection established between the two zones.'
+        H(22)=' '
+        H(23)=' Ground (standard profile) - the other face of the'
+        H(24)='  surface is in direct contact with one of the standard'
+        H(25)='  monthly temperature profiles embedded in ESP-r.'
+        H(26)=' '
+        H(27)=' Ground (user defined profile) - the other face of the'
+        H(28)='  surface is in direct contact with a monthly profile'
+        H(29)='  previously created by the user (in the model context)'
+        H(30)=' '
+        H(31)=' Ground (3D conduction) - the other face connects to a'
+        H(32)='  3D ground representation. This is not often used.'
+        H(33)=' '
+        H(34)=' Adiabatic boundary - typically used for back-to-back'
+        H(35)='  surfaces in a zone representing thermal mass. There'
+        H(36)='  is no heat flux passed beyond the other-face. '
+        H(37)=' '
+        H(38)=' BASESIMP is used to represent one of several basement'
+        H(39)='  configurations and precalculated patterns of heat'
+        H(40)='  transfer. For this to be useful there must be a'
+        H(41)='  basesimp file created for the zone giving a number'
+        H(42)='  of dimensions and computational parameters.'
+        H(43)=' '
+        H(44)=' CEN 13791 partition which is like the SIMILAR'
+        H(45)='  but for CEN 13791 test. The offset temperauture'
+        H(46)='  and radiation (W/m^2) in SIMILAR is not available'
+        H(47)='  for the CEN 13791 partition type. For details see'
+        H(48)='  section 4.4.2 CEN 13791 standard. '
+        H(49)=' '
+        H(50)='There is a module of ESP-r which uses polygon adjacency'
+        H(51)='to automatically link partitions together. '
+        H(52)=' '
+        H(53)='Choices marked - - - must be attributed surface'
+        H(54)='by surface. '
             IX=1
             CALL EPICKS(IX,IVALSS,' ','The other side faces:',
-     &        33,10,SALT,'surface boundary options',IER,6)
+     &        33,10,SALT,'surface boundary options',IER,54)
             IOS=IVALSS(1)
             if(IOS.EQ.2)then
               H(1)='A similar (type 1) connection can include an offset'
@@ -721,19 +788,23 @@ C Remind user of current surface boundary attributes.
               H(5)='be 2degC cooler then use a -2 offset. '
               H(6)=' '
               H(7)='(units are in whole degC and whole W) '
+              H(8)=' '
+              H(9)='Use care when setting a high offset temperatures.'
               VALT=0.0
               VALW=0.0
               CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &          '(see help) ',-99.,'F',99.,'F',0.0,'offset temp',IER,7)
+     &          '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
               CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &          '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,7)
+     &          '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
             elseif(IOS.EQ.3)then
               H(1)='A constant (type 2) connection requires that a '
               H(2)='constant temperature and radiation (W/m^2).'
+              H(3)=' '
+              H(4)='Use care when fixing the temperature above 100C.'
               CALL EASKR(VALT,' ',' Constant temperature? ',
-     &         -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &         -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
               CALL EASKR(VALW,' ',' Constant radiation source (W/m^2)?',
-     &        0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,2)
+     &        0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,4)
             elseif(IOS.EQ.5)then
 
 C List out standard profiles, assuming that if June is 0.0, then the
@@ -754,8 +825,11 @@ C profile has not been defined.
               H(5)='    which case a 0 followed by a profile number'
               H(6)='    is required.'
               H(7)='-3  a connection to a 3D ground model.'
+              H(8)=' '
+              H(9)='A cancel request leaves the model unchanged. '
               CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,9)
+              if(ieri.eq.-3) goto 3
             elseif(IOS.EQ.6)then
 
 C List out user defined profiles, assuming that if June is 0.0, then the
@@ -769,8 +843,11 @@ C profile has not been defined.
  22             continue
                 H(1)='One of the user defined profile numbers is'
                 H(2)='required here.'
+                H(3)=' '
+                H(4)='A cancel leaves the model unchanged. '
                 CALL EASKI(IIE2,' User defined ground profile index ?',
-     &            ' ',0,'F',9,'F',1,'user defined profile',IER,2)
+     &            ' ',0,'F',9,'F',1,'user defined profile',IERI,4)
+                if(ieri.eq.-3) goto 3
               else
                 call usrmsg(
      &          'No user defined ground profiles have been found.',
@@ -834,15 +911,29 @@ C LINSTY of selected surface to 2 (i.e. thick lines) and redraw.
               MODIFY=.TRUE.
               MODGEO=.TRUE.
               CALL ADJVIEW(ITRC,IER)
-              T12='  '
-              write(D12,'(a12)')SNAME(ICOMP,ISS)
+
+C Use a slightly wider editing box than the name. Take the string
+C (T14) and ensure that there are no spaces or strange characters.
+              T14='  '
+              write(D14,'(2a)')SNAME(ICOMP,ISS),'  '
               H(1)='Use this attribute to inform about the nature of '
-              H(2)='the surface (make it easy for others to understand)'
-              write (outs,'(4a)')'Surface name (default=',D12,') for ',
+              H(2)='the surface (for others to understand)!'
+              H(3)=' '
+              H(4)='Each surface in a zone should have a unique name'
+              H(5)='and the name should not have any spaces or un- '
+              H(6)='printable characters in it. '
+              write (outs,'(4a)')'Surface name (default=',D14,') for ',
      &                           'highlighted surface'
- 52           CALL EASKS(T12,outs,'(unique word <=12 char):',
-     &                    12,D12,'surface name',IER,2)
+ 52           CALL EASKS(T14,outs,'(unique name <=12 char):',
+     &                   14,D14,'surface name',IER,6)
+              write(T12,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+              write(D12,'(a)') T14(1:12)
+#else
               call st2name(T12,D12)
+#endif
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
                 SNAME(ICOMP,ISS)=D12
@@ -1052,17 +1143,21 @@ C editing facility.
         if(iw.eq.1)then
           CALL EDOBS(ITRC,iuout,ICOMP,IER)
         elseif(iw.eq.2)then
-#ifdef X11
-          call edisp(iuout,
-     &      'Toggle to obstruction mode after you have set origin')
-          call edisp(iuout,'and scale. ')
-          call clickonbitmap(0,ier)
-          call edisp(iuout,'You may further edit the obstructions...')
-          CALL EDOBS(ITRC,iuout,ICOMP,IER)
-#else
-          call usrmsg('The clickonbitmap facility is not yet working',
-     &      'with new graphic library.','W')
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call edisp(iuout,
+     &        'Toggle to obstruction mode after you have set origin')
+            call edisp(iuout,'and scale. ')
+            call clickonbitmap(0,ier)
+            call edisp(iuout,'You may further edit the obstructions...')
+            CALL EDOBS(ITRC,iuout,ICOMP,IER)
+          elseif(iglib.eq.2)then
+            call usrmsg('The clickonbitmap facility is not yet working',
+     &        'with GTK graphic library.','W')
+          elseif(iglib.eq.3)then
+            call usrmsg('The clickonbitmap facility requires the',
+     &        'interface to be in graphic mode.','W')
+          endif
         endif
       ELSEIF(INO.EQ.ITEMC+12)THEN
 
@@ -1106,6 +1201,10 @@ C Rotation choices.
      &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
               CALL ESCROT(VAL,x1,y1)
               call usrmsg(' ',' ','-')
+            elseif(IRT.EQ.4)THEN
+
+C User asked to cancel so jump back to menu setup code.
+              goto 3
             endif
             ZBFLG(ICOMP)=0.
             CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -1182,8 +1281,8 @@ C Rotate any obstructions associated with this zone.
           call tstamp('>','PRJ: do zone translation')
           H(1)='Transform shifts the zone by a given amount in'
           H(2)='each axis.'
-          hold = ' 0.0  0.0  0.0'
-  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',32,
+          hold = ' 0.000  0.000  0.000    '
+  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
      &      ' 0. 0. 0.','transforms XYZ',IER,2)
           K=0
           CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
@@ -1362,6 +1461,21 @@ C << future position of linear thermophysical properties >>
       ELSEIF(INO.EQ.ITEMC+15)THEN
 
 C Surface summary: print header, followed by surface information.
+C And also report other zone summary fields as in the QA report.
+        exposed = 0.0
+        vexposed = 0.0
+        areatran = 0.0
+        areawall = 0.0
+        areaslproof = 0.0
+        areafltroof = 0.0
+        areaskylt = 0.0
+        uavgtran = 0.0
+        uavgsky = 0.0
+        uavwall = 0.0
+        uavfltroof = 0.0
+        uavslproof = 0.0
+        wallper =0.0
+
         call tstamp('>','PRJ: list zone surface summary')
         context=.true.
         CALL SURINFO(ICOMP,iuout,context)
@@ -1378,12 +1492,171 @@ C Surface summary: print header, followed by surface information.
          if(ICT(icc).eq.4.and.SSOTHER(icc)(1:5).ne.'GROUN')bndry=.false.
          if(ICT(icc).eq.5.and.SSOTHER(icc)(1:5).ne.'ADIAB')bndry=.false.
          if(ICT(icc).eq.6.and.SSOTHER(icc)(1:5).ne.'BASES')bndry=.false.
+
+         if(ICT(icc).eq.0)then 
+
+C Check the U value for each external surface.
+C exposed walls and floors, pitched roofs, flat roofs
+           UVH = 0.0
+           UVU = 0.0
+           UVD = 0.0
+           do 511 ii=1,nmlc
+             if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
+
+C Recover the ISO 6946 U values as in prjqa.F.
+               call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
+             else
+               continue
+             endif
+  511      continue
+           exposed = exposed + SSNA(icc)
+           if(SOTF(is)(1:4).eq.'OPAQ')then
+             if(SVFC(is)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
+               areawall = areawall + SSNA(icc)
+               uavwall = uavwall + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             elseif(SVFC(is)(1:4).eq.'SLOP')then
+
+C For sloped surfaces.
+               areaslproof = areaslproof + SSNA(icc)
+               uavslproof = uavslproof + (SSNA(icc) * UVH)
+             elseif(SVFC(is)(1:4).eq.'CEIL')then
+
+C For ceilings.
+               areafltroof = areafltroof + SSNA(icc)
+               uavfltroof = uavfltroof + (SSNA(icc) * UVH)
+             else
+
+C For floors.
+               areawall = areawall + SSNA(icc)
+               uavwall = uavwall + (SSNA(icc) * UVH)
+             endif
+           elseif(SOTF(is)(1:4).eq.'TRAN')then
+             if(SVFC(is)(1:4).eq.'CEIL'.or.
+     &          SVFC(is)(1:4).eq.'SLOP')then
+
+C Consider glazing on ceiling or sloped to be a skylight.
+               areaskylt = areaskylt + SSNA(icc)
+               uavgsky = uavgsky + (SSNA(icc) * UVH) 
+             elseif(SVFC(is)(1:4).eq.'VERT')then
+
+C Consider glazing on walls to be a part of facade.
+               areatran = areatran + SSNA(icc)
+               uavgtran = uavgtran + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             else
+               areatran = areatran + SSNA(icc)
+               uavgtran = uavgtran + (SSNA(icc) * UVH)
+               vexposed = vexposed + SSNA(icc)
+             endif
+           else
+             continue
+           endif
+          endif
  1243   continue
         if(.NOT.bndry)then
           call edisp(iuout,
      &   'Some surface boundary attributions did not match the master')
           call edisp(iuout,
      &   'connections list. A topology update may be required.')
+        endif
+
+C Debug...
+C        write(iuout,*) 'in zone ',icomp,' area wall = ',areawall
+C        write(iuout,*) 'area flat roof = ',areafltroof
+C        write(iuout,*) 'area sloped roof = ',areaslproof
+C        write(iuout,*) 'area skylights = ',areaskylt
+C        write(iuout,*) 'area windows = ',areatran
+C        write(iuout,*) 'floor area = ',ZBASEA(icomp)
+C        write(iuout,*) 'exposed = ',exposed
+C        write(iuout,*) 'vert exposed = ',vexposed
+
+        if(exposed.gt.0.1)then
+
+C If there is external glazing or skylights then report.
+          call rel16str(exposed,t16a,lna,ier)
+          call rel16str(vexposed,t16b,lnb,ier)
+          if(vexposed.gt.0.1)then
+            write(outs,'(5a)')' There is ',t16a(1:lna),
+     &        'm2 of exposed (to outside) surface area, ',
+     &        t16b(1:lnb),'m2 of which is vertical.'
+          else
+            write(outs,'(3a)')' There is ',
+     &        t16a(1:lna),'m2 of exposed surface area.'
+          endif
+          call edisp(iuout,outs)
+        endif
+        if(areawall.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            wallper = (areawall/ZBASEA(icomp)) * 100.
+          else
+            wallper = 1.0
+          endif
+          call rel16str(wallper,t16a,lna,ier)
+          call rel16str(uavwall,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Outside walls are ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavwall/areawall,' & UA of ',t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areaslproof.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            slproofper = (areaslproof/ZBASEA(icomp))*100.
+          else
+            slproofper = 1.0
+          endif
+          call rel16str(slproofper,t16a,lna,ier)
+          call rel16str(uavslproof,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavslproof/areaslproof,' & UA of ',
+     &      t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areafltroof.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            flatroofper = (areafltroof/ZBASEA(icomp))*100.
+          else
+            flatroofper = 1.0
+          endif
+          call rel16str(flatroofper,t16a,lna,ier)
+          call rel16str(uavfltroof,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Flat roof is ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavfltroof/areafltroof,' & UA of ',
+     &      t16b(1:lnb)
+          call edisp(iuout,outs)
+        endif
+        if(areatran.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            tranper = (areatran/ZBASEA(icomp)) * 100.
+          else
+            tranper = 1.0
+          endif
+          vtranper = (areatran/vexposed) * 100.
+          call rel16str(tranper,t16a,lna,ier)
+          call rel16str(vtranper,t16b,lnb,ier)
+          call rel16str(uavgtran,t16c,lnc,ier)
+          write(outs,'(5a,F5.3,2a)')
+     &      ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
+     &      ' % facade with avg U of ',
+     &      uavgtran/areatran,' & UA of ',t16c(1:lnc)
+          call edisp(iuout,outs)
+        endif
+        if(areaskylt.gt.0.1)then
+          if(ZBASEA(icomp).gt.0.01)then
+            skyper = (areaskylt/ZBASEA(icomp)) * 100.
+          else
+            skyper = 1.0
+          endif
+          call rel16str(skyper,t16a,lna,ier)
+          call rel16str(uavgsky,t16b,lnb,ier)
+          write(outs,'(3a,F5.3,2a)')' Skylights are ',
+     &      t16a(1:lna),' % of floor area & avg U of ',
+     &      uavgsky/areaskylt,' & UA of ',t16b(1:lnb)
+          call edisp(iuout,outs)
         endif
 
 C Check if user wishes to see construction details as well.
@@ -1705,6 +1978,7 @@ C saved to a geometry file ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1725,7 +1999,6 @@ C Optical and geometric properties.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/ground/grdtmp(12,mgrdp)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1734,8 +2007,8 @@ C Optical and geometric properties.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
 
@@ -1744,7 +2017,7 @@ C Optical and geometric properties.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
-      CHARACTER SALT*33,H*72,SN*12,SN2*12,LFMUL*72,LFCON*72
+      CHARACTER SALT*33,H*72,SN*12,SN2*12,T14*14
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SSPARENT*12
 
@@ -1868,12 +2141,19 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
         CALL ADJVIEW(ITRC,IER)
         return
       ELSEIF(INODA.EQ.1)THEN
-        write(SN,'(a12)')SNAME(ICOMP,IS)
+        write(T14,'(2a)')SNAME(ICOMP,IS),'  '
         H(1)='Use this attribute to inform about the nature of the '
         H(2)='surface (make it easy for others to understand). '
- 52     CALL EASKS(SN,' Surface name ','(unique word <=12 char):',
-     &    12,'new_surface','surface name',IER,2)
+ 52     CALL EASKS(T14,' Surface name ','(unique word <=12 char):',
+     &    14,'new_surface','surface name',IER,2)
+        write(SN,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+        write(SN2,'(a)') T14(1:12)
+#else
         call st2name(SN,SN2)
+#endif
         call snamdup(SN2,icomp,is,nameok)
         if(nameok)then
           SNAME(ICOMP,IS)=SN2
@@ -1995,7 +2275,7 @@ C << geometry file and if so do not use CONINF.
      &       '(database data matching surface construction attribute) ',
      &            ok,dok,2)
                 if(ok)then
-                  call ETMLDB(1,iuout,IFCON,ii,imerr)        
+                  call ETMLDB(1,iuout,IFMAT,ii,imerr)        
                 endif
               endif
   5         continue
@@ -2154,17 +2434,65 @@ C Specify the environment of the 'other' face of the surface.
         SALT(10)='CEN 13791 partition              '
         SALT(11)='Unknown (at this time)           '
 
-        H(1)='The boundary conditions at the other face of this sur-'
-        H(2)='face is specified via the selection of one of these'
-        H(3)='choices.  The default is OUTSIDE.'
-        H(4)='Within the system configuration editing section are'
-        H(5)='facilities to ascertain the probable connection type'
-        H(6)='for most surfaces.  The attribute in this display is'
-        H(7)='both an aide memoire and an initial source of infor-'
-        H(8)='mation for the system level connection analysis.'
+        H(1) ='The boundary conditions at the other face of this sur-'
+        H(2) ='face is specified via the selection of one of these'
+        H(3) ='choices.  The default is OUTSIDE.'
+        H(4) =' '
+        H(5) =' Exterior - the other face of the surface is exposed to '
+        H(6) ='  ambient air temperature, wind and solar radiation.'
+        H(4) =' '
+        H(5) =' Dynamic/similar - the other face of the surface is'
+        H(6) ='  exposed to the same conditions as the inside face'
+        H(7) ='  (except that when direct sunlight is falling on the'
+        H(8) ='  inside face it cannot be falling on the other face'
+        H(9) ='  only the diffuse component is used on the other face.'
+        H(10)='  where both sides get the same radiation.'
+        H(11)='  A dynamic/similar connection can include an offset'
+        H(12)='  temperature (C) and radiation (W/m^2).'
+        H(13)=' '
+        H(14)=' Static - requires that a constant temperature and'
+        H(15)='  radiation be supplied. You might use this to represent'
+        H(16)='  a cold storage room.'
+        H(17)=' '
+        H(18)=' Surface in another zone - the other face of the surface'
+        H(19)='  gets its boundary conditions from the last known state'
+        H(20)='  of the other surface. There is a thermophysical con-'
+        H(21)='  nection established between the two zones.'
+        H(22)=' '
+        H(23)=' Ground (standard profile) - the other face of the'
+        H(24)='  surface is in direct contact with one of the standard'
+        H(25)='  monthly temperature profiles embedded in ESP-r.'
+        H(26)=' '
+        H(27)=' Ground (user defined profile) - the other face of the'
+        H(28)='  surface is in direct contact with a monthly profile'
+        H(29)='  previously created by the user (in the model context)'
+        H(30)=' '
+        H(31)=' Ground (3D conduction) - the other face connects to a'
+        H(32)='  3D ground representation. This is not often used.'
+        H(33)=' '
+        H(34)=' Adiabatic boundary - typically used for back-to-back'
+        H(35)='  surfaces in a zone representing thermal mass. There'
+        H(36)='  is no heat flux passed beyond the other-face. '
+        H(37)=' '
+        H(38)=' BASESIMP is used to represent one of several basement'
+        H(39)='  configurations and precalculated patterns of heat'
+        H(40)='  transfer. For this to be useful there must be a'
+        H(41)='  basesimp file created for the zone giving a number'
+        H(42)='  of dimensions and computational parameters.'
+        H(43)=' '
+        H(44)=' CEN 13791 partition which is like the SIMILAR'
+        H(45)='  but for CEN 13791 test. The offset temperauture'
+        H(46)='  and radiation (W/m^2) in SIMILAR is not available'
+        H(47)='  for the CEN 13791 partition type. For details see'
+        H(48)='  section 4.4.2 CEN 13791 standard. '
+        H(49)=' '
+        H(50)='There is a module of ESP-r which uses polygon adjacency'
+        H(51)='to automatically link partitions together. '
+        H(52)=' '
+
         IX=1
         CALL EPICKS(IX,IVAL,' ',' The other side of surface faces:',
-     &    33,11,SALT,'surface boundary ',IER,8)
+     &    33,11,SALT,'surface boundary ',IER,52)
 
         IF(IX.EQ.0)GOTO 13
 
@@ -2190,12 +2518,14 @@ C Determine the match in the system topology and update it.
           H(5)='be 2degC cooler then use a -2 offset. '
           H(6)=' '
           H(7)='(units are in whole degC and whole W) '
+          H(8)=' '
+          H(9)='Use care when setting a high offset temperature.'
           VALT=0.0
           VALW=0.0
           CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &      '(see help) ',-99.,'F',99.,'F',0.0,'offset temp',IER,7)
+     &      '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
           CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,7)
+     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
           IC2(IC)=INT(VALT)
           IE2(IC)=INT(VALW)
           showother=.false.
@@ -2205,8 +2535,10 @@ C Determine the match in the system topology and update it.
           ICT(IC)=2
           H(1)='A type 2 connection requires that a constant temp-'
           H(2)='erature and radiation (W/m^2) be entered.'
+          H(3)=' '
+          H(4)='Use care when setting a high adjacent temperature.'
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &      -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
           IC2(IC)=INT(VAL)
 
           CALL EASKR(VAL,' ',' Constant radiation source (W/m^2) ? ',
@@ -2344,9 +2676,10 @@ C profile has not been defined.
               call edisp(iuout,outs)
             endif
  21       continue
-          SOTHER(IS)='GROUND'
-          SSOTHER(IC)='GROUND'
-          ICT(IC)=4
+
+C Ask for the standard monthly profile index and if a valid response
+C set the common blocks. If out of range warn user. If user cancels
+C the action make no changes and jump back to 13 (the menu creation code).
           H(1)='A ground connection allows either:'
           H(2)='> 0 a connection to one of several standard profiles'
           H(3)='    in which case the profile number is required.'
@@ -2354,12 +2687,23 @@ C profile has not been defined.
           H(5)='    case a 0 followed by a profile number is '
           H(6)='    required.'
           H(7)='-3  a connection to a 3D ground model.'
+          H(8)=' '
+          H(9)='A cancel leaves the model unchanged. '
           iic2=ic2(IC)
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &                  ' ',1,'F',12,'F',1,'ground profile',IERI,9)
           IF(IIC2.GT.0)THEN
-            IC2(IC)=iic2
-            IE2(IC)=0
+            if(ieri.eq.0)then
+              IC2(IC)=iic2
+              IE2(IC)=0
+              SOTHER(IS)='GROUND'
+              SSOTHER(IC)='GROUND'
+              ICT(IC)=4
+            elseif(ieri.eq.-3)then
+              goto 13
+            else
+              goto 777
+            endif
           ELSE
             CALL USRMSG(' ',' Unacceptable ground profile...','W')
             GOTO 777
@@ -2375,15 +2719,34 @@ C profile has not been defined.
               WRITE(OUTS,'(12F6.1)')(UGRDTP(J,IGRDP),J=1,12)
               call edisp(iuout,outs)
  22         continue
-            SOTHER(IS)='GROUND'
-            SSOTHER(IC)='GROUND'
-            ICT(IC)=4
+
+C Ask for the user defined monthly profile index and if a valid response
+C set the common blocks. If out of range warn user. If user cancels
+C the action make no changes and jump back to 13 (the menu creation code).
             H(1)='One of the user defined profile numbers is'
             H(2)='required here.'
-            CALL EASKI(IIE2,' User defined ground profile index ?',
-     &        ' ',0,'F',9,'F',1,'user defined profile',IER,2)
-            IC2(IC)=0
-            IE2(IC)=iie2
+            H(3)=' '
+            H(4)='A cancel leaves the model unchanged. '
+ 778        CALL EASKI(IIE2,' User defined ground profile index ?',
+     &        ' ',0,'F',9,'F',1,'user defined profile',IERI,4)
+            if(IIE2.gt.0)then
+              if(ieri.eq.0)then
+                IC2(IC)=0
+                IE2(IC)=iie2
+                SOTHER(IS)='GROUND'
+                SSOTHER(IC)='GROUND'
+                ICT(IC)=4
+              elseif(ieri.eq.-3)then
+                goto 13
+              else
+                goto 778
+              endif
+            else
+              call usrmsg(
+     &          'User defined ground profile out of range. Retry or',
+     &          'go to `model context` to define another.','W')
+              goto 778
+            endif
           else
            call usrmsg(
      &        'No user defined ground profiles have been found.',
@@ -2406,21 +2769,17 @@ C Link to a 3D conduction model..
           IC2(IC)=0
         ELSEIF(IVAL(1).EQ.9)THEN
 
-C BASESIMP start.
 C Get BASESIMP configuration via call to bsimtype.
-          SOTHER(IS)='BASESIMP'
-          SSOTHER(IC)='BASESIMP'
-          ICT(IC)=6
           H(1)='Specify the BASESIMP configuration number (iconfig). '
           H(2)='Refer to src/esp-r/esrubld/bscoeff.F for the '
           H(3)='correspondence between iconfig and standard BASESIMP '
           H(4)='descriptors (e.g. BCIN_1).'
           IBS=IC2(IC)
           call bsimtype(ibs)
-          IC2(IC)=IBS
 
 C Get `surface weighting factor', the percentage of the BASESIMP heat loss to
-C attribute to the surface under consideration.
+C attribute to the surface under consideration. If the user cancels the
+C action do not instanciate the data.
           Ifrac=IE2(IC)
           H(1)='BASESIMP is a `whole-foundation model`. Therefore, when'
           H(2)='a foundation is represented by numerous ESP-r surfaces'
@@ -2428,28 +2787,33 @@ C attribute to the surface under consideration.
           H(4)='must specify the percentage of the whole-foundation'
           H(5)='heat loss to attribute to each surface. Normally the'
           H(6)='sum of surfaces representing a founcation is 100%.'
-          CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
-     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
-          IE2(IC)=Ifrac
-C BASESIMP end.
+          H(7)='For this to be useful there must be a'
+          H(8)='basesimp file created for the zone giving a number'
+          H(9)='of dimensions and computational parameters.'
+          H(10)=' '
+          H(11)='A cancel leaves the model unchanged. '
+          CALL EASKI(Ifrac,'Percent of BASESIMP loss to this surface?',
+     &      ' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IERI,11)
+          if(ieri.eq.0)then
+            IE2(IC)=Ifrac
+            IC2(IC)=IBS
+            SOTHER(IS)='BASESIMP'
+            SSOTHER(IC)='BASESIMP'
+            ICT(IC)=6
+          elseif(ieri.eq.-3)then
+            INODA=-4
+            goto 13
+          endif
 
         ELSEIF(IVAL(1).EQ.10)THEN
           SOTHER(IS)='IDENT_CEN'
           SSOTHER(IC)='IDENT_CEN'
           ICT(IC)=7
-
-C          H(1)='This is like the SIMILAR but for CEN 13791 test'
-C          H(2)='A similar (type 1) connection can include an offset'
-C          H(3)='temperature and radiation (W/m^2) from that of the'
-C          H(4)='current zone. This is not available for the CEN'
-C          H(5)='13791 partition where these values are 0. '
-C          H(6)='For details see section 4.4.2 CEN 13791 standard. '
           VALT=0.0
           VALW=0.0
           IC2(IC)=INT(VALT)
           IE2(IC)=INT(VALW)
           showother=.false.
-
 
         ELSEIF(IVAL(1).EQ.11)THEN
 
@@ -2529,7 +2893,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
-      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*32
+      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*36
       character outs*124,headv*48
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
 
@@ -2695,11 +3059,11 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+                WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -2831,12 +3195,12 @@ C Distance between two vertices.
             iwhich=IVLST(1)
 
 C Present distance, azimuth and elevation then parse data from HOLD.
-            write(hold,'(f10.4,f9.3,f8.3)') V1,AZ,EL
+            write(hold,'(f10.4,f9.3,f8.3,a)') V1,AZ,EL,'   '
             H(1)='Distance is in metres, azimuth assumes north=0 '
             H(2)='+ degrees clockwise, elevation 90 is vertical. '
  342        CALL EASKS(HOLD,
      &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
+     &      ' ',36,' 1.0  0.0  0.0 ','dist azim elev',IER,2)
             K=0
             CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
             CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
@@ -2885,11 +3249,11 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+                WRITE(HOLD,'(1x,3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres. '
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 543            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3283,11 +3647,11 @@ C be a new vertex and update the wireframe.
             elseif(INVT.eq.2)then
               NTV=NTV+1
               NZTV(icomp)=NTV
-              WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
+              WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
-  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+  43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -3330,17 +3694,31 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(12)=' '
         h(13)='In graphic mode you can edit a number of vertices by '
         h(14)='clicking on the wire-frame image. '
+        h(15)=' '
+        h(16)='A cancel request leaves the model unchanged. '
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
      &    'replicate','edit (several)','do nothing',' ',IRT,14)
         if(IRT.eq.1)then
+
+C If user cancels jump back to menu setup, otherwise add the requested
+C number of vertices.
+          IADD=1
           CALL EASKI(IADD,' ',' How many vertices to add ? ',
-     &     1,'F',MTV-NTV,'F',1,'+ vertex',IER,14)
-          CALL ADDVERT(icomp,IADD,'A',IER)
-          ILEN=NTV
-          IPACT=CREATE
-          CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
-          ZBFLG(ICOMP)=0.
+     &     1,'W',MTV-NTV,'F',1,'+ vertex',IERI,16)
+          if(iadd.eq.0)then
+            goto 92
+          else
+            if(ieri.eq.-3)then
+              goto 92
+            else
+              CALL ADDVERT(icomp,IADD,'A',IER)
+              ILEN=NTV
+              IPACT=CREATE
+              CALL EKPAGE(IPACT)
+              MODGEO=.TRUE.
+              ZBFLG(ICOMP)=0.
+            endif
+          endif
         elseif(IRT.eq.2)then
 
 C Delete one or more vertices, get list and then sort in decending
@@ -3408,18 +3786,22 @@ C only up to MTV.
           if(inpick.eq.1)then
             iwhich=IVLST(1)
             CALL EASKI(IADD,' ',' Replicate how many times ? ',
-     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IER,1)
-            if(IADD.ge.1)then
-              do 144 ij=1,IADD
-                CALL ADDVERT(icomp,IWHICH,'C',IER)
- 144          continue
-              ILEN=NTV
-              IPACT=CREATE
-              CALL EKPAGE(IPACT)
-              MODGEO=.TRUE.
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.
+     &        1,'F',MTV-NTV,'F',1,'+ replicate vertex',IERI,16)
+            if(ieri.eq.-3)then
+              goto 92
+            elseif(ieri.eq.0)then
+              if(IADD.ge.1)then
+                do 144 ij=1,IADD
+                  CALL ADDVERT(icomp,IWHICH,'C',IER)
+ 144            continue
+                ILEN=NTV
+                IPACT=CREATE
+                CALL EKPAGE(IPACT)
+                MODGEO=.TRUE.
+                MODIFY=.TRUE.
+                MODBND=.TRUE.
+                ZBFLG(ICOMP)=0.
+              endif
             endif
           endif
         elseif(IRT.eq.5)then
@@ -3435,12 +3817,12 @@ C Select (possibly via mouse) and then edit.
               ifoc=IVLST(ij)
 
 C Present vertex coords for editing then parse data from HOLD.
-              WRITE(HOLD,'(1x,3f10.5)')X(IFOC),Y(IFOC),Z(IFOC)
+              WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
- 146          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
+ 146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
@@ -3470,11 +3852,11 @@ C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
 
 C Present vertex coords for editing then parse data from HOLD.
-        WRITE(HOLD,'(1x,3f10.5)')X(IFOC),Y(IFOC),Z(IFOC)
+        WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
-  42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',IER,2)
+  42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
@@ -3545,10 +3927,11 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION VERT(36)
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER VERT*34,KEY*1,HOLD*72,H*72,DESC*48,SN*12
+      CHARACTER VERT*34,KEY*1,H*72,DESC*48,SN*12,T14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character hold64*64,t248*248
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -3719,9 +4102,9 @@ C Shift along normal and copy transformed points back to XX,YY,ZZ array.
 
 C Transform all surface vertices.
           call tstamp('>','PRJ: do surface vertex tranform')
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000    '
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &      36,' 0. 0. 0.  ','offsets',IER,9)
+     &      36,' 0.00  0.00  0.00  ','offsets',IER,9)
           K=0
           CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
           CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -3735,14 +4118,20 @@ C Transform all surface vertices.
         endif
         if(IRT.eq.3.or.IRT.eq.5)then
 
-C Rotate around a point in the surface.
+C Rotate around a point in the surface (offer user cancel option).
           call tstamp('>','PRJ: do surface rotation')
           H(1)='The rotation is applied around one vertex of'
           H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
           H(3)='vertex in the surface. '
+          H(4)=' '
+          H(5)='A cancel leaves the model unchanged. '
           CALL EASKI(IRV,'Rotate about which vertex index: ',
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
-     &       1,'F',N,'F',1,'rotation anchor',IER,3)
+     &       1,'F',N,'F',1,'rotation anchor',IERI,5)
+          if(ieri.eq.-3)then
+            MODIFY=.FALSE.
+            goto 92
+          endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
           ANG=0.
@@ -3851,7 +4240,7 @@ C Delete a surface. If number of surfaces changed then update cfg.
         CALL EPMENRC
         IF(IS.EQ.0)goto 92
         LASTS=NSUR
-        iopt=0
+        iopt=0    ! offer editing box with mouse click.
         CALL ADDSUR(ITRC,ICOMP,IS,'D','V',iopt,IER)
         if(LASTS.ne.NSUR)then
           CALL EMKCFG('-',IER)
@@ -3904,29 +4293,44 @@ C Add/insert a surface.
         H(29)='If you are working in a graphics display you can use'
         H(30)='mouse clicks on the existing vertices.'
 
+C Note if running in GTK or in pure text mode then should not offer
+C the mouse click option.
         irt=0
         ilrt=irt
         idrt=3
-        call MENUATOL(' ','new surface options',
-     &   'a made from existing vertices',
-     &   'b made from existing vertices (mouse)',
-     &   'c inserted into a surface',
-     &   'd copy surface(s) in this zone',
-     &   'e copy surface(s) from another zone ',
-     &   'f vertical rectangle (origin&azim)',
-     &   'g horizontal rectangle (origin&rot)',' ',
-     &   ' ',' ',' ',' ',irt,idrt,30)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call MENUATOL(' ','new surface options',
+     &     'a made from existing vertices',
+     &     'b made from existing vertices (mouse)',
+     &     'c inserted into a surface',
+     &     'd copy surface(s) in this zone',
+     &     'e copy surface(s) from another zone ',
+     &     'f vertical rectangle (origin&azim)',
+     &     'g horizontal rectangle (origin&rot)',' ',
+     &     ' ',' ',' ',' ',irt,idrt,30)
+        elseif(iglib.eq.2.or.iglib.eq.3)then
+          call MENUATOL(' ','new surface options',
+     &     'a made from existing vertices',
+     &     'b mouse option NOT available',
+     &     'c inserted into a surface',
+     &     'd copy surface(s) in this zone',
+     &     'e copy surface(s) from another zone ',
+     &     'f vertical rectangle (origin&azim)',
+     &     'g horizontal rectangle (origin&rot)',' ',
+     &     ' ',' ',' ',' ',irt,idrt,30)
+        endif
         call usrmsg(' ',' ','-')
         IF(ilrt.eq.irt)GOTO 92
         IF(irt.eq.0.or.irt.eq.8)GOTO 92
         LASTS=NSUR
         if(IRT.eq.1)then
           call tstamp('>','PRJ: insert surface via vertex')
-          iopt=0
+          iopt=0     ! offer editing box and mouse click option.
           CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
         elseif(IRT.eq.2)then
           call tstamp('>','PRJ: insert surface via vertex')
-          iopt=1
+          iopt=1     ! offer mouse click directly
           CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
         elseif(IRT.eq.3)then
           CALL EPMENSV
@@ -3946,11 +4350,11 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
           CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
-          iopt=2
+          iopt=2      ! offer copy of local surfaces 
           CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
         elseif(IRT.eq.5)then
           call tstamp('>','PRJ: copy another zone surfaces')
-          iopt=1
+          iopt=1      ! offer mouse click directly ??
           CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
         elseif(IRT.eq.6)then
 
@@ -3963,16 +4367,16 @@ C Get vertical rectangular surface orgin.
           call tstamp('>','PRJ: add vertical surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000    '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-     &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
+     &      36,' 0.0  0.0   0.0   ','origin XYZ',IER,2)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get azimuth and length and height.
-          HOLDS= ' 180.0   1.0  1.0 '
+          HOLDS= ' 180.00   1.000  1.000   '
           h(1)='Azimuth 0.0 is north, 180 is south, 270 is west. '
           h(2)='Length and height are in metres.'
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
@@ -4024,21 +4428,21 @@ C Get horizontal rectangular surface orgin.
           call tstamp('>','PRJ: add horizontal surface')
           H(1)='The origin of the surface will be its lower left hand '
           H(2)='corner when viewed from the outside. '
-          HOLDS= ' 0.  0.  0. '
+          HOLDS= ' 0.000  0.000  0.000   '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-     &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
+     &      36,' 0.00  0.00  0.00  ','origin XYZ',IER,2)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
           CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
 
 C Get rotation and length and height.
-          HOLDS= ' 0.0    1.0  1.0 '
+          HOLDS= ' 0.0    1.000  1.000    '
           h(1)='Rotation is in relation to the first edge along the '
           h(2)='`length` edge and the X axis (positive is anticlockwise'
           h(3)='and negative is clockwise.'
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
-     &      ' ',36,' 180.0 1.0 1.0  ','rotation length height',IER,3)
+     &      ' ',36,' 180.0  1.0  1.0  ','rotation length height',IER,3)
           K=0
           CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
@@ -4160,10 +4564,20 @@ C its future position via `one connection past the current last
   251     CONTINUE
           NTV=NTV+4
           NZTV(icomp)=NTV
+          T14=' '
           SN=' '
-          CALL EASKS(SN,' ',' Inserted surface name: ',
-     &      12,'new_door','surface name',IER,0)
+          h(1)='Well named surfaces (e.g. call a door a door) '
+          h(2)='can help you understand a model better! '
+          CALL EASKS(T14,'Inserted surface name (12 char max):','  ',
+     &      14,'new_door','surface name',IER,2)
+          write(SN,'(a)') T14(1:12)
+
+C Return from easks in MINGW results in _____ after the actual text.
+#ifdef MINGW
+          write(SNAME(ICOMP,NSUR),'(a)') T14(1:12)
+#else
           call st2name(SN,SNAME(ICOMP,NSUR))
+#endif
 
           SOTF(NSUR)='OPAQ'
           if(IRT.eq.5) SVFC(NSUR)='VERT'
@@ -4247,7 +4661,7 @@ C a thick line.
         izgfoc=ICOMP
         CALL ADJVIEW(ITRC,IER)
 
-        H(1)='The list of associated vertices should be given in'
+   93   H(1)='The list of associated vertices should be given in'
         H(2)='anticlockwise order as one faces the outside of the'
         H(3)='surface.  If one is looking at the inside face then'
         H(4)='think of the list in clockwise order.  It is a con-'
@@ -4255,42 +4669,26 @@ C a thick line.
         H(6)='bottom-left corner of the surface (looking from the'
         H(7)='outside) with the next vertex moving horizontally.'
         H(8)='It helps to follow a consistent pattern!'
-   93   HOLD=' '
         NV=NVER(IFOC)
 
-C Incrementally write out vertex information (within 72 chars).
-C Use alternative logic if NTV >99
-        ix=1
-        lc=2
-        do 42 j=1,nv
-          ixl=ix+lc
-          if(j.lt.NV.and.ixl.le.72)then
-            write(hold(ix:ixl),'(i3)')JVN(IFOC,j)
-            if(JVN(IFOC,j).le.99)then
-              ix=ix+lc+1
-            else
-              ix=ix+lc+1+1
-            endif
-          elseif(j.eq.NV.and.ixl.le.72)then
-            write(hold(ix:ixl),'(i3)')JVN(IFOC,j)
-          else
-            continue
-          endif
-  42    continue
-  43    CALL EASKS(HOLD,' Associated vertices: ',
-     &     '  ',72,' ','associated vertices',IIER,8)
-        CALL CHITMS(hold,NV)
-C debug        write(6,*) 'found nv ',NV
+C Set up a long string buffer for editing vertex list for the
+C surface. 
+        hold64='                                                      '
+        write(t248,'(4a)') hold64,hold64,hold64,'                     '
+        WRITE(t248,'(24I4)')(JVN(IFOC,j),J=1,nv)
+        CALL EASKS248(t248,' Associated vertices (type the indices)?',
+     &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,8)
+        CALL CHITMS(t248,NV)
         K=0
         DO 94 J=1,NV
 
 C Read an index, check if within range and if so add to JVN().
-          CALL EGETWI(hold,K,JV,1,NTV,'W','vertex list',IIER)
+          CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IIER)
           IF(IIER.NE.0)GOTO 93
           if(JV.eq.0.or.JV.gt.NTV)then
             call edisp(iuout,
      &        'At least one of the vertex indices was out of range!')
-            goto 43
+            goto 93
           endif
           JVN(IFOC,J)=JV
    94   CONTINUE
@@ -4571,6 +4969,7 @@ C << conversion to the 'G1' format takes place.
  
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
 
       common/FILEP/IFIL
 
@@ -4627,9 +5026,6 @@ C calculated based on FLOR orientations (zero).
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
@@ -4649,7 +5045,7 @@ C be inserted.
       character lzip*72,dfile*72
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4 
       character ZN*12,phrasea*64,phraseb*64,zdesc*64,outs*124
-      character currentfile*72,dllsubr*12,dllmesg*124,act*2
+      character dllsubr*12,dllmesg*124,act*2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,msg*48
       logical dll,checkbase
@@ -4670,7 +5066,7 @@ C Initialise geometry data file. and set currentfile.
      &      ' could not be opened.'
         goto 1002
       ENDIF
-      currentfile=lzip
+      write(currentfile,'(a)') lzip(1:lnblnk(lzip))
 
 C First line of a zip file starts with 'COM'. If so the 2nd line
 C of the file is the tag 'NAME' followed by the name of the file

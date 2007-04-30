@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
@@ -42,7 +43,6 @@ C Write IPV report based on description held in common.
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
-      COMMON/RECV6/LCLIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
@@ -135,7 +135,7 @@ C Pre calculated data (filtered).
       CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
-      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30,LCLIM*72
+      CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
@@ -2030,7 +2030,7 @@ C sub-totals as well.
         do 448 ij=1,nipvassmt
 
           call edisp(itru,' ')
-          write(outs,'(2a)') '*Seasonal_summary of ',
+          write(outs,'(3a)') '*Seasonal_summary',tab,
      &      ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
           call edisp(itru,outs)
           call edisp(itru,' ')
@@ -2060,13 +2060,13 @@ C          call eclose(ddmcool(ij),1.0,0.01,closeb)
 
 C << find an iget number for this >>
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
-     &        'performance',tab,ipvadesc(ij)
+     &        'performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(6a)') '*title',tab,'Integrated demand ',
-     &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij))),tab,'kWh/m^2'
+            write(outs,'(5a)') '*title',tab,'Integrated demand ',
+     &        tab,'kWh/m^2'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2076,7 +2076,7 @@ C << find an iget number for this >>
      &          tsmlpw,tdhw,tpv
               call eddisp(itru,outs)
             else
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2087,23 +2087,23 @@ C << find an iget number for this >>
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab.
+C Note: units follow tab (suggesstion by Luis Prazeres to not print total
+C line in the seasonal section).
             Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-            write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-            call eddisp(itru,outs)
+C            write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
+C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
 
 C Report for the total building as well
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
-     &        'building_performance',tab,ipvadesc(ij)
+     &        'building_performance',tab,'aggregate'
             call edisp(itru,outs)
-            write(outs,'(6a)') '*title',tab,
-     &        'Integrated building demand ',
-     &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij))),tab,'kWh'
+            write(outs,'(5a)') '*title',tab,
+     &        'Integrated building demand',tab,'kWh'
             call edisp(itru,outs)
             if(tpv.gt.0.001)then
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2113,7 +2113,7 @@ C Report for the total building as well
      &          tpumpskw,tsmlpwkw,tdhwkw,tpvkw
               call eddisp(itru,outs)
             else
-              write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+              write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2124,13 +2124,14 @@ C Report for the total building as well
               call eddisp(itru,outs)
             endif
         
-C Note: units follow tab.
+C Note: units follow tab (suggesstion by Luis Prazeres to not print total
+C line in the seasonal section).
             Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
-            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
-            call eddisp(itru,outs)
+C            write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
+C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
-            write(outs,'(2a)') '*End_seasonal_summary of ',
+            write(outs,'(3a)') '*End_seasonal_summary',tab,
      &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
             call edisp(itru,outs)
           endif
@@ -2552,6 +2553,8 @@ C << at some point include arrays for separate reporting of pumps and lifts. >>
      &  WPVC,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
@@ -2565,15 +2568,12 @@ C IPV description.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       dimension WHC(MSPS),WCC(MSPS),WLC(MSPS),WFC(MSPS),WSPC(MSPS)
       dimension WDHWC(MSPS),WPVC(MSPS),HCS(MSPS,11),CCS(MSPS,11)
       dimension ZLUCS(MSPS,11),ZLCS(MSPS,11),FCS(MSPS,11)
       dimension SPCS(MSPS,11),DHWCS(MSPS,11),PVC(MSPS,11)
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       character outstr*124,word*20,third*20,name*12,zedsdoc*12
       logical dmdsok,atassment,atreports
 
@@ -2583,7 +2583,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,5
@@ -2721,6 +2721,7 @@ C << at some point include additional arrays for pumps and lifts >>
      &   WPVD,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -2732,9 +2733,6 @@ C Uncomment the next line if debugging required.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
 C For each simulation which was run and type of demand, and 
 C for one more than the possible
 C number of demand sets (the extra is for distributed demands).
@@ -2745,7 +2743,7 @@ C number of demand sets (the extra is for distributed demands).
       character outstr*124,act*1,word*20
       character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2754,7 +2752,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,5
@@ -2891,6 +2889,7 @@ C << at some point include additional arrays for pumps and lifts >>
      &   SWDHWD,SWPVD,denom,ier)  
 
 #include "building.h"
+#include "espriou.h"
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -2902,9 +2901,6 @@ C Uncomment the next line if debugging required.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
 C For each type of demand, and for one more than the possible
 C number of demand sets (the extra is for distributed demands).
       dimension HDS(11),CDS(11)
@@ -2913,7 +2909,7 @@ C number of demand sets (the extra is for distributed demands).
       character outstr*124,act*1,word*20
       character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,currentfile*72
+      character selres*72
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2922,7 +2918,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       SWHD=0.0
@@ -3048,6 +3044,7 @@ C Recover comfort data from a seasonal report.
 C Note if Java IPV because different logic required.
       subroutine ipvgcmft(ifu,NH,ier)  
 #include "building.h"
+#include "espriou.h"
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
@@ -3058,13 +3055,12 @@ C      common/OUTIN/IUOUT,IUIN
       common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
      &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
       common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-      common/curfile/currentfile
       common/IPVFORMAT/ipvform,ipvversion
 
       character outstr*124,word*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,third*20,metgroup*12
-      character msdoc*12,metrglbl*20,currentfile*72
+      character msdoc*12,metrglbl*20
       dimension nh(9,5)
       logical atassment,atreports
 
@@ -3074,7 +3070,7 @@ C Open intermediate report.
         IER=1
         RETURN
       ENDIF
-      currentfile=sipvres
+      write(currentfile,'(a)') sipvres(1:lnblnk(sipvres))
 
 C Clear data arrays.
       do 77 ik=1,nipvassmt
@@ -3491,7 +3487,7 @@ C Simulator parameters.
 
       character*(*) msg
       character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72,act*1
-      character LCMDFL*144,longtfile*144
+      character LCMDFL*144,longtfile*144,longtfiledos*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
 
@@ -3550,7 +3546,18 @@ C Each call is a toggle.
 
 C If appending check and see if it exists. If so close it and then
 C open it with APPEND option. Use ifdef for F77 or F90.
-              call addpath(xfile,longtfile,concat)
+              longtfile=' '
+              if(unixok)then
+                call addpath(xfile,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(xfile,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
               ltf=max(1,LNBLNK(longtfile))
               there=.false.
               INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
@@ -3599,10 +3606,10 @@ C open it with APPEND option. Ifedf for F77 or F90.
           endif
         endif
         if(iw.eq.1)then
-          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',longtfile(1:lnblnk(longtfile))
         else
-          write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+          write(outs,'(1x,3A)') msg(:lnblnk(msg)),
      &      ' reporting >> to ',xfile(1:lnblnk(xfile))
         endif
         call usrmsg(outs,' ','-')

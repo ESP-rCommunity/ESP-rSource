@@ -36,6 +36,7 @@ C is read from the system control strategy file.
 #include "building.h"
 #include "plant.h"
 #include "net_flow.h"
+#include "espriou.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -55,13 +56,12 @@ C is read from the system control strategy file.
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS 
 
       COMMON/UA5/IMET,ISIM,NRSIM
-      common/curfile/currentfile
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character LCTLF*72,DFILE*72,LTMP*72,LBND*72,DBND*72
-      character DPBND*72,H*72,currentfile*72
+      character DPBND*72,H*72
       character ctldoc*248,outs*124
       logical OK,dok,pbyfil,bfngn,pcfngn,ffngn
 
@@ -191,7 +191,7 @@ C Possibly open ascii plant-side boundary data file.
         iunit=ifil+9
         CALL EFOPSEQ(IUNIT,lbnd,1,IER)
         rewind(iunit)
-        currentfile=lbnd
+        write(currentfile,'(a)') lbnd(1:lnblnk(lbnd))
       endif
       return
       end

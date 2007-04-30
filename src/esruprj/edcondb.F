@@ -34,9 +34,9 @@ C ELISTC: Controls display and editing of materials.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       LOGICAL     OK,DOK,MODDB,chgdb
@@ -45,7 +45,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
       DIMENSION ENAM(19),IDBE(19)
       character ACTION*1,CLSSEL*36
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
-      CHARACTER OUTSTR*124,LFCON*72,LFMUL*72,KEY*1,PDBM*64,outs*124
+      CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
       CHARACTER xfile*72,tg*1,delim*1
 
 C Assume no changes to db amd user has not entered password.
@@ -55,7 +55,7 @@ C Assume no changes to db amd user has not entered password.
 C Check that the material db is not empty.
     4 IER=0
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' Materials db is empty.',' ','W')
         IER=1
@@ -70,7 +70,7 @@ C Gather the names of the various classes and present this list.
       DO 44 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         write(CLSSEL(I),'(A)') IDESC(1:36)
         IF(NE.GT.0)THEN
           M=M+1
@@ -126,12 +126,12 @@ C List one or more classifications.
           goto 40
         endif
         call edisp(itu,'In the materials database: ')
-        call edisp(itu, LFCON)
+        call edisp(itu, LFMAT)
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
           IREC=IC*20-19
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
           IF(NE.GT.0)THEN
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        IDESC(1:lnblnk(IDESC)),' (',IC,')'
@@ -144,7 +144,7 @@ C List one or more classifications.
             IDB=IC*20-20
             DO 47 J=1,NE
               IDB=IDB+1
-              CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+              CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
               WRITE(outs,46)IDB,DBCON,DBDEN,DBSHT,E,A,DRV,NAM(1:36)
    46         FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
@@ -168,10 +168,10 @@ C all the information.
           NCLASS=NCLASS+1
           ICLN(NCLASS)=NCLASS
           IREC=601
-          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &          (ICLN(I),I=1,30)
           H(1)='This description may be up to 72 char. '
-          CALL EASKS(IDESC,' Classification name ?',' ',
+          CALL EASKS(IDESC,' Classification name (<72 char)?',' ',
      &      72,' ','class name',IER,1)
           ILNE=1
           IDBE(ILNE)=(NCLASS*20-19)+1
@@ -185,10 +185,10 @@ C all the information.
 
           IREC=NCLASS*20-19
           NREC=IREC
-          WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
+          WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
           DO 41 J=1,ILNE
             IREC=IREC+1
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &            EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    41     CONTINUE
           chgdb=.true.
@@ -200,12 +200,12 @@ C Loop through and read in data for this classification into local
 C arrays for manipulation.
         IC=ICO-1
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         IF(NE.GT.0)THEN
           IDB=IC*20-20
           DO 20 J=1,NE
             IDB=IDB+1
-            CALL ERPCDB(IFCON,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
+            CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
      &                DRV,TITL,NAM)
             IDBE(J)=IDB
             EDBCON(J)=DBCON
@@ -285,17 +285,17 @@ C Help text for this menu.
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 51 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    51       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -307,7 +307,7 @@ C all the information.
 C Edit classification name.
           H(1)='A classification has a descriptive name (up to '
           H(2)='72 char).'
-          CALL EASKS(IDESC,' ',' Classification name ? ',
+          CALL EASKS(IDESC,' ',' Classification name (<72 char)?',
      &      72,' ','class name',IER,2)
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
           GOTO 2
@@ -323,17 +323,17 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             IREC=IC*20-19
             NREC=IREC
-            WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
+            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
             DO 50 J=1,NE
               IREC=IREC+1
-              WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
+              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
      &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
    50       CONTINUE
 
 C Rewrite the last record so that when file is closed it contains
 C all the information.
             IREC=601
-            WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
      &            (ICLN(I),I=1,30)
             MODDB=.FALSE.
           ENDIF
@@ -566,6 +566,7 @@ C id string.
       SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
 
 C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
@@ -574,19 +575,18 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/pophelp/h(60)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
 
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,ISZERO
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch
 
-      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,MLCSYM*12,PROMP1*56
-      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,PROMP2*56
+      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
+      CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*72,tg*1,delim*1,outs*124,TITL*72,NAM*72
       CHARACTER STGLP(7)*56
@@ -732,11 +732,11 @@ C List database.
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then
-            call etmldb(itrc,itu,IFCON,IM,imerr)
+            call etmldb(itrc,itu,IFMAT,IM,imerr)
           elseif(irpt.eq.2)then
-            call etmldb(1,itu,IFCON,IM,imerr)
+            call etmldb(1,itu,IFMAT,IM,imerr)
           elseif(irpt.eq.3)then
-            call etmldb(2,itu,IFCON,IM,imerr)
+            call etmldb(2,itu,IFMAT,IM,imerr)
           endif
    45   continue
         call edisp(itu,
@@ -839,6 +839,7 @@ C Copy an existing construction to a new one at end of list.
   792     CONTINUE
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
+C When editing the construction name use a slightly wider string buffer.
           call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
@@ -846,11 +847,13 @@ C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
           else
             MLCSYM='NONSYMMETRIC'
           endif
-          T12=MLCN
+          write(T14,'(2a)') MLCN(1:12),'  '
           h(1)='Each construction in the database should have a unique'
-          h(2)='name. Please change the name.'
-          CALL EASKS(T12,' ',' Name of new construction? ',
-     &      12,' ','New construction name',IER,2)
+          h(2)='name. Please edit the name (12 character or less) with'
+          h(3)='no spaces or unprintable characters. '
+          CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
+     &      14,' ','New construction name',IER,3)
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           WRITE(DESC(NMLC),89)MLCN,OTF,OPT,MLCSYM
 
@@ -888,16 +891,19 @@ C If there is space attach an "_i" to the end of the name to save the
 C user this task. Get user to confirm the name and then use st2name to
 C remove any wild card charaters.
           if(lnblnk(T12).le.8)then
-            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv'
+            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv  '
           elseif(lnblnk(T12).gt.9.and.lnblnk(T12).le.10)then
-            WRITE(T12,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i'
+            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i  '
           endif
           write(outs,'(3a)') '(original name ',
      &      T12OTH(1:lnblnk(T12OTH)),')'
           h(1)='Typically the original and interted constructions have'
-          h(2)='similar names with one indicating its inverted state. '
-          CALL EASKS(T12,'Name of inverted construction?',outs,
-     &      12,' ','Inverted construction name',IER,2)
+          h(2)='similar names with one indicating its inverted state.'
+          h(3)='The name should be less than or equal to 12 characters'
+          h(4)='and not use spaces or unprintable characters. '
+          CALL EASKS(T14,'Name of inverted construction (<12 char)?',
+     &      outs,14,' ','Inverted construction name',IER,4)
+          write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           if(T12.ne.MLCN)then
             write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected name ',
@@ -996,7 +1002,7 @@ C First check if mlc is transparent
 C Get number of non-air layers of glass
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
-            CALL ERPCDB(IFCON,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
             IF(IER.EQ.1)RETURN
             IF(IPR(IWH,ILAY).EQ.0)GOTO 501
@@ -1030,30 +1036,33 @@ C For each nonair layer ask for reflectance, tranmittance and emissivity
 *            STGLP(5)='0.390 0.450 0.310 0.250 0.837 hi perf reflecting'
             STGLP(6)='manual / user defined'
             CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
-     &                50,6,STGLP,' ',IER,15)
+     &                56,6,STGLP,' ',IER,15)
             IF(IER.NE.0)RETURN
             IPKD=IVALS(1)
             IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
-              OUTS=STGLP(IPKD)(1:29)
+
+C Copy the numbers section of STGLP array item.
+              write(T72,'(a)') STGLP(IPKD)(1:29)
             ELSEIF(IPKD.EQ.6)THEN
-              CALL EASKS(OUTS,
+              T72='  '
+              CALL EASKS(T72,
      &        'enter trnt, reft, op-reft, ems and op-ems (see help)',
-     &        ' ',72,' ','Construction name',IER,10)
+     &        ' ',72,' ','Optical data for g-value',IER,15)
             ELSE
               CALL EDISP(IUOUT,'No choice made ... returning')
               RETURN
             ENDIF
             K=0
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','trans',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','trans',IER)
             TRNT(IPN)=VAL
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','reflect',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','reflect',IER)
             REF(IPN)=VAL
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-reflect',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-reflect',IER)
             OREF(IPN)=VAL
 
 C emissivity value not required
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','emiss',IER)
-            CALL EGETWR(OUTS,K,VAL,0.,1.,'W','op-emiss',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','emiss',IER)
+            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-emiss',IER)
             OEMS(IPN)=VAL 
  501      CONTINUE
 
@@ -1077,7 +1086,7 @@ C Edit block identified by KEYIND, remind user of details and then
 C bring up an editing facility.
         CALL KEYIND(NITMS,INO,IFOC,IO)
         CALL EDISP(iuout,' ')
-        call etmldb(2,iuout,IFCON,IFOC,imerr)
+        call etmldb(2,iuout,IFMAT,IFOC,imerr)
         CALL EPMENSV
         CALL EDWALL(ITRC,IFOC,moddb,IER)
         CALL EPMENRC
@@ -1094,13 +1103,20 @@ C bring up an editing facility.
 
 C ************* EDWALL 
 C EDWALL Edit a construction common block data.
-C IFCON is the unit for the associated materials db.
+C IFMAT is the unit for the associated materials db.
 C IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Information on opaque/transparent is added to DESC.
 
+C << TODO:
+C << Think of a way to preserve the current data just in case
+C << the user cancels the process part way through. On idea
+C << would be to create a temporary file that could be re-read
+C << if needed.
+
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1116,21 +1132,20 @@ C Information on opaque/transparent is added to DESC.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-      LOGICAL     OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,chdb,showother,layermatch,layermatcha,modgeo
 
       dimension SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
-      CHARACTER LFCON*72,LFMUL*72,MLCN*12,OTF*4,OPT*12,SOPT*12
-      character T12OTH*12
-      CHARACTER outs*124,MLED*38,PNAM*72,T12*12,MMLAY*38,MLCSYM*12
+      CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
+      character T12OTH*12,T12*12,T14*14
+      CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -1201,7 +1216,7 @@ C Detail menu.
       M=8
       RT=0.
       DO 23, IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1)RETURN
 
@@ -1393,8 +1408,10 @@ C +- Layer.
         h(3)='order is other-side to zone-side), or insert a layer'
         h(4)='(you will be asked to select a point of insertion and'
         h(5)='existing inner layers will be shifted).'
-        CALL EASKABC(' Layer options: ',' ',' Delete ',
-     &    ' Append @ inside face',' Insert ',IW,5)
+        h(6)=' '
+        h(7)='If you cancel no changes will be made in the mode. '
+        CALL EASKABCD(' Layer options: ',' ',' Delete',
+     &    ' Append @ inside face',' Insert','Continue',IW,7)
         IF(IW.EQ.1)THEN
 
 C If no of layers is edited then ask the user which one to remove.
@@ -1431,6 +1448,10 @@ C Check is layers no longer match.
             if(iw.eq.3)then
 
 C If inserting internal layer, shift inner layers before editing.
+
+C << todo: find a way to restore prior state if the user elects
+C << to cancel part way through the process.
+
               H(1)='Any one of the layers may be selected.'
               IX=1
               CALL EPMENSV
@@ -1481,8 +1502,15 @@ C reference.
               H(1)='Each item in the materials db has a reference'
               H(2)='number. '
               H(3)='Air is reference 0.'
+              H(4)=' '
+              H(5)='If you cancel then no changes should have been'
+              H(6)='made to your model (but please check). '
               CALL EASKI(IWHICH,' ',' Material db reference no: ',
-     &          0,'F',600,'F',0,'material reference',IER,3)
+     &          0,'F',600,'F',0,'material reference',IERI,6)
+              if(ieri.eq.-3)then
+                ILED=-1
+                GOTO 3
+              endif 
             endif
             IPR(IFOC,ILN)=IWHICH
             if(iw.eq.2)LAYERS(IFOC)=ILN
@@ -1541,10 +1569,13 @@ C If an air layer then ask for gap resistance.
             ILED=-1
             GOTO 3
           ENDIF
+        ELSEIF(IW.EQ.4)THEN
+          moddb = .false.
+          GOTO 3
         ENDIF
         moddb = .true.
 
-C Check is layers no longer match.
+C Check if layers no longer match.
         call ismlcsymmetric(ifoc,layermatcha)
         if(.NOT.layermatcha)then
           call edisp(iuout,'Layers might now be nonsymmetric.')
@@ -1585,8 +1616,10 @@ C If they do then warn the user.
             goto 3
           endif
         endif
-        CALL EASKS(T12,' ',' Name of construction? ',
-     &      12,' ','Construction name',IER,2)
+        write(T14,'(2a)') T12(1:12),'  '
+        CALL EASKS(T14,' ',' Name of construction? ',
+     &      14,' ','Construction name',IER,2)
+        write(T12,'(a)') T14(1:12)
         call st2name(T12,MLCN)
         if(MLCSYM(1:9).EQ.'SYMMETRIC')then
           continue
@@ -1784,8 +1817,15 @@ C reference.
           H(1)='Each item in the materials database has a'
           H(2)='reference number. Future selection via list...'
           H(3)='Air is reference 0.'
+          H(4)=' '
+          H(5)='If you cancel then no changes should have been'
+          H(6)='made to your model (but please check). '
           CALL EASKI(IWHICH,' ',' Materials db reference: ',
-     &        0,'F',600,'F',0,'materials reference',IER,3)
+     &        0,'F',600,'F',0,'materials reference',IERI,6)
+          if(ieri.eq.-3)then
+            ILED=-1
+            GOTO 3
+          endif 
         endif
         IPR(IFOC,ILED-8)=IWHICH
 
@@ -1855,13 +1895,12 @@ C ************* MKBPRC
 C MKBPRC: Creates a binary materials db based on the
 C current contents of an ASCII file LASCI opened on unit IFA. 
       SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
+#include "esprdbfile.h"
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,OUTSTR*124
-      CHARACTER LASCI*72
+      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
 
 C The binary file will be overwritten.
-      call EFOPRAN(IFCON,LFCON,40,4,IER)
+      call EFOPRAN(IFMAT,LFMAT,40,4,IER)
       if(ier.ne.0)return
 
 C Open the ASCII file for reading.
@@ -1885,13 +1924,13 @@ C Proceed.
         IREC=601
 
 C Write number of classifications and number of items in each.
-        WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)ICLASS,
+        WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)ICLASS,
      &        (ICLN(K),K=1,30)
         IREC=ICLASS*20-19
         NREC=IREC
 
 C Write values for classification.
-        WRITE(IFCON,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,NDESC
+        WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,NDESC
         DO 20 J=1,NE
           IREC=IREC+1
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCODE,IDESC',IER)
@@ -1911,7 +1950,7 @@ C Write values for classification.
           CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','VAL 6',IER)
 
 C Write values for layer.
-          WRITE(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)
      &          (VAL(IL),IL=1,6),IDESC
    20   CONTINUE
    10 CONTINUE
@@ -1920,10 +1959,10 @@ C Write values for layer.
       RETURN
 
 C File errors.
- 1001 CALL USRMSG(' NE,NDESC write error in ',LFCON,'W')
+ 1001 CALL USRMSG(' NE,NDESC write error in ',LFMAT,'W')
       IER=1
       goto 99
- 1002 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+ 1002 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
       IER=1
       goto 99
     
@@ -1933,17 +1972,17 @@ C ************* MKAPRC
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+#include "esprdbfile.h"
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,LFCON*72,LFMUL*72,NDESC*72,LASCI*72
+      CHARACTER IDESC*72,NDESC*72,LASCI*72
 
 C Open the binary materials database (in clase it was closed elsewhere).
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,1,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)return
-      CONDBOK=.TRUE.
+      MATDBOK=.TRUE.
 
 C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFA,LASCI,4,IER)
@@ -1954,7 +1993,7 @@ C Write out a file header.
 
 C Check binary contents.
       IREC=601
-      READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
       IF(NCLASS.LE.0)THEN
         CALL USRMSG(' binary materials database empty! ',' ','W')
         IER=1
@@ -1966,13 +2005,13 @@ C Proceed.
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
-        READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
         WRITE(IFA,12)IC,NE,IDESC(1:lnblnk(IDESC))
    12   FORMAT('# class|no materials|description',/,I5,I5,3X,A)
         IF(NE.LE.0)goto 10
         DO 20 J=1,NE
           IREC=IREC+1
-          READ(IFCON,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
      &         NDESC
           NCODE=IREC-1
           WRITE(IFA,13)NCODE,NDESC(1:lnblnk(NDESC)),(VAL(K),K=1,6)
@@ -1984,10 +2023,10 @@ C Proceed.
       RETURN
 
 C File errors.
- 1000 CALL USRMSG(' NE,NDESC read error in ',LFCON,'W')
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
       IER=1
       goto 99
- 1001 CALL USRMSG(' Layer data write error in ',LFCON,'W')
+ 1001 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
       IER=1
 
       END

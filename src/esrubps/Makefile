@@ -53,8 +53,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
-	  SOFC_Annex42.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
-	  solar_collectors.o
+	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
+	  solar_collectors.o ground_temp_mains.o
 
 
 
@@ -492,7 +492,7 @@ FC_functions.F:
 	ln -s $(CETCdir)/FC_functions.F .
 water_tanks.F:
 	rm -f water_tanks.F
-	ln -s $(CETCdir)/water_tanks.F .
+	ln -s $(PLTdir)/water_tanks.F .
 h3k_utils.F:
 	rm -f h3k_utils.F
 	ln -s $(CETCdir)/h3k_utils.F .
@@ -525,7 +525,7 @@ SetDllParms.F:
 	ln -s $(CETCdir)/SetDllParms.F .
 AIMS.F:
 	rm -f AIMS.F
-	ln -s $(CETCdir)/AIMS.F .
+	ln -s $(PLTdir)/AIMS.F .
 TAC.F:
 	rm -f TAC.F
 	ln -s $(CETCdir)/TAC.F .
@@ -616,9 +616,9 @@ Hydrogen_appliances.F:
 wind_turbine_profile_model.F:
 	rm -f wind_turbine_profile_model.F
 	ln -s $(PFSdir)/wind_turbine_profile_model.F
-SOFC_Annex42.F:
-	rm -f SOFC_Annex42.F
-	ln -s $(PLTdir)/SOFC_Annex42.F .
+Annex42_fuel_cell.F:
+	rm -f Annex42_fuel_cell.F
+	ln -s $(PLTdir)/Annex42_fuel_cell.F .
 shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
@@ -642,6 +642,9 @@ ADS_controller.F:
 solar_collectors.F:
 	rm -f solar_collectors.F
 	ln -s $(PLTdir)/solar_collectors.F .
+ground_temp_mains.F:
+	rm -f ground_temp_mains.F
+	ln -s $(BLDdir)/ground_temp_mains.F .
 
 install:
 	strip $(PROG);cp $(PROG) $(ESPbin)
@@ -671,7 +674,7 @@ clean:
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
-	SOFC_Annex42.F spmatl.F \
+	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
@@ -682,7 +685,8 @@ clean:
 	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
-	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F
+	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
+	ground_temp_mains.F
 
 
 

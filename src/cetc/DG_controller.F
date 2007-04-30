@@ -711,14 +711,21 @@ C thermal_control_signal
          elseif ( PRI_algorithm .eq. ALG_electric_L ) then
 C---------------------------------------------------------------------------------
 C              Electric load following scenario. Use electric loads to determine
-C              control signal.   
+C              control signal.
 C    
 C              Refer to Section 3.4.2, Ferguson (2003).
 C---------------------------------------------------------------------------------
             DG_control_signal = W_elec_demand  / COGEN_max_w
 C...........Set flag for Stirling engine control interface.            
             iStirling_Control_mode = iPower_out_controlled
-            
+
+C---------------------------------------------------------------------------------
+C Constrain control signal to correspond to operational range of unit.
+C---------------------------------------------------------------------------------
+            IF(DG_control_signal < 0.) DG_control_signal = 0.
+            IF(DG_control_signal > 1.) DG_control_signal = 1.
+
+
 C---------------------------------------------------------------------------------
 C              Call 'DG_manage_thermal_loads' routine to assign priority to tanks.
 C              Ignore the thermal_control_signal variable that it will return

@@ -49,19 +49,20 @@ C            and ibitusc=1 uncertaintly applied to whole item.
 C ************* ERAGDB
 C Read a generic ascii db.
       subroutine eragdb(itrc,IFA,AFIL,IFB,BFIL,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
 C Database width, last record, current record, nb of doc lines, nb of
 C unit lines, nb of source lines, nb of cat, nb of docs for each cat.
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
 
 C Database tag string, db menu entry, data stamp, db log string, doc string(s).
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
 
 C Units common.
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
@@ -93,7 +94,6 @@ C Category tag string, menu entry, data stamp, doc string(s).
       character dbnote*72,c8*8,c20*20,outs*124,LW*4
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
-      logical gendbok
 
       data izero/24*0/
 
@@ -563,11 +563,12 @@ C Close file before exiting.
 C ************* RGENITEM
 C RGENITEM reads one generic db item into common blocks.
       subroutine rgenitem(IFB,idbh,iit,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8/irsit(MGIT),itcat(MGIT)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
@@ -637,11 +638,13 @@ C Repeating data for item.
 C ************* WGENITEM
 C WGENITEM writes one generic db item from common block data.
       subroutine wgenitem(IFB,idbh,iit,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8/irsit(MGIT),itcat(MGIT)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
@@ -701,10 +704,11 @@ C Just to be sure re-write the end-of-file record.
 C ************* LSTGENITEM
 C LSTGENITEM lists one generic db item from common block data.
       subroutine lstgenitem(itru,idbh,iit,ier)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8/irsit(MGIT),itcat(MGIT)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
@@ -750,7 +754,7 @@ C Revised to cope with 248 char itdoc.
 C ************* LSTCAT
 C LSTCAT lists one category from common block data.
       subroutine lstcat(itru,icl,ier)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -773,11 +777,14 @@ C ************* wgdbhead
 C wgdbhead: Writes out header of generic binary db in (BFIL) from current
 C common block data. Idbh is position in hash table.
       subroutine wgdbhead(IFB,idbh,IER)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
 
@@ -786,7 +793,6 @@ C common block data. Idbh is position in hash table.
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
 
 C Write first two records of db.
-C      c20='*ESP-r binary db    '
       c20='*ESP-r binary db 2  '
       irec=1
       WRITE(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
@@ -832,9 +838,11 @@ C Write db level documentation after units & sources (which take 3 rec each).
 C ********* tagend
 C tagend Finish updating generic db by re-writing the last record.
       subroutine tagend(IFB,idbh,ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)  
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       character c8*8,outs*124
     
       IREC=lastr(idbh)+1
@@ -852,12 +860,13 @@ C ********** clrgdbc
 C clrgdbc Clear generic db common blocks for idbh portion of hash table
 C and common blocks.
       subroutine clrgdbc(idbh)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
 
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -878,7 +887,7 @@ C and common blocks.
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
 
 C Initialise variables.
-      idbwidth(idbh)=24
+      idbwidth(idbh)=65
       lastr(idbh)=0
       dbtag(idbh)=' '
       dbmenu(idbh)=' '
@@ -988,12 +997,14 @@ C updirsit Write or read place holders for items start record pointers (irsit).
 C If act = `W` write irsit, if act = `R` read irsit, if act = `I` then
 C initialise irsit and irscat records.
       subroutine updirsit(IFB,idbh,act)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb8/irsit(MGIT),itcat(MGIT)
-      dimension ile(13),izero(24)
+      dimension ile(MGDB),izero(24)
       character outs*124,act*1
       data ile/24,48,72,96,120,144,168,192,216,240,264,288,300/
       data izero/24*0/
@@ -1018,7 +1029,7 @@ C Write out place holders for items start record pointers (irsit)
 
 C Read or write irsit.
       IR = 3+nbunit(idbh)+nbsrc(idbh)+nbdbdoc(idbh)+1
-      do 42 ij=1,13
+      do 42 ij=1,MGDB
         li=ile(ij)
         IR=IR+1
         if(act.eq.'W')then
@@ -1084,16 +1095,17 @@ C   bkdoc, bk4, bk12,bk72, bk248 are arrays of character strings which
 C     are filled by the user when editing and at as substitutes.
 
       subroutine mkagdb(IFA,AFIL,IFB,BFIL,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -1123,6 +1135,7 @@ C changing its length).
       character srcchr*4,srcnote*248,bkdoctyp*2
       character bkdoc*72,bk4*4,bk12*12,bk72*72
       character bk248*248
+      character errmsg*48
       logical bkdocok,ok,dok
 
 C Setup a tab character.
@@ -1133,6 +1146,8 @@ C Open the binary file and read the header.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
       call EFOPRAN(IFB,BFIL,idbw,1,IER)
+
+      errmsg='reading how many tags menus units etc.'
       irec=1
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
@@ -1155,6 +1170,8 @@ C Open the binary file and read the header.
       elseif(c20(1:20).eq.'*ESP-r binary db 2  ')then
         idbver(idbh)=2
       endif
+
+      errmsg='reading database date and note.'
       irec=2
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)dbdate(idbh),dbnote(idbh)
 
@@ -1214,6 +1231,7 @@ C If units edited then write updated text.
  252    continue
       else
         if(nbunit(idbh).gt.0)then
+          errmsg='reading unit char unit string & note.'
           irec = 2
           do 4 inbu=1,nbunit(idbh)
             IREC=IREC+1
@@ -1236,6 +1254,7 @@ C which had been setup as the user edited the text.
  253    continue
       else
         if(nbsrc(idbh).gt.0)then
+          errmsg='reading source char source note.'
           irec = 2 + nbunit(idbh)
           do 5 inbsrc=1,nbsrc(idbh)
 
@@ -1263,6 +1282,8 @@ C be updated then write out alternative text.
           nbdbdoc(idbh)=1
           dbdoc(1)='Database documentation to be inserted here'
         endif
+
+        errmsg='reading database documentation.'
         IREC = 2+nbunit(idbh)+nbsrc(idbh)
         do 51 i=1,nbdbdoc(idbh)
           IREC=IREC+1
@@ -1272,6 +1293,7 @@ C be updated then write out alternative text.
       endif
 
 C Read start record of each category.
+      errmsg='reading start record for each category.'
       IREC = 3+nbunit(idbh)+nbsrc(idbh)+nbdbdoc(idbh)
       read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)(irscat(j),j=1,24)
       IREC=IREC+1
@@ -1286,6 +1308,7 @@ C Skip to first category record and read cat data.
       icl=0
       iit=0
       do 42 k=1,nbcat(idbh)
+        errmsg='reading category type menu date etc.'
         icl=icl+1
         IREC=irscat(icl)
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
@@ -1310,6 +1333,7 @@ C If this category documentation to be updated then use bkdoc text.
             nbcatdoc(icl)=1
             catdoc(1)='Category documentation to be inserted here.'
           endif
+          errmsg='reading category documentation.'
           do 53 ij=1,nbcatdoc(icl)
             IREC=IREC+1
             read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(ij)
@@ -1448,7 +1472,8 @@ C Close file before exiting.
       CALL ERPFREE(IFB,IOS)
       RETURN
 
-    1 write(outs,'(a,I6)') ' Error writing record ',IREC
+    1 write(outs,'(a,I6,4a)') 'SCANDB error at record',IREC,
+     &  ' of file ',dbtag(idbh),' when ',errmsg(1:lnblnk(errmsg))
       call edisp(iuout,outs)
       CALL ERPFREE(IFA,IOS)
       CALL ERPFREE(IFB,IOS)
@@ -1459,14 +1484,17 @@ C ************* recongdb
 C recongdb reconfigure a generic db (change its length) via exporting to ascii 
 C and re-importing. If no errors it exits with IFB still open.
       subroutine recongdb(IAF,IFB,LFB,idbh,IER)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
 
 C Backup of documentation (for editing).
       common/tmpdocc/bkascidb
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
 
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72,db*12
       character bkascidb*72,fs*1,upath*72,tfile*72,LFB*72
@@ -1528,8 +1556,7 @@ C the sucessful width in idbw. Close IFB after sucessful opening.
 C Return ier=0 if binary genericfile, ier=2 if ascii generic,
 C ier=3 if legacy file.
       subroutine ckgdbtype(IFB,LGENDB,dbtype,idbhash,idbw,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       character dbtype*12,dbmenu*32,c20*20,outs*124,LGENDB*72
@@ -1769,15 +1796,16 @@ C Error message.
 C ************* SCANDB
 C SCANDB Open and check a generic binary db.
       subroutine scandb(IFB,LGENDB,db,idbh,IER)
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb0/gendbok(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1788,14 +1816,15 @@ C and current items then lengths of each list.
       character dbnote*72,c8*8,c20*20,outs*124,LGENDB*72
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-
-      logical gendbok
+      character errmsg*48
 
 C Open the binary file and read the header if not already done so.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
       call EFOPRAN(IFB,LGENDB,idbw,1,IER)
       if(ier.ne.0)return
+
+      errmsg='reading how many tags menus units etc.'
       irec=1
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c20,dbtag(idbh),dbmenu(idbh),
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
@@ -1814,6 +1843,7 @@ C Open the binary file and read the header if not already done so.
         return
       endif
 
+      errmsg='reading database date and note.'
       IREC=2
       READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)dbdate(idbh),dbnote(idbh)
 
@@ -1845,6 +1875,7 @@ C Open the binary file and read the header if not already done so.
 
 C Units and Sources.
       if(nbunit(idbh).gt.0.and.nbunit(idbh).le.12)then
+        errmsg='reading unit char unit string & note.'
         IREC=2
         do 4 inbu=1,nbunit(idbh)
           IREC=IREC+1
@@ -1855,7 +1886,8 @@ C Units and Sources.
         write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
       endif
       if(nbsrc(idbh).gt.0.and.nbsrc(idbh).le.24)then
-        IREC = 2+nbunit(idbh)
+        errmsg='reading source char source note.'
+        IREC = 2 + nbunit(idbh)
         do 5 inbsrc=1,nbsrc(idbh)
 
 C Read next record for srcnote.
@@ -1869,6 +1901,7 @@ C Read next record for srcnote.
 
 C Db and attribute help records.
       if(nbdbdoc(idbh).ge.1.and.nbdbdoc(idbh).le.10)then
+        errmsg='reading database documentation.'
         IREC = 2+nbunit(idbh)+nbsrc(idbh)
         do 51 i=1,nbdbdoc(idbh)
           IREC = IREC+1
@@ -1879,6 +1912,7 @@ C Db and attribute help records.
       endif
 
 C Read start record of each category.
+      errmsg='reading start record for each category.'
       IREC = 3+nbunit(idbh)+nbsrc(idbh)+nbdbdoc(idbh)
       read(IFB,REC=IREC,IOSTAT=IOS,ERR=1) (irscat(j),j=1,24)
       IREC=IREC+1
@@ -1893,6 +1927,7 @@ C Skip to first category record and read cat data.
       icl=0
       iit=0
       do 42 k=1,nbcat(idbh)
+        errmsg='reading category type menu date etc.'
         icl=icl+1
         IREC=irscat(icl)
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
@@ -1901,6 +1936,7 @@ C Skip to first category record and read cat data.
 C Debug...
         write(6,*)'scan ',cattag(icl),
      &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
+        errmsg='reading category documentation.'
         do 52 i=1,nbcatdoc(icl)
           IREC=IREC+1
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(i)
@@ -1947,8 +1983,8 @@ C Close file before exiting.
       RETURN
 
 C Error message.
-    1 write(outs,'(a,I6,a,i3)') 'SCANDB Error reading record ',IREC,
-     &  ' of file unit ',ifb
+    1 write(outs,'(a,I6,4a)') 'SCANDB error at record',IREC,
+     &  ' of file ',dbtag(idbh),' when ',errmsg(1:lnblnk(errmsg))
       call edisp(iuout,outs)
       CALL ERPFREE(IFB,IOS)
       return
@@ -1960,15 +1996,16 @@ C SCANDBHD Scan a generic binary db header (file assumed to be open).
 C Recover data for commons gendb1, gendb2, gendb3, gendb4, gendb6, 
 C gendb8, gendb8a, gendbu, gendbs
       subroutine scandbhd(IFB,idbh,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1984,8 +2021,6 @@ C and current items then lengths of each list.
       character ittag*12,itmenu*32,itdate*24,itdoc*248
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-
-      logical gendbok
 
 C Read the first record and confirm that it is a generic db file.
       irec=1
@@ -2078,15 +2113,16 @@ C Error message.
 C ************* REPGDB
 C REPGDB Read a generic binary db and writes out an ascii report.
       subroutine repgdb(itrc,itu,IFB,BFIL,idbh,ICATSEL,IER)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/exporttg/xfile,tg,delim
 
 C Generic db commons:
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
@@ -2271,16 +2307,18 @@ C Icwhich is its category. Ctype filters for particular cagegory
 C types (e.g. ALL shows all, MATLCA shows only material impacts).
       subroutine selcat(IFB,idbh,ctype,itwhich,icwhich,IER)
 #include "epara.h"
-      parameter (MGCL=30)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -2405,17 +2443,18 @@ C SELITEM Given a generic db, provides a list of items in category ic.
 C Itwhich is the index of the db item selected.
       subroutine selitem(IFB,idbh,itwhich,ic,IER)
 #include "epara.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -2660,11 +2699,10 @@ C calling code should issue a call scandbhd() if it relates to
 C a different idbh.
 
       subroutine uniqtag(idbh,ptag,act,ok)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+#include "esprdbfile.h"
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -2707,10 +2745,11 @@ C and compare with ptag to see if unique.
 C *********** prsunit
 C prsunit Given current index of data field return strings for unitstr and unitnote.
       subroutine prsunit(idbh,index,ustr,unote)
-      parameter (MGIT=500)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+#include "esprdbfile.h"
+
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendbu/unitchr(24),unitstr(24),unitnote(24)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
       character unitchr*4,unitstr*12,unitnote*72,itdate*24
@@ -2739,9 +2778,11 @@ C *********** prssrc
 C prssrc: given current item return string for source (snote). Assumes that
 C the database has already been scanned as well as the item.
       subroutine prssrc(idbh,snote)
-      parameter (MGIT=500)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+#include "esprdbfile.h"
+
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendbs/srcchr(24),srcnote(24)
       common/gendb8a/ituntstr,itsrcstr,itcnfstr,itdate(MGIT),itdoc
 
@@ -2768,10 +2809,11 @@ C index (itshash) and itscat is the category of the item (for confirmation
 C of scanning). After each call to prsmenu the calling code should issue
 C a call scandbhd().
       subroutine prsmenu(idbh,item,itsmenu,itshash,itscat)
-      parameter (MGIT=500)
-      common/gendbfi/igendbf(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
+#include "esprdbfile.h"
+
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8/irsit(MGIT),itcat(MGIT)
       character ittag*12,itmenu*32,item*12,itsmenu*32

@@ -66,8 +66,8 @@ C output, IER=0 OK.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
 
       DIMENSION VERT(35),libcmt(MTMC)
@@ -641,6 +641,9 @@ C allow this to be saved. ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -648,7 +651,6 @@ C Optical and geometric properties.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -667,7 +669,6 @@ C Optical and geometric properties.
       CHARACTER TITL*72,NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER LFCON*72,LFMUL*72
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
@@ -851,7 +852,7 @@ C gaps in preparation of scan.
 
 C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
-          CALL ERPCDB(IFCON,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
           IF(IER.EQ.1)RETURN
           CON(ISUR,IL)=DBCON
@@ -974,8 +975,8 @@ C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -990,13 +991,13 @@ C zone construction file with minimum intervention by the user.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,MODGEO,MODCON
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
 
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
-      CHARACTER*72 LFMUL,LFCON,NAM,TITL
+      CHARACTER NAM*72,TITL*72
 
 C Assume no window optical properties asked for.
       IER=0
@@ -1068,7 +1069,7 @@ C the material was not found and must be asked for.
 
 C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
-              CALL ERPCDB(IFCON,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
               IF(IER.EQ.1)RETURN
               CON(IS,IL)=DBCON
@@ -1329,6 +1330,7 @@ C through each of the existing surfaces and finds unique optical types.
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
+      logical canceled   ! toggle set if user interupts an edit session.
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
       CHARACTER DESC*48,outs*124
@@ -1406,6 +1408,8 @@ C Check to see if this new construction has a known set of opticals.
      &      'supply optical properties','select another composite',
      &      'assign `opaque` to this one',IW,2)
           IF(IW.EQ.1)THEN
+
+C << todo consider how one might treat a cancel request within eoptks
             NTL=LAYERS(ICF)
             CALL EOPTKS(ITRC,ITRU,'T',IER)
           ELSEIF(IW.EQ.2)THEN
@@ -1536,7 +1540,29 @@ C Display of current information...
 
 C Having displayed the current common data provide an editing facility...
 C For each of the TMC types found in this zone ask if there is any
-C control attached.
+C control attached.  Provide a jump back point in case the user
+C invokes a cancel during the editing.
+      canceled=.false.
+  203 if(canceled)then
+        dok=.false.
+        h(1)='You interupted the specification. If you want to start'
+        h(2)='again say yes or if you want to not have optical controls'
+        h(3)='say no and the data will be cleared. '
+        CALL ASKOK('Try again to define the optical control?',
+     &    '(a no clears the optical control definitions) ',OK,
+     &    dok,3)
+        if(.NOT.OK) then
+
+C Clear the optical control common blocks that might have
+C been set during the prior edit.
+          DO 204 IT=1,NTMC
+            IBCMT(ICOMP,IT)=0
+            NBCTMC(ICOMP,IT)=0
+            IBCSUR(ICOMP,IT)=0
+  204     continue
+          GOTO 200
+        endif
+      endif
       DO 22 IT=1,NTMC
         if(IBCMT(ICOMP,IT).eq.1)then
           h(1)='There is a surface attribute that indicates that an'
@@ -1551,7 +1577,7 @@ C control attached.
           WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,
      &      ' there is an optical control. Options:'
           CALL EASKABC(outs,' ','remove this optical control',
-     &      'edit this optical contr4ol','accept control as-is',iwa,6)
+     &      'edit this optical control','accept control as-is',iwa,9)
           if(iwa.eq.1)then
             IBCMT(ICOMP,IT)=0
             GOTO 22
@@ -1576,8 +1602,14 @@ C control attached.
         IBCMT(ICOMP,IT)=1
         N1=NBCTMC(ICOMP,IT)
         H(1)='Up to 8 control periods are allowed. '
+        H(2)='If you cancel you will be given the option to exit'
+        H(3)='the optical control definition or start again. '
         CALL EASKI(N1,' ',' No of control periods? ',
-     &    1,'F',MBP,'F',1,'no of control periods',IER,1)
+     &    1,'F',MBP,'F',1,'no of control periods',IERI,3)
+        if(ieri.eq.-3) then
+          canceled=.true.
+          goto 203
+        endif
         NBCTMC(ICOMP,IT)=N1
 
         N2=IBCSUR(ICOMP,IT)
@@ -1589,13 +1621,19 @@ C control attached.
         H(6)='   use this particular type of TMC.'
         H(7)=' * one internal Daylight Coefficient sensor '
         H(8)='   number defined by user.'
+        H(9)='If you cancel you will be given the option to exit'
+        H(10)='the optical control definition or start again. '
         CALL EASKAB('Transparent surfaces can be controlled:',' ',
      &    'via separate sensors','via a single sensor',IW,8)
         if(IW.eq.1)then
           IBCSUR(ICOMP,IT)=0
         else
           CALL EASKI(N2,'Surface index for common sensor location:',' ',
-     &      1,'F',NSUR,'F',1,'sensor location',IER,8)
+     &      1,'F',NSUR,'F',1,'sensor location',IERI,10)
+          if(ieri.eq.-3) then
+            canceled=.true.
+            goto 203
+          endif
           IBCSUR(ICOMP,IT)=N2
         endif
 
@@ -1735,6 +1773,9 @@ C << Note: do not know what sort of question is to be asked here! >>
 
 C Pick the alternative optical properties for the period. Note that
 C the number of layers should match that of the base case.
+
+C << todo: consider how to react to a cancel request within eoptks
+
           CALL EOPTKS(ITRC,ITRU,'T',IER)
           DO 42 ID=1,5
             TMCT2(ICOMP,IT,ID,ICP)=DG(ID)
@@ -1779,10 +1820,20 @@ C transparent construction data editing.
       CHARACTER SOPT*12,GDESCR*36,H*72,HOLD*42
       CHARACTER WHICH*1,outs*124
 
+      integer ntlt   ! for local editing.
+
 C The user will be allowed to use a item from the optical database or
-C to put in the data directly.
+C to put in the data directly.  77 is a jump back point in case the
+C user cancels part way through the definition.
+
+C << todo: consider adding a cancel option >>
+
+  77  h(1)='Manual data input will ask for the direct transmission'
+      h(2)='at each angle as well as absorption characteristics for'
+      h(3)='layer. Using data from an optical database simplifies '
+      h(4)='the process. '
       CALL EASKAB(' Get optical properties from: ',' ',
-     &  ' manual data input',' optical database',IW,0)
+     &  ' manual data input',' optical database',IW,4)
       IF(IW.EQ.2)THEN
         CALL EDWINO(SOPT,IER)
         IF(SOPT.EQ.'UNKNOWN')RETURN
@@ -1820,9 +1871,16 @@ C to put in the data directly.
 C For each of the layers provide the absorptions.
         H(1)='This is almost always equal to that of the associated'
         H(2)='multilayer construction. Layers index (outside=1).'
-        CALL EASKI(NTL,' ',
+        H(3)='If you cancel you will be taken back to the start'
+        H(4)='of the editing sequence. '
+        ntlt=ntl
+        CALL EASKI(NTLT,' ',
      &    ' Current no. of layers (including air gaps)? ',
-     &    1,'F',ME,'F',1,'layers in tmc',IER,2)
+     &    1,'F',ME,'F',1,'layers in tmc',IERI,4)
+        if(ieri.eq.-3)then
+          goto 77
+        endif
+        ntl=ntlt
 
         H(1)='The simulation of radiation transmission through '
         H(2)='transparent constructions requires that the short-'
@@ -1857,8 +1915,8 @@ C ******* SCNTCNST
 C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
@@ -1868,7 +1926,7 @@ C Loop through referenced mlc and derives the longest timeconstant.
 c ITCNST  - number of start-up days
       COMMON/PREC7/ITCNST
 
-      character LFCON*72,LFMUL*72,NAM*72,TITL*72,outs*124
+      character NAM*72,TITL*72,outs*124
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,DESC*48,SSPARENT*12
       logical found
@@ -1895,7 +1953,7 @@ c homogeneous layer.
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            CALL ERPCDB(IFCON,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
 
 C Get properties for outer layer.

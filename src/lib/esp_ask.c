@@ -30,22 +30,28 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gint result;
    int no_valid_event;
    int lnq1,lnrep;	/* for non-blank lengths */
+   gint lnblankstr;     /* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
+   char blankstr[90];
    
    *ier=0;	/* Reset value of ier flag */
 
+/* create a string full of blanks for use in clearing reply_local */
+   strcpy(blankstr,"                                                                                         ");
+   lnblankstr=lenrep-1;
+
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
-   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+   reply_local = g_strndup(reply, (gsize) lnblankstr);	/* start the text highlighted */
 
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
    question_local = g_strndup(q1, (gsize) lnq1);
 
-/* debug g_print("askdialog phrase %s\n",question_local); */
-/* debug g_print("askdialog_ text is %s\n",reply_local); */
-/* debug g_print("askdialog nb of help lines %d\n",help_lines); */
+/* debug g_print("askdialog phrase %s\n",question_local);  */
+/* debug g_print("askdialog_ text is %s\n",reply_local);  */
+/* debug g_print("askdialog nb of help lines %d\n",help_lines);  */
     
    /* Create the widgets */
    askbox = gtk_dialog_new_with_buttons("Text  request",
@@ -79,17 +85,12 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /*
-       Terminate this string properly for return to fortran. Check its actual size
-       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end.
-       */
-         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
-         lnrep = 0;	/* detect the actual size of the string returned */
-         f_to_c_l(reply_local,&lenrep,&lnrep);
-/* debug g_print ("askdialog local %d is %s",lnrep,reply_local); */
-         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
-/* debug g_print ("askdialog reply is %s",reply);  */
+       /* Terminate this string properly for return to fortran via strcpy. */
+         reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
+         g_print ("askdialog local %d is %s\n",lnblankstr,reply_local); /* debug */
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
+         strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
+         g_print ("askdialog reply is now %s",reply);  /* debug */
          g_free (reply_local);
          no_valid_event = FALSE;
          break;
@@ -135,13 +136,19 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    gint result;
    int no_valid_event;
    int lnq1,lnrep,lncmd1;	/* for non-blank lengths */
+   gint lnblankstr;		/* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
+   char blankstr[90];
 
    *ier=0;	/* Reset value of ier flag */
 
+/* create a string full of blanks for use in clearing reply_local */
+   strcpy(blankstr,"                                                                                         ");
+   lnblankstr=lenrep-1;
+
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
-   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+   reply_local = g_strndup(reply, (gsize) lnblankstr);	/* start with the text highlighted */
 
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
@@ -189,15 +196,10 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /*
-       Terminate this string properly for return to fortran. Check its actual size
-       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end.
-       */
-         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
-         lnrep = 0;	/* detect the actual size of the string returned */
-         f_to_c_l(reply_local,&lenrep,&lnrep);
-         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
+       /* Terminate this string properly for return to fortran via strcpy. */
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
+         strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
+         g_print ("askdialogcmd reply is now %s",reply);  /* debug */
          g_free (reply_local);
 	 no_valid_event = FALSE;
          break;
@@ -248,13 +250,19 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    gint result;
    int no_valid_event;
    int lnq1,lnrep,lncmd1,lncmd2;	/* for non-blank lengths */
+   gint lnblankstr;     /* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
+   char blankstr[90];
 
    *ier=0;	/* Reset value of ier flag */
 
+/* create a string full of blanks for use in clearing reply_local */
+   strcpy(blankstr,"                                                                                         ");
+   lnblankstr=lenrep-1;
+
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
-   reply_local = g_strndup(reply, (gsize) lnrep);	/* start with only the actual text highlighted */
+   reply_local = g_strndup(reply, (gsize) lnblankstr);	/* start with text highlighted */
 
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
@@ -306,15 +314,10 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
      result = gtk_dialog_run (GTK_DIALOG (askbox));
      switch (result) {
        case GTK_RESPONSE_OK:
-       /*
-       Terminate this string properly for return to fortran. Check its actual size
-       via f_to_c_l call and then use g_snprintf to write it into the 'reply' string
-       with null terminator one past end.
-       */
-         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,-1);
-         lnrep = 0;	/* detect the actual size of the string returned */
-         f_to_c_l(reply_local,&lenrep,&lnrep);
-         g_snprintf (reply, lnrep+1, "%s\n", reply_local);
+       /* Terminate this string properly for return to fortran via strcpy. */
+         reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
+         strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
+         g_print ("askdialog2cmd reply is now %s",reply);  /* debug */
          g_free (reply_local);
          no_valid_event = FALSE;
          break;
@@ -563,6 +566,8 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gchar *reply_local;
    gchar *question_local;
    gint result;
+   gint menu_pix_hi;
+   gint menu_pix_wd;
    int no_valid_event;
    int lnq1;	/* for non-blank length */
    long int ibx,iby,more;	/* set default position of help */
@@ -596,6 +601,10 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gtk_text_buffer_insert (buffer, &end, reply_local, -1);     /* insert text in the buffer */
    gtk_text_buffer_get_start_iter (buffer, &start);            /* re-establish start and end of buffer */
    gtk_text_buffer_get_end_iter (buffer, &end);
+
+   menu_pix_wd = 420;    /* try 420 pixel wide popup */
+   menu_pix_hi = 200;    /* try 200 pixel wide popup */
+   gtk_widget_set_size_request (askbox, menu_pix_wd, menu_pix_hi);
 
    /* Pack widgets and display */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);

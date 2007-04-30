@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C ################### MFPRB2 
 C This file contains the following subroutines
 C     MF010I
+C     MF011I   Air inlet device self-adjustable, (polinomial)
 C     MF015I
 C     MF017I
 C     MF020I
@@ -33,6 +34,7 @@ C     MF110I
 C     MF120I
 C     MF130I
 C     MF210I
+C     MF211I  Cowl Roof Outlet
 C     MF220I
 C     MF230I
 C     MF240I
@@ -94,6 +96,64 @@ C Flow coefficients.
       K=0
       CALL EGETWR(hold,K,VAL2,0.,99999.,'W','coef a',IER)
       CALL EGETWR(hold,K,VAL3,0.,99999.,'W','exp b',IER)
+      IF(IER.NE.0) GOTO 43
+      SUPCMP(ICMP,2)=VAL2
+      SUPCMP(ICMP,3)=VAL3
+
+      RETURN
+      END
+
+C ****************** MF011I 
+C Fluid flow component supplementary data input for
+C Self regulating vent for 15 or 30 m3/h at 20 Pa)
+      SUBROUTINE MF011I(ICMP,IER)
+      character outs*124
+
+#include "net_flow.h"
+      common/pophelp/h(60)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLOWIT/fndegc,imix 
+      CHARACTER LTPCMP*60,CMNAM*12,prompt*48,H*72,hold*32
+
+C Set number of supplementary data items.
+      IER=0
+      ISDCMP(ICMP)=3
+      ISDCNN(ICMP)=0
+
+C Show short description of flow component.
+      WRITE(outs,'(1X,A60)') LTPCMP(ICMP)
+      WRITE(H(1),'(A)') LTPCMP(ICMP)
+      H(2)='Type 11 approximates self regulating devices which have'
+      H(3)='a rated flow rate of 15m3/h at 20 Pa. or 30m3/h.'
+      H(4)=' '
+      H(5)='These devices are designed to maintain flow close to these'
+      H(6)='rates over a range of pressure differences. The component'
+      H(7)='uses a polynomial to predict flows at other pressures. '
+      H(8)=' '
+      H(9)='  (Q = Nb devides*(a6*DP**6+a5*DP**5++...a1*DP) '
+      H(10)=' '
+      H(11)='Supplemental data: '
+      H(12)= ' '
+      H(13)='  (2) air flow at 20 Pa, 15 or 30 m3/h'
+      H(14)='  (3) number of devices'      
+      H(15)=' '
+      H(16)='Based on work by Armando Pinto. See mfmach code MF011C'
+      H(17)='for details of the method.'
+      CALL PHELPD('comp 11',17,'-',0,0,IER)
+
+C Input fluid type.
+      SUPCMP(ICMP,1)=1.0
+
+C Flow coefficients.
+      write(hold,'(2f12.1)')SUPCMP(ICMP,2),SUPCMP(ICMP,3)
+  43  CALL EASKS(hold,
+     &  'Rated flow (15 or 30) m3/h at 20 Pa and number of devices?',
+     &  ' ',32,' 15. 1. ','comp 11',IER,17)
+      K=0
+      CALL EGETWR(hold,K,VAL2,0.,99999.,'W','Rated capacity',IER)
+      CALL EGETWR(hold,K,VAL3,0.,99999.,'W','Nb of devices',IER)
       IF(IER.NE.0) GOTO 43
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
@@ -910,6 +970,122 @@ C Sum of local dynamic loss factors (-).
       RETURN
       END
 
+C ******************** MF211I
+C Cowl roof ventilator using a method after Armando Pinto based on
+C experimental results of:
+C Gonzalez M.A. On the aerodynamics of natural ventilators. London
+C Pergamon Press, 1984, Building and environment. Vol 19 No 3.
+
+C The paper mentions 7 different models of cowels tested and table
+C one gives several of the coefficients.
+C Model 1 coef B varies between 0.72 and 1.28 depending on direction
+C         coef n varies between 0.51 and 0.26 depending on direction
+C Model 2 coef B varies between 0.37 and 0.80 depending on direction
+C         coef n varies between 0.31 and 0.40 depending on direction
+C Model 3 coef B 0.25  coef n 0.16
+C Model 4 coef B 0.12  coef n 0.17
+C Model 5 coef B 0.37  coef n 0.10
+C Model 6 coef B 0.21  coef n 0.19
+C Model 7 coef B 0.28  coef n 0.45
+
+C Fluid mass flow calculation routine for flow component type:
+C Cowl Roof Outlet
+C     FLUID =   SUPCMP(ICMP,1) - fluid type (1=air)
+C     DIAH =    SUPCMP(ICMP,2) - Cowl hydraulic diameter (m)
+C     K =       SUPCMP(ICMP,3) - local dynamic loss factors (-)
+C     B =       SUPCMP(ICMP,4) - coefficient of cowl
+C     n =       SUPCMP(ICMP,5) - coefficient of cowl
+C     WINDEFF = SUPCMP(ICMP,6) - FLAG =1 CONSIDER WIND EFFECT, =0 DONT
+
+      SUBROUTINE MF211I(ICMP,IER)
+
+#include "net_flow.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLOWIT/fndegc,imix 
+
+      CHARACTER LTPCMP*60,CMNAM*12
+      character H*72,outs*124,hold*48,prompt*48
+      logical close
+
+C Set number of supplementary data items.
+      PI=4.*ATAN(1.)
+      IER=0
+      ISDCMP(ICMP)=6
+      ISDCNN(ICMP)=0
+
+C Show short description of flow component.
+      WRITE(outs,'(1X,A60)') LTPCMP(ICMP)
+      WRITE(H(1),'(A)') LTPCMP(ICMP)
+      H(2)= 'Type 211 represents roof top ventilation cowl which is'
+      H(3)= 'based on experimental data and which takes into account'
+      H(4)= 'head losses and wind effects. '
+      H(5)= ' '
+      H(6)= 'The method is based on the work of Armando Pinto and '
+      H(7)= 'implements experiments reported in: '
+      H(8)= ' Gonzalez M.A. On the aerodynamics of natural ventilators'
+      H(9)= ' London. Pergamon Press, 1984, Building and environment.'
+      H(10)=' Vol 19 No 3.'
+      H(11)=' '
+      H(12)='Please read the paper if you want to understand the types'
+      H(13)='of cowls that this component can represent. '
+      H(14)='The paper mentions 7 different cowels models and Table 1'
+      H(15)='tgives several of the coefficients:'
+      H(16)=' Model 1 coef B between 0.72 and 1.28 by wind direction'
+      H(17)='         coef n between 0.51 and 0.26 by wind direction'
+      H(18)=' Model 2 coef B between 0.37 and 0.80 by wind direction'
+      H(19)='         coef n between 0.31 and 0.40 bt wind direction'
+      H(20)=' Model 3 coef B 0.25  coef n 0.16'
+      H(21)=' Model 4 coef B 0.12  coef n 0.17'
+      H(22)=' Model 5 coef B 0.37  coef n 0.10'
+      H(23)=' Model 6 coef B 0.21  coef n 0.19'
+      H(24)=' Model 7 coef B 0.28  coef n 0.45'
+      H(25)=' '
+      H(26)=' Supplemental data: '
+      H(27)='  - fluid type (1=air)'
+      H(27)='  - Cowl hydraulic diameter (m)'
+      H(27)='  - local dynamic loss factors (-)'
+      H(27)='  - coefficient of cowl B (see above)'
+      H(27)='  - coefficient of cowl n (see above)'
+      H(28)='   Wind effect '
+      H(29)='     0 no wind effect '
+      H(30)='     1 include wind effect '
+      CALL PHELPD('comp 211',30,'-',0,0,IER)
+
+C Set fluid type.
+      SUPCMP(ICMP,1)=1.0
+     
+C DATA OF COWL
+      write(hold,'(4f11.5)')SUPCMP(ICMP,2),SUPCMP(ICMP,3),
+     &  SUPCMP(ICMP,4),SUPCMP(ICMP,5)
+  44  CALL EASKS(hold,
+     & 'Hydrolic Diameter (m), K head loss, coef B, coef n (see help)?',
+     & ' ',48,' 1.0  1.0  1.5 0.61 ','comp 211',IER,30)
+      K=0
+      CALL EGETWR(hold,K,VAL2,0.001,99.,'W','Hydro diameter',IER)
+      CALL EGETWR(hold,K,VAL3,0.001,99.,'W','K head loss',IER)
+      CALL EGETWR(hold,K,VAL4,0.0001,999.,'W','cowel coef B ',IER)
+      CALL EGETWR(hold,K,VAL5,0.0001,1.,'W','cowel coef n ',IER)
+      IF(IER.NE.0) GOTO 44
+      
+      SUPCMP(ICMP,2)=VAL2
+      SUPCMP(ICMP,3)=VAL3
+      SUPCMP(ICMP,4)=VAL4
+      SUPCMP(ICMP,5)=VAL5
+
+C Wind effect 1 include  0 don't include           
+      VAL=SUPCMP(ICMP,6)
+      write(prompt,'(3a)') 'Wind effect ? (1-yes/0-no)'
+   20 CALL EASKR(VAL,' ',prompt,0.,'W',0.,'-',1.,'flow in comp',IER,14)
+      IF(IER.NE.0) GOTO 20
+      SUPCMP(ICMP,6)=VAL
+           
+      RETURN
+      END
+
 C ********************* MF220I 
 C Fluid flow component supplementary data input or check for
 C flow conduit ending in converging 3-leg junction
@@ -1324,6 +1500,11 @@ C ********************* MF310I
 C Fluid flow component supplementary data input or check for
 C general flow inducer (dP = SUM (i=0 to 3) ai.(m/ro)^i; which is
 C                       only valid for q,min <= m/ro <= q,max )
+
+C << consider what would need to change to implement a cancel
+C << option within this interface and the degree to which the
+C << data instanciation needs to change.
+
       SUBROUTINE MF310I(ICMP,IER)
 
 #include "net_flow.h"
@@ -1434,17 +1615,22 @@ C Check if not all coefficients equal to zero.
         CALL ECLOSE(SUPCMP(ICMP,7),0.0,0.001,closec)
         IF(closea.and.closeb.and.closec) GOTO 43
 
-C Points to be read off performance curve
+C Points to be read off performance curve.
+
+C << to be done: implement a cancel option for easki >>
       ELSE
  71     H(1)=' Coordinates entered should be over the '
         H(2)=' entire range of the performance curve. '
         H(3)=' (Not just the preferred operating range)'
         H(4)=' Ideally values for near max and near min'
         H(5)=' flow should also be used.'
+        H(6)=' '
+        H(7)='Cancel option not yet implemented. '
         CALL PHELPD('curve fit',5,'-',0,0,IER)
- 88     CALL EASKI(IVAL,' ',
-     &    ' How many points to be read off performance curve?',
-     &    4,'F',maxp,'F',4,'points read off',IER,5)
+ 88     CALL EASKI(IVAL,
+     &    'How many points to be read off performance curve?',
+     &    '(note: CANCEL option not implemented)',
+     &    4,'F',maxp,'F',4,'points read off',IER,7)
         DO 53 IIVAL=1,IVAL
           WRITE(HOLD,'(2F11.5)')XVAL(IIVAL),YVAL(IIVAL)
  63       CALL EASKS(HOLD,

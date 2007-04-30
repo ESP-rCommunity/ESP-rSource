@@ -48,8 +48,6 @@ C     ICFFS  - fluid flow network node associated with each plant
 C              component. NB fluid flow network and plant energy
 C              network need not be matched
 C     LAPROB - fluid flow problem description file
-C     LAPRES - wind pressure coefficients distribution database
-C     LAFRES - fluid flow network results file
 C     NCOMP  - total number of building zones
 C     NCON   - total number of building intra-zone connections
 C     IER1   - input error index which ensures that ESRUbps menu picks
@@ -89,6 +87,9 @@ C Sets known constant pressure nodes pressures and reset other nodes
 #include "building.h"
 #include "net_flow.h"
 #include "plant.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -98,7 +99,7 @@ C Sets known constant pressure nodes pressures and reset other nodes
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
 
@@ -112,23 +113,26 @@ C Sets known constant pressure nodes pressures and reset other nodes
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
-      CHARACTER*72 LAPROB,LAPRES,LAFRES
+      CHARACTER*72 LAPROB
       character outs*124
 
       PARAMETER (SMALL=1.0E-15)
 
       IER1=0
+
+C If for some reason IAPRES is still zero set it to IFIL+4
+      if(IAPRES.eq.0)IAPRES=IFIL+4
       IUNIT=IFIL+4
 
 C Open WIND PRESSURE COEFFICIENTS file, read coefficient
 C sets and close.
-      CALL EFOPSEQ(IUNIT,LAPRES,1,IER)
+      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(ier.ne.0) GOTO 2
-      READ(IUNIT,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
+      READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
       DO 100 J=1,NPRE
-      READ(IUNIT,*,IOSTAT=ISTAT,ERR=3,END=4) (FPRE(I,J), I=1,MPOS)
+      READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) (FPRE(I,J), I=1,MPOS)
   100 CONTINUE
-      CALL ERPFREE(IUNIT,ISTAT)
+      CALL ERPFREE(IAPRES,ISTAT)
 
 C Open fluid flow PROBLEM file and do a simple validity check.
       if(iairn.eq.0.and.iflwn.eq.1) then
@@ -297,7 +301,7 @@ C temperatures saved in MZLS3.
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 
 C Fluid flow network data.
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -336,7 +340,7 @@ C Activation of connections
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       LOGICAL MFSAVE,dotrace
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFD
+      CHARACTER LAPROB*72,LCFD*72
       character outs*124
       logical bInStartup
 

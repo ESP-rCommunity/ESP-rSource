@@ -188,20 +188,6 @@ C-------------------------------------------------------------------------------
       REAL m_dot_exh_kg_t       ! Exhaust mass flow (kg/s)
       REAL m_dot_air_kg_t       ! Exhaust mass flow (kg/s)
 
-C********************************************************************************
-C The ground temperature data is now calculated in 
-C ground_temp_mains_common.h
-C********************************************************************************
-C---------------------------------------------------------------------------------
-C Ground temperature data.  Used to calculate mains water temperature at inlet
-C for DHW make-up.  This is hard-wired for the FCT project to equivalence with
-C the inputs for reference system (i.e. .dhw file), but could be made variables
-C in the future.
-C---------------------------------------------------------------------------------
-      REAL FC_ground_amp, FC_ground_offset
-      PARAMETER ( FC_ground_amp    = 5.92 ) ! annual amplitude of ground temp
-      PARAMETER ( FC_ground_offset = 7.   ) ! shift of sine curve (months)
-
 C---------------------------------------------------------------------------------
 C Containing Room temperature
 C---------------------------------------------------------------------------------

@@ -37,23 +37,27 @@ C file to manage the reading and saving of this db.
       SUBROUTINE EDOPT(IER)
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LPRFDB,IPRODB (for event profile database)
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/GPICK/GS(MGOPT),nopt
-      COMMON/PRODB/LPRFDB,IPRODB
       common/user/browse
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       CHARACTER GS*52
       DIMENSION OPTITM(35),SALT(9),IVALSS(9),IGSET(MGOPT)
-      CHARACTER H*72,OPTITM*54,DSOPT*12,LPRFDB*72
-      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,LOPTDB*72,KEY*1,loptdbl*72
+      CHARACTER H*72,OPTITM*54,DSOPT*12
+      CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*72,tg*1,delim*1
-      character OUTSTR*124,lfil*72,word*24
+      character OUTSTR*124,lfil*72,word*24,outs248*248
       dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
@@ -190,8 +194,9 @@ C List database.
         elseif(irpt.eq.2)then
           itu = ixunit
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
-          call edisp(itu,'In the optical database: ')
-          call edisp(itu, LOPTDB)
+          write(outs248,'(2a)') 'In the optical database: ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,120)
           call edisp(itu,' ')
         elseif(irpt.eq.3)then
           goto 3
@@ -276,6 +281,8 @@ C Add a new item to the optical db
             H(1)='The layout of glazing, air gaps and blinds can'
             H(2)='be selected from this list or an alternative '
             H(3)='defined.'
+            H(4)=' '
+            H(5)='A cancel request leaves the model unchanged.'
             IX=1
             CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
      &        48,9,SALT,'Typical glazing types',IER,3)
@@ -283,7 +290,11 @@ C Add a new item to the optical db
             if(IOS.eq.9)then
               nl=1
               CALL EASKI(nl,' ',' Number of layers in the new set ?',
-     &          1,'F',ME,'F',1,'opt set layers',IER,2)
+     &          1,'F',ME,'F',1,'opt set layers',IERI,5)
+              if(ieri.eq.-3) then
+                INO=-4
+                GOTO 3
+              endif
               layout='g------'
             elseif(IOS.eq.1)then
               nl=1
@@ -809,7 +820,7 @@ C List help text for the menu.
           CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
      &      ilabs,'Optical layer (select one to copy)',IER,2)
           IL=IGSET(1)-1
-          if(IL.ne.0.and.NTLED.lt.ME)then
+          if(IL.gt.0.and.NTLED.lt.ME)then
             NTLED=NTLED+1
             RFED(NTLED)=RFED(IL)
             ABED(NTLED,1)=ABED(IL,1)
@@ -1414,6 +1425,7 @@ C optic properties. These are usually the result of measurements.
       subroutine edbioptics()
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 1 for the present.
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
@@ -1427,7 +1439,6 @@ C to 1 for the present.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/PRODB/LPRFDB,IPRODB
 
 C NSTMCFL flag for each model surface (connection). A non-zero
 C   number indicates bi-directional information is available.
@@ -1436,7 +1447,7 @@ C   Limited to 0 or 1 at present.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
-      character H*72,VERT*54,CXITM*43,LPRFDB*72,key*1,lfil*72
+      character H*72,VERT*54,CXITM*43,key*1,lfil*72
       character outs*124,bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND,ok,dok
 
@@ -1592,9 +1603,15 @@ C Display information about the anchors associated with connection.
             else
               nl=1
               h(1)='There are a limited number of types. '
+              h(2)=' '
+              h(3)='A cancel request leaves the model unchanged.'
               CALL EASKI(nl,' ',' Which bi-directional type?',
-     &          0,'F',MSTMC,'F',1,'bi opt types',IER,1)
-              NSTMCFL(ifocc)=nl
+     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
+              if(ieri.eq.-3)then
+                continue
+              else
+                NSTMCFL(ifocc)=nl
+              endif
             endif
           endif
         else

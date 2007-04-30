@@ -22,6 +22,11 @@ C PRO
 C ESRU event profiles database manager.
 
       program pro
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+C default file names for databases
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -30,7 +35,6 @@ C ESRU event profiles database manager.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       COMMON/FILEP/IFIL
-      COMMON/PRODB/LPRFDB,IPRODB
 
 C Path to problem
       common/rpath/path
@@ -47,12 +51,10 @@ C Where exemplars list and default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      character LPRFDB*72,LCMDFL*144,inf*144,H*72,outs248*248
+      character LCMDFL*144,inf*144,H*72,outs248*248
       character outs*124,path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
@@ -230,6 +232,9 @@ C   air flow patterns to the operations file,
 C   control information to the configuration control file.
       SUBROUTINE  CASFMK
 #include "epara.h"
+#include "esprdbfile.h"
+
+      integer igraphiclib  ! external definition
 
       PARAMETER  (MC=35)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -237,7 +242,6 @@ C   control information to the configuration control file.
       COMMON/FILEP/IFIL
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
@@ -246,13 +250,11 @@ C Command line file (if any).
       common/rpath/path
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
       DIMENSION ITEM(35)
-      CHARACTER LPRFDB*72,LASCI*72,DFILE*72,DESC*40,outs*124,KEY*1
+      CHARACTER LASCI*72,DFILE*72,DESC*40,outs*124,KEY*1
       character H*72,ITEM*38,LCMDFL*144,LTMP*72,path*72,L144*144
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       logical XST,OK,dok
 
@@ -261,24 +263,29 @@ C Defaults.
       L144=LCMDFL
       llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(L144,' Event profile db? ',
-     &    ' ',96,DPRFDB,'binary events db',IER,2)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(L144,' Event profile db? ',
-     &    ' ',124,DPRFDB,'binary events db',IER,2)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',96,DPRFDB,'binary events db',IER,2)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',124,DPRFDB,'binary events db',IER,2)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,' Event profile db? ',
+     &      ' ',144,DPRFDB,'binary events db',IER,2)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(L144,' Event profile db? ',
      &    ' ',144,DPRFDB,'binary events db',IER,2)
+      else
+        CALL EASKF(L144,' Event profile db? ',
+     &    ' ',96,DPRFDB,'binary events db',IER,2)
       endif
-#else
-      CALL EASKF(L144,' Event profile db? ',
-     &  ' ',144,DPRFDB,'binary events db',IER,2)
-#endif
+
       IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 155
       LCMDFL=L144
       IER=0
@@ -585,19 +592,19 @@ C dummy data is displayed first. NFLAG='N' new profile, NFLAG='E'
 C existing profile.
       SUBROUTINE  EDPROF(ITM,NFLAG,IER)
 #include "epara.h"
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(30)
       character NFLAG*1
-      CHARACTER LPRFDB*72,DESC*40,outs*124,KEY*1,TMP*40
+      CHARACTER DESC*40,outs*124,KEY*1,TMP*40
       character ITEM*33,H*72,cstr*72
 
 C If existing - read data for the profile and display.

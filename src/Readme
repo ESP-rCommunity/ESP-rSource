@@ -454,11 +454,12 @@ on each of ESP-r's supported platforms:
   ======================================================================
   Platform  Last test date     Notes
   ---------------------------------------------------------------------
-  Linux     2006-11-10 (r626)  A complete regression test was performed
-                               against last release (2006-07-28, r356), 
-                               with no observed numerical differences.
+  Linux     2007-04-16 (r967)  A complete regression test was performed
+            2007-03-28 (r922)  against last release (2006-11-11, r653).
+                               All differences are expected as introduced
+                               in r665 and r904.
   ---------------------------------------------------------------------
-  Unix      2006-11-10 (r625)  A cross platform test was performed
+  Unix      2007-03-29 (r922)  A cross platform test was performed
                                comparing Unix output to linux results.
                                Trivial numerical differences were
                                observed in all test cases, while some
@@ -466,24 +467,19 @@ on each of ESP-r's supported platforms:
                                observed in in the temperatures of
                                exterior surfaces in some test cases.
   ---------------------------------------------------------------------
-  Cygwin    2006-11-10 (r626)  A cross platform test was performed
+  Cygwin    2007-04-04 (r922)  A cross platform test was performed
                                comparing Cygwin output to linux
-                               results. No numerical differences were
-                               observed.
+                               results on r922. This test identified
+                               a problem with one test case in basesimp.
+                               The problem was addressed with r967.
+                               Since no source code changes between r922
+                               and r967, the complete cross platform test
+                               was not carried out for r967.
   ---------------------------------------------------------------------
-  MinGW     2006-11-10 (r626)  A cross platform test was performed
-                               comparing results from MinGW
-                               to linux.  Trivial numerical
-                               differences were observed in some
-                               test cases. Installation of ESP-r
-                               has also failed on some MinGW systems
-                               --- non-standard locations of MinGW
-                               libraries are thought to be the
-                               cause. Additionally, MinGW may not
-                               be compatible with scripts written
-                               for Unix or Linux versions of ESP-r.
+  MinGW     -----              The cross platform test between Linux
+                               and MinGW was not undertaken.
   ---------------------------------------------------------------------
-  OS X      ----               No comprehensive comparison between 
+  OS X      -----              No comprehensive comparison between
                                Linux and OSX results has been 
                                undertaken.
   ======================================================================

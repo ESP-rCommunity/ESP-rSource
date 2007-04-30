@@ -809,8 +809,12 @@ C has been read in, otherwise ask for zones one by one.
      &    12,NCOMP,zname,' zone list',IER,1)
       ELSE
         H(1)='More than one zone can be selected.'
+        H(2)='A cancel request leaves the selection list unchanged.'
         CALL EASKI(INPIC,' ',' Number of zone to include ? ',
-     &       1,'W',MCOM,'W',1,'no of zones',IER,1)
+     &       1,'W',MCOM,'W',1,'no of zones',IERI,2)
+        if(ieri.eq.-3) goto 105
+        IF(INPIC.EQ.0)GOTO 105
+
         DO 79 IZZ=1,INPIC
 
 C Pass ICOMP in as a positive so that 'ALL' is included in list.

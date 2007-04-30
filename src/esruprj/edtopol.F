@@ -35,11 +35,11 @@ C Edit connection attributes in common block __ via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -49,13 +49,16 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/appw/iappw,iappx,iappy
 
-      LOGICAL concat,prob,dup,OK,dok
+      LOGICAL concat,prob,dup,OK,dok,unixok
 
       DIMENSION VERT(6)
       CHARACTER VERT*34,CXSTR*78,H*72,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF,LPRFDB
-      character DFILE*72,ltmp*72,longtfile*144
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
+      character DFILE*72,ltmp*72,longtfile*144,longtfiledos*144
       character doit*248,tmode*8,tfile*72,MODE*4,cfgroot*24
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C On first entry, see if the list is consistent with geometry.
   90  call usrmsg(
@@ -199,7 +202,17 @@ C the path and create a string to drive the remote application.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCFGF,longtfile,concat)
+        if(unixok)then
+          call addpath(LCFGF,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LCFGF,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -1106,6 +1119,7 @@ C << Note: this procedure is somewhat out of date. Its function
 C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1115,7 +1129,6 @@ C << should be reviewed for current simulation demands
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
@@ -1134,19 +1147,23 @@ C IDST tool commands.
 
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12,cdblbl*20,cdblfil*72
-      character LCFGF*72,cfgroot*24,h*72,LCLIM*72
+      character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,DESC*48,outs*124,LTMP*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,clmdb
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SSPARENT*12
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,alias*32,donegdst*72,longtfile*144
+      character selres*72,alias*32,donegdst*72
+      character longtfile*144,longtfiledos*144
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
-      logical updatecon,QUIET,concat
+      logical updatecon,QUIET,concat,unixok
 
 C Set flag for zone construction file update.
       updatecon=.false.
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C If IDST climate is different update the configuration. Check
 C against the climate list to see related db for climate name.
@@ -1287,7 +1304,17 @@ C Run the appropriate simulations.
         aut=' silent '
         tmode='text'
       endif
-      call addpath(LCFGF,longtfile,concat)
+      if(unixok)then
+        call addpath(LCFGF,longtfile,concat)
+      else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+        call addpath(LCFGF,longtfile,concat)
+        call cmdfiledos(longtfile,longtfiledos,ier)
+        longtfile=' '
+        longtfile=longtfiledos
+      endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

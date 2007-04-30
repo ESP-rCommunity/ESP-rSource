@@ -40,9 +40,9 @@ C with the radiation flag set appropriately after the file has been
 C read in.
 C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKBCLM(ITRU,ICDESC,LASCI,IUNIT,IDS,IDF,silent,IER)
+#include "esprdbfile.h"
 
       common/pophelp/h(60)
-      COMMON/C22/ICLIM,LCLIM
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
@@ -53,7 +53,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       dimension ICLM(24,6)
 
       CHARACTER CLMLOC*30
-      CHARACTER H*72,LCLIM*72,LASCI*72,outs*124,OUTSTR*124
+      CHARACTER H*72,LASCI*72,outs*124,OUTSTR*124
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -223,16 +223,16 @@ C of the period being transferred.
 C Item 3 will be replaced by global horizontal radiation (W/M**2),
 C if the radiation flag set was set to GH in the binary climate file.
       SUBROUTINE MKACLM(ACT,LASCI,IAF,IBD,IED,IER)
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
       DIMENSION ICLM(24,6)
 
-      CHARACTER LCLIM*72,LASCI*72,outs*124,CLMLOC*30,outsd*124
+      CHARACTER LASCI*72,outs*124,CLMLOC*30,outsd*124
       character act*1,tab*1,msg*19
 
       tab = CHAR(9)
@@ -275,8 +275,15 @@ C Create a header section with site name, period etc.
         WRITE(outs,'(I6,2F8.2,I4)',IOSTAT=ISTAT,ERR=1002)IYEAR,CLAT,
      &      CLONG,IDNGH
         call SDELIM(outs,outsd,'C',IW)
-        write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
-     &    '   # year latitude long diff rad flag'
+
+C When writing clarify which type of solar radiation is used.
+        if(IDNGH.eq.0)then
+          write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
+     &      '   # year, latitude, long diff, direct normal rad flag'
+        else
+          write(IAF,'(1x,2a)')outsd(1:lnblnk(outsd)),
+     &      '   # year, latitude, long diff, global horiz rad flag'
+        endif
         outs=' '
         WRITE(outs,'(2I6)',IOSTAT=ISTAT,ERR=1003)IBD,IED
         call SDELIM(outs,outsd,'C',IW)
@@ -404,11 +411,12 @@ C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
+#include "esprdbfile.h"
+      integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/INPER/INIT
       COMMON/FILEP/IFIL
-      COMMON/C22/ICLIM,LCLIM
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -420,9 +428,6 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
 C Where list of climate files is held.
       common/clmlst/cdblbl,cdblfil
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
       logical XST,ok,silent
       
 C Logical rescan = true if climatelist needs to be rescanned to
@@ -430,7 +435,7 @@ C pick up typical periods (i.e. if climate file name typed in
 C or passed into clm module).
       logical rescan
 
-      CHARACTER CLMLOC*30,LCLIM*72,H*72,outs*124,tab*1,outs248*248
+      CHARACTER CLMLOC*30,H*72,outs*124,tab*1,outs248*248
       character LCMDFL*144,cdblbl*20,cdblfil*72,clmdb*72,L144*144
       tab = CHAR(9)
 
@@ -484,18 +489,22 @@ C climate file.
           endif
           if(clmdb(1:12).eq.'USER_DEFINED')then
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
             LCMDFL='newclim'
  291        continue
-#ifdef X11
-            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
-     &       ' ',96,DCLIM,'new climate file',IER,15)
-#else
-            CALL EASKF(LCMDFL,' New climate file (esp-r binary) ?',
-     &       ' ',144,DCLIM,'new climate file',IER,15)
-#endif
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1.or.iglib.eq.3)then
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new climate file',IER,15)
+            elseif(iglib.eq.2)then
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',144,DCLIM,'new climate file',IER,15)
+            else
+              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new climate file',IER,15)
+            endif
 
             IF(LCMDFL.EQ.' ')GOTO 291
             IER=0
@@ -516,13 +525,17 @@ C name with the full path.
      &    ' (Check with your administrator about `climatelist` file)')
           write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
  289      continue
-#ifdef X11
-          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
-     &     ' ',96,DCLIM,'climate file',IER,15)
-#else
-          CALL EASKF(LCMDFL,' Climate file (esp-r binary format) ? ',
-     &     ' ',144,DCLIM,'climate file',IER,15)
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file',IER,15)
+          elseif(iglib.eq.2)then
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'climate file',IER,15)
+          else
+            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file',IER,15)
+          endif
           IF(LCMDFL.EQ.' ')GOTO 289
           IER=0
           rescan=.true.
@@ -535,25 +548,29 @@ C name with the full path.
           L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
   290     llt=lnblnk(L144)
-#ifdef X11
-          if(llt.lt.96)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        96,DCLIM,'climate file name',IER,15)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        124,DCLIM,'climate file name',IER,15)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &        144,DCLIM,'climate file name',IER,15)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',96,DCLIM,'climate file name',IER,15)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',124,DCLIM,'climate file name',IER,15)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &          ' ',144,DCLIM,'climate file name',IER,15)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'climate file name',IER,15)
+          else
+            CALL EASKF(L144,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file name',IER,15)
           endif
-#else
-          CALL EASKF(L144,' Climate file (esp-r binary format)?',' ',
-     &      144,DCLIM,'climate file name',IER,15)
-#endif
           IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 290
           call st2file(L144,LCMDFL)
           IER=0
@@ -859,8 +876,9 @@ C Item 3 can be replaced by global horizontal radiation (W/M**2),
 C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE EPWTOBCLM(LASCI,IUNIT,IER)
+#include "esprdbfile.h"
+#include "espriou.h"
 
-      COMMON/C22/ICLIM,LCLIM
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
@@ -877,15 +895,14 @@ C Design conditions line of text.
 
 C Comment lines.
       common/CLMCOM/clmcomment(2)
-      common/curfile/currentfile
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       dimension ICLMEPW(12,31,24,6)
 
       CHARACTER CLMLOC*30,WORD*24,uncert*44
-      CHARACTER LCLIM*72,LASCI*72,outs*124,OUTSTR*248
-      character dcline*248,currentfile*72
+      CHARACTER LASCI*72,outs*124,OUTSTR*248
+      character dcline*248
 
 C Initial guess on string sizes.
       character city*24,provence*24,country*24,source*24
@@ -932,7 +949,7 @@ C Open the ASCII file for reading.
         ier = 1
         return
       endif
-      currentfile=LASCI
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Read a line of text from the file, if end of file process data.
   42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'line 1',IER)

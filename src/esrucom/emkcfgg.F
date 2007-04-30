@@ -33,6 +33,14 @@ C This version uses generic databases.
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C espprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
       PARAMETER (MSTMC=1,MSGAL=1)
 
       common/FILEP/IFIL
@@ -50,13 +58,12 @@ C This version uses generic databases.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C5/IXPOS,GREF
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Plant network.
@@ -71,11 +78,6 @@ C Project log file, paths to standard file locations.
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
-C Optical, profile and construction db.
-      COMMON/GOPTDB/LOPTDB,IOPTDB
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
@@ -89,7 +91,7 @@ C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
@@ -207,15 +209,14 @@ C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-C Generic databases.
-      common/gendbf/gendbfn(13)
+C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPRJLG,LCLIM
+      CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
-      CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LPNF,LTDF,LTDFA
+      CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -244,7 +245,6 @@ C Generic databases.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
-      character gendbfn*72
 
       IUF=IFIL+1
       IER=0

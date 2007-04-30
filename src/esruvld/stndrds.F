@@ -29,13 +29,14 @@ C selection of or information about one or more of these.
 C iexfil is the file unit number.
 C exfil is the validation models file name 
       subroutine STNDRDS
+#include "espriou.h"
+C espriou.h provides currentfile.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      common/curfile/currentfile
       common/pophelp/h(60)
       common/FILEP/IFIL
       common/vldlst/vldlbl,vldfl
-      character vldlbl*20,vldfl*72,currentfile*72
+      character vldlbl*20,vldfl*72
 
 C name is array of string holding *name from the file.
 C inl2ngr is a pointer from the menu item back to the group index.
@@ -67,7 +68,7 @@ C vldfl is set in startup.F
         return
       endif
       exfil=vldfl
-      currentfile=vldfl
+      write(currentfile,'(a)') vldfl(1:lnblnk(vldfl))
       
 C Open the validation models file.
       IER=0
@@ -605,9 +606,9 @@ C dispfl is the file containing the results
 C imod is the current case.
 
       subroutine dotdatrecover(dispfl,imod,iopt)
+#include "espriou.h"
       common/OUTIXSTN/IUOUT,IUIN
       common/FILEP/IFIL
-      common/curfile/currentfile
 
       parameter (MNVCASE=40,MNVOPT=3,MNVRES=40)
       common/vldstd1/nrecdata(MNVCASE),irecdata(MNVCASE,MNVRES,2)
@@ -617,7 +618,6 @@ C imod is the current case.
       character recdesc*24
 
       character outstr*124,word*24,dispfl*72
-      character currentfile*72
       
       dimension imet(MNVRES),icol(MNVRES)
 

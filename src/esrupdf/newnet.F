@@ -61,7 +61,7 @@ C     simtyp - holds description of simulation type.
 
 C Mass flow network.
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -101,7 +101,7 @@ C Common controlling format of plant network file
       save bInitialized
       
       character*20 simtyp(3)
-      character*72  lpnam,laprob, lapres, lafres,LPNF
+      character lpnam*72,laprob*72,LPNF*72
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
@@ -165,7 +165,7 @@ C Read in the configuration file.
       if(lctlf(1:3).NE.'UNK'.AND.lctlf(1:2).NE.'  ') CALL SCANBPLINK
 
 C Open plant component data base.
-      call opnpdb(iupdb,1)
+      call opnpdb(1)
       CALL USRMSG(' ',' ','-')
 
 C Read components data from database
@@ -1045,7 +1045,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1053,7 +1053,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
 
 C Fill array with existing containment types.
@@ -2087,6 +2087,7 @@ C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2095,15 +2096,14 @@ C The routine presents a list of surface layers.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION PNAM(ME),item(ME+10)
-      LOGICAL        CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       integer header,footer
       character item*32
       CHARACTER DESC*48,NAM*72,PNAM*20,H*72
-      CHARACTER TITL*72,SNAME*12,LFCON*72,LFMUL*72
+      CHARACTER TITL*72,SNAME*12
       CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
 
 C Check composite name of surface with composite name in MLC common.
@@ -2128,7 +2128,7 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFCON,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
         IF(IER.EQ.1) THEN
            call edisp(iuout,' Found an error reading PCDB!')
@@ -2512,7 +2512,7 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -2522,7 +2522,7 @@ C Common for the building plant lin
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
 
       IF(MODE.EQ.'A'.OR.MODE.EQ.'E') THEN

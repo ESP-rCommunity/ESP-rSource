@@ -44,7 +44,7 @@ C-------------------------------------------------------------------------------
      & AIM2_furnace_flue,AIM2_fire_flue1,AIM2_fire_flue2,
      & AIM2_DHW_flue1,AIM2_DHW_flue2,AIM2_ref_zone,
      & AIM2_num_zones_infil,AIM2_zone_infil,AIM2_basement_zone,
-     & AIM2_CrawlSpace_zone,AIM2_attic_zone
+     & AIM2_CrawlSpace_zone,AIM2_attic_zone,fAIM2VersionNumber
 
 C Air tightness type as defined in HOT2000 interface:
 C 1=blower door test; 2=quick blower door test;
@@ -158,6 +158,8 @@ C Zone number of attic. Infiltration to attics not calculated with AIM-2 model
 C but rather treated with different approach.
         INTEGER  AIM2_attic_zone
 
+C File version (used in report functions)
+        REAL fAIM2VersionNumber
 
 
 

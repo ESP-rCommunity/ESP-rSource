@@ -910,6 +910,7 @@ C.....Local variables
       real humidity_ratio       ! humidity ratio (-)
 
       integer iLength           ! Length of string
+      integer iLength_tmp       ! Temporary holder of length of string
 
 C.....References
       integer LNBLNK            ! function returning # of non-blank characters in
@@ -943,6 +944,7 @@ C.....Loop through all components in plant network
 C........Build base name
          char_temp = pcname(ii)
          iLength = lnblnk(char_temp)
+         iLength_tmp = iLength
          write(Base_Name, '(A,A)')
      &        'plant/',char_temp(1:iLength)
 
@@ -950,9 +952,16 @@ C........Loop through nodes (NPCDAT(i,8)
          do jj = 1, NPCDAT(ii,8)
 
 C...........Build node name
-            write(Node_name, '(A,A,I1)')
-     &           Base_Name(1:iLength+6),
-     &           '/node_',jj
+            iLength = iLength_tmp  ! Reset string length in case it was incremeted for 2-digit nodes.
+            if(jj<10)then  ! First nine nodes.
+              write(Node_name, '(A,A,I1)')
+     &             Base_Name(1:iLength+6),
+     &             '/node_',jj
+            else           ! This presumes that no plant component will have more than 99 nodes! 
+              write(Node_name, '(A,A,I2)')
+     &             Base_Name(1:iLength+6),
+     &             '/node_',jj
+            endif
 
 C...........Get index of node in overall plant network
 C...........NPCDAT(ii,9) holds pointer to start of
@@ -993,6 +1002,11 @@ C     &           )
 C.....................................................
 
 C...........Transport State variables
+            if(jj<10)then
+              iLength = iLength_tmp
+            else                           ! Longer string length required for 2-digit nodes.
+              iLength = iLength_tmp + 1
+            endif
 
            !Temperature:
             write(H3K_rep_NAME,'(A,A)')

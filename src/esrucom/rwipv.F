@@ -372,6 +372,7 @@ C *********** ripvdat
 C Read IPV data.
       subroutine ripvdat(ifu,file,ier)
 #include "building.h"
+#include "espriou.h"
 
       common/OUTIN/IUOUT,IUIN
 C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
@@ -425,9 +426,8 @@ C initially set to 1.0. << should call clm for these numbers >>.
 
       common/IPVDMD/idmdinc(7)
       common/IPVI/nipvimg,lipvimg(4)
-      common/curfile/currentfile
 
-      character file*72,word*20,currentfile*72
+      character file*72,word*20
       character ipvtitl*40,ipvvers*40
       character ipvsynop*248,lipvimg*72,OUTSTR*124,LOUTSTR*248
       character ipvadesc*40,zedsdoc*12
@@ -439,7 +439,7 @@ C Open any existing file by this name.
         IER=1
         RETURN
       ENDIF
-      currentfile=file
+      write(currentfile,'(a)') file(1:lnblnk(file))
 
 C Check identity.
       CALL STRIPC(ifu,OUTSTR,99,ND,1,'line 1',IER)

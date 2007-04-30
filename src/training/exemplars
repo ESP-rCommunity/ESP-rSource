@@ -80,6 +80,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_natv/cfg/cellular_natv.cfg
 *root	/usr/esru/esp-r/training/cellular_natv
 *item
+*name	two offices and passage with earth tube air tempering 
+*cfg	/usr/esru/esp-r/training/cellular_earth/cfg/cellular_earth.cfg
+*root	/usr/esru/esp-r/training/cellular_earth
+*item
 *name	two offices and passage with CO2 tracking (windows open)
 *cfg	/usr/esru/esp-r/training/cellular_contam/cfg/cellular_contam_bc.cfg
 *root	/usr/esru/esp-r/training/cellular_contam
@@ -111,6 +115,34 @@
 *name	two offices with abstract floor heating & chilled ceiling
 *cfg	/usr/esru/esp-r/training/cellular_flh/cfg/cellular_flh.cfg
 *root	/usr/esru/esp-r/training/cellular_flh
+*item
+*name	two offices and passage with simple CV HVAC controller
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_cvvt.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with separate ON OFF controller
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_onoff.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with different ON OFF controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_onoffpro.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with master-slave controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_master.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with ON OFF & 3 position controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_3pos.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with proportional and P+I controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_pi.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
+*item
+*name	two offices and passage with optimum start controllers
+*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_optst.cfg
+*root	/usr/esru/esp-r/training/cellular_cvvt
 *item
 *group	realistic models
 *help	A set of models demonstrating ESP-r's basic modelling features.

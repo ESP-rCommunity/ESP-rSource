@@ -33,6 +33,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "building.h"
 #include "tdf2.h"
 
+      integer igraphiclib  ! external definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -81,7 +83,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg
 
-      logical MODSIT,browse,XST,modish,OK,DOK,concat
+      logical MODSIT,browse,XST,modish,OK,DOK,concat,unixok
       logical closea,closeb,closec,closed,defview,FOUND
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
@@ -93,9 +95,11 @@ C ITEMS is menu for site/context items.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character doit*248,tmode*8,cfgroot*24,LCFGF*72
-      character longtfile*144
+      character longtfile*144,longtfiledos*144
       character imgfmt*4,imgfoc*4,limgfil*72
-      character hold24*24,act*1,GTNAME*15
+      character hold32*32,act*1,GTNAME*15
+
+      integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -104,6 +108,9 @@ C Set initial states to false.
       MODSIT=.false.
       modish=.false.
       call tstamp('>','PRJ: model context')
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check default view point.
       defview=.false.
@@ -277,7 +284,18 @@ C as the command line. For silent do the runit via
 C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
-                  call addpath(LCFGF,longtfile,concat)
+                  if(unixok)then
+                    call addpath(LCFGF,longtfile,concat)
+                  else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                    call addpath(LCFGF,longtfile,concat)
+                    call cmdfiledos(longtfile,longtfiledos,ier)
+                    longtfile=' '
+                    longtfile=longtfiledos
+                  endif
+
                   write(doit,'(5a)') 'ish -mode text -file ',
      &              longtfile(1:lnblnk(longtfile)),' -zone ',
      &              ZN(1:lnz),' -act update_silent'
@@ -287,6 +305,7 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
      &            ' has been recalculated.'
                   call edisp(iuout,outs)
                 else
+                  DOK=.TRUE.
                   h(1)='Each zone is calculated sequentially... '
                   h(2)='If you do one then you should do all. '
                   write(outs,'(3a)') 'Proceed with shading for ',
@@ -297,7 +316,14 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                     doit = ' '
                     call tchild(ICPMOD)
                     call termode(ICPMOD,tmode)
-                    call addpath(LCFGF,longtfile,concat)
+                    if(unixok)then
+                      call addpath(LCFGF,longtfile,concat)
+                    else
+                      call addpath(LCFGF,longtfile,concat)
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                      longtfile=' '
+                      longtfile=longtfiledos
+                    endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -532,13 +558,22 @@ C Weekends def.
         H(2)='Sunday as `weekends`.  You can define these days and'
         H(3)='even set a one day weekend by defining the second'
         H(4)='day equal to the first.'
-        CALL EASKI(idwe1,'Index of day (mon=1,tue=2 etc.) for the',
+        H(5)=' '
+        H(6)='A cancel request leaves the model unchanged. '
+        idwe1T=idwe1
+        CALL EASKI(idwe1T,'Index of day (mon=1,tue=2 etc.) for the',
      &    ' first day of the weekend:',
-     &        1,'F',7,'F',6,'1st weekend index',IER,4)
+     &        1,'F',7,'F',6,'1st weekend index',IERI,6)
+        if(ieri.eq.-3) goto 3
+        idwe1=idwe1T
         wkd1=wkday(idwe1)
-        CALL EASKI(idwe2,'Index of day (mon=1,tue=2 etc.) for the',
+
+        idwe2T=idwe2
+        CALL EASKI(idwe2T,'Index of day (mon=1,tue=2 etc.) for the',
      &    ' second day of the weekend:',
-     &        1,'F',7,'F',7,'2nd weekend index',IER,4)
+     &        1,'F',7,'F',7,'2nd weekend index',IERI,6)
+        if(ieri.eq.-3) goto 3
+        idwe2=idwe2T
         wkd2=wkday(idwe2)
         MODSIT=.true.
       ELSEIF(INO.EQ.7)THEN
@@ -548,8 +583,13 @@ C and then list the months of the year.
         H(1)='The project controls and scheduling uses a year'
         H(2)='index. You can use the one specified with the climate'
         H(3)='file or give the current year.'
-        CALL EASKI(IYEAR,' ',' Year for schedules and assessments?',
-     &       1900,'W',2010,'W',2001,'year',IER,3)
+        H(4)=' '
+        H(5)='A cancel request leaves the model unchanged. '
+        iyeart=iyear
+        CALL EASKI(iyeart,' ',' Year for schedules and assessments?',
+     &       1900,'W',2010,'W',2001,'year',IERI,5)
+        if(ieri.eq.-3) goto 3
+        iyear=iyeart
         MODSIT=.true.
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
@@ -611,24 +651,24 @@ C Set eye point at standard place and viewed point at cog.
         elseif(IW.EQ.3)then
           H(1)='The eyepoint is in metres in the coordinate system '
           H(2)='of the site. '
- 143      WRITE(HOLD24,'(1x,3f7.1)')EYEM(1),EYEM(2),EYEM(3)
-          CALL EASKS(HOLD24,' Eye point  X  Y  Z (in metres): ',
-     &     '  ',24,' -100. -100. 100. ','eye point coord',IER,2)
+ 143      WRITE(HOLD32,'(1x,3f8.2)')EYEM(1),EYEM(2),EYEM(3)
+          CALL EASKS(HOLD32,' Eye point  X  Y  Z (in metres): ',
+     &     '  ',32,' -100.0 -100.0 100.0 ','eye point coord',IER,2)
           K=0
-          CALL EGETWR(HOLD24,K,EYEMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD24,K,EYEMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD24,K,EYEMI(3),0.,999.,'W','eye Zcord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(1),-999.,999.,'W','Xcord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(2),-999.,999.,'W','Ycord',IER)
+          CALL EGETWR(HOLD32,K,EYEMI(3),0.,999.,'W','eye Zcord',IER)
           if(ier.ne.0)goto 143
           H(1)='The viewpoint is in metres in the coordinate system'
           H(2)='of the site and defaults to the centre of gravity '
           H(3)='of the body. '
- 141      WRITE(HOLD24,'(1x,3f7.1)')VIEWM(1),VIEWM(2),VIEWM(3)
-          CALL EASKS(HOLD24,' Viewpoint  X  Y  Z (in metres): ',
-     &     '  ',24,' 2. 2. 1. ','viewpoint coord',IER,3)
+ 141      WRITE(HOLD32,'(1x,3f8.2)')VIEWM(1),VIEWM(2),VIEWM(3)
+          CALL EASKS(HOLD32,' Viewpoint  X  Y  Z (in metres): ',
+     &     '  ',32,' 2.0 2.0 1.0 ','viewpoint coord',IER,3)
           K=0
-          CALL EGETWR(HOLD24,K,VIEWMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD24,K,VIEWMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD24,K,VIEWMI(3),0.,999.,'W','v Zcord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(1),-999.,999.,'W','Xcord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(2),-999.,999.,'W','Ycord',IER)
+          CALL EGETWR(HOLD32,K,VIEWMI(3),0.,999.,'W','v Zcord',IER)
           if(ier.ne.0)goto 141
           H(1)='The angle of view is in degrees, allowable values'
           H(2)='are from 1 to 89 degrees. '
@@ -653,19 +693,18 @@ C Ground topology.
           call GTOPOL(itrc,ier)
           MODSIT=.true.
         elseif(iwgt.eq.3)then
-          if(MMOD.eq.8)then
-#ifdef X11
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
             iz=0
             call edisp(iuout,'In the bitmap facility you must toggle')
             call edisp(iuout,'to the ground topology input mode.')
             call clickonbitmap(iz,ier)
             call GTOPOL(itrc,ier)
             MODSIT=.true.
-#else
+          elseif(iglib.eq.2)then
             call usrmsg('The clickonbitmap facility is not yet',
      &        'working with new graphic library.','W')
-#endif
-          else
+          elseif(iglib.eq.3)then
             call usrmsg('Must be in graphic mode to use click on',
      &      'bitmap facility to define ground toplogy. ','W')
           endif
@@ -694,8 +733,11 @@ C Ground temperature profiles....
         elseif(IRT.eq.2)then
           if(NGRDP.gt.0)then
             H(1)='Provide index of the ground temperature profile.'
+            H(2)=' '
+            H(3)='A cancel request leaves the model unchanged. '
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IER,1)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,3)
+            if(ieri.eq.-3) goto 3
             goto 93
           else
             call usrmsg('No profiles known.','Choose add!','W')
@@ -767,10 +809,17 @@ C IPV data.
         h(1)='This file holds a description of an Integrated '
         h(2)='Performance View of this model, including periods,'
         h(3)='climatic degree day information and associated zones.'
-        ltmp=lipvdatf
+        lr=lnblnk(cfgroot)
+        if(lnblnk(lipvdatf).eq.0)then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+        else
+          ltmp=lipvdatf
+        endif
  142    CALL EASKS(ltmp,'IPV description file ?',
      &    ' ',72,'xxx.ipv','IPV file',IER,3)
-        if(lipvdatf(1:2).ne.'  ')then
+        if(ltmp(1:2).ne.'  ')then
           lipvdatf=ltmp
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
@@ -1058,10 +1107,10 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 
-      logical MODSIT,browse,OK,concat,unixok
+      logical MODSIT,browse,OK,dok,concat,unixok
       logical FOUND,XST
 
-      character H*72,outs*124,ltmp*72,hold*40,longtfile*144
+      character H*72,outs*124,ltmp*72,hold*40
       character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
@@ -1069,6 +1118,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character DBTAG*12,DBTASK*12,DBZN*15,FOCUS*8
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
+      character longtfile*144,longtfiledos*144
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1248,7 +1298,17 @@ C name to include the path and create a string to drive tdf.
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LTDFA,longtfile,concat)
+        if(unixok)then
+          call addpath(LTDFA,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LTDFA,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
      &    longtfile(:lnblnk(longtfile)),' &'
         call usrmsg('starting temporal module via',doit,'-')
@@ -1469,8 +1529,12 @@ C Delete an association and move others up.
           h(1)='Select the index of the temporal item you do not wish'
           h(2)='use in the current model. This removes the association'
           h(3)='but does not remove the entity from the temporal file.'
+          H(4)=' '
+          H(5)='A cancel request leaves the model unchanged. '
           CALL EASKI(it,'Temporal item which you do not want to use',
-     &      'in this model?',1,'F',itemstd,'F',1,'selec index',IER,3)
+     &      'in this model?',1,'F',itemstd,'F',1,'selec index',IERI,5)
+          if(ieri.eq.-3) goto 42
+
           if(it.eq.0)then
             goto 42
           elseif(it.eq.itemstd)then
@@ -1494,8 +1558,11 @@ C Add association or edit current association.
           if(itro.eq.3)then
             h(1)='Select the index of the association you wish to'
             h(2)='modify in the current model. '
+            H(3)=' '
+            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(ite,'Which temporal association to modify?',
-     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',IER,2)
+     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',IERI,4)
+            if(ieri.eq.-3) goto 42
             if(ite.ne.0)then
 
 C Reset itemstd to the item to be edited.
@@ -1504,14 +1571,20 @@ C Reset itemstd to the item to be edited.
               call edisp(iuout,outs)
               h(1)='Select the index of the temporal item you wish to'
               h(2)='change to for this association. '
+              H(3)=' '
+              H(4)='A cancel request leaves the model unchanged. '
               CALL EASKI(it,'Temporal item index to associate with',
-     &          'this?',1,'F',NITDF,'F',1,'selec tdf index',IER,2)
+     &          'this?',1,'F',NITDF,'F',1,'selec tdf index',IERI,4)
+              if(ieri.eq.-3) goto 42
             endif
           elseif(itro.eq.2)then
             h(1)='Select the index of the temporal item you wish to'
             h(2)='include in the current model. '
+            H(3)=' '
+            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(it,'Temporal item index to associate with',
-     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',IER,2)
+     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',IERI,4)
+            if(ieri.eq.-3) goto 42
             ITEMSTD=ITEMSTD+1
             ite=ITEMSTD
           endif
@@ -1584,7 +1657,8 @@ C Present a summary of the steps needed to create a temporal-control link.
             h(11)='    tain the setpoint.'
             h(12)=' d) the actuation zone (air point)'
             h(13)=' '
-            CALL PHELPD('temporal-control popup',13,'-',0,0,IER)
+            h(14)='A cancel request leaves the model unchanged. '
+            CALL PHELPD('temporal-control popup',14,'-',0,0,IER)
 
 C Ask the user whether there has already been a control law defined
 C to use the setpoint. If so report on that control loop and offer
@@ -1609,10 +1683,11 @@ C copy data into cm variables for later editing.
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
      &          'use existing control','create new control','continue',
-     &          IRTC,13)
+     &          IRTC,14)
               if(irtc.eq.1)then
                 CALL EASKI(ispl,'Control loop to use set point data?',
-     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IER,13)
+     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,14)
+                if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=-5
                 ibsn(ispl,2)=ITE
@@ -1696,7 +1771,7 @@ C Confirm capacities.
             H(8)='the control may not work properly.'
             CALL EASKS(HOLD,
      &      ' Max & Min heat capacity, Max & Min cool capacity for',
-     &      ' matching another temp: ',40,' 10000. 0. 10000. 0. ',
+     &      ' matching another temp: ',40,' 10000. 0.0 10000. 0.0 ',
      &      ' track another max min heat cool',IER,8)
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
@@ -1730,7 +1805,10 @@ C Update the control file and link the control loop to the correct zone.
             DBZN(ITE)='ALL'
           endif
           if(itro.eq.2)then
-            CALL EASKOK(' ',' Use another temporal item?',OK)
+            dok=.false.
+            h(1)='If you want to continue adding temporal refences '
+            h(2)='then answer yes. '
+            CALL ASKOK(' ',' Use another temporal item?',OK,DOK,2)
             if(OK)then
               IRT=4
               goto 27
@@ -1912,7 +1990,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.10)then
    95   hold = ' '
-        WRITE(HOLD,'(3F9.2)')phtco2,phtnox,phtsox
+        WRITE(HOLD,'(3F10.3)')phtco2,phtnox,phtsox
         CALL EASKS(HOLD,'Heating related emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','heat emiss',IIER,41)
         K=0
@@ -1923,7 +2001,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.11)then
    96   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pclco2,pclnox,pclsox
+        WRITE(HOLD,'(3F10.3)')pclco2,pclnox,pclsox
         CALL EASKS(HOLD,'Cooling related emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','cool emiss',IIER,41)
         K=0
@@ -1934,7 +2012,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.12)then
    97   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pltco2,pltnox,pltsox
+        WRITE(HOLD,'(3F10.3)')pltco2,pltnox,pltsox
         CALL EASKS(HOLD,'Lighting related emissions [gr/kWh primary]:',
      &   'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','light emiss',IIER,41)
         K=0
@@ -1945,7 +2023,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.13)then
    98   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pfnco2,pfnnox,pfnsox
+        WRITE(HOLD,'(3F10.3)')pfnco2,pfnnox,pfnsox
         CALL EASKS(HOLD,'Fan & pump emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','fan emiss',IIER,41)
         K=0
@@ -1956,7 +2034,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.14)then
    99   hold = ' '
-        WRITE(HOLD,'(3F9.2)')pspco2,pspnox,pspsox
+        WRITE(HOLD,'(3F10.3)')pspco2,pspnox,pspsox
         CALL EASKS(HOLD,'Small power emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,'612.   2.06  7.5 ','smlp emiss',IIER,41)
         K=0
@@ -1967,7 +2045,7 @@ C Help text for this menu.
         MODSIT=.true.
       elseif(ino.eq.15)then
    94   hold = ' '
-        WRITE(HOLD,'(3F9.2)')phwco2,phwnox,phwsox
+        WRITE(HOLD,'(3F10.3)')phwco2,phwnox,phwsox
         CALL EASKS(HOLD,'Hot water emissions [gr/kWh primary]:',
      &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','dhw emiss',IIER,41)
         K=0
@@ -2812,8 +2890,14 @@ C Ground temperature profiles....
           if(NGRDP.gt.0)then
             ifoc=1
             H(1)='Provide index of the ground temperature profile.'
+            H(2)=' '
+            H(3)='A cancel request leaves the model unchanged. '
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IER,1)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,3)
+            if(ieri.eq.-3) then
+              modsit=.false.
+              return
+            endif
             goto 93
           else
             call usrmsg('No profiles known.','Choose add!','W')
@@ -2896,13 +2980,17 @@ C EDDGTP Sets up shading and insolation files
       common/appw/iappw,iappx,iappy
 
       character*72 TFILE,LTHRM,H,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
-      CHARACTER ZNAME*12,ZN*12,longtfile*144
+      CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
-      logical XST,OK,DOK,concat
+      logical XST,OK,DOK,concat,unixok
 
       if(ncomp.eq.0)then
         return
       endif
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
+
       do 42 iz=1,ncomp
         if(ISI(iz).eq.1)then
           call FINDFIL(LSHAD(iz),XST)
@@ -2938,7 +3026,17 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
           if(IRT.eq.1)then
-            call addpath(LCFGF,longtfile,concat)
+            if(unixok)then
+              call addpath(LCFGF,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LCFGF,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
             write(doit,'(5a)') 'ish -mode text -file ',
      &        longtfile(1:lnblnk(longtfile)),' -zone ',
      &        ZN(1:lnz),' -act update_silent'
@@ -2951,6 +3049,7 @@ C rather than starting up a new xterm.
      &            ' has been recalculated.'
             call edisp(iuout,outs)
           else
+            DOK=.true.
             h(1)='Each zone is calculated sequentially... '
             h(2)='If you do one then you should do all. '
             write(outs,'(3a)') 'Proceed with shading for ',
@@ -2961,7 +3060,14 @@ C rather than starting up a new xterm.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

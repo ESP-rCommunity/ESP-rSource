@@ -30,6 +30,11 @@ C Portions of the DXF translation can be traced back (eventually)
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -68,19 +73,17 @@ C Where default db list are kept.
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      
+
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input
@@ -91,7 +94,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*72,filname2*72,filname1*72,repfile*40
       character inf*72,ouf*72,layname*72,instring*72,lf*72
@@ -105,7 +108,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character cfgroot*24,dstmp*24
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
-      character*72 LFCON,LFMUL,LOPTDB,htmlfile
+      character htmlfile*72
       character ltobs*72,outs*124
       logical OPND,match,doobs,unixok
 
@@ -168,7 +171,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Assume construction input from 15 and materials from 16.
       IFMUL=15
-      IFCON=16
+      IFMAT=16
       IOPTDB=17
 
 C Assume there are no obstructions.
@@ -327,7 +330,7 @@ C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
         CFGOK=.FALSE.
         MLDBOK=.FALSE.
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
         CTLOK=.FALSE.
 
 C Scan the defaults file for default configuration.
@@ -1174,6 +1177,7 @@ C Fill common blocks for a minimal standard systems configuration
 C file so that output file can be written from commons.
       subroutine blnksys
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1181,20 +1185,14 @@ C file so that output file can be written from commons.
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
-      COMMON/C22/ICLIM,LCLIM
       COMMON/C23/IFPNF,LPNF
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       common/cctlnm/ctldoc,lctlf
-      COMMON/GOPTDB/LOPTDB,IOPTDB
       COMMON/LOG/LPRJLG
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
@@ -1202,18 +1200,16 @@ C file so that output file can be written from commons.
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LPCDB
-      character*72 LOPTDB,LFCON,LFMUL,LPRFDB,LPRJLG,LCLIM
+      CHARACTER LAPROB*72,LPNF*72,LPRJLG*72
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
       character zmfn1*124,zmfn2*124
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character lradcf*72,ctldoc*248,LCTLF*72
       character GTGEOM*72,GTNAME*15
       character*10 wkd1, wkd2
 
       LCLIM=DCLIM
       LAPRES=DAPRES
-      LFCON=DFCON
+      LFMAT=DFCON
       LFMUL=DFMUL
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
@@ -1274,6 +1270,7 @@ C mksyshd - write out the initial portion of the system configuration
 C file (up to where the zone information starts).
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1284,18 +1281,13 @@ C file (up to where the zone information starts).
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C7/LPCDB
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       common/CFGV/icfgv
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/GOPTDB/LOPTDB,IOPTDB
-      COMMON/PRODB/LPRFDB,IPRODB
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -1317,8 +1309,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LFMUL,LFCON,LOPTDB,LPRFDB,LCNN
-      CHARACTER*72 LPCDB,LAPROB,LAPRES,LAFRES,LPRJLG,LCLIM,LOUT
+      CHARACTER LCNN*72,LAPROB*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1367,7 +1358,7 @@ C Comment for configuration index (upgrade registration level).
       IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
      &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
-      WRITE(ioout,'(A,A)') '*prm  ',LFCON(1:lnblnk(LFCON))
+      WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
       WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))
       WRITE(ioout,'(A,A)') '*prs  ',LAPRES(1:lnblnk(LAPRES))

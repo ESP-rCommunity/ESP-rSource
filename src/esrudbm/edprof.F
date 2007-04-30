@@ -26,19 +26,19 @@ C a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edprof(IFB,idbh,ic,iit,ACT,IER)
 #include "epara.h"
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/curfile/currentfile
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons:
-      common/gendbf/gendbfn(13)
-      common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
-     &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)      
-      common/gendb2/dbtag(13),dbmenu(13),dbdate(13),dbnote(13),dbdoc(10)
+      common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
+     &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
+     &              idbver(MGDB)      
+      common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
+     &              dbdoc(10)
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -57,12 +57,12 @@ C Generic db commons:
       character dbnote*72,outs*124,outs248*248,hold*60
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character ustr*12,unote*72,DayT*8,KEY*1,Patr*8,head*38
-      character gendbfn*72,snote*248,currentfile*72
+      character snote*248
       logical primod,OK,dok,showtags
 
 C Scan the data from the common blocks.
     9 primod=.false.
-      currentfile=gendbfn(idbh)
+      write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       call scandbhd(IFB,idbh,ier)
       call rgenitem(IFB,idbh,iit,ier)
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
@@ -445,13 +445,11 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
  
       SUBROUTINE ELSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
       CHARACTER*600 OUTSTR,STRING,TMP
-      CHARACTER*124 MSG1
+      CHARACTER loutstr*248
       CHARACTER*(*) MSG
-      character currentfile*72
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -479,14 +477,14 @@ C Find out the number of separate words/string groupings.
         CALL ELCHITMS(OUTSTR,ITEMS)
         if(IEXP.ne.ITEMS)then
           if(currentfile(1:2).ne.'  ')then
-            WRITE(tmp,'(3A,I3,3A)')' In ',
+            WRITE(loutstr,'(3A,I3,3A)')' In ',
      &        currentfile(1:lnblnk(currentfile)),' expecting',IEXP,
      &        ' items (',MSG(1:lnblnk(MSG)),') in...'
-            CALL LUSRMSG(tmp,OUTSTR,'F')
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
           else
-            WRITE(tmp,'(A,I3,A,A,A)')' Expecting',IEXP,' items (',
+            WRITE(loutstr,'(A,I3,A,A,A)')' Expecting',IEXP,' items (',
      &         MSG(1:lnblnk(MSG)),') in...'
-            CALL LUSRMSG(tmp,OUTSTR,'F')
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
           endif
         endif
       endif
@@ -496,29 +494,31 @@ C Find out the number of separate words/string groupings.
   101 IER=1
       IF(IR.EQ.1)THEN
         if(currentfile(1:2).ne.'  ')then
-          WRITE(MSG1,'(5A)')' In ',currentfile(1:lnblnk(currentfile)),
+          WRITE(loutstr,'(5A)')' In ',
+     &      currentfile(1:lnblnk(currentfile)),
      &      ' error reading (',MSG(1:lnblnk(MSG)),') in...'
         else
-          WRITE(MSG1,'(A,A)',IOSTAT=ISTAT,ERR=1)' Error reading: ',
+          WRITE(loutstr,'(A,A)',IOSTAT=ISTAT,ERR=1)' Error reading: ',
      &      MSG(1:lnblnk(MSG)),') in...'
         endif
-        CALL LUSRMSG(MSG1,OUTSTR,'W')
+        CALL LUSRMSG(loutstr,OUTSTR,'W')
       ENDIF
       goto 4
 
   102 IER=2
       IF(IR.EQ.1)THEN
         if(currentfile(1:2).ne.'  ')then
-          WRITE(tmp,'(5A)')' In ',currentfile(1:lnblnk(currentfile)),
+          WRITE(loutstr,'(5A)')' In ',
+     &      currentfile(1:lnblnk(currentfile)),
      &      ' error reading (',MSG(1:lnblnk(MSG)),') EOF sensed.'
         else
-          WRITE(tmp,'(3A)',IOSTAT=ISTAT,ERR=1)' Error reading ',
+          WRITE(loutstr,'(3A)',IOSTAT=ISTAT,ERR=1)' Error reading ',
      &      MSG(1:lnblnk(MSG)),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',tmp,'-')
+        CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
+   1  write(6,*) 'ELSTRIPC: error writing warning re: ',OUTSTR
 
       END
 

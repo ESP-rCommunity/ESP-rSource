@@ -1261,7 +1261,9 @@ C Solar processes.
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         
-C        call easkok('Report per square meter of surface',' ',OK)
+C        dok=.false.
+C        h(1)='The normal report is for the whole surface. '
+C        call askok('Report per square meter of surface',' ',OK,dok,1)
 C        if(ok)ISM=1
 C        slist=.true.
 C        if (ISM.eq.0) then
@@ -1527,8 +1529,9 @@ C Set up surface flux selection items.
         CALL EPICKS(IX,IVALS,' ',' Surface fluxes:',
      &         23,18,ITEMS,'surface fluxes',IER,4)
         if(IVALS(1).eq.0)goto 1
-        call usrmsg('  ','  ','-')
-        call easkok('Report per square meter of surface',' ',ok)
+        dok=.false.
+        h(1)='The normal report is for the whole surface. '
+        call askok('Report per square meter of surface',' ',OK,dok,1)
         ism=0
         if(ok)ism=1
         inoc=IVALS(1)
@@ -3064,9 +3067,13 @@ C This recovers one day.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+           
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
 
+      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
@@ -3375,7 +3382,7 @@ C zone files >>
 
 C Set default surface absorbtivity.
         absorb=1.0
-        absorb=ABSE(IZ)
+        absorb=ABSE(IS)
 
 C Radiant plant is area AND emissivity weighted.
         emarea=0.0
@@ -3459,8 +3466,15 @@ C no radiant plant component.
             elseif(IPK.eq.16)then
               GVAL(JTS)=qswrde/SAREA
             elseif(IPK.eq.17)then
-              GVAL(JTS)=qswrde/(SAREA*absorb)
-C              write (6,*) GVAL(JTS), absorb
+
+C Determine if the surface is transparent or opaque.
+              if (SOTF(IS).EQ.'OPAQ'.OR.SOTF(IS).EQ.'UNKN') then
+                GVAL(JTS)=qswrde/(SAREA*absorb)
+              else
+                call edisp(iuout,
+     & ' Surface solar abs is only available for opaque surfaces.')
+                GVAL(JTS)=0.0
+              endif
             elseif(IPK.eq.18)then
               GVAL(JTS)=qstore/SAREA
             else

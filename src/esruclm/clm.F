@@ -24,6 +24,7 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -38,7 +39,6 @@ C climatic data sets compatible with ESP-r.
       COMMON/OUTPCH/ICOUT
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C22/ICLIM,LCLIM
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
@@ -60,9 +60,6 @@ C Project journal on/off, unit number, cmd, file name.
 C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
-C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
-
 C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
@@ -81,10 +78,10 @@ C Climate list common.
       common/clmlnum/nbclmlhelp
 
       dimension ITEM(22)
-      character ITEM*26,LCLIM*72,H*72,LASCI*72,outs*124,outs248*248
+      character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
-      character inf*144,ascif*72,pascif*72,pact*16,aut*12,paction*16
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPDB,DPRFDB,DPCDB
+      character inf*144,ascif*72,pascif*72,llasci*144
+      character pact*16,aut*12,paction*16
       character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1
       character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
@@ -245,8 +242,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       call edisp(IUOUT,' ')
       write(outs,'(2a)')
-     &  ' ESP-r Climate Analysis: Version 6.22a of July 2006.',
-     &  ' Copyright 2001-6 Energy'
+     &  ' ESP-r Climate Analysis: Version 6.22b of April 2007.',
+     &  ' Copyright 2001-7 Energy'
       call edisp(IUOUT,outs)
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
@@ -656,11 +653,44 @@ C Export climate data to ASCII file (with similar name).
      &    'ASCII esp-r file','SQL tab separated','continue',IICT,3)
         if(IICT.eq.3) goto 3
 
+C Prepend a .a to the current binary name and allow for browsing.
         call tstamp('>','CLM: export climate data')
-        write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        h(1)='This file will be a text version of the current db. '
-        CALL EASKS(LASCI,' ASCII climate file? ',
-     &      ' ',72,'./newclim.a','ASCII climate file',IER,1)
+        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        h(1)='This file will be an ASCII version of the current db.'
+        h(2)='You can accept the name or browse for a new location '
+        h(3)='and add in a name. '
+
+C Call EASKF depending on the current file name length.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  290   llt=lnblnk(LLASCI)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+     &        ' ',96,DCLIM,'ASCII climate file name',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+     &        ' ',124,DCLIM,'climate file name',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+     &        ' ',144,DCLIM,'ASCII climate file name',IER,3)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+     &      ' ',144,DCLIM,'ASCII climate file name',IER,3)
+        else
+          CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
+     &      ' ',96,DCLIM,'ASCII climate file name',IER,3)
+        endif
+        IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
+
+C Cast back to 72 char name.
+        llt=MIN0(lnblnk(llasci),72)
+        write(LASCI,'(a)') LLASCI(1:llt)
+C        CALL EASKS(LASCI,' ASCII climate file? ',
+C     &      ' ',72,'./newclim.a','ASCII climate file',IER,1)
  
 C Confirm the period to transfer.
         NTSPH=1
@@ -693,10 +723,43 @@ C Check whether it is an esp-r climate file or an EPW file.
         if(IICT.eq.1)then
           NTSPH=1
           LASCI=' '
+          LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This text file is the EPW source to be read in. '
-          CALL EASKS(LASCI,' ASCII (EPW) climate file? ',
-     &    ' ',72,' ','ASCII (EPW) climate file',IER,1)
+          h(1)='This text file is the EPW source to be read in.'
+          h(2)='You can browse for the source location and then '
+          h(3)='add in a name or type in the whole name. '
+
+C Call EASKF depending on the current file name length.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  291     llt=lnblnk(LLASCI)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(LLASCI,' Climate EPW file?',
+     &          ' ',96,DCLIM,'EPW climate file name',IER,3)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(LLASCI,' Climate EPW file?',
+     &          ' ',124,DCLIM,'EPW climate file name',IER,3)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(LLASCI,' Climate EPW file?',
+     &          ' ',144,DCLIM,'EPW climate file name',IER,3)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(LLASCI,' Climate EPW file?',
+     &        ' ',144,DCLIM,'EPW climate file name',IER,3)
+          else
+            CALL EASKF(LLASCI,' Climate EPW file?',
+     &        ' ',96,DCLIM,'EPWclimate file name',IER,3)
+          endif
+          IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 291
+
+C Cast back to 72 char name and do the conversion.
+          llt=MIN0(lnblnk(llasci),72)
+          write(LASCI,'(a)') LLASCI(1:llt)
+C          CALL EASKS(LASCI,' ASCII (EPW) climate file? ',
+C     &    ' ',72,' ','ASCII (EPW) climate file',IER,1)
           CALL EPWTOBCLM(LASCI,IUNIT,IER)
         elseif(IICT.eq.2)then
 
@@ -717,10 +780,44 @@ C to overwrite site information. Confirm the period to transfer.
           ENDIF
 
           LASCI=' '
+          LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This text file is the source to be read in. '
-          CALL EASKS(LASCI,' ASCII climate file? ',
-     &      ' ',72,' ','ASCII climate file',IER,1)
+          h(1)='This ASCII ESP-r file is the source to be read in. '
+          h(2)='You can browse for the source location and then '
+          h(3)='add in a name or type in the whole name. '
+
+C Call EASKF depending on the current file name length.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  292     llt=lnblnk(LLASCI)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(LLASCI,' Climate ASCII file?',
+     &          ' ',96,DCLIM,'ASCII climate file name',IER,3)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(LLASCI,' Climate ASCII file?',
+     &          ' ',124,DCLIM,'ASCII climate file name',IER,3)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(LLASCI,' Climate ASCII file?',
+     &          ' ',144,DCLIM,'ASCII climate file name',IER,3)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(LLASCI,' Climate ASCII file?',
+     &        ' ',144,DCLIM,'ASCII climate file name',IER,3)
+          else
+            CALL EASKF(LLASCI,' Climate ASCII file?',
+     &        ' ',96,DCLIM,'ASCII climate file name',IER,3)
+          endif
+          IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 292
+
+C Cast back to 72 char name and do the conversion.
+          llt=MIN0(lnblnk(llasci),72)
+          write(LASCI,'(a)') LLASCI(1:llt)
+
+C          CALL EASKS(LASCI,' ASCII climate file? ',
+C     &      ' ',72,' ','ASCII climate file',IER,1)
           dok=.true.
           h(1)='When scanning an ASCII version of the ESP-r '
           h(2)='climate file you can also take any site data '

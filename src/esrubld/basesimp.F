@@ -34,30 +34,29 @@ C BASEREAD     Reads the data contained in the .bsm file.
 
       SUBROUTINE BASEREAD(ICOMP,IER)
 #include "building.h"
+#include "espriou.h"
+c espriou.h provides currentfile
 c common block for ground temperature profiles.
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/BSdata/bsHEIG(MCOM),bsDEPT(MCOM),bsLENG(MCOM),bsWIDT(MCOM),
      &              bsOVER(MCOM),bsRSI(MCOM),bsSOIL(MCOM),bsWTD(MCOM)
-c------This common block has been removed. It is no longer needed as the 
-c------ground temperature variables are now being calculated in
-c------/cetc/ground_temp_mains.F
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
 
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
-      common/curfile/currentfile
       common/dllerr/dllsubr,dllmesg
 
-      character*72 LBSIMP,currentfile
+      character*72 LBSIMP
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
-c  REAL fBASESIMPVersionNumber ! version number of BASESIMP input file
-      
+      REAL fBASESIMPVersionNumber	! version number of BASESIMP input file
+      logical close,close2
+
 C This subroutine is called once for each zone which has a BASESIMP foundation.
 C The data are read from the BASESIMP input data file (.bsm file) and placed
 C into the BSsys, BSdata, and BSwth common blocks:
@@ -69,15 +68,9 @@ C    bsOVER(i): Insulation overlap for "combination" configurations for zone `i'
 C    bsRSI(i):  Insulation resistance in RSI for zone `i'.
 C    bsSOIL(i): Soil conductivity for zone `i'.
 C    bsWTD(i):  Water-table depth for zone `i'.
-C*********************************************************************************
-C The ground temperature variables are now being calculated as functions in 
-C /cetc/ground_temp_mains.F based on the Moore Method and the climate data 
-C (degree day calculation).
-C The variables bsTGavg(i), bsTGamp(i)and bsTGps(i) have been removed from the
-C *.bsm input file.
-C    bsTGavg(i) -> fTemp_Ground_Avg: Anually-averaged soil temperature
-C    bsTGamp(i) -> fTemp_Ground_Amp: Amplitude of ground-temperature's annual sine wave 
-C    bsTGps(i)  -> fTemp_Ground_phaseshift: Phase lag of ground-temperature's annual sine wave
+C    bsTGavg(i) Anually-averaged soil temperature	
+C    bsTGamp(i) Amplitude of ground-temperature's annual sine wave 
+C    bsTGps(i)  Phase lag of ground-temperature's annual sine wave
 C NOTE: the references to the zone numbers have been removed, as these values are not
 c       zone-dependent.
 C**********************************************************************************
@@ -85,8 +78,8 @@ C Check if running in dll mode.
       call isadll(dll)
 
 C Set the version number
-c      fBASESIMPVersionNumber = 0.
-      
+      fBASESIMPVersionNumber = 0.
+
 C Open BASESIMP input data file.
       IUNIT=IFIL+1
       CALL ERPFREE(IUNIT,ISTAT)
@@ -106,41 +99,38 @@ C Open BASESIMP input data file.
           RETURN
         endif
       endif
-      currentfile=LBSIMP(ICOMP)
+      write(currentfile,'(a)') LBSIMP(ICOMP)(1:lnblnk(LBSIMP(ICOMP)))
 
 C Default error message.
       t60='low level I/O read error '
 
 C Versioning Control
 c Determine the version number of this file.
-c If it is an old file (with no version number), then we will read in the 
-c values of bsTGavg(i), bsTGamp(i)and bsTGps(i) but they won't be used anywhere.
-c For newer versions, these values won't be read in at all. 
-c This is required for backward file compatability
+c If it is an old file (with no version number or 0 version number), then we will 
+c read in the values of bsTGavg(i), bsTGamp(i)and bsTGps(i)
+c For newer versions (version number > 0), these values won't be read in at all.
+c They are however calculated in file /esrubld/ground_temp_mains.F 
 
 C Get first line.
-c      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' BASESIMP data',IER)
-c      IF(IER.NE.0) goto 1000
-c      K=0
+      CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0) goto 1000
+      K=0
 
 C-----Read the file version number, if applicable
-c      IF ( outstr(1:13).eq.'* FileVersion' ) then
-c        call stripc(iunit,outstr,99,nd,0,'file ver',ier)
-c        k = 13
+      IF ( outstr(1:12).eq.'*FileVersion' ) then
+        k = 12
 C-------write version number to fBASESIMPVersionNumber
-c        call egetwr(outstr,k,fBASESIMPVersionNumber,0.01,100.,'F',
-c     &              'version number',IER)
+        call egetwr(outstr,k,fBASESIMPVersionNumber,0.0,100.,'F',
+     &              'version number',IER)
 c-------read in next line of the input file (to get foundation height)
-c        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' BASESIMP data',IER)   
-c      ELSE   
-c-------if there is no version number, continue with reading in the BASESIMP data
-c        CONTINUE
-c      ENDIF
-      
-C Read foundation height.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' BASESIMP data',IER)
+        k=0
         IF(IER.NE.0)goto 1000
-        K=0
+      ELSE   
+c-------if there is no version number, continue with reading in the BASESIMP data
+        CONTINUE
+      ENDIF
+
         CALL EGETWR(OUTSTR,K,VAL,1.0,2.5,'F',' found. height',IER)
         if(IER.NE.0)then
           t60=' Cannot read height of foundation '
@@ -249,19 +239,25 @@ C Read depth of water table.
         endif
         bsWTD(icomp)=VAL
 
-C*********************************************************************************
-C The ground temperature variables are now being calculated in
-C /cetc/ground_temp_mains.F
-C based on the Moore Method and the climate data (and degree day) calculation.
-
-c-------If there is a version number associated with the BASESIMP input file, then 
-c-------the variables bsTGavg(i), bsTGamp(i)and bsTGps(i) are not read in.
-c        IF(fBASESIMPVersionNumber .NE. 0.) then 
+C-------If there is a version number associated with the BASESIMP input file, then 
+C-------the variables bsTGavg(i), bsTGamp(i)and bsTGps(i) are not read in. These 
+C-------will be set to values based on weather file and Moore model
+        CALL ECLOSE(fBASESIMPVersionNumber,0.0,0.0001,CLOSE)
+        CALL ECLOSE(fBASESIMPVersionNumber,1.0,0.0001,CLOSE2)
+        IF(CLOSE2) then 
 C---------Close BASESIMP input data file
-c          CALL ERPFREE(IUNIT,ISTAT)  
-c-------If there is no version number associated with the BASESIMP input file, 
-c-------then, these values are read in, but are not used in the simulation.
-c        ELSE
+          CALL ERPFREE(IUNIT,ISTAT)
+C---------Set ground temperature calculation method flag to 2 indicating ground
+C---------temperature parameters are determined based on Moore model and weather file
+          Basesimp_grd_temp_cal_flag(icomp) = 2
+
+C-------If there is no version number associated with the BASESIMP input file, 
+C-------then, these values are read in
+        ELSEIF(CLOSE) THEN
+C-------Set ground temperature calculation method flag to 1 indicating that these
+C-------ground temperature parameters are read in from basesimp file
+          Basesimp_grd_temp_cal_flag(icomp) = 1
+
 C Read annually-averaged soil temperature.
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
           IF(IER.NE.0)goto 1000
@@ -274,7 +270,7 @@ C locations.
             t60=' Cannot read average of ground Temp '
             goto 1000
           endif
-          bsTGavg(icomp)=VAL !this variable is not used in the simulation
+          bsTGavg(icomp)=VAL	
 
 C Read amplitude of ground-temperature's annual sine wave.
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
@@ -285,9 +281,9 @@ C Read amplitude of ground-temperature's annual sine wave.
             t60=' Cannot read amplitude of ground Temp '
             goto 1000
           endif
-          bsTGamp(icomp)=VAL !this variable is not used in the simulation
+          bsTGamp(icomp)=VAL	
 
-C Read phase lage of ground-temperature's annual sine wave.
+C Read phase lag of ground-temperature's annual sine wave.
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
           IF(IER.NE.0)goto 1000
           K=0
@@ -296,11 +292,11 @@ C Read phase lage of ground-temperature's annual sine wave.
             t60=' Cannot read phase lag of ground Temp '
             goto 1000
           endif
-          bsTGps(icomp)=VAL !this variable is not used in the simulation
+          bsTGps(icomp)=VAL
 
 C Close BASESIMP input data file.
           CALL ERPFREE(IUNIT,ISTAT)
-c        ENDIF
+        ENDIF
 
         return
         
@@ -317,7 +313,7 @@ C Error handling.
         call edisp(iuout,outs)
         IER=1
         CALL ERPFREE(IUNIT,ISTAT)
-
+	
 C modified Feb 4, 2004 SPH
 C Exit instead of returning
         CALL EXIT(1)
@@ -746,15 +742,17 @@ C            BASESIMP foundation for the current time step.
 
       SUBROUTINE BSHEAT(ICOMP,ICON,TBSAVG,Qtotal)
 #include "building.h"
-c#include "ground_temp_mains_common.h"
+#include "ground_temp_mains_common.h"
 
       COMMON/BSHLF/Sag(MCON),Sbgavg(MCON),Sbgvar(MCON),Bphase(MCON)
-c------This common block has been removed. It is no longer needed as the 
-c------ground temperature variables are now being calculated in
-c------/cetc/ground_temp_mains.F
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
+C Local variables for basesimp ground temperature parameters
+      REAL basesimp_grd_temp_amp    ! Ground temperature amplitude
+      REAL basesimp_grd_temp_avg    ! Ground temperature average
+      REAL basesimp_grd_temp_pshift ! Ground temperature phase shift
 
 C Set constants used in calculations.
       PI=4.0*atan(1.0)
@@ -763,34 +761,43 @@ C Set constants used in calculations.
 C Above-grade heat loss (W). The outdoor air temperature is set in climi.F.
       Qag = Sag(icon) * (TBSAVG-TF)
 
+C Set temperature for determining below grade heat loss
+C In the case that the basesimp data file does not have a version number or
+C version number is set to 0.
+      if(Basesimp_grd_temp_cal_flag(icomp).eq.1) then
+C In this case set basesimp ground temperature parameters to values in
+C basesimp file
+        basesimp_grd_temp_avg = bsTGavg(icomp)
+        basesimp_grd_temp_amp = bsTGamp(icomp)
+        basesimp_grd_temp_pshift = bsTGps(icomp)
+      elseif(Basesimp_grd_temp_cal_flag(icomp).eq.2) then
+C In the case that the basesimp data file has a version number > 0,
+C then the ground temperature parameters calculated internally using
+C weather file and Moore model.
+        basesimp_grd_temp_avg = Temp_Ground_Avg
+        basesimp_grd_temp_amp = Temp_Ground_Amp
+        basesimp_grd_temp_pshift = Temp_Ground_phaseshift
+      endif    
+       
 C Steady component of below-grade heat loss (W).
-      Qbgavg = Sbgavg(icon) * ( TBSAVG-bsTGavg(icomp) )
-c-----This equation is modified to the updated average ground temperature
-c-----bsTGavg become fTemp_Ground_Avg. Also, this value is not dependent 
-c-----on the zone number, so this reference has been removed.
-c     Qbgavg = Sbgavg(icon) * ( TBSAVG-fTemp_Ground_Avg )
+	  Qbgavg = Sbgavg(icon) * 
+     &             ( TBSAVG-basesimp_grd_temp_avg )
 
 C Time-varying component of below-grade heat loss (W). `time' measures the
 C time in hours from the beginning of the calendar year.
       time = float(idyp-1)*24. + float(ihrp)
-      Qbgvar = Sbgvar(icon) * bsTGamp(icomp) *
-     &         SIN( omega*time+Bphase(icon)-PI/2.-bsTGps(icomp) )
-c-----This equation is modified to the updated ground temperature amplitude and phase shift.
-c-----bsTGamp becomes fTemp_Ground_Amp and bsTGps becomes . 
-c-----Also, these value are not dependent on the zone number, so this reference has been removed.
-c      Qbgvar = Sbgvar(icon) * fTemp_Ground_Amp *
-c     &         SIN( omega*time+Bphase(icon)-PI/2.-
-c     &              fTemp_Ground_phaseshift )
-
+      Qbgvar = Sbgvar(icon) * basesimp_grd_temp_amp  *
+     &         SIN( omega*time+Bphase(icon)-PI/2.-
+     &              basesimp_grd_temp_pshift )
 
 C Sum components of heat loss to return total heat transfer to BASESIMP foundation.
 C Units of `Qtotal' are W.
       Qtotal = Qag + Qbgavg + Qbgvar
 
 C Debug begin ....
-c       write(88,*) 'time = ',time,' idyp = ',idyp
-c       write(88,'(5(a,f6.1))') 'Tout = ',TF,' TBSAVG = ',TBSAVG,
-c     &  'Qag = ',Qag,' Qbgavg = ',Qbgavg,' Qbgvar = ',Qbgvar
+c	write(88,*) 'time = ',time,' idyp = ',idyp
+c	write(88,'(5(a,f6.1))') 'Tout = ',TF,' TBSAVG = ',TBSAVG,
+c     &	'Qag = ',Qag,' Qbgavg = ',Qbgavg,' Qbgvar = ',Qbgvar
 C Debug end ....
 
       RETURN

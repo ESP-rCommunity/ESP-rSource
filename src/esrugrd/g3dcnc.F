@@ -436,9 +436,9 @@ C LMPEDG creates control volumes and connections for lumped edge.
 C *********************************************************************
       SUBROUTINE LMPEDG(IZ,IEG)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -450,7 +450,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72,LFCON*72,LFMUL*72
+      CHARACTER PNM*72,TL*72
 
 C Determine the lumped edge thermophysical properties.
       VOLML=0.
@@ -462,7 +462,7 @@ C Determine the lumped edge thermophysical properties.
       DO 10 IY=1,NDYE(IEG)
       DO 10 IX=1,NDXE(IEG)
         IEL=ITPEDG(IEG,IX,IY,IDZ)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
         IF(IER.NE.0)STOP "error (407): while reading primative db."
         VL=DZE(IEG,IDZ)*DYE(IEG,IY)*DXE(IEG,IX)
         VOLML=VOLML+VL
@@ -578,9 +578,9 @@ C DISEDG creates control volumes and connections for discretised edge.
 C *********************************************************************
       SUBROUTINE DISEDG(IZ,IEG)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -593,7 +593,7 @@ C *********************************************************************
       COMMON/GR3D81/ISNDS(MS),ISNDE(MEZ),ISNDC(MCZ)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
+      CHARACTER PNAM*72,TITL*72
 
       ISP1=-2
       IS1=ISFEDG(IEG,1)
@@ -627,7 +627,7 @@ C *********************************************************************
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPEDG(IEG,IX,IY,IL)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (411): while reading primative db."
 
 C Create the control volume and node.
@@ -770,9 +770,9 @@ C LMPCRN creates control volumes and connections for lumped corner.
 C *********************************************************************
       SUBROUTINE LMPCRN(IZ,ICR)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -784,7 +784,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72,LFCON*72,LFMUL*72
+      CHARACTER PNM*72,TL*72
 
 C Determine the lumped corner thermophysical properties.
       VOLML=0.
@@ -797,7 +797,7 @@ C Determine the lumped corner thermophysical properties.
       DO 10 IY=1,NDYC(ICR)
       DO 10 IX=1,NDXC(ICR)
         IEL=ITPCRN(ICR,IX,IY,IDZ)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
         IF(IER.NE.0)STOP "error (415): while reading primative db."
         VL=DZC(ICR,IDZ)*DYC(ICR,IY)*DXC(ICR,IX)
         VOLML=VOLML+VL
@@ -907,9 +907,9 @@ C DISCRN creates control volumes and connections for discretised corner.
 C *********************************************************************
       SUBROUTINE DISCRN(IZ,ICR)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -921,7 +921,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72,LFCON*72,LFMUL*72
+      CHARACTER PNAM*72,TITL*72
 
       ISP1=-3
       IS1=ISFCRN(ICR,1)
@@ -951,7 +951,7 @@ C *********************************************************************
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPCRN(ICR,IX,IY,IL)
-        CALL ERPCDB(IFCON,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
+        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
         IF(IER.NE.0)STOP "error (419): while reading primative db."
 
 C Create the control volume and node.

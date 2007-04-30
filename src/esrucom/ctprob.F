@@ -27,6 +27,11 @@ C CSIADC Add, delete, edit source/sink models
 C CTIADC Add, delete, edit contaminants
 C CTLIST List contaminant information to text feedback area
 
+C TODO LIST
+C << introduction of 'cancel' option only partially implemented
+C << and instanciation of data edited in a sequence should be
+C << done only after all of the dialogs have been accepted.
+
 C ******************** CTWRIT ********************
 C Dump contaminant model to file 
 C Definitions of most variables is given in ctread.F
@@ -35,7 +40,7 @@ C Definitions of most variables is given in ctread.F
 #include "net_flow.h"
 #include "building.h"
 
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -53,7 +58,7 @@ C Definitions of most variables is given in ctread.F
 
       CHARACTER*10 SOUTS
       CHARACTER*124 CNTMDESC,LOUTS,TOUTS
-      CHARACTER*72 CNTMFIL,LAPROB,LAPRES,LAFRES
+      CHARACTER CNTMFIL*72,LAPROB*72
       CHARACTER*12 CONTMNAM,SSNAME,NDNAM,CMNAM
       CHARACTER LTPCMP*60,MOUTS*12
       INTEGER SPMTYP,SSLINK1,SSLINK2
@@ -101,7 +106,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        SOUTS(1:lnblnk(SOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK1(ISPMNO,ICONTM).NE.0)GOTO 501
@@ -227,7 +231,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        MOUTS(1:lnblnk(MOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//MOUTS
           ENDIF
  513    CONTINUE
       WRITE(IFCTM,1027,IOSTAT=ISTAT,ERR=99)
@@ -260,7 +263,6 @@ C string variables.
             write(TOUTS,'(a)') LOUTS(1:LNBLNK(LOUTS))
             write(LOUTS,'(3a)') TOUTS(1:LNBLNK(TOUTS)),' ',
      &        SOUTS(1:lnblnk(SOUTS))
-C            LOUTS=LOUTS(1:LNBLNK(LOUTS))//' '//SOUTS
           ENDIF
           ISPMNO=ISPMNO+1
           IF(SSLINK2(ISPMNO,INOD).NE.0)GOTO 515
@@ -291,7 +293,7 @@ C Definitions of most variables is given in ctread.F
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/USER/BROWSE
       COMMON/FILEP/IFIL
       COMMON/PATHS/ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DOCPTH,TMPPTH,
@@ -321,8 +323,10 @@ C Definitions of most variables is given in ctread.F
       CHARACTER*55 ITEML(MCNN+20)
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP
-      LOGICAL OK,CLKOK,XST,CLOSER,UNIXOK
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,BROWSE
+      LOGICAL OK,DOK,CLKOK,XST,CLOSER,UNIXOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,BROWSE
+
+      integer NTSTEPCT   ! for local editing.
 
 C set contaminant file 
       IUNIT=IFIL+72
@@ -341,7 +345,9 @@ C flow network prior to defining a contaminant model
       H(10)= 'contaminant model will have to be modified accordingly. '
       IF(NOCNTM.LE.0) THEN
         CALL PHELPD('contamn model def',10,'-',0,0,IER)                  
-        CALL EASKOK('Proceed with contaminant model definition?',' ',OK)
+        DOK=.false.
+        CALL ASKOK('Proceed with contaminant model definition?',
+     &    ' ',OK,DOK,10)
         IF(.NOT.OK) RETURN
       ENDIF
       H(1)='You have chosen a contaminant model. '
@@ -415,9 +421,21 @@ C If specified file is a new (not created) file
         ENDIF
       ELSE
         CNTMFIL=CTMF
-        CALL CTREAD
-        CALL EASKOK('Display a synopsis of the contaminant model ?',
-     &' ',OK)
+        outs='Scanning contaminants file...'
+        call edisp(iuout,outs)
+        CALL CTREAD(iier)
+        if(iier.ne.0)then
+          outs='There was a problem with scanning contaminants file.'
+          call edisp(iuout,outs)
+        else
+          outs='Scanning contaminants file...done.'
+          call edisp(iuout,outs)
+        endif
+        DOK=.false.
+        h(1)='A listing of the contaminant model is a good way to '
+        h(2)='review the contaminant regime in this zone. '
+        CALL ASKOK('Display a synopsis of the contaminant model ?',
+     &    ' ',OK,DOK,2)
         IF(OK) THEN
           INDEX=0
           CALL CTLIST(INDEX)
@@ -462,8 +480,11 @@ C Setup Contaminant Model network
         CALL CTLIST(INDEX)
         GOTO 2000
       ELSEIF(INO.EQ.1) THEN
-        CALL EASKOK(' Reading or creating a new contaminant file will ',
-     &    ' overwrite any existing data! Is this ok?',OK)
+        DOK=.true.
+        h(1)='This warning is to ensure that you do not loose existing'
+        h(2)='data without being informed. '
+        CALL ASKOK(' Reading or creating a new contaminant file will ',
+     &    ' overwrite any existing data! Is this ok?',OK,DOK,2)
         IF(.NOT.OK)THEN
           GOTO 2000
         ELSE
@@ -578,6 +599,9 @@ C Setup Contaminant Model network
           CALL CTLIST(INDEX)
           GOTO 2006
         ELSEIF(INNO.GT.1.AND.INNO.LT.(NSPMNO+2))THEN
+
+C Use CSIADC to edit a specific source or sink (inno-1)
+C The first parameter is zero (it is not used).
           IF(.NOT.BROWSE)THEN
             CALL CSIADC(0,INNO-1)
             GOTO 2006
@@ -586,6 +610,8 @@ C Setup Contaminant Model network
             CALL PHELPD(' ',1,'-',0,0,IER)
           ENDIF
         ELSEIF(INNO.EQ.(NSPMNO+3))THEN
+
+C User asked to add or delete or copy.
           IF(.NOT.BROWSE)THEN
             H(1) =' Sorry no help available for this topic'
             CALL EASKABCD('Select option or continue ',' ','add',
@@ -593,6 +619,9 @@ C Setup Contaminant Model network
             IF(IADC.EQ.4)THEN
               GOTO 2006
             ELSE
+
+C Use CSIADC for add/delete/copy only. 2nd parameter is zero to
+C disallow editing.
               CALL CSIADC(IADC,0)
               GOTO 2006
             ENDIF
@@ -754,8 +783,12 @@ C Now put in filter efficiencies if any
             CALL EASKR(VAL,' ','Enter filter efficiency (0 to 1)
      &        ',0.0,'F',1.0,'F',0.01,'filter eff',IER,1)
             FILEFA(ICONTM,ICNN)=VAL
-            CALL EASKOK('Edit more filter efficiencies for this contamin
-     &ant?',' ',OK)
+            DOK=.false.
+            h(1)='If you say yes then you will be taken back to the '
+            h(2)='details menu to allow further data to be entered.  '
+            CALL ASKOK(
+     &        'Edit more filter efficiencies for this contaminant?',
+     &        ' ',OK,DOK,2)
             IF(OK)THEN
               GOTO 2018
             ELSE
@@ -774,9 +807,14 @@ C Now put in filter efficiencies if any
         H(3) =' timestep a five minute timestep is usually appropriate.'
         H(4) =' Contaminant timestep should be integer multiple of '
         H(5) =' building timestep.' 
-        CALL EASKI(NTSTEPC,' ','no of contaminant simulation timesteps / 
-     & hour? ',
-     &        1,'W',120,'W',12,'contaminant simul tstep ',IER,5)
+        H(6)=' '
+        H(7)='A cancel request leaves the model unchanged. '
+        NTSTEPCT=NTSTEPC
+        CALL EASKI(NTSTEPCT,' ',
+     &    'no of contaminant simulation timesteps / hour? ',
+     &    1,'W',120,'W',12,'contaminant simul tstep ',IERI,7)
+        if(ieri.eq.-3) goto 2000
+        NTSTEPC=NTSTEPCT
         GOTO 2000
       ELSE
         GOTO 2000
@@ -788,7 +826,11 @@ C Now put in filter efficiencies if any
       GOTO 2000
 
 C Ask if changes need to be saved
- 5000 CALL EASKOK('Do you want to save any changes?',' ',OK)
+ 5000 DOK=.true.
+      h(1)='You probably changed the contaminant data. This is your'
+      h(2)='chance to save these changes. If you say no then the'
+      h(3)='zone contaminant file will not be re-written. '
+      CALL ASKOK('Do you want to save any changes?',' ',OK,DOK,3)
       IF(OK)THEN
         IF(NTSTEPC.LE.0)GOTO 7000
    81   CALL EASKS(CTMF,' Contaminant model file ? ',
@@ -808,8 +850,12 @@ C Ask if changes need to be saved
       ENDIF
 
 C Update the configuration file so that contmainant information is known
-      CALL EASKOK(' Update the configuration level mass flow',
-     &    ' links to reflect any changes in contaminant model ? ',OK)
+      DOK=.true.
+      h(1)='There is a relationship between the contaminant description'
+      h(2)='and the mass flow network. Changing one without the other '
+      h(3)='can cause problems. '
+      CALL ASKOK(' Update the model mass flow links ',
+     &  ' to reflect any changes in contaminant model ?',OK,DOK,3)
       IF(OK)THEN
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,' Updating configuration contaminant data...')
@@ -838,20 +884,20 @@ C Definitions of most variables is given in ctread.F
 
       CHARACTER OUTS*124,H*72,CONTMNAM*12
       CHARACTER*55 ITEML(MCONTM+20)
-      LOGICAL OK,EDIT,CLOSER,FOUND
+      LOGICAL OK,DOK,EDIT,CLOSER,FOUND
 
       IF(MEDIT.NE.0)THEN
-        CALL EASKOK('Edit this chemical reaction',' ',OK)
-        IF(.NOT.OK)RETURN
-        EDIT=.TRUE.
-        IADC=1
-
         H(1) ='The first contaminant is the one that will be generated'
         H(2) ='due to a reaction of the second contaminant.'
         H(3) ='The reaction rate determines the amount of the first'
         H(4) ='contaminant generated according to the equation:'
-        H(5) = 'increase of mass in cntmnt1 = mass of cntmnt2 * '
-        H(6) = 'rate constant of cntmnt1 formed by cntmnt2'
+        H(5) ='increase of mass in cntmnt1 = mass of cntmnt2 * '
+        H(6) ='rate constant of cntmnt1 formed by cntmnt2'
+        DOK=.false.
+        CALL ASKOK('Edit this chemical reaction',' ',OK,DOK,6)
+        IF(.NOT.OK)RETURN
+        EDIT=.TRUE.
+        IADC=1
 
 C Get contaminant 1 and 2 for the chemical reaction
         NCHEMRR=0
@@ -942,10 +988,11 @@ C Get contaminant 1 and 2 for the chemical reaction
           ELSE
             VAL=0.0
           ENDIF
-          CALL EASKR(VAL,' ','Enter 1st order chemical reaction rate 
-     & constant(/s)',1E-14,'W',1.0,'F',0.01,'chem rate const',IER,1)
-            FORCAB(ICTCR1,ICTCR2)=VAL
-            FORCAB(ICTCR2,ICTCR1)=-VAL
+          CALL EASKR(VAL,' ',
+     &      'Enter 1st order chemical reaction rate constant(/s)',
+     &      1E-14,'W',1.0,'F',0.01,'chem rate const',IER,1)
+          FORCAB(ICTCR1,ICTCR2)=VAL
+          FORCAB(ICTCR2,ICTCR1)=-VAL
           RETURN
         ELSE
           GOTO 2015
@@ -1181,7 +1228,8 @@ c Get node to be linked
 C ******************** CSIADC ********************
 C Add, delete, copy, edit source/sink models
 C Definitions of most variables is given in ctread.F
-
+C NADC is the action to take 1 = add, 2 = delete, 3 = copy
+C ISPMNU is ??
       SUBROUTINE CSIADC(NADC,ISPMNU)
 #include "net_flow.h"
 
@@ -1198,21 +1246,36 @@ C Definitions of most variables is given in ctread.F
       CHARACTER*33 ITEMS(MCNN+20)
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP
-      LOGICAL OK,EDIT
+      LOGICAL OK,DOK,EDIT
+      integer iadc   ! local variable signaling edit choice.
 
+C If the ispmnu parameter is non-zero then give the user the option
+C to edit the contaminant details. If ispmnu is zero details should
+C not be edited (just allow add copy delete).
       IF(ISPMNU.NE.0)THEN
         EDIT=.TRUE.
         IADC=1
-        CALL EASKOK('Edit this source/sink',' ',OK)
+        DOK=.false.
+        h(1)='This is your chance to backup and not change the details'
+        h(2)='of this contaminant source. '
+        CALL ASKOK('Edit this source/sink?',' ',OK,DOK,2)
         IF(.NOT.OK)RETURN        
       ELSE
         EDIT=.FALSE.
         IADC=NADC
       ENDIF
+
       IF(IADC.EQ.1) THEN
+
+C Add a source or sink, begin by asking for a name. And if user is
+C editing then also use this facility.
         H(1) = 'Source/sink names should be <= 12 characters and have '
         H(2) = 'no blanks. Use logical names for clarity.'
-        T12='source'
+        if(EDIT)then
+          T12=SSNAME(ISPMNU)
+        else
+          T12='source'
+        endif
  141    CALL EASKS(T12,' ',' source/sink name (<= 12 characters): ',12,
      &' source ','source/sink',IER,2)
         CALL ST2NAME(T12,SSID)
@@ -1220,18 +1283,72 @@ C Definitions of most variables is given in ctread.F
          IF((.NOT.EDIT.AND.(SSID(1:12).EQ.SSNAME(ISPMNO)(1:12))).OR.
      &     (EDIT.AND.(SSID(1:12).EQ.SSNAME(ISPMNO)(1:12)
      &     .AND.ISPMNO.NE.ISPMNU)))THEN
-            CALL EDISP(IUOUT,' This a duplicate name - try again')
-            CALL EASKOK('Try again ? ',' ',OK)
+            DOK=.true.
+            h(1)='contaminant descriptions should not include'
+            h(2)='duplicate names of sources or sinks. '
+            CALL ASKOK('This a duplicate source or sink name...',
+     &        'Try again?',OK,DOK,2)
             IF(.NOT.OK)RETURN
             GOTO 141
           ENDIF
  10     CONTINUE
 
 
-C Now get source/sink type
+C Now get source/sink type.
+C Remind the user what the current source/sink type is!
+        IF(EDIT) THEN
+          if(SPMTYP(ISPMNU).eq.1) then
+           call edisp(iuout,'Currently a constant coefficient')
+          elseif(SPMTYP(ISPMNU).eq.2) then
+           call edisp(iuout,'Currently a cut-off concentration')
+          elseif(SPMTYP(ISPMNU).eq.3) then
+           call edisp(iuout,'Currently an exponential decay/increase')
+          elseif(SPMTYP(ISPMNU).eq.4) then
+           call edisp(iuout,'Currently a bounday layer diffusion')
+          elseif(SPMTYP(ISPMNU).eq.5) then
+           call edisp(iuout,'Currently a time dependant constant mass')
+          elseif(SPMTYP(ISPMNU).eq.6) then
+           call edisp(iuout,'Currently a personal CO2 emission')
+          else
+           call edisp(iuout,'Currently undefined.')
+          endif
+        else
+          call edisp(iuout,'Source sink type not yet defined.')
+        endif
+
  2007   INNO=-2
         H(1) ='Sources and sinks may be defined for each contaminant.'
         H(2) ='These can then be linked to each node to account for'
+        H(3) ='for removal or generation of the contaminant.'
+        H(4) =' '
+        H(5) ='Source/Sink models: '
+        H(6) ='(1) Constant coefficient: A fixed amount G(kg/s) of '
+        H(7) ='    contaminant is added/removed from the node'
+        H(8) ='    mass added/removed = G'
+        H(9) ='(2) Cut-off concentration: The contaminant mass added'
+        H(10)='    to the node decreases until concentration (C) '
+        H(11)='    reaches a cut-off value'
+        H(12)='    mass added = G*(1-C/C_cutoff)'
+        H(13)='(3) Exponential model: Mass decays/increases'
+        H(14)='    exponentially in the node'
+        H(15)='    mass added/removed = G*exp(t/timeconstant)'
+        H(16)='(4) Boundary layer diffusion: Mass emitted (kg/s)'
+        H(17)='    from a surface is given by h*rho*A*(C-C_s/k) '
+        H(18)='    where h = avg. film mass transfer coeff,  '
+        H(19)='    rho = film density of air, A = area of emitting '
+        H(20)='    surface, C = air conc, C_s = surface concentration'
+        H(21)='    of contaminant & k = Henry adsorption coeff'
+        H(22)='(5) Time dependant: A fixed mass (kg/s) of contaminant'
+        H(23)='    is added within a user specified interval'
+        H(24)='(6) Personal CO2 emission: From information about '
+        H(25)='    the number of people and their metabolic activity'
+        H(26)='    CO2 emissions from the node are evaluated'
+        H(27)=' '
+        H(28)='A cancel request (integers) leaves the model unchanged'
+        H(29)='for the item currently being edited. Not all items in '
+        H(30)='a sequence of edits may have been restored so please'
+        H(31)='check your model description. '
+
         ITEMS(1) ='a constant coefficient           '       
         ITEMS(2) ='b cut-off concentration          '
         ITEMS(3) ='c exponential decay/increase     '
@@ -1245,7 +1362,7 @@ C Now get source/sink type
         CALL EMENU('Choose Source/Sink models',ITEMS,NITEMS,INNO)
         IF(INNO.EQ.9)RETURN
         IF(INNO.EQ.8) THEN
-          CALL PHELPD('source/sink models',26,'-',0,0,IER)
+          CALL PHELPD('source/sink models',31,'-',0,0,IER)
           GOTO 2007
         ELSEIF(INNO.GE.1.AND.INNO.LE.6)THEN
 
@@ -1269,28 +1386,35 @@ C increment NSPMNO
           GOTO 2007
         ENDIF
 
-C Now get supplementary data items
-c<< To put in checks for range checking of suppl data items
+C Now get supplementary data items for constant coefficient.
+C << To put in checks for range checking of suppl data items
         IF(ISSTYP.EQ.1)THEN
           VAL=0.0
-          CALL EASKR(VAL,' ','Constant contaminant generation rate
-     & (kg/s)? ',0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
+          if(EDIT) VAL=SPMSUP(ISPMNU,1)
+          CALL EASKR(VAL,' ',
+     &      'Constant contaminant generation rate (kg/s)? ',
+     &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,1)=VAL
           ELSE
             SPMSUP(ISPMNU,1)=VAL
           ENDIF
         ENDIF
+
+C Now get supplementary data items for cut-off concentration.
         IF(ISSTYP.EQ.2)THEN
           VAL=0.0
-          CALL EASKR(VAL,' ','Initial contaminant generation rate 
-     & (kg/s)? ',0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
+          if(EDIT) VAL=SPMSUP(ISPMNU,1)
+          CALL EASKR(VAL,' ',
+     &      'Initial contaminant generation rate (kg/s)? ',
+     &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,1)=VAL
           ELSE
             SPMSUP(ISPMNU,1)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,2)
           CALL EASKR(VAL,' ','Cutoff concentration (kg/kg) ? ',
      &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1299,16 +1423,21 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,2)=VAL
           ENDIF
         ENDIF
+
+C Now get supplementary data items for exponential decay/increase.
         IF(ISSTYP.EQ.3)THEN
           VAL=0.0
-          CALL EASKR(VAL,' ','Initial contaminant generation rate 
-     & (kg/s)? ',0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
+          if(EDIT) VAL=SPMSUP(ISPMNU,1)
+          CALL EASKR(VAL,' ',
+     &      'Initial contaminant generation rate (kg/s)? ',
+     &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,1)=VAL
           ELSE
             SPMSUP(ISPMNU,1)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,2)
           CALL EASKR(VAL,' ','Time constant (hr) ? ',
      &      0.0,'W',10.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1317,32 +1446,44 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,2)=VAL
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
           CALL EASKI(IV,' ','Generation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,3)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,3)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
           CALL EASKI(IV,' ','Generation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,4)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,4)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
           CALL EASKI(IV,' ','Generation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,5)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,5)=REAL(IV)
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
+
+C Now get supplementary data items for bndry layer diffusion.
         IF(ISSTYP.EQ.4)THEN
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,1)
           CALL EASKR(VAL,' ','average film mass transfer coeff (m/s)? ',
      &      0.0,'W',1.0,'W',0.00001,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1351,6 +1492,7 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,1)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,2)
           CALL EASKR(VAL,' ','film density of air (kg/m^3) ? ',
      &      1.0,'W',2.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1359,6 +1501,7 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,2)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,3)
           CALL EASKR(VAL,' ','area of emitting surface (m^2) ? ',
      &      0.0,'W',100.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1367,15 +1510,17 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,3)=VAL
           ENDIF
           VAL=0.0
-          CALL EASKR(VAL,' ','total mass of adsorbant per unit area 
-     & (kg/m2) ? ',0.0,'W',20.0,'W',0.01,'source/sink suppl data
-     &',IER,26)
+          if(EDIT) VAL=SPMSUP(ISPMNU,4)
+          CALL EASKR(VAL,' ',
+     &      'total mass of adsorbant per unit area (kg/m2) ? ',
+     &      0.0,'W',20.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,4)=VAL
           ELSE
             SPMSUP(ISPMNU,4)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,5)
           CALL EASKR(VAL,' ','Henry adsorption/partition coefficient ?',
      &      0.0,'W',10.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1384,6 +1529,7 @@ c<< To put in checks for range checking of suppl data items
             SPMSUP(ISPMNU,5)=VAL
           ENDIF
           VAL=0.0
+          if(EDIT) VAL=SPMSUP(ISPMNU,6)
           CALL EASKR(VAL,' ','Initial concentration in adsorbant ?',
      &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
@@ -1391,78 +1537,109 @@ c<< To put in checks for range checking of suppl data items
           ELSE
             SPMSUP(ISPMNU,6)=VAL
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
+
+C Now get supplementary data items for time dependant constant mass.
         IF(ISSTYP.EQ.5)THEN
           VAL=0.0
-          CALL EASKR(VAL,' ','Constant contaminant generation rate
-     & (kg/s)? ',0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
+          if(EDIT) VAL=SPMSUP(ISPMNU,1)
+          CALL EASKR(VAL,' ',
+     &      'Constant contaminant generation rate (kg/s)? ',
+     &      0.0,'W',1.0,'W',0.01,'source/sink suppl data',IER,26)
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,1)=VAL
           ELSE
             SPMSUP(ISPMNU,1)=VAL
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,2))
           CALL EASKI(IV,' ','Generation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,2)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,2)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
           CALL EASKI(IV,' ','Generation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,3)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,3)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
           CALL EASKI(IV,' ','Generation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,4)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,4)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
           CALL EASKI(IV,' ','Generation stop time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,5)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,5)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,6))
           CALL EASKI(IV,' ','Generation stop time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,26)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,6)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,6)=REAL(IV)
           ENDIF
           IV=1
+          if(EDIT) IV=NINT(SPMSUP(ISPMNU,7))
           CALL EASKI(IV,' ','Generation stop time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,26)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,31)
+          if(ieri.eq.-3) goto 2007
           IF(.NOT.EDIT) THEN
             SPMSUP(NSPMNO,7)=REAL(IV)
           ELSE
             SPMSUP(ISPMNU,7)=REAL(IV)
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
+
+C Now get supplementary data items for personal CO2 emission.
         IF(ISSTYP.EQ.6)THEN
-        H(1)=' CO2 rates can be inputted manually by choosing NO and '
-        H(2)=' defining mass input at various times in a simulation. '
-        H(3)=' Or can be computed internally from metabolic rates    '
-        H(4)=' (occupancy casual gains) in the operations file. This '
-        H(5)=' source would still need to be linked to the node and  '
-        H(6)=' contaminant though.                                   '
-        CALL EASKAB(' Take metabolic rates from occupancy casual gains',
-     &    ' (defined in operation files) ','yes','no',JC,6)
+          H(1)=' CO2 rates can be inputted manually by choosing NO and'
+          H(2)=' defining mass input at various times in a simulation.'
+          H(3)=' Or can be computed internally from metabolic rates   '
+          H(4)=' (occupancy casual gains) in the operations file. This'
+          H(5)=' source would still need to be linked to the node and '
+          H(6)=' contaminant though.                                  '
+          H(7)=' '
+          H(8)='A cancel request (integers) leaves the model unchanged'
+          H(9)='for the item currently being edited. Not all items in '
+          H(10)='a sequence of edits may have been restored so please'
+          H(11)='check your model description. '
+          CALL EASKAB(' Take metabolic rates from occupancy casual ',
+     &      'gains (defined in operation files) ','yes','no',JC,11)
           IF(JC.EQ.2)THEN
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,1))
             CALL EASKI(IV,' ','Number of people ? ',
-     &        1,'-',1,'-',1,'source/sink suppl data',IER,26)
+     &        1,'-',1,'-',1,'source/sink suppl data',IERI,11)
+            if(ieri.eq.-3) goto 2007
             SPMSUP(NSPMNO,8)=REAL(IV)
             H(1) ='CO2 Emission is calculated from metabolic '
             H(2) ='activity of people the following activity levels'
@@ -1474,9 +1651,13 @@ c<< To put in checks for range checking of suppl data items
             H(8) ='Level5: 725W (very heavy work)'
             H(9) ='Alternately level 6 can be chosen to input'
             H(10)='activity level in Watts'
+            H(11)='A cancel request might not clean up all items'
+            H(12)='so please check your model. '
+            H(13)='<< further work required in CSIADC >> '
             IV=1
             CALL EASKI(IV,' ','Choose activity level (see help) ? ',
-     &        1,'F',6,'F',1,'source/sink suppl data',IER,10)
+     &        1,'F',6,'F',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,1)=REAL(IV)
             ELSE
@@ -1484,8 +1665,10 @@ c<< To put in checks for range checking of suppl data items
             ENDIF
             IF(IV.EQ.6)THEN
               IV=100
+              if(EDIT) IV=NINT(SPMSUP(ISPMNU,9))
               CALL EASKI(IV,' ','Choose metabolic rate (Watts) ? ',
-     &            100,'-',1000,'-',1,'source/sink suppl data',IER,10)
+     &          100,'-',1000,'-',1,'source/sink suppl data',IERI,13)
+              if(ieri.eq.-3) goto 2007
               IF(.NOT.EDIT) THEN
                 SPMSUP(NSPMNO,9)=REAL(IV)
               ELSE
@@ -1493,48 +1676,60 @@ c<< To put in checks for range checking of suppl data items
               ENDIF
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,2))
             CALL EASKI(IV,' ','Occupation start time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,2)=REAL(IV)
             ELSE
               SPMSUP(ISPMNU,2)=REAL(IV)
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,3))
             CALL EASKI(IV,' ','Occupation start time (month)? ',
-     &        1,'W',12,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,3)=REAL(IV)
             ELSE
               SPMSUP(ISPMNU,3)=REAL(IV)
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,4))
             CALL EASKI(IV,' ','Occupation start time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,10)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,4)=REAL(IV)
             ELSE
               SPMSUP(ISPMNU,4)=REAL(IV)
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,5))
             CALL EASKI(IV,' ','Occupation stop time (day of month)? ',
-     &        1,'W',31,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',31,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,5)=REAL(IV)
             ELSE
               SPMSUP(ISPMNU,5)=REAL(IV)
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,6))
             CALL EASKI(IV,' ','Occupation stop time (month)? ',
-     &          1,'W',12,'W',1,'source/sink suppl data',IER,10)
+     &        1,'W',12,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,6)=REAL(IV)
             ELSE
               SPMSUP(ISPMNU,6)=REAL(IV)
             ENDIF
             IV=1
+            if(EDIT) IV=NINT(SPMSUP(ISPMNU,7))
             CALL EASKI(IV,' ','Occupation stop time (hour of day)? ',
-     &        0,'W',24,'W',1,'source/sink suppl data',IER,10)
+     &        0,'W',24,'W',1,'source/sink suppl data',IERI,13)
+            if(ieri.eq.-3) goto 2007
             IF(.NOT.EDIT) THEN
               SPMSUP(NSPMNO,7)=REAL(IV)
             ELSE
@@ -1547,6 +1742,9 @@ c<< To put in checks for range checking of suppl data items
               SPMSUP(ISPMNU,1)=-1.0
             ENDIF
           ENDIF
+
+C Place to instanciate data if user did not cancel.
+C << to be done. >>
         ENDIF
       ELSEIF(IADC.EQ.2)THEN
 
@@ -1568,7 +1766,10 @@ C To delete a source/sink model
           CALL PHELPD('Delete source/sink ',1,'-',0,0,IER)
           GOTO 2011
         ELSEIF(IIO.GT.1.AND.IIO.LT.(NSPMNO+2))THEN
-          CALL EASKOK('Delete this source/sink model?',' ',OK)
+          DOK=.false.
+          h(1)='Just in case you selected delete by mistake this is '
+          h(2)='a chance to back out of the decision. '
+          CALL ASKOK('Delete this source/sink model?',' ',OK,DOK,2)
           IF(.NOT.OK)RETURN        
           ISSDEL=IIO-1
 
@@ -1626,9 +1827,9 @@ C Move remaining source/sink models 'up' in relevant arrays
 
           GOTO 2011
         ENDIF
+      ELSEIF(IADC.EQ.3)THEN
 
 C Copy a source/sink
-      ELSEIF(IADC.EQ.3)THEN
  2012   IIO=-2
         H(1) = 'Choose source/sink to be copied'
         ITEMS(1) =' Source Name:          type:'
@@ -1646,7 +1847,10 @@ C Copy a source/sink
           CALL PHELPD('Copy source/sink ',1,'-',0,0,IER)
           GOTO 2012
         ELSEIF(IIO.GT.1.AND.IIO.LT.(NSPMNO+2))THEN
-          CALL EASKOK('Copy this contaminant',' ',OK)
+          DOK=.false.
+          h(1)='In case you selected copy by mistake, here is your '
+          h(2)='chance to back out of the decision. '
+          CALL ASKOK('Copy this contaminant',' ',OK,DOK,2)
           IF(.NOT.OK)RETURN        
           ISSCPY=IIO-1
 
@@ -1659,8 +1863,11 @@ C Get source/sink name
           CALL ST2NAME(T12,SSID)
           DO 9 ISPMNO=1,NSPMNO
             IF(SSID(1:12).EQ.SSNAME(ISPMNO)(1:12))THEN
-              CALL EDISP(IUOUT,' This a duplicate name - try again')
-              CALL EASKOK('Try again ? ',' ',OK)
+              DOK=.false.
+              h(1)='contaminant descriptions should not include '
+              h(2)='duplicate names for sources and/or sinks. '
+              CALL ASKOK('This a duplicate source or sink name.',
+     &          'Try again ?',OK,DOK,2)
               IF(.NOT.OK)RETURN
               GOTO 151
             ENDIF
@@ -1694,7 +1901,8 @@ C Copy common block information
 C ******************** CTIADC ********************
 C Add, delete, copy, edit contaminants
 C Definitions of most variables is given in ctread.F
-
+C NADC is ??
+C MEDIT is ??
       SUBROUTINE CTIADC(NADC,MEDIT)
 #include "net_flow.h"
 #include "building.h"
@@ -1717,12 +1925,15 @@ C Definitions of most variables is given in ctread.F
       CHARACTER*33 ITEMS(MCNN+20)
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP,WCONCA(MT)
-      LOGICAL OK,EDIT
+      LOGICAL OK,DOK,EDIT
 
       IF(MEDIT.NE.0)THEN
         EDIT=.TRUE.
         ICONTAM=MEDIT
-        CALL EASKOK('Edit this contaminant',' ',OK)
+        DOK=.false.
+        h(1)='Just in case you selected edit by mistake, here is '
+        h(2)='a chance to go back. '
+        CALL ASKOK('Edit this contaminant',' ',OK,DOK,2)
         IF(.NOT.OK)RETURN        
         IADC=1
       ELSE
@@ -1746,8 +1957,11 @@ C Get Contaminant name and check to be unique
         DO 10 ICONTM=1,NCONTM
           IF(CNTMID(1:12).EQ.CONTMNAM(ICONTM)(1:12).AND.ICONTM.NE.
      &      MEDIT)THEN
-            CALL EDISP(IUOUT,' This a duplicate name - try again')
-            CALL EASKOK('Try again ? ',' ',OK)
+            DOK=.true.
+            h(1)='contaminant descriptions should not include '
+            h(2)='duplicate names for containments. '
+            CALL ASKOK('This a duplicate containment name.',
+     &        'Try again?',OK,DOK,2)
             IF(.NOT.OK)RETURN
             GOTO 11
           ENDIF
@@ -1772,8 +1986,13 @@ C Ask for default concentration
         H(3) = 'Constant concentration assumes one value over 24'
         H(4) = 'hours, choose variable concentration to specify'
         H(5) = 'a different concentration for each hour of day'
-        CALL EASKAB(' Which best describes the average hourly',
-     &    ' contaminant concentration','Variable','Constant',IHORC,5)
+        H(6)=' '
+        H(7)='A cancel request (integers) leaves the model unchanged'
+        H(8)='for the item currently being edited. Not all items in '
+        H(9)='a sequence of edits may have been restored so please'
+        H(10)='check your model description. '
+        CALL EASKAB('Which best describes the average hourly',
+     &    ' contaminant concentration','Variable','Constant',IHORC,10)
         IF(IHORC.EQ.1)GOTO 1
         IF(IHORC.EQ.2)GOTO 2
  1      ITIM=1
@@ -1782,7 +2001,12 @@ C Ask for default concentration
         CALL EASKR(CONC,' ',STR,0.,'F',0.,'-',1.,'conc',IER,5)
         IF(ITIM.LT.MT)THEN
           CALL EASKI(NTIM,' ','Til when (1-24 hours) is this valid ?',
-     &     ITIM,'F',MT,'F',ITIM+1,'ambieNt concentration',IER,5)
+     &     ITIM,'F',MT,'F',ITIM+1,'ambieNt concentration',IERI,10)
+          if(ieri.eq.-3) then
+
+C << to be done - return data to previous value before exit >>
+            return
+          endif
         ELSE
           NTIM=MT
         ENDIF
@@ -1792,8 +2016,11 @@ C Ask for default concentration
         ITIM=NTIM+1
         IF(NTIM.LT.24)GOTO 4
         GOTO 3  
- 2      CALL EASKR(VAL,' ','Ambient concentration kg/kg ? ',
-     &     0.0,'F',1.0,'F',0.01,'amb conc of contaminant',IER,2)
+ 2      VAL=CNCAA(ICONTAM,1)
+        H(1) = 'Contaminant ambient concentration (kg/kg of air)'
+        H(2) = 'values to be between 0 and 1'
+        CALL EASKR(VAL,' ','Ambient concentration kg/kg ? ',
+     &    0.0,'F',1.0,'F',0.01,'amb conc of contaminant',IER,2)
  3      DO 256 IT=1,MT  
           IF(IHORC.EQ.2)THEN
             IF(EDIT)THEN
@@ -1832,8 +2059,8 @@ C Ask for concentration of this contaminant at all internal airpoints
             ENDIF
  20       CONTINUE
         ELSE
-        H(1) = 'Contaminant initial concentration (kg/kg of air)'
-        H(2) = 'values to be between 0 and 1'
+          H(1) = 'Contaminant initial concentration (kg/kg of air)'
+          H(2) = 'values to be between 0 and 1'
           DO 30 INOD=1,NNOD
             IF(NDTYP(INOD).LT.2)THEN
               WRITE(OUTS,'(A12)')NDNAM(INOD)
@@ -1875,7 +2102,10 @@ C To delete a contaminant
           CALL PHELPD('Delete contaminant ',1,'-',0,0,IER)
           GOTO 2013
         ELSEIF(IIO.GT.2.AND.IIO.LT.(NCONTM+3))THEN
-          CALL EASKOK('Delete this contaminant',' ',OK)
+          DOK=.false.
+          h(1)='If you selected delete by mistake this is a chance to'
+          h(2)='back out of the decision. '
+          CALL ASKOK('Delete this contaminant',' ',OK,DOK,2)
           IF(.NOT.OK)RETURN        
           ICTDEL=IIO-2
           CONTMNAM(ICTDEL)=' '
@@ -1947,7 +2177,10 @@ C Copy a contaminant
           CALL PHELPD('Copy contaminant ',1,'-',0,0,IER)
           GOTO 2014
         ELSEIF(IIO.GT.2.AND.IIO.LT.(NCONTM+3))THEN
-          CALL EASKOK('Copy this contaminant',' ',OK)
+          DOK=.false.
+          h(1)='In case you requested copy by mistake, this is a chance'
+          h(2)='to back out without changing anything. '
+          CALL ASKOK('Copy this contaminant',' ',OK,DOK,2)
           IF(.NOT.OK)RETURN        
           ICTCPY=IIO-2
 
@@ -1960,8 +2193,11 @@ C Get Contaminant name and check to be unique
           CALL ST2NAME(T12,CNTMID)
           DO 43 ICONTM=1,NCONTM
             IF(CNTMID(1:12).EQ.CONTMNAM(ICONTM)(1:12))THEN
-              CALL EDISP(IUOUT,' This a duplicate name - try again')
-              CALL EASKOK('Try again ? ',' ',OK)
+              DOK=.true.
+              h(1)='Duplicate containment names are not allowed in a '
+              h(2)='contaminant description. '
+              CALL ASKOK('This a duplicate containment name.',
+     &          'Try again ?',OK,DOK,2)
               IF(.NOT.OK)RETURN
               GOTO 121
             ENDIF
@@ -2010,10 +2246,10 @@ C Definitions of most variables is given in ctread.F
      &SPMTYP(MSPMNO),SSNAME(MSPMNO),NSPMNO,SSLINK1(MSPMNO,MCONTM)
       COMMON/CONTM6/CNCNI(MCONTM,MNOD)
 
-      CHARACTER*124 OUTS,CNTMDESC,LOUT,OUT
-      CHARACTER*72 CNTMFIL
+      CHARACTER OUTS*124,CNTMDESC*124,LOUT*124,OUT*124
+      CHARACTER CNTMFIL*72
       CHARACTER CONTMNAM*12,CMNAM*12,LTPCMP*60,SSNAME*12
-      CHARACTER NDNAM*12,SSTYPE*21
+      CHARACTER NDNAM*12,SSTYPE*21,sout(mcsd)*44
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP
       LOGICAL CLOSER,RRDEF,FEDEF,SSLCDEF,SSLNDEF,ONCE,SSDEF
@@ -2139,44 +2375,102 @@ C Source/sink information
       DO 20 ISPMNO=1,NSPMNO
         IF(SPMTYP(ISPMNO).NE.0)THEN
           IF(ONCE)THEN
-            CALL EDISP(IUOUT,
-     &       'number: name:        type:           supplementary data:')
+            CALL EDISP(IUOUT,' no: name:        type:')
             ONCE=.FALSE.
             SSDEF=.TRUE.
           ENDIF
           IF(SPMTYP(ISPMNO).EQ.1)THEN
             SSTYPE='constant coefficient'
-            WRITE(LOUT,'(1X,F12.10)')SPMSUP(ISPMNO,1)
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            SOUT(1)='Constant contaminant generation rate kg/s: '
+            WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(1),SPMSUP(ISPMNO,1)
+            CALL EDISP(IUOUT,LOUT)
           ELSEIF(SPMTYP(ISPMNO).EQ.2)THEN
             SSTYPE='cutoff concentration'
-            WRITE(LOUT,'(1X,F12.10,1X,F12.10)')SPMSUP(ISPMNO,1),
-     &      SPMSUP(ISPMNO,2)
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            SOUT(1)='Initial contaminant generation rate kg/s : '
+            SOUT(2)='Cutoff concentration kg/kg               : '
+            DO 1302 IJ=1,2
+              WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(IJ),SPMSUP(ISPMNO,IJ)
+              CALL EDISP(IUOUT,LOUT)
+ 1302       CONTINUE
           ELSEIF(SPMTYP(ISPMNO).EQ.3)THEN
             SSTYPE='exponential model'
-            WRITE(LOUT,'(1X,2F12.10,3F5.0)')SPMSUP(ISPMNO,1),
-     &      SPMSUP(ISPMNO,2),SPMSUP(ISPMNO,3),SPMSUP(ISPMNO,4),        
-     &      SPMSUP(ISPMNO,5)
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            SOUT(1)='Initial contaminant generation rate kg/s : '
+            SOUT(2)='Time Constant hr                         : '
+            SOUT(3)='Generation start time (day of month)     : '
+            SOUT(4)='Generation start time (month)            : '
+            SOUT(5)='Generation start time (hour of day)      : '
+            DO 1303 IJ=1,5
+              WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(IJ),SPMSUP(ISPMNO,IJ)
+              CALL EDISP(IUOUT,LOUT)
+ 1303       CONTINUE
           ELSEIF(SPMTYP(ISPMNO).EQ.4)THEN
             SSTYPE='bndry layer diffusion'
-            WRITE(LOUT,'(1X,F12.10,1X,F4.2,1X,F4.1
-     &      ,1X,F4.1,1X,F4.2,1X,F12.10)')
-     &      SPMSUP(ISPMNO,1),SPMSUP(ISPMNO,2),SPMSUP(ISPMNO,3),
-     &      SPMSUP(ISPMNO,4),SPMSUP(ISPMNO,5),SPMSUP(ISPMNO,6)
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            SOUT(1)='Average film mass transfer coeff m/s     : '
+            SOUT(2)='Film density of air kg/m^3               : '
+            SOUT(3)='Area of emitting surface m^2             : '
+            SOUT(4)='Total mass of adsorbant/unit area kg/m^2 : '
+            SOUT(5)='Henry adsorption/partition coefficient   : '
+            SOUT(6)='Initial concentration in adsorbant kg/kg : '
+            DO 1304 IJ=1,6
+              WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(IJ),SPMSUP(ISPMNO,IJ)
+              CALL EDISP(IUOUT,LOUT)
+ 1304       CONTINUE
           ELSEIF(SPMTYP(ISPMNO).EQ.5)THEN
             SSTYPE='time dependant'
-            WRITE(LOUT,'(1X,F12.10,6F5.0)')SPMSUP(ISPMNO,1),
-     &      SPMSUP(ISPMNO,2),SPMSUP(ISPMNO,3),SPMSUP(ISPMNO,4),        
-     &      SPMSUP(ISPMNO,5),SPMSUP(ISPMNO,6),SPMSUP(ISPMNO,7)        
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            SOUT(1)='Constant contaminant generation rate kg/s: '
+            SOUT(2)='Generation start time (day of month)     : '
+            SOUT(3)='Generation start time (month)            : '
+            SOUT(4)='Generation start time (hour of day)      : '
+            SOUT(5)='Generation stop time (day of month)      : '
+            SOUT(6)='Generation stop time (month)             : '
+            SOUT(7)='Generation stop time (hour of day)       : '
+            DO 1305 IJ=1,7
+              WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(IJ),SPMSUP(ISPMNO,IJ)
+              CALL EDISP(IUOUT,LOUT)
+ 1305       CONTINUE
           ELSEIF(SPMTYP(ISPMNO).EQ.6)THEN
             SSTYPE='personal CO2 emission'
-            WRITE(LOUT,'(1X,9F7.0)')SPMSUP(ISPMNO,1),
-     &      SPMSUP(ISPMNO,2),SPMSUP(ISPMNO,3),SPMSUP(ISPMNO,4),        
-     &      SPMSUP(ISPMNO,5),SPMSUP(ISPMNO,6),SPMSUP(ISPMNO,7),        
-     &      SPMSUP(ISPMNO,8),SPMSUP(ISPMNO,9)
+            WRITE(OUTS,'(1X,I3,1X,A12,1X,A21)')
+     &       ISPMNO,SSNAME(ISPMNO),SSTYPE
+            CALL EDISP(IUOUT,OUTS)
+            IF(ABS(SPMSUP(ISPMNO,1)+1.).LT.0.01)THEN
+              WRITE(LOUT,'(5X,2A)')'CO2 mass injections taken from '
+     &        ,'metabolic rates defined in operations file for the zone'
+              CALL EDISP(IUOUT,LOUT)
+            ELSE
+              SOUT(1)='Activity level                         : '
+              SOUT(2)='Occupation start time (day of month)   : '
+              SOUT(3)='Occupation start time (month)          : '
+              SOUT(4)='Occupation start time (hour of day)    : '
+              SOUT(5)='Occupation stop time (day of month)    : '
+              SOUT(6)='Occupation stop time (month)           : '
+              SOUT(7)='Occupation stop time (hour of day)     : '
+              SOUT(8)='Number of people                       : '
+              SOUT(9)='Metabolic rate/person W                : '
+              NSUP=8
+              IF(ABS(SPMSUP(ISPMNO,1)-6.0).LT..01)NSUP=9
+              DO 1306 IJ=1,NSUP
+                WRITE(LOUT,'(5X,A,1X,F14.10)')SOUT(IJ),SPMSUP(ISPMNO,IJ)
+                CALL EDISP(IUOUT,LOUT)
+ 1306         CONTINUE
+            ENDIF
           ENDIF
-          WRITE(OUTS,'(1X,I3,1X,A12,1X,A21,1X,A)')
-     &     ISPMNO,SSNAME(ISPMNO),SSTYPE,LOUT
-          CALL EDISP(IUOUT,OUTS)
+          CALL EDISP(IUOUT,' ')
         ENDIF
  20   CONTINUE
       IF(.NOT.SSDEF)THEN

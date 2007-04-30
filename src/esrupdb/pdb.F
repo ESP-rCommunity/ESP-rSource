@@ -21,6 +21,9 @@ C Boston, MA 02111-1307 USA.
       program pdb
 
 #include "plantdb.h"
+#include "esprdbfile.h"
+
+      integer igraphiclib  ! external definition
 
 C The Plant component DataBase program maintains a
 C database containing plant component descriptions.
@@ -35,7 +38,6 @@ C database entry.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
@@ -65,7 +67,6 @@ C Mass flow components data
       CHARACTER ZITEM(9)*26 
       CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,mfsdsc*68,ltpcmp*60 
@@ -205,24 +206,28 @@ C Initialize plant component database file.
       L144=LCMDFL
       llt=lnblnk(L144)
 
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
 C name with the full path.
-#ifdef X11
-      if(llt.lt.96)then
-        CALL EASKF(L144,'Plant component database file name? ',' ',
-     &    96,DPCDB,' Database name ',IER,7)
-      elseif(llt.ge.96.and.llt.lt.124)then
-        CALL EASKF(L144,'Plant component database file name? ',' ',
-     &    124,DPCDB,' Database name ',IER,7)
-      elseif(llt.ge.124.and.llt.le.144)then
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      96,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      124,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(L144,'Plant component database file name? ',' ',
+     &      144,DPCDB,' Database name ',IER,7)
+        endif
+      elseif(iglib.eq.2)then
         CALL EASKF(L144,'Plant component database file name? ',' ',
      &    144,DPCDB,' Database name ',IER,7)
+      else
+        CALL EASKF(L144,'Plant component database file name? ',' ',
+     &    96,DPCDB,' Database name ',IER,7)
       endif
-#else
-      CALL EASKF(L144,'Plant component database file name? ',' ',
-     &  144,DPCDB,' Database name ',IER,7)
-#endif
 
       if(L144(1:2).ne.'  ')LCMDFL=L144
 

@@ -24,6 +24,8 @@
 *report_gen	Reporting tool	xfs
 # Location of examplars: tag, label(<=20 char), file name(<=72 char)
 *exemplars	Exemplars	/usr/esru/esp-r/training/exemplars
+# Location of validation test folders: tag, label(<=20 char), file name(<=72 char)
+*validation_stds,Validation standards,/usr/esru/esp-r/validation/stds_list
 # Location of default databases: tag, label(<=20 char), file name(<=72 char)
 *db_defaults	Defaults	/usr/esru/esp-r/default
 *end

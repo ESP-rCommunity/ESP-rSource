@@ -111,7 +111,6 @@ C - Alex Feb. 20 2004
       COMMON/CasCou/iNumb_Gain_coupling(MCOM,3),
      &     Coupling_gain_info(MCOM,3,MC,6)
 
-     
 C Common to store casual/radiative gain injections 
 C on a zone-by-zone basis. Note: the latent gain 
 C common variable has been created is a place-holder
@@ -134,7 +133,7 @@ C ICGCTL - pointer to controlled gain type.
       COMMON/LIGHTS/ICGCTL(MCOM)
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
-     
+
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
@@ -142,7 +141,7 @@ C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
       DIMENSION QLATN(2),VAL(MBITS+2)
-     
+
       CHARACTER outs*124, lodlabel*6
       character*10 wkd1, wkd2, DSTR
       logical traceok
@@ -252,7 +251,7 @@ C new day control period:
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)
             CGCTL(2,ICGCTL(ICOMP))=FRAC
-          endif         
+          endif
         endif
       endif
 
@@ -290,7 +289,7 @@ C Data in temporal database (3 columns of gains).
           call edisp(itu,outs)
         endif
       else
-      
+
 C Data in operations file.
 C For each casual gain type set gain for current period.
         do 10 IGN=1,MGTY
@@ -313,7 +312,6 @@ C Calculate the current period id.
               IPER=I
             endif
  30       continue
-          
 
 C Set future casual gain values if there is periods defined.
           if(IPER.gt.0)then
@@ -340,7 +338,7 @@ C              write (6,*) 'Time    Zone   Period   GainSen'
 C              write (6,*) BTIMEF,ICOMP,IPER,CGSENC(ICOMP,IDAY,IGN,IPER)
 C              write (6,*) QCASC,QCASR,QLATN,' ctl:',CGCTL
 C            endif
-          
+
 C Set future electrical loads.
             if (BTIMEF.le.TCGS(ICOMP,IDAY,IGN,IPER+1).and.
      &          BTIMEF.gt.TCGS(ICOMP,IDAY,IGN,IPER)) then
@@ -394,8 +392,8 @@ C Check to see if the future  building time is between the start hour and
 C the end hour of the gain
         start_hour = Coupling_gain_info(icomp,iDay,ii,1) ! start hour 0-24)
         stop_hour  = Coupling_gain_info(icomp,iDay,ii,2) ! end hour (0-24)
-        if ( ( btimef .ge. start_hour ) 
-     &          .and. ( btimef .lt. stop_hour ) )then
+        if ( ( btimef .gt. start_hour ) 
+     &          .and. ( btimef .le. stop_hour ) )then
 C gain applies to future time. Get total non-hvac electric load (W_elec_nonHVAC, W)
           W_electric_nonHVAC =  Elec_Net_Load_Calc(occupant_load) ! W
 C get data for gain coupling:
@@ -781,7 +779,7 @@ C If inconsistency (i.e. error) in irradiance data - plum < 0 set it to 0:
                   nzone = 7
                 elseif(npatch.eq.145)then
                   nzone = 8
-                endif                
+                endif
                 neglum = .true.
 
 C Use aproximate solution assuming uniform sky luminance distribution
@@ -1208,7 +1206,7 @@ closea,closeb,closec,closed,closee,closef
                       CONTINUE
                     ELSE
                       WRITE(ITU,842)ICOMP,J
-                    ENDIF                    
+                    ENDIF      
                   ELSE
                     WRITE(ITU,842)ICOMP,J
                   ENDIF
@@ -1481,7 +1479,7 @@ C Update corresponding SHOCC lighting (if existing).
         call updatelighting(icomp,n,zelum(n),btimep,btimef)
 
 C Case of proproportional dimming control with chosen sensors/lighting
-C systems:  
+C systems:
       ELSEIF(ICGCFL(ICOMP,N).EQ.3)THEN
           ZFRAC(N)=0.0
           DFRAC = 0.0
@@ -1543,7 +1541,7 @@ C zelum   sensor signal (lux) under daylight (time dependend).
 C For detailed explanation of control algorithms see: Rubinstein, F.,
 C Ward, G., Verderberg, R., Improving the Performance of Photo-
 C Electrically Controled Lighting Systems. Journal of the IES Winter 1989.
-  
+
       ELSEIF(ICGCFL(ICOMP,N).EQ.31)THEN
 C Redefine SOFFRL for explicit control:
           SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)
@@ -1605,7 +1603,7 @@ C SPELEC  sensor signal (lux) under artificial lighting
 C         - night time calibration;
 C zelum   sensor signal (lux) under daylight (time dependend);
 C SLOPEM  linear control response slope (-).
-  
+
       ELSEIF(ICGCFL(ICOMP,N).EQ.32)THEN
 C Redefine SOFFRL for explicit control:
           SOFFRL=SOFFLL(ICOMP,N)*SPELEC(ICOMP,N)

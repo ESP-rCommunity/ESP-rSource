@@ -40,12 +40,15 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -57,14 +60,14 @@ C fluid flow model description file.
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
       COMMON/MFLOWIT/fndegc,imix 
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/user/browse
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
       CHARACTER*33 ITEM1(24)
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPRFDB,LCFGF
+      CHARACTER LAPROB*72,LCFGF*72
       CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
       character zmfn1*124,zmfn2*124,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -72,7 +75,7 @@ C fluid flow model description file.
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
-      LOGICAL CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -681,6 +684,9 @@ C
 #include "net_flow.h"
 #include "building.h"
 #include "epara.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -699,7 +705,7 @@ C
       COMMON/MFLOWIT/fndegc,imix 
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
@@ -710,7 +716,7 @@ C
 
       CHARACTER H*72,outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,t72
+      CHARACTER LAPROB*72,t72*72
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
@@ -1390,6 +1396,8 @@ C Then call appropriate supplementary data input subroutine.
 
         IF(ITPCMP(IFCMP).EQ. 10) THEN
           CALL MF010I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ. 11) THEN
+          CALL MF011I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 15) THEN
           CALL MF015I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ. 17) THEN
@@ -1414,6 +1422,8 @@ C Then call appropriate supplementary data input subroutine.
           CALL MF130I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.210) THEN
           CALL MF210I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ.211) THEN
+          CALL MF211I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.220) THEN
           CALL MF220I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.230) THEN
@@ -2046,13 +2056,14 @@ C << should mode Z be visible when user first enters flow facility? >>
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2098,7 +2109,7 @@ C associated with the largest ventilation rate.
       LOGICAL MODIFY,MODLEN,MODBND,XST
       logical closevz,closeiz,close,foundit
       character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
-      character*72 LAPROB,LAPRES,LAFRES,H
+      character*72 LAPROB,H
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 
@@ -2351,8 +2362,8 @@ C A nothing happening infiltration fixed volume component (with
 C zero flow), remember index via noinfforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='inflf_.0000'
-        ITPCMP(NCMP)=IVALCM(6)
-        LTPCMP(NCMP)=LVALCM(6)
+        ITPCMP(NCMP)=IVALCM(7)
+        LTPCMP(NCMP)=LVALCM(7)
         ISDCMP(NCMP)=2
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2363,8 +2374,8 @@ C A nothing happening ventilation fixd volume component. (with
 C zero flow), remember index via noventforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='ventf_.0000'
-        ITPCMP(NCMP)=IVALCM(6)
-        LTPCMP(NCMP)=LVALCM(6)
+        ITPCMP(NCMP)=IVALCM(7)
+        LTPCMP(NCMP)=LVALCM(7)
         ISDCMP(NCMP)=2
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2375,8 +2386,8 @@ C A nothing happening crack 5mm x 1m (so zones with no infiltration
 C or ventilation are not perfectly closed), remember index via crackforcurrent.
         NCMP=NCMP+1
         CMNAM(NCMP)='crack_5mm1m'
-        ITPCMP(NCMP)=IVALCM(11)
-        LTPCMP(NCMP)=LVALCM(11)
+        ITPCMP(NCMP)=IVALCM(12)
+        LTPCMP(NCMP)=LVALCM(12)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2387,8 +2398,8 @@ C or ventilation are not perfectly closed), remember index via crackforcurrent.
 C A small exfiltration grill 0.2m^2, remember index via gr02forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.2'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2399,8 +2410,8 @@ C A small exfiltration grill 0.2m^2, remember index via gr02forcurrent
 C An exfiltration grill 0.4m^2, remember index via gr04forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.4'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2411,8 +2422,8 @@ C An exfiltration grill 0.4m^2, remember index via gr04forcurrent
 C An exfiltration grill 0.6m^2, remember index via gr06forcurrent
         NCMP=NCMP+1
         CMNAM(NCMP)='grill_0.6'
-        ITPCMP(NCMP)=IVALCM(8)
-        LTPCMP(NCMP)=LVALCM(8)
+        ITPCMP(NCMP)=IVALCM(9)
+        LTPCMP(NCMP)=LVALCM(9)
         ISDCMP(NCMP)=3
         ISDCNN(NCMP)=0
         SUPCMP(NCMP,1)=1.0
@@ -2543,8 +2554,8 @@ C Add that connection now with component (pointed to by icompforinf).
 C If infiltraiton is non-zero and unique make a new component
                     NCMP=NCMP+1
                     write(CMNAM(NCMP),'(a,F5.4)') 'inflf_',finfmax(iz)
-                    ITPCMP(NCMP)=IVALCM(6)
-                    LTPCMP(NCMP)=LVALCM(6)
+                    ITPCMP(NCMP)=IVALCM(7)
+                    LTPCMP(NCMP)=LVALCM(7)
                     ISDCMP(NCMP)=2
                     ISDCNN(NCMP)=0
                     SUPCMP(NCMP,1)=1.0
@@ -2587,8 +2598,8 @@ C We have one of the initial zones so just generate new component
 C and connection for infiltration and exfiltration.
                   NCMP=NCMP+1
                   write(CMNAM(NCMP),'(a,F5.4)') 'inflf_',finfmax(iz)
-                  ITPCMP(NCMP)=IVALCM(6)
-                  LTPCMP(NCMP)=LVALCM(6)
+                  ITPCMP(NCMP)=IVALCM(7)
+                  LTPCMP(NCMP)=LVALCM(7)
                   ISDCMP(NCMP)=2
                   ISDCNN(NCMP)=0
                   SUPCMP(NCMP,1)=1.0
@@ -2670,8 +2681,8 @@ C     & icaas(isrczforvent(iz))
 C Make a new ventilation component.
                     NCMP=NCMP+1
                     write(CMNAM(NCMP),'(a,F5.4)') 'ventf_',fvntmax(iz)
-                    ITPCMP(NCMP)=IVALCM(6)
-                    LTPCMP(NCMP)=LVALCM(6)
+                    ITPCMP(NCMP)=IVALCM(7)
+                    LTPCMP(NCMP)=LVALCM(7)
                     ISDCMP(NCMP)=2
                     ISDCNN(NCMP)=0
                     SUPCMP(NCMP,1)=1.0
@@ -2713,8 +2724,8 @@ C We have one of the initial zones so just generate new component
 C and connection for ventilation.
                   NCMP=NCMP+1
                   write(CMNAM(NCMP),'(a,F5.4)') 'ventf_',fvntmax(iz)
-                  ITPCMP(NCMP)=IVALCM(6)
-                  LTPCMP(NCMP)=LVALCM(6)
+                  ITPCMP(NCMP)=IVALCM(7)
+                  LTPCMP(NCMP)=LVALCM(7)
                   ISDCMP(NCMP)=2
                   ISDCNN(NCMP)=0
                   SUPCMP(NCMP,1)=1.0

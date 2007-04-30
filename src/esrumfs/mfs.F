@@ -53,6 +53,7 @@ C     MMOD   - determines the device type attached to the current job.
 
       program mfs
 #include "net_flow.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
@@ -84,7 +85,6 @@ C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Activation of connections
@@ -101,7 +101,6 @@ C Once per hour storage of results, averaged over that hour.
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
       CHARACTER H*72,OUTSTR*124,inf*144,outs*124
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72
       character dfdblbl*20,defdbfl*72
@@ -120,6 +119,7 @@ C Initialize global common data.
       LIMIT =8
       IDAYF=0
       IDAYL=0
+      IAPRES=11
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -130,8 +130,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
       write(path,'(a1,a1)')'.',fs
 
-C Export (grtool) file information. Temporarily use 
-C unit ifil+6 for output file.
+C Export (grtool) file information.
       xfile = 'data.grt'
       ixopen = 0
       ixunit = 16
@@ -142,7 +141,7 @@ C unit ifil+6 for output file.
 
 C File unit numbers.
       IFPRB=10
-      IFPRE=11
+      IAPRES=11
       IFCLM=12
       IFRES=13
       IUA=14
@@ -303,8 +302,8 @@ C Fill valid component type arrays
 C Set defaults for iteration parameters, Pstack calculation model,
 C                  matrix solver type and trace output flag
 C Assign and attach problem description (IFPRB), wind pressure
-C distribution (IFPRE), climate (IFCLM) and results (IFRES) files
-      CALL MFINIT(IFPRB,IFPRE,IFCLM,IFRES)
+C distribution (IAPRES), climate (IFCLM) and results (IFRES) files
+      CALL MFINIT(IFPRB,IFCLM,IFRES)
 
 C Let the user pick a menu item.
    10 INO=-5
@@ -368,7 +367,7 @@ C Help via the askabout facility in esru_ask.F The zero requests display
       elseif(INO.EQ.1)then
 
 C Change to a different problem description.
-        CALL MFINIT(IFPRB,IFPRE,IFCLM,IFRES)
+        CALL MFINIT(IFPRB,IFCLM,IFRES)
         call tstamp('>','MFS: change network file')
       elseif(INO.EQ.2)then
 
@@ -548,7 +547,7 @@ C Set known constant pressure nodes pressures and reset other nodes.
 C Set initial values for flow, derivative and pressure history variables.
 C Rewind results file (will only hold results of most recent mfs run).
 C Indicate start of simulation and show iteration parameters.
-      CALL MFSETU(IFPRE,IFRES)
+      CALL MFSETU(IFRES)
 
 C Start simulation and continue until LAST hour.
       LAST=.FALSE.
@@ -585,14 +584,18 @@ C Set initial values for flow, derivative and pressure history variables
 C Rewind results file (will only hold results of most recent ESRUmfs run)
 C Indicate start of simulation and show iteration parameters
 
-      SUBROUTINE MFSETU(IFPRE,IFRES)
+      SUBROUTINE MFSETU(IFRES)
 
 #include "building.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C ICLIM,LCLIM (for climate file)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
-      COMMON/C22/ICLIM,LCLIM
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW11/PSTACK(MCNN),HDP(MCNN),HDV(MCNN),HFL(MCNN)
@@ -605,8 +608,8 @@ C Indicate start of simulation and show iteration parameters
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
 
-      CHARACTER*72 LCLIM
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outs*124
 
       PARAMETER (SMALL=1.0E-15)
@@ -633,15 +636,15 @@ C Set simulation time step control variables and progress flag
       IPROG=0
 
 C Read pressure distribution file (coefficient for normal wind first)
-      REWIND(IFPRE,ERR=999)
-      READ(IFPRE,*,ERR=999) NPRE
+      REWIND(IAPRES,ERR=999)
+      READ(IAPRES,*,ERR=999) NPRE
       IF(NPRE.LE.0.OR.NPRE.GT.MPRD)then
         call usrmsg(' Number of pressure distributions out of',
      &              ' range. Could be bad pressure db.','W')
         GOTO 100
       endif
       DO 22 J=1,NPRE
-      READ(IFPRE,*,ERR=999) (FPRE(I,J),I=1,MPOS)
+      READ(IAPRES,*,ERR=999) (FPRE(I,J),I=1,MPOS)
    22 CONTINUE
 
 C Set known constant pressure nodes pressures and reset other nodes

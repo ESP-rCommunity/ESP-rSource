@@ -20,6 +20,13 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C***********************************************************************************
+C These functions have been found to consume inordinate cpu resources.  They should
+C be used only when the liquid water stream is pressurized.  When dealing with
+C liquid water at atmospheric pressures, another function, 'SHTFLD', should be
+C employed instead as it is MUCH more cpu efficient.
+C***********************************************************************************
+
 C     For the Thermal Active Cooling (TAC) project, a model was required to 
 C     obtain the  specific heat (Cp) and density (rho) of water for a given 
 C     temperature and pressure. Esp-r, the simulator which the TAC model is 

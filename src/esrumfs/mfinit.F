@@ -22,20 +22,25 @@ C ************ MFINIT
 C Fills valid component type arrays
 C Sets default values for iteration parameters, Pstack calculation
 C model, matrix solver type and trace output flag
-C Assigns problem description (IFPRB), wind pressure coefficients
-C distribution (IFPRE), climate (IFCLM) and results (IFRES) files
+C Assigns file units for the problem description (IFPRB),
+C climate (IFCLM) and results (IFRES) files
 
-      SUBROUTINE MFINIT(IFPRB,IFPRE,IFCLM,IFRES)
+      SUBROUTINE MFINIT(IFPRB,IFCLM,IFRES)
 
 #include "building.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C ICLIM,LCLIM (for climate file)
+C default file names for databases
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C22/ICLIM,LCLIM
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/pophelp/h(60)
 
 C Defaults.
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
@@ -43,16 +48,12 @@ C Defaults.
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
-
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      CHARACTER*72 LCLIM,H,DFILE,LTMP
-      character*72 LAPROB,LAPRES,LAFRES
-      CHARACTER OUTSTR*124,currentfile*72
+      CHARACTER H*72,DFILE*72,LTMP*72
+      character LAPROB*72
+      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      CHARACTER OUTSTR*124
       logical XST,OK,DOK
 
 C Initiates filling of valid fluid flow component type arrays
@@ -61,7 +62,7 @@ C Initiates filling of valid fluid flow component type arrays
 C Set default values for:
 C iteration parameters, pressure stack difference calculation model,
 C matrix solver type, trace output option.
-      MAXITF=100
+      MAXITF=200
       FERREL=.01
       FERMFL=.0005
       PMAX=50.
@@ -95,7 +96,7 @@ C Do a simple check on the file to see if it is a network file.
       ENDIF
       CALL EFOPSEQ(IFPRB,LAPROB,3,IER)
       IF(IER.NE.0) GOTO 20
-      currentfile=LAPROB
+      write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
 
 C Test for legal file type
 C For the time being, when the first record does not contain valid data
@@ -109,8 +110,9 @@ C this might cause overwriting of an existing file !!
       CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connection',IER)
       IF(IER.EQ.1)GOTO 20
 
-C Assign wind pressure distribution file and read NPRE
-   30 IFPRE=11
+C Assign wind pressure distribution file and read NPRE. If for some
+C reason IAPRES is still zero then set to 11.
+   30 if(IAPRES.eq.0)IAPRES=11
       H(1)='A wind pressure coefficients distribution file is a'
       H(2)='database of pressure coefficients for surfaces in'
       H(3)='typical positions and within several different exposure'
@@ -118,12 +120,12 @@ C Assign wind pressure distribution file and read NPRE
   288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
      &     72,DAPRES,'pressure db',IER,4)
       IF(LAPRES.EQ.' ')GOTO 288
-      CALL EFOPSEQ(IFPRE,LAPRES,1,IER)
+      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(IER.NE.0) GOTO 30
-      currentfile=LAPRES
+      write(currentfile,'(a)') LAPRES(1:lnblnk(LAPRES))
 
 C Read in the pressure db to see if it is a proper one.
-      CALL STRIPC(IFPRE,OUTSTR,0,ND,1,'pressure db',IER)
+      CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
       IF(IER.NE.0)RETURN
       K=0
       CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)
@@ -162,16 +164,18 @@ C Assign results file; make sure this is not the problem file
       H(3)='format and the name is required even if you are not'
       H(4)='planning to do a simulation during this session. '
       DFILE='new.mfr'
-      CALL EASKS(LAFRES,' Mass flow simulation results file ? ',
+      LTMP=LAFRES
+      CALL EASKS(LTMP,' Mass flow simulation results file ? ',
      &     ' ',72,DFILE,'mass flow results',IER,4)
-      IF(LAFRES.EQ.LAPROB)THEN
+      IF(LTMP(1:lnblnk(LTMP)).EQ.LAPROB(1:lnblnk(LAPROB)))THEN
         CALL USRMSG(' You have specified the same name as the problem',
      &  ' description, please use another file name!','W')
         GOTO 50
       ENDIF
+      LAFRES=LTMP
       CALL EFOPSEQ(IFRES,LAFRES,3,IER)
       IF(IER.NE.0) GOTO 50
-      currentfile=LAFRES
+      write(currentfile,'(a)') LAFRES(1:lnblnk(LAFRES))
       RETURN
 
 C File error trap

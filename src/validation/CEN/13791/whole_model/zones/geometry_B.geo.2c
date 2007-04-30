@@ -1,0 +1,41 @@
+# geometry of T_2-V_c defined in: ../zones/geometry_B.geo.2c
+GEN  T_2-V_c  T_2-V_c describes a...  # type, name, descr
+      12       7   0.000    # vertices, surfaces, rotation angle
+#  X co-ord, Y co-ord, Z co-ord
+     10.00000    20.00000     0.00000  # vert   1
+     15.50000    20.00000     0.00000  # vert   2
+     15.50000    23.60000     0.00000  # vert   3
+     10.00000    23.60000     0.00000  # vert   4
+     10.00000    20.00000     2.80000  # vert   5
+     15.50000    20.00000     2.80000  # vert   6
+     15.50000    23.60000     2.80000  # vert   7
+     10.00000    23.60000     2.80000  # vert   8
+     10.00000    23.20000     0.10000  # vert   9
+     10.00000    20.40000     0.10000  # vert  10
+     10.00000    20.40000     2.60000  # vert  11
+     10.00000    23.20000     2.60000  # vert  12
+# no of vertices followed by list of associated vert
+   4,  1,  2,  6,  5,
+   4,  2,  3,  7,  6,
+   4,  3,  4,  8,  7,
+  10,  4,  1,  5,  8,  4,  9, 12, 11, 10,  9,
+   4,  5,  6,  7,  8,
+   4,  1,  4,  3,  2,
+   4,  9, 10, 11, 12,
+# unused index
+ 0,0,0,0,0,0,0
+# surfaces indentation (m)
+ 0.00,0.00,0.00,0.00,0.00,0.00,0.00
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  construction environment
+# no  name         type  posn  name         other side
+  1, South         OPAQ  VERT  Type_n.2     IDENT_CEN        
+  2, East          OPAQ  VERT  Type_n.2     IDENT_CEN        
+  3, North         OPAQ  VERT  Type_n.2     IDENT_CEN        
+  4, West          OPAQ  VERT  Type_n.1     EXTERIOR       
+  5, Ceiling       OPAQ  CEIL  Type_n.3     IDENT_CEN        
+  6, Floor         OPAQ  FLOR  Type_n.3-flr IDENT_CEN        
+  7, window        TRAN  VERT  dbl_glz_shd  EXTERIOR       
+# base
+  6  0  0  0  0  0    19.80 0

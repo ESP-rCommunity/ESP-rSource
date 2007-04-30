@@ -39,6 +39,7 @@ C parameter `sfile` is the file name returned (including the
 C   path from current working directory to file).
 C parameter `snpfile` is the file name returned (without path).
 C parameter nlist is the number of files matching criteria.
+C parameter ier returned as 2 if problem writing file name path.
 
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
       common/pophelp/h(60)
@@ -46,11 +47,16 @@ C parameter nlist is the number of files matching criteria.
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+
 C where can be: `cfg` (looks in cfg folder), `dbs` (looks in ../dbs),
 C   `zon` (looks in ../zones), `net` (looks in ../nets),
 C   `ctl` (looks in ../ctl), `img` (looks in ../images),
 C   `rad` (looks in ../rad), `doc` (looks in ../doc),
 C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
+C   `pat` (looks in {where esp-r installed}/training/pattern).
 C what can be: `dir` list of folders, `fil` any files in the folders,
 C   `cfg` configuration files, `ctl` control files,
 C   `afn` air flow networks, `gnf` graphic network files,
@@ -72,13 +78,14 @@ C   `qac` QA contents file, `zip` cflo3 zip (geometry) file.
       character*72 listf(50),listfc(50)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,act*1
+      character dinstpath*48
 
 C Array for browse menu.
       character*70 listfc70(50)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
-      character subpath*72,action*3,outs*124,relative*48
+      character subpath*72,action*3,outs*124,relative*60
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -99,52 +106,59 @@ C project manager was started from).
       subpath=' '
       call usrdir(odir)
       if(where(1:3).eq.'cfg')then
-        write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(3a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path))
-        write(relative,'(a)') path(1:lnblnk(path))
+        write(relative,'(a)',iostat=ios,err=2) path(1:lnblnk(path))
       elseif(where(1:3).eq.'dbs')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    dbspth(1:lnblnk(dbspth))
       elseif(where(1:3).eq.'zon')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),zonepth(1:lnblnk(zonepth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    zonepth(1:lnblnk(zonepth))
       elseif(where(1:3).eq.'net')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),netpth(1:lnblnk(netpth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    netpth(1:lnblnk(netpth))
       elseif(where(1:3).eq.'ctl')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),ctlpth(1:lnblnk(ctlpth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    ctlpth(1:lnblnk(ctlpth))
       elseif(where(1:3).eq.'img')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    imgpth(1:lnblnk(imgpth))
       elseif(where(1:3).eq.'rad')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),radpth(1:lnblnk(radpth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    radpth(1:lnblnk(radpth))
       elseif(where(1:3).eq.'doc')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),docpth(1:lnblnk(docpth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    docpth(1:lnblnk(docpth))
       elseif(where(1:3).eq.'tmp')then
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),tmppth(1:lnblnk(tmppth))
-        write(relative,'(2a)') path(1:lnblnk(path)),
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    tmppth(1:lnblnk(tmppth))
       elseif(where(1:3).eq.'usr')then
-        write(subpath,'(2a)') upath(1:lnblnk(upath)),fs
-        write(relative,'(2a)') upath(1:lnblnk(upath)),fs
+        write(subpath,'(2a)',iostat=ios,err=1) upath(1:lnblnk(upath)),
+     &    fs
+        write(relative,'(2a)',iostat=ios,err=2) upath(1:lnblnk(upath)),
+     &    fs
+      elseif(where(1:3).eq.'pat')then
+        write(subpath,'(6a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
+        write(relative,'(6a)',iostat=ios,err=2)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
       endif
 
 #ifdef OSX
@@ -155,9 +169,11 @@ C (just use the relative path defined above).
       elseif(path(1:9).eq.'/usr/esru')then
         subpath=' '
         if(where(1:3).eq.'usr')then
-          write(subpath,'(2a)') upath(1:lnblnk(upath)),fs
+          write(subpath,'(2a)',iostat=ios,err=1)
+     &      upath(1:lnblnk(upath)),fs
         else
-          write(subpath,'(a)') relative(1:lnblnk(relative))
+          write(subpath,'(a)',iostat=ios,err=2)
+     &      relative(1:lnblnk(relative))
         endif
       else
         continue
@@ -299,6 +315,16 @@ C          write(sfile,'(a)')relative(1:lnblnk(relative))
           ier=2
         endif
       endif
+      return
+
+C Errors when creating string buffers.
+   1  write(6,*) 'browsefilelist: error creating subpath: ',subpath
+      ier=2
+      return
+
+   2  write(6,*) 'browsefilelist: error creating relative path: ',
+     &  relative
+      ier=2
       return
 
 C Example of manual use of clearfilelist, getfilelist, copyfilelist, printfilelist.

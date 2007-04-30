@@ -59,7 +59,8 @@ C in a new model file.
       SUBROUTINE CLRPRB
 #include "building.h"
 #include "cfd.h"
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -188,7 +189,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPRJLG,LPNF
+      CHARACTER*72 LAPROB,LPRJLG,LPNF
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
@@ -360,7 +361,6 @@ C Images.
 
       IAIRN=0
       LAPROB='UNKNOWN'
-      LAFRES='UNKNOWN'
 
       XLAT=50.0
       SLAT=50.
@@ -459,13 +459,13 @@ C see if there are images associated with descriptive buttons.
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-      common/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/entfile/entflnam, ientxist
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       CHARACTER ctldoc*248,LCTLF*72,LCFD*72,entflnam*72
-      character*72 LAPROB,LAPRES,LAFRES
+      character LAPROB*72
       character imgfmt*4,imgfoc*4,limgfil*72
 
       icfg_type = INDCFG
@@ -540,7 +540,7 @@ C ***** Notice that a active description button has been pressed.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C23/IFPNF,LPNF
       COMMON/LOG/LPRJLG
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/entfile/entflnam, ientxist
 
@@ -576,7 +576,7 @@ C Images.
       character h*72,act*1
       character imgfmt*4,imgfoc*4,limgfil*72,entflnam*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,CNTMFIL
+      CHARACTER*72 LAPROB,LPNF,CNTMFIL
       CHARACTER CTLDOC*248,LCTLF*72,LPRJLG*72
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,CNTMDESC*124,CONTMNAM*12
@@ -687,6 +687,8 @@ C ERUTIL Reads a zone utility file and fills the common blocks INDICS
 C and UDESC. ITRU unit number for user output, IER=0 OK. 
       SUBROUTINE ERUTIL(IFIL,LFIL,IZ,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -699,12 +701,9 @@ C and UDESC. ITRU unit number for user output, IER=0 OK.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,currentfile
+      character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LFIL*72,OUTSTR*124
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
 
@@ -715,7 +714,7 @@ C Open the utility file, return if not found.
         IER=1
         RETURN
       ENDIF
-      currentfile=LFIL
+      write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
 
       ZONE3D(IZ)=.TRUE.
 
@@ -933,6 +932,7 @@ C range checking and printed summary. An obstruction block name (up to
 C 12 characters) may be included as an option and is returned via BLKNAME. 
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "espriou.h"
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -946,12 +946,11 @@ C BLKNAME (8 char) name of obstruction block.
 C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
+C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER LOBS*72,BLKNAME*8,BLKMAT*12,tmp*8,OUTSTR*124,WORD*20
-      character currentfile*72,dllsubr*12,dllmesg*124,outs*124
+      character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
 C Check if running in dll mode.
@@ -973,7 +972,7 @@ C Check if running in dll mode.
           RETURN
         endif
       ENDIF
-      currentfile=LOBS
+      write(currentfile,'(a)') LOBS(1:lnblnk(LOBS))
 
 C Read past site information from the file and check for range errors.
 C Read lines from file, discarding comments, check the number of items
@@ -1140,6 +1139,7 @@ C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
+#include "espriou.h"
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
@@ -1148,15 +1148,13 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       common/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
+C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION VA(MSM)
 
       CHARACTER LMRT*72,LGEO*72,CUBN*6,OUTSTR*124,WORD*20,outs*124
-      character currentfile*72,dllsubr*12,dllmesg*124
+      character dllsubr*12,dllmesg*124
       integer fstgrp,fstsur,lstsur,strtgr
       logical dll
 
@@ -1178,7 +1176,7 @@ C Check if running in dll mode.
           RETURN
         endif
       ENDIF
-      currentfile=LMRT
+      write(currentfile,'(a)') LMRT(1:lnblnk(LMRT))
 
 C Read first line which must be *VIEWFACTORS
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'line 1',IER)
@@ -2199,8 +2197,18 @@ C If no configuration file then ask for zone number and name.
         H(1)='The zone number is required only for reporting'
         H(2)='purposes but should match the numbering expected'
         H(3)='in the system configuration file.'
+        H(4)=' '
+        H(5)='A cancel instruction lets you start the zone '
+        H(6)='creation process again. '
         CALL EASKI(IZONE,PROMPT,' Zone number?',
-     &             1,'F',MCOM,'W',1,'zone number',IER,3)
+     &             1,'F',MCOM,'W',1,'zone number',IERI,6)
+        if(ieri.eq.-3)then
+
+C User requested a cancel set izone to zero to signal that
+C nothing has been selected.
+          IZONE=0
+          RETURN
+        endif
 
         H(1)='A zone geometry file will be selected via input of the'
         H(2)='file name since no system configuration file exists.'
@@ -3226,6 +3234,7 @@ C databases have been opened.
 
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3235,13 +3244,12 @@ C databases have been opened.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32,DESC*48,NAM*72,PNAM*20,H*72,outs*124
-      CHARACTER LFCON*72,LFMUL*72,SSPARENT*12
+      CHARACTER SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
 
 C Check name of surface with construction name in MLC common.
@@ -3274,7 +3282,7 @@ C materials db.
         ELSE
           NAM='  '
           IR = iel + 1
-          READ(IFCON,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+          READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
      &       DRV,NAM
           PNAM(j)=NAM(1:20)
         ENDIF 
@@ -3300,14 +3308,21 @@ C Ask for the nodal location, first calculate a location at centre.
         h(2)='at the centre of the layer). Nodes are indexed from'
         h(3)='the outside face to the inside face and the default'
         h(4)='nodal scheme uses 3 nodes per layer. '
+        h(5)=' '
+        h(6)='A cancel leaves the model unchanged. '
         nodloca=nodloc-1
         nodlocb=nodloc+1
         nodlocd=nodloc
         call easki(nodloc,' Position material at ',' which node ? ',
-     &nodloca,'W',nodlocb,'W',nodlocd,'spm node',IER,4)
-        ilay=ino-header
-        inode=nodloc
-        return
+     &    nodloca,'W',nodlocb,'W',nodlocd,'spm node',IERI,6)
+        if(ieri.eq.-3)then
+          ier=1
+          return
+        else
+          ilay=ino-header
+          inode=nodloc
+          return
+        endif
       elseif(ino.eq.ndisp+footer-1) then
         call phelpd('Special material',2,'-',0,0,IER)
         ino=-1
@@ -3323,12 +3338,12 @@ C Ask for the nodal location, first calculate a location at centre.
       return
 
  105  write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' in file',IFCON
+     &    ' read error @ record ',IR,' in file',IFMAT
       call edisp(iuout,outs)
       write(outs,'(A,6f9.3)') ' with data ',DBCON,DBDEN,DBSHT,E,A,DRV
       call edisp(iuout,outs)
       IER=1
-      CALL ERPFREE(IFCON,ISTAT)
+      CALL ERPFREE(IFMAT,ISTAT)
       return
       end
 

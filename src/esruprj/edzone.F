@@ -1,3 +1,4 @@
+
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
@@ -33,6 +34,7 @@ C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -45,7 +47,6 @@ C an extrusion. IER=0 OK.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PRODB/LPRFDB,IPRODB
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -60,21 +61,34 @@ C an extrusion. IER=0 OK.
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LPRFDB
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,HOLD*32
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character MODE*4,SSPARENT*12
+      character MODE*4,SSPARENT*12,fs*1
       CHARACTER OUTSTR*124,H*72,zname*12,CTYPE*3,ZN*12,zdesc*64
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
-      LOGICAL OK,dok,browse,OKC,XST
+      LOGICAL OK,dok,browse,OKC,XST,unixok
+
+C << todo - consider how a more robust cancel facility can
+C << be established. Possibly one that deletes the new zone
+C << from the model or that finds ways to uninstanciate the
+C << common block data that was set prior to the cancel instruction.
 
 C If browsing then user cannot create a new zone.
       if(browse)then
         call usrmsg('Cannot update model while in browse ',
      &    'mode with a new zone, you must `own` the model! ','W')
         return
+      endif
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
       endif
 
 C Clear local coordinate array.
@@ -86,10 +100,10 @@ C Clear local coordinate array.
 C Creation of a new zone, first ask its name, trapping out
 C illegal characters.
       call tstamp('>','PRJ: new zone')
-      H(1)='The name of the zone is used both for descriptive'
+      ZN=' '
+ 42   H(1)='The name of the zone is used both for descriptive'
       H(2)='and bookkeeping purposes.  Each name should be'
       H(3)='unique and should not contain blanks. '
- 42   ZN=' '
       CALL EASKS(ZN,' What do you want to call this new zone ',
      &  ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
       IF(ZN.eq.' '.or.ier.ne.0)goto 42
@@ -104,11 +118,11 @@ C << Unix vs NT needs to be updated >>
         WRITE(OFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.opr'
       else
-        WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
-        WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
-        WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+        WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
      &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
       endif
       LGEOM(ICOMP)=DFILE
@@ -217,8 +231,12 @@ C User begins with an extruded shape.
      &       0.000,'W',99.9,'W',2.7,'elevation of top',IER,2)
         H(1)='The number of walls does not include the base '
         H(2)='and the top.'
+        H(3)=' '
+        H(4)='A cancel instruction lets you start the zone '
+        H(5)='creation process again. '
         CALL EASKI(NW,' ',' Number of walls? ',
-     &           3,'F',MS-2,'F',4,'no of walls',IER,2)
+     &           3,'F',MS-2,'F',4,'no of walls',IERI,5)
+        if(ieri.eq.-3) goto 42
         call edisp(iuout,'Input the coordinates around the base ')
         call edisp(iuout,'polygon ANTI-clockwise looking from the')
         call edisp(iuout,'top, preferably beginning from the lower ')
@@ -823,6 +841,9 @@ C DELZONE systematicly removes a thermal zone.
       SUBROUTINE DELZONE(ITRC,IWHICH,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -875,30 +896,26 @@ C Anchor data.
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       common/user/browse
-      COMMON/PRODB/LPRFDB,IPRODB
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/AFNZN/zmfn1,zmfn2
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-C Current file (for use by low level I/O calls)
-      common/curfile/currentfile
-
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LCFGF,LPRFDB
+      CHARACTER LAPROB*72,LCFGF*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,cfgroot*24
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
       CHARACTER H*72,zname*12,zdesc*64,ctldoc*248,LCTLF*72,outs*124
       character zmfn1*124,zmfn2*124,ltmp*72,NDNAM*12
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,currentfile*72
+      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
       if(browse)then
@@ -946,7 +963,7 @@ C should be scanned and converted into flow common blocks.
         CALL EFOPSEQ(IUM,LAPROB,1,IER)
         CALL STRIPC(IUM,OUTSTR,99,ND,0,'1st line of file',IER)
         if(ier.eq.0)then
-          currentfile=LAPROB
+          write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
             CALL EMFREAD(IUM,ITRC,IER)
@@ -1532,6 +1549,10 @@ C IER=0 OK.
       character longtfile*144,longtfiledos*144
       character doit*248,tmode*8,tfile*72,cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,concat,QUIET
+      logical XST,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
       nh = 0
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
@@ -1593,7 +1614,17 @@ C to include the path and create a string to drive ish.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCFGF,longtfile,concat)
+          if(unixok)then
+            call addpath(LCFGF,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(LCFGF,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.

@@ -76,8 +76,8 @@ C.....Flag for timestep output
 C.....Counter
       integer iCount
 
-C.....Error flag from ESP-r prompts
-      integer ier
+C.....Error flags from ESP-r prompts
+      integer ier,ieri
 
 C.....Intrinsic functions
 C      integer int
@@ -97,8 +97,9 @@ C      endif
 
 
 
-C.....Get current values for all inputs
-      fDG_control_constant  = fDG_configuration(2)
+C.....Get current values for all inputs and point to jump
+C     back to if user cancels a dialog.
+ 77   fDG_control_constant  = fDG_configuration(2)
       iDG_tank_priority     = int(fDG_configuration(3))
       iDG_HWT_index         = int(fDG_configuration(4))
       iDG_HWT_node          = int(fDG_configuration(5))
@@ -240,14 +241,21 @@ C........HWT index
          H(5) = ' defined in the plant network file (ie. the '
          H(6) = ' third component will have and index of 3).'
          H(7) = ' ' 
+         H(8) = ' If you cancel at the index dialog you will be' 
+         H(9) = ' returned to the start of the controller input' 
+         H(10)= ' process. You may need to check your data because' 
+         H(11)= ' prior data for other aspects of the controller'
+         H(12)= ' may may be inconsistent.' 
          CALL EASKI(iDG_HWT_index,
      &            ' ',
      &            'Index of hot water tank in plant network',
      &            1,'F',
      &            MPCOM,'W',
      &            1,
-     &            'HWT index',IER,
-     &            7)
+     &            'HWT index',IERI,
+     &            12)
+         if(ieri.eq.-3) goto 77
+
 C........HWT node             
          H(1) = ' The cogeneration controller needs to know '
          H(2) = ' the index of the node representing the water '
@@ -255,14 +263,20 @@ C........HWT node
          H(4) = ' If unsure, review the documenation of the water'
          H(5) = ' tank model.'
          H(6) = ' '
+         H(7) = ' If you cancel at the index dialog you will be' 
+         H(8) = ' returned to the start of the controller input' 
+         H(9)= ' process. You may need to check your data because' 
+         H(10)= ' prior data for other aspects of the controller'
+         H(11)= ' may may be inconsistent.' 
          CALL EASKI(iDG_HWT_node,
      &        ' ',
      &        'Index of hot water tank Water node ',
      &        1,'F',
      &        MNODEC,'W',
      &        1,
-     &        'HWT index',IER,
-     &        6)  
+     &        'HWT index',IERI,
+     &        11)  
+         if(ieri.eq.-3) goto 77
 
 C........Heating season        
          H(1) = ' The controller may be configured to regulate'
@@ -285,18 +299,31 @@ C........Heating season
 C...........Get seasonal start                 
             H(1)='You may define start of the heating season as ' 
             H(2)='any day between 1 (Jan 1st) and 365 (Dec 31st).'
+            H(3)=' '
+            H(4)=' If you cancel at the index dialog you will be' 
+            H(5)=' returned to the start of the controller input' 
+            H(6)=' process. You may need to check your data because' 
+            H(7)=' prior data for other aspects of the controller'
+            H(8)=' may may be inconsistent.' 
             CALL EASKI(iDG_HS_start,
      &           'Heating season start day',
      &           '(1-365)',
      &           1,'F',
      &           365,'F',
      &           1,
-     &           'Heating season start day',IER,
-     &           2)
+     &           'Heating season start day',IERI,
+     &           8)
+            if(ieri.eq.-3) goto 77
 
 C...........Get seasonal end                
             H(1)='You may define end of the heating season end ' 
             H(2)='any day between 1 (Jan 1st) and 365 (Dec 31st).'
+            H(3)=' '
+            H(4)=' If you cancel at the index dialog you will be' 
+            H(5)=' returned to the start of the controller input' 
+            H(6)=' process. You may need to check your data because' 
+            H(7)=' prior data for other aspects of the controller'
+            H(8)=' may may be inconsistent.' 
             CALL EASKI(iDG_HS_end,
      &           'Heating season end day',
      &           '(1-365)',
@@ -304,7 +331,8 @@ C...........Get seasonal end
      &           365,'F',
      &           365,
      &           'Heating season end day',IER,
-     &           2)
+     &           8)
+            if(ieri.eq.-3) goto 77
   
          else
 C...........Use year start & end                 
@@ -411,10 +439,8 @@ C...........Calculate default value
 
 
             H(1)= 'The lower tank temperature defines the lower '
-            H(2)= 
-     &           'bound of the operating range on the controller`s '
-            H(3)= 
-     &           'thermal load following algorithms. '
+            H(2)= 'bound of the operating range on the controller`s '
+            H(3)= 'thermal load following algorithms. '
             H(4) = ' '            
             call EASKR(
      &           fDG_HWT_T_sl,
@@ -593,14 +619,21 @@ C........CWT index
          H(5) = ' defined in the plant network file (ie. the '
          H(6) = ' third component will have and index of 3).'
          H(7) = ' ' 
+         H(8) =' If you cancel at the index dialog you will be' 
+         H(9) =' returned to the start of the controller input' 
+         H(10)=' process. You may need to check your data because' 
+         H(11)=' prior data for other aspects of the controller'
+         H(12)=' may may be inconsistent.' 
          CALL EASKI(iDG_CWT_index,
      &            ' ',
      &            'Index of cold water tank in plant network',
      &            1,'F',
      &            MPCOM,'W',
      &            1,
-     &            'CWT index',IER,
-     &            7)
+     &            'CWT index',IERI,
+     &            12)
+         if(ieri.eq.-3) goto 77
+
 C........CWT node             
          H(1) = ' The cogeneration controller needs to know '
          H(2) = ' the index of the node representing the water '
@@ -608,14 +641,20 @@ C........CWT node
          H(4) = ' If unsure, review the documenation of the water'
          H(5) = ' tank model.'
          H(6) = ' '
+         H(7) =' If you cancel at the index dialog you will be' 
+         H(8) =' returned to the start of the controller input' 
+         H(9) =' process. You may need to check your data because' 
+         H(10)=' prior data for other aspects of the controller'
+         H(11)=' may may be inconsistent.' 
          CALL EASKI(iDG_CWT_node,
      &        ' ',
      &        'Index of cold water tank water node ',
      &        1,'F',
      &        MNODEC,'W',
      &        1,
-     &        'CWT index',IER,
-     &        6)  
+     &        'CWT index',IERI,
+     &        11)  
+         if(ieri.eq.-3) goto 77
 
 C........Cooling season        
          H(1) = ' The controller may be configured to regulate'
@@ -637,26 +676,40 @@ C........Cooling season
 C...........Get seasonal start                 
             H(1)='You may define start of the cooling season as ' 
             H(2)='any day between 1 (Jan 1st) and 365 (Dec 31st).'
+            H(3)= ' '
+            H(4)=' If you cancel at the index dialog you will be' 
+            H(5)=' returned to the start of the controller input' 
+            H(6)=' process. You may need to check your data because' 
+            H(7)=' prior data for other aspects of the controller'
+            H(8)=' may may be inconsistent.' 
             CALL EASKI(iDG_CS_start,
      &           'Cooling season start day',
      &           '(1-365)',
      &           1,'F',
      &           365,'F',
      &           1,
-     &           'Cooling season start day',IER,
-     &           2)
+     &           'Cooling season start day',IERI,
+     &           8)
+            if(ieri.eq.-3) goto 77
 
 C...........Get seasonal end                
             H(1)='You may define end of the cooling season end ' 
             H(2)='any day between 1 (Jan 1st) and 365 (Dec 31st).'
+            H(3)= ' '
+            H(4)=' If you cancel at the index dialog you will be' 
+            H(5)=' returned to the start of the controller input' 
+            H(6)=' process. You may need to check your data because' 
+            H(7)=' prior data for other aspects of the controller'
+            H(8)=' may may be inconsistent.' 
             CALL EASKI(iDG_CS_end,
      &           'Cooling season end day',
      &           '(1-365)',
      &           1,'F',
      &           365,'F',
      &           365,
-     &           'Cooling season end day',IER,
-     &           2)
+     &           'Cooling season end day',IERI,
+     &           8)
+            if(ieri.eq.-3) goto 77
   
          else
 C...........Use year start & end                 

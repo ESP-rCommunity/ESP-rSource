@@ -47,6 +47,11 @@ C                           furniture
       PROGRAM RevTime
 #include "building.h"
 #include "acoustic.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure database)
+C LOPTDB,IOPTDB (for optical database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -86,14 +91,12 @@ C Defaults and paths
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      common/CONDB/LFCON,IFCON,LFMUL,IFMUL
 
       COMMON/C21/IFCFG,cfgroot,LCFGF
-      COMMON/GOPTDB/LOPTDB,IOPTDB
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
@@ -117,15 +120,15 @@ C ACO specific commons
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-      LOGICAL OK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,ACOOK
+      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
 
       DIMENSION ITEM(26) 
 
-      CHARACTER BCFName*72,DBCFNam*72,LFCON*72,LFMUL*72
+      CHARACTER BCFName*72,DBCFNam*72
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
-      CHARACTER inf*144,LCMDFL*144,LOPTDB*72
+      CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path,upath,esprc
       CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
@@ -158,7 +161,7 @@ C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL +15.
       IBCF=IFIL+22
       IACO=IFIL+23
       ICLMRF = IFIL+25
-      IFCON = IFIL+26
+      IFMAT = IFIL+26
       IFMUL = IFIL+27
 
 C ECO initialiastion <<hard coded for the atrium ofd the EOS example
@@ -188,7 +191,7 @@ C Set defaults.
       OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
-      CONDBOK=.FALSE.
+      MATDBOK=.FALSE.
       CTLOK=.FALSE.
       OPTKOK=.FALSE.
       MODIFY=.FALSE.

@@ -58,6 +58,9 @@ C wshad.f  - WSHAD:  Performs ASHRAE window shading.
 
       program ish
 #include "building.h"
+
+      integer igraphiclib  ! external definition
+
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -76,7 +79,7 @@ C wshad.f  - WSHAD:  Performs ASHRAE window shading.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/DATA2/ICAL
@@ -119,7 +122,7 @@ C Significant figure reporting limit (NSIGFIG).
 
       DIMENSION MTHNAM(12),ITEMS(20),ISADD(12),ISHD(12)
       LOGICAL MODIFY,MODLEN,MODBND,XST
-      LOGICAL    OK,DOK,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK,tok
+      LOGICAL    OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,tok
       CHARACTER*72 LNAME,LTRNS,TBASE,H
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -561,25 +564,30 @@ C Request definition of model.
         LTMP=LCMDFL
 
 C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file, while the GTK version will be returning the
+C The X11 version will be returning only the name of the 
+C file, while the GTK version will be returning the
 C name with the full path.
   289   llt=lnblnk(ltmp)
-#ifdef X11
-        if(llt.lt.96)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,5)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
-     &      'config file name',IER,5)
-        elseif(llt.ge.124.and.llt.le.144)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+     &        'config file name',IER,5)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
+     &        'config file name',IER,5)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+     &        'config file name',IER,5)
+          endif
+        elseif(iglib.eq.2)then
           CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
      &      'config file name',IER,5)
+        else
+          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+     &      'config file name',IER,5)
         endif
-#else
-        CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
-     &    'config file name',IER,5)
-#endif
+
         IF(LTMP(1:2).EQ.'  '.or.LTMP(1:4).eq.'UNKN')GOTO 289
         call st2file(LTMP,LCMDFL)
         INQUIRE (FILE=LCMDFL,EXIST=XST)

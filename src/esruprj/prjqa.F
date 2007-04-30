@@ -32,6 +32,16 @@ C the current model.
 #include "control.h"
 #include "plant.h"
 #include "tdf2.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -45,16 +55,8 @@ C the current model.
       CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
-      common/C7/LPCDB
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
-      common/C22/ICLIM,LCLIM
-      common/GOPTDB/LOPTDB,IOPTDB
-      common/PRODB/LPRFDB,IPRODB
-
-C Current file (for use by low level I/O calls). Error subroutine
-C and error details for dll mode.
-      common/curfile/currentfile
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -66,7 +68,6 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -90,8 +91,11 @@ C LPNF (72 char) plant network file name.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
-      COMMON/AFN/IAIRN,LAPROB,LAPRES,LAFRES,ICAAS(MCOM)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
+
+C AIM-2.
+      common/aim2def/iAIM2,LAIM2
 
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -163,17 +167,17 @@ C External folder browser.
 C A set of possible image formats (see config file) and
 C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
-      common/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
-      logical CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
-      logical allattribok,changedit,ok,dok,concat
+      logical allattribok,changedit,ok,dok,concat,unixok
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
@@ -185,9 +189,9 @@ C Remember if each zone is fully attributed.
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
-      character GTNAME*15,LCLIM*72,CLMLOC*30,lipvdatf*72
+      character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
-      character longtfile*144
+      character longtfile*144,longtfiledos*144
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
@@ -197,8 +201,8 @@ C Remember if each zone is fully attributed.
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
-      character dstmp*24,mlcname*12,LFCON*72,LFMUL*72,currentfile*72
-      CHARACTER*72 LAPROB,LAPRES,LAFRES,LPNF,LOPTDB,LPCDB,LPRFDB
+      character dstmp*24,mlcname*12
+      CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24
@@ -209,7 +213,7 @@ C Remember if each zone is fully attributed.
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
-      character cdblbl*20,cdblfil*72
+      character cdblbl*20,cdblfil*72,LAIM2*72
 
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -219,6 +223,9 @@ C in the current model. A -1 means not applicable
       integer destination
 
       character*10 wkd1, wkd2
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
       changedit=.false.
       IUF=IFIL+2
@@ -478,7 +485,17 @@ C necessary.  If vi then spawn a new window to do the editing.
           h(2)='use it to edit this file.  '
           CALL ASKOK(' ',' Edit this file?',OK,dok,2)
           IF(OK)then
-            call addpath(LPRJLG,longtfile,concat)
+            if(unixok)then
+              call addpath(LPRJLG,longtfile,concat)
+            else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+              call addpath(LPRJLG,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
             tmode='graph'
             if(teditor(1:2).eq.'  ')then
               call usrmsg(
@@ -905,6 +922,13 @@ C Context of the model.
      &'Primary energy conversions (demand kWhr to primary kWhr) used.')
         endif
       elseif(contextinfo.eq.2)then
+
+C If there is an AIM-2 descritption scan the file and then report.
+        if(iAIM2.eq.1)then
+          call AIM2_READIN
+          call AIM2_report(itu,ier)
+        endif
+
         if(ipconv.eq.1)then
           call edisp(itu,
      &'Primary energy conversions (demand kWhr to primary kWhr) are:')
@@ -968,26 +992,37 @@ C if verbose print periods, seasons and ratios as well.
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           continue
         else
-          call ripvdat(IFCFG,lipvdatf,ier)
+          call ripvdat(IFCFG,lipvdatf,ieripv)
           call edisp(itu,' ')
-          call edisp(itu,
-     &      'An Integrated Perormance View has been defined:')
-          if(contextinfo.eq.1)then
-            WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
-            call edisp(itu,outs)
-            WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
-            call edisp(itu,outs)
-            call edisp(itu,'Synopsis:')
-            call edisp248(itu,ipvsynop,80)
-          elseif(contextinfo.eq.2)then
+          if(ieripv.eq.0)then
+            call edisp(itu,
+     &        'An Integrated Performance View has been defined:')
+            if(contextinfo.eq.1)then
+              WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
+              call edisp(itu,outs)
+              WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
+              call edisp(itu,outs)
+              call edisp(itu,'Synopsis:')
+              call edisp248(itu,ipvsynop,80)
+            elseif(contextinfo.eq.2)then
 
-C Rescan the climatelist file to get seasons.
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              call scancdblist(IUF,cdblfil,LCLIM,ok,ier)
+C Rescan the climatelist file to get seasons. If this was successful
+C then include a description of the IPV.
+              INQUIRE (FILE=cdblfil,EXIST=XST)
+              if(XST)then
+                IUF=IFIL+2
+                call scancdblist(IUF,cdblfil,LCLIM,ok,ieripv)
+                if(ieripv.eq.0)then
+                  call listipvdat(itu,'a',ier)
+                else
+                  call edisp(itu,
+     &              'And the IPV file was incomplete or missing.')
+                endif
+              endif
             endif
-            call listipvdat(itu,'a',ier)
+          else
+            call edisp(itu,
+     &       'An Integrated Performance View is incomplete or missing.')
           endif
         endif
 
@@ -1031,7 +1066,7 @@ C Databases associated with the model.
      &    LAPRES(1:lnblnk(LAPRES))
         call edisp(itu,outs)
         WRITE(outs,'(2A)')' materials              : ',
-     &    LFCON(1:lnblnk(LFCON))
+     &    LFMAT(1:lnblnk(LFMAT))
         call edisp(itu,outs)
         WRITE(outs,'(2A)')' constructions          : ',
      &    LFMUL(1:lnblnk(LFMUL))
@@ -1042,9 +1077,9 @@ C Databases associated with the model.
         WRITE(outs,'(2A)')' event profiles         : ',
      &    LPRFDB(1:lnblnk(LPRFDB))
         call edisp(itu,outs)
-        WRITE(outs,'(2A)')' optical properties     : ',
+        WRITE(outs248,'(2A)')' optical properties     : ',
      &    LOPTDB(1:lnblnk(LOPTDB))
-        call edisp(itu,outs)   
+        call edisp248(itu,outs248,100)   
       endif
 
 C Control in the model
@@ -1147,7 +1182,7 @@ C If there is a plant network, scan it and report.
           if(xst) then
             IFPNF=IFIL+3
             iunit1=IUF
-            currentfile=LPNF
+            write(currentfile,'(a)') LPNF(1:lnblnk(LPNF))
             CALL EFOPSEQ(ifpnf,LPNF,1,IER)
             IF(IER.LT.0)THEN
               IER=1
@@ -1310,7 +1345,7 @@ C flow as well as internal partition (horizontal 0.13 both sides).
 C Note: ISO 6946 advises use of horizontal hc value for surfaces where
 C heat flow direction is unknown. This assumption is used in
 C the U and UA reporting below.
-                call etmldbu(0,itu,IFCON,ii,UVH,UVU,UVD,UVI)
+                call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
 
 C Debug.
 C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
@@ -1791,7 +1826,7 @@ C MLC database reporting.
           call mlcrefs(mlcname,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,IFCON,imlc,imerr)
+              call etmldb(2,itu,IFMAT,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
@@ -1837,8 +1872,11 @@ C not browsing.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
       character zname*12,zdesc*64,ZN*12,doit*248,tmode*8
-      character longtfile*144
-      logical ok,dok,ddok,found,XST,concat,anyish
+      character longtfile*144,longtfiledos*144
+      logical ok,dok,ddok,found,XST,concat,anyish,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
 C Check to see if version of configuration file requires updating.
       if(icfgv.lt.3)then
@@ -1964,7 +2002,17 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
               write(doit,'(5a)') 'ish -mode text -file ',
      &          longtfile(1:lnblnk(longtfile)),' -zone ',
      &          ZN(1:lnz),' -act update_silent'
@@ -1978,7 +2026,17 @@ C as the command line.
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
-              call addpath(LCFGF,longtfile,concat)
+              if(unixok)then
+                call addpath(LCFGF,longtfile,concat)
+              else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                call addpath(LCFGF,longtfile,concat)
+                call cmdfiledos(longtfile,longtfiledos,ier)
+                longtfile=' '
+                longtfile=longtfiledos
+              endif
 
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
@@ -2014,7 +2072,7 @@ C If a negative conductivity is supplied the abs value represents the
 C resistance of an air gap.
 C << NOTE: this routine gets close for some constructions, but
 C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRC,ITRU,IFCON,IFOC,Rsi,Rso)
+      subroutine ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
 #include "building.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -2036,7 +2094,7 @@ C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       layer=LAYERS(IFOC)+1
       do 5 IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFCON,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)

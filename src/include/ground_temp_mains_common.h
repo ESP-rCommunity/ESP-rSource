@@ -1,11 +1,6 @@
 C********************************************************************************
 c Function Declarations
 
-c Ground temperature profile variable names have been changed:
-c fMeanGroundTem and bsTGavg become fTemp_Ground_Avg
-c fAmpGroundTempVar and bsTGamp becomes fTemp_Ground_Amp
-c bsTGps becomes fTemp_Ground_phaseshift
-
       REAL  fTemp_Ground_Avg  ! annually-averaged soil temperature
       REAL  fTemp_Ground_Amp  ! amplitude of ground-temperature's annual sine wave
       REAL  fTemp_Ground_phaseshift  ! phase lag of ground-temperature's annual sine wave
@@ -20,28 +15,35 @@ c bsTGps becomes fTemp_Ground_phaseshift
 C********************************************************************************
 c Common Block Declarations
 
-C The common block created for ground temperatures information. These values are calculated 
-c once per simulation (/cetc/ground_temp_mains.F/Ground_Temp_Profile) 
-c and then stored in the common block.
+C The common block created for ground temperatures information. The first 3 parameters 
+c are calculated once per simulation (/esrubld/ground_temp_mains.F/Ground_Temp_Profile subroutine) 
+c and then stored in the common block 
       COMMON/Ground_Temp/
      &       Temp_Ground_Avg,
      &       Temp_Ground_Amp,
-     &       Temp_Ground_phaseshift
+     &       Temp_Ground_phaseshift,
+     &       Basesimp_grd_temp_cal_flag(mcom),
+     &       gshp_grd_temp_cal_flag
      
       REAL  Temp_Ground_Avg  ! annually-averaged soil temperature
       REAL  Temp_Ground_Amp  ! amplitude of ground-temperature's annual sine wave
       REAL  Temp_Ground_phaseshift ! phase lag of ground-temperature's annual sine wave     
 c used in mznuma, Ground_Temp_Profile, fDHW_LimitMeanGroundTemp(), 
 c iDHW_GroundOffset(), and fDHW_ColdMainTemp()
-
-
+      INTEGER Basesimp_grd_temp_cal_flag   ! Used to indicate whether basesimp model
+                                          ! ground temperature parameters are read from
+                                          ! basesimp input file or evaluated internally
+                                          ! using weather file and Moore model
+      INTEGER gshp_grd_temp_cal_flag  ! Used to indicate whether ground-source heat pump model
+                                      ! ground temperature parameters are to be read in from
+                                      ! input file or they are to be calculated using weather file
+                                      ! and Moore model
 c The common block created for degree day information in /cetc/ground_temp_mains.F/CLM_DEG_DAY
       COMMON/DD/DEGREE_DAY
 
       REAL  DEGREE_DAY ! number of annual heating degree days for chosen climate 
 c called from mznuma
 c used in CLM_DEG_DAY, fTemp_Ground_Avg(), fTemp_Ground_Amp(), and fTemp_Ground_phaseshift()
-
 
 c The common block created for monthly average ambient temperature in
 c /cetc/ground_temp_mains.F/CLM_DEG_DAY

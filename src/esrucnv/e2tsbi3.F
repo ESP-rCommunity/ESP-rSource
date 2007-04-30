@@ -27,13 +27,13 @@ C e2vrml:  Generate VRLM 2.0 world of esp-r model.
 C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -44,7 +44,6 @@ C ******* Translate esp data to tsbi3 file geom and materials.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character GDESCR*36,DESCRC*25
-      CHARACTER LFCON*72,LFMUL*72
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       dimension iprndx(50),optndx(50)
@@ -101,7 +100,7 @@ C text to form its name.
       WRITE(ioout,'(a)') '#wall_lib'
       WRITE(ioout,'(a)') ' '
       do 25 iy = 1,iij
-        CALL ERPCDB(IFCON,iprndx(iy),ITRU,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         ln = MIN0(lnblnk(NAM),10)
         if(iprndx(iy).gt.0.and.iprndx(iy).lt.10)then
@@ -179,7 +178,7 @@ C Write layers in reverse order.
           IL=LAYERS(ino)+1
   37      continue
           IL=IL-1
-          CALL ERPCDB(IFCON,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
+          CALL ERPCDB(IFMAT,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
 
 C Not dealing with air gap resistance directly...
@@ -383,7 +382,7 @@ C    &            ' ',q,'unknown',q
 C Calculate the window U-value
             RT = 0
             DO 201, IL=1,LAYERS(ino)
-              CALL ERPCDB(IFCON,IPR(INO,IL),ITRU,IER,DBCON,
+              CALL ERPCDB(IFMAT,IPR(INO,IL),ITRU,IER,DBCON,
      &                    DBDEN,DBSHT,E,A,DRV,TITL,NAM)
 
 C Calculate std U-value and display as well
@@ -428,7 +427,7 @@ C External obstracles - NONE
             WRITE(ioout,'(4a)') q,'unknown',q,' -1'
 
           ELSE
-            CALL ERPCDB(IFCON,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
+            CALL ERPCDB(IFMAT,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,AE,DRV,TITL,NAM)
             WRITE(ioout,'(f8.3,8a,F8.2)') sna(is),'  ',
      &        q,zsn(is)(:lnblnk(zsn(is))),q,'   ',
@@ -511,27 +510,26 @@ C Duplicate of code in eddb.F
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
-      COMMON/FOPENED/CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,CONDBOK,CTLOK,OPTKOK
-      CHARACTER LFCON*72,LFMUL*72
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
 C Open currently named primitive construction db.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
-      CALL ERPFREE(IFCON,ISTAT)
-      call EFOPRAN(IFCON,LFCON,40,0,IER)
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
         write(outs,'(3a)') ' No primitive constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
-        CONDBOK=.FALSE.
+        MATDBOK=.FALSE.
       else
         call edisp(iuout,' Opened primitive construction db...')
-        CONDBOK=.TRUE.
+        MATDBOK=.TRUE.
       endif
         
 C Read multilayer db information into common.
@@ -541,7 +539,7 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,ITRU,IER)
         IF(IER.NE.0)then
           write(outs,'(3a)') ' Problem with multilayer constr db ',
-     &     LFCON(1:lnblnk(LFCON)),'... '
+     &     LFMAT(1:lnblnk(LFMAT)),'... '
           call edisp(iuout,outs)
           MLDBOK=.FALSE.
         else
@@ -550,7 +548,7 @@ C Read multilayer db information into common.
         endif
       else
         write(outs,'(3a)') ' No multilayer constructions db ',
-     &     LFCON(1:lnblnk(LFCON)),' found.'
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
       endif
 
@@ -573,6 +571,7 @@ C e2vrml takes zones/obstructions and any ground topology and
 C creates a grey-scale VRML 2.0 world.
       SUBROUTINE e2vrml(itrc,IER)
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -580,7 +579,6 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/CONDB/LFCON,IFCON,LFMUL,IFMUL
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -603,7 +601,7 @@ C creates a grey-scale VRML 2.0 world.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
-      CHARACTER LFCON*72,LFMUL*72,cfgroot*24,LCFGF*72
+      CHARACTER cfgroot*24,LCFGF*72
       CHARACTER NAM*72,TITL*72,DESC*48,BLKNAME*8,BLKMAT*12
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       CHARACTER GMLCN*12,GSNAME*6
@@ -649,9 +647,9 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+        CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &    DBSHT,E,AE,DRV,TITL,NAM)
-        CALL ERPCDB(IFCON,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
+        CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &    DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
 
 C If a tmc then find tranmission functions.  If more transparent than
@@ -742,9 +740,9 @@ C Pick up general description of the composite.
               ENDIF
 
 C For the inside and outside layer get surface properties.
-              CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &          DBSHT,E,AE,DRV,TITL,NAM)
-              CALL ERPCDB(IFCON,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
+              CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &          DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
 
               goto 7
@@ -914,7 +912,7 @@ C Pick up general description of the composite.
               WRITE(MLCN,'(A)')DESC(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
-              CALL ERPCDB(IFCON,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+              CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &          DBSHT,E,AE,DRV,TITL,NAM)
               gvt=0.00
               goto 77
@@ -1028,7 +1026,7 @@ C Find the matching mlc index.
             DO 701 imm=1,NMLC
               IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
                 ifound=im
-                CALL ERPCDB(IFCON,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
+                CALL ERPCDB(IFMAT,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
      &            DBSHT,E,AE,DRV,TITL,NAM)
                 gvt=0.00
 C Debug.
