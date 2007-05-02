@@ -209,6 +209,18 @@ C General image option flags.
       GRDIS=0.0
       ITPPSW=0
 
+C If your compiler does not support floating-point arithmetic
+C according to ANSI/IEEE Std 754-1985 comment out the following code.
+
+C Initialize mode, status, and signal handling for IEEE arithmetic.
+C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
+C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
+C           only if: Sun-3 f77 with -f68881 or -ffpa option
+C                or: Sun-4 f77.
+C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+C      ieeer=ieee_handler('set','common',SIGFPE_bps)
+C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+
 c Initialise output device, assume minimal trace.
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
@@ -733,6 +745,14 @@ C Clear VEWF array in preparation for editing.
           elseif(irt.eq.3)then
             goto 10
           endif
+        else
+
+C Having read in an existing viewfactor file (which might contain
+C previously calculated data set the values for strtgr fstsur and
+C lstsur as if a calculation had just been performed.
+          strtgr = 1
+          fstsur = 1
+          lstsur = nsur
         endif
         MRTLOAD=.TRUE.
         GEOLOAD=.TRUE.
@@ -979,4 +999,18 @@ C ***** Dummy display of images.
 
       return
       end
+
+C In support of floating point exceptions.
+C      integer function SIGFPE_bps(sig,code,context)
+C      integer sig,code,context(5)
+C      character label*16
+C      if(loc(code).eq.208) label = 'invalid'
+C      if(loc(code).eq.200) label = 'division by zero'
+C      if(loc(code).eq.212) label = 'overflow'
+C      if(loc(code).eq.204) label = 'underflow'
+C      if(loc(code).eq.196) label = 'inexact'
+C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+C      SIGFPE_bps = loc(code)
+C      end
+
 
