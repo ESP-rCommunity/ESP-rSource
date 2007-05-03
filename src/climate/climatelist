@@ -455,6 +455,46 @@ Winter season is Mon 12 Nov - Mon 31 Dec
 Typical winter week begins Mon 26 Nov
 *help_end
 *item
+*name	DIJON - FRA (47.27N 005.08E)
+*aide	DIJON - FRA (47.27N 005.08E) was sourced from USA DoE EPW file.
+*dbfl	/usr/esru/esp-r/climate/FRA_Dijon
+*avail	ONLINE
+*winter_s  1  1 25  2 12 11 31 12
+*spring_s 26  2 20  5 10  9 11 11
+*summer_s 21  5  9  9
+*winter_t 22  1 28  1 19 11 25 11
+*spring_t 16  4 22  4  1 10  7 10
+*summer_t 11  6 17  6
+*help_start
+Climate is DIJON - FRA (47.27N 005.08E)
+ Location: 47.27N  9.92W : 2001
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan    -11.0 @ 8h00 Sat-27       11.0 @17h00 Sun-14     2.2
+ Feb     -8.0 @ 3h00 Tue-13       14.0 @15h00 Tue-27     2.6
+ Mar     -4.0 @ 5h00 Tue-06       18.0 @15h00 Sat-10     6.5
+ Apr     -1.0 @ 6h00 Fri-06       23.5 @16h00 Thu-26     9.5
+ May      1.0 @ 5h00 Tue-15       26.0 @15h00 Sat-05    13.8
+ Jun      9.0 @ 5h00 Thu-07       28.0 @17h00 Fri-15    17.0
+ Jul      9.0 @ 5h00 Sun-15       32.0 @15h00 Mon-23    20.1
+ Aug     10.6 @ 6h00 Mon-20       31.3 @14h00 Sat-25    19.8
+ Sep      7.0 @ 6h00 Thu-13       27.0 @15h00 Mon-24    15.7
+ Oct      1.7 @ 7h00 Mon-08       21.7 @15h00 Tue-30    10.8
+ Nov     -6.0 @ 6h00 Wed-07       19.0 @14h00 Sun-11     5.8
+ Dec     -6.4 @ 7h00 Fri-07       12.6 @16h00 Tue-11     3.7
+ Annual -11.0 @ 8h00 Sat-27-Jan   32.0 @15h00 Mon-23-Jul    10.7
+ ---Seasons & typical periods---
+Winter season is Mon-01-Jan - Sun-25-Feb
+Typical winter week begins Mon-22-Jan
+Spring season is Mon-26-Feb - Sun-20-May
+Typical spring week begins Mon-16-Apr
+Summer season is Mon-21-May - Sun-09-Sep
+Typical summer week begins Mon-11-Jun
+Autumn season is Mon-10-Sep - Sun-11-Nov
+Typical autumn week begins Mon-01-Oct
+Winter season is Mon-12-Nov - Mon-31-Dec
+Typical winter week begins Mon-19-Nov
+*help_end
+*item
 *name	Dublin Ireland IWEC WMO 039690
 *aide	Dublin (sourced from IWEC/DoE)
 *dbfl	/usr/esru/esp-r/climate/irl_dublin_iwec
@@ -1016,6 +1056,46 @@ Autumn season is Mon 17 Sep - Sun 18 Nov
 Typical autumn week begins Mon 22 Oct
 Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
+*help_end
+*item
+*name	Seoul AB - from Kier
+*aide	Seoul AB - from KIER in Seoul probably the Seoul AB
+*dbfl	/usr/esru/esp-r/climate/KOR_SeoulAB
+*avail	ONLINE
+*winter_s  1  1 10  3 11 11 31 12
+*spring_s 11  3 16  6  9  9 31 10
+*summer_s 17  6  8  9
+*winter_t 12  2 18  2  2 12  8 12
+*spring_t  6  5 12  5  7 10 13 10
+*summer_t 19  8 25  8
+*help_start
+Climate is INCHON - KOR IWEC 471120
+ Location: 37.48N  8.45W : 1996
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -9.9 @ 9h00 Thu  4        8.9 @15h00 Sat 13    -2.2
+ Feb     -9.5 @ 6h00 Thu  1       10.3 @12h00 Sat 10    -0.3
+ Mar     -5.0 @24h00 Mon 11       13.5 @15h00 Fri 15     4.8
+ Apr      2.8 @ 6h00 Fri 12       22.6 @15h00 Tue  9    10.8
+ May      9.2 @ 6h00 Wed  1       25.0 @15h00 Sat 11    15.8
+ Jun     13.5 @ 6h00 Sat  1       31.9 @15h00 Wed 19    20.5
+ Jul     17.6 @21h00 Mon  1       32.7 @15h00 Tue 23    23.6
+ Aug     19.5 @ 6h00 Fri  2       32.4 @15h00 Sun 11    25.0
+ Sep     10.5 @ 6h00 Sun 29       29.2 @15h00 Sun  8    20.8
+ Oct      1.2 @ 6h00 Sat 26       23.7 @12h00 Tue  1    14.5
+ Nov     -4.3 @ 6h00 Fri 29       16.6 @12h00 Tue  5     7.6
+ Dec    -11.8 @ 6h00 Mon 16       12.0 @15h00 Tue 10     1.2
+ Annual -11.8 @ 6h00 Mon 16 Dec   32.7 @15h00 Tue 23 Jul    11.9
+ ---Seasons & typical periods---
+Winter season is Mon  1 Jan - Sun 10 Mar
+Typical winter week begins Mon 12 Feb
+Spring season is Mon 11 Mar - Sun 16 Jun
+Typical spring week begins Mon  6 May
+Summer season is Mon 17 Jun - Sun  8 Sep
+Typical summer week begins Mon 19 Aug
+Autumn season is Mon  9 Sep - Thu 31 Oct
+Typical autumn week begins Mon  7 Oct
+Winter season is Mon 11 Nov - Tue 31 Dec
+Typical winter week begins Mon  2 Dec
 *help_end
 *item
 *name	MADRID - ESP from IWEC

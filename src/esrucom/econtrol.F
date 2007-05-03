@@ -3229,27 +3229,32 @@ C control loops for legality.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 
       character outstr*124
-
+    
+C This code loops throug the building (m=1), plant (m=2) and flow (m=3)
+C control loops and tests them for validity. It's a mess of goto statements,
+C and is a good candidate for rewriting. 
+      
+C Loop through building/plant/flow control loops       
       do 10 m=1,3
-      if(m.eq.3)goto 1
 
-C Test for building control functions.
-      if(ncf.eq.0)goto 10
-      nbp=ncf
-      goto 2
+      if ( m .eq. 1 ) then 
+C Test assign # of parseable controls to # of building control loops 
+        nbp=ncf
+        
+      elseif ( m .eq. 2 ) then 
+C Test assign # of parseable controls to # of plant control loops
+        nbp=ncl
 
-    1 if(m.eq.3) goto 21
+      elseif ( m.eq. 3 ) then
+C Test assign # of parseable controls to # of flow control loops
+        nbp=ncc
+      endif 
 
-C Test for plant control loops.
-      if(ncl.eq.0)goto 10
-      nbp=ncl
-      goto 2
-
-C Test for flow control loops.
-   21 if(ncc.eq.0)goto 10
-      nbp=ncc
-
-    2 do 20 i=1,nbp
+C Test if parsable loops exist      
+      if ( nbp .gt. 0  ) then
+      
+      do 20 i=1,nbp
+C 'i' appears to serve no purpose in this code.     
       ii=i
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
@@ -3274,6 +3279,8 @@ C Remember to which zone this control function relates.
       if(icfz.eq.0)goto 20
       goto 4
 
+C This line of code appears to serve no purpose, and will
+C never be executed.       
     3 if(m.eq.3) goto 22
 
 C Set up data for plant control loop ii.
@@ -3313,11 +3320,15 @@ C Mixed temperature sensor.
       if(isn3.lt.0.or.isn3.gt.100)goto 1003
       goto 9
 
+
+
 C Sensor within plant component.
+C Check to see if component exists
     6 if(isn2.lt.0.or.isn2.gt.npcomp)goto 1002
+C Check to see if sensed node exists    
       if(isn3.lt.1.or.isn3.gt.npcdat(isn2,8))goto 1003
       goto 9
-
+    
 C Sensor located externally.
     7 if(isn2.lt.0.or.isn2.gt.6)goto 1002
       goto 9
@@ -3356,7 +3367,24 @@ C Actuation is on zone node weighting.
 
 C Actuation is on a plant component.
    12 if(ian2.lt.0.or.ian2.gt.npcomp)goto 1005
-      if(ian3.lt.1.or.ian3.gt.npcdat(ian2,8))goto 1006
+
+C Check to see if the acutuator is correct. Note: the following
+C line is erroneous --- the number of control variables associated
+C with a plant component is *NOT* constrained by the number of nodes
+C in the plant component (despite what prj and other parts of bps
+C might suggest).
+C      if(ian3.lt.1.or.ian3.gt.npcdat(isn2,8))goto 1003
+C
+C The number of control variables is constrained by a variable 
+C called 'MMISCD', which is assigned in plant.h. Each component
+C record within the plant comnponent database defines the number 
+C of controls associated the plant component --- this value can
+C vary from 1->mmiscd (mmiscd = 5 as of January 2006).  However,
+C this data is not presently available in the bps data model
+C (the appropriate code would have to be added to MZPMXT). Instead,
+C check to see the actuator does not exceed mmiscd:
+      if(ian3.lt.1.or.ian3.gt.mmiscd)goto 1003
+
       goto 20
 
 C Actuation on zone under consideration.
@@ -3386,9 +3414,13 @@ c actuation is on a mass flow component.
    25 if((ian2.lt.0).or.((ian2.gt.ncnn).and.(ian2.gt.ncmp)))goto 1005
 
    20 continue
+      endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
+
    10 continue
       return
+      
 
+      
 C Error messages.
  1001 write(outstr,'(A,I3,A)') ' Sensor node: 1st item (',
      &  isn1,') > number of zones.'

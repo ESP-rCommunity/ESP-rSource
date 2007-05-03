@@ -725,7 +725,7 @@ C to the unit number 42.
 
 C Write surface attributes that might be of interest. Find
 C lowest and highest point and cog of surface.
-          write(42,'(2a,i3,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
+          write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
@@ -1257,7 +1257,7 @@ C Begin with high level menu.
       ITEMS(3)   ='b  constructions                 '
       ITEMS(4)   ='c  operation                     '
       ITEMS(5)   =' _____________________________   '
-      WRITE(ITEMS(6),'(A,I3,A)') ' Topology ... (',NCON,' connections)'
+      WRITE(ITEMS(6),'(A,I4,A)') ' Topology ... (',NCON,' connections)'
       ITEMS(7)   ='d  connections & anchors         '
       ITEMS(8)   =' _____________________________   '
       ITEMS(9)   =' Options ...                     ' 

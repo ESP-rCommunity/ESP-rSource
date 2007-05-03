@@ -33,8 +33,6 @@ aco:
 	cd $(SRCdir)/esruaco; $(MAKE)
 b2e: 
 	cd $(SRCdir)/esrub2e; $(MAKE)
-bld: 
-	cd $(SRCdir)/esrubld; $(MAKE)
 # pass the target 'include_XML/exclude_XML' to build
 # bps with/without H3Kreports.
 bps: 
@@ -69,8 +67,6 @@ net:
 	cd $(SRCdir)/esrunet; $(MAKE)
 pdb: 
 	cd $(SRCdir)/esrupdb; $(MAKE)
-plt: 
-	cd $(SRCdir)/esruplt; $(MAKE)
 prj: 
 	cd $(SRCdir)/esruprj; $(MAKE)
 res: 
@@ -87,7 +83,6 @@ install:
 	@cd $(SRCdir)
 	@if [ -f $(SRCdir)/esruaco/aco$(EXE) ]; then strip ./esruaco/aco$(EXE); cp ./esruaco/aco$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then strip ./esrub2e/b2e$(EXE); cp ./esrub2e/b2e$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrubld/bld$(EXE) ]; then strip ./esrubld/bld$(EXE); cp ./esrubld/bld$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then strip ./esrubps/bps$(EXE); cp ./esrubps/bps$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip ./esrudbm/dbm$(EXE); cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then strip ./esrudfs/dfs$(EXE); cp ./esrudfs/dfs$(EXE) $(ESPdir)/bin; fi
@@ -104,7 +99,6 @@ install:
 	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip ./esrumrt/mrt$(EXE); cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then strip ./esrunet/net$(EXE); cp ./esrunet/net$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip ./esrupdb/pdb$(EXE); cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruplt/plt$(EXE) ]; then strip ./esruplt/plt$(EXE); cp ./esruplt/plt$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip ./esruprj/prj$(EXE); cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then strip ./esrures/res$(EXE); cp ./esrures/res$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then strip ./esrutdf/tdf$(EXE); cp ./esrutdf/tdf$(EXE) $(ESPdir)/bin; fi
@@ -116,7 +110,6 @@ clean:
 	cd $(SRCdir)/lib;     $(MAKE) clean
 	cd $(SRCdir)/esruaco; $(MAKE) clean
 	cd $(SRCdir)/esrub2e; $(MAKE) clean
-	cd $(SRCdir)/esrubld; $(MAKE) clean
 	cd $(SRCdir)/esrubps; $(MAKE) clean
 	cd $(SRCdir)/esrudbm; $(MAKE) clean
 	cd $(SRCdir)/esrudfs; $(MAKE) clean
@@ -133,7 +126,6 @@ clean:
 	cd $(SRCdir)/esrumrt; $(MAKE) clean
 	cd $(SRCdir)/esrunet; $(MAKE) clean
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
-	cd $(SRCdir)/esruplt; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
 	cd $(SRCdir)/esrutdf; $(MAKE) clean

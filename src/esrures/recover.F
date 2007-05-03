@@ -62,7 +62,7 @@ C       by calling eddisp (as opposed to edisp).
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character xfile*72,tg*1,delim*1,outs*124
+      character xfile*144,tg*1,delim*1,outs*124
       character SLABEL*32,GLABEL*20,outfile*72
       character TSLABEL*32,TLLABEL*64,TGLABEL*20
       character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8
@@ -108,12 +108,12 @@ C Open output redirect (if saving all outputs together).
 C Output file not specified - use pif file name but changed to *.dat
           ilen=lnblnk(lpifl)-3
           if (lpifl(ilen:ilen).eq.'.') then
-            write (xfile,'(a,a)') lpifl(1:ilen),'dat'
+            write (xfile,'(2a)') lpifl(1:ilen),'dat'
           else
-            write (xfile,'(a,a)') lpifl(1:lnblnk(lpifl)),'.dat'
+            write (xfile,'(2a)') lpifl(1:lnblnk(lpifl)),'.dat'
           endif
         else
-          xfile=outfile
+          write(xfile,'(a)') outfile(1:lnblnk(outfile))
         endif
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
       endif
@@ -487,7 +487,7 @@ C current menu (moget) selections.
 
       common/exporttg/xfile,tg,delim
 
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character SLABEL*32,GLABEL*20
       character lpifl*72,pifltog*4,lname*24,ldisc*64
 

@@ -14,7 +14,7 @@ C Type declarations:
       integer NPRECL, MPSEN, MPDLAY 
 
 C Maximum number of component ADATA (=ESPpdb:MAXMSC)
-      PARAMETER (MADATA=120)
+      PARAMETER (MADATA=140)
 C Maximum number of plant database entries (=ESPpdb:MAXPC)
       PARAMETER (MAXPC=460)
 C Maximum number of component BDATA
@@ -46,7 +46,7 @@ C Maximum number of distinct plant control periods during each day type
 C Maximum number of control day types for plant side control
       PARAMETER (MPCDT=10)
 C Maximum number of plant matrix coefficients for a component model
-      PARAMETER (MPCOE=40)
+      PARAMETER (MPCOE=50)
 C Maximum number of plant components in overall system
       PARAMETER (MPCOM=50)
 C Maximum number of plant component inter-connections

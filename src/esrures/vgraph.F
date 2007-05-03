@@ -50,7 +50,7 @@ C time-dependent variables to be plotted for one or more zones.
       LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*16 ITEM(42)
-      character VITEM*16,HITEM*16,xfile*72,tg*1,delim*1,h*72
+      character VITEM*16,HITEM*16,xfile*144,tg*1,delim*1,h*72
 
       MODIFY=.FALSE.
       VITEM=' '

@@ -42,6 +42,8 @@ C Maximum number of demands/day       MC=20
 
       SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
 #include "building.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -52,30 +54,72 @@ C Maximum number of demands/day       MC=20
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
+      common/b3ver/idmdver
 
 C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
+C Error subroutine and error details for dll mode.
+      common/dllerr/dllsubr,dllmesg
+
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      character dllsubr*12,dllmesg*124,WORD*20,outs*124
       character calename*32,calentag*12,calendayname*32
+      character dstmp*24
       CHARACTER*6 blodlabel
+      logical dll
 
       IER=0
+
+C Check if running in dll mode.
+      call isadll(dll)
 
 C Initialise project data file.
       CALL EFOPSEQ(IUO,bdmds,1,IER)
       IF(IER.NE.0)THEN
-        IER=1
-        RETURN
+        write(outs,'(3a)') 'Dispersed demands file ',
+     &    bdmds(1:lnblnk(bdmds)),' could not be opened.'
+        if(dll)then
+          dllsubr='ERBDMD'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          IER=1
+          RETURN
+        endif
       ENDIF
+      write(currentfile,'(a)') bdmds(1:lnblnk(bdmds))
 
 C Read lines from file, discarding comments. To allow for operation
 C names with spaces copy directly from OUTSTR rather than parsing
 C it into words.  Use long stip for dmdsdesc line. 
       CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
       IF(IER.NE.0)RETURN
-      dmdsdesc=LOUTSTR
+
+C Detect header and set a version number.
+      if(loutstr(1:10).eq.'*Dispersed')then
+        if(loutstr(12:14).eq.'1.0')then
+          idmdver=1
+        elseif(loutstr(12:14).eq.'2.0')then
+          idmdver=2
+        endif
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
+        IF(IER.NE.0) goto 1002
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
+        IF(IER.NE.0) goto 1002
+        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
+          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+        endif
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
+        dmdsdesc=LOUTSTR
+      else
+        dmdsdesc=LOUTSTR
+        idmdver=0
+      endif
 
 C Debug.
       write(6,*) 'calendar ',calename
@@ -109,9 +153,43 @@ C Loop through all of the calendar day types.
      &      IER)
           CALL EGETWR(OUTSTR,K,BCONC(idt,I),0.0,1.,'W','cas conv frac',
      &      IER)
-          IF(IBCGS(idt,I).GT.IBCGF(idt,I))goto 1006
+          IF(IBCGS(idt,I).GT.IBCGF(idt,I))then
+
+C If periods are out of sync then return with a warning.
+            write(outs,'(3a)') ' Period start-end mismatch in...',
+     &        OUTSTR(1:50),'...'
+            if(dll)then
+              dllsubr='ERBDMD'
+              dllmesg=outs
+              ier=2
+              CALL ERPFREE(IUO,ISTAT)
+              return
+            else
+              call edisp(iuout,outs)
+              IER=1
+              CALL ERPFREE(IUO,ISTAT)
+              RETURN
+            endif
+          endif
           X=BRADC(idt,I)+BCONC(idt,I)
-          IF(X.GT.1.)goto 1015
+          if(X.GT.1.02)then
+
+C If radiant plus convective is over unity warn.
+            write(outs,'(3a)') ' Radiant & convec frc>1.02 in...',
+     &        OUTSTR(1:50),'...'
+            if(dll)then
+              dllsubr='ERBDMD'
+              dllmesg=outs
+              ier=2
+              CALL ERPFREE(IUO,ISTAT)
+              return
+            else
+              call edisp(iuout,outs)
+              IER=1
+              CALL ERPFREE(IUO,ISTAT)
+              RETURN
+            endif
+          endif
           IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
      &                            ' Demand rad:con sum < 1.0')
    40   CONTINUE
@@ -142,35 +220,39 @@ C Check for areas associated with each demand label.
  1233   CONTINUE
       ENDIF      
 
- 1235 CONTINUE
+ 1235 CONTINUE    ! jump back point if types were not found.
 
-C Deman reporting if requested.
+C Distributed demands reporting if requested.
       if(ITRC.GE.1)call BDMDINF(iuout,IER)
 
 C Now free project data file.
-    7 CALL ERPFREE(IUO,ISTAT)
+      CALL ERPFREE(IUO,ISTAT)
       RETURN
 
 C Error messages.
- 1000 IER=1
-      call edisp(iuout,' Project demands file error.')
-      GOTO 7
-
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup'
+      blodlabel(1)='Occup '
       blodlabel(2)='Lights'
       blodlabel(3)='SmPowr'      
-      blodlabel(4)='Fans'
-      blodlabel(5)='Pumps'
-      blodlabel(6)='Lifts'      
-      blodlabel(7)='DHW'      
+      blodlabel(4)='Fans  '
+      blodlabel(5)='Pumps '
+      blodlabel(6)='Lifts '      
+      blodlabel(7)='DHW   '      
       goto 1235
- 1006 call edisp(iuout,' Period start - end mismatch in the line ...')
-      call edisp(iuout,outstr)
-      goto 1000
- 1015 call edisp(iuout,' Radiant & convec fractions > 1.0 in...')
-      call edisp(iuout,outstr)
-      goto 1000
+
+ 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+      if(dll)then
+        dllsubr='ERBDMD'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUO,ISTAT)
+        return
+      else
+        call edisp(iuout,outs)
+        IER=1
+        CALL ERPFREE(IUO,ISTAT)
+        RETURN
+      endif
 
       END
 

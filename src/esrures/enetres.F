@@ -477,7 +477,7 @@ C Type casting (all varaiables and arrays cast explicitly)
       CHARACTER MODE*1
 
       CHARACTER ITEM*24,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
-     &TG*1,XFILE*72,H*72,HEADER*32,VALUES*20
+     &TG*1,XFILE*144,H*72,HEADER*32,VALUES*20
 
 C Firstly clear all existing selections and initialise variables.
       CALL EDISP (IUOUT,' ')

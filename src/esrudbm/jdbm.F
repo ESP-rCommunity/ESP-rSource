@@ -99,7 +99,7 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       character tfile*72,longtfile*144
       character outs248*248,LTMP*144
       character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
-      character dfdblbl*20,defdbfl*72,xfile*72,tg*1,delim*1,cfgroot*24
+      character dfdblbl*20,defdbfl*72,xfile*144,tg*1,delim*1,cfgroot*24
       character curfile*72,dba*12,act*1,action*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -841,94 +841,6 @@ C and an index.
       return
       end
 
-
-C CTLEXP *********** ( same as prj version )
-C CTLEXP: Control feedback to export wireframe or text feedback area.
-C Assign user-specified export file - checking if local or remote.
-C tg is a character T or G specifying text or graphic 
-C info being saved.
-C << needs to be compaired for longer strings >>
-      subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      common/rpath/path
-
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*144
-      logical concat
-
-C Each call is a toggle. If open then close text or graphics command
-C file. For the graphics ask if file should be further converted.
-      ixopen=ixopen+1
-      if(ixopen.GT.1)ixopen=0
-      if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
-        if(tg.eq.'T')then
-          CALL ERPFREE(ixunit,ISTAT)
-        elseif(tg.eq.'G')then
-          if(ixloc.eq.1)then
-            longtfile=' '
-            call addpath(xfile,longtfile,concat)
-          else
-            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
-          endif
-          call wwcsetend
-          call wwcclose(longtfile)
-        endif
-      elseif(ixopen.eq.1)then
-        ixloc=0
-        if(path.ne.'./'.and.path.ne.' ')then
-           write(outs,'(A,A)') ' The current path is: ',path
-           call edisp(iuout,outs)
-         h(1)='If using path then name appended to path. Otherwise'
-         h(2)='file put in folder where application was started.'
-         h(3)='If `local` choice you may also give an absolute'
-         h(4)='addressed file name ie. /tmp/junk.exp '
-           CALL EASKAB(' The problem is in a remote folder... ',
-     &      ' place export file:','using current path',
-     &      'in local (or absolute) folder',ixloc,4)
-        endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
-        call easks(xfile,' export file name: ',' ',72,
-     &    ' ','export file name',IER,2)
-
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
-        call usrmsg(outs,' ','p')
-        if(ixloc.eq.1)then
-          if(tg.eq.'T')then
-            call efopseq(ixunit,xfile,4,IER)
-            if(ier.ne.0)return
-          elseif(tg.eq.'G')then
-
-C Writing remotely, add the path to the given file name before
-C passing request to wwlib.c
-            longtfile=' '
-            call addpath(xfile,longtfile,concat)
-            call wwcopen(longtfile)
-            call wwcsetstart
-          endif
-        else
-          if(tg.eq.'T')then
-            CALL ERPFREE(ixunit,ISTAT)
-            call FPOPEN(ixunit,ISTAT,1,3,xfile)
-            if(ISTAT.lt.0)return
-          elseif(tg.eq.'G')then
-            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
-            call wwcopen(longtfile)
-            call wwcsetstart
-          endif
-        endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
-     &    ' >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','p')
-      endif
-      RETURN
-      END
 
 C *********** PKAVAILGBD 
 C PKAVAILGBD presents a list of currently scanned generic databases

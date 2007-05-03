@@ -542,6 +542,11 @@ C    PCONDR(i)            Ratio of flow rate leaving sending node `i' that
 C                         reaches receiving node.
 C    H20LIQUIDCPCel(T, P) Function that returns heat capacity (J/kgK) of liquid
 C                         water at temperature `T' (oC) and pressure 'P' (Pa).
+C                         This function consumes inordinate cpu resources but
+C                         is required here because it can calculate the heat
+C                         capacity of pressurized water.  Another function,
+C                         'SHTFLD', is much more efficient and should be used
+C                         in cases where the liquid water is not pressurized.
 C    TAC_Pw_gen_inlet     Pressure of water in FC-cogen/generator loop (Pa).
 C---------------------------------------------------------------------------------
         mdot_con1   = PCONDR(con1) * CONVAR(con1,2)
@@ -688,6 +693,11 @@ C    PCONDR(i)            Ratio of flow rate leaving sending node `i' that
 C                         reaches receiving node.
 C    H20LIQUIDCPCel(T, P) Function that returns heat capacity (J/kgK) of liquid
 C                         water at temperature `T' (oC) and pressure 'P' (Pa).
+C                         This function consumes inordinate cpu resources but
+C                         is required here because it can calculate the heat
+C                         capacity of pressurized water.  Another function,
+C                         'SHTFLD', is much more efficient and should be used
+C                         in cases where the liquid water is not pressurized.
 C    TAC_Pw_gen_inlet     Pressure of water in FC-cogen/generator loop (Pa).
 C---------------------------------------------------------------------------------
           mdot_bypass = mdot_con1
@@ -766,6 +776,11 @@ C    PCONDR(i)            Ratio of flow rate leaving sending node `i' that
 C                         reaches receiving node.
 C    H20LIQUIDCPCel(T, P) Function that returns heat capacity (J/kgK) of liquid
 C                         water at temperature `T' (oC) and pressure 'P' (Pa).
+C                         This function consumes inordinate cpu resources but
+C                         is required here because it can calculate the heat
+C                         capacity of pressurized water.  Another function,
+C                         'SHTFLD', is much more efficient and should be used
+C                         in cases where the liquid water is not pressurized.
 C    TAC_Pw_gen_inlet     Pressure of water in FC-cogen/generator loop (Pa).
 C---------------------------------------------------------------------------------
         mdotCp_con1 = PCONDR(con1) * CONVAR(con1,2)

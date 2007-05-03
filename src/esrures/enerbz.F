@@ -59,7 +59,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       logical SNAPSH
       
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character outs*124,xfile*72,tg*1,delim*1,lodlabel*6
+      character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
 
       CHARACTER zname*12,zdesc*64
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124

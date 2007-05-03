@@ -67,7 +67,7 @@ C Format of the IPV report.
 C  = 1 is human readable text, 2 is tab separated, 3 is java
       common/IPVFORMAT/ipvform,ipvversion
 
-      character outs*124,outsn*124,outsd*124,H*72,xfile*72,tg*1
+      character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
       character SLABEL*32,GLABEL*20,TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
