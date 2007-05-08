@@ -328,8 +328,8 @@ C Initialise plot counter.
       IPLOT=0
 
 C Iteration loop.
- 320  NPLT=MAXIT/50
-      IF (mod(MAXIT,50).NE.0) NPLT=NPLT+1
+ 320  NPLT=MAXIT/100
+      IF (mod(MAXIT,100).NE.0) NPLT=NPLT+1
       ICALL=0
 
 C If in text mode, print monitoring headlines.
