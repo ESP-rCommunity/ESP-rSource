@@ -496,9 +496,10 @@ C For each view generate image.
      &     outs,GENVEW,dok,1)
         endif
 
-C Generate name of image depending on type.
+C Generate name of image depending on type and allow 3 digits for
+C the frame number.
         if (GENVEW) then
-          write (t12,'(a,i2.2)') LBITrt(ICOMP,IM)(1:10),IFRAME
+          write (t12,'(a,i3.3)') LBITrt(ICOMP,IM)(1:9),IFRAME
           call st2name(t12,name)
           if (imgtyp.eq.1) then
             write (TLBIT,'(a,a4)') name(1:lnblnk(name)),'.bmp'
