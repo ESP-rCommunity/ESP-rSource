@@ -19,7 +19,8 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C edcondb.F comprising:
-C  ELISTC: Controls display/edit of materials.
+C  ELISTC: Controls display/edit of materials via binary file.
+C  ELISTMAT: Controls display and editing of materials commons.
 C  EDPELEM: Controls listing of materials.
 C  EDMLDB: Display/edit a constructions db.
 C  EDWALL: Edit construction common block data.
@@ -479,6 +480,528 @@ C To indicate this, pass back ier as 2.
    10 FORMAT(' Materials db data write error: Record',I6)
       CALL EDISP(iuout,OUTSTR)
       GOTO 99
+
+      END
+
+
+C ************* ELISTMAT 
+C ELISTMAT: Controls display and editing of materials commons.
+C If ACTION = 'M' then include editing if ACTION = '-' only
+C allow choice.  Chgdb flagged true if an mod made to db during session.
+      SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,IER)
+#include "esprdbfile.h"
+      common/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/exporttg/xfile,tg,delim
+      COMMON/exporttgi/ixopen,ixloc,ixunit
+      LOGICAL     OK,DOK,MODDB,chgdb
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
+      real matvistran,matvisotrfl,matvisinrfl,matrender
+      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
+     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
+     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
+
+      real matgapcnd,matvisco,matgapden
+      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
+     &  matgapden(MGIT,4)
+
+      integer mathash
+      common/mathasharray/mathash(600)
+
+C CLSDES (30 char) is an array for menu items listing each class.
+C CLSSEL (36 char) is an array for menu items for the selected class.
+      DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      integer iwhicharray   ! for each item in menu point back to array
+      dimension iwhicharray(60)
+      character ACTION*1,CLSSEL*36,ltmp*72,CLSDES*30,H*72
+      CHARACTER KEY*1,PDBM*68,outs*124
+      CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
+      logical close
+
+C Assume no changes to db amd user has not entered password.
+      MODDB=.FALSE.
+      chgdb=.false.
+      t32 = ' '
+      IAF=IFIL+1
+
+C Check that the material db is not empty.
+    4 IER=0
+      call eclose(matver,1.1,0.001,close)
+      if(close)then
+        IF(matcats.LE.0)THEN
+          CALL USRMSG(' Materials db is empty.',' ','W')
+          IER=1
+          RETURN
+        ENDIF
+      endif
+
+C Setup for menu.
+C Gather the names of the various classes and present this list.
+  40  ICO=-1
+      CLSDES(1)=  '  Description        No. Items'
+      M=1
+      DO 44 I=1,matcats
+        write(CLSSEL(I),'(A)') matcatname(I)(1:32)
+        IF(matcatitems(I).GT.0)THEN
+          M=M+1
+          CALL EMKEY(M-1,KEY,IER)
+          WRITE(CLSDES(M),'(A1,1X,A,2X,I2)')KEY,matcatname(I)(1:24),
+     &      matcatitems(I)
+        ENDIF
+   44 CONTINUE
+
+      CLSDES(M+1)=  '  __________________________  '
+      if(ACTION.eq.'M'.or.ACTION.eq.'m')then
+        CLSDES(M+2)='+ add a classification        '
+        CLSDES(M+3)='! list database entries       '
+      elseif(ACTION.eq.'-')then
+        CLSDES(M+2)='                              '
+        CLSDES(M+3)='                              '
+        call edisp(iuout,' ')
+        call edisp(iuout,' Select classification to view items')
+      endif
+      CLSDES(M+4)=  '? help                        '
+      CLSDES(M+5)=  '- exit                        '
+      NCO=M+5
+      ICO=-2
+
+C Help text for this menu.
+      H(1)='The classifications shown in the display include up to'
+      H(2)='18 materials. To get a listing of the items included'
+      H(3)='select one of the classifications.'
+
+C Now display the menu.
+      CALL EMENU('Materials Classes',CLSDES,NCO,ICO)
+      IF(ICO.EQ.NCO)THEN
+        RETURN
+      ELSEIF(ICO.EQ.(NCO-1))THEN
+        CALL PHELPD('materials menu',3,'-',0,0,IER)
+      ELSEIF(ICO.EQ.(NCO-2))THEN
+
+C List one or more classifications.
+        INPIC=matcats
+        h(1)='You may select one or more classes to list. '
+        CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
+     &        36,matcats,CLSSEL,'Material classes',IER,1)
+        IF(INPIC.EQ.0)GOTO 40
+        h(1)=' Summary reporting can be shown in the text feedback'
+        h(2)=' or a text file.'
+        CALL EASKABC(' Reporting to:',' ',
+     &      'text feedback','summary file','cancel',irpt,2)
+        if(irpt.eq.1)then
+          itu = iuout
+        elseif(irpt.eq.2)then
+          itu = ixunit
+          write(xfile,'(a)') 'material_listing.txt'  ! initial file name
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+        elseif(irpt.eq.3)then
+          goto 40
+        endif
+        call edisp(itu,'In the materials database: ')
+        call edisp(itu, LFMAT)
+        call edisp(itu,' ')
+        do 42 list=1,INPIC
+          IC=ICLSSEL(list)
+          IF(matcatitems(IC).GT.0)THEN
+            WRITE(outs,'(3a,i2,a)')' Classification: ',
+     &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
+            call edisp(itu,outs)
+            call edisp(itu,' ')
+            call edisp(itu,
+     &      'Index|Con-   |Den- |Specif|IR  |Solr|Diffus|Description')
+            call edisp(itu,
+     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+
+C Loop through all of the items in the array and list out those that are
+C associated with this class.
+            DO 47 J=1,matdbitems
+              if(matcatindex(J).eq.IC)then
+                IDB=matlegindex(J)
+                WRITE(outs,46)IDB,matdbcon(J),matdbden(J),matdbsht(J),
+     &            matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:lnblnk(matname(J)))
+   46           FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+                call edisp(itu,outs)
+              endif
+   47       CONTINUE
+          ELSE
+            call edisp(itu,' No items in this classification.')
+          ENDIF
+   42   continue
+        call edisp(itu,' ')
+        call edisp(itu,' Units: Conduct W/(m deg.C), Density kg/m**3')
+        call edisp(itu,'        Specific Heat J/(kg deg.C) ')
+        if(irpt.eq.2)then
+
+C Call ctlexp a 2nd time to close the file.
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
+        endif
+      ELSEIF(ICO.EQ.(NCO-3))THEN
+
+C Add another category to the database << not yet tested >>
+        if(matcats.LT.30)then
+          matcats=matcats+1
+          H(1)='This description may be up to 32 char. '
+          t32=' '
+          CALL EASKS(t32,' Classification name (<32 char)?',' ',
+     &      32,' ','class name',IER,1)
+          write(matcatname(matcats),'(a)') t32
+          write(matcatdoc(matcats),'(a,i2,3a)')
+     &      'Category (',matcats,') named ',t32(1:lnblnk(t32)),
+     &      ' was inserted manually. No other documentation (yet).'
+          ILNE=matdbitems+1
+          matname(ILNE)='new_material'
+          matopaq(ILNE)='o'
+          matdoc(ILNE)='no documentation (yet)'
+          matcatindex(ILNE)=matcats
+          matdbcon(ILNE)=1.0
+          matdbden(ILNE)=1.0
+          matdbsht(ILNE)=1.0
+          matdboute(ILNE)=0.9
+          matdbine(ILNE)=0.9
+          matdbouta(ILNE)=0.5
+          matdbina(ILNE)=0.5
+          matdbdrv(ILNE)=10.0
+          matdbthick(ILNE)=10.0
+          matirtran(ILNE)=0.0
+          matsoldrtrn(ILNE)=0.0
+          matsoldrotrfl(ILNE)=0.5
+          matsoldrinrfl(ILNE)=0.5
+          matvistran(ILNE)=0.0
+          matvisotrfl(ILNE)=0.5
+          matvisinrfl(ILNE)=0.5
+          matrender(ILNE)=0.0
+          chgdb=.true.
+        endif
+        goto 40
+      ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
+        
+C Loop through data for this classification for manipulation.
+        IC=ICO-1
+        IF(matcatitems(IC).EQ.0)THEN
+         CALL USRMSG(' No items in this classification.',' ','W')
+         GOTO 40
+        ENDIF
+
+C Display the materials of the classification in a menu.
+    3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
+        PDBM(2)= '          Specific Heat J/(kg deg.C) '
+        WRITE(PDBM(3),33)matcatname(IC)(1:lnblnk(matcatname(IC))),IC
+   33   FORMAT    ('a Classification: ',A,' (',I2,')')
+        WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
+        PDBM(5)=   '  ___________________________________'
+        PDBM(6)=
+     &  ' |Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
+        PDBM(7)=
+     &  ' |duct. |sity |heat  |emis|abs |resis|of material  '
+        M=7
+        DO 30 J=1,matdbitems
+
+C Loop through all of the items in the array and list out those that are
+C associated with this class.
+          if(matcatindex(J).eq.IC)then
+
+C Remember the array index that goes with the menu position (m).
+            M=M+1
+            iwhicharray(M)=J  ! menu position M relates to data array J.
+            CALL EMKEY(M-6,KEY,IER)
+            if(matopaq(J).eq.'o')then
+              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:24)
+   24         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+            elseif(matopaq(J).eq.'-')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:12)
+   25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
+            else
+              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:24)
+            endif
+          endif
+   30   CONTINUE
+        NC=M
+        PDBM(NC+1)=  '  __________________________     '
+        if(ACTION.eq.'M'.or.ACTION.eq.'m')then
+          PDBM(NC+2)='1 add/ delete material            '
+          PDBM(NC+3)='2 copy material                   '
+          PDBM(NC+4)='! save materials database        '
+        elseif(ACTION.eq.'-')then
+          PDBM(NC+2)='                                 '
+          PDBM(NC+3)='                                 '
+          PDBM(NC+4)='                                 '
+        endif
+        PDBM(NC+5)=  '? help                           '
+        PDBM(NC+6)=  '- exit this menu                 '
+        NITMS=NC+6
+        INO=-4
+
+C Help text for this menu.
+    2   continue
+        H(1)='The information in this display is based on data from'
+        H(2)='a materials database.  Databases of this'
+        H(3)='type are used to build a construction database.'
+        H(4)='Data in this db rarely changes. However, users may '
+        H(5)='wish to add additional materials or classifications to'
+        H(6)='conform to materials in their region.  '
+        H(7)='  '
+        H(8)='Adding or Deleting a material is supported. The'
+        H(9)='former creates a material at the end of the current'
+        H(10)='classification which may then be edited. '
+        H(11)=' '
+        H(12)='You may copy an existing material into a new item at'
+        H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+ 
+        CALL EMENU('Materials Database',PDBM,NITMS,INO)
+
+        IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
+          IF(MODDB.and.ACTION.eq.'M')THEN
+            dok=.true.
+            h(1)='Recent changes to the materials database are held'
+            h(2)='in memory and might be lost if not saved to file.'
+            CALL ASKOK('Changes have been made in database. ',
+     &        'Save the database now ? ',OK,dok,2)
+            IF(.NOT.OK)GOTO 4
+            chgdb=.true.
+            ltmp=' '
+            write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.aa'
+            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            MODDB=.FALSE.
+          ENDIF
+          GOTO 4
+        ELSEIF(INO.EQ.1.OR.INO.EQ.2)THEN
+          GOTO 2
+        ELSEIF(INO.eq.3)THEN
+
+C Edit classification name.
+          H(1)='A classification has a descriptive name (up to '
+          H(2)='32 char).'
+          write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
+          CALL EASKS(t32,' ',' Classification name (<32 char)?',
+     &      32,' ','class name',IER,2)
+          if(t32(1:2).ne.'  ')then
+            write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
+          endif
+
+C Also edit classification documentation.
+          H(1)='Notes (<248 char) for this category of materials' 
+          H(2)='are useful for descriptions that apply to all'
+          H(3)='the materials.'
+          t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
+          CALL EASKS248(t248,'Category notes:',' ',
+     &      72,'this category...','category notes',IER,3)
+          if(t248(1:2).ne.'  ')then
+            write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+          endif
+        ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
+          GOTO 2
+        ELSEIF(INO.EQ.NITMS-1)THEN
+          CALL PHELPD('materials database',13,'-',0,0,IER)
+        ELSEIF(INO.EQ.NITMS-2)THEN
+
+C Save materials db with all materials and
+C reset flag to show db is current with local arrays.
+          IF(.NOT.MODDB)THEN
+            CALL USRMSG(' ',' No changes in db...','-')
+          ELSE
+            chgdb=.true.
+            ltmp=' '
+            write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.aa'
+            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            MODDB=.FALSE.
+          ENDIF
+        ELSEIF(INO.EQ.NITMS-3)THEN
+
+C Copy an existing material to a new one at end of the array.
+C Use iwhicharray to go from the menu position to the array
+C end of the array.  
+          CALL USRMSG(' ',' Which item of list?','-')
+          CALL EMENU('Copy material',PDBM,NITMS,IW)
+          IWHICH=iwhicharray(IW)
+          ILNE=matdbitems+1
+          matlegindex(ILNE)=-99
+          matdbcon(ILNE)=matdbcon(IWHICH)
+          matdbden(ILNE)=matdbden(IWHICH)
+          matdbsht(ILNE)=matdbsht(IWHICH)
+          matdboute(ILNE)=matdboute(IWHICH)
+          matdbine(ILNE)=matdbine(IWHICH)
+          matdbouta(ILNE)=matdbouta(IWHICH)
+          matdbina(ILNE)=matdbina(IWHICH)
+          matdbdrv(ILNE)=matdbdrv(IWHICH)
+          matdbthick(ILNE)=matdbthick(IWHICH)
+          matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
+          write(matname(ILNE),'(2a)') 
+     &      matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+          matdoc(ILNE)=matdoc(IWHICH)
+          matopaq(ILNE)=matopaq(IWHICH)
+          matirtran(ILNE)=matirtran(IWHICH)
+          matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+          matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+          matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+          matvistran(ILNE)=matvistran(IWHICH)
+          matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+          matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+          matrender(ILNE)=matrender(IWHICH)
+          matdbitems=matdbitems+1
+          matcatitems(IC)=matcatitems(IC)+1
+          MODDB=.TRUE.
+          chgdb=.true.
+        ELSEIF(INO.EQ.NITMS-4)THEN
+
+C Add or delete and material from db.
+          h(1)='You cannot recover a deleted material.  After you '
+          h(2)='copy it, be sure to give it a unique name. '
+          CALL EASKABC(' ','Options: ',' Delete existing material',
+     &      ' Insert material','continue',IW,2)
+          IF(IW.EQ.1)THEN
+
+C Ask the user which one to remove then loop through materials and
+C copy the contents of material > IWHICH into the next lower one.
+            CALL USRMSG(' ',' Which item of list? ','-')
+            CALL EMENU('delete material',PDBM,NITMS,IW)
+            IWHICH=iwhicharray(IW)
+            DO 791 IVV=IWHICH,matdbitems-1
+              matlegindex(IVV)=matlegindex(IVV+1)-1
+              matdbcon(IVV)=matdbcon(IVV+1)
+              matdbden(IVV)=matdbden(IVV+1)
+              matdbsht(IVV)=matdbsht(IVV+1)
+              matdboute(IVV)=matdboute(IVV+1)
+              matdbine(IVV)=matdbine(IVV+1)
+              matdbouta(IVV)=matdbouta(IVV+1)
+              matdbina(IVV)=matdbina(IVV+1)
+              matdbdrv(IVV)=matdbdrv(IVV+1)
+              matdbthick(IVV)=matdbthick(IVV+1)
+              matcatindex(IVV)=matcatindex(IVV+1)  ! keep in same category
+              matname(IVV)=matname(IVV+1)
+              matdoc(IVV)=matdoc(IVV+1)
+              matopaq(IVV)=matopaq(IVV+1)
+              matirtran(IVV)=matirtran(IVV+1)
+              matsoldrtrn(IVV)=matsoldrtrn(IVV+1)
+              matsoldrotrfl(IVV)=matsoldrotrfl(IVV+1)
+              matsoldrinrfl(IVV)=matsoldrinrfl(IVV+1)
+              matvistran(IVV)=matvistran(IVV+1)
+              matvisotrfl(IVV)=matvisotrfl(IVV+1)
+              matvisinrfl(IVV)=matvisinrfl(IVV+1)
+              matrender(IVV)=matrender(IVV+1)
+  791       CONTINUE
+            matdbitems=matdbitems-1
+            matcatitems(IC)=matcatitems(IC)-1
+            MODDB=.TRUE.
+            chgdb=.true.
+          ELSEIF(IW.EQ.2)THEN
+
+C Add a material, initiate it to the values of last material in class.
+            IF(matdbitems.LT.MGIT)THEN
+              ILNE=matdbitems+1
+              lastcatitem=0
+              DO 793 J=1,matdbitems
+                if(matcatindex(J).eq.IC)then
+                  lastcatitem=J
+                endif
+  793         continue
+              if(lastcatitem.gt.0)then
+                matname(ILNE)='new_material'
+                matlegindex(ILNE)=-99
+                matdbcon(ILNE)=matdbcon(lastcatitem)
+                matdbden(ILNE)=matdbden(lastcatitem)
+                matdbsht(ILNE)=matdbsht(lastcatitem)
+                matdboute(ILNE)=matdboute(lastcatitem)
+                matdbine(ILNE)=matdbine(lastcatitem)
+                matdbouta(ILNE)=matdbouta(lastcatitem)
+                matdbina(ILNE)=matdbina(lastcatitem)
+                matdbdrv(ILNE)=matdbdrv(lastcatitem)
+                matdbthick(ILNE)=matdbthick(lastcatitem)
+                matcatindex(ILNE)=matcatindex(lastcatitem)  ! keep in same category
+                matdoc(ILNE)=matdoc(lastcatitem)
+                matopaq(ILNE)=matopaq(lastcatitem)
+                matirtran(ILNE)=matirtran(lastcatitem)
+                matsoldrtrn(ILNE)=matsoldrtrn(lastcatitem)
+                matsoldrotrfl(ILNE)=matsoldrotrfl(lastcatitem)
+                matsoldrinrfl(ILNE)=matsoldrinrfl(lastcatitem)
+                matvistran(ILNE)=matvistran(lastcatitem)
+                matvisotrfl(ILNE)=matvisotrfl(lastcatitem)
+                matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
+                matrender(ILNE)=matrender(lastcatitem)
+                matdbitems=matdbitems+1
+
+C ??
+C               CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+C     &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
+                MODDB=.TRUE.
+                chgdb=.true.
+              endif
+            ELSE
+              CALL USRMSG(' ','Exceeds classification limit!','W')
+              GOTO 3
+            ENDIF
+          ELSEIF(IW.EQ.3)THEN
+            GOTO 3
+          ENDIF
+        ELSEIF(INO.EQ.NITMS-4)THEN
+          GOTO 2
+        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-4)THEN
+
+C Identified one of the materials to edit or select.
+          IFOC=iwhicharray(IW)
+          if(ACTION.eq.'M')then
+C ??
+C            CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+C     &        EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
+            MODDB=.TRUE.
+            chgdb=.true.
+          elseif(ACTION.eq.'-')then
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &        ' Units: Conduct W/(m deg.C), Density kg/m**3')
+            call edisp(iuout,
+     &        '        Specific Heat J/(kg deg.C) ')
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Diffus|Description')
+            call edisp(iuout,
+     &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
+            WRITE(outs,244)matlegindex(IFOC),matdbcon(IFOC),
+     &        matdbden(IFOC),matdbsht(IFOC),matdboute(IFOC),
+     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:20)
+  244       FORMAT(I5,F9.3,F7.1,F7.0,F5.2,F6.2,F7.0,1X,A)
+            CALL EDISP(iuout,outs)
+            CALL EDISP(iuout,' ')
+            iwhich=matlegindex(ifoc)
+            lsn=MIN0(lnblnk(matname(IFOC)),32)
+            write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
+     &        matname(IFOC)(1:lsn)
+            dok=.true.
+            h(1)='Last chance to abort the selection. '
+            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            if(OK)return
+          endif
+        ENDIF
+        GOTO 3
+      else
+        goto 40
+      endif
+      call usrmsg(' ',' ','-')
+      goto 40
 
       END
 
