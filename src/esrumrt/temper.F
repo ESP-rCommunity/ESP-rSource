@@ -50,83 +50,83 @@ C               Z coordinate.
       vectemp(2,icube)=0.0
       vectemp(3,icube)=0.0
       t(1)=0.0
-        t(2)=0.0
-        t(3)=0.0
-        t(4)=0.0
-        t(5)=0.0
-        t(6)=0.0
-        tempmrt=0.0
+      t(2)=0.0
+      t(3)=0.0
+      t(4)=0.0
+      t(5)=0.0
+      t(6)=0.0
+      tempmrt=0.0
 
 c Theoretically, the sum over a row in the view factor
 c matrix should be 1.00.  Sometimes the program gives
 c values that do not follow this rule.  Therefore the
 c values of one row are scaled, in order to ensure that
 c the sum is equal to one.
-        temperr=.false.
-        do 30 i=fstsur,fstsur+5
-          sum =0.0
-          do 10 j=1,lstsur
-            sum= sum+ ff(i,j)
-10        continue
-          if (sum.gt.0.0) then
-            do 20 j=1,lstsur
-              ff(i,j)=ff(i,j)/sum
-20          continue
-          else
-            ixxx=(i-fstsur+1)
-            write(outs,22)ixxx
-22          format(' Surface number',i3,' of cube cannot SEE other',
+      temperr=.false.
+      do 30 i=fstsur,fstsur+5
+        sum =0.0
+        do 10 j=1,lstsur
+          sum= sum+ ff(i,j)
+10      continue
+        if (sum.gt.0.0) then
+          do 20 j=1,lstsur
+            ff(i,j)=ff(i,j)/sum
+20        continue
+        else
+          ixxx=(i-fstsur+1)
+          write(outs,22)ixxx
+22        format(' Surface number',i3,' of cube cannot SEE other',
      &           ' Surfaces. TMRT incorrect !!')
-            call edisp(iuout,outs)
-            temperr=.true.
-          endif
-30      continue
+          call edisp(iuout,outs)
+          temperr=.true.
+        endif
+30    continue
 
 c  For every surface of the cube inside the geometry the radiant
 c  temperature is calculated. '  t(k)  '. Surface properties
 C  are taken into account....look at code in MZCFGG
-        do 200 i=fstsur,fstsur+5
-          k=i-fstsur+1
-          t(k)=0.0
-          do 100 j=1,lstsur
-            t(k)=t(k)+ff(i,j)*((temp(j)+273.19)**4)
-100       continue
-          t(k)=(t(k)**0.25)
-200     continue
+      do 200 i=fstsur,fstsur+5
+        k=i-fstsur+1
+        t(k)=0.0
+        do 100 j=1,lstsur
+          t(k)=t(k)+ff(i,j)*((temp(j)+273.19)**4)
+100     continue
+        t(k)=(t(k)**0.25)
+200   continue
 
 c  Here the tempmrt value is estimated as the mean radiant
 c  temperature of all cube surfaces.
 c  surarea(i) = the area of surface i divided by the total area.
-        tempmrt=0.0
-        do 300 i=1,6
-          tempmrt=tempmrt+(t(i)*surarea(i))
-          t(i)=(t(i)-273.19)
-300     continue
-        tempmrt=(tempmrt)-273.19
+      tempmrt=0.0
+      do 300 i=1,6
+        tempmrt=tempmrt+(t(i)*surarea(i))
+        t(i)=(t(i)-273.19)
+300   continue
+      tempmrt=(tempmrt)-273.19
 
 c  Here the Vector Radiant Temperature is calculated.
 c  Cubefaces 4,1,6 have the larger x,y or z coordinates.
-        vectemp(1,icube)=t(4)-t(2)
-        vectemp(2,icube)=t(1)-t(3)
-        vectemp(3,icube)=t(6)-t(5)
+      vectemp(1,icube)=t(4)-t(2)
+      vectemp(2,icube)=t(1)-t(3)
+      vectemp(3,icube)=t(6)-t(5)
 
-        call edisp(iuout,' ')
-        WRITE(outs,'(A,I2)') ' MRT sensor: ',NCUB
-        call edisp(iuout,outs)
-        call edisp(iuout,' ___________________________________________')
-        call edisp(iuout,' Sensor|   origin (m)    |    size (m)  |rot')
-        call edisp(iuout,' name  |Xcord|Ycord|Zcord|len |wid |ht  |deg')
-        L=icube
-        WRITE(outs,303)CUBN(L),XOC(L),YOC(L),ZOC(L),
-     &                 DXC(L),DYC(L),DZC(L),CANG(L)
-  303   FORMAT(1X,A6,3F6.1,3F5.2,F5.0)
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
+      call edisp(iuout,' ')
+      WRITE(outs,'(A,I2)') ' MRT sensor: ',NCUB
+      call edisp(iuout,outs)
+      call edisp(iuout,' ___________________________________________')
+      call edisp(iuout,' Sensor|   origin (m)    |    size (m)  |rot')
+      call edisp(iuout,' name  |Xcord|Ycord|Zcord|len |wid |ht  |deg')
+      L=icube
+      WRITE(outs,303)CUBN(L),XOC(L),YOC(L),ZOC(L),
+     &               DXC(L),DYC(L),DZC(L),CANG(L)
+  303 FORMAT(1X,A6,3F6.1,3F5.2,F5.0)
+      call edisp(iuout,outs)
+      call edisp(iuout,' ')
 
-        write(outs,'(A,F8.2)') ' TMRT-value             [C]  :',tempmrt
-        call edisp(iuout,outs)
-        write(outs,'(A,3F8.2)')' VRT values(x,y and z)  [C]  :',
+      write(outs,'(A,F8.2)') ' TMRT-value             [C]  :',tempmrt
+      call edisp(iuout,outs)
+      write(outs,'(A,3F8.2)')' VRT values(x,y and z)  [C]  :',
      &                        (vectemp(i,icube),i=1,3)
-        call edisp(iuout,outs)
-        return
-        end
+      call edisp(iuout,outs)
+      return
+      end

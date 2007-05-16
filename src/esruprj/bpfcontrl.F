@@ -1688,8 +1688,11 @@ C Control with separate on/off setpoints for heating and cooling.
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
-C << this logic is used for the case of a setpoint temperature
-C << defined in a temporal file.
+C This logic is also used for the case of a setpoint temperature
+C defined in a temporal file.  Note that users should first have
+C setup the control via the context->temporal menu so it is usually
+C not required that a user do subsequent editing to the zone control
+C law ll details.
           H(1)=' - Refer ESP-r Data Model section 9 '
           if(itrc.gt.0)then
             call edisp(iuout,' ')
@@ -1742,9 +1745,14 @@ C string to remind the user.
           H(14)=' '
           H(15)='PLUS 1 item for scaling factor (i.e. a % offset)'
           H(16)='PLUS 1 item for offset factor (absolute offset) '
-          H(17)=' - Refer ESP-r Data Model section 9 '
+          H(17)=' '
+          H(18)='NOTE: if you are using this control to get a setpoint'
+          H(19)='from a temporal file a zone control might already have'
+          H(20)='created within the model context->temporal data menu.'
+          H(21)=' '
+          H(22)=' '
           CALL EASKR(cm(1),' ',' No. of misc data items ',
-     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,17)
+     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,22)
 
   53      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
           H(1)='Heat delivery is normally set high so that the '
@@ -1783,18 +1791,24 @@ C Auxiliary sensor details,
           I6=INT(cm(6))  
           H(1)='The sensor details are essentially the same as '
           H(2)='required in a control point sensor ie. '
-          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(3)=' 1st aux item >0 is a zone and or surface, =0 any zone,'
           H(4)='   = -1 measuring plant component,  '
           H(5)='   = -2 measuring mix air:radiant,'
           H(6)='   = -3 ambient where the 2nd item is:'
           H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
           H(8)='        3 = wind dir, 4 = diffuse rad, '
           H(9)='        5 = direc norm rad, 6 = RH'
-          h(10)=' '
-          h(11)=' 2nd item is used to further specify the location '
-          h(12)=' 3rd item is used to further specify the location '
-          h(13)=' 4th item is always zero '
-          H(14)=' - Refer ESP-r Data Model section 9 '
+          h(10)='  = -5 an item in a temporal file AND the 2nd aux item'
+          h(11)='       is the column of the temporal item.'
+          h(12)='       NOTE: these would already be set for you if'
+          h(12)='       you used the context->temporal data menu'
+          h(13)='       option to associate a temporal setpoint item'
+          h(14)='       with a model.'
+          h(15)=' '
+          h(16)=' 2nd item is used to further specify the location '
+          h(17)=' 3rd item is used to further specify the location '
+          h(18)=' 4th item is always zero '
+          H(19)=' - Refer ESP-r Data Model section 9 '
           DO 125 L=1,I6
             ndx=8+4*(L-1)
 
@@ -1807,15 +1821,16 @@ C string to remind the user.
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
-            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,14)
-            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,14)          
-            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,14)          
+            CALL EASKR(cm(ndx),' ',
+     &        ' Aux sensor detail 1st item (see help)?',
+     &        -5.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,19)
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,19)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,19)          
             CALL EASKR(cm(ndx+3),' ',
-     &        ' Aux sen detail 4th item (always use zero)?',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,14)
+     &        ' Aux sensor detail 4th item (always use zero)?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,19)
 125       continue 
           lastndx=ndx+4         
           

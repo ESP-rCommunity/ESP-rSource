@@ -3548,6 +3548,8 @@ C Each call is a toggle.
               return    ! does ixopen need to be reset?
             endif
           endif
+        else
+          IW=2   ! iw needs to be non-zero for subsequent code to work.
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '

@@ -96,7 +96,7 @@ install:
 	@if [ -f $(SRCdir)/esruish/ish$(EXE) ]; then strip ./esruish/ish$(EXE); cp ./esruish/ish$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrumfs/mfs$(EXE) ]; then strip ./esrumfs/mfs$(EXE); cp ./esrumfs/mfs$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrumld/mld$(EXE) ]; then strip ./esrumld/mld$(EXE); cp ./esrumld/mld$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip ./esrumrt/mrt$(EXE); cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin; fi
+	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip ./esrumrt/mrt$(EXE); cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin/espvwf$(EXE); fi
 	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then strip ./esrunet/net$(EXE); cp ./esrunet/net$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip ./esrupdb/pdb$(EXE); cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
 	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip ./esruprj/prj$(EXE); cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi

@@ -1960,19 +1960,28 @@ C Also update lodlabel commons before writing out.
             H(2)='data for the zone surfaces.'
             CALL EASKS(CFILE,' New construction file name:',
      &        ' ',72,'new.con','construction file',IER,2)
-            IF(CFILE.NE.' ')THEN
+            IF(CFILE(1:2).NE.'  ')THEN
               QUIET=.false.
+              write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
               CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
-                DO 61 ISS=1,NZSUR(NCOMP)
+                do 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
    61           continue
-                LTWIN(NCOMP)=DFILE
-                ITW(NCOMP)=1
-                QUIET=.false.
-                CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
+                H(1)='A zone tmc file contains optical data for the'
+                H(2)='data zone surfaces.'
+                CALL EASKS(DFILE,' New zone tmc file name:',
+     &            ' ',72,'new.tmc','tmc file',IER,2)
+                if(DFILE(1:2).NE.'  ')then
+                  write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
+                  ITW(NCOMP)=1
+                  QUIET=.false.
+                  CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
+                else
+                  goto 90
+                endif
               endif
             else
               goto 90

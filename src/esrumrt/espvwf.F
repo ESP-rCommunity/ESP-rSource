@@ -18,10 +18,10 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C ESRU: mrt
+C ESRU: espvwf
 
 C Revised to take in configuration file and zone focus.
-      program mrt
+      program espvwf
 #include "building.h"
 
       integer igraphiclib  ! external definition
@@ -48,7 +48,7 @@ C Revised to take in configuration file and zone focus.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       COMMON /CELLS/ NCELL(MSM), NCPT(MSM), IGFACT
       COMMON /BUBXYZ1/ NPATCH, NBUB
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
@@ -152,7 +152,7 @@ C     temp(i)           : Temperature for surface i. [C]
 
 C Initialize global common data.
       call ezero
-      call curmodule('mrt ')
+      call curmodule('vwf ')
       IUIN=5
       IUOUT=6
       LIMTTY=24
@@ -209,6 +209,18 @@ C General image option flags.
       GRDIS=0.0
       ITPPSW=0
 
+C If your compiler does not support floating-point arithmetic
+C according to ANSI/IEEE Std 754-1985 comment out the following code.
+
+C Initialize mode, status, and signal handling for IEEE arithmetic.
+C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
+C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
+C           only if: Sun-3 f77 with -f68881 or -ffpa option
+C                or: Sun-4 f77.
+C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+C      ieeer=ieee_handler('set','common',SIGFPE_bps)
+C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+
 c Initialise output device, assume minimal trace.
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
@@ -251,7 +263,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMIT =16
       ENDIF
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r View Factors & MRT: enquiries to esru@strath.ac.uk')
+     &'ESP-r View Factors: enquiries to esru@strath.ac.uk')
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
 C If starting as a reduced percentage of default then widen the
@@ -348,10 +360,10 @@ C determine if focus should be to a single zone.
         inzone='ALL'
       endif
 
-C Clear VWF array.
+C Clear VEWF array.
       DO 331 I = 1,MS
         DO 332 J=1,MS
-          VWF(I,J)=0.
+          VEWF(I,J)=0.
   332   CONTINUE
   331 CONTINUE
 
@@ -458,11 +470,11 @@ C that zone.  If inzone = UNKNOWN or the index 0 present a list.
       ITEM(14)=                 '> update file                '
       ITEM(15)=                 '  __________________________ '
       ITEM(16)=                 '? help                       '
-      ITEM(17)=                 '- exit mrt                   '
+      ITEM(17)=                 '- exit vwf                   '
       NITEMS = 17
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
-      call askabout('mrt ',1)
+      call askabout('vwf ',1)
 
 20    CALL EMENU('  Viewfactors & MRT',ITEM,NITEMS,INO)
 
@@ -511,7 +523,7 @@ C Find the path and local file name.
           call updwire(ncomp)
           NZONES=NCOMP
           CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
-          call tstamp('>','MRT: scanning new model')
+          call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 
 C Open scratch file now that path is known.
@@ -554,7 +566,7 @@ C Read geometry file for either calculation purpose
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 10
         IER=0
         ZN=zname(IC)
-        write(outs,'(a,a)')'MRT: shift zone focus to: ',ZN
+        write(outs,'(a,a)')'VWF: shift zone focus to: ',ZN
         call tstamp('>',outs)
         goto 42
       ELSEIF(INO.EQ.6)THEN
@@ -575,7 +587,7 @@ c Change parameter igfact.
         h(4)='at the centre of each sub-surface. '
         CALL EASKI(IGFACT,' ',' New value ? ',
      &             2,'W',igx,'W',6,'grid factor',IER,4)
-        call tstamp('>','MRT: updated grid factor')
+        call tstamp('>','VWF: updated grid factor')
       ELSEIF(INO.EQ.7)THEN
 
 c Change npatch.
@@ -587,7 +599,7 @@ c Change npatch.
         CALL EASKI(NP,' ',' New value ? ',
      &       1,'F',MPATCH/4,'F',1,'patch subdivision',IER,0)
         NPATCH=4*NP
-        call tstamp('>','MRT: updated patch subdivision')
+        call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
 
 c Calculate viewfactors for input geometry.
@@ -605,9 +617,9 @@ c Calculate viewfactors for input geometry.
         lstsur = nsur
         tmrt=.false.
         GEOLOAD=.TRUE.
-        call tstamp('>','MRT: enter viewfactor calcs')
+        call tstamp('>','VWF: enter viewfactor calcs')
         CALL CALVF(ICOMP)
-        call tstamp('>','MRT: exit viewfactor calcs')
+        call tstamp('>','VWF: exit viewfactor calcs')
       ELSEIF(INO.EQ.10)THEN
 
 C Proceed with TMRT calculations after asking for the
@@ -630,9 +642,9 @@ C of rectangular body.
         NGRID = 0
         NTRPOL = 0
         IER=0
-        call tstamp('>','MRT: enter mrt calcs')
+        call tstamp('>','VWF: enter mrt calcs')
         call EDMRTC(ITRC,IUOUT,ICOMP,IER)
-        call tstamp('>','MRT: exit mrt calcs')
+        call tstamp('>','VWF: exit mrt calcs')
 
 C Reset grid and patch after return from MRT sensor calculations.
         IGFACT = 10
@@ -645,7 +657,7 @@ C Toggle trace level.
       ELSEIF(INO.EQ.13)THEN
 
 c Printout of surfaces.
-        call tstamp('>','MRT: list surface info')
+        call tstamp('>','VWF: list surface info')
         context=.false.
         CALL SURINFO(ICOMP,iuout,context)
       ELSEIF(INO.EQ.14)THEN
@@ -667,11 +679,11 @@ C Save view factor file.
         LVIEW(icomp)=LTMP
         CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(icomp),IUF,
      &    ICOMP,'v',IER)
-        call tstamp('>','MRT: update viewfactor file')
+        call tstamp('>','VWF: update viewfactor file')
       ELSEIF(INO.EQ.16)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
-        call askabout('mrt ',0)
+        call askabout('vwf ',0)
       ELSEIF(INO.EQ.17)THEN
 
 c End program, free and delete the scratch file.
@@ -721,10 +733,10 @@ C default (area weighted) viewfactors and no MRT sensors.
             goto 43
           elseif(irt.eq.2)then
 
-C Clear VWF array in preparation for editing.
+C Clear VEWF array in preparation for editing.
             DO 231 I = 1,MS
               DO 232 J=1,MS
-                VWF(I,J)=0.
+                VEWF(I,J)=0.
   232         CONTINUE
   231       CONTINUE
             NCUB=0
@@ -733,6 +745,14 @@ C Clear VWF array in preparation for editing.
           elseif(irt.eq.3)then
             goto 10
           endif
+        else
+
+C Having read in an existing viewfactor file (which might contain
+C previously calculated data set the values for strtgr fstsur and
+C lstsur as if a calculation had just been performed.
+          strtgr = 1
+          fstsur = 1
+          lstsur = nsur
         endif
         MRTLOAD=.TRUE.
         GEOLOAD=.TRUE.
@@ -752,7 +772,7 @@ C Clear VWF array in preparation for editing.
         CALL FILEIN(ITRC,IUOUT,IER)
         MRTLOAD=.TRUE.
         GEOLOAD=.TRUE.
-        call tstamp('>','MRT: created file full of zeros')
+        call tstamp('>','VWF: created file full of zeros')
       endif
 
 C Determine geometry bounds and force it to be drawn.
@@ -799,7 +819,7 @@ C Calculate viewfactors for a zone.
       COMMON /FORMF/ FF(MSM,MSM), FFS
       COMMON /VISIB/ IVIS(MSM,MSM), IARECT(MSM,MSM)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
 c wrongrow   : Will contain the rownumber with largest error
 c rowsum(i)  : will contain the sum over j  of  ff(i,j)
@@ -874,7 +894,7 @@ C the polygon.
           rowsum(i)=rowsum(i)+ff(i,j)
 
 C If within zone portion of ff array save to zone viewfactor array.
-          if(i.le.MS.and.j.le.MS)VWF(i,j)=ff(i,j)
+          if(i.le.MS.and.j.le.MS)VEWF(i,j)=ff(i,j)
 250     CONTINUE
         drow=((rowsum(i)-1.0)**2)**0.5
         if ((drow).gt.rowsum(MS+1)) then
@@ -979,4 +999,18 @@ C ***** Dummy display of images.
 
       return
       end
+
+C In support of floating point exceptions.
+C      integer function SIGFPE_bps(sig,code,context)
+C      integer sig,code,context(5)
+C      character label*16
+C      if(loc(code).eq.208) label = 'invalid'
+C      if(loc(code).eq.200) label = 'division by zero'
+C      if(loc(code).eq.212) label = 'overflow'
+C      if(loc(code).eq.204) label = 'underflow'
+C      if(loc(code).eq.196) label = 'inexact'
+C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+C      SIGFPE_bps = loc(code)
+C      end
+
 

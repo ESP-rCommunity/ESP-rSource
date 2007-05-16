@@ -784,7 +784,7 @@ C Help message for parpsf.
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      elseif(appn(1:3).eq.'mrt')then
+      elseif(appn(1:3).eq.'mrt'.or.appn(1:3).eq.'vwf')then
         call edisp(iuout,'The viewfactor calculation module.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')

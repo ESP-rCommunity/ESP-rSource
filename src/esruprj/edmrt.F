@@ -52,7 +52,7 @@ C will have been defined prior to calling edmrt.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/appw/iappw,iappx,iappy
@@ -96,7 +96,7 @@ C matching geometry file.
       write(head,'(2A)')'  Viewfactors in ',zname(ICOMP)
       write(ZN,'(A)') zname(ICOMP)
 
-C Set VWF array in preparation for editing or silent creation.
+C Set VEWF array in preparation for editing or silent creation.
       CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
       NS=NSUR
@@ -104,9 +104,9 @@ C Set VWF array in preparation for editing or silent creation.
         II=I
         DO 201 J=1,NS
           JJ=J
-          VWF(II,JJ)=0.0
+          VEWF(II,JJ)=0.0
           IF(II.EQ.JJ)goto 201
-          VWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
+          VEWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
   201   CONTINUE
   111 CONTINUE
       if(silent)then
@@ -157,7 +157,7 @@ C If act = 'a' then return.
 C Otherwise commission an explicit calculation.
 
 C Get logical name of terminal type, expand model name
-C to include the path and create a string to drive mrt.
+C to include the path and create a string to drive espvwf module.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
@@ -176,15 +176,15 @@ C and change any / to \.
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,4a)') 'mrt -mode ',tmode,
+            write(doit,'(3a,3i4,4a)') 'espvwf -mode ',tmode,
      &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN))
           else
-            write(doit,'(6a)') 'mrt -mode ',tmode,
+            write(doit,'(6a)') 'espvwf -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN))
           endif
-          call usrmsg('starting mrt module via',doit,'-')
+          call usrmsg('starting espvwf module via',doit,'-')
           call runit(doit,tmode)
           call usrmsg(' Reading viewfactor file....',' ','-')
           call pauses(1)
@@ -199,7 +199,7 @@ C read it or create one with default (area weighted) viewfactors
 C and no MRT sensors.
       if(IVF(ICOMP).eq.1)then
         H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU mrt program which allows a more robust treatment'
+        H(2)='ESRU vwf program which allows a more robust treatment'
         H(3)='of longwave radiation within a zone.'
         H(4)=' '
         H(5)='If you want to ignore the existing viewfactors for this'
@@ -232,7 +232,7 @@ C and no MRT sensors.
 C No mrt file referenced so offer default name as well as an option
 C to back out of the facility.
         H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU mrt program which allows a more robust treatment'
+        H(2)='ESRU vwf program which allows a more robust treatment'
         H(3)='of longwave radiation within a zone.'
         H(4)=' '
         H(5)='If you want to ignore the existing viewfactors for this'
@@ -375,7 +375,7 @@ C the zone, obstructions and sensors.
 C Help text for this menu.
       H(1) ='This menu allows zone viewfactors or MRT sensors to'
       H(2) ='be viewed and edited.  These are then passed to the '
-      H(3) ='program `mrt` for further processing if a robust '
+      H(3) ='program `espvwf` for further processing if a robust '
       H(4) ='evaluation of view factors or position dependent '
       H(5) ='mean radiant temperatures is required. '
       H(6) =' '
@@ -412,7 +412,7 @@ C List viewfactor contents.
         call edisp(itru,' View Factors from Surface to Surface')
         DO 860 I=1,NZS
           DO 850 J=1,NZS
-            WRITE(outs,5203)SNAME(icomp,I),I,SNAME(icomp,J),J,VWF(I,J)
+            WRITE(outs,5203)SNAME(icomp,I),I,SNAME(icomp,J),J,VEWF(I,J)
  5203       FORMAT(10X,A12,I3,'  to ',A12,I3,' = ',F6.4)
             call edisp(itru,outs)
   850     CONTINUE
@@ -421,7 +421,7 @@ C List viewfactor contents.
 
 C Save viewfactor & sensor file...
         H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU mrt program which allows a more robust treatment'
+        H(2)='ESRU vwf program which allows a more robust treatment'
         H(3)='of longwave radiation within a zone.'
         LTMP=LVIEW(ICOMP)
    48   CALL EASKS(LTMP,' Zone viewfactor file? ',
@@ -473,14 +473,14 @@ C Manual editing of viewfactors.
           if(MM.NE.IS)then
             write(outs,'(A,A15,A,A15)') ' For ',SNAME(ICOMP,IS),' to ',
      &                                   SNAME(ICOMP,MM)
-            V=VWF(IS,MM)
+            V=VEWF(IS,MM)
             CALL EASKR(V,outs,' view factor: ',
      &        0.,'F',0.999,'F',0.,'viewfactors',IER,1)
-            VWF(IS,MM)=V
+            VEWF(IS,MM)=V
           else
-            VWF(IS,IS)=0.
+            VEWF(IS,IS)=0.
           endif
-          A=A+VWF(IS,MM)
+          A=A+VEWF(IS,MM)
   33    continue
         IF(ABS(A).LT.0.9888.OR.ABS(A).GT.1.002)then
           write(outs,'(A,F8.5)')' currently the total is ',A,
@@ -494,7 +494,7 @@ C Manual editing of viewfactors.
       ELSEIF(IVERT.EQ.4)THEN
 
 C View factor calculations - offer choice of default viewfactors or
-C call to MRT. Recover information on areas in the current zone for
+C call to ESPVWF. Recover information on areas in the current zone for
 C use in area weighted computation.
         h(1)='The ray-tracing calcs will start a calculation module.'
         call easkabc(' Zone viewfactor calculations can be either',
@@ -507,15 +507,15 @@ C use in area weighted computation.
             II=I
             DO 20 J=1,NS
               JJ=J
-              VWF(II,JJ)=0.0
+              VEWF(II,JJ)=0.0
               IF(II.EQ.JJ)goto 20
-              VWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
+              VEWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
    20       CONTINUE
    11     CONTINUE
         elseif(IW.eq.2)then
 
 C Get logical name of terminal type, expand model name
-C to include the path and create a string to drive mrt.
+C to include the path and create a string to drive espvwf.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
@@ -534,23 +534,23 @@ C and change any / to \.
 C If prj initial size is a % of default pass this on to child with
 C an offset from prj start position.
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,5a)') 'mrt -mode ',tmode,
+            write(doit,'(3a,3i4,5a)') 'espvwf -mode ',tmode,
      &        ' -s ',iappw,iappx+20,iappy+30,' -file ',
      &        longtfile(:lnblnk(longtfile)),' -zone ',ZN(1:lnblnk(ZN)),
      &        ' &'
           else
-            write(doit,'(7a)') 'mrt -mode ',tmode,
+            write(doit,'(7a)') 'espvwf -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
      &        ' -zone ',ZN(1:lnblnk(ZN)),' &'
           endif
-          call usrmsg('starting mrt module via',doit,'-')
+          call usrmsg('starting espvwf module via',doit,'-')
           call runit(doit,tmode)
 
           H(1)='When the computation is completed you will be '
           H(2)='asked whether you want to make use of this data.'
           H(3)='The computation may take some time... do not '
           H(4)='attempt to use the data until it is finished. '
-          CALL PHELPD('mrt running',4,'-',0,0,IER)
+          CALL PHELPD('espvwf running',4,'-',0,0,IER)
           h(1)='The previous pop-up message applies.'
           CALL EASKABC(' Post calculation choices :',' ',
      &      'use new data','revert (no viewfactors)','continue',irt,1)
