@@ -33,7 +33,7 @@ C      BCL04: fixed heat injection/extraction control.
 C      BCL05: proportional+integral+derivative control action.
 C      BCL06: plant to building linker.
 C      BCL07: multi-stage controller with hysteresis.
-C      BCL08: CV HAVC variable supply temperature system.
+C      BCL08: CAV HAVC variable supply temperature system.
 C      BCL09: heat pipe.
 C      BCL10: on/off control.
 C      BCL11: temperature brought to multi-sensor value (ideal).
@@ -47,6 +47,7 @@ C      BCL18: null controller.
 C      bcl19: multi-sensor basic controller.
 C      BCL20: evaporative source (defined as a controller).
 C      BCL21: master slave capacity inj/ext controller
+C      BCL22: VAV with CAV with reheat air supply controller
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine
@@ -92,7 +93,8 @@ C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
-      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21),IFUNC
+      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22),
+     &  IFUNC
       GOTO 98
 
 C CL1 is basic control with potential for a different heating and
@@ -197,6 +199,10 @@ C CL20 evaporative source (e.g. swimming pool).
 
 C CL21 slave capacity controller
    21 call BCL21
+      goto 99
+
+C CL22 VAV and CAV air based controller
+   22 call BCL22
       goto 99
       
 C New control laws should be inserted here.
@@ -3365,7 +3371,7 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
-      character outs*124
+      character outs*248
       
       DIMENSION SNWGHT(MSEN)  
 
@@ -3417,14 +3423,44 @@ C ISM = 4: TDIF = (ref sensor)-(weighting of auxiliary sensors).
       ISM=INT(BMISCD(ICF,IDTYP,IPER,7))
 
 C SNWGHT() is the sensor weighting when ISM=4.
-C If only one sensor read attributes and then set scaling.
+C If only one sensor read attributes and then get scaling and offset
+C based on whether there is weighting or not. This follows the same
+C logic used in econtrol.F subroutine EVCNTRLAW.
       if(NSEN(ICF).eq.1)then
         IBMSN(ICF,1,1)=INT(BMISCD(ICF,IDTYP,IPER,8))
         IBMSN(ICF,1,2)=INT(BMISCD(ICF,IDTYP,IPER,9))
         IBMSN(ICF,1,3)=INT(BMISCD(ICF,IDTYP,IPER,10))
         IBMSN(ICF,1,4)=INT(BMISCD(ICF,IDTYP,IPER,11))
-        SCALEF=1.0
-        OFFSET=0.0
+        IF(ISM.EQ.4)THEN
+          SNWGHT(1)=BMISCD(ICF,IDTYP,IPER,12)
+          SNWTOT=SNWGHT(1)
+          SCALEF=BMISCD(ICF,IDTYP,IPER,13)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,14)
+        ELSE
+          SCALEF=BMISCD(ICF,IDTYP,IPER,12)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,13)
+C          SCALEF=1.0
+C          OFFSET=0.0
+        ENDIF
+      elseif(NSEN(ICF).eq.2)then
+        IBMSN(ICF,1,1)=INT(BMISCD(ICF,IDTYP,IPER,8))
+        IBMSN(ICF,1,2)=INT(BMISCD(ICF,IDTYP,IPER,9))
+        IBMSN(ICF,1,3)=INT(BMISCD(ICF,IDTYP,IPER,10))
+        IBMSN(ICF,1,4)=INT(BMISCD(ICF,IDTYP,IPER,11))
+        IBMSN(ICF,2,1)=INT(BMISCD(ICF,IDTYP,IPER,12))
+        IBMSN(ICF,2,2)=INT(BMISCD(ICF,IDTYP,IPER,13))
+        IBMSN(ICF,2,3)=INT(BMISCD(ICF,IDTYP,IPER,14))
+        IBMSN(ICF,2,4)=INT(BMISCD(ICF,IDTYP,IPER,15))
+        IF(ISM.EQ.4)THEN
+          SNWGHT(1)=BMISCD(ICF,IDTYP,IPER,16)
+          SNWGHT(2)=BMISCD(ICF,IDTYP,IPER,17)
+          SNWTOT=SNWGHT(1)+SNWGHT(2)
+          SCALEF=BMISCD(ICF,IDTYP,IPER,18)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,19)
+        ELSE
+          SCALEF=BMISCD(ICF,IDTYP,IPER,16)
+          OFFSET=BMISCD(ICF,IDTYP,IPER,17)
+        ENDIF
       else
         DO 10 L=1,NSEN(ICF)           
           IBMSN(ICF,L,1)=INT(BMISCD(ICF,IDTYP,IPER,8+4*(L-1)))
@@ -3434,15 +3470,15 @@ C If only one sensor read attributes and then set scaling.
 
 C << If using +4* logic, how does 12+ and 13+  fit? >>
           IF(ISM.EQ.4)THEN
-           SNWGHT(L)=BMISCD(ICF,IDTYP,IPER,12+(L-1)+4*(NSEN(ICF)-1))
-           SNWTOT=SNWTOT+SNWGHT(L)
+            SNWGHT(L)=BMISCD(ICF,IDTYP,IPER,12+(L-1)+4*(NSEN(ICF)-1))
+            SNWTOT=SNWTOT+SNWGHT(L)
           ENDIF
           IF(ISM.GE.1.AND.ISM.LT.4.AND.L.EQ.NSEN(ICF))THEN
-             SCALEF=BMISCD(ICF,IDTYP,IPER,12+4*(L-1))
-             OFFSET=BMISCD(ICF,IDTYP,IPER,13+4*(L-1))
+            SCALEF=BMISCD(ICF,IDTYP,IPER,12+4*(L-1))
+            OFFSET=BMISCD(ICF,IDTYP,IPER,13+4*(L-1))
           ELSEIF(ISM.EQ.4.AND.L.EQ.NSEN(ICF))THEN
-             SCALEF=BMISCD(ICF,IDTYP,IPER,13+(L-1)+4*(NSEN(ICF)-1))
-             OFFSET=BMISCD(ICF,IDTYP,IPER,14+(L-1)+4*(NSEN(ICF)-1))
+            SCALEF=BMISCD(ICF,IDTYP,IPER,13+(L-1)+4*(NSEN(ICF)-1))
+            OFFSET=BMISCD(ICF,IDTYP,IPER,14+(L-1)+4*(NSEN(ICF)-1))
           ENDIF    
 10      CONTINUE
       endif
@@ -3502,17 +3538,17 @@ C      write(6,*) '*OFFSET,SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT',OFFSET,
 C     & SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT
 
       IF(ISM.EQ.1)THEN
-         TDIF=ABS(TEMPHI-TNP)
-         TSEN=TEMPHI
+        TDIF=ABS(TEMPHI-TNP)
+        TSEN=TEMPHI
       ELSEIF(ISM.EQ.2)THEN
-         TDIF=ABS(TEMPLO-TNP)
-         TSEN=TEMPLO
+        TDIF=ABS(TEMPLO-TNP)
+        TSEN=TEMPLO
       ELSEIF(ISM.EQ.3)THEN
-         TDIF=ABS(TEMPAV-TNP)
-         TSEN=TEMPAV
+        TDIF=ABS(TEMPAV-TNP)
+        TSEN=TEMPAV
       ELSEIF(ISM.EQ.4)THEN 
-         TDIF=ABS(TEMPWT-TNP)
-         TSEN=TEMPWT
+        TDIF=ABS(TEMPWT-TNP)
+        TSEN=TEMPWT
       ENDIF
  
       IF(TDIF.LT.0.001)RETURN
@@ -3532,22 +3568,22 @@ C Convert from (/m^2) if necessary.
 C Is this capacity available ?
 
       IF(TSEN.GE.TNP)THEN
-         IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 1
-         IF(QQ.GT.QHM)GOTO 2
-         Q=QHN
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
-    2    Q=QHM
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
+        IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 1
+        IF(QQ.GT.QHM)GOTO 2
+        Q=QHN
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
+    2   Q=QHM
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
       ELSEIF(TSEN.LT.TNP)THEN
-         IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 1
-         IF(QQ.LT.QCM)GOTO 3
-         Q=QCN
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-         GOTO 1
-    3    Q=QCM
-         IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 1
+        IF(QQ.LT.QCM)GOTO 3
+        Q=QCN
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+        GOTO 1
+    3   Q=QCM
+        IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
       ENDIF
 
     1 TFUT=(BB3-BB2*Q)/BB1
@@ -3561,9 +3597,13 @@ C Is this capacity available ?
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
-         write(outs,'(A,F10.3,A,F10.3)') ' Qfuture = ',QFUT,
-     &                                   ' Tfuture = ',TFUT
-         call edisp(itu,outs)
+         write(outs,'(6(A,F10.3),7(A,F5.2))') ' Qfuture=',QFUT,
+     &     'W Tfuture=',TFUT,'C Max ht cp=',QHM,'W Min ht cp=',QHN,
+     &     'W Max cl cp=',QCM,'W Min cl cp=',QCN,
+     &     'W Scale=',SCALEF,' Offset=',OFFSET,
+     &     'C T hi=',TEMPHI,'C T lo=',TEMPLO,'C T avg=',TEMPAV,
+     &     'C T wtd=',TEMPWT,' T sensed=',TSEN
+         call edisp248(itu,outs,110)
          call edisp(itu,' Leaving subroutine BCL11')
       END IF
      
@@ -5663,6 +5703,185 @@ C Trace output.
       endif   
             
       end
+
+C ******************** BCL22
+C 'BCL22' is a variable supply volume cooling control which
+C reverts to a CAV system using reheat for heating mode.
+
+C << the energy balance reported in esrures is off a bit >>
+      SUBROUTINE BCL22
+#include "building.h"
+
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
+     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
+     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
+     &BMISCD(MCF,MBCDT,MBCDP,MISC)
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/MBINFO/ZMBI(MCOM,4)
+      COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
+
+C Mode indicates if in VAV or CAV or reheat.
+      character outs*144,mode*16
+      real tswitchvavcav    ! The control temp for VAV/CAV switch
+      real prefafr          ! The inital preference for flow rate
+      logical vavok         ! Set true if in VAV mode
+
+C Fatal error test if there are less than ?? misecel items.
+      IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL22')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+      mode = ' '
+      QFUT=0.
+      TFUT=TNP
+      TCTL=TNP
+      QReheat = 0.0
+      tswitchvavcav = 0.0
+      prefafr = 0.0
+      IF(IBSN(ICF,1).NE.-2)GOTO 101
+      IZ=IBSN(ICF,2)
+      CALL MZMIXT(IZ,TMRT,TCTL)
+
+  101 IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.0)TCTL=TF
+      IF(IBSN(ICF,1).EQ.-3.AND.IBSN(ICF,2).EQ.1)TCTL=SOLAIR(TF,QFF,QDF)
+
+C AFR is computed air volume flow rate (m3/s)
+C AIRCAP is air heat capacity fixed at J/kg K.
+      AIRCAP = 1006.0
+
+C QRHMAX is reheat maximum capacity (W)
+      QRHMAX=BMISCD(ICF,IDTYP,IPER,2)
+
+C TSUPLY is air supply temperature (deg.C)
+      TSUPLY=BMISCD(ICF,IDTYP,IPER,3)
+
+C SP is desired set point temp. (deg.C)
+      SP=BMISCD(ICF,IDTYP,IPER,4)
+
+C AFRMAX is maximum air volume flow rate (m3/s)
+C AFRMIN is minimum air volume flow rate (m3/s)
+      AFRMAX=BMISCD(ICF,IDTYP,IPER,5)
+      AFRMIN=BMISCD(ICF,IDTYP,IPER,6)
+
+C Is temperature above the cooling setpoint? Remember what TCTL
+C is for reporting in the trace.
+      tswitchvavcav=TCTL
+      IF(TCTL.LE.SP)then
+
+C Too low, revert to CAV system at minimum flow rate.
+C TS is the temp we need to have entering the room to get to
+C the desired set point temperature.
+        vavok = .false.        ! set toggle so trace correct
+        AFR = AFRMIN           ! set to minimum flow rate
+        prefafr = AFR
+        D=AFR*1.2*AIRCAP
+        TS=(BB3-(BB1-(BB2*D))*SP)/(BB2*D)  ! as in bcl08
+
+C Calculate QReheat and test against QRHMAX.
+        QReheat = AFR*1.2*AIRCAP * (TS - TSUPLY)
+        if(QReheat.gt.QRHMAX)then
+
+C If QReheat is greater than QRHMAX then constrain and calculate
+C TS TFUT and QFUT.
+          write(mode,'(a)') 'CAV reheat lim '
+          QReheat = QRHMAX
+          TS = (QReheat / (AFR*1.2*AIRCAP)) + TSUPLY
+          TFUT=(BB3-BB2*D*TS)/(BB1-BB2*D)   ! as in bcl08
+          QFUT= (D*(TS-TFUT))   ! as in bcl08
+        else
+
+C QReheat was allowable so calculate TS TFUT and QFUT
+          write(mode,'(a)') 'CAV reheat std '
+          TS = (QReheat / (AFR*1.2*AIRCAP)) + TSUPLY
+          TFUT=(BB3-BB2*D*TS)/(BB1-BB2*D)   ! as in bcl08
+          QFUT= (D*(TS-TFUT))   ! as in bcl08
+        endif
+      else
+
+C Guess that the future temperature will be high if nothing done
+C so establish air supply rate to cool air to set point (SP)
+        vavok = .true.        ! set toggle so trace correct
+        DT = TSUPLY - SP
+        TS = TSUPLY       ! TS not used for VAV set to TSUPLY for trace.
+        D = (BB3-(BB1*SP))/ (BB2*DT)   ! this is mcp for the air supplied to space
+        AFR = D/(AIRCAP*1.2)    ! the volume flow rate needed m^3/s
+        prefafr = AFR           ! remember this for trace
+
+C Is this supply flow rate within the limits.
+        write(mode,'(a)')   'VAV mode float '
+        if(AFR.lt.AFRMIN)then
+          AFR = AFRMIN
+          write(mode,'(a)') 'VAV mode min f '
+        elseif(AFR.gt.AFRMAX)then
+          AFR = AFRMAX
+          write(mode,'(a)') 'VAV mode max f '
+        endif
+
+        TFUT=(BB3-(BB2*1.2*AFR*AIRCAP*DT))/BB1
+        QFUT=1.2*AFR*AIRCAP*(TSUPLY-TFUT)
+      endif
+
+C Enter gain due to mechanical system here
+C mechanical system mass flow rate * moisture content.
+C GEXTF the future ambient humidity ratio for the
+C assumed outside air part of the supply.
+      ZMBI(IICOMP,3)=AFR*1.2*GEXTF
+
+C Total mass flow rate lost from the zone (no moisture included).
+      ZMBI(IICOMP,4)=ZMBI(IICOMP,4)+AFR*1.2
+
+C Trace output format depending on whether VAV or CAV active.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+         if(vavok)then
+           write(outs,'(A,A,F9.1,4(A,F7.3),2(A,F10.3))') 
+     &       mode(1:lnblnk(mode)),' Qfut=',QFUT,
+     &       ' Tfut=',TFUT,' SetPt=',SP,' TS=',TS,
+     &       ' Tsupply=',TSUPLY,' Guess VAV/CAV=',tswitchvavcav,
+     &       ' mcp=',D
+           call edisp(itu,outs)
+           write(outs,'(8(A,F8.4))') ' Flow rate used =',AFR,
+     &       ' Flow rate wanted =',prefafr,
+     &       ' Flow gextf=',ZMBI(IICOMP,3),
+     &       ' Flow loss=',ZMBI(IICOMP,4),
+     &       ' BB1=',BB1,' BB2=',BB2,' BB3=',BB3,' DT=',DT
+           call edisp(itu,outs)
+         else
+           write(outs,'(A,2(A,F9.1),4(A,F7.3))') 
+     &       mode(1:lnblnk(mode)),' Qfut=',QFUT,' Reheat =',QReheat,
+     &       ' Tfut=',TFUT,' SetPt=',SP,' Supply T after reheat=',TS,
+     &       ' Guess VAV/CAV=',tswitchvavcav
+           call edisp(itu,outs)
+           write(outs,'(7(A,F8.4))') ' Flow rate used =',AFR,
+     &       ' Flow rate wanted =',prefafr,
+     &       ' Flow gextf=',ZMBI(IICOMP,3),
+     &       ' Flow loss=',ZMBI(IICOMP,4),
+     &       ' BB1=',BB1,' BB2=',BB2,' BB3=',BB3
+           call edisp(itu,outs)
+         endif
+         call edisp(itu,' Leaving subroutine BCL22')
+      END IF
+
+      RETURN
+   99 call edisp(iuout,' BCL22: data incomplete.')
+      call epwait
+      call epagend
+      STOP
+      END
 
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
