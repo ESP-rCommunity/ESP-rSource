@@ -120,9 +120,12 @@ C For air gaps WIS supplies some additional data.
 C matgapcnd(4)  gap conduction at -10C 0C 10C 20C
 C matvisco(4) gap viscosity at -10C 0C 10C 20C
 C matgapden(4)  gap density at -10C 0C 10C 20C
-C      real matgapcnd,matvisco,matgapden
+C matprandtl(2) prandtl number and extra field for T correct
+C UK EPBD method uses the 1st array index for the value and
+C the 2nd array index for T derivitive.
+C      real matgapcnd,matvisco,matgapden,matprandtl
 C      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-C     &  matgapden(MGIT,4)
+C     &  matgapden(MGIT,4),matprandtl(MGIT,4)
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
@@ -175,9 +178,9 @@ C legacy ASCII material database LASCI opened on unit IFA.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden
+      real matgapcnd,matvisco,matgapden,matprandtl
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,4)
 
       integer mathash
       common/mathasharray/mathash(600)
@@ -238,7 +241,7 @@ C matdbitems counter and creating a new name.
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'leg index and text',IER)
           IF(IER.NE.0)RETURN
           K=0
-          CALL EGETWI(OUTSTR,K,NCODE,0,600,'F','legacy index',IER)
+          CALL EGETWI(OUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
           matlegindex(matdbitems)=NCODE
           matcatindex(matdbitems)=I
 
@@ -326,10 +329,12 @@ C Assume that this category is glass. ?? WIS data
 
   20    CONTINUE
   10  CONTINUE
-      write(6,*) 'matdbitems ',matdbitems
-      write(6,*) 'matcatitems ',matcatitems
-      write(6,*) 'mathash ',mathash
-      write(6,*) 'matlegindex ',matlegindex
+
+C Debug.
+C      write(6,*) 'matdbitems ',matdbitems
+C      write(6,*) 'matcatitems ',matcatitems
+C      write(6,*) 'mathash ',mathash
+C      write(6,*) 'matlegindex ',matlegindex
       
       CALL ERPFREE(IFA,ISTAT)
       RETURN
@@ -366,9 +371,9 @@ C Notes on variables at top of file.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden
+      real matgapcnd,matvisco,matgapden,matprandtl
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,4)
 
       integer mathash
       common/mathasharray/mathash(600)
@@ -391,6 +396,22 @@ C The ASCII file will be overwritten if it exists.
      &  LASCI(1:lnblnk(LASCI))
       write(IFA,'(3A)') '*doc',tab,matdbdoc(1:lnblnk(matdbdoc))
       write(IFA,'(i2,a)') matcats,'  # number of classifications'
+      write(IFA,'(A)') '#  '
+      write(IFA,'(A)') '# Materials have the following attributes:'
+      write(IFA,'(2A)') '#  conductivity (W/(m-K), density (kg/m**3)',
+     &  ' specific heat (J/(kg-K)'
+      write(IFA,'(2A)') '#  emissivity out (-) emissivity in (-)',
+     &  '#   absorptivity out (-) absorptivity in (-)'
+      write(IFA,'(A)') '#  diffusion rest (?) default thickness (mm)'
+      write(IFA,'(A)') '#  flag [-] legacy [o] opaque [t] transparent'
+      write(IFA,'(A)') '#       [g] gas data+T cor [h] gas data at 4T'
+      write(IFA,'(A)') '#  '
+      write(IFA,'(A)') '# Transparent material attributes:'
+      write(IFA,'(2A)')'#  longwave tran (-) solar direct tran (-)',
+     &  ' solar reflec out (-) solar refled in (-)'
+      write(IFA,'(2A)')'#  visable tran (-) visable reflec out (-)',
+     &  ' visable reflec in (-) colour rendering (-)'
+      write(IFA,'(A)') '#  '
 
 C Loop through each classification (index I) and write out contents.
       do 10 I=1,matcats
@@ -442,22 +463,24 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,6f10.5)')
+              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,8f10.5)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
      &          matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
-     &          matvisco(J,2),matgapden(J,1),matgapden(J,2)
+     &          matvisco(J,2),matgapden(J,1),matgapden(J,2),
+     &          matprandtl(J,1),matprandtl(J,2)
             elseif(matopaq(J)(1:1).eq.'h')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f7.4,4f7.2,
-     &          4f7.2)')
+              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f13.3,
+     &          4f9.3,4f6.3,2f10.5)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
      &          matgapcnd(J,1),matgapcnd(J,2),matgapcnd(J,3),
      &          matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
      &          matvisco(J,3),matvisco(J,4),matgapden(J,1),
-     &          matgapden(J,2),matgapden(J,3),matgapden(J,4)
+     &          matgapden(J,2),matgapden(J,3),matgapden(J,4),
+     &          matprandtl(J,1),matprandtl(J,2)
             endif
             call SDELIM(outs,outsd,'C',IW)
             write(IFA,'(a)') outsd(1:lnblnk(outsd))
@@ -497,14 +520,14 @@ C current ASCII material database LASCI opened on unit IFA.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden
+      real matgapcnd,matvisco,matgapden,matprandtl
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,4)
 
       integer mathash
       common/mathasharray/mathash(600)
 
-      DIMENSION VAL(9)
+      DIMENSION VAL(16)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72,WORD*24
       character WORD32*32,WORD248*248
 
@@ -571,7 +594,7 @@ C class index IC is used for subsequent items.
         matdbitems=matdbitems+1   ! increment counter
         CALL EGETW(OUTSTR,K,WORD32,'-','item name',IER)
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
-        CALL EGETWI(OUTSTR,K,NCODE,0,600,'F','legacy index',IER)
+        CALL EGETWI(OUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE
         if(NCODE.gt.0.and.NCODE.le.600)then
           mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
@@ -631,8 +654,56 @@ C Read single layer optics if there are more than
           endif
         elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
           matopaq(matdbitems)='g'
+          CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
+          CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',IER)
+          CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db gas visc',IER)
+          CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db visc T deriv',IER)
+          CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db gas density',IER)
+          CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db dens T deriv',IER)
+          CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db prandtl',IER)
+          CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db prandtl T der',IER)
+          matgapcnd(matdbitems,1)=VAL(1)
+          matgapcnd(matdbitems,2)=VAL(2)
+          matvisco(matdbitems,1)=VAL(3)
+          matvisco(matdbitems,2)=VAL(4)
+          matgapden(matdbitems,1)=VAL(5)
+          matgapden(matdbitems,2)=VAL(6)
+          matprandtl(matdbitems,1)=VAL(7)
+          matprandtl(matdbitems,2)=VAL(8)
         elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
           matopaq(matdbitems)='h'
+          CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db gas cond -10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db gas cond 0',IER)
+          CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db gas cond 10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db gas cond 20',IER)
+          CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db gas visc -10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db gas visc 0',IER)
+          CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db gas visc 10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db gas visc 20',IER)
+          CALL EGETWR(OUTSTR,K,VAL(9),0.,0.,'-','db gas dens -10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(10),0.,0.,'-','db gas dens 0',IER)
+          CALL EGETWR(OUTSTR,K,VAL(11),0.,0.,'-','db gas dens 10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(12),0.,0.,'-','db gas dens 20',IER)
+          CALL EGETWR(OUTSTR,K,VAL(13),0.,0.,'-','db prandtl -10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(14),0.,0.,'-','db prandtl 0',IER)
+          CALL EGETWR(OUTSTR,K,VAL(15),0.,0.,'-','db prandtl 10',IER)
+          CALL EGETWR(OUTSTR,K,VAL(16),0.,0.,'-','db prandtl 20',IER)
+          matgapcnd(matdbitems,1)=VAL(1)
+          matgapcnd(matdbitems,2)=VAL(2)
+          matgapcnd(matdbitems,3)=VAL(3)
+          matgapcnd(matdbitems,4)=VAL(4)
+          matvisco(matdbitems,1)=VAL(5)
+          matvisco(matdbitems,2)=VAL(6)
+          matvisco(matdbitems,3)=VAL(7)
+          matvisco(matdbitems,4)=VAL(8)
+          matgapden(matdbitems,1)=VAL(9)
+          matgapden(matdbitems,2)=VAL(10)
+          matgapden(matdbitems,3)=VAL(11)
+          matgapden(matdbitems,4)=VAL(12)
+          matprandtl(matdbitems,1)=VAL(13)
+          matprandtl(matdbitems,2)=VAL(14)
+          matprandtl(matdbitems,3)=VAL(15)
+          matprandtl(matdbitems,4)=VAL(16)
         endif
 
         goto 41

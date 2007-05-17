@@ -22,6 +22,7 @@ C edcondb.F comprising:
 C  ELISTC: Controls display/edit of materials via binary file.
 C  ELISTMAT: Controls display and editing of materials commons.
 C  EDPELEM: Controls listing of materials.
+C  EDONEMAT: Edits a material in the common block at array index index.
 C  EDMLDB: Display/edit a constructions db.
 C  EDWALL: Edit construction common block data.
 C  MKBPRC: Creates a binary materials db based on the
@@ -519,9 +520,9 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden
+      real matgapcnd,matvisco,matgapden,matprandtl
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,4)
 
       integer mathash
       common/mathasharray/mathash(600)
@@ -952,11 +953,14 @@ C Add a material, initiate it to the values of last material in class.
                 matrender(ILNE)=matrender(lastcatitem)
                 matdbitems=matdbitems+1
 
-C ??
-C               CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
-C     &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
-                MODDB=.TRUE.
-                chgdb=.true.
+C Browse/Edit the details of this new item. Mark as unmodified first
+C and then resetn MODDB and chgdb if mod is true.
+                mod=.false.
+                call edonemat(iuout,ILNE,mod,ier)
+                if(mod)then 
+                  MODDB=.TRUE.
+                  chgdb=.true.
+                endif
               endif
             ELSE
               CALL USRMSG(' ','Exceeds classification limit!','W')
@@ -1122,10 +1126,10 @@ C mod is returned as true if data has changed.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden
+      real matgapcnd,matvisco,matgapden,matprandtl
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4)
-      DIMENSION PELM(24)
+     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+      DIMENSION PELM(28)
       CHARACTER H*72,PELM*40,tnam*32,tdoc*248,message*32
       real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
       real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
@@ -1161,6 +1165,8 @@ C Work with local variables.
       visinrfl= matvisinrfl(index)
       render= matrender(index)
 
+C << air gap data needs local variables >>
+
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
       WRITE(PELM(2),'(A,1X,A)')    'b Note:',tdoc(1:32)
@@ -1184,39 +1190,41 @@ C or a gas (g), include additional items.
         m=12
       elseif(matopaq(index).eq.'t')then
        WRITE(PELM(12),'(A)')  'l type >>transparent  '
-       WRITE(PELM(13),'(A,F7.2)')'m Longwave tran (-)      :',IRTRAN
-       WRITE(PELM(14),'(A,F7.2)')'n Solar direct tran (-)  :',SOLDRTRN
-       WRITE(PELM(15),'(A,F7.2)')'o Solar reflec out (-)   :',soldrotrfl
-       WRITE(PELM(16),'(A,F7.2)')'p Solar refled in (-)    :',soldrinrfl
-       WRITE(PELM(17),'(A,F7.2)')'q Visable transmit (-)   :',vistran
-       WRITE(PELM(18),'(A,F7.2)')'r Visable reflec out (-) :',visotrfl
-       WRITE(PELM(19),'(A,F7.2)')'s Visable reflec in (-)  :',visinrfl
+       WRITE(PELM(13),'(A,F7.3)')'m Longwave tran (-)      :',IRTRAN
+       WRITE(PELM(14),'(A,F7.3)')'n Solar direct tran (-)  :',SOLDRTRN
+       WRITE(PELM(15),'(A,F7.3)')'o Solar reflec out (-)   :',soldrotrfl
+       WRITE(PELM(16),'(A,F7.3)')'p Solar refled in (-)    :',soldrinrfl
+       WRITE(PELM(17),'(A,F7.3)')'q Visable tran (-)       :',vistran
+       WRITE(PELM(18),'(A,F7.3)')'r Visable reflec out (-) :',visotrfl
+       WRITE(PELM(19),'(A,F7.3)')'s Visable reflec in (-)  :',visinrfl
        WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
         m=20
       elseif(matopaq(index).eq.'g')then
         X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data+temp correction)'
-        WRITE(PELM(13),'(A,F6.2)') 'm  (-)   :',X
-        WRITE(PELM(14),'(A,F6.2)') 'n  (-)   :',X
-        WRITE(PELM(15),'(A,F6.2)') 'o  (-)   :',X
-        WRITE(PELM(16),'(A,F6.2)') 'p  (-)   :',X
-        WRITE(PELM(17),'(A,F6.2)') 'q  (-)   :',X
-        WRITE(PELM(18),'(A,F6.2)') 'r  (-)   :',X
-        WRITE(PELM(19),'(A,F6.2)') 's  (-)   :',X
-        WRITE(PELM(20),'(A,F6.2)') 't  (-)   :',X
-        m=20
+        WRITE(PELM(13),'(A,F9.3)') 'm Conduct (W/(m-K)   :',X
+        WRITE(PELM(14),'(A,F8.6)') 'n Conduct T deriv    :',X
+        WRITE(PELM(15),'(A,F7.3)') 'o Viscosity (kg/msK) :',X
+        WRITE(PELM(16),'(A,F8.6)') 'p Viscosity T deriv  :',X
+        WRITE(PELM(17),'(A,F8.2)') 'q Density (kg/m**3)  :',X
+        WRITE(PELM(18),'(A,F8.6)') 'r Density T deriv    :',X
+        m=18
       elseif(matopaq(index).eq.'h')then
         X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data at 4 temps)'
-        WRITE(PELM(13),'(A,F6.2)') 'm  (-)   :',X
-        WRITE(PELM(14),'(A,F6.2)') 'n  (-)   :',X
-        WRITE(PELM(15),'(A,F6.2)') 'o  (-)   :',X
-        WRITE(PELM(16),'(A,F6.2)') 'p  (-)   :',X
-        WRITE(PELM(17),'(A,F6.2)') 'q  (-)   :',X
-        WRITE(PELM(18),'(A,F6.2)') 'r  (-)   :',X
-        WRITE(PELM(19),'(A,F6.2)') 's  (-)   :',X
-        WRITE(PELM(20),'(A,F6.2)') 't  (-)   :',X
-        m=20
+        WRITE(PELM(13),'(A,F7.3)') 'm Cond @-10C (W/(m-K):',X
+        WRITE(PELM(14),'(A,F7.3)') 'n Cond @  0C (W/(m-K):',X
+        WRITE(PELM(15),'(A,F7.3)') 'o Cond @ 10C (W/(m-K):',X
+        WRITE(PELM(16),'(A,F7.3)') 'p Cond @ 20C (W/(m-K):',X
+        WRITE(PELM(17),'(A,F7.3)') 'q Visc @-10C (kg/msK):',X
+        WRITE(PELM(18),'(A,F7.3)') 'r Visc @  0C (kg/msK):',X
+        WRITE(PELM(19),'(A,F7.3)') 's Visc @ 10C (kg/msK):',X
+        WRITE(PELM(20),'(A,F7.3)') 't Visc @ 20C (kg/msK):',X
+        WRITE(PELM(21),'(A,F7.3)') 'u Dens @-10C (kg/m^3):',X
+        WRITE(PELM(22),'(A,F7.3)') 'v Dens @  0C (kg/m^3):',X
+        WRITE(PELM(23),'(A,F7.3)') 'v Dens @ 10C (kg/m^3):',X
+        WRITE(PELM(24),'(A,F7.3)') 'v Dens @ 20C (kg/m^3):',X
+        m=24
       endif
       PELM(m+1) =' _____________________ '
       PELM(m+2)='? Help                 '
@@ -1267,7 +1275,7 @@ C updating the common blocks.
             matrender(index) = render
             modify=.false.
             mod=.true.   ! pass this back to calling code.
-C << to here >>
+C << to here air gap data needs to be added >>
 
           endif
         endif
@@ -1454,10 +1462,19 @@ C Offer to toggle between different types.
         elseif(matopaq(index).eq.'o')then
           goto 3
         elseif(matopaq(index).eq.'t')then
+
+C << Single layer optical properties to be added >>
+          call usrmsg('This facility not yet available.',' ','-')
           goto 3
         elseif(matopaq(index).eq.'g')then
+
+C << Gas properties for data + T deriv to be added >>
+          call usrmsg('This facility not yet available.',' ','-')
           goto 3
         elseif(matopaq(index).eq.'h')then
+
+C << Gas properties for data at 4 T to be added >>
+          call usrmsg('This facility not yet available.',' ','-')
           goto 3
         endif
       ELSEIF(IW.EQ.NELM-1)THEN
