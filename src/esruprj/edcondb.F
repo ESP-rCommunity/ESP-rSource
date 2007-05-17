@@ -531,10 +531,11 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
-      character ACTION*1,CLSSEL*36,ltmp*72,CLSDES*30,H*72
+      character ACTION*1,CLSSEL*36,ltmp*72,CLSDES*32,H*72
       CHARACTER KEY*1,PDBM*68,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       logical close
+      logical mod   ! to signal whether an item has been altered.
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -552,18 +553,19 @@ C Check that the material db is not empty.
           RETURN
         ENDIF
       endif
+      call usrmsg('  ','  ','-')   ! clear editing box.
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
   40  ICO=-1
-      CLSDES(1)=  '  Description        No. Items'
+      CLSDES(1)=  '  Description         No. Items'
       M=1
       DO 44 I=1,matcats
         write(CLSSEL(I),'(A)') matcatname(I)(1:32)
         IF(matcatitems(I).GT.0)THEN
           M=M+1
           CALL EMKEY(M-1,KEY,IER)
-          WRITE(CLSDES(M),'(A1,1X,A,2X,I2)')KEY,matcatname(I)(1:24),
+          WRITE(CLSDES(M),'(A1,1X,A,1X,I2)')KEY,matcatname(I)(1:26),
      &      matcatitems(I)
         ENDIF
    44 CONTINUE
@@ -709,9 +711,9 @@ C Display the materials of the classification in a menu.
         WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
         PDBM(5)=   '  ___________________________________'
         PDBM(6)=
-     &  ' |Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
+     &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
         PDBM(7)=
-     &  ' |duct. |sity |heat  |emis|abs |resis|of material  '
+     &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
         M=7
         DO 30 J=1,matdbitems
 
@@ -731,8 +733,12 @@ C Remember the array index that goes with the menu position (m).
             elseif(matopaq(J).eq.'-')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:12)
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
    25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
+            elseif(matopaq(J).eq.'t')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
             else
               WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
@@ -801,6 +807,7 @@ C Edit classification name.
      &      32,' ','class name',IER,2)
           if(t32(1:2).ne.'  ')then
             write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
+            chgdb=.true.
           endif
 
 C Also edit classification documentation.
@@ -812,6 +819,7 @@ C Also edit classification documentation.
      &      72,'this category...','category notes',IER,3)
           if(t248(1:2).ne.'  ')then
             write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+            chgdb=.true.
           endif
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
           GOTO 2
@@ -957,18 +965,22 @@ C     &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER)
           ELSEIF(IW.EQ.3)THEN
             GOTO 3
           ENDIF
-        ELSEIF(INO.EQ.NITMS-4)THEN
+        ELSEIF(INO.EQ.NITMS-5)THEN
           GOTO 2
-        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-4)THEN
+        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-5)THEN
 
 C Identified one of the materials to edit or select.
-          IFOC=iwhicharray(IW)
+          IFOC=iwhicharray(INO)
           if(ACTION.eq.'M')then
-C ??
-C            CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
-C     &        EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
-            MODDB=.TRUE.
-            chgdb=.true.
+
+C Browse/Edit the details of this item. Mark as unmodified first
+C and then resetn MODDB and chgdb if mod is true.
+            mod=.false.
+            call edonemat(iuout,ifoc,mod,ier)
+            if(mod)then 
+              MODDB=.TRUE.
+              chgdb=.true.
+            endif
           elseif(ACTION.eq.'-')then
             call edisp(iuout,' ')
             call edisp(iuout,
@@ -1073,6 +1085,383 @@ C Help text for this menu.
      &         1.0,'W',20000.,'W',1.,'diffusion resistance',IER,2)
       ELSEIF(IW.EQ.10)THEN
         CALL PHELPD('material attributes',2,'-',0,0,IER)
+      ELSE
+        IW=-1
+        GOTO 2
+      ENDIF
+      GOTO 3
+
+      END
+
+C ************* EDONEMAT 
+C EDONEMAT: Edits a material in the common block at array index index.
+C mod is returned as true if data has changed.
+      SUBROUTINE EDONEMAT(ITRU,index,mod,IER)
+#include "esprdbfile.h"
+      common/pophelp/h(60)
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
+      real matvistran,matvisotrfl,matvisinrfl,matrender
+      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
+     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
+     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
+
+      real matgapcnd,matvisco,matgapden
+      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
+     &  matgapden(MGIT,4)
+      DIMENSION PELM(24)
+      CHARACTER H*72,PELM*40,tnam*32,tdoc*248,message*32
+      real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
+      real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
+      real visotrfl,visinrfl,render
+      logical modify,dok,ok,mod
+
+C If index is outwith range just return.
+      if(index.gt.0.and.index.le.matdbitems)then
+        mod=.false.
+      else
+        return
+      endif
+
+C Work with local variables.
+      modify=.false.
+      tnam = matname(index)
+      tdoc = matdoc(index)
+      DBCON = matdbcon(index)
+      DBDEN = matdbden(index)
+      DBSHT = matdbsht(index)
+      EOUT = matdboute(index)
+      EIN = matdbine(index)
+      AOUT = matdbouta(index)
+      AIN = matdbina(index)
+      dbdrv = matdbdrv(index)
+      THICK = matdbthick(index)
+      IRTRAN = matirtran(index)
+      SOLDRTRN = matsoldrtrn(index)
+      soldrotrfl = matvisotrfl(index)
+      soldrinrfl = matsoldrinrfl(index)
+      vistran= matvistran(index)
+      visotrfl= matvisotrfl(index)
+      visinrfl= matvisinrfl(index)
+      render= matrender(index)
+
+   3  IW=-4
+      WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
+      WRITE(PELM(2),'(A,1X,A)')    'b Note:',tdoc(1:32)
+      WRITE(PELM(3),'(A,1X,F9.3)') 'c Conductivity (W/(m-K)  :',DBCON
+      WRITE(PELM(4),'(A,1X,F8.2)') 'd Density (kg/m**3)      :',DBDEN
+      WRITE(PELM(5),'(A,1X,F8.2)') 'e Specific Heat (J/(kg-K):',DBSHT
+      WRITE(PELM(6),'(A,1X,F8.2)') 'f Emissivity out (-)     :',EOUT
+      WRITE(PELM(7),'(A,1X,F8.2)') 'g Emissivity in (-)      :',EIN
+      WRITE(PELM(8),'(A,1X,F8.2)') 'h Absorptivity out (-)   :',AOUT
+      WRITE(PELM(9),'(A,1X,F8.2)') 'i Absorptivity in (-)    :',AIN
+      WRITE(PELM(10),'(A,F9.2)')  'j Diffusion rest (?)     :',dbdrv
+      WRITE(PELM(11),'(A,F9.2)')  'k Default thickness (mm) :',THICK
+
+C Depending on whether the item is legacy (-), opaque (o), transp (t),
+C or a gas (g), include additional items.
+      if(matopaq(index).eq.'-')then
+        WRITE(PELM(12),'(A)')  'l type >>legacy opaque'
+        m=12
+      elseif(matopaq(index).eq.'o')then
+        WRITE(PELM(12),'(A)')  'l type >>opaque       '
+        m=12
+      elseif(matopaq(index).eq.'t')then
+       WRITE(PELM(12),'(A)')  'l type >>transparent  '
+       WRITE(PELM(13),'(A,F7.2)')'m Longwave tran (-)      :',IRTRAN
+       WRITE(PELM(14),'(A,F7.2)')'n Solar direct tran (-)  :',SOLDRTRN
+       WRITE(PELM(15),'(A,F7.2)')'o Solar reflec out (-)   :',soldrotrfl
+       WRITE(PELM(16),'(A,F7.2)')'p Solar refled in (-)    :',soldrinrfl
+       WRITE(PELM(17),'(A,F7.2)')'q Visable transmit (-)   :',vistran
+       WRITE(PELM(18),'(A,F7.2)')'r Visable reflec out (-) :',visotrfl
+       WRITE(PELM(19),'(A,F7.2)')'s Visable reflec in (-)  :',visinrfl
+       WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
+        m=20
+      elseif(matopaq(index).eq.'g')then
+        X=0.0
+        WRITE(PELM(12),'(A)')  'l type >>gas (data+temp correction)'
+        WRITE(PELM(13),'(A,F6.2)') 'm  (-)   :',X
+        WRITE(PELM(14),'(A,F6.2)') 'n  (-)   :',X
+        WRITE(PELM(15),'(A,F6.2)') 'o  (-)   :',X
+        WRITE(PELM(16),'(A,F6.2)') 'p  (-)   :',X
+        WRITE(PELM(17),'(A,F6.2)') 'q  (-)   :',X
+        WRITE(PELM(18),'(A,F6.2)') 'r  (-)   :',X
+        WRITE(PELM(19),'(A,F6.2)') 's  (-)   :',X
+        WRITE(PELM(20),'(A,F6.2)') 't  (-)   :',X
+        m=20
+      elseif(matopaq(index).eq.'h')then
+        X=0.0
+        WRITE(PELM(12),'(A)')  'l type >>gas (data at 4 temps)'
+        WRITE(PELM(13),'(A,F6.2)') 'm  (-)   :',X
+        WRITE(PELM(14),'(A,F6.2)') 'n  (-)   :',X
+        WRITE(PELM(15),'(A,F6.2)') 'o  (-)   :',X
+        WRITE(PELM(16),'(A,F6.2)') 'p  (-)   :',X
+        WRITE(PELM(17),'(A,F6.2)') 'q  (-)   :',X
+        WRITE(PELM(18),'(A,F6.2)') 'r  (-)   :',X
+        WRITE(PELM(19),'(A,F6.2)') 's  (-)   :',X
+        WRITE(PELM(20),'(A,F6.2)') 't  (-)   :',X
+        m=20
+      endif
+      PELM(m+1) =' _____________________ '
+      PELM(m+2)='? Help                 '
+      PELM(m+3)='- Exit                 '
+      NELM=m+3   ! number of items to display
+
+C Help text for this menu.
+   2  continue
+      h(1)='This display shows the attributes of this material.'
+      h(2)='The attributes vary depending on the source of the '
+      h(3)='material (legacy materials have fewer attributes). '
+      h(4)=' '
+      h(5)='Some attributes (e.g. single layer optics) will be '
+      h(6)='used in a future ESP-r version but are required for'
+      h(7)='expport to other assessment tools. '
+      h(8)=' '
+      h(9)='Edit by selecting an item. '
+      CALL EMENU('Material details',PELM,NELM,IW)
+      IF(IW.EQ.0.OR.IW.EQ.NELM)THEN
+
+C If there has been a modification check with user prior to
+C updating the common blocks.
+        if(modify)then
+          dok=.true.
+          h(1)='Recent changed to materials are held in memory '
+          h(2)='and if you say no then edits will be discarded. '
+          CALL ASKOK(' ','Accept changes in material (see help)?',
+     &      OK,dok,2)
+          if(OK)then
+            matname(index) = tnam
+            matdoc(index) = tdoc
+            matdbcon(index) = DBCON
+            matdbden(index) = DBDEN
+            matdbsht(index) = DBSHT
+            matdboute(index) = EOUT
+            matdbine(index) = EIN
+            matdbouta(index) = AOUT
+            matdbina(index) = AIN
+            matdbdrv(index) = dbdrv
+            matdbthick(index) = THICK
+            matirtran(index) = IRTRAN
+            matsoldrtrn(index) = SOLDRTRN
+            matvisotrfl(index) = soldrotrfl
+            matsoldrinrfl(index) = soldrinrfl
+            matvistran(index) = vistran
+            matvisotrfl(index) = visotrfl
+            matvisinrfl(index) = visinrfl
+            matrender(index) = render
+            modify=.false.
+            mod=.true.   ! pass this back to calling code.
+C << to here >>
+
+          endif
+        endif
+        RETURN
+      ELSEIF(IW.EQ.NELM-2)THEN
+        GOTO 3
+      ELSEIF(IW.EQ.1)THEN
+        H(1)='A descriptive name (up to 32 char) is required.'
+        H(2)='This will appear in selection lists (but might be'
+        H(3)='be shown in a truncated form in some locations). '
+        CALL EASKS(tnam,' ',' Description of material? ',
+     &    32,' ','material name',IER,3)
+        if(tnam(1:2).ne.'  ')then
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.2)THEN
+        H(1)='Documentation (up to 248 char) is a really good idea'
+        H(2)='and might include the source and test regime etc.'
+        CALL EASKS248(tdoc,' ',' Description of material? ',
+     &    72,' ','material documentation',IER,2)
+        if(tdoc(1:2).ne.'  ')then
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.3)THEN
+        H(1)='Conductivity units are W/(m deg.C) '
+        CALL EASKR(DBCON,' ',' Conductivity (W/(m deg.C): ',
+     &    0.001,'W',300.,'W',1.,'conductivity',IER,1)
+        modify=.true.
+      ELSEIF(IW.EQ.4)THEN
+        H(1)='Density units are  kg/m**3 '
+        CALL EASKR(DBDEN,' ',' Density (kg/m**3): ',
+     &    1.0,'W',9000.,'W',100.,'density',IER,1)
+        modify=.true.
+      ELSEIF(IW.EQ.5)THEN
+        H(1)='Specific Heat units are J/(kg deg.C) '
+        CALL EASKR(DBSHT,' ',' Specific heat (J/(kg deg.C): ',
+     &    1.0,'W',2000.,'W',100.,'specific heat',IER,1)
+        modify=.true.
+      ELSEIF(IW.EQ.6)THEN
+
+C For legacy materials both faces should have the same value.
+        if(matopaq(index).eq.'-')then
+          H(1)='Surface emissivity is based on infrared band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='This legacy material will have the same value '
+          H(4)='for the inside and outside face. '
+          CALL EASKR(EOUT,' ',' Surface emissivity : ',
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+          EIN=EOUT
+          modify=.true.
+        else
+          H(1)='Surface emissivity is based on infrared band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='You may specify different values for each face '
+          H(4)='(but ESP-r does not yet use this). '
+          CALL EASKR(EOUT,' ',' Outside face emissivity : ',
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.7)THEN
+
+C For legacy materials both faces should have the same value.
+        if(matopaq(index).eq.'-')then
+          H(1)='Surface emissivity is based on infrared band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='This legacy material will have the same value '
+          H(4)='for the inside and outside face. '
+          CALL EASKR(EIN,' ',' Surface emissivity : ',
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+          EOUT=EIN
+          modify=.true.
+        else
+          H(1)='Surface emissivity is based on infrared band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='You may specify different values for each face '
+          H(4)='(but ESP-r does not yet use this). '
+          CALL EASKR(EIN,' ',' Inside face emissivity : ',
+     &      0.001,'W',0.999,'W',0.9,'in emissivity',IER,4)
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.8)THEN
+        if(matopaq(index).eq.'-')then
+          H(1)='Surface absorptance is based on solar band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='This legacy material will have the same value '
+          H(4)='for the inside and outside face. '
+          CALL EASKR(AOUT,' ',' Surface absorptance: ',
+     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,4)
+          AIN=AOUT
+          modify=.true.
+        else
+          H(1)='Surface absorptance is based on solar band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='You may specify different values for each face '
+          H(4)='(but ESP-r does not yet use this). '
+          CALL EASKR(AOUT,' ',' Outside face absorptance: ',
+     &      0.001,'W',0.999,'W',0.9,'out absorptance',IER,4)
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.9)THEN
+        if(matopaq(index).eq.'-')then
+          H(1)='Surface absorptance is based on solar band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='This legacy material will have the same value '
+          H(4)='for the inside and outside face. '
+          CALL EASKR(AIN,' ',' Surface absorptance : ',
+     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,4)
+          AOUT=AIN
+          modify=.true.
+        else
+          H(1)='Surface absorptance is based on solar band. '
+          H(2)='It is specified as fraction 0.01 < x < 0.99 '
+          H(3)='You may specify different values for each face '
+          H(4)='(but ESP-r does not yet use this). '
+          CALL EASKR(AIN,' ',' Inside face absorptance: ',
+     &      0.001,'W',0.999,'W',0.9,'in absorptance',IER,4)
+          modify=.true.
+        endif
+      ELSEIF(IW.EQ.10)THEN
+        H(1)='Diffusion resistance factor for vapour transfer is '
+        H(2)='defined in the ESP-r glossary. << units >>'
+        CALL EASKR(dbdrv,' ',' Diffusion resistance : ',
+     &         1.0,'W',20000.,'W',1.,'diffusion resistance',IER,2)
+        modify=.true.
+      ELSEIF(IW.EQ.11)THEN
+        H(1)='Thickness (mm) is the typical/default thickness of this'
+        H(2)='material. '
+        CALL EASKR(THICK,' ',' Default thickness (mm) : ',
+     &         1.0,'W',500.,'W',10.,'default thickness',IER,2)
+        modify=.true.
+      ELSEIF(IW.EQ.12)THEN
+
+C Offer to toggle between different types.
+        if(matopaq(index).eq.'-')then
+          message='(currently legacy opaque)'
+        elseif(matopaq(index).eq.'o')then
+          message='(currently opaque)'
+        elseif(matopaq(index).eq.'t')then
+          message='(currently transparent)'
+        elseif(matopaq(index).eq.'g')then
+          message='(currently gas data + T cor)'
+        elseif(matopaq(index).eq.'h')then
+          message='(currently gas data @4 temp)'
+        endif
+        h(1)='Legacy opaque was imported from an older materials'
+        h(2)='database and only contains essential data. '
+        h(3)=' '
+        h(4)='Opaque will have option of additional parameters. '
+        h(5)=' '
+        h(6)='Transparent includes single layer optics such as '
+        h(7)='used by WIS and Window5.1 etc. '
+        h(8)=' '
+        h(9)='There are two types of gas (work in progress): '
+        h(10)=' Data with T correction to match data model of'
+        h(11)=' the UK Energy Performance Directive'
+        h(12)=' '
+        h(13)=' Data (viscosity, conductivity, density, CP at'
+        h(14)=' 4 temperature points.'
+        CALL EASKATOG('Material options:',message,
+     &    'legacy opaque','opaque','transparent',
+     &    'gas data+correction ','gas data @4 temps','leave un-changed',
+     &    ' ',jsur,14)
+        if(jsur.eq.1)then
+          matopaq(index)='-'
+          modify=.true.
+        elseif(jsur.eq.2)then
+          matopaq(index)='o'
+          modify=.true.
+        elseif(jsur.eq.3)then
+          matopaq(index)='t'
+          modify=.true.
+        elseif(jsur.eq.4)then
+          matopaq(index)='g'
+          modify=.true.
+        elseif(jsur.eq.5)then
+          matopaq(index)='h'
+          modify=.true.
+        else
+          continue
+        endif
+      ELSEIF(IW.gt.12.and.IW.LE.NELM-4)THEN
+        if(matopaq(index).eq.'-')then
+          goto 3
+        elseif(matopaq(index).eq.'o')then
+          goto 3
+        elseif(matopaq(index).eq.'t')then
+          goto 3
+        elseif(matopaq(index).eq.'g')then
+          goto 3
+        elseif(matopaq(index).eq.'h')then
+          goto 3
+        endif
+      ELSEIF(IW.EQ.NELM-1)THEN
+        CALL PHELPD('material attributes',9,'-',0,0,IER)
       ELSE
         IW=-1
         GOTO 2

@@ -58,7 +58,9 @@ C     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 C It would be good for purposes of sorting to provide a flag indicating
 C whether the material was opaque/transparent and/or a gas. This would
 C allow additional data to be scanned from the file:
-C matopaq (1 char) 'o' is opaque, 't' is transparent, 'g' is gas
+C matopaq (1 char) 'o' is opaque, 't' is transparent,
+C                  'g' is gas (data+temp correction),
+C                  'h' is gas (data at 4 temps),
 C                  '-' imported from legacy
 
 C matname (32 char) for leacy materials the name is a combination of
@@ -440,6 +442,13 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
+              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,6f10.5)')
+     &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
+     &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
+     &          matdbthick(J),' ',matopaq(J),
+     &          matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
+     &          matvisco(J,2),matgapden(J,1),matgapden(J,2)
+            elseif(matopaq(J)(1:1).eq.'h')then
               write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f7.4,4f7.2,
      &          4f7.2)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
@@ -620,8 +629,10 @@ C Read single layer optics if there are more than
             matvisinrfl(matdbitems)=VAL(7)
             matrender(matdbitems)=VAL(8)
           endif
-        elseif(WORD32(1:1).eq.'g')then
+        elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
           matopaq(matdbitems)='g'
+        elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
+          matopaq(matdbitems)='h'
         endif
 
         goto 41
