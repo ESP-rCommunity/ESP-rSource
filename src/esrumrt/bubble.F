@@ -22,7 +22,6 @@ C+++++++++++++++++++++++ BUBBLE
 C Bubble projects through bubble from each grid cell.
       SUBROUTINE  BUBBLE
 
-
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -38,23 +37,36 @@ C PCG   -  centroid of surface
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       common /cube5/fstgrp,fstsur,lstsur,strtgr
       integer fstgrp,fstsur,lstsur,strtgr
+      integer k1,k2,k3,k4,k5,k6,k7,k8,k9,k10
       logical anal
 
 C Initial value for IDS ??
       IDS=0
       CALL BUB(npatch)
 
-c Set up counters to identify which stage the
-c calculation has reached in current run.
-      K1=strtgr+(NGRID-strtgr)/4
-      K2=strtgr+(NGRID-strtgr)/2
-      K3=strtgr+(NGRID-strtgr)*3/4
-      K4=strtgr+(NGRID-strtgr)*95/100
+C Set up counters to identify which stage the
+C calculation has reached in current run.
+      K1=strtgr+(NGRID-strtgr)*10/100
+      K2=strtgr+(NGRID-strtgr)*20/100
+      K3=strtgr+(NGRID-strtgr)*30/100
+      K4=strtgr+(NGRID-strtgr)*40/100
+      K5=strtgr+(NGRID-strtgr)*50/100
+      K6=strtgr+(NGRID-strtgr)*60/100
+      K7=strtgr+(NGRID-strtgr)*70/100
+      K8=strtgr+(NGRID-strtgr)*80/100
+      K9=strtgr+(NGRID-strtgr)*90/100
+      K10=strtgr+(NGRID-strtgr)*95/100
       IF(NGRID.LT.5)THEN
         K1=100
         K2=100
         K3=100
         K4=100
+        K5=100
+        K6=100
+        K7=100
+        K8=100
+        K9=100
+        K10=100
       ENDIF
 
 c Commence calculation.
@@ -63,11 +75,23 @@ c points.  With tmrt strtgr = first point on cube, else 1.
       DO 200  I = strtgr,NGRID
 
       IF(I.EQ.K1)THEN
-        CALL USRMSG(' 1/4 complete','  ','-')
+        CALL USRMSG(' 10% complete','  ','-')
       ELSEIF(I.EQ.K2)THEN
-        CALL USRMSG(' 1/2 complete','  ','-')
+        CALL USRMSG(' 20% complete','  ','-')
       ELSEIF(I.EQ.K3)THEN
-        CALL USRMSG(' 3/4 complete','  ','-')
+        CALL USRMSG(' 30% complete','  ','-')
+      ELSEIF(I.EQ.K4)THEN
+        CALL USRMSG(' 40% complete','  ','-')
+      ELSEIF(I.EQ.K5)THEN
+        CALL USRMSG(' 50% complete','  ','-')
+      ELSEIF(I.EQ.K6)THEN
+        CALL USRMSG(' 60% complete','  ','-')
+      ELSEIF(I.EQ.K7)THEN
+        CALL USRMSG(' 70% complete','  ','-')
+      ELSEIF(I.EQ.K8)THEN
+        CALL USRMSG(' 80% complete','  ','-')
+      ELSEIF(I.EQ.K9)THEN
+        CALL USRMSG(' 90% complete','  ','-')
       ELSEIF(I.EQ.K4)THEN
         CALL USRMSG(' Almost complete','  ','-')
       ENDIF
@@ -77,7 +101,7 @@ c points.  With tmrt strtgr = first point on cube, else 1.
         anal=.true.
       ENDIF
 
-c anal = true if an analytical procedure will add new information.
+C anal = true if an analytical procedure will add new information.
        if ((iarect(ids,ids).eq.-12).or.(iarect(ids,ids).eq.0)) then
          if (anal) then
            do 100 jsur=1,nsurmf
