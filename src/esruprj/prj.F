@@ -2619,9 +2619,9 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
-     &      anu_tot_bld(1)
-          call eddisp(iuout,outs)
+C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
+C     &      anu_tot_bld(1)
+C          call eddisp(iuout,outs)
           call edisp(iuout,'For the variant model:')
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
@@ -2634,9 +2634,9 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
-     &      anu_tot_bld(2)
-          call eddisp(iuout,outs)
+C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
+C     &      anu_tot_bld(2)
+C          call eddisp(iuout,outs)
           call edisp(iuout,' ')
           write(outs,'(4a)')'Diff between ',
      &      basefile(1:lnblnk(basefile)),
@@ -2664,7 +2664,7 @@ C We have done both passes, report differences and exit.
           anu_ht_thrm_bld(3)=anu_ht_thrm_bld(1)-anu_ht_thrm_bld(2)
           anu_cl_m2(3)=anu_cl_m2(1)-anu_cl_m2(2)
           anu_cl_bld(3)=anu_cl_bld(1)-anu_cl_bld(2)
-          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
+C          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
           anu_tot_bld(3)=anu_tot_bld(1)-anu_tot_bld(2)
           anu_ht_cap_m2(3)=anu_ht_cap_m2(1)-anu_ht_cap_m2(2)
           anu_ht_cap_bld(3)=anu_ht_cap_bld(1)-anu_ht_cap_bld(2)
@@ -2681,9 +2681,9 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(3),
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
           call eddisp(iuout,outs)
-          write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
-     &      anu_tot_bld(3)
-          call eddisp(iuout,outs)
+C          write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
+C     &      anu_tot_bld(3)
+C          call eddisp(iuout,outs)
 
 C If comma separated delimeter then also write out a single line
 C summary (Patch for IEA_Annex 46).
@@ -2760,17 +2760,17 @@ C                write(6,*) outstr(1:lnblnk(outstr))
                 endif
 
 C Get the total data line, 2nd is the value.
-                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
-                k=5
-                CALL EGETW(OUTSTR,K,WORD1,'W','total',IFLAG)
+C                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
+C                k=5
+C                CALL EGETW(OUTSTR,K,WORD1,'W','total',IFLAG)
 C                write(6,*) outstr(1:lnblnk(outstr))
-                if(im2)then
-                  CALL EGETWR(OUTSTR,K,anu_tot_m2(ipass),0.,0.,'-',
-     &              'total m2',IER)
-                else
-                  CALL EGETWR(OUTSTR,K,anu_tot_bld(ipass),0.,0.,'-',
-     &              'total bld',IER)
-                endif
+C                if(im2)then
+C                  CALL EGETWR(OUTSTR,K,anu_tot_m2(ipass),0.,0.,'-',
+C     &              'total m2',IER)
+C                else
+C                  CALL EGETWR(OUTSTR,K,anu_tot_bld(ipass),0.,0.,'-',
+C     &              'total bld',IER)
+C                endif
                 goto 143
               endif
             elseif(id1.eq.74)then
