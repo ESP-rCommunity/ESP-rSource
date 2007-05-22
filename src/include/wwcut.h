@@ -140,6 +140,8 @@ void	abcdboxs(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act)
 void	openaskbox_(char* msg1,char* msg2,long int* asklen,int len1,int len2);
 void	openaskaltbox_(char* msg1,char* msg2,char* alt,long int* asklen,int len1,
 	int len2,int len3);
+void	openaskcnclbox_(char* msg1,char* msg2,char* cncl,long int* asklen,int len1,
+	int len2,int len3);
 void	openask2altbox_(char* msg1,char* msg2,char* alt,char* alt2,long int* asklen,int len1,
 	int len2,int len3,int len4);
 void	update_edit_str(box ebox,char* edstr,int* xbar,int* lstrlen);
@@ -150,6 +152,7 @@ void	egphelp_(long int* impx,long int* impy,long int* ipflg,
 	long int* ishowmoreflg,long int* uresp);
 void	askdialog_(char* sstr,long int* id,long int* iq,int f_len);
 void	askaltdialog_(char* sstr,char* alt,long int* id,long int* iq,int f_len,int a_len);
+void	askcncldialog_(char* sstr,char* cncl,long int* id,long int* iq,int f_len,int a_len);
 void	ask2altdialog_(char* sstr,char* alt,char* alt2,long int* id,long int* iq,
 	int f_len,int a_len,int b_len);
 void	msgbox_(char* msg1,char* msg2,int len1,int len2);

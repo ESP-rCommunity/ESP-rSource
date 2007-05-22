@@ -283,7 +283,8 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
 C Include a cancel option.
         cancel='cancel'
-        CALL openaskaltbox(PROMP1,PROMP2,cancel,iwidth)
+        CALL openaskcnclbox(PROMP1,PROMP2,cancel,iwidth)
+C        CALL openaskaltbox(PROMP1,PROMP2,cancel,iwidth)
 C        CALL openaskbox(PROMP1,PROMP2,iwidth)
         WORD=' '
         if(NHELP.GT.0)then
@@ -295,7 +296,8 @@ C        CALL openaskbox(PROMP1,PROMP2,iwidth)
           call dupphelp(dh)
           call updhelp(dh,2,IHW)
         endif
-        CALL askaltdialog(ask,cancel,idef,iquery)
+        CALL askcncldialog(ask,cancel,idef,iquery)
+C        CALL askaltdialog(ask,cancel,idef,iquery)
 C        CALL askdialog(ask,idef,iquery)
 
 C Strip off the last character (end of line mark) as well as any

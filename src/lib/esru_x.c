@@ -3448,6 +3448,7 @@ void openaskaltbox_(msg1,msg2,alt,asklen,len1,len2,len3)
   tprompt = askbx.b_left - ((lm2+2) * f_width);
   if (tprompt < lprompt) lprompt = tprompt;
   if (lprompt < msgbx.b_left) lprompt = msgbx.b_left+5;
+  asklprompt = lprompt;   /* remember the position */
 
   msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3;
   msgbx.b_bottom= xrt_height - 3;
@@ -3467,6 +3468,82 @@ void openaskaltbox_(msg1,msg2,alt,asklen,len1,len2,len3)
   if (saved_font != butn_fnt) winfnt_(&saved_font);
   return;
 } /* openaskaltbox */
+
+/* **************  Open a dialogue & cancel box *************** */
+/*
+ Passed the prompts which were sent to the dialogue box so that the
+ correct position is defined. msgbx contains the prompts, cancelbox shows
+ cancel command (action) and askbx is reserved for user input.
+ If the width of the string
+ would cause the input box to over-run the dialogue box then
+ truncate the input box. If there is only a " " in the second
+ prompt then position askbx against the left side.
+*/
+void openaskcnclbox_(msg1,msg2,cncl,asklen,len1,len2,len3)
+  char      *msg1,*msg2,*cncl; /* character strings for each line and action message*/
+  int  len1,len2,len3; /* lengths as supplied by fortran */
+  long int  *asklen;     /* character width of the input box */
+{
+  int lprompt,tprompt;   /* cursor position, prompt left side */
+  int lm1, lm2, lm3;          /* local string lengths found by test  */
+  int cnclbox_left, okbox_left, qbox_left, dbox_left;	/* positions of small boxes */
+  long int saved_font;
+  ask_len = *asklen;
+  askmsg1 = msg1; askmsg2 = msg2; /* remember prompt character strings */
+  saved_font = current_font;
+  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
+
+  f_to_c_l(msg1,&len1,&lm1);
+  f_to_c_l(msg2,&len2,&lm2);
+  f_to_c_l(cncl,&len3,&lm3);
+  asklm1=lm1; asklm2=lm2; asklm3=lm3; /* remember prompt lengths */
+
+  askbx.b_top = msgbx.b_bottom - (f_height + 6);
+  askbx.b_bottom = msgbx.b_bottom -2;
+
+/* ok box is 4th box over and 8+lm3 char total to the right */
+  okbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + lm3)));
+/* query box is 3rd box over and 5+lm3 char total to the right */
+  qbox_left = msgbx.b_right - ((3 * 5) + (f_width * (5 + lm3)));
+/* defaults box is 2 box over and 3+lm3 char total to the right */
+  dbox_left = msgbx.b_right - ((2 * 5) + (f_width * (3 + lm3)));
+/* cncl box is on far right  */
+  cnclbox_left = msgbx.b_right - ((1 * 5) + (f_width * (1 + lm3)));
+
+/* Set askbx against ok box and truncate editing box if necessary. */
+  askbx.b_right = okbox_left - 5;
+  askbx.b_left = askbx.b_right -((*asklen+2) * f_width);
+  if (askbx.b_left < (msgbx.b_left + 5)) {
+       askbx.b_left = msgbx.b_left + 5;
+  }
+
+/* determine left edge of prompt text */
+  lprompt = askbx.b_left;
+  tprompt = msgbx.b_right - ((lm1+2) * f_width);
+  if (tprompt < lprompt) lprompt = tprompt;
+  tprompt = askbx.b_left - ((lm2+2) * f_width);
+  if (tprompt < lprompt) lprompt = tprompt;
+  if (lprompt < msgbx.b_left) lprompt = msgbx.b_left+5;
+  asklprompt = lprompt;   /* remember the position */
+
+  msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3;
+  msgbx.b_bottom= xrt_height - 3;
+  msgbx.b_left  = 2;
+/*  msgbx.b_right = xrt_width - (f_width * 11); */
+  msgbx.b_right = xrt_width - 2;
+
+  xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
+  XDrawString(theDisp,win,theGC,lprompt,msgbx.b_bottom - (f_height+8),msg1,lm1);
+  XDrawString(theDisp,win,theGC,lprompt,msgbx.b_bottom - 3,msg2,lm2);
+
+  altbox(cncl,lm3,lm3+1,&msgbx.b_bottom,&cnclbox_left,'-');
+  qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
+  dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
+  okbox("ok",2,3,&msgbx.b_bottom,&okbox_left,'-');
+  xbox(askbx,fg,white,BMCLEAR |BMEDGES);   /* draw input box with edges  */
+  if (saved_font != butn_fnt) winfnt_(&saved_font);
+  return;
+} /* openaskcnclbox */
 
 /* **************  Open a dialogue & 2 command input boxs *************** */
 /*
@@ -3526,6 +3603,7 @@ void openask2altbox_(msg1,msg2,alt,alt2,asklen,len1,len2,len3,len4)
   tprompt = askbx.b_left - ((lm2+2) * f_width);
   if (tprompt < lprompt) lprompt = tprompt;
   if (lprompt < msgbx.b_left) lprompt = msgbx.b_left+5;
+  asklprompt = lprompt;   /* remember the position */
 
   msgbx.b_top = xrt_height - ((f_height+4) * 2) - 3;
   msgbx.b_bottom= xrt_height - 3;
@@ -4367,6 +4445,184 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor);
   if (saved_font != butn_fnt) winfnt_(&saved_font);
 } /* askaltdialog */
+
+
+/* **************  Get string from dialogue & cancel input box *************** */
+/*
+ Code implements control of a single line input facility with cancel detect.
+ Input begins when cursor is within askbx.
+*/
+void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
+  char *sstr,*cncl;         /* string returned to fortran (remember strip end mark) */
+  long int *id,*iq;   /* flag for default and help querry */
+  int  f_len,a_len;   /* character width of the string from fortran */
+{
+  XEvent event;
+  XWindowAttributes wa;
+  static char sbuf[124];
+  int b_width;   /* b_width  pixels w/in box */
+  int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
+  int	no_valid_event = TRUE;
+  int	initial_button_in = FALSE;
+  int x,y,len,lstrlen,lm3;
+  long int impx,impy,ipflg,ishowmoreflg,uresp;
+  long int saved_font;
+  int okbox_left, qbox_left, dbox_left, cnclbox_left;	/* positions of small boxes */
+  int initial_f_height;  /* font height used for the small boxes */
+  unsigned int start_height,start_width;
+  int lprompt,tprompt;   /* cursor position, prompt left side */
+
+/* remember position and size of the whole module (so as to detect changes) */
+  XGetWindowAttributes(theDisp,win,&wa);
+  start_height = wa.height; start_width = wa.width;
+
+/* ok box is 4th box over and 8+asklm3 char total to the right */
+  okbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + asklm3)));
+/* query box is 3rd box over and 5+asklm3 char total to the right */
+  qbox_left = msgbx.b_right - ((3 * 5) + (f_width * (5 + asklm3)));
+/* defaults box is 2 box over and 3+asklm3 char total to the right */
+  dbox_left = msgbx.b_right - ((2 * 5) + (f_width * (3 + asklm3)));
+/* cncl box is on far right  */
+  cnclbox_left = msgbx.b_right - ((1 * 5) + (f_width * (1 + asklm3)));
+  initial_f_height = f_height;  /* remember in case of a resize */
+/*
+ Find actual string length and truncate when printing to fit within box.
+*/
+  strcpy(sbuf,"                                                                                  ");
+  saved_font = current_font;
+  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
+  f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
+  f_to_c_l(cncl,&a_len,&lm3);
+
+  b_width = WIDTH(askbx);
+  fitchars = ((b_width - f_width) / f_width);
+  fitpix = XTextWidth(fst, sbuf, len);
+/* debug  fprintf(stderr,"textfollow: sbuf is %s %d %d %d %d\n",sbuf,f_len,len,fitchars,fitpix); */
+  if ((len+2) > fitchars ) { lstrlen = fitchars; } else { lstrlen = len; }
+  XDrawString(theDisp,win,theGC,askbx.b_left+f_width,askbx.b_bottom-3,sbuf,lstrlen);
+  XFlush(theDisp);
+  XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
+
+  while ( no_valid_event) {
+    XNextEvent(theDisp, &event);
+    switch (event.type) {
+      case VisibilityNotify:
+/* debug fprintf(stderr,"askcncldialog: vis event %d\n",event.xvisibility.state); */
+        if(event.xvisibility.state == 0 ) {
+          refreshenv_();
+          xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
+          altbox(cncl,asklm3,asklm3+1,&msgbx.b_bottom,&cnclbox_left,'-');
+          qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
+          dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
+          okbox("ok",2,3,&msgbx.b_bottom,&okbox_left,'-');
+          xbox(askbx,fg,white,BMCLEAR |BMEDGES);   /* draw input box with edges  */
+          XDrawString(theDisp,win,theGC,askbx.b_left+f_width,askbx.b_bottom-3,sbuf,lstrlen);
+          XFlush(theDisp);
+        }
+        break;
+      case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
+        XGetWindowAttributes(theDisp,win,&wa);
+        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+          no_valid_event = TRUE;
+        }
+        if(start_height != wa.height || start_width != wa.width) {
+
+	/* Window resized so force update of the positions of the various boxes
+           including the position of askbx.  
+           << todo put similar logic in other dialogs >> */
+        /* debug  fprintf(stderr,"askcncldialog detected configure event\n"); */
+          refreshenv_();
+          okbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + asklm3)));
+          qbox_left = msgbx.b_right - ((3 * 5) + (f_width * (5 + asklm3)));
+          dbox_left = msgbx.b_right - ((2 * 5) + (f_width * (3 + asklm3)));
+          cnclbox_left = msgbx.b_right - ((1 * 5) + (f_width * (1 + asklm3)));
+
+          /* Figure out where askbx is now. */
+          askbx.b_right = okbox_left - 5;
+          askbx.b_left = askbx.b_right -((ask_len+2) * f_width);
+          askbx.b_top = msgbx.b_bottom - (initial_f_height + 6);  /* use initial font height */
+          askbx.b_bottom = msgbx.b_bottom -2;
+          if (askbx.b_left < (msgbx.b_left + 5)) {
+            askbx.b_left = msgbx.b_left + 5;
+          }
+
+          /* Determine new left edge of prompt text. */
+          lprompt = askbx.b_left;
+          tprompt = msgbx.b_right - ((asklm1+2) * f_width);
+          if (tprompt < lprompt) lprompt = tprompt;
+          tprompt = askbx.b_left - ((asklm2+2) * f_width);
+          if (tprompt < lprompt) lprompt = tprompt;
+          if (lprompt < msgbx.b_left) lprompt = msgbx.b_left+5;
+          asklprompt = lprompt;   /* remember the position */
+
+          /* Redraw the prompt strings and then the boxes. One
+             remaining glitch - the font seems to be smaller? */
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
+          altbox(cncl,asklm3,asklm3+1,&msgbx.b_bottom,&cnclbox_left,'-');
+          qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
+          dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
+          okbox("ok",2,3,&msgbx.b_bottom,&okbox_left,'-');
+          xbox(askbx,fg,white,BMCLEAR |BMEDGES);   /* draw input box with edges  */
+          XDrawString(theDisp,win,theGC,askbx.b_left+f_width,askbx.b_bottom-3,sbuf,lstrlen);
+          XFlush(theDisp);
+        }
+        break;
+      case ButtonPress:
+        x = event.xbutton.x;  y = event.xbutton.y;
+        if (xboxinside(askbx,x,y)){
+          offsc = ((x - (askbx.b_left+f_width)) / f_width);
+          x1 = (askbx.b_left+f_width) + (offsc * f_width);
+/* debug  fprintf(stderr,"textfollow: x %d y %d x1 %d offsc %d %c\n",x,y,x1,offsc,sbuf[offsc]); */
+          if( lstrlen == 1 ) {
+            offsc = 1;
+            x1 = (askbx.b_left+f_width) + (offsc * f_width);
+          }
+          if ((len+2) > fitchars ) { lstrlen = fitchars; } else { lstrlen = len; }
+          update_edit_str(askbx,sbuf,&x1,&lstrlen);  /* clear and re-draw askbx box and text */
+          initial_button_in = TRUE;
+          break;
+        } else if (xboxinside(okb,x,y)){
+          okbox("ok",2,3,&msgbx.b_bottom,&okb.b_left,'!'); /* brief hilight */
+          no_valid_event = FALSE;
+          break;
+        } else if (xboxinside(defb,x,y)){
+          dbox("d",1,2,&msgbx.b_bottom,&defb.b_left,'!'); /* brief hilight */
+          *id = 1;
+          no_valid_event = FALSE;
+          break;
+        } else if (xboxinside(altb,x,y)){
+          altbox(cncl,lm3,lm3+1,&msgbx.b_bottom,&altb.b_left,'!'); /* brief hilight */
+          *id = 2;
+          no_valid_event = FALSE;
+          break;
+        } else if (xboxinside(querb,x,y)){
+          qbox_("?",1,2,&msgbx.b_bottom,&querb.b_left,'!'); /* brief hilight */
+	  impx = 0; impy = 0; ishowmoreflg = 0; uresp = 0;
+          if (help_lines <= 20) ipflg = 0;
+          if (help_lines > 20) ipflg = 1;
+          egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
+          break;
+        }
+      case KeyPress:	/* (XKeyEvent)&ev */
+        if (initial_button_in) {
+          track_edit_str(sbuf,&event,&x1,&f_len,&len,&fitchars,&offsc,&no_valid_event);
+         }
+        break;
+    }
+  }
+  if(XPending(theDisp) > 0) {
+    while ( XPending(theDisp) > 0) {
+      XNextEvent (theDisp,&event);	/* flush events */
+    }
+  }
+
+  strncpy(sstr,sbuf,(unsigned int)f_len);
+  XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,arrow_cursor);
+  if (saved_font != butn_fnt) winfnt_(&saved_font);
+} /* askcncldialog */
 
 /* **************  Get string from dialogue & 2 alt command input boxs *************** */
 /*
