@@ -2905,15 +2905,16 @@ int *ino;
   Standard redraw and invocation box. Takes text to display
   character width of box, pixels for lower left corner.
 */
-void doitbox(dobox,msg,msglen,asklen,sav_font,use_font,b_bottom,b_left,topic,act)
-  box dobox;	/* box do do it in */
-  char *msg;	/* text in box */
-  char *topic;	/* which topic this button supports */
-  int act;	/* action to take (- is draw, ! is hilight and do */
-  int  msglen,asklen;     /* character width of the text and input box */
-  long int  *sav_font, *use_font;	/* font in current use, font to use within box */
-  int  *b_bottom, *b_left;   /* pixel at lower left of box (supplied) */
-{
+void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long int* use_font,
+	int* b_bottom,int* b_left,char* topic,char act){
+/* where:  dobox is the box to do it in,
+ *         *msg is the text in box,
+ *         *topic which topic this button supports,
+ *         msglen,asklen character width of the text and input box,
+ *         *sav_font, *use_font font in current use, font to use within box,
+ *         *b_bottom, *b_left pixel at lower left of box (supplied),
+ *         act action to take (- is draw, ! is hilight and do  */
+
   int lm1,ilen,len;	/* local string lengths  */
   int bottom, left;	/* pixel at lower left of box (supplied) */
   long int s_font, u_font;	/* font in current use, font to use within box,  */

@@ -131,7 +131,7 @@ void	qbox_(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
 void	dbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
 void	okbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
 void	doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long int* use_font,
-	int* b_bottom,int* b_left,char* topic,int act);
+	int* b_bottom,int* b_left,char* topic,char act);
 void	dosymbox(box dobox,int asklen,long int* sav_font,long int* use_font,int* b_bottom,
 	int* b_left,char* topic,int act);
 void	altbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
