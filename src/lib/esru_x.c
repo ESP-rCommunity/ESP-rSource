@@ -3254,12 +3254,12 @@ void alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act)
   NOTE: expects boxes "a = b = c = d = e = f = g " to have been
   done in the calling function.
 */
-void abcdboxs(msg,msglen,asklen,b_bottom,b_left,act)
-  char *msg;	/* text in box */
-  int act;     /* indicator of the box to work with */
-  int  msglen,asklen;     /* character width of the text and text box */
-  int  *b_bottom, *b_left;   /* pixel at lower left of box (supplied) */
-{
+void abcdboxs(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act){
+/* where:  msg is the text in box,
+ *         msglen,asklen character width of the text and input box,
+ *         *b_bottom, *b_left pixel at lower left of box (supplied),
+ *         act action to take (- is draw, ! is hilight and do  */
+
   int lm1;		/* local string lengths  */
   int  bottom, left;	/* pixel at lower left of box (supplied) */
   long int saved_font;
