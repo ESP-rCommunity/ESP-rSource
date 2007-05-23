@@ -3208,12 +3208,12 @@ void altbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act){
   Standard alternative command string box for dialog that needs a second one.
   Takes text to display character width of box, pixels for lower left corner.
 */
-void alt2box(msg,msglen,asklen,b_bottom,b_left,act)
-  char *msg;	/* text in box */
-  int act;	/* action to take */
-  int  msglen,asklen;     /* character width of the text and input box */
-  int  *b_bottom, *b_left;   /* pixel at lower left of box (supplied) */
-{
+void alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act){
+/* where:  msg is the text in box,
+ *         msglen,asklen character width of the text and input box,
+ *         *b_bottom, *b_left pixel at lower left of box (supplied),
+ *         act action to take (- is draw, ! is hilight and do  */
+
   int lm1;		/* local string lengths found by test  */
   int  bottom, left;	/* pixel at lower left of box (supplied) */
   long int saved_font;

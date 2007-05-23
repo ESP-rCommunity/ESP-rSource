@@ -135,7 +135,7 @@ void	doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
 void	dosymbox(box dobox,int asklen,long int* sav_font,long int* use_font,int* b_bottom,
 	int* b_left,char* topic,char act);
 void	altbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
-void	alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
+void	alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
 void	abcdboxs(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
 void	openaskbox_(char* msg1,char* msg2,long int* asklen,int len1,int len2);
 void	openaskaltbox_(char* msg1,char* msg2,char* alt,long int* asklen,int len1,
