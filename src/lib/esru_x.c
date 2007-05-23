@@ -2632,12 +2632,12 @@ void qbox_(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act){
   Standard defaults box for dialog that needs one. Takes text to display
   character width of box, pixels for lower left corner.
 */
-void dbox(msg,msglen,asklen,b_bottom,b_left,act)
-  char *msg; /* text in box */
-  int act;	/* action "-" display, "!" brief hilight */
-  int  msglen,asklen;     /* character width of the text and input box */
-  int  *b_bottom, *b_left;   /* pixel at lower left of box (supplied) */
-{
+void dbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act){
+/* where: *msg is text in box,
+ *        msglen,asklen are character width of the text and input box
+ *        *b_bottom, *b_left are pixel at lower left of box (supplied)
+ *        act is the action `-` nothing, `!` blink it. */
+
   int lm1;		/* local string lengths found by test  */
   int  bottom, left;	/* pixel at lower left of box (supplied) */
   long int saved_font;
