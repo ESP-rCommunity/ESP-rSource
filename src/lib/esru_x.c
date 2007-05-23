@@ -4323,7 +4323,9 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   long int impx,impy,ipflg,ishowmoreflg,uresp;
   long int saved_font;
   int okbox_left, qbox_left, dbox_left, altbox_left;	/* positions of small boxes */
+  int initial_f_height;  /* font height used for the small boxes */
   unsigned int start_height,start_width;
+  int lprompt,tprompt;   /* cursor position, prompt left side */
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
@@ -4337,6 +4339,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
   qbox_left = msgbx.b_right - ((2 * 5) + (f_width * 4));
 /* defaults box is 1 box over and 2 char total to the right */
   dbox_left = msgbx.b_right - ((1 * 5) + (f_width * 2));
+  initial_f_height = f_height;  /* remember in case of a resize */
 /*
  Find actual string length and truncate when printing to fit within box.
 */
@@ -4362,10 +4365,10 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 /* debug fprintf(stderr,"askaltdialog: vis event %d\n",event.xvisibility.state); */
         if(event.xvisibility.state == 0 ) {
           refreshenv_();
-          altbox(alt,asklm3,asklm3+1,&msgbx.b_bottom,&altbox_left,'-');
           xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
-          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (initial_f_height+8),askmsg1,asklm1);
           XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
+          altbox(alt,asklm3,asklm3+1,&msgbx.b_bottom,&altbox_left,'-');
           qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
           dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
           okbox("ok",2,3,&msgbx.b_bottom,&okbox_left,'-');
@@ -4382,7 +4385,35 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
         if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"askaltdialog detected configure event\n"); */
           refreshenv_();
+	  /* Window resized so force update of the positions of the various boxes
+             including the position of askbx. */
           altbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + asklm3)));
+          okbox_left = msgbx.b_right - ((3 * 5) + (f_width * 7));
+          qbox_left = msgbx.b_right - ((2 * 5) + (f_width * 4));
+          dbox_left = msgbx.b_right - ((1 * 5) + (f_width * 2));
+
+          /* Figure out where askbx is now. */
+          askbx.b_right = altbox_left - 5;
+          askbx.b_left = askbx.b_right -((ask_len+2) * f_width);
+          askbx.b_top = msgbx.b_bottom - (initial_f_height + 6);  /* use initial font height */
+          askbx.b_bottom = msgbx.b_bottom -2;
+          if (askbx.b_left < (msgbx.b_left + 5)) {
+            askbx.b_left = msgbx.b_left + 5;
+          }
+
+          /* Determine new left edge of prompt text. */
+          lprompt = askbx.b_left;
+          tprompt = msgbx.b_right - ((asklm1+2) * f_width);
+          if (tprompt < lprompt) lprompt = tprompt;
+          tprompt = askbx.b_left - ((asklm2+2) * f_width);
+          if (tprompt < lprompt) lprompt = tprompt;
+          if (lprompt < msgbx.b_left) lprompt = msgbx.b_left+5;
+          asklprompt = lprompt;   /* remember the position */
+
+          /* Redraw the prompt strings and then the boxes. One
+             remaining glitch - the font seems to be smaller? */
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (initial_f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
           altbox(alt,asklm3,asklm3+1,&msgbx.b_bottom,&altbox_left,'-');
           qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
           dbox("d",1,2,&msgbx.b_bottom,&dbox_left,'-');
@@ -4511,7 +4542,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
         if(event.xvisibility.state == 0 ) {
           refreshenv_();
           xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
-          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (initial_f_height+8),askmsg1,asklm1);
           XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
           altbox(cncl,asklm3,asklm3+1,&msgbx.b_bottom,&cnclbox_left,'-');
           qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
@@ -4559,7 +4590,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 
           /* Redraw the prompt strings and then the boxes. One
              remaining glitch - the font seems to be smaller? */
-          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (f_height+8),askmsg1,asklm1);
+          XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - (initial_f_height+8),askmsg1,asklm1);
           XDrawString(theDisp,win,theGC,asklprompt,msgbx.b_bottom - 3,askmsg2,asklm2);
           altbox(cncl,asklm3,asklm3+1,&msgbx.b_bottom,&cnclbox_left,'-');
           qbox_("?",1,2,&msgbx.b_bottom,&qbox_left,'-');
