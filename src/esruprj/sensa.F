@@ -829,7 +829,7 @@ C ITEM   If equal to zero then add a new definition, else edit.
 
       subroutine LINKDEF(ITEM,IERR)
 #include "building.h"
-# include "uncertainty.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -912,7 +912,6 @@ C any duplicates.
 
       subroutine UPELM(IPRIM,PRIMLIST,IER)
 #include "building.h"
-C #include "epara.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
 
