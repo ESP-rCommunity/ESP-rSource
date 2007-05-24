@@ -8,7 +8,7 @@ PROG= eco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = eco.o arrow.o c2fdum.o common3dv.o cread3dv.o ctlexp.o dossupport.o \
+OBJECTS = eco.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o ctlexp.o dossupport.o \
 	  e3dviews.o ecocalc.o ecoesp.o readBCF.o econstr.o edatabase.o edcondb.o \
 	  egeometry.o eroper.o esru_misc.o plelev.o startup.o sort.o scsys.o
 
@@ -18,6 +18,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -75,7 +78,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
+	arrow.F ascii_mat.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
         e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F \
 	egtgeom.F emkcfg.F eroper.F esru_misc.F inside.F plelev.F \
 	scsys.F sort.F startup.F 

@@ -15,7 +15,7 @@ PROG = prj$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
+OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \

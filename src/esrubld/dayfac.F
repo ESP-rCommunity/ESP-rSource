@@ -131,25 +131,30 @@ C Trace heading.
           ZP=CGH(ICOMP,N,I)
 
           DO 20 J=1,NSUR
-             DF(J)=0.
+            DF(J)=0.
+
 C Continue only if this surface is vertical, is TMC, has 4 vertexes
-C  and is connectedto either the exterior or another real zone.  Keep track
+C and is connected to either the exterior or another real zone.  Keep track
 C of total windows in zone with nt. Exclude skylights.
             call eclose(PELV(ICOMP,J),0.00,0.5,close)
             IF(close.AND.(ITMCFL(ICOMP,J).GT.0))THEN
               IF (NVER(J).NE.4)THEN
-              WRITE(ITU,811)ICOMP,J
-  811         format('Zone',I2,' TMC',I2,' not 4 vertexes!')
+                WRITE(ITU,811)ICOMP,J
+  811           format('Zone ',I2,' TMC surf ',I2,' not 4 vertexes!')
+
+C This would be a good place to calculate an alternative bounding box
+C for use in width/height calculations.
+C << to be done >>
               ENDIF
 
 C Determine the 'other' zone and connection information.
-            CALL SURADJ(ICOMP,J,IES,T,IZC,ISC,ICN,CSTR)
-            NA=NVER(J)
-            DO 201 K=1,NA
-              XPL(K)=X(JVN(J,K))
-              YPL(K)=Y(JVN(J,K))
-              ZPL(K)=Z(JVN(J,K))
-  201       CONTINUE
+              CALL SURADJ(ICOMP,J,IES,T,IZC,ISC,ICN,CSTR)
+              NA=NVER(J)
+              DO 201 K=1,NA
+                XPL(K)=X(JVN(J,K))
+                YPL(K)=Y(JVN(J,K))
+                ZPL(K)=Z(JVN(J,K))
+  201         CONTINUE
 
 C Test if the TMC is rectangular and calculate window width
 C and high WIDTH, HIGH:
@@ -196,6 +201,9 @@ C and high WIDTH, HIGH:
                 IF(.NOT.close)ZZ2=ZPL(M)
   557         CONTINUE
 
+C If the surface is 4-sided the width calculation works.
+C However, if the surface has different edges, then the
+C calculation of width and height could be incorrect.
               WIDTH=SQRT((XX1-XX2)**2+(YY1-YY2)**2)
               HIGH=ABS(ZZ1-ZZ2)
               ZZMIN=ZZ1

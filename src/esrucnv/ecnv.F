@@ -99,7 +99,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
-      character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*72
+      character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*144
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character path*72,upath*72,esprc*72,LCNN*72
       character dfdblbl*20,defdbfl*72,upgcfg*72
@@ -333,7 +333,7 @@ C have not been read in.
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit iotmp2.
         call escdef(dfdblbl,defdbfl,iotmp2,IER)
-        LTMP=filname
+        write(LTMP,'(a)') filname(1:lnblnk(filname))
 
 C Find the path and local file name.
         call fdroot(LTMP,path,LCFGF)

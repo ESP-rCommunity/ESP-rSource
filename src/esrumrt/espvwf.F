@@ -104,7 +104,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72,LTMPPOL*72
+      CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,esprc*72,cfgroot*24,zdesc*64
       character dfdblbl*20,defdbfl*72,journcmd*20,jfile*72,uname*24
@@ -402,8 +402,8 @@ C successful then scan all the zones via ZDATA.
             NZONES=NCOMP
             CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
 
-C Open scratch file now that path is known. Make up name which includes
-C the users home folder and the current pid number. If this file exists
+C Open scratch file now that path is known. Extend the name of the
+C vwf file. If this file exists
 C then remove it before opening a new scratch file.
             if(browse)then
               call usrmsg('You do not own the current model and so are',
@@ -412,26 +412,40 @@ C then remove it before opening a new scratch file.
             else
               if(unixok)then
                 fs = char(47)
-                call esppid(ipid)
-                write(LTMPPOL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),
-     &            ipid,'.mrt'
-                call st2file(LTMPPOL,LTMPFL)
-                write (LTMPPOL,'(a,a,a)')upath(1:lnblnk(upath)),fs,
-     &            LTMPFL(1:lnblnk(LTMPFL))
-                INQUIRE (FILE=LTMPPOL(1:lnblnk(LTMPPOL)),EXIST=XST)
+                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+     &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
+                INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
                 if(XST)then
                   call edisp(iuout,'Removing existing scratch file. ')
-                  call FPRAND(IFPOL,ISTAT,80,1,LTMPPOL)
+                  call FPRAND(IFPOL,ISTAT,80,1,LTMPFL)
                   call EFDELET(IFPOL,ISTAT)
                 endif
-                call FPRAND(IFPOL,ISTAT,80,3,LTMPPOL)
+                call FPRAND(IFPOL,ISTAT,80,3,LTMPFL)
                 if(ISTAT.lt.0)then
                   call edisp(iuout,' Error opening mrt.trace file;')
                   CALL EPAGEND
                   STOP
                 endif
+                call edisp(iuout,'Opening scratch file...')
+                call edisp(iuout,LTMPFL)
               else
                 fs = char(92)
+                write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+     &            cfgroot(1:lnblnk(cfgroot)),'.mrt'
+                INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
+                if(XST)then
+                  call edisp(iuout,'Removing existing scratch file. ')
+                  call FPRAND(IFPOL,ISTAT,80,1,LTMPFL)
+                  call EFDELET(IFPOL,ISTAT)
+                endif
+                call FPRAND(IFPOL,ISTAT,80,3,LTMPFL)
+                if(ISTAT.lt.0)then
+                  call edisp(iuout,' Error opening mrt.trace file;')
+                  CALL EPAGEND
+                  STOP
+                endif
+                call edisp(iuout,'Opened scratch file...')
+                call edisp(iuout,LTMPFL)
               endif
             endif
           endif
@@ -529,26 +543,40 @@ C Find the path and local file name.
 C Open scratch file now that path is known.
           if(unixok)then
             fs = char(47)
-            call esppid(ipid)
-            write(LTMPPOL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,
-     &        '.mrt'
-            call st2file(LTMPPOL,LTMPFL)
-            write (LTMPPOL,'(a,a,a)')upath(1:lnblnk(upath)),fs,
-     &        LTMPFL(1:lnblnk(LTMPFL))
-            INQUIRE (FILE=LTMPPOL,EXIST=XST)
+            write(LTMPFL,'(4a)') path(1:lnblnk(path)),fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
             if(XST)then
               call edisp(iuout,'Removing existing scratch file. ')
-              call FPRAND(IFPOL,ISTAT,80,1,LTMPPOL)
+              call FPRAND(IFPOL,ISTAT,80,1,LTMPFL)
               call EFDELET(IFPOL,ISTAT)
             endif
-            call FPRAND(IFPOL,ISTAT,80,3,LTMPPOL)
+            call FPRAND(IFPOL,ISTAT,80,3,LTMPFL)
             if(ISTAT.lt.0)then
               call edisp(iuout,' Error opening mrt.trace file;')
               CALL EPAGEND
               STOP
             endif
+            call edisp(iuout,'Opening scratch file...')
+            call edisp(iuout,LTMPFL)
           else
             fs = char(92)
+            write(LTMPFL,'(4a)') path(1:lnblnk(upath)),fs,
+     &        cfgroot(1:lnblnk(cfgroot)),'.mrt'
+            INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
+            if(XST)then
+              call edisp(iuout,'Removing existing scratch file. ')
+              call FPRAND(IFPOL,ISTAT,80,1,LTMPFL)
+              call EFDELET(IFPOL,ISTAT)
+            endif
+            call FPRAND(IFPOL,ISTAT,80,3,LTMPFL)
+            if(ISTAT.lt.0)then
+              call edisp(iuout,' Error opening mrt.trace file;')
+              CALL EPAGEND
+              STOP
+            endif
+            call edisp(iuout,'Opened scratch file...')
+            call edisp(iuout,LTMPFL)
           endif
         else
           goto 289
@@ -689,10 +717,10 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 c End program, free and delete the scratch file.
         call usrmsg(' Closing viewfactor and MRT program...',' ','P')
         call tstamp('>','Finish viewfactor module')
-        INQUIRE (FILE=LTMPPOL,EXIST=XST)
+        INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
         if(XST)then
           CALL ERPFREE(IFPOL,ISTST)
-          call FPRAND(IFPOL,ISTAT,80,1,LTMPPOL)
+          call FPRAND(IFPOL,ISTAT,80,1,LTMPFL)
           CALL EFDELET(IFPOL,ISTAT)
         endif
         CALL EPAGEND

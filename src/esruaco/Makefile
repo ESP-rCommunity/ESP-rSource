@@ -10,7 +10,7 @@ PROG= aco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aco.o acocalc.o acoesp.o arrow.o c2fdum.o common3dv.o cread3dv.o \
+OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
 	ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o item.o mfcdat.o nwkrewr.o plelev.o pltcfg.o readaco.o \
@@ -22,6 +22,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -103,7 +106,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
+	arrow.F ascii_mat.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F inside.F \
 	item.F mfcdat.F nwkrewr.F plelev.F sort.F startup.F tdfile.F pltcfg.F
