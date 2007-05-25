@@ -146,6 +146,41 @@ C << EnergyPlus and DOE-2?
 C << What further information differences are there with
 C << WIS and Window 5.1
 
+C Categories for materials implied by UK national calculation method.
+C   Air Layer
+C   Asbestos Cement
+C   Asphalt
+C   Brick
+C   Building Paper
+C   Concrete dense
+C   Concrete lightweight
+C   Concrete medium density
+C   Cement Mortar
+C   Felt
+C   Floor finish
+C   Glazing not coated not tinted
+C   Glazing not coated tinted
+C   Glazing low-e coated not tinted
+C   Glazing low-e coated tinted
+C   Insulation (batts)
+C   Insulation (board)
+C   Insulation (fill)
+C   Insulation (quilt)
+C   Insulation (miscellaneous)
+C   Metal
+C   Particle Board
+C   Plaster
+C   Plasterboard
+C   Render
+C   Roof Gravel
+C   Rubber Tile
+C   Soil
+C   Stone
+C   Tiles / slate
+C   Wood
+C   Other
+C   
+
 C rlegacymat: scan legacy ASCII file and fill common blocks.
 C mkascimat:  creates ascii material file (version 1.1) based on
 C rascimat:   fills common matdatarray and matnamearray from
@@ -431,13 +466,13 @@ C common block arrays so that future reads are more efficient.
           if(matcatindex(J).eq.I)then
             matcatcount=matcatcount+1 ! increment items in category counter
             if(matcatcount.gt.matcatitems(I))then
-              call usrmsg('Number of items linked with a category does',
+              call usrmsg('Number of items linked with a category ',
      &                    'exceeds expected count.','W')
             endif
             matcount=matcount+1   ! increment counter
             if(matcount.gt.matdbitems)then
               call usrmsg('Number of materials scanned exceeds',
-     &                    'exceeds expected count.','W')
+     &                    'expected count for database.','W')
             endif
             lnna=lnblnk(matname(J))
             lndo=lnblnk(matdoc(J))
@@ -727,3 +762,32 @@ C << did not find the correct header.... >>
       RETURN
     
       END
+
+C ************* getnextascislot 
+C getnextascislot: Finds the next empty slot in the 0-600 list
+C of legacy material indices.
+C Where: ip is point to start looking from
+C        inext is slot found.
+      subroutine getnextascislot(ip,inext)
+
+C mathash is a pointer to the array index in matdatarray for a
+C   given legacy index e.g array_index = mathash(legacy_index)
+C   if return is negative then there is no pointer.
+      integer mathash
+      common/mathasharray/mathash(600)
+      integer ip,inext,ilook
+
+C Set inext to 601 in case nothing found. If mathash array item
+C is negative then it has not yet been used. Calling code should
+C be sure to instanciate mathash with the material array index.
+      inext=601
+      if(ip.gt.0.and.ip.le.599)then
+        do 42 ilook=ip,600
+          if(mathash(ilook).lt.0)then
+            inext=ilook
+            return
+          endif
+  42    continue
+      endif
+      return
+      end

@@ -848,7 +848,31 @@ C end of the array.
           CALL EMENU('Copy material',PDBM,NITMS,IW)
           IWHICH=iwhicharray(IW)
           ILNE=matdbitems+1
-          matlegindex(ILNE)=-99
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and maek up initial name based
+C on the original.
+          ip=matlegindex(IWHICH)
+          call getnextascislot(ip,inext)
+          if(inext.le.600)then 
+            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+            matlegindex(ILNE)=inext
+            mathash(inext)=ILNE
+          else
+            write(matname(ILNE),'(2a)') 
+     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+            matlegindex(ILNE)=-99
+          endif
+
+C If there is room add a note about its origin.
+          ils=lnblnk(matdoc(IWHICH))
+          if(ils.le.200)then
+            write(matdoc(ILNE),'(2a)') 
+     &        matdoc(IWHICH)(1:ils),' (copy of)'
+          else
+            matdoc(ILNE)=matdoc(IWHICH)
+          endif
           matdbcon(ILNE)=matdbcon(IWHICH)
           matdbden(ILNE)=matdbden(IWHICH)
           matdbsht(ILNE)=matdbsht(IWHICH)
@@ -859,9 +883,6 @@ C end of the array.
           matdbdrv(ILNE)=matdbdrv(IWHICH)
           matdbthick(ILNE)=matdbthick(IWHICH)
           matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
-          write(matname(ILNE),'(2a)') 
-     &      matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
-          matdoc(ILNE)=matdoc(IWHICH)
           matopaq(ILNE)=matopaq(IWHICH)
           matirtran(ILNE)=matirtran(IWHICH)
           matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
@@ -889,8 +910,10 @@ C copy the contents of material > IWHICH into the next lower one.
             CALL USRMSG(' ',' Which item of list? ','-')
             CALL EMENU('delete material',PDBM,NITMS,IW)
             IWHICH=iwhicharray(IW)
+            ip=matlegindex(IWHICH)  ! remove legacy index from the hash table.
+            mathash(ip)=-1
             DO 791 IVV=IWHICH,matdbitems-1
-              matlegindex(IVV)=matlegindex(IVV+1)-1
+              matlegindex(IVV)=matlegindex(IVV+1)
               matdbcon(IVV)=matdbcon(IVV+1)
               matdbden(IVV)=matdbden(IVV+1)
               matdbsht(IVV)=matdbsht(IVV+1)
@@ -929,8 +952,19 @@ C Add a material, initiate it to the values of last material in class.
                 endif
   793         continue
               if(lastcatitem.gt.0)then
-                matname(ILNE)='new_material'
-                matlegindex(ILNE)=-99
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices and make up name and index based on inext value.
+                ip=matlegindex(lastcatitem)
+                call getnextascislot(ip,inext)
+                if(inext.le.600)then 
+                  write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+                  matlegindex(ILNE)=inext
+                  mathash(inext)=ILNE
+                else
+                  matname(ILNE)='new_material'
+                  matlegindex(ILNE)=-99
+                endif
                 matdbcon(ILNE)=matdbcon(lastcatitem)
                 matdbden(ILNE)=matdbden(lastcatitem)
                 matdbsht(ILNE)=matdbsht(lastcatitem)
@@ -941,7 +975,15 @@ C Add a material, initiate it to the values of last material in class.
                 matdbdrv(ILNE)=matdbdrv(lastcatitem)
                 matdbthick(ILNE)=matdbthick(lastcatitem)
                 matcatindex(ILNE)=matcatindex(lastcatitem)  ! keep in same category
-                matdoc(ILNE)=matdoc(lastcatitem)
+
+C If there is room add a note about its origin.
+                ils=lnblnk(matdoc(lastcatitem))
+                if(ils.le.200)then
+                  write(matdoc(ILNE),'(2a)') 
+     &              matdoc(lastcatitem)(1:ils),' (derived from)'
+                else
+                  matdoc(ILNE)=matdoc(lastcatitem)
+                endif
                 matopaq(ILNE)=matopaq(lastcatitem)
                 matirtran(ILNE)=matirtran(lastcatitem)
                 matsoldrtrn(ILNE)=matsoldrtrn(lastcatitem)
@@ -952,6 +994,7 @@ C Add a material, initiate it to the values of last material in class.
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
                 matdbitems=matdbitems+1
+                matcatitems(IC)=matcatitems(IC)+1
 
 C Browse/Edit the details of this new item. Mark as unmodified first
 C and then resetn MODDB and chgdb if mod is true.
