@@ -4,13 +4,14 @@ MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
 PROG = mrt$(EXE)
+PROG2 = espvwf$(EXE)
 
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = mrt.o arrow.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
+OBJECTS = espvwf.o arrow.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
 	  cread3dv.o ctread.o dossupport.o e3dviews.o edatabase.o edmrt.o egeometry.o \
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
 	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
@@ -94,7 +95,7 @@ tdfile.F:
 	ln -s $(TDFdir)/tdfile.F .
 
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	strip $(PROG);cp $(PROG) $(ESPbin)/$(PROG2)
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \

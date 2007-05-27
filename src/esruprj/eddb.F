@@ -845,11 +845,14 @@ C If db does not exist offer the following choices:
       H(22)='  database will be made and you will be offered a '
       H(23)='  chance to rename it.'
       H(24)=' '
-      H(25)='e) export constructions db (a binary file which is'
+      H(25)='e) export material db (a binary file which is'
       H(26)='   platform dependant to an ascii file) '
       H(27)=' '
-      H(28)='f) import ascii constructions db file and convert it'
+      H(28)='f) import legacy ascii material db file and convert it'
       H(29)='   to a binary file. '
+      H(30)=' '
+      H(31)='g) import ascii material db file into common blocks,view'
+      H(32)='   it and write out to ascii file (BETA facility). '
       CALL ERPFREE(IFMAT,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
@@ -864,7 +867,7 @@ C Get length of path to where esp-r databases were installed.
      &    'a browse/edit (NOT APPLICABLE)','b select another file',
      &    'c make a new database','d copy the default database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    ' ',' ',' ',' ',' ',' ',isw,idno,29)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
           copydef=.true.
       elseif(LFMAT(1:linst).eq.linstd(1:linst))then
 
@@ -875,7 +878,7 @@ C If corportate database then offer the following choices:
      &    'a browse or edit this file','b select another file',
      &    'c make a new database','d make project copy of database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    '  ',' ',' ',' ',' ',' ',isw,idno,29)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
           copydef=.false.
       else
 
@@ -886,7 +889,7 @@ C If db exists locally offer the following choices:
      &    'a browse or edit this file','b select another file',
      &    'c make a new database','d copy the default database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    '  ',' ',' ',' ',' ',' ',isw,idno,29)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
           copydef=.true.
       endif
 
@@ -1047,6 +1050,9 @@ C a new db, populate it and present editing facility.
         MATDBOK=.TRUE.
         moddb=.true.
         modcon=.true.
+
+C << need to update this to offer choice of legacy or current
+C << ascii materials file.
 
 C Write a scratch file which can be read in to create a binary material.
 C Include typical categories with one item in each.
@@ -1275,6 +1281,9 @@ C ascii version of this new project materials db.
       elseif(isw.eq.5)then
 
 C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
+
+C << offer option to write to either format of ascii file. >>
+
         IAF=IFIL+1
         IF(.NOT.MATDBOK)THEN
 
@@ -1334,6 +1343,49 @@ C the same name as the binary one and is in the same location.
           return
         else
           CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+        endif
+      elseif(isw.eq.7)then
+
+C Legacy materials to common blocks.
+        H(1)='The materials database holds the thermo-physical'
+        H(2)='properties of a range of materials such as'
+        H(3)='brick, concrete, insulation, etc. An asci version'
+        H(4)='of this database is ofen used when transporting models'
+        H(5)='between operating systems. '
+        IAF=IFIL+1
+        clkok=.false.
+        DFILE=' '
+        LASCI=' '
+        write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+        CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
+     &    '  ','cancel',clkok,72,DFILE,'materials db (ascii)',IER,5)
+        if(clkok) return
+
+C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
+C re-read as a legacy materials file.
+        call rascimat(iuout,IAF,LASCI,IER)
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IAF,LASCI,ier)
+        endif
+
+C Offer display of material common blocks.
+        CALL ELISTMAT(iw,chgdb,'M',IER)
+
+        DFILE='./newmat.db1a'
+        clkok=.false.
+        write(ltmp,'(2a)') LASCI(1:lnblnk(LASCI)),'a1.1'
+ 147    CALL EASKSCMD(ltmp,' Materials database (1.1 ASCII)?',
+     &    '  ','cancel',clkok,72,DFILE,'Materials 1.1 ASCII)',IER,5)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          continue
+        else
+          goto 147
+        endif
+        if(clkok)then
+          return
+        else
+          CALL mkascimat(IUOUT,IAF,ltmp,IER)
         endif
       endif
 

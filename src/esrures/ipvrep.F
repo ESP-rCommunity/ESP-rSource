@@ -779,26 +779,6 @@ C Note: the diversified minimums are reports.
         call edisp(itru,'*end_report')
         call edisp(itru,' ')
 
-C << this report not included becuse it is somewhat opaque >>
-C Write average capacity. The IGET number is fixed at 70.
-C        write(outs,'(9a)') '*report',tab,'70',tab,'average',
-C     &    tab,'capacity',tab,zedsdoc(ij)(1:lnblnk(zedsdoc(ij)))
-C        call edisp(itru,outs)
-C        write(outs,'(5a)') '*title',tab,'Average capacity',tab,'W'
-C        call edisp(itru,outs)
-C        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
-C        call edisp(itru,outs)
-C        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
-C     &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
-C     &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
-C     &    'Hot water'
-C        call edisp(itru,outs)
-C        write(outs,'(a,7F12.3)')'*data ',XAVE(1)*1000.0,
-C     &    XAVE(2)*1000.0,XAVE(3),XAVE(4),XAVE(5),XAVE(6),XAVE(7)
-C        call eddisp(itru,outs)
-C        call edisp(itru,'*end_report')
-C        call edisp(itru,' ')
-
 C Integrate heating cooling and lighting demands for the period.
 C The IGET number is fixed at 70.
         write(outs,'(9a)') '*report',tab,'70',tab,'demand',
@@ -813,7 +793,7 @@ C The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',THE,TCE,tuclight,tlight,
+        write(outs,'(a,7F12.3)')'*data ',THE,abs(TCE),tuclight,tlight,
      &    tpumps,tsmlpw,tdhw
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -1475,30 +1455,31 @@ C Write out timestep demands.
           ihr=0
           do 90 j=ISTART,IEND,NOUT
 
-C Compute current time (as in ZONTAB).
+C Compute current time (as in ZONTAB). Suggestion from L. Prazeres that
+C cooling should be presented as absolute value.
             call DATIME(J,ATIME)
             if (IHFLAG.eq.0) then 
               if(ipvform.eq.3)then
                 call SJTIME(J,LJTIME)
                 write(outs,'(4a,6F12.1)') sq,ljtime,sq,' ',edput(1,j),
-     &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
+     &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               else
                 call STIME(J,LTIME)
                 write(outs,'(2a,6F12.1)') ltime,' ',edput(1,j),
-     &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
+     &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               endif
             else
               if(ipvform.eq.3)then
                 call SJTIME(J,LJTIME)
                 write(outs,'(4a,6F12.1)') sq,ljtime,sq,' ',edput(1,j),
-     &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
+     &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               else
                 RDOTY=FLOAT(IDAY)+(ATIME/24.)
                 write(outs,'(F10.4,6F12.1)')RDOTY,edput(1,j),
-     &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
+     &            abs(edput(2,j)),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j)
               endif
             endif
@@ -2100,8 +2081,6 @@ C << find an iget number for this >>
 C Note: units follow tab (suggesstion by Luis Prazeres to not print total
 C line in the seasonal section).
             Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-C            write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-C            call eddisp(itru,outs)
             call edisp(itru,'*end_report')
             call edisp(itru,' ')
 
@@ -2210,10 +2189,6 @@ C << find an iget number for this >>
         call eddisp(itru,outs)
       endif
         
-C Note: units follow tab. Luis Prazeres suggests to remove Total line.
-C      Total = THE+abs(TCE)+tlight+tpumps+tsmlpw+tdhw
-C      write(outs,'(4a,F9.2)') '*data ',tab,'Total',tab,total
-C      call eddisp(itru,outs)
       call edisp(itru,'*end_report')
       call edisp(itru,' ')
 
@@ -2226,7 +2201,7 @@ C << find an iget number for this >>
      &  'kWh/a'
       call edisp(itru,outs)
       if(tpv.gt.0.001)then
-        write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
+        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
         write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2236,7 +2211,7 @@ C << find an iget number for this >>
      &    tsmlpwkw,tdhwkw,tpvkw
         call eddisp(itru,outs)
       else
-        write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'6'
+        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
         write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
@@ -2247,10 +2222,10 @@ C << find an iget number for this >>
         call eddisp(itru,outs)
       endif
         
-C Note: units follow tab.
-      Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
-      write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
-      call eddisp(itru,outs)
+C Note: units follow tab. This total no longer used in the report.
+C      Total = THEKW+abs(TCEKW)+tlightkw+tpumpskw+tsmlpwkw+tdhwkw
+C      write(outs,'(4a,F12.1)') '*data ',tab,'Total',tab,total
+C      call eddisp(itru,outs)
       call edisp(itru,'*end_report')
       call edisp(itru,' ')
 
@@ -3548,6 +3523,8 @@ C Each call is a toggle.
               return    ! does ixopen need to be reset?
             endif
           endif
+        else
+          IW=2   ! iw needs to be non-zero for subsequent code to work.
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '

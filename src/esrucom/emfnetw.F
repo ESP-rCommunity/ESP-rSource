@@ -179,7 +179,7 @@ C Read number of nodes, components, interconnections and wind reduction.
         CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','no of nodes',IER)
         CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','no of compnt',IER)
         CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connct',IER)
-        CALL EGETWR(OUTSTR,K,WRED,0.,10.,'F','wind reduction',IER)
+        CALL EGETWR(OUTSTR,K,WRED,0.,10.,'W','wind reduction',IER)
         IF(IER.NE.0) GOTO 1001
       ELSE
         CALL USRMSG('looking for at least 4 items in',OUTSTR,'W')

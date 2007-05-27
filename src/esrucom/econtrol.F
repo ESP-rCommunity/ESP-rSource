@@ -2104,7 +2104,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-      CHARACTER SSTR*72,SSTRB*48
+      CHARACTER SSTR*72,SSTRB*48,SSTR1*72,SSTRB1*48
       CHARACTER NDNAM*12
 
       dimension cm(misc)  ! for passing miscel control data
@@ -2118,6 +2118,9 @@ C sub-strings for describing multi-sensor flow controls.
       logical oka,okb
 
       SSTR=' '
+      SSTR1=' '
+      SSTRB=' '
+      SSTRB1=' '
       message=' '
 
       if(icfoc.eq.0)then
@@ -2401,7 +2404,95 @@ C          call edisp248(6,message,80)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.11)then
           SSTR='match temp - ideal'
-          message='match temperature (ideal) report TBD'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+
+C Depending on one or two aux sensors decode their locations
+C into SSTRB and optionally SSTRB1.
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          if(nint(cm(7)).eq.1)then
+            msg1=' greatest value @ '
+          elseif(nint(cm(7)).eq.2)then
+            msg1=' least value @ '
+          elseif(nint(cm(7)).eq.3)then
+            msg1=' mean value @ '
+          elseif(nint(cm(7)).eq.4)then
+            msg1=' weighted value @ '
+          endif
+
+          if(nint(cm(6)).eq.1)then
+            icsn(1)=nint(bmiscd(II,JJ,KK,8))
+            icsn(2)=nint(bmiscd(II,JJ,KK,9))
+            icsn(3)=nint(bmiscd(II,JJ,KK,10))
+            icsn(4)=nint(bmiscd(II,JJ,KK,11))
+            if(nint(cm(7)).eq.4)then
+              cm(12)=bmiscd(II,JJ,KK,12)   ! weighting
+              cm(13)=bmiscd(II,JJ,KK,13)   ! scale factor 
+              cm(14)=bmiscd(II,JJ,KK,14)   ! offset 
+            else
+              cm(12)=bmiscd(II,JJ,KK,12)   ! scale factor
+              cm(13)=bmiscd(II,JJ,KK,13)   ! offset 
+            endif
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+          elseif(nint(cm(6)).eq.2)then
+            icsn(1)=nint(bmiscd(II,JJ,KK,8))
+            icsn(2)=nint(bmiscd(II,JJ,KK,9))
+            icsn(3)=nint(bmiscd(II,JJ,KK,10))
+            icsn(4)=nint(bmiscd(II,JJ,KK,11))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            icsn(1)=nint(bmiscd(II,JJ,KK,12))
+            icsn(2)=nint(bmiscd(II,JJ,KK,13))
+            icsn(3)=nint(bmiscd(II,JJ,KK,14))
+            icsn(4)=nint(bmiscd(II,JJ,KK,15))
+            if(nint(cm(7)).eq.4)then
+              cm(16)=bmiscd(II,JJ,KK,16)   ! weighting 1st
+              cm(17)=bmiscd(II,JJ,KK,17)   ! weighting 2nd
+              cm(18)=bmiscd(II,JJ,KK,18)   ! scale factor 
+              cm(19)=bmiscd(II,JJ,KK,19)   ! offset 
+            else
+              cm(16)=bmiscd(II,JJ,KK,16)   ! scale factor
+              cm(17)=bmiscd(II,JJ,KK,17)   ! offset 
+            endif
+            SSTR1=' '
+            call decodesensor(0,icsn,SSTR1,SSTRB1,ier)
+          endif
+
+C Generate the description from the bits taking into account how
+C many aux sensors and whether there is a weighting factor.
+          if(nint(cm(6)).eq.1)then
+            if(nint(cm(7)).eq.4)then
+              write(lmsg,'(4(a,f8.0),a,f3.0,2a,3(a,f5.2))')
+     &          ' match temperature (ideal): max heat cp ',cm(2),
+     &          'W min heat cp ',cm(3),'W max cool cp ',cm(4),
+     &          'W min heat cp ',cm(5),'W Aux sensors ',cm(6),
+     &          msg1(1:lnblnk(msg1)),SSTRB(1:lnblnk(SSTRB)),
+     &          ' weighting ',cm(12),' scale ',cm(13),
+     &          ' offset ',cm(14)
+            else
+              write(lmsg,'(4(a,f8.0),a,f3.0,2a,2(a,f5.2))')
+     &          ' match temperature (ideal): max heat cp ',cm(2),
+     &          'W min heat cp ',cm(3),'W max cool cp ',cm(4),
+     &          'W min heat cp ',cm(5),'W Aux sensors ',cm(6),
+     &          msg1(1:lnblnk(msg1)),SSTRB(1:lnblnk(SSTRB)),
+     &          ' scale ',cm(12),' offset ',cm(13)
+            endif
+            call SDELIM(lmsg,message,'S',IW)
+            call edisp248(6,message,90)
+          elseif(nint(cm(6)).eq.2)then
+            write(lmsg,'(4(a,f8.0),a,f3.0,4a)')
+     &        ' match temperature (ideal): max heat cp ',cm(2),
+     &        'W min heat cp ',cm(3),'W max cool cp ',cm(4),
+     &        'W min heat cp ',cm(5),'W Aux sensors ',cm(6),
+     &        msg1(1:lnblnk(msg1)),SSTRB(1:lnblnk(SSTRB)),
+     &        ' & ',SSTRB1(1:lnblnk(SSTRB1))
+            call SDELIM(lmsg,message,'S',IW)
+            call edisp248(6,message,90)
+          endif
         ELSEIF(IBCLAW(II,JJ,KK).EQ.12)then
           SSTR='match temp - on-off'
           message='match temperature (on/off) report TBD'
@@ -2588,6 +2679,20 @@ C          call edisp248(6,message,80)
      &      ' master/slave control: index of master control loop',
      &       nint(cm(2)),' slave maximum heating capacity ',cm(3),
      &      ' slave maximum cooling capacity ',cm(4),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.22)then
+          SSTR='VAV and CAV air based '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          write(lmsg,'(a,f9.2,a,f7.3,a,f7.3,a,f7.4,a,f7.4,a)') 
+     &    ' VAV and CAV air based: reheat cap ',cm(2),
+     &    'W air supply temp',cm(3),'C room setpoint ',cm(4),
+     &    'C max air flow rate ',cm(5),'m^3/s min air flow rate',
+     &    cm(6),'m^3/s' 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBSN(II,1).EQ.-99)then
@@ -3252,7 +3357,7 @@ C Test assign # of parseable controls to # of flow control loops
 
 C Test if parsable loops exist      
       if ( nbp .gt. 0  ) then
-      
+
       do 20 i=1,nbp
 C 'i' appears to serve no purpose in this code.     
       ii=i
@@ -3320,15 +3425,13 @@ C Mixed temperature sensor.
       if(isn3.lt.0.or.isn3.gt.100)goto 1003
       goto 9
 
-
-
 C Sensor within plant component.
 C Check to see if component exists
     6 if(isn2.lt.0.or.isn2.gt.npcomp)goto 1002
 C Check to see if sensed node exists    
       if(isn3.lt.1.or.isn3.gt.npcdat(isn2,8))goto 1003
       goto 9
-    
+
 C Sensor located externally.
     7 if(isn2.lt.0.or.isn2.gt.6)goto 1002
       goto 9
@@ -3415,12 +3518,12 @@ c actuation is on a mass flow component.
 
    20 continue
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
-
    10 continue
       return
       
 
       
+
 C Error messages.
  1001 write(outstr,'(A,I3,A)') ' Sensor node: 1st item (',
      &  isn1,') > number of zones.'

@@ -1145,7 +1145,7 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       common/TOTAL/nsurmf, NGRID, NTRPOL
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      common/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
 C Error subroutine and error details for dll mode.
@@ -1252,7 +1252,7 @@ C Read surface data line(s).
         IRV=NZS
         CALL EGETWRA(IUF,VA,IRV,0.,0.9999,'F','view factors',IER)
         DO 14 J=1,NZS
-          VWF(I,J)=VA(J)
+          VEWF(I,J)=VA(J)
    14   CONTINUE
   330 CONTINUE
 
@@ -1285,20 +1285,20 @@ C Write out trace if requested.
 C MS senstive, change is MS>68.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
-            write(outs,9993)I,(VWF(I,J),J=1,NZS)
+            write(outs,9993)I,(VEWF(I,J),J=1,NZS)
  9993       format(I3,1X,22F5.2)
             call edisp(itru,outs)
           elseif(NZS.ge.23.and.NZS.le.44)then
-            write(outs,9993)I,(VWF(I,J),J=1,22)
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=23,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,NZS)
             call edisp(itru,outs)
           elseif(NZS.ge.45.and.NZS.le.68)then
-            write(outs,9993)I,(VWF(I,J),J=1,22)
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=23,44)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=45,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
@@ -1414,7 +1414,7 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
       character zname*12,zdesc*64,LMRT*72,LGEOM*72,CUBN*6,act*1
@@ -1452,7 +1452,7 @@ C Write matrix, one line at a time. Begin by copying data to a single
 C dimension array and then generating & writing out as much as 248 chars.
       DO 930 I = 1,NZS
         do 32 j = 1,NZS
-          rval(j)=VWF(i,j)
+          rval(j)=VEWF(i,j)
   32    continue
         itrunc=1
         ipos=1
@@ -1468,7 +1468,7 @@ C because it might influence use of view factors in bps.
       DO 462 I =  1,NZS
         fr=0.0
         DO 461 J =  1,NZS
-          fr=fr+VWF(i,j)
+          fr=fr+VEWF(i,j)
 461     CONTINUE
         WRITE(IUF,4060)i,fr
 4060    FORMAT(' sum over row ',i2,' is : ',F14.10)
