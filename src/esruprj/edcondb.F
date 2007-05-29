@@ -692,6 +692,23 @@ C Add another category to the database << not yet tested >>
           matvisotrfl(ILNE)=0.5
           matvisinrfl(ILNE)=0.5
           matrender(ILNE)=0.0
+
+          matgapcnd(ILNE,1)=0.0
+          matgapcnd(ILNE,2)=0.0
+          matgapcnd(ILNE,3)=0.0
+          matgapcnd(ILNE,4)=0.0
+          matvisco(ILNE,1)=0.0
+          matvisco(ILNE,2)=0.0
+          matvisco(ILNE,3)=0.0
+          matvisco(ILNE,4)=0.0
+          matgapden(ILNE,1)=0.0
+          matgapden(ILNE,2)=0.0
+          matgapden(ILNE,3)=0.0
+          matgapden(ILNE,4)=0.0
+          matprandtl(ILNE,1)=0.0
+          matprandtl(ILNE,2)=0.0
+          matprandtl(ILNE,3)=0.0
+          matprandtl(ILNE,4)=0.0
           chgdb=.true.
         endif
         goto 40
@@ -867,9 +884,11 @@ C on the original.
 
 C If there is room add a note about its origin.
           ils=lnblnk(matdoc(IWHICH))
+          iln=lnblnk(matname(IWHICH))
           if(ils.le.200)then
-            write(matdoc(ILNE),'(2a)') 
-     &        matdoc(IWHICH)(1:ils),' (copy of)'
+            write(matdoc(ILNE),'(4a)') 
+     &        matdoc(IWHICH)(1:ils),' (copy of ',
+     &        matname(IWHICH)(1:iln),')'
           else
             matdoc(ILNE)=matdoc(IWHICH)
           endif
@@ -892,6 +911,23 @@ C If there is room add a note about its origin.
           matvisotrfl(ILNE)=matvisotrfl(IWHICH)
           matvisinrfl(ILNE)=matvisinrfl(IWHICH)
           matrender(ILNE)=matrender(IWHICH)
+
+          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+          matvisco(ILNE,1)=matvisco(IWHICH,1)
+          matvisco(ILNE,2)=matvisco(IWHICH,2)
+          matvisco(ILNE,3)=matvisco(IWHICH,3)
+          matvisco(ILNE,4)=matvisco(IWHICH,4)
+          matgapden(ILNE,1)=matgapden(IWHICH,1)
+          matgapden(ILNE,2)=matgapden(IWHICH,2)
+          matgapden(ILNE,3)=matgapden(IWHICH,3)
+          matgapden(ILNE,4)=matgapden(IWHICH,4)
+          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+          matprandtl(ILNE,3)=matprandtl(IWHICH,3)
+          matprandtl(ILNE,4)=matprandtl(IWHICH,4)
           matdbitems=matdbitems+1
           matcatitems(IC)=matcatitems(IC)+1
           MODDB=.TRUE.
@@ -935,6 +971,23 @@ C copy the contents of material > IWHICH into the next lower one.
               matvisotrfl(IVV)=matvisotrfl(IVV+1)
               matvisinrfl(IVV)=matvisinrfl(IVV+1)
               matrender(IVV)=matrender(IVV+1)
+
+              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
+              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
+              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
+              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
+              matvisco(IVV,1)=matvisco(IVV+1,1)
+              matvisco(IVV,2)=matvisco(IVV+1,2)
+              matvisco(IVV,3)=matvisco(IVV+1,3)
+              matvisco(IVV,4)=matvisco(IVV+1,4)
+              matgapden(IVV,1)=matgapden(IVV+1,1)
+              matgapden(IVV,2)=matgapden(IVV+1,2)
+              matgapden(IVV,3)=matgapden(IVV+1,3)
+              matgapden(IVV,4)=matgapden(IVV+1,4)
+              matprandtl(IVV,1)=matprandtl(IVV+1,1)
+              matprandtl(IVV,2)=matprandtl(IVV+1,2)
+              matprandtl(IVV,3)=matprandtl(IVV+1,3)
+              matprandtl(IVV,4)=matprandtl(IVV+1,4)
   791       CONTINUE
             matdbitems=matdbitems-1
             matcatitems(IC)=matcatitems(IC)-1
@@ -978,9 +1031,11 @@ C indices and make up name and index based on inext value.
 
 C If there is room add a note about its origin.
                 ils=lnblnk(matdoc(lastcatitem))
+                iln=lnblnk(matname(lastcatitem))
                 if(ils.le.200)then
-                  write(matdoc(ILNE),'(2a)') 
-     &              matdoc(lastcatitem)(1:ils),' (derived from)'
+                  write(matdoc(ILNE),'(4a)') 
+     &              matdoc(IWHICH)(1:ils),' (derived from ',
+     &              matname(lastcatitem)(1:iln),')'
                 else
                   matdoc(ILNE)=matdoc(lastcatitem)
                 endif
@@ -993,6 +1048,23 @@ C If there is room add a note about its origin.
                 matvisotrfl(ILNE)=matvisotrfl(lastcatitem)
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
+
+                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
+                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
+                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
+                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
+                matvisco(ILNE,1)=matvisco(lastcatitem,1)
+                matvisco(ILNE,2)=matvisco(lastcatitem,2)
+                matvisco(ILNE,3)=matvisco(lastcatitem,3)
+                matvisco(ILNE,4)=matvisco(lastcatitem,4)
+                matgapden(ILNE,1)=matgapden(lastcatitem,1)
+                matgapden(ILNE,2)=matgapden(lastcatitem,2)
+                matgapden(ILNE,3)=matgapden(lastcatitem,3)
+                matgapden(ILNE,4)=matgapden(lastcatitem,4)
+                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
+                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
+                matprandtl(ILNE,3)=matprandtl(lastcatitem,3)
+                matprandtl(ILNE,4)=matprandtl(lastcatitem,4)
                 matdbitems=matdbitems+1
                 matcatitems(IC)=matcatitems(IC)+1
 
@@ -1179,6 +1251,10 @@ C mod is returned as true if data has changed.
       real visotrfl,visinrfl,render
       logical modify,dok,ok,mod
 
+C Local variables for gas materials.
+      real gapcnd,visco,gapden,prandtl
+      dimension gapcnd(4),visco(4),gapden(4),prandtl(4)
+
 C If index is outwith range just return.
       if(index.gt.0.and.index.le.matdbitems)then
         mod=.false.
@@ -1207,6 +1283,22 @@ C Work with local variables.
       visotrfl= matvisotrfl(index)
       visinrfl= matvisinrfl(index)
       render= matrender(index)
+      gapcnd(1)= matgapcnd(index,1)
+      gapcnd(2)= matgapcnd(index,2)
+      gapcnd(3)= matgapcnd(index,3)
+      gapcnd(4)= matgapcnd(index,4)
+      visco(1)= matvisco(index,1)
+      visco(2)= matvisco(index,2)
+      visco(3)= matvisco(index,3)
+      visco(4)= matvisco(index,4)
+      gapden(1)= matgapden(index,1)
+      gapden(2)= matgapden(index,2)
+      gapden(3)= matgapden(index,3)
+      gapden(4)= matgapden(index,4)
+      prandtl(1)= matprandtl(index,1)
+      prandtl(2)= matprandtl(index,2)
+      prandtl(3)= matprandtl(index,3)
+      prandtl(4)= matprandtl(index,4)
 
 C << air gap data needs local variables >>
 
@@ -1243,31 +1335,32 @@ C or a gas (g), include additional items.
        WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
         m=20
       elseif(matopaq(index).eq.'g')then
-        X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data+temp correction)'
-        WRITE(PELM(13),'(A,F9.3)') 'm Conduct (W/(m-K)   :',X
-        WRITE(PELM(14),'(A,F8.6)') 'n Conduct T deriv    :',X
-        WRITE(PELM(15),'(A,F7.3)') 'o Viscosity (kg/msK) :',X
-        WRITE(PELM(16),'(A,F8.6)') 'p Viscosity T deriv  :',X
-        WRITE(PELM(17),'(A,F8.2)') 'q Density (kg/m**3)  :',X
-        WRITE(PELM(18),'(A,F8.6)') 'r Density T deriv    :',X
-        m=18
+        WRITE(PELM(13),'(A,F9.3)') 'm Conduct (W/(m-K)   :',gapcnd(1)
+        WRITE(PELM(14),'(A,F8.6)') 'n Conduct T deriv    :',gapcnd(2)
+        WRITE(PELM(15),'(A,F7.3)') 'o Viscosity (kg/msK) :',visco(1)
+        WRITE(PELM(16),'(A,F8.6)') 'p Viscosity T deriv  :',visco(2)
+        WRITE(PELM(17),'(A,F8.2)') 'q Density (kg/m**3)  :',gapden(1)
+        WRITE(PELM(18),'(A,F8.6)') 'r Density T deriv    :',gapden(2)
+        WRITE(PELM(19),'(A,F8.6)') 's Prandtl number     :',prandtl(1)
+        WRITE(PELM(20),'(A,F8.6)') 's Prandtl T deriv    :',prandtl(2)
+        m=20
       elseif(matopaq(index).eq.'h')then
-        X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data at 4 temps)'
-        WRITE(PELM(13),'(A,F7.3)') 'm Cond @-10C (W/(m-K):',X
-        WRITE(PELM(14),'(A,F7.3)') 'n Cond @  0C (W/(m-K):',X
-        WRITE(PELM(15),'(A,F7.3)') 'o Cond @ 10C (W/(m-K):',X
-        WRITE(PELM(16),'(A,F7.3)') 'p Cond @ 20C (W/(m-K):',X
-        WRITE(PELM(17),'(A,F7.3)') 'q Visc @-10C (kg/msK):',X
-        WRITE(PELM(18),'(A,F7.3)') 'r Visc @  0C (kg/msK):',X
-        WRITE(PELM(19),'(A,F7.3)') 's Visc @ 10C (kg/msK):',X
-        WRITE(PELM(20),'(A,F7.3)') 't Visc @ 20C (kg/msK):',X
-        WRITE(PELM(21),'(A,F7.3)') 'u Dens @-10C (kg/m^3):',X
-        WRITE(PELM(22),'(A,F7.3)') 'v Dens @  0C (kg/m^3):',X
-        WRITE(PELM(23),'(A,F7.3)') 'v Dens @ 10C (kg/m^3):',X
-        WRITE(PELM(24),'(A,F7.3)') 'v Dens @ 20C (kg/m^3):',X
-        m=24
+        WRITE(PELM(13),'(A,F7.3)') 'm Cond @-10C (W/(m-K):',gapcnd(1)
+        WRITE(PELM(14),'(A,F7.3)') 'n Cond @  0C (W/(m-K):',gapcnd(2)
+        WRITE(PELM(15),'(A,F7.3)') 'o Cond @ 10C (W/(m-K):',gapcnd(3)
+        WRITE(PELM(16),'(A,F7.3)') 'p Cond @ 20C (W/(m-K):',gapcnd(4)
+        WRITE(PELM(17),'(A,F7.3)') 'q Visc @-10C (kg/msK):',visco(1)
+        WRITE(PELM(18),'(A,F7.3)') 'r Visc @  0C (kg/msK):',visco(2)
+        WRITE(PELM(19),'(A,F7.3)') 's Visc @ 10C (kg/msK):',visco(3)
+        WRITE(PELM(20),'(A,F7.3)') 't Visc @ 20C (kg/msK):',visco(4)
+        WRITE(PELM(21),'(A,F7.3)') 'u Dens @-10C (kg/m^3):',gapden(1)
+        WRITE(PELM(22),'(A,F7.3)') 'v Dens @  0C (kg/m^3):',gapden(2)
+        WRITE(PELM(23),'(A,F7.3)') 'w Dens @ 10C (kg/m^3):',gapden(3)
+        WRITE(PELM(24),'(A,F7.3)') 'x Dens @ 20C (kg/m^3):',gapden(4)
+        WRITE(PELM(25),'(A,F8.6)') 'y Prandtl number     :',prandtl(1)
+        m=25
       endif
       PELM(m+1) =' _____________________ '
       PELM(m+2)='? Help                 '
@@ -1316,10 +1409,24 @@ C updating the common blocks.
             matvisotrfl(index) = visotrfl
             matvisinrfl(index) = visinrfl
             matrender(index) = render
+            matgapcnd(index,1) = gapcnd(1)
+            matgapcnd(index,2) = gapcnd(2)
+            matgapcnd(index,3) = gapcnd(3)
+            matgapcnd(index,4) = gapcnd(4)
+            matvisco(index,1) = visco(1)
+            matvisco(index,2) = visco(2)
+            matvisco(index,3) = visco(3)
+            matvisco(index,4) = visco(4)
+            matgapden(index,1) = gapden(1)
+            matgapden(index,2) = gapden(2)
+            matgapden(index,3) = gapden(3)
+            matgapden(index,4) = gapden(4)
+            matprandtl(index,1) = prandtl(1)
+            matprandtl(index,2) = prandtl(2)
+            matprandtl(index,3) = prandtl(3)
+            matprandtl(index,4) = prandtl(4)
             modify=.false.
             mod=.true.   ! pass this back to calling code.
-C << to here air gap data needs to be added >>
-
           endif
         endif
         RETURN
@@ -1507,7 +1614,57 @@ C Offer to toggle between different types.
         elseif(matopaq(index).eq.'t')then
 
 C << Single layer optical properties to be added >>
-          call usrmsg('This facility not yet available.',' ','-')
+          if(IW.eq.13)then
+            H(1)='Longwave transmittance units (-) between 0.0 & 1.0'
+            CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
+     &        0.00,'W',1.00,'W',1.,'ir tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.14)then
+            H(1)='Solar transmittance units(-) between 0.0 & 1.0'
+            CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar direct tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.15)then
+            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The outside face is farthest from zone air.'
+            CALL EASKR(soldrotrfl,' ',
+     &        'Solar reflectance outside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar reflec outside',IER,2)
+            modify=.true.
+          elseif(IW.eq.16)then
+            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The inside face is nearest the zone air.'
+            CALL EASKR(soldrinrfl,' ',
+     &        'Solar reflectance inside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar reflec inside',IER,2)
+            modify=.true.
+          elseif(IW.eq.17)then
+            H(1)='Visible transmittance units are (-) between 0.0 & 1.0'
+            CALL EASKR(vistran,' ','Visible trans (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.18)then
+            H(1)='Visible reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The outside face is farthest from zone air.'
+            CALL EASKR(visotrfl,' ',
+     &        'Visible reflectance outside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible reflec outside',IER,2)
+            modify=.true.
+          elseif(IW.eq.19)then
+            H(1)='Visable reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The inside face is nearest the zone air.'
+            CALL EASKR(visinrfl,' ',
+     &        'Visible reflectance inside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible reflec inside',IER,2)
+            modify=.true.
+          elseif(IW.eq.20)then !render
+            H(1)='Colour rendering units are (?) between 0.0 & 100.0'
+            H(2)='<<more text to be added...>>'
+            CALL EASKR(visinrfl,' ',
+     &        'Colour rendering index (-): ',
+     &        0.00,'W',100.00,'W',1.,'colour rendering',IER,2)
+            modify=.true.
+          endif
           goto 3
         elseif(matopaq(index).eq.'g')then
 
