@@ -29,6 +29,7 @@ C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
 C EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
+C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
 C  st2name: Given `string' swap blanks & wildcards to _ return as `name'.
 C  st2file: Given `string' strip blanks & wildcards and return as `name'.
@@ -1502,7 +1503,7 @@ C When writing out the combined text, put a space between each section.
       return
       end
 
-C ************* EASKCMD
+C ************* EASKSCMD
 C EASKSCMD is a facility for asking the user for a text string which
 C incorporates the prompt, alternative command, error messages and
 C help facilities as follows:
@@ -1702,6 +1703,44 @@ C Must have input a character string.
       ENDIF
       RETURN
       END
+
+C ************* EASKSCNCL
+C EASKSCNCL is a facility for asking the user for a text string which
+C incorporates the prompt, cancel, error messages and
+C help facilities as follows:
+
+C STRVAL is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C CNCL is cancel command string, CNCLACT is logical if the
+C command action is selected.
+C If a space is typed then STRVAL is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+
+      SUBROUTINE EASKSCNCL(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
+     &  DSTR,ERMSG,IER,NHELP)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      dimension dh(60)
+      CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
+      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      character outstr248*248
+      LOGICAL OK,CNCLACT,DOK
+
+C Essentiall a wrapper around a call toe easkscmd.
+      call EASKSCMD(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
+     &  DSTR,ERMSG,IER,NHELP)
+
+      return
+      end
 
 C ************* EASKS2CMD
 C EASKS2CMD is a facility for asking the user for a text string which

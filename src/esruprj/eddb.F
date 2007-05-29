@@ -377,9 +377,9 @@ C a new db, populate it and present editing facility.
      &        cfgroot(1:lr),'.pressuredb'
           endif
           clkok=.false.
- 32       CALL EASKSCMD(LTMP,' New pressure coefficients database?',' ',
-     &      'cancel',clkok,72,DAPRES,'pressure coefficients database',
-     &      IER,2)
+ 32       CALL EASKSCNCL(LTMP,' New pressure coefficients database?',
+     &      ' ','cancel',clkok,72,DAPRES,
+     &      'pressure coefficients database',IER,2)
           if(clkok) goto 3
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LAPRES=LTMP
@@ -933,7 +933,7 @@ C If the materials db was edited write a backup ASCII version.
             clkok=.false.
             LASCI=' '
             write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
+            CALL EASKSCNCL(LASCI,' Materials database (ASCII backup)?',
      &        ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &       IER,3)
             if(clkok)then
@@ -1001,7 +1001,7 @@ C If the materials db was edited write a backup ASCII version.
             clkok=.false.
             LASCI=' '
             write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
+            CALL EASKSCNCL(LASCI,' Materials database (ASCII backup)?',
      &        ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &        IER,3)
             if(clkok)then
@@ -1032,7 +1032,7 @@ C a new db, populate it and present editing facility.
      &      cfgroot(1:lr),'.materialdb'
         endif
         clkok=.false.
-  145   CALL EASKSCMD(LTMP,' New material database?',
+  145   CALL EASKSCNCL(LTMP,' New material database?',
      &    ' ','cancel',clkok,72,DFCON,'new material database',IER,2)
         if(clkok) return
         IF(LTMP(1:2).NE.'  ')then
@@ -1266,7 +1266,7 @@ C ascii version of this new project materials db.
           clkok=.false.
           LASCI=' '
           write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-          CALL EASKSCMD(LASCI,' Materials database (ASCII backup)?',
+          CALL EASKSCNCL(LASCI,' Materials database (ASCII backup)?',
      &     '  ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &    IER,7)
           if(clkok)then
@@ -1303,7 +1303,7 @@ C Confirm suggested name and then write out asci file.
         clkok=.false.
         LASCI=' '
         write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-        CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
+        CALL EASKSCNCL(LASCI,' Materials database (ASCII)?',
      &    '  ','cancel',clkok,72,DFILE,'materials database (ascii)',
      &    IER,4)
         if(clkok)then
@@ -1325,14 +1325,14 @@ C the same name as the binary one and is in the same location.
         DFILE=' '
         LASCI=' '
         write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-        CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
+        CALL EASKSCNCL(LASCI,' Materials database (ASCII)?',
      &    '  ','cancel',clkok,72,DFILE,'materials db (ascii)',IER,5)
         if(clkok) return
 
         DFILE='./newprim.db1'
         clkok=.false.
         ltmp=LFMAT
- 143    CALL EASKSCMD(ltmp,' Materials database (BINARY)?',
+ 143    CALL EASKSCNCL(ltmp,' Materials database (BINARY)?',
      &    '  ','cancel',clkok,72,DFILE,'Materials db (binary)',IER,5)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LFMAT=ltmp
@@ -1357,7 +1357,7 @@ C Legacy materials to common blocks.
         DFILE=' '
         LASCI=' '
         write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-        CALL EASKSCMD(LASCI,' Materials database (ASCII)?',
+        CALL EASKSCNCL(LASCI,' Materials database (ASCII)?',
      &    '  ','cancel',clkok,72,DFILE,'materials db (ascii)',IER,5)
         if(clkok) return
 
@@ -1375,7 +1375,7 @@ C Offer display of material common blocks.
         DFILE='./newmat.db1a'
         clkok=.false.
         write(ltmp,'(2a)') LASCI(1:lnblnk(LASCI)),'a1.1'
- 147    CALL EASKSCMD(ltmp,' Materials database (1.1 ASCII)?',
+ 147    CALL EASKSCNCL(ltmp,' Materials database (1.1 ASCII)?',
      &    '  ','cancel',clkok,72,DFILE,'Materials 1.1 ASCII)',IER,5)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           continue
@@ -1611,14 +1611,15 @@ C a new db, populate it and present editing facility.
      &      cfgroot(1:lr),'.constrdb'
         endif
         clkok=.false.
-   45   CALL EASKSCMD(LTMP,' New constructions database?',
+   45   CALL EASKSCNCL(LTMP,' New constructions database?',
      &    ' ','cancel',clkok,72,DFMUL,'constructions database',IER,2)
-        if(clkok) return
+        if(clkok) goto 38
         IF(LTMP(1:2).NE.'  ')then
           LFMUL=LTMP
         else
           goto 45
         endif
+
         NMLC=1
         DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
         DTHK(1,1)=0.100
@@ -1993,7 +1994,7 @@ C a new db, populate it and present editing facility.
         h(6)='a new one will be created to hold data for new'
         h(7)='components.'
         clkok=.false.
-        CALL EASKSCMD(ltmp,'Plant component database?',
+        CALL EASKSCNCL(ltmp,'Plant component database?',
      &    ' ','cancel',clkok,72,DPCDB,'plant component database',
      &    IER,7)
         if(clkok) return
@@ -2348,7 +2349,7 @@ C a new db, populate it and present editing facility.
         H(1)='An event profiles db holds a schedule of patterns'
         H(2)='over a day. '
         clkok=.false.
- 42     CALL EASKSCMD(ltmp,' Event profiles database?',
+ 42     CALL EASKSCNCL(ltmp,' Event profiles database?',
      &    ' ','cancel',clkok,72,DPRFDB,'event profiles database',
      &    IER,2)
         if(clkok) return
@@ -2949,7 +2950,7 @@ C be explored).
         H(1)='An optics db holds properties of transparent'
         H(2)='constructions '
         clkok=.false.
- 352    CALL EASKSCMD(ltmp,' Optics database?',
+ 352    CALL EASKSCNCL(ltmp,' Optics database?',
      &    ' ','cancel',clkok,72,'optics.db','optics database',IER,2)
         if(clkok) return
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
@@ -3513,7 +3514,7 @@ C a new db, populate it and present editing facility.
      &        cfgroot(1:lr),'.climate'
         endif
         clkok=.false.
- 553    CALL EASKSCMD(LTMP,' Climate database?',
+ 553    CALL EASKSCNCL(LTMP,' Climate database?',
      &      ' ','cancel',clkok,72,DCLIM,'climate database',IER,2)
         if(clkok) RETURN
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
@@ -3698,7 +3699,7 @@ C Confirm suggested name and then write out asci file.
         clkok=.false.
         LASCI=' '
         write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        CALL EASKSCMD(LASCI,' Climate data (ASCII)?',
+        CALL EASKSCNCL(LASCI,' Climate data (ASCII)?',
      &     ' ','cancel',clkok,72,DFILE,'climate data (ascii)',IER,4)
         if(clkok)then
           RETURN
@@ -3735,12 +3736,12 @@ C Confirm suggested name and then write out binary file.
         clkok=.false.
         LASCI=' '
         write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        CALL EASKSCMD(LASCI,' Climate data (ASCII)?',
+        CALL EASKSCNCL(LASCI,' Climate data (ASCII)?',
      &     ' ','cancel',clkok,72,DFILE,'climate data (ascii)',IER,3)
         if(clkok) RETURN
 
         ltmp=LCLIM
-        CALL EASKSCMD(ltmp,' Climate data (binary)?',
+        CALL EASKSCNCL(ltmp,' Climate data (binary)?',
      &     ' ','cancel',clkok,72,DFILE,'climate data (binary)',IER,3)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCLIM=ltmp
@@ -3781,12 +3782,12 @@ C Confirm suggested name and then write out binary file.
         clkok=.false.
         LASCI=' '
         write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        CALL EASKSCMD(LASCI,' Climate data (EPW)?',
+        CALL EASKSCNCL(LASCI,' Climate data (EPW)?',
      &     ' ','cancel',clkok,72,DFILE,'climate data (EPW)',IER,4)
         if(clkok) RETURN
 
         ltmp=LCLIM
-        CALL EASKSCMD(ltmp,' Climate data (esp-r binary)?',
+        CALL EASKSCNCL(ltmp,' Climate data (esp-r binary)?',
      &     ' ','cancel',clkok,72,DFILE,'climate data (binary)',IER,4)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCLIM=ltmp

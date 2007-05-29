@@ -29,6 +29,7 @@ C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
 C EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
+C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
 C  st2name: Given `string' swap blanks & wildcards to _ return as `name'.
 C  st2file: Given `string' strip blanks & wildcards and return as `name'.
@@ -1562,6 +1563,197 @@ C Must have input a character string.
       RETURN
       END
 
+C ************* EASKSCNCL
+C EASKSCNCL is a facility for asking the user for a text string which
+C incorporates the prompt, cancel, error messages and
+C help facilities as follows:
+
+C STRVAL is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C CNCL is cancel command string, CNCLACT is logical if the
+C command action is selected.
+C If a space is typed then STRVAL is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+
+C Example:
+C    ....
+C test getting a string.
+C        H(1)='The site name is a test of the menu help facilities.'
+C        XNAME=' '
+C        DNAME=' '
+C        CALL EASKSCNCL(XNAME,' ',' What is the site name ?','Use map',CACT,
+C     &   13,DNAME,'test sites',IER,1)
+C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
+
+      SUBROUTINE EASKSCNCL(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
+     &  DSTR,ERMSG,IER,NHELP)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      dimension dh(60)
+      CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
+      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      character outstr248*248
+      LOGICAL OK,CNCLACT,DOK
+
+   20 IER=0
+      CNCLACT=.FALSE.
+      WORD=' '
+      last=max(1,lnblnk(STRVAL))
+      LASTS=STRVAL(1:last)
+
+C Generate custom help text.
+      IF(NHELP.EQ.0)THEN
+        LN=max(1,LNBLNK(ERMSG))
+        WRITE(H(1),64)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'.')
+      ENDIF
+
+C At this point get user input via dialogue box or Fortran read in
+C the text window.
+C Note that the string read in is limited to ISTRW characters wide.
+C If in terminal type 8 use dialogue box.
+      IF(MMOD.EQ.8)THEN
+        idef=0
+        iquery=0
+        CALL openaskcnclbox(PROMP1,PROMP2,CNCL,ISTRW)
+        WORD=' '
+        if(NHELP.GT.0)then
+          CALL PHELPW(NHELP,IHW,IER)
+          call dupphelp(dh)
+          call updhelp(dh,NHELP,IHW)
+        else
+          CALL PHELPW(1,IHW,IER)
+          call dupphelp(dh)
+          call updhelp(dh,1,IHW)
+        endif
+        CALL askcncldialog(STRVAL,CNCL,idef,iquery)
+
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+        call c2fstr(STRVAL,WORD)
+
+        IF(idef.EQ.1)THEN
+          LN=max(1,LNBLNK(DSTR))
+          WRITE(OUTSTR,'(3a)')' The default is ',
+     &      DSTR(1:LN),'.'
+          DOK=.true.
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHELP)
+          IF(OK)THEN
+            STRVAL=DSTR(1:LN)
+            RETURN
+          ELSE
+            GOTO 20
+          ENDIF
+        ENDIF
+        IF(idef.EQ.2)THEN
+          IF(WORD(1:2).EQ.'  ')THEN
+
+C User asked to cancel, pass back prior string and set cnclact to true.
+            IF(LASTS(1:2).NE.'  ')THEN
+              WRITE(OUTSTR248,55)LASTS(1:last)
+              call edisp248(iuout,outstr248,90)
+              write(STRVAL,'(a)') LASTS(1:last)
+              CNCLACT=.TRUE.
+              RETURN
+            ENDIF
+          ELSE
+            WRITE(OUTSTR248,55)LASTS(1:last)
+            call edisp248(iuout,outstr248,90)
+            write(STRVAL,'(a)') LASTS(1:last)
+            CNCLACT=.TRUE.
+            RETURN
+          ENDIF
+        endif
+        IF(WORD.EQ.' ')THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS(1:2).NE.'  ')THEN
+            WRITE(IUOUT,55)LASTS(1:last)
+            STRVAL=LASTS(1:last)
+            CNCLACT=.FALSE.
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ENDIF
+
+C Must have input a character string.
+        STRVAL=WORD(1:ISTRW)
+        CNCLACT=.FALSE.
+        RETURN
+      ELSE
+        CALL USRMSG(PROMP1,PROMP2,'?')
+        READ(IUIN,'(A72)')WORD
+        A=WORD(1:1)
+        IF(lnblnk(WORD).EQ.1)THEN
+          IF(A.EQ.'D'.OR.A.EQ.'d')THEN
+
+C A 'D' or 'd' detected, set to default.
+            LN=max(1,LNBLNK(DSTR))
+            WRITE(OUTSTR,'(3a)')' The default is ',
+     &        DSTR(1:LN),'.'
+            DOK=.true.
+            CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHELP)
+            IF(OK)THEN
+              STRVAL=DSTR(1:LN)
+              RETURN
+            ELSE
+              STRVAL=LASTS(1:last)
+              GOTO 20
+            ENDIF
+          ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
+
+C A probable request for help has been received. Print out the lines
+C of help supplied and then provide the prompt again.
+            IF(NHELP.GT.0)THEN
+              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
+            ELSE
+              CALL PHELPD('ask user string',1,'-',0,0,IER)
+            ENDIF
+            GOTO 20
+          ELSE
+
+C Neither help no default, could be a single character string was
+C requested.
+            STRVAL=WORD(1:ISTRW)
+            RETURN
+          ENDIF
+        ELSEIF(WORD.EQ.' ')THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS(1:2).NE.'  ')THEN
+            WRITE(IUOUT,55)LASTS(1:last)
+   55       FORMAT(' The existing string (',a,') will be used.')
+            STRVAL=LASTS(1:last)
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ELSE
+
+C Must have input a character string.
+          STRVAL=WORD(1:ISTRW)
+          RETURN
+        ENDIF
+      ENDIF
+      RETURN
+      END
+
 C ************* EASKS2CMD
 C EASKS2CMD is a facility for asking the user for a text string which
 C incorporates the prompt, two alternative commands, error messages and
@@ -2585,7 +2777,7 @@ C Not one of the legal menu choices.
 
 C ******************** ASKOK
 C ASKOK Generic choice facility returning logical variable
-C from a yes no default prompt (supports help).
+C from a yes no (with default indicated) prompt (supports help).
 C In the case of a graphic menu the messages will appear in a
 C dialogue box at the bottom of the graphic window.
 C If NHELP=-1 there is no default option.
@@ -2620,9 +2812,9 @@ C Setup a single line menu to pick from via EASKS.
    21   LN=max(1,LNBLNK(MSG2))
         if (DEFLT) then
           if(DOK)then
-            WRITE(MSG3,'(2a)')MSG2(1:LN),' [Y]es [N]o [D]efault (yes) ?'
+            WRITE(MSG3,'(2a)')MSG2(1:LN),' [Y]es (default) or [N]o ?'
           else
-            WRITE(MSG3,'(2a)')MSG2(1:LN),' [Y]es [N]o [D]efault (no) ?'
+            WRITE(MSG3,'(2a)')MSG2(1:LN),' [Y]es or [N]o (default) ?'
           endif
         else
           WRITE(MSG3,'(2a)')MSG2(1:LN),' [Y]es [N]o ?'
@@ -2652,10 +2844,10 @@ C Querry yes or no.
 C Querry yes or no or default.
         if (DEFLT) then
           if(DOK)then
-            call EASKATOG(MSG1,MSG2,'yes','no','default (yes)',' ',' ',
+            call EASKATOG(MSG1,MSG2,'yes (default)','no',' ',' ',' ',
      &      ' ',' ',IW,NHL)
           else
-            call EASKATOG(MSG1,MSG2,'yes','no','default (no)',' ',' ',
+            call EASKATOG(MSG1,MSG2,'yes','no (default)',' ',' ',' ',
      &      ' ',' ',IW,NHL)
           endif
         else
@@ -2666,8 +2858,12 @@ C Querry yes or no or default.
           OK=.TRUE.
         ELSEIF(IW.eq.2)THEN
           OK=.FALSE.
-        ELSEIF(DEFLT.and.IW.eq.3)THEN
-          OK=DOK
+        ELSEIF(DEFLT)THEN
+          if(DOK)then
+            OK=DOK
+          elseif(.NOT.DOK)then
+            OK=.FALSE.
+          endif
         ENDIF
         call usrmsg('  ','  ','-')
       ENDIF
