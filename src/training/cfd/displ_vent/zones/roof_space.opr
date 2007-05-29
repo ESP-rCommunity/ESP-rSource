@@ -1,8 +1,8 @@
 *Operations 1.0
-*date Wed Jul 28 12:30:29 2004  # latest file modification 
+*date Mon May 28 16:30:20 2007  # latest file modification 
 # operations of roof_space defined in: 
 # ../zones/roof_space.opr
-CEILING VD  # description
+Ceiling void has 800 W from lighting in the rooms below.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      0   # no Weekday flow periods
