@@ -1655,23 +1655,11 @@ C leading blanks from string returned.
           ENDIF
         ENDIF
         IF(idef.EQ.2)THEN
-          IF(WORD(1:2).EQ.'  ')THEN
-
-C User asked to cancel, pass back prior string and set cnclact to true.
-            IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(OUTSTR248,55)LASTS(1:last)
-              call edisp248(iuout,outstr248,90)
-              write(STRVAL,'(a)') LASTS(1:last)
-              CNCLACT=.TRUE.
-              RETURN
-            ENDIF
-          ELSE
-            WRITE(OUTSTR248,55)LASTS(1:last)
-            call edisp248(iuout,outstr248,90)
-            write(STRVAL,'(a)') LASTS(1:last)
-            CNCLACT=.TRUE.
-            RETURN
-          ENDIF
+          WRITE(OUTSTR248,55)LASTS(1:last)
+          call edisp248(iuout,outstr248,90)
+          write(STRVAL,'(a)') LASTS(1:last)
+          CNCLACT=.TRUE.
+          RETURN
         endif
         IF(WORD.EQ.' ')THEN
 

@@ -111,6 +111,7 @@ void	forceflush_();
 /* Shared functions in esp_ask.c */
 void	askdialog_(char *q1,char *reply,long int *ier,int lenq1,int lenrep);
 void	askdialogcmd_(char *q1,char *reply,char *cmd,long int *ier,int lenq1,int lenrep,int lencmd);
+void	askdialogcncl_(char *q1,char *reply,char *cncl,long int *ier,int lenq1,int lenrep,int lencmd);
 void	askdialog2cmd_(char *q1,char *reply,char *cmd1,char *cmd2,long int *ier,int lenq1,int lenrep,int lencmd1,int lencmd2);
 void	askreal_(char *q1, float *reply,long int *ier,int lenq1);
 void	askint_(char *q1, long int *reply,long int *ier,int lenq1);

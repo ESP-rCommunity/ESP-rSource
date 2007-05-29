@@ -292,9 +292,13 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
-        write (6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
+
+C Debug.
+C        write (6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
         CALL askint(PROMPT,IVALUE,IFLG)
-        write (6,*) 'EASKI',IVALUE,IVAL,IFLG
+
+C Debug.
+C        write (6,*) 'EASKI',IVALUE,IVAL,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -538,7 +542,9 @@ C        iquery=0
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
         RVALUE=RVAL
         CALL askreal(PROMPT,RVALUE,IFLG)
-        write (6,*) 'EASKR',RVALUE,IFLG
+
+C Debug.
+C        write (6,*) 'EASKR',RVALUE,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -762,10 +768,14 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
-        write (6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
-        write (6,*) '< aske string ',ask(1:lnblnk(ask))
+
+C Debug.
+C        write (6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write (6,*) '< aske string ',ask(1:lnblnk(ask))
         CALL askdialog(PROMPT,ask,IFLG)
-        write (6,*) 'aske VAL:',ask,' iflg ',IFLG
+
+C Debug.
+C        write (6,*) 'aske VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -1174,10 +1184,14 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
-        write (6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-        write (6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
+C Debug.
+C        write (6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write (6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
         CALL askdialog(PROMPT,STRVAL,IFLG)
-        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+
+C Debug.
+C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1359,10 +1373,14 @@ C For graphic version use the standard GTK widget as does easks.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
-        write (6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-        write (6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
+C Debug.
+C        write (6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write (6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
         CALL askdialog248(PROMPT,STRVAL,IFLG)
-        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+
+C Debug.
+C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1578,7 +1596,9 @@ C        iquery=0
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
         CALL askdialogcmd(PROMPT,STRVAL,CMD,IFLG)
-        write (6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
+
+C Debug.
+C        write (6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1706,13 +1726,13 @@ C Must have input a character string.
 
 C ************* EASKSCNCL
 C EASKSCNCL is a facility for asking the user for a text string which
-C incorporates the prompt, cancel, error messages and
-C help facilities as follows:
+C incorporates the prompt, calling code defined cancel string, error
+C messages and help facilities as follows:
 
 C STRVAL is the string returned, ISTRW is its length.
 C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
 C CNCL is cancel command string, CNCLACT is logical if the
-C command action is selected.
+C cancel action is selected.
 C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
@@ -1732,12 +1752,153 @@ C DSTR is a string to use as a default.
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
       CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
-      character outstr248*248
+      character outstr248*248,prompt*144
       LOGICAL OK,CNCLACT,DOK
 
-C Essentiall a wrapper around a call toe easkscmd.
-      call EASKSCMD(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
-     &  DSTR,ERMSG,IER,NHELP)
+   20 IER=0
+      CNCLACT=.FALSE.
+      WORD=' '
+      last=max(1,lnblnk(STRVAL))
+      LASTS=STRVAL(1:last)
+
+C Generate custom help text.
+      IF(NHELP.EQ.0)THEN
+        LN=max(1,LNBLNK(ERMSG))
+        WRITE(H(1),64)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'.')
+      ENDIF
+
+C At this point get user input via dialogue box or Fortran read in
+C the text window.
+C Note that the string read in is limited to ISTRW characters wide.
+C If in terminal type 8 use dialogue box.
+      IF(MMOD.EQ.8)THEN
+
+C idef and iquery are not currently used in GTK version.
+C        idef=0
+C        iquery=0
+        WORD=' '
+        if(NHELP.GT.0)then
+          CALL PHELPW(NHELP,IHW,IER)
+          call dupphelp(NHELP)
+        else
+          CALL PHELPW(1,IHW,IER)
+          call dupphelp(1)
+        endif
+        lmmod=mmod
+        LN1=max(1,lnblnk(PROMP1))
+        LN2=max(1,lnblnk(PROMP2))
+        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        CALL askdialogcncl(PROMPT,STRVAL,CNCL,IFLG)
+
+C Debug.
+C        write (6,*) 'askdialogcncl STRVAL:',STRVAL(1:lnblnk(STRVAL)),
+C     &    ' iflg ',IFLG
+
+C PATCH to restore mmod (occassioanlly gets corrupted in linux)
+        if(lmmod.ne.mmod)mmod=lmmod
+
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+        call c2fstr(STRVAL,WORD)
+
+        IF(iflg.EQ.-2)THEN
+          LN=max(1,LNBLNK(DSTR))
+          WRITE(OUTSTR,'(3a)')' The default is ',
+     &      DSTR(1:LN),'.'
+          DOK=.true.
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
+          IF(OK)THEN
+            STRVAL=DSTR(1:LN)
+            RETURN
+          ELSE
+            GOTO 20
+          ENDIF
+        ELSEIF(IFLG.EQ.2)THEN
+          WRITE(OUTSTR248,55)LASTS(1:last)
+          call edisp248(iuout,outstr248,90)
+          write(STRVAL,'(a)') LASTS(1:last)
+          CNCLACT=.TRUE.
+          RETURN
+        endif
+        IF(WORD.EQ.' '.or.IFLG.eq.-1)THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS(1:2).NE.'  ')THEN
+            WRITE(IUOUT,55)LASTS(1:last)
+            STRVAL=LASTS(1:last)
+            CNCLACT=.FALSE.
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ENDIF
+
+C Must have input a character string.
+        STRVAL=WORD(1:ISTRW)
+        CNCLACT=.FALSE.
+        RETURN
+      ELSE
+        CALL USRMSG(PROMP1,PROMP2,'?')
+        READ(IUIN,'(A72)')WORD
+        A=WORD(1:1)
+        IF(lnblnk(WORD).EQ.1)THEN
+          IF(A.EQ.'D'.OR.A.EQ.'d')THEN
+
+C A 'D' or 'd' detected, set to default.
+            LN=max(1,LNBLNK(DSTR))
+            WRITE(OUTSTR,'(3a)')' The default is ',
+     &        DSTR(1:LN),'.'
+            DOK=.true.
+            CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHELP)
+            IF(OK)THEN
+              STRVAL=DSTR(1:LN)
+              RETURN
+            ELSE
+              STRVAL=LASTS(1:last)
+              GOTO 20
+            ENDIF
+          ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
+
+C A probable request for help has been received. Print out the lines
+C of help supplied and then provide the prompt again.
+            IF(NHELP.GT.0)THEN
+              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
+            ELSE
+              CALL PHELPD('ask user string',1,'-',0,0,IER)
+            ENDIF
+            GOTO 20
+          ELSE
+
+C Neither help no default, could be a single character string was
+C requested.
+            STRVAL=WORD(1:ISTRW)
+            RETURN
+          ENDIF
+        ELSEIF(WORD.EQ.' ')THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing string.
+          IF(LASTS(1:2).NE.'  ')THEN
+            WRITE(IUOUT,55)LASTS(1:last)
+   55       FORMAT(' The existing string (',a,') will be used.')
+            STRVAL=LASTS(1:last)
+            RETURN
+          ELSE
+            CALL USRMSG(' The current string is blank!',
+     &                  ' Please re-enter.','W')
+            GOTO 20
+          ENDIF
+        ELSE
+
+C Must have input a character string.
+          STRVAL=WORD(1:ISTRW)
+          RETURN
+        ENDIF
+      ENDIF
 
       return
       end
@@ -1814,10 +1975,14 @@ C If in terminal type 8 use dialogue box.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
         write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
-        write (6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
-        write (6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
+
+C Debug.
+C        write (6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write (6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
         CALL askdialog2cmd(PROMPT,STRVAL,CMD,CMD2,IFLG)
-        write (6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
+
+C Debug.
+C        write (6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
@@ -3051,7 +3216,9 @@ C Querry which one.
         write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
 
         CALL espabcbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,IW)
-        write (6,*) 'call to espabcbox returned ',IW
+
+C Debug.
+C        write (6,*) 'call to espabcbox returned ',IW
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -3223,7 +3390,9 @@ C Querry which one.
 
         CALL espdozenbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
      &    HOPT,IOPT,JOPT,KOPT,LOPT,IW)
-        write (6,*) 'call to espdozenbox returned ',IW
+
+C Debug.
+C        write (6,*) 'call to espdozenbox returned ',IW
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -4864,7 +5033,9 @@ C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
-          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+
+C Debug.
+C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
@@ -4990,7 +5161,9 @@ C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
-          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+
+C Debug.
+C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
