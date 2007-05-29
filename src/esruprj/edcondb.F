@@ -125,6 +125,12 @@ C List one or more classifications.
           itu = ixunit
           write(xfile,'(a)') 'material_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 40
+          endif
         elseif(irpt.eq.3)then
           goto 40
         endif
@@ -615,6 +621,12 @@ C List one or more classifications.
           itu = ixunit
           write(xfile,'(a)') 'material_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 40
+          endif
         elseif(irpt.eq.3)then
           goto 40
         endif
@@ -1859,6 +1871,12 @@ C List database.
           itu = ixunit
           write(xfile,'(a)') 'construction_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','MLC db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 3
+          endif
         endif
         call edisp(itu,'In the MLC database: ')
         call edisp(itu, LFMUL)
