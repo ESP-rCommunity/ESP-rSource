@@ -919,7 +919,7 @@ C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
 C If a space is typed then FILEN is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
-C  IER is the error state, if 0 then OK.
+C  IER is the error state, if 0 then OK if -3 then user requested CANCEL.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
@@ -1027,6 +1027,20 @@ C wishes to use prior/existing string.
      &                  ' Please re-enter.','W')
             GOTO 20
           ENDIF
+        ELSEIF(WORD144(1:6).EQ.'CANCEL')THEN
+
+C The call to askf will return the first 7 characters as CANCEL if
+C the user pressed the cancel button. Set ier = -3 to signal a
+C cancel request to the calling code.
+          if(last.lt.144)then
+            write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last)
+          else
+            write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:144)
+          endif
+          call edisp(iuout,'User requested a cancel during dialog...')
+          call edisp(iuout,prompt)
+          ier=-3
+          RETURN
         ENDIF
 
 C Must have input a character string.
