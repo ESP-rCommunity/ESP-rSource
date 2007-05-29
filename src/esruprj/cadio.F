@@ -285,6 +285,11 @@ C the wireframe is redrawn (in the C code the low level calls will be
 C writing out the vector information to the export file.
           write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_wire'
           call ctlexp(xfile,ixopen,ixloc,ixunit,'G','wire frame',IER)
+
+C If user canceled the wireframe export loop back.
+          if(ier.eq.-3)then
+            goto 33
+          endif
           call usrmsg('sending wireframe... ',' ','-')
           MODIFY=.TRUE.
           CALL ADJVIEW(ITRC,IER)
