@@ -283,6 +283,9 @@ C Output redirect.
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
         endif
+
+C If user request cancel then reset ixopen to zero.
+        if(ier.eq.-3) ixopen=0
         goto 7
       elseif(INO.EQ.21)then
 

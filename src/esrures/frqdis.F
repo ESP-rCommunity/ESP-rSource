@@ -516,8 +516,12 @@ C after image and advise user.
 C Output to file - should sense automatically if graphical.
         if(ixopen.eq.1)then
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'G','Freq dist',IER)
-          call edisp(iuout,'To echo more graphic commands, re-enable')
-          call edisp(iuout,'in the main frquency distribution menu...')
+          if(ier.eq.-3)then
+            continue
+          else
+           call edisp(iuout,'To echo more graphic commands, re-enable')
+           call edisp(iuout,'in the main frquency distribution menu...')
+          endif
         endif
       endif
       if(IG.EQ.3.OR.IG.EQ.4.OR.IG.EQ.5)then
