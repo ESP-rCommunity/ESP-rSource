@@ -763,12 +763,13 @@ C Present opening menu.
       IF(INO.EQ.MITEM)THEN
         if(changedit)then
           h(1)='If you exit without saving, recent changes could be'
-          h(2)='lost. If you select continue then you will be returned'
+          h(2)='lost. If you select cancel then you will be returned'
           h(3)='to the interface.'
           h(4)=' '
           h(5)='If you selected this option in error click continue. '
           CALL EASKABC('There are unsaved changes in the model.',
-     &      'options:','exit w/o saving','save & exit','continue',IW,5)
+     &      'options:','exit w/o saving','save & exit',
+     &      'continue using project manager',IW,5)
           if(iw.eq.3)then
             goto 3
           elseif(iw.eq.2)then
@@ -845,9 +846,9 @@ C Open an exemplar or existing model.
         h(1)='A list of example (exemplar) models is available or'
         h(2)='you can specify another existing model.'
         h(3)=' '
-        h(4)='If you selected this option in error click continue. '
+        h(4)='If you selected this option in error click cancel. '
         CALL EASKABC(' Model opening options:','  ',
-     &    'open an exemplar','open another model','continue',IW,4)
+     &    'open an exemplar','open another model','cancel',IW,4)
         if(iw.eq.3)then
           continue
         elseif(iw.eq.1)then
@@ -964,11 +965,11 @@ C Something was passed in via the command line so offer choice.
             H(4)='passed to the Project Manager as a command line'
             H(5)='argument.'
             H(6)=' '
-            H(7)='If you selected this option in error click continue. '
+            H(7)='If you selected this option in error click cancel. '
             write(outs,'(a,a)') ' The command line included: ',
      &      LCMDFL(1:lnblnk(LCMDFL))
             CALL EASKABC(outs,' ','use it as the model',
-     &        'specify another','continue',IW,7)
+     &        'specify another','cancel',IW,7)
 
 C Find the path and local file name.
             if(IW.eq.1)then
@@ -1459,9 +1460,9 @@ C Invoke simulator.
           h(2)='which can be overwritten. The silent running mode '
           h(3)='uses the parameters to run in automatic mode. '
           h(4)=' '
-          h(5)='If you selected this option in error click continue.'
+          h(5)='If you selected this option in error click cancel.'
           CALL EASKABC('Simulation interaction options: (see help)',' ',
-     &      'run interactively','silent running mode','continue',
+     &      'run interactively','silent running mode','cancel',
      &      isauto,5)
           if(isauto.eq.1)then
             aut=' interactive'
@@ -1572,9 +1573,9 @@ C an offset from prj start position.
         H(12)='For models where this assumption is inappropriate'
         H(13)='the `Integrated` simulation option should be used.'
         H(14)=' '
-        H(15)='If you selected this option in error click continue.'
+        H(15)='If you selected this option in error click cancel.'
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
-     &      'Computational Fluid Dynamics','continue',IW,15)
+     &      'Computational Fluid Dynamics','cancel',IW,15)
         IF(IW.EQ.1)THEN
 
 C Execute mfs.
@@ -2230,19 +2231,19 @@ C IPV for the actual number of simulations required.
       h(28)=' *difference in heating, therms and cooling by area and'
       h(29)='  for the whole building.'
       h(30)=' '
-      h(31)='If you selected this in error click on continue. '
+      h(31)='If you selected this in error click cancel.'
       CALL EASKABCD('IPV options: (see help)',' ',
      &  'run required simulations','extract reports',
-     &  'compare reports','continue',irs,31)
+     &  'compare reports','cancel',irs,31)
       if(irs.eq.1)then
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
         h(4)=' '
-        h(5)='If you selected this option in error click continue.'
+        h(5)='If you selected this option in error click cancel.'
         CALL EASKABC('Simulation interaction options: (see help)',
      &    ' ','run interactively','silent running mode',
-     &    'continue',isauto,5)
+     &    'cancel',isauto,5)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
         call tchild(ICPMOD)
@@ -2315,9 +2316,9 @@ C an offset from prj start position.
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
         h(4)=' '
-        h(5)='If you selected this option in error click continue.'
+        h(5)='If you selected this option in error click cancel.'
         CALL EASKABC('IPV extraction options: (see help)',' ',
-     &    'run interactively','silent running mode','continue',
+     &    'run interactively','silent running mode','cancel',
      &    isauto,5)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
@@ -2335,7 +2336,7 @@ C an offset from prj start position.
         h(2)='libraries for each simulation are available. '
         h(3)='The all option does each in sequence. '
         call easkabcd('IPV recovery options:',' ','intermediate',
-     &    'scan intermediate ->annual','all','continue',IRT,3)
+     &    'scan intermediate ->annual','all','cancel',IRT,3)
         if(IRT.eq.4) goto 39  ! redisplay menu.
 
 C Extract only for the number of assessments required. Note: the strings
@@ -2703,7 +2704,7 @@ C summary (Patch for IEA_Annex 46).
             call eddisp(iuout,outs)
           endif
 
-          CALL EASKAB('comparison options:',' ','exit',
+          CALL EASKAB('comparison options:',' ','back to menu',
      &      'do another report',IW,1)
           if(iw.eq.1)then
             return
@@ -4343,9 +4344,9 @@ C View factors and radiant sensors
           h(1)='Area weighted calculations are the default treatment.'
           h(2)='Ray tracing is more accurate and time consuming.'
           h(3)=' '
-          h(4)='If you selected this option in error click continue. '
+          h(4)='If you selected this option in error click cancel. '
           CALL EASKABC('Viewfactor options:',' ',
-     &      'area weighted (quick)','ray traced','continue',IW,4)
+     &      'area weighted (quick)','ray traced','cancel',IW,4)
 
 C Updating viewfactors can require configuration file to be updated
 C before calling mrt.
@@ -4461,10 +4462,10 @@ C pressure distributions
         H(10)= 'copies the database, renames it and optionally allows'
         H(11)= 'you to edit it.'
         H(12)=' '
-        H(13)='If you selected this option in error click continue. '
+        H(13)='If you selected this option in error click cancel. '
         msg1='updating model for pressure db changes...'
         CALL EASKABC('Change to be made to ... (see help) ',
-     &  ' ','building parameters','database','continue',IW,13)
+     &  ' ','building parameters','database','cancel',IW,13)
         IF(IW.EQ.3)THEN
           RETURN
         ELSEIF(IW.EQ.2)THEN
