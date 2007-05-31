@@ -72,7 +72,7 @@ C
 C----------------------------------------------------------------------
       real function fCount_carbon ( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -115,7 +115,7 @@ C  - Number of mols of hydrogen in compound
 C----------------------------------------------------------------------
       real function fCount_hydrogen ( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -160,7 +160,7 @@ C
 C----------------------------------------------------------------------
       real function fCount_oxygen ( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -206,7 +206,7 @@ C
 C----------------------------------------------------------------------
       real function fCount_nitrogen( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -233,7 +233,7 @@ C
 C----------------------------------------------------------------------
       real function fCompound_EF ( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -282,7 +282,7 @@ C
 C----------------------------------------------------------------------
       real function fCompound_R(iCompound)
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -339,7 +339,7 @@ C
 C----------------------------------------------------------------------
       logical function bFlammable ( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -372,7 +372,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Compound_MM( iCompound )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -434,7 +434,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Mixture_MM( fComposition )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -480,7 +480,7 @@ C
 C----------------------------------------------------------------------      
       real function fEval_Compound_Cp ( iCompound, fTemperature )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
       real fTemperature
@@ -553,7 +553,7 @@ C
 C----------------------------------------------------------------------      
       real function fEval_Compound_Cv ( iCompound, fTemperature )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
       real fTemperature
@@ -605,7 +605,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Compound_HV( iCompound, iState )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       integer iCompound
 
@@ -717,7 +717,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Mixture_Cp( fComposition, fTemperature)
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -769,7 +769,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Mixture_Cv( fComposition, fTemperature)
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -820,7 +820,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Mixture_HV( fComposition, iState )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -870,7 +870,7 @@ C
 C----------------------------------------------------------------------
       real function fEval_Mixture_R( fComposition )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -918,7 +918,7 @@ C
 C----------------------------------------------------------------------
       logical function bFlammable_Mixture( fComposition )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 
       real fComposition ( iCompound_count )
       integer ii
@@ -960,9 +960,9 @@ C----------------------------------------------------------------------
      &            cMessage,
      &            bFatal )
       implicit none
-#include "chemical_properties.h"
+      INCLUDE 'chemical_properties.h'
 C.....ESP-r interface
-#include "building.h"
+      INCLUDE 'building.h'
      
       logical bFatal
 

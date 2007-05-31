@@ -30,8 +30,8 @@ C ************* EDSITE
 C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       integer igraphiclib  ! external definition
 
@@ -869,7 +869,7 @@ C ****** manageimages
 C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1075,8 +1075,8 @@ C Setuptemporal coordinates access to and initial creation of
 C temporal data to be associated with a model.
 
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1649,20 +1649,34 @@ C Present a summary of the steps needed to create a temporal-control link.
             h(3)='temperature to match that recorded in the temporal'
             h(4)='file. It makes use a control law 11 to do this. '
             h(5)=' '
-            h(6)= 'This facilities is based on: '
-            h(7)= ' a) the temporal item index '
-            h(8)= ' b) control loop index (existing or new)'
-            h(9)= ' c) maximum and minimum heating & cooling capacity'
-            h(10)='    which should have sufficient capacity to main-'
-            h(11)='    tain the setpoint.'
-            h(12)=' d) the actuation zone (air point)'
-            h(13)=' '
-            h(14)='A cancel request leaves the model unchanged. '
-            CALL PHELPD('temporal-control popup',14,'-',0,0,IER)
+            h(6)='If you want to use an existing control it will be '
+            h(7)='updated to impliment the necessary links. If you '
+            h(8)='want to create a new zone control then all of the '
+            h(9)='necessary control period will be generated. '
+            h(10)=' '
+            h(11)='If you want to use temporal-based setpoints for'
+            h(12)='several zones you will need a separate temporal '
+            h(13)='item and a separate zone control law for each zone.'
+            h(14)=' '
+            h(15)='You will be asked about: '
+            h(16)=' a) control loop index (existing or new)'
+            h(17)=' b) maximum and minimum heating & cooling capacity'
+            h(18)='    which should have sufficient capacity to main-'
+            h(19)='    tain the setpoint.'
+            h(20)=' c) the zone where the set point will be used '
+            h(21)=' '
+            h(22)='It is not necessary to further modify the zone '
+            h(23)='control once it has been created (unless you did '
+            h(24)='not guess the correct capacity. '
+            h(25)=' '
+            h(26)='A cancel request leaves the model unchanged. '
+            CALL PHELPD('temporal-control popup',26,'-',0,0,IER)
 
 C Ask the user whether there has already been a control law defined
 C to use the setpoint. If so report on that control loop and offer
-C selected information to alter.
+C selected information to alter. Either controls with a sensor
+C first item equal to -5 or a control with a type 11 (match sensor)
+C control law in the first period.
             write(outs,'(a,i2,a)')' There are currently ',ncf,
      &        ' control loops.'
             call edisp(iuout,outs)
@@ -1674,6 +1688,9 @@ C selected information to alter.
               if(ibsn(ijj,1).eq.-5)then
                 found=.true.
                 call LSTCNTL(iuout,0,ijj,IER)
+              elseif(ibclaw(ijj,1,1).eq.11)then
+                found=.true.
+                call LSTCNTL(iuout,0,ijj,IER)
               endif
   77        continue
             if(found)then
@@ -1683,20 +1700,28 @@ C copy data into cm variables for later editing.
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
      &          'use existing control','create new control','continue',
-     &          IRTC,14)
+     &          IRTC,26)
               if(irtc.eq.1)then
                 CALL EASKI(ispl,'Control loop to use set point data?',
-     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,14)
+     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,26)
                 if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
-                ibsn(ispl,1)=-5
-                ibsn(ispl,2)=ITE
+                ibsn(ispl,1)=izdef
+                ibsn(ispl,2)=0
                 ibsn(ispl,3)=0
                 ibsn(ispl,4)=0
                 cm(2)=bmiscd(ispl,1,1,2)
                 cm(3)=bmiscd(ispl,1,1,3)
                 cm(4)=bmiscd(ispl,1,1,4)
                 cm(5)=bmiscd(ispl,1,1,5)
+                cm(6)=bmiscd(ispl,1,1,6)
+                cm(7)=bmiscd(ispl,1,1,7)
+                cm(8)=bmiscd(ispl,1,1,8)
+                cm(9)=bmiscd(ispl,1,1,9)
+                cm(10)=bmiscd(ispl,1,1,10)
+                cm(11)=bmiscd(ispl,1,1,11)
+                cm(12)=bmiscd(ispl,1,1,12)
+                cm(13)=bmiscd(ispl,1,1,13)
               elseif(irtc.eq.3)then
                 goto 42
               endif
@@ -1708,8 +1733,7 @@ C possible and link back to the temporal item. Increment ncf.
               call edisp(iuout,'No applicable controls found.')
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
-     &          'n/a','create new control','continue',
-     &          IRTC,13)
+     &          'n/a','create new control','cancel',IRTC,26)
               if(irtc.eq.1.or.irtc.eq.3)then
                 goto 42
               endif
@@ -1719,8 +1743,8 @@ C Add another controls
             if(irtc.eq.2)then
               ispl=ncf+1
               ncf=ncf+1
-              ibsn(ispl,1)=-5
-              ibsn(ispl,2)=ITE
+              ibsn(ispl,1)=0
+              ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
               cm(2)=5000.0
@@ -1737,11 +1761,12 @@ C Add another controls
 
 C Confirm which zone to use with this control. Then instanciate
 C all of the usual values for control-temporal links. Note that
-C even though cm(8) & cm(9) does not seem to be used set them.
+C even though cm(8) - cm(13) does not seem to be used set them.
             IC=-1
  255        call askzone(ic,izdef,'Related zone for temporal setpoint?',
      &        'Related zone','-','Set point requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 255
+            ibsn(ispl,1)=IC
             iban(ispl,1)=IC
             iban(ispl,2)=0
             iban(ispl,3)=0
@@ -1752,12 +1777,15 @@ C even though cm(8) & cm(9) does not seem to be used set them.
             tbcps(ispl,1,1)=0.0
             ibctyp(ispl,1,1)=0
             ibclaw(ispl,1,1)=11
-            cm(1)=10.0
+            cm(1)=12.0
             cm(6)=1.0
-            cm(7)=1.0
+            cm(7)=3.0
             cm(8)=-5.0
             cm(9)=ITE
             cm(10)=0.0
+            cm(11)=0.0
+            cm(12)=1.0
+            cm(13)=0.0
 
 C Confirm capacities.
   53        WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
@@ -1780,6 +1808,7 @@ C Confirm capacities.
             CALL EGETWR(HOLD,K,cm(5),0.,999999.,'F','Min Cool',IER)
             if(ier.ne.0)goto 53
 
+C Update the control period data.
             bmiscd(ispl,1,1,1)=cm(1)
             bmiscd(ispl,1,1,2)=cm(2)
             bmiscd(ispl,1,1,3)=cm(3)
@@ -1790,6 +1819,9 @@ C Confirm capacities.
             bmiscd(ispl,1,1,8)=cm(8)
             bmiscd(ispl,1,1,9)=cm(9)
             bmiscd(ispl,1,1,10)=cm(10)
+            bmiscd(ispl,1,1,11)=cm(11)
+            bmiscd(ispl,1,1,12)=cm(12)
+            bmiscd(ispl,1,1,13)=cm(13)
 
 C Update the control file and link the control loop to the correct zone.
             icascf(IC)=ispl
@@ -2076,7 +2108,7 @@ C nbcaldays (int) is the number of days associated with each type
 C icalendar (int*365) for each day, the associated day type
 C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
-#include "epara.h"
+      INCLUDE 'epara.h'
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2854,7 +2886,7 @@ C      return
 C ********** EDDGTP **************
 C EDDGTP Sets up ground temperature profiles
       SUBROUTINE EDDGTP(modsit)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
@@ -2966,7 +2998,7 @@ C ********** EDDSHD **************
 C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN

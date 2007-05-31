@@ -37,7 +37,7 @@ C   iscopt = 0 offer editing box and option to click on mouse for vertices
 C   iscopt = 1 use the mouse click directly to specify vertices
 C   iscopt = 2 offer copy of local (in the same zone) surfaces 
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -902,7 +902,7 @@ C Passed character ACTION to signal deletion or addition. NUM will
 C be either the vertex to delete or the number of vertices to
 C added at the end of the list.
       SUBROUTINE ADDVERT(icomp,NUM,ACTION,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1228,7 +1228,7 @@ C Number of unbounded edges in iub, number inverted surfaces inve.
 C IVB = 0 is silent, IVB=1 feedback on errors.
 
       SUBROUTINE CKVERT(ivb,ICOMP,bounded,iub,inve,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -1350,7 +1350,7 @@ C << instanciation code blocks to be moved so that the data is only
 C << written at the end of the process. This has yet to be done.
 
       SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO,ZO,XW,ZH,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       PARAMETER  (MPL = 200 )
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
@@ -2078,7 +2078,7 @@ C SURLEHI Determines the overall lenght (in the x/y plane) and hight
 C (in z-direction) of a surface and passes the vaules back as
 C XYMAX and ZMAX.
       SUBROUTINE SURLEHI(IS,XYMAX,ZMAX)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -2121,7 +2121,7 @@ C           than the current number of connections and icon
 C           is the point of insertion (so as to know when to
 C           stop shifting).
       subroutine adjcbg6g7(act,ix,icon)
-#include "building.h"
+      INCLUDE 'building.h'
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.

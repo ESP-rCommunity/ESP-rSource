@@ -23,7 +23,7 @@ C Control MRT sensor based calculations.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDMRTC(ITRC,ITRU,ICOMP,IER)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -35,13 +35,14 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
       COMMON/MRT2/GEOLOAD,MRTLOAD
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       COMMON /FORMF/ FF(MSM,MSM), FFS
       common /cube3/surarea(6)
       common/tmrt1/tmrt,temperr
@@ -183,6 +184,9 @@ C recover from FFL.
               ff(i,j)=FFL(icube,i-lstsur,j)
 250         CONTINUE
 252       CONTINUE
+
+C Prior to call to temperature reset lstsur = nsur
+          lstsur = nsur
           call temperature(icube)
           radtemp(icube)=tempmrt
 990     continue
@@ -224,8 +228,8 @@ C ************* EDSURT
 C EDSURT display/edit surface temperatures.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EDSURT(ICOMP,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       common/pophelp/h(60)
@@ -328,7 +332,7 @@ C Not one of the legal menu choices.
 
 C *********** CALMRT
       SUBROUTINE CALMRT(ITRC,ITRU,radtemp,ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -338,7 +342,7 @@ C *********** CALMRT
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube3/surarea(6)
       common/tmrt2/temp(ms),tempmrt
       common /cube5/fstgrp,fstsur,lstsur,strtgr
@@ -534,7 +538,7 @@ C number of the cube for reporting purposes.
 
         SUBROUTINE  adcube(ITRC,ITRU,ICOMP,icube,IER)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM

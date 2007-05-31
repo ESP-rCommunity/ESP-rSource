@@ -283,8 +283,7 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
 C Include a cancel option.
         cancel='cancel'
-        CALL openaskaltbox(PROMP1,PROMP2,cancel,iwidth)
-C        CALL openaskbox(PROMP1,PROMP2,iwidth)
+        CALL openaskcnclbox(PROMP1,PROMP2,cancel,iwidth)
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP+1,IHW,IER)
@@ -295,8 +294,7 @@ C        CALL openaskbox(PROMP1,PROMP2,iwidth)
           call dupphelp(dh)
           call updhelp(dh,2,IHW)
         endif
-        CALL askaltdialog(ask,cancel,idef,iquery)
-C        CALL askdialog(ask,idef,iquery)
+        CALL askcncldialog(ask,cancel,idef,iquery)
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
@@ -1375,7 +1373,7 @@ C When writing out the combined text, put a space between each section.
       return
       end
 
-C ************* EASKCMD
+C ************* EASKSCMD
 C EASKSCMD is a facility for asking the user for a text string which
 C incorporates the prompt, alternative command, error messages and
 C help facilities as follows:
@@ -5150,7 +5148,7 @@ C delimiter:
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124
-      character xfile*72,tg*1,delim*1,dg*1
+      character xfile*144,tg*1,delim*1,dg*1
 
 C If delimiter set to alternative then process text before edisp call.
       if(delim.eq.'-')then
@@ -6146,7 +6144,7 @@ C     L      - current position in WORD
 C     LW     - maximum length of WORD
 
       SUBROUTINE EGETW(STRING,K,WORD,ACT,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
       common/OUTIN/IUOUT,IUIN
 
@@ -6223,7 +6221,7 @@ C characters. Phrases are separated by tabs or commas. Provides a warning
 C message if ACT='W', a failure message if ACT='F' and does
 C no message if ACT='-'.
       SUBROUTINE EGETP(STRING,K,PHRASE,ACT,MSG,ier)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       common/OUTIN/IUOUT,IUIN
 
       CHARACTER*(*) PHRASE, STRING, MSG
@@ -6304,7 +6302,7 @@ C no range checking if ACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWI(STRING,K,IV,MN,MX,ACT,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       common/OUTIN/IUOUT,IUIN
 
       CHARACTER*(*) STRING, MSG
@@ -6430,7 +6428,7 @@ C no range checking if RACT='-'. Words may be separated by blanks,
 C commas, or tab: WORD,WORD,WORD or WORD WORD WORD or WORD, WORD, WORD
 C are all valid.
       SUBROUTINE EGETWR(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       common/OUTIN/IUOUT,IUIN
 
 C LOUTSTR is for messages to the user and should be long enough
@@ -6852,7 +6850,7 @@ C ***************** EGETRM
 C EGETRM returns the remainder of a text string TSTR after position k
 C in RSTR where RSTR has no leading blanks.
       SUBROUTINE EGETRM(TSTR,K,RSTR,ACT,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       common/OUTIN/IUOUT,IUIN
 
 
@@ -7446,7 +7444,7 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE STRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 
       CHARACTER*124 tmp,STRING,OUTSTR
       character loutstr*248
@@ -7539,7 +7537,7 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 
       CHARACTER*248 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
@@ -8863,7 +8861,7 @@ C the number of zones which have currently been selected for display.
 C Compilation of wwlib.c assumes this will be available in each modules
 C code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
-#include "building.h"
+      INCLUDE 'building.h'
 
 C izgfoc is the graphic focus zone, nzg is the number of zones selected
 C and nznog array of selected zone indices.
@@ -8885,8 +8883,8 @@ C EVSET provides setup environment for wire frame view w/in prj.
 C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

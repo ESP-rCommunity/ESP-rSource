@@ -26,8 +26,8 @@ c ******************** MZNUMA ********************
 c MZNUMA is the main controller for the numerical simulation
 
       SUBROUTINE MZNUMA
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

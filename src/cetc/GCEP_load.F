@@ -51,9 +51,9 @@ c ***********************************************************************
       IMPLICIT NONE
 c Definition of module for daily loads and EWT. 
 C The heating and cooling load will be read in each timestep.
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "gcep_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'gcep_common.h'
 
 
 
@@ -141,12 +141,12 @@ c Use heat pump input data module (contains ahp, bhp, chp, dhp values)
 
        IMPLICIT NONE
 c Use HVAC input data module (contains isys information)
-#include "hvac_parameters.h"
-#include "building.h"
-#include "hvac_common.h"
-#include "gcep_common.h"
-#include "ashp_common.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'gcep_common.h'
+      INCLUDE 'ashp_common.h'
+      INCLUDE 'gshp_common.h'
        INTEGER isys
        REAL Cd, degrad_coeff
 
@@ -197,12 +197,12 @@ c entering water temperature data
 
 
        IMPLICIT NONE
-#include "hvac_parameters.h"
-#include "building.h"
-#include "hvac_common.h"
-#include "gcep_common.h"
-#include "ashp_common.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'gcep_common.h'
+      INCLUDE 'ashp_common.h'
+      INCLUDE 'gshp_common.h'
        INTEGER isys
        REAL Cd, degrad_coeff
 
@@ -262,8 +262,8 @@ c **********************************************************************
 
 C       USE GCEP_INPUT
        IMPLICIT NONE
-#include "gcep_parameters.h"
-#include "gcep_common.h"
+      INCLUDE 'gcep_parameters.h'
+      INCLUDE 'gcep_common.h'
 
 c Common for the number of time steps per hour
        COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

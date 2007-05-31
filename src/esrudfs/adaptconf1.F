@@ -45,7 +45,7 @@ C ********************* ADAPCONF *********************
 C ADAPCONF - Main controlling routine for `adaptive conflation controller'.
 
       SUBROUTINE ADAPCONF
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       common/CFDlen/rlengW,rlengE,rlengS,rlengN,rlengL,rlengH
       common/CFDdt/DTW,DTE,DTS,DTN,DTL,DTH
@@ -188,8 +188,8 @@ C CFDLENS - Determine length scales to use in calculating non-dimen groupings.
 C           Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE CFDLENS
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
       COMMON/CONST/GREAT,small,GRAV
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -328,8 +328,8 @@ C GOPHER - Performs preliminary CFD simulation for current time-step using
 C          the MIT 0-eqn model with coarse convergence parameters.
 
       SUBROUTINE GOPHER(ICOMP)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
@@ -434,8 +434,8 @@ C           non-dimensional groupings. Supporting routine for CFD `adaptive
 C           handshaking' algorithm.
 
       SUBROUTINE cfdDELT(ICOMP)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
       COMMON/CONST/GREAT,small,GRAV
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -602,7 +602,7 @@ C ********************* THERPHYS *********************
 C THERPHYS - Set thermophysical properties for calculation of non-dimensional
 C            groupings. Supporting routine for CFD `adaptive conflation controller'.
       SUBROUTINE THERPHYS(TA,GRAVITY,aBETA,RHO,HEATCAP,VISM,aCOND)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
       COMMON/FLUPRf/URFVIS,VISCOS,PRANDT,SH,
@@ -649,7 +649,7 @@ C MAXVEL - Determines velocity to use in calculating Reynolds number.
 C          Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE MAXVEL
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       COMMON/CONST/GREAT,small,GRAV
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -760,7 +760,7 @@ C VELMAG - Calculates magnitude of velocity for requested CFD cell.
 C          Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE VELMAG(I,J,K,Vmean)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
      2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
@@ -786,7 +786,7 @@ C            forced-convection effects for given surface.
 C            Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE cfdRA2RE(RE,RA,FORorNAT)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
 
@@ -818,8 +818,8 @@ C           appraised from `gopher' simulation. Supporting routine for
 C           CFD `adaptive conflation controller'.
 
       SUBROUTINE setBUOY(ICOMP,ForNmax)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
@@ -881,7 +881,7 @@ C           to greater convergence than gopher run. Supporting routine for
 C           CFD `adaptive conflation controller'.
 
       SUBROUTINE setCONV
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
      1             IPPHI(MNZ),SRMAX(MNZ)
       COMMON/RENORM/LRENORM
@@ -911,7 +911,7 @@ C turnKEon - Turns on k-epsilon turbulence model and initializes k and epsilon
 C            fields based on preliminary CFD run.
 
       SUBROUTINE turnKEon
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),
      &             CALLC(MNZ),KEMDL(MNZ),BUOY(MNZ),BOUSSI(MNZ),
      &             ZEROT(MNZ),ZandKE(MNZ),MITzero(MNZ)
@@ -967,8 +967,8 @@ C           CFD simulation. Used for one-way adaptive conflation control.
 
       SUBROUTINE setSHK1(isetsurf,FORorNAT)
 
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
@@ -1069,8 +1069,8 @@ C           control.
 
       SUBROUTINE setSHK2(isetsurf,FORorNAT)
 
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
@@ -1179,7 +1179,7 @@ C           the eddy viscosity predictions from the preliminary CFD run.
 C           Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE HOWTURB
-#include "cfd.h"
+      INCLUDE 'cfd.h'
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
      &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
@@ -1324,8 +1324,8 @@ C          coefficient when conditional two-way adaptive conflation is active.
 C          Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE CHKSPC
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -1474,7 +1474,7 @@ C            This is used when there is conditional two-way adaptive conflation
 C            control. Supporting routine for CFD `adaptive conflation controller'.
 
       SUBROUTINE resetHCs
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -1522,8 +1522,8 @@ C            be integrated more closely with the network air flow conflation
 C            mechanism.
 
       SUBROUTINE AIRBCMAP(ICOMP)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Fisher/Vdot(MCOM),SAT(MCOM),ADJREF(MCOM,MS),DELTAR(MCOM)
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
@@ -1570,8 +1570,8 @@ C          test hut demo in thesis. This is a prototype application that needs
 C          to be generalized in the future.
 
       SUBROUTINE RADMAP(ICOMP)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
       COMMON/ICFNOD/ICFD,ICP
       COMMON/ACCrec/IACC
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)

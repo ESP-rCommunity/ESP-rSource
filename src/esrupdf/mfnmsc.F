@@ -27,8 +27,8 @@ C    mode = 2  : Writes mass flow network description to a file.
 
       subroutine genmfn(mode)
 
-#include "net_flow.h"
-#include "plant.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'plant.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FFN/IFLWN,ICFFS(MPCON)
@@ -252,9 +252,9 @@ C << to a graphic network flow file.
 C *********************** askmfn ************************
 C Ask user for related mass flow network files.
       subroutine askmfn(mfunit)
-#include "building.h"
-#include "plant.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 

@@ -28,8 +28,8 @@ C BS2CFDSB - Maps BSim thermal conditions onto CFD solid boundaries. Only used
 C            when there is thermal conflation.
 
       SUBROUTINE BS2CFDSB
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -169,8 +169,8 @@ C ********************* TREFBC *********************
 C TREFBC - Calculate the reference temperature for the surface convection.
 
       SUBROUTINE TREFBC(L,TREF)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -247,8 +247,8 @@ C BS2CFDBLK - Maps BSim thermal conditions onto CFD blockages. Only used
 C             when there is thermal conflation.
 
       SUBROUTINE BS2CFDBLK
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/FVALA/TFA(MCOM),qfa(MCOM)
       COMMON/HSrc/NHS(2,MNZ),IHSi(MNHS,2,MNZ),IHSf(MNHS,2,MNZ),

@@ -1,7 +1,7 @@
           SUBROUTINE TRANSF
 C---------------------------------------------------------
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
 
 C---------------------------------------------------------
           DIMENSION AT1(4,4),ATR(4,4),VE(3)
@@ -267,8 +267,8 @@ C---------------------------------------------------------
 C ******** CURV
       SUBROUTINE CURV
 
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
 
 C CORRECT ELEVATION CONSTANT DATA FOR CURVATURE OF EARTH AND REFRACTION OF L
 C CALCULATE CONSTANT FOR CURVATURE OF AND REFRACTION

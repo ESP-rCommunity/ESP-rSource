@@ -23,7 +23,7 @@ C 'RRITE' allows one day of hourly values (of the 6 climate
 C parameters to be edtied by the user and merged into the
 C climate file.
       SUBROUTINE RRITE
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -213,7 +213,7 @@ C Check if user wishes to edit another day.
 C ********** SITEDIT
 C SITEDIT edits site related data in a climate file.
       SUBROUTINE SITEDIT
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
       COMMON/FILEP/IFIL
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)

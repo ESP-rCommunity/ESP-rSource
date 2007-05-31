@@ -37,7 +37,7 @@ C MO3DPL plots a 3-D surface representation of a
 C user-specified variable.
 
       SUBROUTINE MO3DPL
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -578,7 +578,7 @@ C ******************** SURF3 ********************
 C Plot a 3D surface representation of 2D arrays of time
 C series data ie. timesteps-vs-day-vs-data. 
       SUBROUTINE SURF3(LU1,ROTNXX,ROTNYY,YS,ZS,xxmin,xxmax,zlist)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS

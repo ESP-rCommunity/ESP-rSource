@@ -42,8 +42,8 @@ C     XRHS   - right hand side vector of matrix eq PCOF . XNOD = XRHS
 C
       SUBROUTINE MFLW2B
 
-#include "building.h"
-#include "net_flow.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

@@ -28,7 +28,7 @@ C         transitional shading file.
 C ************** TFILE1 ***********************
 C Write to transitional shading file.
       SUBROUTINE TFILE1
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -383,7 +383,7 @@ C ************** TFILE2 ***********************
 C ' TFILE2' transfers the transformed coordinates of the object
 C  body face under consideration to the transitional shading file.
       SUBROUTINE TFILE2(IS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -430,7 +430,7 @@ C ************** TFILE3 ***********************
 C 'TFILE3' saves the hourly grid shading index values in the transitional
 C shading file.
       SUBROUTINE TFILE3(ICOMP,IS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

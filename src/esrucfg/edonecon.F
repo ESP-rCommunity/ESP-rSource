@@ -31,8 +31,8 @@ C ************* EDACONN
 C Edit connection attributes in common block __ via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDACONN(ITRC,IER)
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -579,7 +579,7 @@ C **************** CONXMENU
 C CONXMENU returns an English description in CXITM of the inter-connection 
 C information. 
       SUBROUTINE CONXMENU(ICON,CXITM)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)

@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C PCWRT of ESRUpdb
         SUBROUTINE PCWRT (ICHAN)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
 
 C Formatted output of a complete plant component entry.  The channel
 C used for output is passed as an argument.

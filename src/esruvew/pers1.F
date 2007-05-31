@@ -1,7 +1,7 @@
       SUBROUTINE PERS1
  
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
  
       LOGICAL ER,PG1,PG2,PG3,PG4
  

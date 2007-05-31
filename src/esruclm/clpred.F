@@ -39,7 +39,7 @@ C IST = 1 is not currently used.
 C IST = 2 the user is interested in transforming the data
 C IST = 3 the user is interested in curve fitting.
       SUBROUTINE CLPRED(IST)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
       PARAMETER (MT=24,MD=365,MAAS=9)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

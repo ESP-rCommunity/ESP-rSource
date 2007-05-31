@@ -33,8 +33,8 @@ C file. MODE = `S` to read silently. INUNIT is the file unit to use
 C when reading the file.
       SUBROUTINE NETREAD(INUNIT,MODE,IER)
 
-#include "gnetwk.h"
-#include "espriou.h"
+      INCLUDE 'gnetwk.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
 C Graphics and ESP-r default commons
@@ -739,9 +739,9 @@ C ******************************** NETTOFLW *********************************
 C Convert from graphic network file to network flow common blocks.
       SUBROUTINE NETTOFLW(IER)
 
-#include "building.h"
-#include "gnetwk.h"
-#include "net_flow.h"
+      INCLUDE 'building.h'
+      INCLUDE 'gnetwk.h'
+      INCLUDE 'net_flow.h'
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1223,7 +1223,7 @@ C tool. The routine can be called using two modes:
 C 1 - save current file in the current location with the current filename (if any).
 C 2 - save the current file with a specified location and name.
       SUBROUTINE NETWRITE(IMODE)
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1582,7 +1582,7 @@ C *************************** NWKINIT ************************
 C NWKINIT is the initialisation for network common blocks. 
       SUBROUTINE NWKINIT
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),

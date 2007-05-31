@@ -57,7 +57,7 @@ C This is done in the range of AIN(ISTART) to AIN(IEND).
 C CALLS:     CALLED BY:
 
       SUBROUTINE SUM1V(AIN,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       DIMENSION AIN(MTS)
@@ -101,7 +101,7 @@ C If init=0 initialise DMAX & DMIN, otherwise test agains value
 C passed into array.
 
       SUBROUTINE CMXMN(AIN,ISTART,IEND,DMAX,ITMAX,DMIN,ITMIN,INIT)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       DIMENSION AIN(MTS)
 
@@ -150,7 +150,7 @@ C DLTSLT = D(I) is LT 0 when STAT(I) is LT 0,
 
       SUBROUTINE SUMSTA(D,STAT,ISTART,IEND,DGTSGT,DLTSGT,DGTSEQ,DLTSEQ,
      &                  DGTSLT,DLTSLT)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       DIMENSION D(MTS), STAT(MTS)
@@ -196,7 +196,7 @@ C The returned values are as follows:
 C Returns REGS(6)
 
       SUBROUTINE SUMUSR(UD,DATA,ISTART,IEND,IROW,REGS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       DIMENSION DATA(MTS), UD(MCOM,2),REGS(6)
@@ -396,7 +396,7 @@ C data is returned, each item in DOUT is for one NOUT time-step.
 C NEL is the number of NOUT timesteps in DOUT (not used).
 
       SUBROUTINE FLTIAV(IDAY,DIN,DOUT,NEL)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -603,7 +603,7 @@ C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
 
       SUBROUTINE ZNLIST(zdescr,length,ierr)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
@@ -647,7 +647,7 @@ C COLZNLIST takes the current selected zones and draws text with
 C a different colour for each name. 
 
       SUBROUTINE COLZNLIST(line,isize,ierr)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -829,7 +829,7 @@ C copy into IPICK of the common block VAL1(IPICK,MTS). In addition
 C the user must specify a range to duplicate i.e. ISTART to IEND.
 
       SUBROUTINE XTVAL1(ARRAY,ISTART,IEND,IPICK)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -855,7 +855,7 @@ C copy into IPICK of the common block VAL2(IPICK,MTS). In addition
 C the user must specify a range to duplicate i.e. ISTART to IEND.
 
       SUBROUTINE XTVAL2(ARRAY,ISTART,IEND,IPICK)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -881,7 +881,7 @@ C copy into IPICK of the common block VAL3(IPICK,MTS). In addition
 C the user must specify a range to duplicate i.e. ISTART to IEND.
 
       SUBROUTINE XTVAL3(ARRAY,ISTART,IEND,IPICK)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -906,7 +906,7 @@ C GVTXDUM takes data in GVAL and moves it to XDUM. In addition
 C the user must specify a range to duplicate i.e. ISTART to IEND.
 
       SUBROUTINE GVTXDUM(ISTART,IEND)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -929,7 +929,7 @@ C GVTXDM1 takes data in GVAL and moves it to XDUM1. In addition
 C the user must specify a range to duplicate i.e. ISTART to IEND.
 
       SUBROUTINE GVTXDM1(ISTART,IEND)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -950,7 +950,7 @@ C ******************** ASKZON ********************
 C ASKZON: call to enquire which zone the user is interested in.
 
       SUBROUTINE ASKZON(IZONE)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1013,7 +1013,7 @@ C PICKSUR: call to enquire which surfaces (one or many) in zone IZ
 C the user is interested in for stats/ graphs/ listings etc.
 
       SUBROUTINE PICKSUR(IZ,NP,IVA,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1073,7 +1073,7 @@ C IALOC = nb of links (surfaces, etc.) associated with the anchor,
 C lstanchr = links for each anchor
 
       SUBROUTINE PICKANC(ATYPE,IZLST,ISLST,NSANC,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1136,7 +1136,7 @@ C PIKMRTS: call to enquire which MRT sensors to display sensed MRT for.
 C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       SUBROUTINE PIKMRTS(IZLST,ISLST,NSEL,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1210,7 +1210,7 @@ C ASKICN: call to enquire which node in surface ISFN in zone IZONE
 C the user is interested in.
 
       SUBROUTINE ASKICN(IZONE,ISFN,INN)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1320,7 +1320,7 @@ C Data from VAL1(J,ISTEP) returned as XVAL1(J).
 C Given the range of VAL1 to process ie. VAL1(1,ISTEP) to VAL1(IMAX,ISTEP).
 
       SUBROUTINE VALIAV(IMAX,ISTEP,XVAL1)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -1499,7 +1499,11 @@ C CTLEXP ***********
 C CTLEXP: Control feedback to export file or text feedback area.
 C Assign user-specified export file - checking if local or remote.
 C tg is a character T, X, or G specifying text, tabular or graphic 
-C info being saved.
+C   info being saved.
+C xfile (width variable) is the initial name of the file to be exported
+C msg (width variable) is prepended to dialog as export happens
+C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
+C ixunit is the file unit number for the export file.
       subroutine ctlexp(xfile,ixopen,ixunit,ixpunit,tg,msg,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1508,18 +1512,22 @@ C info being saved.
       common/rpath/path
 
 C Simulator parameters.
+C autook if .true. then assume that the user does not need to confirm
+C   the file name.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg,xfile
-      character H*72,path*72,outs*124,tg*1,tfile*72
-      character ixpfile*72,ttext*42,LCMDFL*144
+      character H*72,path*72,outs*124,tg*1,outs248*248
+      character ixpfile*144,ttext*42,LCMDFL*144
       character longtfile*144,longtfiledos*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
+      integer lenxfile
 
 C Initial name for export parameter file is xfile+par.
-      if(xfile(1:1).ne.' ')then
-        write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
+      lenxfile=lnblnk(xfile)
+      if(xfile(1:1).ne.' '.and.lenxfile.gt.2)then
+        write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
       else
         ixpfile = 'data.grt.par'
       endif
@@ -1528,12 +1536,14 @@ C Each call is a toggle.
       ixopen=ixopen+1
       if(ixopen.GT.1)ixopen=0
       if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
+        write(outs248,'(2a)') 'closing export file: ',xfile
+        call edisp248(iuout,outs248,100)
         if(tg.eq.'X')then
           CALL ERPFREE(ixunit,ISTAT)
           CALL ERPFREE(ixpunit,ISTAT)
-          write(outs,'(a,a)') 'closing export parameter file: ',ixpfile
+          write(outs248,'(2a)') 'closing export parameter file: ',
+     &      ixpfile
+          call edisp248(iuout,outs248,100)
           call usrmsg(outs,'reporting >> to display ','-')
         elseif(tg.eq.'T')then
           CALL ERPFREE(ixunit,ISTAT)
@@ -1557,35 +1567,60 @@ C Each call is a toggle.
           write(outs,'(A,A)') ' The current path is: ',path
           call edisp(iuout,outs)
           h(1)='If using path then the export file will be placed in'
-          h(2)='the model folder. Otherwise nominate a folder and file'
-          h(3)='name for the export file (i.e. /tmp/junk.exp or'
+          h(2)='the model folder. Otherwise nominate a folder and'
+          h(3)='file name for the export file (i.e. /tmp/junk.exp or'
           h(4)='/home/ralph/reports/junk.exp) '
+          h(5)=' '
+          h(6)='If you selected this option in error click continue.'
           if (autook) then
             IW=2
           else
             write(outs,'(A,A)') ' The model is in folder ',path
-            CALL EASKAB(outs,' place export file:','in model folder',
-     &        'user defined folder',IW,4)
+            CALL EASKABC(outs,' place export file:',
+     &        'in the model folder','user defined folder','continue',
+     &        iw,6)
+            if(iw.eq.3)then
+              ixopen=0
+              return    ! does ixopen need to be reset?
+            endif
           endif
         endif
         h(1)='This file is a text file which can be used in'
         h(2)='reports or for third party tools. '
         if (.NOT.autook) then
-          call easks(xfile,' export file name: ',' ',72,
-     &               ' ','export file name',IER,2)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          llt=lnblnk(xfile)
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',96,'export.txt','export file name',IER,2)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',124,'export.txt','export file name',IER,2)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(xfile,' Export file name? ',
+     &          ' ',144,'export.txt','export file name',IER,2)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',144,'export.txt','export file name',IER,2)
+          else
+            CALL EASKF(xfile,' Export file name? ',
+     &        ' ',96,'export.txt','binary events db',IER,2)
+          endif
         endif
-        write(outs,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                    ' for export.'
-        call usrmsg(outs,' ','-')
+        write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                       ' for export.'
+        call edisp248(iuout,outs248,100)
         if(iw.eq.1)then
           if(tg.eq.'X')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
-            write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
+            write(ixpfile,'(2a)') xfile(1:lnblnk(xfile)),'.par'
             call efopseq(ixpunit,ixpfile,4,IER)
-            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                        ' for export parameters.'
-            call usrmsg(outs,' ','-')
+            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                           ' for export parameters.'
+            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             call efopseq(ixunit,xfile,4,IER)
             if(ier.ne.0)return
@@ -1594,15 +1629,14 @@ C Each call is a toggle.
 C Writing remotely, add the path to the given file name before
 C passing request to c graphic calls. Check if Unix-based or DOS based.
             call isunix(unixok)
-            tfile=xfile
             longtfile=' '
             if(unixok)then
-              call addpath(tfile,longtfile,concat)
+              call addpath(xfile,longtfile,concat)
             else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-              call addpath(tfile,longtfile,concat)
+              call addpath(xfile,longtfile,concat)
               call cmdfiledos(longtfile,longtfiledos,ier)
               longtfile=' '
               longtfile=longtfiledos
@@ -1618,9 +1652,9 @@ C and change any / to \.
             write(ixpfile,'(a,a)') xfile(1:lnblnk(xfile)),'.par'
             CALL ERPFREE(ixpunit,ISTAT)
             call FPOPEN(ixpunit,ISTAT,1,3,ixpfile)
-            write(outs,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
-     &                        ' for export parameters.'
-            call usrmsg(outs,' ','-')
+            write(outs248,'(3A)')' opened ',ixpfile(1:lnblnk(ixpfile)),
+     &                           ' for export parameters.'
+            call edisp248(iuout,outs248,100)
           elseif(tg.eq.'T')then
             CALL ERPFREE(ixunit,ISTAT)
             call FPOPEN(ixunit,ISTAT,1,3,xfile)
@@ -1630,9 +1664,9 @@ C and change any / to \.
             call wwcsetstart
           endif
         endif
-        write(outs,'(1x,3A)') msg(:lnblnk(msg)),
-     &    ' reporting >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','-')
+        write(outs248,'(1x,3A)') msg(1:lnblnk(msg)),
+     &    ' >> to ',xfile(1:lnblnk(xfile))
+        call edisp248(iuout,outs248,100)
 
 C If tabular info then create the headder to the xvgr parameter file.
         if(tg.eq.'X')then

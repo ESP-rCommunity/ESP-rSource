@@ -26,9 +26,9 @@ C*********************** pcwrt ************************
 C This subroutine writes plant network data to configuration
 C file.
       subroutine pcwrt
-#include "plant.h"
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 

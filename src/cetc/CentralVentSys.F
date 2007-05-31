@@ -29,9 +29,9 @@ c ---
       
 c
       Implicit None
-#include "aim2_parameters.h"
-#include "aim2_common.h"
-#include "Ventilation_Data.h"
+      INCLUDE 'aim2_parameters.h'
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'Ventilation_Data.h'
       Integer iComp
       Integer iFun
       Real T, FlowRate
@@ -71,10 +71,10 @@ c ---
       
 c ---
       IMPLICIT NONE
-#include "building.h"
-#include "aim2_parameters.h"
-#include "aim2_common.h"
-#include "Ventilation_Data.h"
+      INCLUDE 'building.h'
+      INCLUDE 'aim2_parameters.h'
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'Ventilation_Data.h'
       COMMON/PREC2/VOL
       REAL VOL(MCOM)
       COMMON/C1/NCOMP,NCON
@@ -237,8 +237,8 @@ C electrical demand during each time-step in the plant domain.
 
 c
       Implicit None
-#include "Ventilation_Data.h"
-#include "SOFC.h"
+      INCLUDE 'Ventilation_Data.h'
+      INCLUDE 'SOFC.h'
 
       Integer iFun
       Real T
@@ -481,7 +481,7 @@ c ---
 C      USE Ventilation_data
 c ---
       Implicit None
-#include "Ventilation_Data.h"
+      INCLUDE 'Ventilation_Data.h'
       Integer m
       Real T
 c ---
@@ -551,7 +551,7 @@ c ---
 
 c
       Implicit None
-#include "Ventilation_Data.h"
+      INCLUDE 'Ventilation_Data.h'
       Real T, Tds
       Real Fleak, Diam, L, HTC, AvVel, CnstDD(2,3)
       Integer i, j, Duct
@@ -654,11 +654,11 @@ c	None. Sums up Monthly HRV energy in H3KSTORE_DATA module
 
       SUBROUTINE H3KSTORE_HRV_DATA()
            IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
-#include "Ventilation_Data.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
+      INCLUDE 'Ventilation_Data.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

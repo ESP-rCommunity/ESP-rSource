@@ -32,7 +32,7 @@ C ************* AREA
 C AREA calculates the area for any polygon where N is the number
 C of points, X & Y are arrays of coordinates around the surface 
 C and A is the calculated area.
-#include "building.h"
+      INCLUDE 'building.h'
       DIMENSION X(MV),Y(MV)
       A=0
       DA=(X(2)-X(1))**2+(Y(2)-Y(1))**2
@@ -64,7 +64,7 @@ C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question
 C and any associated windows.
       SUBROUTINE MESH(IS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -141,7 +141,7 @@ C act = 'l or L' view shading surfs, act = '-' neither.
 C IVA array of selections. Uses information from ZONDF.
 
       SUBROUTINE PICKSSUR(IZONE,NP,act,IVA,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
@@ -338,7 +338,7 @@ C ************* POINT1 **********************
 C 'POINT1' determines if a specified point is within or outwith any
 C specified object body face boundary.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION C(2*MV+2)

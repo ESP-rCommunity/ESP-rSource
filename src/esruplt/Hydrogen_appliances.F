@@ -64,9 +64,9 @@ C-------------------------------------------------------------------------------
       subroutine H2_appliance_coeff_gen( iPComp, COut, iStats )
       implicit none
 
-#include "plant.h"
-#include "chemical_properties.h"
-#include "Hydrogen_demand_controller.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'chemical_properties.h'
+      INCLUDE 'Hydrogen_demand_controller.h'
 
 C External functions.     
       integer lnblnk
@@ -356,7 +356,7 @@ C-------------------------------------------------------------------------------
 
       IMPLICIT NONE
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C External functions.     
       integer lnblnk
@@ -639,7 +639,7 @@ C-------------------------------------------------------------------------------
 
       IMPLICIT NONE
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C-------------------------------------------------------------------------------
 C     Passed variables

@@ -168,18 +168,18 @@ C                         use the inside surface node temperature
 
       subroutine mzinpt(IREP,IER)
 
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
-#include "plant.h"
-#include "tdf2.h"
-#include "dhw_common.h"
-#include "MultiYear_simulations.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'MultiYear_simulations.h'
       PARAMETER (MSTMC=1)
       integer igraphiclib  ! external definition
 
@@ -755,7 +755,7 @@ C checks if user wants to re-specify simulation start-up period.
 C IREP=1 implies no reporting or data checking.
 
       SUBROUTINE MZPREC(IREP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1282,9 +1282,9 @@ C be used in preference to the zone file defaults.
 C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
-#include "building.h"
-#include "cfd.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       common/trc/itrc
@@ -1476,8 +1476,8 @@ C Climate and control are as specified in the configuration file.
 C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
-#include "building.h"
-#include "MultiYear_simulations.h"
+      INCLUDE 'building.h'
+      INCLUDE 'MultiYear_simulations.h'
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -1695,7 +1695,7 @@ C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       subroutine ckcurmatch(prob,iprob,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

@@ -28,7 +28,7 @@ C MOREC1 identifies the starting record address
 C for first day of recovery period.
 
       SUBROUTINE MOREC1(IDAY,IREC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,
      &NTS,ISAVE

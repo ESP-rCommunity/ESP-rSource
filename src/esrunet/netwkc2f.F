@@ -42,7 +42,7 @@ C IACTIVE is returned if ISELECT=0 but the component is already marked
 C as selected.
       SUBROUTINE NWKSLCTC(IX,IY,IT,IS,ISA,ISELECT,IACTIVE)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
@@ -173,7 +173,7 @@ C Called from the c-library and updates component and connection
 C intermediate point positions.
       SUBROUTINE NWKUPDTPOS(IS,ISA,IT,IX,IY)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
@@ -287,7 +287,7 @@ C Called from the c-library and updates the network grid properties
 C Zoom ,snap, etc, etc.
       SUBROUTINE GRIDUPDT(IZOOM,IGRIDU,IGRIDS,ISNP,IPAN,DX,DY)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 C Grid commons
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       COMMON/NWKGRDL/GON,SON
@@ -385,7 +385,7 @@ C Called from the C-side
 
       SUBROUTINE GCONAD(IX,IY,IXR,IYR,IB)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/NWKTYP/INWKTYP,vergnf   
@@ -720,7 +720,7 @@ C CV - current horiz. view centre
 
       SUBROUTINE GNWKQUERY(IQ,PV,TV,CV,PH,TH,CH)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
       IQ=-1
@@ -764,7 +764,7 @@ C when grid snappping is on
 
       SUBROUTINE NETWSNAP(X,Y,XS,YS)
 
-#include "gnetwk.h"
+      INCLUDE 'gnetwk.h'
 C Grid commons
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW

@@ -42,7 +42,7 @@ C network. For a listing of variable and string definitions see the ENETREWR
 C subroutine. 
       SUBROUTINE ENETINIT
 
-#include "power.h"
+      INCLUDE 'power.h'
 C
 C Common Blocks
 
@@ -285,7 +285,7 @@ C Presents a list of electrical nodes to the user and returns the selected node 
 
       SUBROUTINE ELNODMLS(NPK,IPK)
 
-#include "epara.h"
+      INCLUDE 'epara.h'
 # include "power.h"
 
 C Commons
@@ -424,7 +424,7 @@ C ******************************* ELHYBMLS  ************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
       SUBROUTINE ELHYBMLS(NPK,IPK)
-#include "epara.h"
+      INCLUDE 'epara.h'
 # include "power.h"
 
 C Commons
@@ -567,7 +567,7 @@ C ******************************* ELPOWMLS  ************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
       SUBROUTINE ELPOWMLS(NPK,IPK)
-#include "epara.h"
+      INCLUDE 'epara.h'
 # include "power.h"
 
 C Commons
@@ -707,7 +707,7 @@ C ******************************* ELCNCMLS  ************************************
 C Presents a list of connecting components to the user and returns the selected 
 C component number.
       SUBROUTINE ELCNCMLS(NPK,IPK)
-#include "epara.h"
+      INCLUDE 'epara.h'
 # include "power.h"
 
 C Commons
@@ -849,7 +849,7 @@ C Presents a list of electrical connections to the user and returns the selected
 C connection number.
       SUBROUTINE ELCONMLS(NPK,IPK)
 
-#include "epara.h"
+      INCLUDE 'epara.h'
 # include "power.h"
 
 C Commons

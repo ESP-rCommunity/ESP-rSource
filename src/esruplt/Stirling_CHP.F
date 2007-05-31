@@ -105,7 +105,7 @@ C----------------------------------------------------------------------
      &               iPlant_Matrix  )
       implicit none
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C----------------------------------------------------------------------
 C     ESP-r commons 
@@ -253,11 +253,11 @@ C----------------------------------------------------------------------
       subroutine Stirling_Thermal_dyn ( iC_Index, fCoefficients )
       implicit none
 
-#include "building.h"
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
-#include "chemical_properties.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
+      INCLUDE 'chemical_properties.h'
 
 C----------------------------------------------------------------------
 C     Passed arguemets
@@ -1692,11 +1692,11 @@ C----------------------------------------------------------------------
       subroutine Stirling_Collect_Data_dyn ( iComp )
       implicit none
 
-#include "building.h"       
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
-#include "chemical_properties.h"
+      INCLUDE 'building.h'       
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
+      INCLUDE 'chemical_properties.h'
 
 C.....Plant component configuration data - read from input file
       common/pdbdt/adata,bdata
@@ -2029,9 +2029,9 @@ C----------------------------------------------------------------------
      &                fQ_Cogeneration )
       implicit none
      
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
 
 C.....Inputs
       integer iC_index    ! Pointer to component in network
@@ -2172,9 +2172,9 @@ C----------------------------------------------------------------------
      &                                         fCW_temperature_in,
      &                                         fCW_mass_flow )
       implicit none
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
 
       integer iC_index
       real fCW_temperature_in               ! cooling water temperature (oC)
@@ -2239,9 +2239,9 @@ C----------------------------------------------------------------------
      &                                         fCW_temperature_in,
      &                                         fCW_mass_flow )
       implicit none
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
 
       integer iC_index
       real fCW_temperature_in          ! Cooling water temperature (oC)
@@ -2303,9 +2303,9 @@ C----------------------------------------------------------------------
      &                                  fN_fuel_flow,
      &                                  fTemp_Room_P )
       implicit none
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
 
       real fN_fuel_flow
       real fTemp_Room_P
@@ -2357,10 +2357,10 @@ C-----------------------------------------------------------------------
       subroutine Stirling_H3Kreports_module (
      &                 iIndex, iStatus )
       implicit none
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
-#include "CETC_definitions.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
+      INCLUDE 'CETC_definitions.h'
 
 C External functions.     
       integer lnblnk
@@ -2941,9 +2941,9 @@ C----------------------------------------------------------------------
      &           fX_average,
      &           fX_final )
       implicit none
-#include "plant.h"
-#include "cetc_cogen.h"
-#include "Stirling_CHP.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cetc_cogen.h'
+      INCLUDE 'Stirling_CHP.h'
 C----------------------------------------------------------------------
 C     Passed variables
 C----------------------------------------------------------------------

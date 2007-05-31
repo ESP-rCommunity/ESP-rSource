@@ -28,8 +28,8 @@ C ztu,ztl are upper/lower zone temperature.
 C zph,zpc are zone heating/cooling capacities.
 C tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE MZOUTP
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SHOUT/ICOUT

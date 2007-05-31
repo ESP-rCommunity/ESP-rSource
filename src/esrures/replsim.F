@@ -30,9 +30,9 @@ C of the files associated with the original simulation.  Similar to
 C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
-#include "building.h"
-#include "tdf2.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -162,7 +162,7 @@ C ******************** SYNOPF ********************
 C SYNOPF displays the names of the files used in a simulation
 
       SUBROUTINE SYNOPF
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT

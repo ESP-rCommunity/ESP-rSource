@@ -42,7 +42,7 @@ C Age of Air" is a "passive scalar" quantity, it does not affect
 C the velocity field and should be calculated after convergence 
 C for all other variables is achieved. 
       SUBROUTINE CALCLMA(ITIMST)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       common/outin/IUOUT,IUIN
       common/pophelp/h(60)
@@ -405,7 +405,7 @@ C Age of Air" variable. There is no difference between laminar or turbulent
 C cases - at solid walls the BC's are always of the zero-gradient type. 
 
       SUBROUTINE BNDARLMA(AVELMA,SUMFLU)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
      &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
@@ -740,7 +740,7 @@ C face for blockages.
 C Zero-gradient type of BC's are applied 
 C
       SUBROUTINE BLKBNDL(IBLK)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2

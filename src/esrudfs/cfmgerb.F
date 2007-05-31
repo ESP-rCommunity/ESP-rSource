@@ -28,8 +28,8 @@ C  cfdlib - Write results of CFD simulation to results file.
 C ********************* CFMNGE *********************
 C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       SUBROUTINE CFMNGE(ICOMP,IND)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       common/outin/iuout,iuin
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -224,8 +224,8 @@ C ********************* SURFCONF *********************
 C SURFCONF - Calls CFMNGE each time step there is surface conflation.
 
       SUBROUTINE SURFCONF(ICOMP,mHCcfd)
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -311,8 +311,8 @@ C ********************* cfdlibhead *********************
 C cfdlibhead - write header information to cfd results library.
 
       subroutine cfdlibhead
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
@@ -400,7 +400,7 @@ C CFD domain.
 C This routine will work for multiple CFD domains in a problem.
 
       subroutine cfdlibdom(ICOMP)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
@@ -463,8 +463,8 @@ C ********************* cfdlib *********************
 C cfdlib - write data to cfd results library.
 
       subroutine cfdlib
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
 
       common/outin/iuout,iuin
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB

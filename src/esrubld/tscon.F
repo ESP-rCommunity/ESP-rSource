@@ -97,7 +97,7 @@ C ITSITR       : Number of iterations to be performed for an hour interval.
 C ITRPAS       : Counts number of iterations performed so far.
 
       SUBROUTINE TSCINP
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
@@ -443,7 +443,7 @@ C gradient of a control variable exceed the user-specified
 C value. Only weather variables are used as control variables.
 
       SUBROUTINE TSCON1(NTSCTR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -559,8 +559,8 @@ C injection for previous and current timestep is smaller than
 C the user-specified value.
 
       SUBROUTINE TSCON2(IAGAIN,ITSTP1,NTSCTR)
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -677,7 +677,7 @@ C ************************* TSCON4 *************************
 C TSCON4 checks if another iteration is required for type 4 TSC.
 
       SUBROUTINE TSCON4(ITRFLG,NTSCTR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TS4/ITSITR(MSCH),ITRPAS
 
@@ -702,7 +702,7 @@ C ************************* TSCON6 *************************
 C TSCON6 checks if `rewind` operation is required for type 6 TSC.
 
       SUBROUTINE TSCON6(idy,ihr,NTSCTR,irew)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -800,7 +800,7 @@ C ************************* COEFF1 *************************
 C COEFF1 modifies the coefficients of arrays C and QC by the ratio of N1/M1
 
       SUBROUTINE COEFF1(N1,M1)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -851,8 +851,8 @@ C SAVEPV saves present time-row variables which are
 C expected to be modified at future time-row.
 
       subroutine savepv
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
       COMMON/C1/NCOMP,NCON
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -1006,8 +1006,8 @@ C ************************* RTRVPV *************************
 C RTRVPV retrieves all variables saved by subroutine SAVEPV.
 
       subroutine rtrvpv
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
       COMMON/C1/NCOMP,NCON
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -1168,8 +1168,8 @@ C generation plant component.  Further, it presumes that the
 C DG component is controlled with subroutine DG_controller.
 
       SUBROUTINE TSCON7(plant_elec_converged)
-#include "power.h"
-#include "CETC_definitions.h" 
+      INCLUDE 'power.h'
+      INCLUDE 'CETC_definitions.h' 
 C------------------------------------------------------------------------------
 C Common block variables.
 C------------------------------------------------------------------------------

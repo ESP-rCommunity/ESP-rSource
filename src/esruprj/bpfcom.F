@@ -23,10 +23,10 @@ C Common source in building/plant/ flow/ global control.
 C ******** ADDCNTL
 C Add or delete a building/plant/flow control.
       SUBROUTINE ADDCNTL(icfoc,ACT,IER)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -664,10 +664,10 @@ C Copy an existing control loop.
 C ******** ADDCTLD
 C Add or delete a building/plant/flow/global control day type.
       SUBROUTINE ADDCTLD(icfoc,II,IER)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
 
       common/pophelp/h(60)
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -967,10 +967,10 @@ C Add or delete a building/plant/flow/global control period.
 C II is the loop, ID is the day type, act is "D" delete, "A"
 C for add.
       SUBROUTINE ADDCTLDP(icfoc,II,ID,act,IER)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
 
       common/pophelp/h(60)
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -1099,11 +1099,11 @@ C ******** LSTCNTL
 C List a building/plant/flow/global control.  If II = 0 then
 C list out the zone/loop associations. 
       SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'power.h'
 
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
@@ -1193,11 +1193,11 @@ C List function details.
 C ****** stfctl
 C Copies from control commons to working array.
       subroutine stfctl(icfoc,i,j,k)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'power.h'
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -1273,11 +1273,11 @@ C Copies from control commons to working array.
 C ****** extrctl
 C Copies from working array to control commons.
       subroutine extrctl(icfoc,i,j,k)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'power.h'
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),

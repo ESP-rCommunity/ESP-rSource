@@ -60,7 +60,7 @@ C Return
 
 C ******************************************************************
       SUBROUTINE PCEXCH (N1,N2)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
 
 C  Parameters
 C Used by shell to exchange items
@@ -79,7 +79,7 @@ C ******************************************************************
 C Used by shell to compare keyed items
 C ie compare component descriptions
       LOGICAL FUNCTION COMPDS (N1,N2)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
 
       COMMON /PL/ INDXPR(MAXPC)
       common/OUTIN/IUOUT,IUIN
@@ -106,7 +106,7 @@ C ie compare component descriptions
 
 C ******************************************************************
       LOGICAL FUNCTION COMPNO (N1,N2)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
 
 C Used by shell to compare keyed items
 C ie compare component codes

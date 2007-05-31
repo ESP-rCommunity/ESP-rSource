@@ -20,8 +20,8 @@ C Boston, MA 02111-1307 USA.
 
       SUBROUTINE MFCNTR
 
-#include "building.h"
-#include "net_flow.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -132,9 +132,9 @@ C CFFVAR locates the sensor, checks if the sensor corresponds with
 C prevailing controller type, determines sensed condition (SVCTL).
 
       SUBROUTINE CFFVAR(SVCTL,icnn)
-#include "plant.h"
-#include "building.h"
-#include "net_flow.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
@@ -437,8 +437,8 @@ C << patched Dec 2005 for additional misc data item specifying
 C << what comprises ON 
       SUBROUTINE FCL00
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -502,8 +502,8 @@ C Establish sensed variable magnitude and actuated node location.
 C *******  FCL01 Proportional controller with hysteresis
       SUBROUTINE FCL01
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -546,8 +546,8 @@ C nominal rate or area associated with each range (0.0 is off,
 C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
       SUBROUTINE FCL02
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -607,8 +607,8 @@ C Establish sensed variable magnitude and actuated node location.
 
 C ***** POSITN
       FUNCTION POSITN(SIGNAL)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
 C     SIGL  - signal lower limit Sl (?)
 C     PSIGL - relative valve position H/H100 at Sl (%)
@@ -681,8 +681,8 @@ C logical AND/OR as specified in the sensor definition
  
       subroutine FCL03
  
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
  
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN

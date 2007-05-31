@@ -34,7 +34,7 @@ C            component in dbase. In this case n represents code number
 C            for this component.
 
       subroutine pcedit(ival)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

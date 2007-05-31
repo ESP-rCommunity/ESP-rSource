@@ -28,8 +28,8 @@ C     of control variables have been specified, whethe the number of W
 C     connections is correct and whether the connections are to the 
 C     correct fluid type.
       SUBROUTINE PEM_static_template(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -214,8 +214,8 @@ C======================================================================
       SUBROUTINE PEM_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
 C---- Header files req'd for ESP-r common blocks
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 C=======================================================================
 C     START ESP-r common blocks 
 C=======================================================================
@@ -1814,7 +1814,7 @@ C======================================================================
      &     Burner_exhaust
      &     )
       IMPLICIT NONE
-#include "plant.h"
+      INCLUDE 'plant.h'
 C--------------------------------------------------------------------------------
 C     Common block req'd for fuel cell description (contained in ADATA)
 C--------------------------------------------------------------------------------
@@ -2666,7 +2666,7 @@ C======================================================================
      &     IPCOMP,
      &     Burner_exhaust)
       IMPLICIT NONE
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C-------------------------------------------------------------------------------
 C     ESP-r common block required for fuel cell description (ADATA)

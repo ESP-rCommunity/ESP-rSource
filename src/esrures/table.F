@@ -27,9 +27,9 @@ C  CZRESL returns one day's temperatures of zone resultant temp.
 C ******************** MOTABL ********************
 C MOTABL produces tabular output for a 24 hour period.
       SUBROUTINE MOTABL
-#include "building.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -59,10 +59,7 @@ C Special materials file flag
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(15)
-      character outs*124
-      character*72 xfile,H
-      character tg*1,delim*1
-      character spflnam*72
+      character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
@@ -210,7 +207,7 @@ C act='p' iget parameters already set.
 C act='m' called from ipv metric with parameters already set.
 
       SUBROUTINE ZONTAB(act)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -239,7 +236,7 @@ C  = 1 is human readable text, 2 is tab separated, 3 is java
 
       character outs*124,act*1,sq*1,unit*7,t20*20
       character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8
-      character prompt*124,tg*1,delim*1,xfile*72
+      character prompt*124,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
@@ -546,7 +543,7 @@ C ******************** MGLTBL ********************
 C MGLTBL: monthly multi-column tabular listing for selected
 C gains and losses.
       SUBROUTINE MGLTBL
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
@@ -857,7 +854,7 @@ C GET2.
 C CALLS: GZTMS.
 
       SUBROUTINE CZMRT(IDAY,IZONE,ISET)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -894,7 +891,7 @@ C via XDUM1 in common GET2.
 C CALLS:  GZTMS.
 
       SUBROUTINE CZRESL(IDAY,IZONE,ISET)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

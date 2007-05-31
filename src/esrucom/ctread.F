@@ -43,8 +43,8 @@ C CNCNI: Initial contaminant concentration in each node (may be
 C different from ambient concentration)
 
       SUBROUTINE CTREAD(ier)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1

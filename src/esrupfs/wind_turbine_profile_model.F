@@ -62,7 +62,7 @@ C *********************************************************************
 
       SUBROUTINE POWOC_Wind_Prof_Supp_Elec(IPWC)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -196,7 +196,7 @@ C *********************************************************************
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_Wind_Read_Data(IPWC)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C External functions.     
       integer lnblnk
@@ -461,9 +461,9 @@ C
 C *********************************************************************      
        REAL FUNCTION GetWTPower(IPWC)
        IMPLICIT NONE
-#include "building.h"
-#include "plant.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'power.h'
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric

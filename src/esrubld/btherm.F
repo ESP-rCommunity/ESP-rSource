@@ -34,7 +34,7 @@ C MZVTHP controls the variable thermophysical properties
 C simulation.
 C *************************************************************
       SUBROUTINE MZVTHP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
@@ -82,7 +82,7 @@ C THZERO initializes all variables associated with the nonlinear
 C thermal properties.
 C *************************************************************
       SUBROUTINE THZERO
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
@@ -105,7 +105,7 @@ C *************************  MZITHP  **********************************
 C MZITHP initializes the variable thermophysical properties variables.
 C *********************************************************************
       SUBROUTINE MZITHP
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/c1/ncomp,ncon
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -176,7 +176,7 @@ C *************************  MZITCF  **********************************
 C MZITCF sets the thermal coupling terms.
 C *********************************************************************
       SUBROUTINE MZITCF(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -219,7 +219,7 @@ C MTHPES sets the present values of thermal properties equal to the
 C saved values from the last time step.
 C *********************************************************************
       SUBROUTINE MTHPES(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -256,7 +256,7 @@ C MTHFEI sets the future thermophysical properties values equal to the
 C initial values.
 C *********************************************************************
       SUBROUTINE MTHFEI(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -331,7 +331,7 @@ C          orders of dependency, by including it in a bigger IF
 C          statements structure. 
 C *************************************************************
       SUBROUTINE MZKOND(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -431,7 +431,7 @@ C RESMST estimates the thermal resistance for a sigment of a layer
 C including the effect of moisture content.
 C *********************************************************************
       SUBROUTINE RESMST(ICOMP,I,IL,X1,X2,TOTRES)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
@@ -479,7 +479,7 @@ C CONMST calculates the inter-moisture nodal thermal conductivity as
 C a function of moisture content.
 C **********************************************************************
       FUNCTION CONMST(ICOMP,I,INM,IL)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
@@ -507,7 +507,7 @@ C the new values of the layers thermal  properties by using the
 C equation defined by the user.
 C *********************************************************************
       SUBROUTINE MZNTHP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -587,7 +587,7 @@ C MZLAYR calculates thermal properties values for a layer based on the
 C activated thermal control function.
 C *********************************************************************
       SUBROUTINE MZLAYR(IEQ,ICOMP,IS,IL,INDS,INDE)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -649,7 +649,7 @@ C ***************************** MZTHSFP ********************************
 C MZTHSFP saves the future thermal property values.
 C *********************************************************************
       SUBROUTINE MZTHSFP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/VTHP22/THCONf(MS,MN),THDNSf(MS,MHCV),THCAPf(MS,MHCV)
@@ -683,7 +683,7 @@ C MZCOE4 modifies the coefficients computed by MZCOE1 (or MZCOE2 if the
 C time step was less than one hour)
 C *********************************************************************
       SUBROUTINE MZCOE4(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)

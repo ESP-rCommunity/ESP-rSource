@@ -37,7 +37,7 @@ C  'Create' - depending on scene purpose create Radiance model
 C  else simulate the scene by calling simscene
 
       SUBROUTINE autorad
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -200,7 +200,7 @@ C ********************** simscene **********************
 C simscene simulates daylight coefficients and coupling (called from bps)
 
       SUBROUTINE simscene
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -538,7 +538,7 @@ C ********************** defview **********************
 C defview generates a new default view.
 
       SUBROUTINE defview
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
 
@@ -628,7 +628,7 @@ C ********************** genimage **********************
 C genimage generates an image to screen or file.
 C ITP =1 - image only; =2 - glare info to display on image.
       SUBROUTINE genimage(ITP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1072,7 +1072,7 @@ C ********************** getglr **********************
 C getglr recovers view information and runs glare calculation.
 
       SUBROUTINE getglr
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/expath/runpath
@@ -1238,7 +1238,7 @@ C ********************** getdf **********************
 C getdf runs daylight factor calculation.
 
       SUBROUTINE getdf
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

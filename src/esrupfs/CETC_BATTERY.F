@@ -43,9 +43,9 @@ C
 C *********************************************************************
       SUBROUTINE POWOC_CETC_BATTERY(IPWC)
       IMPLICIT NONE
-#include "BATTERY.h"
-#include "power.h"
-#include "building.h"
+      INCLUDE 'BATTERY.h'
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C External functions.     
       integer lnblnk
@@ -336,7 +336,7 @@ C
 C *********************************************************************
       SUBROUTINE InitSimulation(IPWC, batTempInit, batDODInit)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -422,7 +422,7 @@ C
 C *********************************************************************
       REAL FUNCTION FreeVoltage(IPWC,batDOD)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -518,7 +518,7 @@ C
 C *********************************************************************
       REAL FUNCTION BatteryCap(IPWC,batTemp)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -597,7 +597,7 @@ C
 C *********************************************************************
       REAL FUNCTION BatteryRInt(IPWC,batTemp,batDOD,batI,batMode)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -707,7 +707,7 @@ C -IPWC: power-only component index number
 ! *********************************************************************
       REAL FUNCTION MaxCurrent(IPWC,batTemp,DODInit,batMode,dtTStep)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -868,7 +868,7 @@ C *********************************************************************
       REAL FUNCTION PowForCur(IPWC,batTemp,DODInit,batMode,dtTStep,
      &                        batCur)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -1109,7 +1109,7 @@ C *********************************************************************
       REAL FUNCTION BatFinalTemp(IPWC,batTempInit,dtTStep,pIntHeat,
      &                           pHeaters,zoneTemp)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -1339,7 +1339,7 @@ C
 C *********************************************************************
       REAL FUNCTION GetNeededHeat(IPWC,batTIni,dtTStep,batTFin,zoneT)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -1548,7 +1548,7 @@ c *********************************************************************
      &                    maxC,maxP,pLoad,pBat,pHeaters,
      &                    batVolt,batTFin,batDODFin)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -1708,7 +1708,7 @@ C *********************************************************************
      &                       maxC,maxP,pLoad,pBat,pHeaters,
      &                       batVolt,batTFin,batDODFin)
       IMPLICIT NONE
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Common holding the power-only component description read from the electric
 C network input file.

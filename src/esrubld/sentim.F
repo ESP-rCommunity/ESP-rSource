@@ -28,8 +28,8 @@ C ******************** UATFLG ********************
 C UATFLG edits control data based on time.
 
       SUBROUTINE UATFLG(IDAY,IHOUR,ILOC,IVALID)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/UA2T/NTLOC(MNIL),NTG(MNIL,4)
 
@@ -64,8 +64,8 @@ C ******************** UAT01 ********************
 C UAT01 flags which control data should be changed during the simulation.
 
       SUBROUTINE UAT01(IACT,DIR)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)
@@ -118,8 +118,8 @@ C ******************** UAT01a ********************
 C UAT01a alters control data during simulation.
 
       SUBROUTINE UAT01a(IDAY,IHOUR)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -313,8 +313,8 @@ C ******************** UAT03 ********************
 C UAT03 flags which climate data should be adjusted when reading from db.
 
       SUBROUTINE UAT03(IACT,DIR)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
@@ -360,8 +360,8 @@ C ******************** UAT03a ********************
 C UAT03a alters climate data during simulation.
 
       SUBROUTINE UAT03a(IDAY)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       common/clim/idif(mt),itmp(mt),idnr(mt),ivel(mt),idir(mt),
      &            ihum(mt),idiff,itmpf,idnrf,ivelf,idirf,ihumf

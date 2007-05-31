@@ -30,8 +30,8 @@ C ********************* CGD *********************
 C CGD - domain grid visualization.
 C IC = zone number (if in dfs set to 1)
       subroutine cgd(IC,IER)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -319,7 +319,7 @@ C title     - title of plot
 C xax       - text for horiz axis.
       SUBROUTINE VGRID1D(xoff,yoff,TOTDIS,CTDIS,NRG,IAX,ICFD,NCEL,REG,
      &                   plaw,TITLE,xax)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -393,7 +393,7 @@ C nx,ny     - number of grid cell points
 C title     - title of plot
 C xax,yax   - text for horiz and vert axis.
       SUBROUTINE VGRID2D(xoff,yoff,xgrd,ygrd,nx,ny,title,xax,yax)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -448,8 +448,8 @@ C   gact = xzg then draw only north and south face grid
 C   gact = xyz then draw all face grids
 C izone is the index of the zone to be drawin (if zero do not bother`).
       SUBROUTINE VGRID3D(zact,gact,izone)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
       PARAMETER  (MPL = 200 )
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -691,7 +691,7 @@ C Complete the polygon.
 C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -944,7 +944,7 @@ C Label in center of boundary.
 C ********************* VAO3D *********************
 C VAO3D - draws the air openings - highlighting the chosen one.
       SUBROUTINE VAO3D(IOPENHL)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 

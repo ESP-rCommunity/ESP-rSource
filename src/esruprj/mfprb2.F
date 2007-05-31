@@ -49,7 +49,7 @@ C Fluid flow component supplementary data input for
 C power law volume flow resistance component (m = rho . a . dP^b [m^3/s])
       SUBROUTINE MF010I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -109,7 +109,7 @@ C Self regulating vent for 15 or 30 m3/h at 20 Pa)
       SUBROUTINE MF011I(ICMP,IER)
       character outs*124
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -166,7 +166,7 @@ C Fluid flow component supplementary data input for
 C power law mass flow resistance component (m = a . dP^b [kg/s])
       SUBROUTINE MF015I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -224,7 +224,7 @@ C Fluid flow component supplementary data input for
 C power law mass flow resistance component (m = a.rho^1/2.dP^b [kg/s])
       SUBROUTINE MF017I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -284,7 +284,7 @@ C Fluid flow component supplementary data input or check for
 C quadratic law volume flow resistance component (dP = a.m/ro+b.(m/ro)^2)
       SUBROUTINE MF020I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -347,7 +347,7 @@ C Fluid flow component supplementary data input or check for
 C quadratic law mass flow resistance component (dP = a.m + b.m^2)
       SUBROUTINE MF025I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -406,7 +406,7 @@ C Fluid flow component supplementary data input or check for
 C constant volume flow rate component (m = rho . a)
       SUBROUTINE MF030I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -540,7 +540,7 @@ C **************** MF035I
 C Fluid flow component supplementary data input or check for
 C constant mass flow rate component (m = a)
       SUBROUTINE MF035I(ICMP,IER)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -597,7 +597,7 @@ C Fluid flow component supplementary data input or check for
 C common orifice flow component (m = rho Cd A (2/rho dP)**.5)
       SUBROUTINE MF040I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -658,7 +658,7 @@ C Fluid flow component supplementary data input or check for
 C laminar pipe volume flow rate component (m = rho (dP/(8 mu L)) pi R**4)
       SUBROUTINE MF050I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -718,7 +718,7 @@ C Fluid flow component supplementary data input or check for
 C Specific air flow opening.
       SUBROUTINE MF110I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -764,7 +764,7 @@ C Fluid flow component supplementary data input or check for
 C specific air flow crack component.
       SUBROUTINE MF120I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -810,7 +810,7 @@ C Fluid flow component supplementary data input or check for
 C specific air flow door.
       SUBROUTINE MF130I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -878,7 +878,7 @@ C     SUPCMP(ICMP,6) - sum of local dynamic loss factors (-)
 
       SUBROUTINE MF210I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -999,7 +999,7 @@ C     WINDEFF = SUPCMP(ICMP,6) - FLAG =1 CONSIDER WIND EFFECT, =0 DONT
 
       SUBROUTINE MF211I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1102,7 +1102,7 @@ C     SUPCMP(ICMP,13) - Ccp coefficient a5 (-)
 
       SUBROUTINE MF220I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1200,7 +1200,7 @@ C     SUPCMP(ICMP,13) - Ccp coefficient a5 (-)
 
       SUBROUTINE MF230I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1301,7 +1301,7 @@ C     SUPCMP(ICMP,17) - Ccp coefficient a9 (-)
 
       SUBROUTINE MF240I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1407,7 +1407,7 @@ C     SUPCMP(ICMP,17) - Ccp coefficient a9 (-)
 
       SUBROUTINE MF250I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1507,7 +1507,7 @@ C << data instanciation needs to change.
 
       SUBROUTINE MF310I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1692,7 +1692,7 @@ C Fluid flow component supplementary data input or check for
 C general flow corrector (ie. valve or damper)
       SUBROUTINE MF410I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -1792,7 +1792,7 @@ C flow corrector (ie. valve or damper) with polynomial flow resistance.
 C See synopsis for SUPCMP data.
       SUBROUTINE MF420I(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -1869,7 +1869,7 @@ C ******************* MF460I
 C Fluid flow component supplementary data input or check for
 C fixed flow rates controller. See synopsis for SUPCMP data.
       SUBROUTINE MF460I(ICMP,IER)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       common/pophelp/h(60)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),

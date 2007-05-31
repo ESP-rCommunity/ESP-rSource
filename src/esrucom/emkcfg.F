@@ -28,13 +28,13 @@ C EMKCFG writes out the current contents of system configuration
 C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
 
-#include "building.h"
-#include "tdf2.h"
-#include "uncertainty.h"
-#include "net_flow.h"
-#include "MultiYear_simulations.h"
-#include "bc_data.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'MultiYear_simulations.h'
+      INCLUDE 'bc_data.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -1057,7 +1057,7 @@ C information in common blocks  which are filled by reading the
 C system configuration file. If ICF=1 then display with zone and surface names 
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -1083,22 +1083,22 @@ C Trap out of range IC1 and IE1 variables.
       ZST1=ZNAME(IC1(ICON))
       IF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8985)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 8985   FORMAT(I3,2X,a,' in ',a,' is External')
+ 8985   FORMAT(I4,1X,a,' in ',a,' is External')
       ELSEIF(ICT(ICON).EQ.1.AND.ICF.GT.0)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,8984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
- 8984     FORMAT(I3,2X,a,' in ',a,' >|< Identical environment ')
+ 8984     FORMAT(I4,1X,a,' in ',a,' >|< Identical environment ')
         else
           WRITE(CXSTR,8987)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 8987     FORMAT(I3,2X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
+ 8987     FORMAT(I4,1X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ELSEIF(ICT(ICON).EQ.2.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8983)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1)),
      &                   IC2(ICON),IE2(ICON)
- 8983   FORMAT(I3,2X,a,' in ',a,' >|< Constant @',I3,' dC &',
+ 8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &         I4,' W rad')
       ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
         SST2=SNAME(IC2(ICON),IE2(ICON))
@@ -1106,26 +1106,26 @@ C Trap out of range IC1 and IE1 variables.
         WRITE(CXSTR,8982)ICON,SST1(1:LNBLNK(SST1)),
      &    ZST1(1:LNBLNK(ZST1)),SST2(1:LNBLNK(SST2)),
      &    ZST2(1:LNBLNK(ZST2))
- 8982   FORMAT(I3,2X,a,' in ',a,' >|< ',a,' in ',a)
+ 8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)
       ELSEIF(ICT(ICON).EQ.4.AND.ICF.GT.0)THEN
         IF(IC2(ICON).GT.0)THEN
           WRITE(CXSTR,8981)ICON,SST1(1:LNBLNK(SST1)),
      &                     ZST1(1:LNBLNK(ZST1)),IC2(ICON)
- 8981     FORMAT(I3,2X,a,' in ',a,' >|< ground profile',I2)
+ 8981     FORMAT(I4,1X,a,' in ',a,' >|< ground profile',I2)
         ELSE
           WRITE(CXSTR,8980)ICON,SST1(1:LNBLNK(SST1)),
      &                     ZST1(1:LNBLNK(ZST1)),IE2(ICON)
- 8980     FORMAT(I3,2X,a,' in ',a,
+ 8980     FORMAT(I4,1X,a,' in ',a,
      &         ' >|< user def ground profile',I2)
         ENDIF
       ELSEIF(ICT(ICON).EQ.5.AND.ICF.GT.0)THEN
         WRITE(CXSTR,7984)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 7984   FORMAT(I3,2X,a,' in ',a,' is adiabatic')
+ 7984   FORMAT(I4,1X,a,' in ',a,' is adiabatic')
 
 C BASESIMP start.
       ELSEIF(ICT(ICON).EQ.6.AND.ICF.GT.0)THEN
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
+ 7986   FORMAT(I4,1X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
@@ -1133,11 +1133,11 @@ C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
- 9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical CEN 13791   ')
+ 9984     FORMAT(I4,1X,a,' in ',a,' >|< Identical CEN 13791   ')
         else
           WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
+ 9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ENDIF
@@ -1147,7 +1147,7 @@ C CEN 13791 boundary condition.
 
 C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

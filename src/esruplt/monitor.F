@@ -43,7 +43,7 @@ c ymin   : Expected minimum value of variable along the y axis.
 c ymax   : Expected maximum value of variable along the y axis.
 
       subroutine minput
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -142,7 +142,7 @@ c values are assigned to 'csv1m', 'csv2m' and 'csv3m' is called
 c after the start-up period.
 
       subroutine mgraph(iss,isf,instpp,mode)
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB, LNMVRL, LNDRRL

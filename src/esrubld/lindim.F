@@ -15,8 +15,8 @@ C This subroutine calculates the contribution of inter-construction
 C heat transfers to W(I,J,5).
       SUBROUTINE W2D(ICOMP)
 
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
 
 C  Each link is characterised by the number of the LINE construction
 C  (NCONL), which is even when communicating to the first surface
@@ -111,11 +111,11 @@ c      endif
       end
 
       SUBROUTINE W2DMOD(NTSTEP)
-#include "building.h"
+      INCLUDE 'building.h'
 c  modify inter-node heat transfer coefficients
 c  as well as line C coefficients for time step
 c  less than an hour.
-#include "tbridge.h"
+      INCLUDE 'tbridge.h'
       COMMON/U2D/UC2D(MLINKS),ICOML(MCOM),NCONL(MLINKS),
      &NNOD1(MLINKS),NNOD2(MLINKS)
       COMMON/L2/JVSS1(MCOM,MTL),JVSS2(MCOM,MTL),NLIN(MCOM)
@@ -155,8 +155,8 @@ c    construction (NNOD2L)
 c  modify inter-node heat transfer coefficients
 c  as well as line C coefficients for time step
 c  less than an hour.
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/U2D/UC2D(MLINKS),ICOML(MCOM),NCONL(MLINKS),
      &           NNOD1(MLINKS),NNOD2(MLINKS)
       COMMON/L2/JVSS1(MCOM,MTL),JVSS2(MCOM,MTL),NLIN(MCOM)
@@ -191,7 +191,7 @@ c     lateral heat transfer characteristic length scale for each
 c     surface of the zone, as well as the total thickness of the
 c     construction.
 c     The internal and the external thermal resistances are not included
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -233,8 +233,8 @@ c   Convert air gaps into layers
 c   This subroutine classifies the vertices according to the
 c   lines. each line is defined by two vertices (JVL1 and JVL2)
 c   as well as two surfaces (JVS1 and JVS2).
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/L1/JVL1(MTL),JVL2(MTL),JVS1(MTL),JVS2(MTL),NLINS
@@ -387,8 +387,8 @@ c   store the line information for the zone
       END
 
       SUBROUTINE LAYCL(ICOMP)
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/U2D/UC2D(MLINKS),ICOML(MCOM),NCONL(MLINKS),
      &NNOD1(MLINKS),NNOD2(MLINKS)
       COMMON/U2DL/UC2DL(MLINKS),ICOMLL(MCOM),NCONLL(MLINKS),
@@ -925,8 +925,8 @@ c      and heat generation at the above nodes.
 c      Additionally, the intraconstruction heat transfer conductances
 c      are calculated
       SUBROUTINE MZCOE1L(ICOMP,LIN)
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -1254,8 +1254,8 @@ c  strategy - it just compute new node surfaces for the
 c  line constructions from the old values of temperature.
 
       SUBROUTINE MZSETUL(ICOMP)
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/U2DL/UC2DL(MLINKS),ICOMLL(MCOM),NCONLL(MLINKS),
      &            NNOD1L(MLINKS),NNOD2L(MLINKS)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1420,8 +1420,8 @@ c  there is no provision for plant interaction and internal
 c This subroutine inverts the matrices the tri-diagonal established by
 c MZSETUL, to find the temperatures of the nodes
 c inside the line constructions
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
 
 c Common FVALCL contains the temperature array for the line construction
       COMMON/FVALCL/TFCL(MCOM,MTL,MNN)
@@ -1459,8 +1459,8 @@ c next construction
 
       SUBROUTINE BRTR(ICOMP)
 C  This subroutine writes the values of the internal surface temperature
-#include "building.h"
-#include "tbridge.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tbridge.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IYEAR,IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)

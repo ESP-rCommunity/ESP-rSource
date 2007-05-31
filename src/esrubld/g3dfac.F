@@ -35,7 +35,7 @@ C ***************************    INIT3D    ****************************
 C INIT3D creates the files required in 3D simulation.
 C *********************************************************************
       SUBROUTINE INIT3D
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -384,7 +384,7 @@ C **************************    FLORDR    *****************************
 C FLORDR re-orders the 3D files for a zone.
 C *********************************************************************
       SUBROUTINE FLORDR(IZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -591,7 +591,7 @@ C ************************    CFFVLU    *******************************
 C CFFVLU gets the value of a coefficient from its row and column numbers.
 C *********************************************************************
       SUBROUTINE CFFVLU(IROW,ICLMN,CVALU,IPRV,ICFF)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
 
@@ -620,7 +620,7 @@ C **************************    UPDZMX    *****************************
 C UPDZMX updates the zone matrix (i.e. dynamic sparse storage).
 C *********************************************************************
       SUBROUTINE UPDZMX(IROW,ICLMN,CVALU,IPREV,ICOFF)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
@@ -672,7 +672,7 @@ C ***************************    CHKGRD    ****************************
 C CHKGRD checks if the 3D zone models are assign the default 1D gridding.
 C *********************************************************************
       SUBROUTINE CHKGRD(GRDOK)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/C1/NCOMP,NCON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -705,7 +705,7 @@ C **************************    MZ3CFG    *****************************
 C MZ3CFG is similar to MZCFGG but for 3D zone models.
 C *********************************************************************
       SUBROUTINE MZ3CFG(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -809,7 +809,7 @@ C *************************    GETF12    ******************************
 C GETF12 returns the view factor for 3D surface node from 1D view factor.
 C *********************************************************************
       FUNCTION GETF12(ICOMP,IS1,IS2,AREA2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/V2/CFB(MCOM,MST,MST)

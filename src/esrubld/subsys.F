@@ -50,7 +50,7 @@ C                in MZCFGB)
 C    SBC       = Stefan-Boltzmann constant.
 
       SUBROUTINE MZCFGG(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -119,9 +119,6 @@ C From I to K (/m2 of K).
       T2=TFS(ICOMP,K)+273.16
       DT=ABS(T1-T2)
 
-C Following logical check should be modified to avoid run-time error
-C on Windows EXE compiled with Absoft f90.
-C      IF(DT.LT..001)goto 3
       IF(DT.LT..00001)goto 3
       E1=EI(ICOMP,I)
       E2=EI(ICOMP,K)
@@ -249,7 +246,7 @@ C  longwave radiation coefficient is then evaluated, based on the
 C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -375,6 +372,8 @@ C Set initial cloud cover = 0.4
       CLOUD2=0.4
       CLOUD3=0.4
 
+C << place to use connection based viewfactors >>
+C << props/propg/propb would be replaced by vfgr vfsk vfbl vfob >>
       IF(IXPOS.NE.8)goto 101
       PROPS(8)=SKYR
       PROPG(8)=GRDR
@@ -391,47 +390,53 @@ C surrounding building(s) and ground associated with the
 C surface's hemispherical envelope.
       NC=NCONST(ICOMP)
       DO 20 I=1,NC
-      ADDCH1=0.0
-      IF(IE(ICOMP,I).EQ.0)goto 2
-      A1(ICOMP,I)=0.0
-      B1(ICOMP,I)=0.0
-      C1(ICOMP,I)=0.0
-      goto 20
-    2 TILT=90.0-PELV(ICOMP,I)
-      IF(TILT.GT.180.0)TILT=180.0
-      IF(TILT.LT.0.0)TILT=0.0
+        ADDCH1=0.0
+        IF(IE(ICOMP,I).EQ.0)goto 2
+        A1(ICOMP,I)=0.0
+        B1(ICOMP,I)=0.0
+        C1(ICOMP,I)=0.0
+        goto 20
+    2   TILT=90.0-PELV(ICOMP,I)
+        IF(TILT.GT.180.0)TILT=180.0
+        IF(TILT.LT.0.0)TILT=0.0
 
 C Because the values of Av, Bv and Cv are for vertical
 C surfaces only, then the values of A, B and C must
 C be found, where A, B and C are the actual proportions
 C for a surface at any angle of inclination.
-      IF(TILT.LT.89.8.OR.TILT.GT.90.2)goto 3
+        IF(TILT.LT.89.8.OR.TILT.GT.90.2)goto 3
 
 C The following expressions are used for a vertical surface.
-      A1(ICOMP,I)=AV
-      B1(ICOMP,I)=BV
-      C1(ICOMP,I)=CV
-      ADDCH1=AV+BV+CV
-      IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
-      goto 20
+
+C << use vfgr for c1, vfsk for b1, vfbl for a1 >>
+C << if obstructions were assumed to be at ambient air T >>
+C << where would that fit into the equations? >>
+        A1(ICOMP,I)=AV
+        B1(ICOMP,I)=BV
+        C1(ICOMP,I)=CV
+        ADDCH1=AV+BV+CV
+        IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
+        goto 20
 
 C Non-vertical surface considered.
-    3 CT=ECOSD(TILT)
-      A1(ICOMP,I)=(1.0-ABS(CT))*AV
-      DELTAA=AV-A1(ICOMP,I)
+C << vfbl for av in following calculation >>
+    3   CT=ECOSD(TILT)
+        A1(ICOMP,I)=(1.0-ABS(CT))*AV
+        DELTAA=AV-A1(ICOMP,I)
 
 C Different equations are used to solve B and C depending
 C on the angle of inclination.
-      IF(TILT.GT.90.0)goto 4
-      C1(ICOMP,I)=CV*(1.0-ECOSD(TILT))
-      B1(ICOMP,I)=BV+(CV-C1(ICOMP,I))+DELTAA
-      ADDCH1=A1(ICOMP,I)+B1(ICOMP,I)+C1(ICOMP,I)
-      IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
-      goto 20
-    4 B1(ICOMP,I)=BV*(1.0+ECOSD(TILT))
-      C1(ICOMP,I)=CV+(BV-B1(ICOMP,I))+DELTAA
-      ADDCH1=A1(ICOMP,I)+B1(ICOMP,I)+C1(ICOMP,I)
-      IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
+C << vfgr for CV and vfsk for BV
+        IF(TILT.GT.90.0)goto 4
+        C1(ICOMP,I)=CV*(1.0-ECOSD(TILT))
+        B1(ICOMP,I)=BV+(CV-C1(ICOMP,I))+DELTAA
+        ADDCH1=A1(ICOMP,I)+B1(ICOMP,I)+C1(ICOMP,I)
+        IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
+        goto 20
+    4   B1(ICOMP,I)=BV*(1.0+ECOSD(TILT))
+        C1(ICOMP,I)=CV+(BV-B1(ICOMP,I))+DELTAA
+        ADDCH1=A1(ICOMP,I)+B1(ICOMP,I)+C1(ICOMP,I)
+        IF(ADDCH1.LT.0.98.OR.ADDCH1.GT.1.02)goto 1001
    20 CONTINUE
       IF(ICOMP.GT.1)goto 1
 
@@ -594,7 +599,7 @@ C      QT=QFF+QDF*ESIND(SALT)
 C      IF(IRTYPE.EQ.1)QT=QDF
 C End For NT
 
-C Ground solar gain.
+C Ground solar gain. 
       QGGF=0.0
       IF(ISUNUP.EQ.0)goto 305
       QGGF=QT*(1.0-GREF)
@@ -877,6 +882,8 @@ C Trace output.
 C Trace output includes sky temperature as determined
 C from several different methods.
 
+C << how about allowing user to select the sky method to use? >>
+
       EAIR=0.527+0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK)))))
       ECLOUD=0.16*EAIR+0.84
       ETOTAL=(1.0-(0.84*CLOUDC))*EAIR+(0.84*CLOUDC)
@@ -1014,11 +1021,11 @@ C CVVPM & CVVFM - as CVVP & CVVF but normalised to the
 C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
-#include "hvac_parameters.h"
-#include "hvac_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -1555,7 +1562,7 @@ C                   external temperature (for use in MZLS3).
 
       SUBROUTINE MZWCON(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -1618,10 +1625,10 @@ C This routine calculates zone relative humidity by performing
 C a moisture balance at the air point.
 
       SUBROUTINE MZVAPC(ICOMP,ZRH,CNDS)
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
-#include "hvac_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

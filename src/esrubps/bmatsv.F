@@ -28,23 +28,23 @@ C The main controller for the numerical simulation.
       subroutine mznuma
 
 C Include files req'd for deleting temporary files after the simulation is complete.
-#include "H2_wind.h"
+      INCLUDE 'H2_wind.h'
 C HOT3000: Fuel cell.
-#include "SOFC.h"
-#include "building.h"
-#include "esprdbfile.h"
-#include "plant.h"
-#include "tdf2.h"
-#include "monitor.h"
-#include "cfd.h"
-#include "uncertainty.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "CETC_definitions.h"
-#include "MultiYear_simulations.h"
-#include "bc_data.h"
+      INCLUDE 'SOFC.h'
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'monitor.h'
+      INCLUDE 'cfd.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'CETC_definitions.h'
+      INCLUDE 'MultiYear_simulations.h'
+      INCLUDE 'bc_data.h'
 C CWEC Degree Day and ground temperature parameters
-#include "ground_temp_mains_common.h"
+      INCLUDE 'ground_temp_mains_common.h'
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -259,6 +259,8 @@ C Indicies of start, end, current & future indicies
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+      character LBSIMP*72
+
 C Flag for whether there is basesimp file
       logical bsm_flag
 

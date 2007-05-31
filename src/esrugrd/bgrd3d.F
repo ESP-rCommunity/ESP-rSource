@@ -37,7 +37,7 @@ C ***************************  MENU3D  ********************************
 C MENU3D displays the multi-gridding menu.
 C *********************************************************************
       SUBROUTINE MENU3D(ITRC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -460,8 +460,8 @@ C ****************************   DFNCSS    ****************************
 C DFNCSS displays the surface-surface connections indices menu.
 C *********************************************************************
       SUBROUTINE DFNCSS
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -559,8 +559,8 @@ C ****************************   DFNCSE    ****************************
 C DFNCSE displays the surface-edge connections indices menu.
 C *********************************************************************
       SUBROUTINE DFNCSE(IZ)
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -683,8 +683,8 @@ C ****************************   DFNCEE    ****************************
 C DFNCEE displays the edge-edge connections indices menu.
 C *********************************************************************
       SUBROUTINE DFNCEE(IZ)
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -803,8 +803,8 @@ C ****************************   DFNCEC    ****************************
 C DFNCEC displays the edge-corner connections indices menu.
 C *********************************************************************
       SUBROUTINE DFNCEC(IZ)
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -956,7 +956,7 @@ C ***************************      SELZON     *************************
 C SELZON displays the zone selection menu.
 C *********************************************************************
       SUBROUTINE SELZON(ITRC,SZN,ZONOK,IZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1069,7 +1069,7 @@ C ***************************     READ3D     **************************
 C READ3D reads 3D gridding cofiguration file.
 C *********************************************************************
       SUBROUTINE READ3D(IZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1407,7 +1407,7 @@ C ****************************    SAVE3D   ****************************
 C SAVE3D saves 3D gridding configuration file.
 C *********************************************************************
       SUBROUTINE SAVE3D(IZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)

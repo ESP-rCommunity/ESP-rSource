@@ -27,7 +27,7 @@ C  INPOLY - Polygon point containment test.
 
 C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -383,8 +383,8 @@ C ****** EDGVERT
 C Edit vertex attributes in common block G1 via a paging menu.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EDGVERT(ITRC,MODGEO,IER)
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -1354,7 +1354,7 @@ C EPKGVERT Select one or more vertices from information currently in
 C common block G1.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKGVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -1552,7 +1552,7 @@ C Passed character ACTION to signal deletion or addition. NUM will
 C be either the vertex to delete or the number of vertices to
 C added at the end of the list.
       SUBROUTINE ADDGVERT(NUM,ACTION,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -1860,8 +1860,8 @@ C index IS. It assumes that a ground topology file has been read in.
 C If MOD = '-' name list only, MOD = 'M' attribute Many, MOD = 'A'
 C show attributes in list.
       SUBROUTINE EASKGSUR(IS,MOD,PROMPT1,PROMPT2,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2005,7 +2005,7 @@ C Passed character ACTION to signal deletion 'D', addition 'A', copy 'C'.
 C It is easy to add a surface at the end of the list. 
 C Method checks for minimally linked vertices.
       SUBROUTINE ADDGSUR(ITRC,IWHICH,ACTION,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2421,8 +2421,8 @@ C Edit ground surface-vertex list attributes in common block grndpl
 C via a paging menu. ITRU = unit number for user output, IER=0 OK,
 C IER=1 problem.
       SUBROUTINE EDGVLIST(ITRC,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       PARAMETER  (MPL = 200 )
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -3125,7 +3125,7 @@ C the two vertices (i.e. it discards matches beyond the end points.
 C It assumes that calling code will decide whether the distance
 C can be used. 
       subroutine pointtogline(ipoint,iwhich1,iwhich2,offset,match)
-#include "building.h"
+      INCLUDE 'building.h'
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       dimension vd(3),vd1(3),vd2(3)
@@ -3179,7 +3179,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
 
 C ****** Routine to update-draw ground during triangulation.
       SUBROUTINE UGRNDR(IVV,NGTG,MSG,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -3263,7 +3263,7 @@ C  newvert: chosen vertex as vert 3 for new triangle
 C input: vertex list and number of vertices
 C output: triangle list
       SUBROUTINE TRIANG(ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3546,7 +3546,7 @@ C Form new triangles by joining CENTER to all vertices listed
 C in IVSEL().
 
       SUBROUTINE MKTRI(CENTER,NVERT,VLIST,CCR,CENT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -3655,7 +3655,7 @@ C CHKTRI checks that the new triangle NTRI does not break the Delauny
 C stipulation of an empty circumcenter.
 
       SUBROUTINE CHKTRI(NTCHK,ITCHK,POINT,CCR,CENT,NTSEL,ITSEL,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -3830,7 +3830,7 @@ C The list of triangles must be sorted first into a list of decreasing
 C values.
 
       SUBROUTINE RMTRI(NDEL,TDEL,CCR,CENT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -4082,7 +4082,7 @@ C NB       = no. base surf vertices,
 C XB,YB,ZB = base surf vertex arrays,
 C XT,YT,ZT =  transformed surf vertex arrays,
       SUBROUTINE TRANGSUR(ITRC,ITRU,NB,XB,YB,ZB,OFFSET,XT,YT,ZT,gsname)
-#include "building.h"
+      INCLUDE 'building.h'
       DIMENSION  XB(8),YB(8),ZB(8),XT(8),YT(8),ZT(8)
       DIMENSION  VP(3),EQN(4),TRNS(3)
       CHARACTER gsname*6,outs*144,out96*96

@@ -37,8 +37,8 @@ C Control editing/creation of zone construction file and allow updated
 C information to be saved into a new file. ITRU unit number for user 
 C output, IER=0 OK. 
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -640,8 +640,8 @@ C Edit zone surface construction attributes in common block G5 and
 C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
@@ -974,8 +974,8 @@ C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1137,7 +1137,7 @@ C exist in this zone.  Then for each of these we need to write out their
 C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
       SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1305,7 +1305,7 @@ C to a named optical property in the optical properties database (if
 C UNKNOWN then the user must supply this information manually). It scans
 C through each of the existing surfaces and finds unique optical types.
       SUBROUTINE EDTWIN(ITRC,ITRU,ICOMP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1811,7 +1811,7 @@ C Edits optical properties associated with a transparent surface.
 C Takes in and returns data via common block GOPT. If WHICH='T' for
 C transparent construction data editing.
       SUBROUTINE EOPTKS(ITRC,ITRU,WHICH,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1914,8 +1914,8 @@ C For each of the layers provide the absorptions.
 C ******* SCNTCNST
 C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

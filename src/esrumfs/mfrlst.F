@@ -30,8 +30,8 @@ C ********************** ASKRNOD
 C ASKRNOD presents a list of mass flow nodes returning the index IS.
       SUBROUTINE ASKRNOD(head,MOD,IS,IER)
 
-#include "net_flow.h"
-#include "epara.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'epara.h'
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -175,8 +175,8 @@ C ********************** ASKRCMP
 C ASKRCMP presents a list of mass flow components returning the index IS.
       SUBROUTINE ASKRCMP(head,MOD,IS,IER)
 
-#include "net_flow.h"
-#include "epara.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'epara.h'
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -301,8 +301,8 @@ C ASKRCON presents a list of mass flow connections returning the
 C Starting and ending node numbers.
       SUBROUTINE ASKRCON(head,MOD,INODPS,INODNE,IC,IER)
 
-#include "net_flow.h"
-#include "epara.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'epara.h'
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/MFLOW1/NNOD,NCMP,NCNN

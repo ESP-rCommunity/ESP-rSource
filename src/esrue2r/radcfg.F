@@ -25,7 +25,7 @@ C rif file to be used and its intended purpose.
 C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -154,7 +154,7 @@ C this scene represent alternate blind states.
 C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/FILEP/IFIL
       common/expath/runpath
@@ -245,8 +245,8 @@ C ********************* whichrif *********************
 C whichrif presents a list of existing rif files.
 C If MODE is 's' then create a static list, 'm' then allow modification.
       SUBROUTINE whichrif(MODE)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -486,7 +486,7 @@ C sets values if MODE='s' (silent) from command line or
 C if MODE='a' (aim) will ask for aim and name files automatically or
 C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
 
@@ -840,7 +840,7 @@ C ********************** setdfgrid **********************
 C setdfgrid allows the creation of the daylight factor grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1136,7 +1136,7 @@ C SENLOC creates a file containing the sensor locations and orientations
 C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1222,7 +1222,7 @@ C checkrif checks for existing scenes or creates a new scene with the given
 C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
 
@@ -1329,7 +1329,7 @@ C RDCFTMP Read in daylight coefficients to common and rewrites to casual
 C gain control file.
 
       SUBROUTINE RDCFTMP(LFTMP,ISET)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

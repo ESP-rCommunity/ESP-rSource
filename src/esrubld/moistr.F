@@ -53,7 +53,7 @@ C *********************************************************************
 C MZMSTR is the main controller for combined heat and moisture transfer.
 C *********************************************************************
       SUBROUTINE MZMSTR(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -181,7 +181,7 @@ C *********************************************************************
 C INITMZ initiates the zone moisture variables.
 C *********************************************************************
       SUBROUTINE INITMZ(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -263,7 +263,7 @@ C **********************************************************************
 C MZMVPP set the present vapor pressure distribution.
 C **********************************************************************
       SUBROUTINE MZMVPP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -292,7 +292,7 @@ C MZMTMP sets the moisture nodes present temperatures by linear
 C interpolation.
 C **********************************************************************
       SUBROUTINE MZMTMP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -409,7 +409,7 @@ C MZMTMF sets the moisture nodes future temperatures by linear
 C interpolation.
 C **********************************************************************
       SUBROUTINE MZMTMF(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -493,7 +493,7 @@ C MZMTMF2 sets the moisture nodes future temperatures by linear
 C interpolation.
 C **********************************************************************
       SUBROUTINE MZMTMF2(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -581,7 +581,7 @@ C **********************************************************************
 C MZMCFP sets the present moisture parameters.
 C **********************************************************************
       SUBROUTINE MZMCFP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -626,7 +626,7 @@ C *********************************************************************
 C SETNEF Update the new future variables value.
 C *********************************************************************
       SUBROUTINE SETNEF(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -655,7 +655,7 @@ C MSLINK Set the parameters for linking the moisture simulation with
 C other modules in ESP_r (mfs, plt, ...etc).
 C *********************************************************************
       SUBROUTINE MSLINK(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -725,7 +725,7 @@ C *********************************************************************
 C MZMCFF calculates the future moisture parameters.
 C *********************************************************************
       SUBROUTINE MZMCFF(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
@@ -924,7 +924,7 @@ C *********************************************************************
 C MZMSPF save the future pressure distribution for convergence test.
 C *********************************************************************
       SUBROUTINE MZMSPF(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -954,7 +954,7 @@ C counting for the possible different temperature node distribution.
 C Implicitness degrees between 0 and 1 inclusive are allowed.
 C *********************************************************************
       SUBROUTINE MZMSTU(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
@@ -1213,7 +1213,7 @@ C *********************************************************************
 C MZMITR solves the zone moisture matrix by Gauss Siedal method.
 C *********************************************************************
       SUBROUTINE MZMITR(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1324,7 +1324,7 @@ C *********************************************************************
 C MZMCHP check for convergence in pressure values.
 C *********************************************************************
       SUBROUTINE MZMCHP(ICOMP,CONVP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1369,7 +1369,7 @@ C *********************************************************************
 C MZMCHF check for convergence in fluid values.
 C *********************************************************************
       SUBROUTINE MZMCHF(ICOMP,CONVF)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1414,7 +1414,7 @@ C *********************************************************************
 C SETFEN updates the future variables from n-th variables.
 C *********************************************************************
       SUBROUTINE SETFEN(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1442,7 +1442,7 @@ C **********************************************************************
 C LYRPRP gets the thermophysical properties for a layer.
 C **********************************************************************
       SUBROUTINE LYRPRP(ICOMP,I,IL,CNDCT,DNSTY,HTCAP,THCK)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -1471,7 +1471,7 @@ C **********************************************************************
 C LYRTYP defines the layer type; air gap (IAIR > 0) or solid (IAIR = 0).
 C **********************************************************************
       SUBROUTINE LYRTYP(ICOMP,I,IL,IAIR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -1486,7 +1486,7 @@ C **********************************************************************
 
 C **********************************************************************
       SUBROUTINE CHKMST(IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -1531,7 +1531,7 @@ C If this construction is lumped.
 
 C **********************************************************************
       SUBROUTINE MSRTND(ICOMP,I,IL,INH,IMS,IME)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
@@ -1572,7 +1572,7 @@ C *********************************************************************
 C WRITRH writes the relative humidity results.
 C *********************************************************************
       SUBROUTINE WRITRH(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

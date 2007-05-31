@@ -48,8 +48,8 @@ C by invoking appropriate control routine (PCL??) for each active plant
 C control loop to establish CDATA for current time-step
 C
       SUBROUTINE CONTRL(iterp)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -240,8 +240,8 @@ C actuated plant component (IPCMP), and number of this plant
 C component type's control variable (IPCVR)
 
       SUBROUTINE CLVAR(SVCTL,IPCMP,IPCVR)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -482,8 +482,8 @@ C correspondence with prevailing controller type; and
 C determines sensed condition SVCTLM(?,?).
 
       SUBROUTINE CLMVAR
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -699,8 +699,8 @@ C auxiliary sensor function in the case of
 C multi-sensor control.
 
       SUBROUTINE CLAXSN(IAUXFN,SVCTLX)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -764,7 +764,7 @@ C Trace output
 C ******************** PCBDAT
 
       SUBROUTINE PCBDAT(idtcol,svctl)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -847,8 +847,8 @@ C ******************** CLFNGR ********************
 C CLFNGR is a (user-defined) function generator.
 
       SUBROUTINE CLFNGR(IFNCT,SVCTL)
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
       COMMON/PTIME/PTIMEP,PTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -1124,9 +1124,9 @@ C CLVARN imposes non-ideal sensor characteristics on
 C the sensed variable returned from CFVAR routine.
 
       SUBROUTINE CLVARN(SVCT,SVCTLN)
-#include "plant.h"
-#include "building.h"
-#include "control.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'control.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1235,9 +1235,9 @@ C CTLROP imposes non-ideal actuator characteristics on
 C the controller output sent from the calling routine.
 
       SUBROUTINE CTLROP
-#include "plant.h"
-#include "building.h"
-#include "control.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'control.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1383,9 +1383,9 @@ C ******************** CLACDL ********************
 C CLACDL handles actuator delay.
 
       SUBROUTINE CLACDL(IPCMPD,IPCVRD,CDLAY1,CDLAY2,ILOOPN,LAG)
-#include "building.h"
-#include "plant.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'control.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1462,9 +1462,9 @@ C ******************** CLSNDL ********************
 C CLSNDL handles sensor delay.
 
       SUBROUTINE CLSNDL(LAG,SV1,SV2,ILOOP)
-#include "plant.h"
-#include "building.h"
-#include "control.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'control.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1532,8 +1532,8 @@ C PCL00 forces a plant control loop actuator to the OFF state
 C by setting all plant component control variables to zero
 
       SUBROUTINE PCL00
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1596,8 +1596,8 @@ C    or type 10: senses relative humidity
 
 
       SUBROUTINE PCL01(iterp)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2034,8 +2034,8 @@ C                 or type  9: senses additional plant output
 C                 or type 11: senses relative humidity.
 
       SUBROUTINE PCL02(iterp)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2463,8 +2463,8 @@ C                   or type 16: senses additional plant output
 C                   or type 17: senses relative humidity
 
       SUBROUTINE PCL03
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2585,8 +2585,8 @@ C This controller is suitable for plant controllers acting on flux
 C or on a variable expecting some numerical value
 
       SUBROUTINE PCL04
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2695,8 +2695,8 @@ C                   or type 23: senses relative humidity
 C                   or type 40: senses numerical value.
 
       subroutine pcl05
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/tc/itc,icnt
@@ -2843,8 +2843,8 @@ C this controller is exactly equal to the
 C controller's input sensor value.
 
       SUBROUTINE PCL06
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -2891,8 +2891,8 @@ C OFF state by setting all plant component control variables
 C to zero.
 
       SUBROUTINE PCL07
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3005,8 +3005,8 @@ C ******************** PCL08 ********************
 C PCL08 is a `Two-Position` controller.
 
       SUBROUTINE PCL08
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3113,8 +3113,8 @@ C ******************** PCL09 ********************
 C PCL09 is a multi-sensor `Two-Position` controller.
 
       SUBROUTINE PCL09
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3245,8 +3245,8 @@ C ******************** PCL10 ********************
 C PCL10 is a `Zero Energy Band' controller.
 
       SUBROUTINE PCL10
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3349,8 +3349,8 @@ C Refer ESP-r training folder:
 C " ....... esp-r/training/plant/AHU'
 
       SUBROUTINE PSYSPT(ire,mdflag,imx,isupdc,iretdc,zntpsp,znrhsp,stpt)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

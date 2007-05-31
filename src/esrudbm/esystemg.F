@@ -105,14 +105,14 @@ C           network need not be matched.
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
-#include "building.h"
-#include "net_flow.h"
-#include "tdf2.h"
-#include "cfd.h"
-#include "uncertainty.h"
-#include "gnetwk.h"
-#include "dhw_common.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'cfd.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'gnetwk.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -122,7 +122,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       PARAMETER (MSTMC=1)
@@ -2325,7 +2325,7 @@ C information in common blocks  which are filled by reading the
 C system configuration file. If ICF=1 then display with zone and surface names 
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -2423,7 +2423,7 @@ C HZSTOCN scans the current connections list and builds an
 C array IZSTOCN(MCOM,MS) which holds the connection index.
 
       SUBROUTINE HZSTOCN
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)

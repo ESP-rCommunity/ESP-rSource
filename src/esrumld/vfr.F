@@ -23,8 +23,8 @@ C Boston, MA 02111-1307 USA.
 C This subroutine reads data from the moisture results file and 
 C writes the recovered data to array GOTDAT
 
-#include "building.h"
-#include "mould.h"
+      INCLUDE 'building.h'
+      INCLUDE 'mould.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 

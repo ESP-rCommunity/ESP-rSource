@@ -34,7 +34,7 @@ C analysis of electrical network output.
 C ************************************************************************************
       SUBROUTINE ENETRES
 
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -222,7 +222,7 @@ C that in the electrical network common block. The routine returns an
 C error if this data is found to be inconsistent. 
       SUBROUTINE ENETRCHK(IER)
 
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -418,7 +418,7 @@ C **********************************************************************
 
       SUBROUTINE ERSMENU(IFOC,MODE)
 
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -477,7 +477,7 @@ C Type casting (all varaiables and arrays cast explicitly)
       CHARACTER MODE*1
 
       CHARACTER ITEM*24,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
-     &TG*1,XFILE*72,H*72,HEADER*32,VALUES*20
+     &TG*1,XFILE*144,H*72,HEADER*32,VALUES*20
 
 C Firstly clear all existing selections and initialise variables.
       CALL EDISP (IUOUT,' ')
@@ -1658,7 +1658,7 @@ C IPOS - points to the entry (column number) in a specific record
 C ***********************************************************************
       SUBROUTINE ENETHASH(ITS,IENTY,IENO,IENOID,IREC,NPOS,IPOS)
 
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Electrical network results library details.
       COMMON/ENELIBRC/IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
@@ -1937,7 +1937,7 @@ C ******************************************************************************
 
       SUBROUTINE ENETGET(IT,MODE)
 
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Electrical network results library details.
       COMMON/OUTIN/IUOUT,IUIN

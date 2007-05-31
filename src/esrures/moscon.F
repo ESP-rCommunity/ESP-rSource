@@ -43,7 +43,7 @@ C JREC = current results database record position.
 
 C Inside and 'outside' surfaces are handled differently.
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -272,7 +272,7 @@ C HC   = heat transfer coef.
 
 C Inside and 'outside' surfaces are handled differently.
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

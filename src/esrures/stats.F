@@ -35,7 +35,7 @@ C MOSTAT allows statistical analysis of the simulation
 C results. Available at present:
 
       SUBROUTINE MOSTAT
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -65,7 +65,7 @@ C SNAPSH is a logical flag to request variation in header.
       logical SNAPSH,close
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
       dimension ITEM(24)
-      CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*72
+      CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*144
       character SLABEL*32,GLABEL*20
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
@@ -747,7 +747,7 @@ C act='i' called from ipv: sets bin width uses current IGETS
 C act='p' iget parameters already set.
 
       SUBROUTINE MOSMSD(act,VMX,VMN,VAVE,VTOT,DIVMX,DIVMN,DISTMX,DISTMN)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -773,7 +773,7 @@ C act='p' iget parameters already set.
       dimension YMAX(MZS), YMIN(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS), YTOT(MZS)
       dimension TMAX(MZS), TMIN(MZS)
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character outs*124,act*1
       character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124
@@ -1250,7 +1250,7 @@ C other basic statistical data and then compares it to the values in the CEN
 C standard.
 
       SUBROUTINE MOSMSDCEN(act)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1449,7 +1449,7 @@ C  iabove <1 find hours below value
 C act='p' iget parameters already set.
 
       SUBROUTINE MOSQHR(act,iabove,tval)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1807,7 +1807,7 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       SUBROUTINE MOEDMDS(act,the,tzhtime,tce,tzctime,tlhe,tzlhtime,
      &  tlce,tzlctime)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -2010,7 +2010,7 @@ C Reporting of casual gains distribution (radiant and convective)
 C within current zone set.
       SUBROUTINE CASDIST(act)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL

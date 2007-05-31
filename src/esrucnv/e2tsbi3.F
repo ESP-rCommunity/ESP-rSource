@@ -26,8 +26,8 @@ C e2vrml:  Generate VRLM 2.0 world of esp-r model.
 
 C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -510,7 +510,7 @@ C Duplicate of code in eddb.F
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -570,8 +570,8 @@ C ******* Translate esp data to vrlm world.
 C e2vrml takes zones/obstructions and any ground topology and
 C creates a grey-scale VRML 2.0 world.
       SUBROUTINE e2vrml(itrc,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

@@ -127,11 +127,11 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_fuel_static_temp(IPCOMP)
       IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "SOFC.h"
-#include "cogen_tanks.h"
-#include "chemical_properties.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'SOFC.h'
+      INCLUDE 'cogen_tanks.h'
+      INCLUDE 'chemical_properties.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -532,10 +532,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_fuel_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "SOFC.h"
-#include "cogen_tanks.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'SOFC.h'
+      INCLUDE 'cogen_tanks.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1418,10 +1418,10 @@ C ------------------------------------------------------------------------------
       SUBROUTINE FC_DHW_load(T_tank)
 
       IMPLICIT NONE
-#include "building.h"
-#include "cogen_tanks.h"
-#include "ground_temp_mains_common.h"
-#include "dhw_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cogen_tanks.h'
+      INCLUDE 'ground_temp_mains_common.h'
+      INCLUDE 'dhw_common.h'
 
       COMMON/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -1596,10 +1596,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_elec_static_temp(IPCOMP)
       IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "SOFC.h"
-#include "cogen_tanks.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'SOFC.h'
+      INCLUDE 'cogen_tanks.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1870,10 +1870,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_elec_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-#include "plant.h"
-#include "building.h"
-#include "SOFC.h"
-#include "cogen_tanks.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'SOFC.h'
+      INCLUDE 'cogen_tanks.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -2430,7 +2430,7 @@ C-------------------------------------------------------------------------------
       SUBROUTINE FC_check_for_boil(node)
 
       IMPLICIT NONE
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 
 
@@ -2506,8 +2506,8 @@ C-------------------------------------------------------------------------------
       SUBROUTINE FC_dump_excess_energy(node)
 
       IMPLICIT NONE
-#include "plant.h"
-#include "cogen_tanks.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cogen_tanks.h'
 
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       REAL CSVF,CSVP
@@ -2578,8 +2578,8 @@ C-------------------------------------------------------------------------------
 
       implicit none 
 
-#include "plant.h"
-#include "cogen_tanks.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'cogen_tanks.h'
 
 C.....Passed variables 
       integer iComponentIndex   ! index of FC in plant component network

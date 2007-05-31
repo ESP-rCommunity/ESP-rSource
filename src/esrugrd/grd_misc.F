@@ -55,7 +55,7 @@ c AI & AE - solar absorptivity of each internal and external
 c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -156,7 +156,7 @@ C *************** MESH ***********************
 C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question.
       SUBROUTINE MESH(IS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
@@ -231,7 +231,7 @@ C ************* FACDRW *****************
 C FACDRW draws the elevation of the surface.
       SUBROUTINE FACDRW(IHOUR,ICOMP,ISUR,NV,XMIN,XMAX,ZMIN,ZMAX,
      &            Xadd,Zadd,SCA)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -277,7 +277,7 @@ C ************* POINT1 **********************
 C 'POINT1' determines if a specified point is within or outwith any
 C specified object body face boundary.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION C(26)

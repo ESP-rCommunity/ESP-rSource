@@ -24,7 +24,7 @@ C  VEWFORM: View control and definition.
 
 C ******* View cone for plan/elevation.
       SUBROUTINE VCONE(direc)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -85,7 +85,7 @@ C If south elevation, omitt the view-cone.
 
 C ******* Default views formation.
       SUBROUTINE VEWFORM(IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/C1/NCOMP,NCON

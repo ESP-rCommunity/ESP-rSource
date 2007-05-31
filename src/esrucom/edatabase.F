@@ -38,9 +38,9 @@ C IER=0 OK, IER=1 problem.
 C DRAIR is the air gap layer resistance for 3 orientations.
 
       SUBROUTINE ERMLDB(ITRC,ITRU,IER)
-#include "building.h"
-#include "esprdbfile.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -287,7 +287,7 @@ C index match.
 C << note if transparent also should check optical properties >> 
       subroutine ismlcsymmetric(ifoc,layermatch) 
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       CHARACTER DESC*48
@@ -355,7 +355,7 @@ C *************** ETMLDB
 C ETMLDB provides reporting on current description of a composite
 C construction based on contents of common MLC.
       SUBROUTINE ETMLDB(ITRC,ITRU,IFMAT,IFOC,ier)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GVALCAL/CLAMDA(MMLC)
@@ -479,7 +479,7 @@ C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
 C on contents of common MLC.
       SUBROUTINE ETMLDBU(ITRC,ITRU,IFMAT,IFOC,UVH,UVU,UVD,UVI)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       CHARACTER OUTSTR*124,DESC*48,NAM*72
@@ -558,8 +558,8 @@ C EPKMLC Select a composite construction with display of details.
 C Information is available via common block MLC.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -683,8 +683,8 @@ C EMKAMLD: Creates an ascii constructions database based on the
 C current contents of common MLC.  In the case of an air layer sub-
 C stitute the U value for each layer.
       SUBROUTINE EMKAMLD(ITRU,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -754,9 +754,9 @@ C database to a temporary file on unit itopt (assumed to have
 C already been opened). If user has requested a listing of the
 C database then use itopt (which may be text feedback or a file unit).
       SUBROUTINE EROPTDB(ITRC,ITOPT,SOPT,GDESCR,IER)
-#include "building.h"
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -985,7 +985,7 @@ C in the geometry file attributes. SOPT is a 12 Char identity string
 C for the optical properties choice. Displays choices held in common
 C GPICK which was derived from a call to ___.
       SUBROUTINE EDWINO(SOPT,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       common/pophelp/h(60)
       COMMON/GPICK/GS(MGOPT),nopt
       CHARACTER GS*52,H*72,SOPT*12

@@ -19,7 +19,6 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C RevTime : Interface for the reverberation time module
-C CTLEXP  : Control feedback to export wireframe or text feedback area.
 C Imgdisp : Dummy routine (needed for call back from c).
 
 C ************RevTime*************
@@ -45,9 +44,9 @@ C XNbFur(MaxFur)(Real)      Nb of unit or surface area for the current
 C                           furniture
 
       PROGRAM RevTime
-#include "building.h"
-#include "acoustic.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'acoustic.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -134,7 +133,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
       CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
-      CHARACTER tg*1,delim*1,xfile*72,dstmp*24,LabFreq*4
+      CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
 C Initial assumptions (summary reporting).
@@ -932,75 +931,5 @@ C keep it (SC)
       return
       end
 
-C CTLEXP ***********
-C CTLEXP: Control feedback to export wireframe or text feedback area.
-C Assign user-specified export file - checking if local or remote.
-C tg is a character T or G specifying text or graphic 
-C info being saved.
-      subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      common/rpath/path
-
-      character*(*) msg
-      character H*72,xfile*72,TTmp*72,path*72,outs*124,tg*1
-
-C Each call is a toggle. If open then close text or graphics command
-C file. For the graphics ask if file should be further converted.
-      ixopen=ixopen+1
-      if(ixopen.GT.1)ixopen=0
-      if(ixopen.eq.0)then
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
-        if(tg.eq.'T')then
-          CALL ERPFREE(ixunit,ISTAT)
-        elseif(tg.eq.'G')then
-          continue
-        endif
-      elseif(ixopen.eq.1)then
-        ixloc=0
-        if(path.ne.'./'.and.path.ne.' ')then
-           write(outs,'(A,A)') ' The current path is: ',path
-           call edisp(iuout,outs)
-         h(1)='If using path then name appended to path. Otherwise'
-         h(2)='file put in folder where application was started.'
-         h(3)='If `local` choice you may also give an absolute'
-         h(4)='addressed file name ie. /tmp/junk.exp '
-           CALL EASKAB(' The problem is in a remote folder... ',
-     &      ' place export file:','using current path',
-     &      'in local (or absolute) folder',ixloc,4)
-        endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
-        TTmp=xfile
-        call easks(TTmp,' export file name: ',' ',72,
-     &    ' ','export file name',IER,2)
-        xfile=TTmp
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
-        call usrmsg(outs,' ','p')
-        if(ixloc.eq.1)then
-          if(tg.eq.'T')then
-            call efopseq(ixunit,xfile,4,IER)
-            if(ier.ne.0)return
-          elseif(tg.eq.'G')then
-            continue
-          endif
-        else
-          if(tg.eq.'T')then
-            CALL ERPFREE(ixunit,ISTAT)
-            call FPOPEN(ixunit,ISTAT,1,4,xfile)
-            if(ISTAT.lt.0)return
-          elseif(tg.eq.'G')then
-            continue
-          endif
-        endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
-     &    ' >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','p')
-      endif
-      RETURN
-      END
 
 

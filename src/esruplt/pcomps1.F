@@ -34,8 +34,8 @@ C node 3 represents water in contact (ISV=20)
 C node 4 represents leaving water    (ISV=20)
 
       SUBROUTINE CMP53S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -106,8 +106,8 @@ C corresponding coefficient generator routine
 C node 1 represents leaving water/steam    (ISV=20)
 
       SUBROUTINE CMP54S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -175,8 +175,8 @@ C corresponding coefficient generator routine
 C node 1 represents leaving moist air  (ISV=21)
 
       SUBROUTINE CMP55S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -246,8 +246,8 @@ C node 4 represents air in contact with casing          (ISV=21)
 C node 5 represents leaving air                         (ISV=21)
 
       SUBROUTINE CMP56S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -325,8 +325,8 @@ C node 3 represents water in contact   (ISV=20)
 C node 4 represents leaving water      (ISV=20)
 
       SUBROUTINE CMP57S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -397,8 +397,8 @@ C node 3 represents air in contact     (ISV=21)
 C node 4 represents leaving air        (ISV=21)
 
       SUBROUTINE CMP58S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -466,8 +466,8 @@ C node 2 represents air in contact with heater  (ISV=21)
 C node 3 represents metallic casing             (ISV=29)
 C node 4 represents air in contact with casing  (ISV=21)
       SUBROUTINE CMP60S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -541,8 +541,8 @@ C corresponding coefficient generator routine
 C node 1 represents mixed fluid   (ISV=20)
 
       SUBROUTINE CMP64S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -610,8 +610,8 @@ C   node 2 represents fluid at second outlet  (ISV=20)
 C   node 3 represents fluid at inlet  (ISV=20)
 
       SUBROUTINE CMP65S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -679,8 +679,8 @@ C   node 2 represents air at second outlet  (ISV=21)
 C   node 3 represents air at inlet  (ISV=21)
 
       SUBROUTINE CMP66S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -747,8 +747,8 @@ C corresponding coefficient generator routine
 C   node 1 represents fluid at outlet  (ISV=21)
 
       SUBROUTINE CMP68S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -811,8 +811,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine.
 
       SUBROUTINE CMP95S(IPCOMP)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

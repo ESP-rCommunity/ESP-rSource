@@ -45,9 +45,9 @@ C----------------------------------------------------------------------
       subroutine H2_demand_controller ( iterp )
       implicit none
 
-#include "building.h"
-#include "plant.h"
-#include "Hydrogen_demand_controller.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'Hydrogen_demand_controller.h'
 
 C----------------------------------------------------------------------
 C     Passed arguements

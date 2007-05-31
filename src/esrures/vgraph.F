@@ -33,7 +33,7 @@ C graph construction. This output mode allows any pair of
 C time-dependent variables to be plotted for one or more zones.
 
       SUBROUTINE VWLIN
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -50,7 +50,7 @@ C time-dependent variables to be plotted for one or more zones.
       LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*16 ITEM(42)
-      character VITEM*16,HITEM*16,xfile*72,tg*1,delim*1,h*72
+      character VITEM*16,HITEM*16,xfile*144,tg*1,delim*1,h*72
 
       MODIFY=.FALSE.
       VITEM=' '
@@ -258,7 +258,7 @@ C compute the scale of the vertical and horizontal axes
 C at the time of graph construction.
 
       SUBROUTINE VGMXN(JPICK)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -443,7 +443,7 @@ C      =28  - relative humidity
 C      =29  - dew point temperature
 
       SUBROUTINE VGGET(IZONE,IDAY,IGET,I12)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -758,7 +758,7 @@ C ******************** VGDRW ********************
 C VGDRW initiates axis drawing and displays all requested profiles.
 
       SUBROUTINE VGDRW(VITEM,HITEM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -898,7 +898,7 @@ C VGHED outputs the appropriate header information corresponding
 C to graphical result display.
 
       SUBROUTINE VGHED(VITEM,HITEM)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

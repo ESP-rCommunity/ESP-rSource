@@ -35,7 +35,7 @@ C network simulation.
 
       SUBROUTINE ENETPOST
 C  named constants
-#include "CETC_definitions.h"      
+      INCLUDE 'CETC_definitions.h'      
 C Dummy variable
       real fDummy
 
@@ -73,8 +73,8 @@ C CONTRNIPU      - The transmitted current in each phase.
 C ************************************************************************************
       SUBROUTINE ENETDVAR
 
-#include "power.h"
-#include "building.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -414,8 +414,8 @@ C ENODVSI - the solved nodal voltage (SI values).
 
       SUBROUTINE ENETPU2SI
 
-#include "power.h"
-#include "building.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -652,9 +652,9 @@ C case and 'A' is appended.
 
       SUBROUTINE ENETLIBSV
 
-#include "power.h"
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 

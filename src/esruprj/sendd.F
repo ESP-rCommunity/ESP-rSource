@@ -30,9 +30,9 @@ C   SDDBOUND - ask for numerical data with range checking.
 C ****************** SDDEF001 ******************
 C SDDEF001 - Material properties distribution definition.
       subroutine SDDEF001(ICDEF,IER)
-#include "building.h"
-#include "uncertainty.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -187,9 +187,9 @@ C Work out material category and property and hence uncertainty.
 C ****************** SDDEF002 ******************
 C SDDEF002 - Composite constructions dietribution definition.
       subroutine SDDEF002(ICDEF,IER)
-#include "building.h"
-#include "uncertainty.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -286,8 +286,8 @@ C Everything is OK re selection therefore add type selection to common.
 C ****************** SDDEF003 ******************
 C SDDEF003 - Climatic parameters distribution definition.
       subroutine SDDEF003(ICDEF,IER)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -341,7 +341,7 @@ C Now determine the climatic parameter which is uncertain.
 C ****************** SDDEF004 ******************
 C SDDEF004 - Operations distribution definition.
       subroutine SDDEF004(ICDEF,IER)
-#include "uncertainty.h"
+      INCLUDE 'uncertainty.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -390,8 +390,8 @@ C Operations file data.
 C ****************** SDDEF005 ******************
 C SDDEF005 - Convection coefficients distribution definition.
       subroutine SDDEF005(ICDEF,IER)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -435,8 +435,8 @@ C      endif
 C ****************** SDDEF101 ******************
 C SDDEF101 - Zone geometry distribution definition.
       subroutine SDDEF101(ICDEF,IER)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

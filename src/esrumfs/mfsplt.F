@@ -32,9 +32,9 @@ C  mass flow rate >= 0)
 
       SUBROUTINE MFLW2P
 
-#include "building.h"
-#include "net_flow.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'plant.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -111,8 +111,8 @@ C Finds the sensed value SVCTL from ICFP-th defined plant control loop
 C based on most recent results
 
       SUBROUTINE MFCNTL(SVCTL)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

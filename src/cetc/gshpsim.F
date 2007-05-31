@@ -71,11 +71,11 @@ c Use heat pump input data module (contains ahp, bhp, chp, dhp values)
 
        IMPLICIT NONE
 c Use HVAC input data module (contains isys information)
-#include "building.h"
-#include "hvac_parameters.h"
-#include "ashp_common.h"
-#include "hvac_common.h"
-#include "gshp_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'ashp_common.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'gshp_common.h'
        INTEGER  isys
        REAL  Cd, degrad_coeff
 
@@ -125,10 +125,10 @@ c **********************************************************************
 c Daily ground cooling load and entering water temperature data
 
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "ashp_common.h"
-#include "gshp_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'ashp_common.h'
+      INCLUDE 'gshp_common.h'
       INTEGER  isys
       REAL  Cd, degrad_coeff
 
@@ -184,10 +184,10 @@ c Use heat pump input data module (contains ahp, bhp, chp, dhp values)
 
 
        IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "ashp_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'ashp_common.h'
 
        INTEGER isys
        REAL Cd,degrad_coeff
@@ -284,9 +284,9 @@ c ***********************************************************************
 c Definition of module for daily loads and EWT. 
 C The heating and cooling load will be read in each timestep.
 C Initiates reading of global variables (common for all)
-#include "building.h"
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
@@ -347,10 +347,10 @@ C **********************************************************************
 
 
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 C Initiates reading of global variables (common for all)
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -508,11 +508,11 @@ C Module variables specific to vertical heat exchangers.
 C      USE GSHP_VERTICAL_INPUT
 
        IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "gshp_common.h"
-#include "gshp_v1_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
+      INCLUDE 'gshp_v1_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 
 C Common for read and write statements
@@ -735,11 +735,11 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_HORIZONTAL_INPUT
 
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "gshp_common.h"
-#include "gshp_hs_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
+      INCLUDE 'gshp_hs_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
@@ -938,11 +938,11 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_HORIZONTAL_INPUT
 
        IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "gshp_common.h"
-#include "gshp_hs_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
+      INCLUDE 'gshp_hs_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1179,11 +1179,11 @@ C Module variables specific to horizontal heat exchangers.
 C       USE GSHP_SLINKY_INPUT
 
        IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "gshp_common.h"
-#include "gshp_sl_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
+      INCLUDE 'gshp_sl_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 C Common for read and write statements
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1758,8 +1758,8 @@ c Mode of operation of the GSHP, GSHP_HP_mode = 1 for heating
 c and -1 for cooling
 
       IMPLICIT NONE
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
 
 
 C Arguments
@@ -1910,8 +1910,8 @@ c **********************************************************************
 
 C       USE GSHP_INPUT
       IMPLICIT NONE
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
 
 c Common for the number of time steps per hour
        COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -2033,8 +2033,8 @@ c ***********************************************************************
 C      USE GSHP_COP_MODULE
 
       IMPLICIT NONE
-#include "hvac_parameters.h"
-#include "gshp_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'gshp_common.h'
 
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

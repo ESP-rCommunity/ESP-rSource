@@ -33,7 +33,7 @@ C ********** opendb (copy of code from eddb.F)
 C Open materials constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -98,7 +98,7 @@ C********************* Zoneslist (copy of MOZDFN from resdef.F) ****
 C Display Zones list and wait for INIPIC item selected
 
       SUBROUTINE Zoneslist
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -185,7 +185,7 @@ C string to be used in headers.
 C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
@@ -226,7 +226,7 @@ C length : Length of zdescr
 C ************* ZoneDisp
 C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -309,7 +309,7 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
 
       SUBROUTINE CompoList
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -410,8 +410,8 @@ C          1 = textual feedback or 2 = File
 
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
-#include "building.h"
-#include "acoustic.h"
+      INCLUDE 'building.h'
+      INCLUDE 'acoustic.h'
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -1113,8 +1113,8 @@ C RESMN      - Minimum reverberation time
 
       SUBROUTINE PLOTTrev(MAll, MethodCalc)
 
-#include "building.h"
-#include "acoustic.h"
+      INCLUDE 'building.h'
+      INCLUDE 'acoustic.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/Zones/TxtZone

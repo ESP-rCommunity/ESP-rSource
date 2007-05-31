@@ -42,8 +42,8 @@ C VAL3(19,?) holds controlled convective casual type 2.
 C VAL3(20,?) holds controlled convective casual type 3.
 
       SUBROUTINE ZCASC(IZONE,IDAY)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -255,8 +255,8 @@ C VAL3(19,?) holds controlled radiant casual type 2.
 C VAL3(20,?) holds controlled radiant casual type 3.
 
       SUBROUTINE ZCASR(IZONE,ISFN,IDAY)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -478,8 +478,8 @@ C VAL3(19,?) holds controlled casual type 2.
 C VAL3(20,?) holds controlled casual type 3.
 
       SUBROUTINE CASRT(IZONE,IDAY)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -691,7 +691,7 @@ C of each period will have to be shifted in the calling routine.  This
 C will be corrected in the revised results library.
       SUBROUTINE CASTYP(IZ,IDAY,ITSTEP,UCCT1,UCCT2,UCCT3,
      &                  UCCRT1,UCCRT2,UCCRT3,ICC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
@@ -1074,8 +1074,8 @@ C VAL3(19,?) holds controlled casual type 2.
 C VAL3(20,?) holds controlled casual type 3.
 
       SUBROUTINE ZCASCF(IZONE,IDAY,IJDAY)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

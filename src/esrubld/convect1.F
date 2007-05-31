@@ -37,8 +37,8 @@ C     QZONE   Calculates heat injected/extracted to zone by air-handling system.
 C ******************** MZCONV ********************
        SUBROUTINE MZCONV
 
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/C1/NCOMP,NCON
@@ -245,7 +245,7 @@ C specified in the .htc file.
 
       SUBROUTINE HTOVER(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
@@ -316,7 +316,7 @@ C each surface. The interface typically writes standard values to this file
 C but the file can hold alternative values.
       SUBROUTINE HTOVERCEN(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -518,7 +518,7 @@ C INTERR interrogates the configuration to decide which surface-convection
 C approach to apply for each interior surface of the zone.
       SUBROUTINE INTERR(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       common/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
@@ -610,7 +610,7 @@ C surface when `type 2' control over convection calculations is imposed.
 
       SUBROUTINE SELCOR2(ICOMP,ISUR,inRout,ICOR)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
@@ -662,7 +662,7 @@ C surface when `type 3' control over convection calculations is imposed.
 
       SUBROUTINE SELCOR3(ICOMP,ISUR,inRout,ICOR)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1020,7 +1020,7 @@ C SELFORC selects a forced or mixed flow correlation based on approach specified
 C by user and based on surface orientation. Returns ICOR.
 
       SUBROUTINE SELFORC(ICOMP,ISUR,inRout,iapp,TS,TA,ICOR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/HCcomb/iAandH,iassist
@@ -1085,7 +1085,7 @@ C `interior' building surfaces.
 
       SUBROUTINE OUTISIN 
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/C1/NCOMP,NCON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1139,7 +1139,7 @@ C QPLANT returns QM, the total plant injection (+) or extraction (-)
 C to the zone.
 
       SUBROUTINE QPLANT(ICOMP,QM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
@@ -1179,7 +1179,7 @@ C QZONE returns Qznload, the convective heat injected (+) or extracted (-)
 C to/from the zone by the air-handling system.
 
       SUBROUTINE QZONE(ICOMP,TA,Qtotal,iOAflg,Qznload)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF

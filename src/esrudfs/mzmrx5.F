@@ -90,8 +90,8 @@ C             |             |    reduction relates the zone
 C             b1           b3    convection heat transfer terms.
 
       Subroutine MZCMS5(ICOMP)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/zoneqn/e(meq,mtr)
@@ -157,8 +157,8 @@ C CFMZBK - Evaluates surface temperatures by back substitution.
 C  Surface temperatures are recalculate at each CFD iteration
 C  based on convection heat transfer.
       Subroutine CFMZBK
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),

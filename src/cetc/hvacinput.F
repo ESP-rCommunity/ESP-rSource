@@ -60,10 +60,10 @@ c *********************************************************************
 
 c Variable passed in call
       character hvacfile*72
-#include "building.h"
-#include "hvac_parameters.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
       COMMON/FILEP/IFIL
       COMMON/ER/IER
@@ -204,12 +204,12 @@ c *********************************************************************
 
 c Variable passed in call
       INTEGER i
-#include "building.h"
-#include "hvac_parameters.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "furnace_common.h"
+      INCLUDE 'furnace_common.h'
 
       COMMON/FILEP/IFIL
       COMMON/ER/IER
@@ -450,12 +450,12 @@ c *********************************************************************
 
 c Variable passed in call
       INTEGER i
-#include "building.h"
-#include "hvac_parameters.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 
       COMMON/FILEP/IFIL
@@ -929,12 +929,12 @@ c Variable passed in call
 c Define the characters variables associated with the utility 
 c functions STRIPC,EGETWI,and EGETWR
       character OUTSTR*124,word*124
-#include "building.h"
-#include "hvac_parameters.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 
       COMMON/FILEP/IFIL
@@ -1172,13 +1172,13 @@ c *********************************************************************
 c Variables in call
       INTEGER i
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "furnace_common.h"
+      INCLUDE 'furnace_common.h'
 
       COMMON/FILEP/IFIL
       COMMON/ER/IER

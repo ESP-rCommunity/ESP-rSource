@@ -3,7 +3,7 @@ C ROUTINES FOR TERMINAL COMMUNICATION VIA SCRATCH PAD
       SUBROUTINE PUT(X,Y,ICH)
 C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
 
-#include "viewer.h"
+      INCLUDE 'viewer.h'
       COMMON/GFONT/IFS,ITFS,IMFS
         character a*1
 
@@ -19,7 +19,7 @@ C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
 C--------------------------------------------------------------------
           SUBROUTINE SPD(A,N,X)
 
-#include "viewer.h"
+      INCLUDE 'viewer.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) A
@@ -37,7 +37,7 @@ C--------------------------------------------------------------
       SUBROUTINE SPS(A,N)
 C   TO OUTPUT STRING ON SPAD2 WITH CONTROL
 
-#include "viewer.h"
+      INCLUDE 'viewer.h'
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) A

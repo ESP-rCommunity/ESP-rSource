@@ -65,13 +65,13 @@ c **********************************************************************
 c Variable passed in call
       INTEGER isys
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "building.h"  
+      INCLUDE 'building.h'  
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Declaration of local variables
       REAL power1,power2
@@ -185,13 +185,13 @@ c Variables passed in call
 
       REAL plrp,plrb,plfp,plfb
 
-#include "building.h"  
+      INCLUDE 'building.h'  
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Common for the number of time steps per hour
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

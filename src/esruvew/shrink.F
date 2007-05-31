@@ -1,8 +1,8 @@
 C COPYRIGHT R. P. PARKINS, OF THE ABACUS UNIT, 1977
       SUBROUTINE SHRINK(NP1,NP2)
 
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
 C        include 'viewer.h'
 C        include 'viewer.h2'
 

@@ -27,14 +27,14 @@ C climate (IFCLM) and results (IFRES) files
 
       SUBROUTINE MFINIT(IFPRB,IFCLM,IFRES)
 
-#include "building.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

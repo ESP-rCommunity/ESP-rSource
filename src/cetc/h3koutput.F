@@ -46,14 +46,14 @@ c     COMMENTS:
 C     This is the main subroutine of the H3k Output. Iterates through systems  
       
       SUBROUTINE H3KOUTPUT_MAIN(IWU)
-#include "building.h"
-#include "esprdbfile.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
 
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 c     iBSIMP is used to determine if a zone is a Basement iBSIMP=1
@@ -156,11 +156,11 @@ C**********************************************************************
 
       SUBROUTINE H3KOUTPUT_SYSTEM_DATA(ISYSTEM,IWU)
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "hvac_common.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_common.h'
       CHARACTER OUTS*124
       INTEGER ISYSTEM
       INTEGER IWU
@@ -208,11 +208,11 @@ C     OUTPUTS:
       SUBROUTINE H3KOUTPUT_HVAC_Fan_HRV_Monthly(IWU)
 C      USE Ventilation_Data
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "Ventilation_Data.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'Ventilation_Data.h'
+      INCLUDE 'h3kstore_common.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       CHARACTER OUTS*124
       DIMENSION MTHNAM(12)
@@ -297,10 +297,10 @@ C     FEB               2782.3              10273.7                  0.0        
 C     MAR               1651.9               6175.9                  0.0                113.4                  0.0
 
       SUBROUTINE H3KOUTPUT_HVAC_ENERGY_MONTHLY(ISYSTEM,IWU)
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       CHARACTER OUTS*124
       DIMENSION MTHNAM(12)
@@ -382,11 +382,11 @@ C     20.0%- 30.0%          587.00         13.71
 C************************************************************************
       SUBROUTINE H3KOUTPUT_HVAC_PLR_PERCENT(ISYSTEM,IWU)
 
-#include "building.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
 
       CHARACTER OUTS*124
       WRITE (OUTS,'(A)')' ' 
@@ -470,12 +470,12 @@ C**********************************************************************
       SUBROUTINE H3KOUTPUT_FURNACE_DATA(ISYSTEM,IWU)
 
 
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "furnace_common.h"
-#include "hvac_common.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'furnace_common.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_common.h'
       CHARACTER OUTS*124
       
       WRITE(OUTS,'(A)')'HVAC SYSTEM TYPE = FURNACE'
@@ -506,12 +506,12 @@ C     THIS ROUTINE OUTPUTS TO FILE NUMBER IWU THE CHARECTERISTIC OF THE
 C     BOILER SYSTEM #(ISYSTEM)  
 C**********************************************************************
       SUBROUTINE H3KOUTPUT_BOILER_DATA(ISYSTEM,IWU)
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "furnace_common.h"
-#include "hvac_common.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'furnace_common.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_common.h'
       CHARACTER OUTS*124
       WRITE(OUTS,'(A)')'HVAC SYSTEM TYPE = BOILER'
       CALL EDISP(IWU,OUTS)
@@ -545,12 +545,12 @@ C**********************************************************************
       SUBROUTINE H3KOUTPUT_BASEBOARD_DATA(ISYSTEM,IWU)
 
 
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "hvac_common.h"
-#include "h3kstore_common.h"
-#include "furnace_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_common.h'
+      INCLUDE 'furnace_common.h'
       CHARACTER OUTS*124
       WRITE(OUTS,'(A)')'HVAC SYSTEM TYPE = BASEBOARD'
       CALL EDISP(IWU,OUTS)
@@ -582,12 +582,12 @@ C     ASHP SYSTEM #(ISYSTEM) .
 C**********************************************************************
       SUBROUTINE H3KOUTPUT_ASHP_DATA(ISYSTEM,IWU)
 
-#include "building.h"
-#include "hvac_parameters.h"
-#include "ashp_common.h"
-#include "h3kstore_parameters.h"
-#include "hvac_common.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'ashp_common.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'hvac_common.h'
+      INCLUDE 'h3kstore_common.h'
       CHARACTER OUTS*124       
       WRITE(OUTS,'(A)')'HVAC SYSTEM TYPE = ASHP'
       CALL EDISP(IWU,OUTS)
@@ -654,12 +654,12 @@ C**********************************************************************
       SUBROUTINE H3KOUTPUT_AIMSDATA(IWU)
 C      USE AIM2_CALC_DATA
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'h3kstore_common.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/aim2def/iAIM2,LAIM2
       DIMENSION MTHNAM(12)
@@ -728,10 +728,10 @@ c     None. Outputs up Monthly  losses of energy per zone
 c     to file IWU
 **************************************************************************
       SUBROUTINE H3KOUTPUT_Solar_Casual_Found(izone,IWU)
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 c     ISM2 and ISM2 are required (startup and ending month)
@@ -796,11 +796,11 @@ C     ztu,ztl are upper/lower zone temperature.
 C     zph,zpc are zone heating/cooling capacities.
 C     tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE H3KMZOUTP()
-#include "building.h"
-#include "esprdbfile.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1012,10 +1012,10 @@ C     Close output file after writing.
 C     *********************************************************************      
       SUBROUTINE H3KOUTPUT_FC(IWU)
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/Fcell/iFClds,LFClds
       INTEGER   ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1280,10 +1280,10 @@ C     OUTPUT MONTHLY ENERGY VALUES of FC TO FILE (iFC_TimeStep_File_Number)
       SUBROUTINE FC_Timestep_Out()
 
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/rcmd/LCMDFL
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -1405,10 +1405,10 @@ C Data pertaining to gas-fired water storage tank (may not exist in user's .pln)
 
       SUBROUTINE H3KSTORE_Progress()
            IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its 
       INTEGER   iZONE,IDAYN,iMonth,ISTAT, I

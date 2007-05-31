@@ -46,7 +46,7 @@ C GTGEOM    - the ground topology file name
 C GTNAME    - description name of the ground topology.
 
       SUBROUTINE EGRNIN(IUNIT,GTGEOM,ITRC,ITRU,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -236,7 +236,7 @@ C by this name is overwritten). ITRU unit number for
 C user output. IER=0 OK, IER=1 problem.
 
       SUBROUTINE  EGROUT(IFILG,GENFIL,ITRU,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -329,7 +329,7 @@ C ******************** EGTROT
 C Rotate ground by ANG degrees and return information via common grndpln.
 C X1,Y1 is the point to rotate about.
       SUBROUTINE EGTROT(ANG,X1,Y1)
-#include "building.h"
+      INCLUDE 'building.h'
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -355,7 +355,7 @@ C and a list of surfaces associated with each vertex.  The second
 C prints a list of surface numbers and the list of vertices which 
 C define them.  Information is gathered from common block G1.
       SUBROUTINE GTINFO(ITRU)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)

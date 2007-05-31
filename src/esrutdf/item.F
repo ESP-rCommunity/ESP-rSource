@@ -81,7 +81,7 @@ C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
-#include "tdf2.h"
+      INCLUDE 'tdf2.h'
       COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
      &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
@@ -489,7 +489,7 @@ C Strip from typical string.  GMF(?)='TEXT,4,1
 C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
-#include "tdf2.h"
+      INCLUDE 'tdf2.h'
       COMMON/TDFG2/GMAT(MGAT)
       DIMENSION SALT(6)
       CHARACTER GMAT*52,line*52,SALT*16

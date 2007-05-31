@@ -31,9 +31,9 @@ C of header information to the plant results database.
 C At present this data is cursory.
 
       SUBROUTINE  MZPLS1
-#include "building.h"
-#include "plant.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)
@@ -126,7 +126,7 @@ C results library. This information is stored in a header
 C block associated with the current simulation save set.
 
       SUBROUTINE MZPLS2
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -223,8 +223,8 @@ C (note that at present there is only space for up to 'nprecl/3'
 C  nodes)
 
       SUBROUTINE MZPLS3(IDAY,iflag)
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

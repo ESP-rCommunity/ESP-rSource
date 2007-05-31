@@ -513,7 +513,7 @@ C ******** WRITELC
 C ******* genplin
 C 2 or 3D polyline.
       subroutine genplin
-#include "building.h"
+      INCLUDE 'building.h'
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN

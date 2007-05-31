@@ -30,7 +30,7 @@ C MODESQ is the main controlling routine for the
 C design question facility.
 
       SUBROUTINE MODESQ
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -325,7 +325,7 @@ C ******************** MORANK ********************
 c Routine to perform rank ordering of zones.
 
       SUBROUTINE MORANK(XVAL,IRANK,VRANK)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
@@ -360,7 +360,7 @@ C MOEBAL allows the retrieval of the energy balance 'picture'
 C for any zone over the defined output period.
 
       SUBROUTINE MOEBAL
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV

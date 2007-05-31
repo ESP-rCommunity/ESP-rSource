@@ -24,7 +24,7 @@ C ELISTCMOD: Controls display and editing of primitive constructions.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
@@ -39,7 +39,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       CHARACTER ACTION*1,CLSSEL*36
       CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
       CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -111,7 +111,7 @@ C List one or more classifications.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','mat db text',IER)
         elseif(irpt.eq.3)then
           goto 40
         endif
@@ -529,7 +529,7 @@ C ********** opendb (copy of code from eddb.F)
 C Open materials constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -595,7 +595,7 @@ C Display Zones list and wait for INIPIC item selected
 C the zone no are recorded in NZNOG
 
       SUBROUTINE Zoneslist
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -685,7 +685,7 @@ C string to be used in headers.
 C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
@@ -728,8 +728,8 @@ C ZoneDisp - displays zone based information and allows....
 C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -930,7 +930,7 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 
 
       SUBROUTINE CompoList
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -1037,8 +1037,8 @@ C IF calculation is composite or project based (I.NE.0) the calculation is per
 C square meter of the selected composite.
 
       FUNCTION STEPIMP(IZ,I,J,K,L,NoStep)
-#include "building.h"
-#include "LCA.h"
+      INCLUDE 'building.h'
+      INCLUDE 'LCA.h'
 
       COMMON/CompDim/HeightCo,WidthCo, Perimeter, Area
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
@@ -1310,9 +1310,9 @@ C Db of the primitive material
 C 
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
-#include "building.h"
-#include "LCA.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'LCA.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2339,9 +2339,9 @@ C phylosophy as LCACalc
 
 
       SUBROUTINE LCADet(itrc,Ichanel)
-#include "building.h"
-#include "LCA.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'LCA.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3889,7 +3889,7 @@ C Surfprm returns the number of edges and total length of
 C the perimiter of the polygon. Assumes that the surface is
 C in the current zones common blocks.
       subroutine surfprm(izone,isurf,dupedges,perim)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

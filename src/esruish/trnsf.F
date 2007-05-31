@@ -36,7 +36,7 @@ C The X and Z coordinates of this object body face are then
 C re-expressed in terms of the new local coordiante system
 C for use in POINT.
       SUBROUTINE TRNSF1(IS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTPCH/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/PANGL/PAZI,PELV,PTILT
@@ -279,7 +279,7 @@ C The projected points are specified relative to the local face
 C coordinate system.  The Y-coordinate is left unprojected but in
 C the new coordinate system.
       SUBROUTINE TRNSF3(IB)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/TC/ITC,ICNT
       COMMON/OUTPCH/ICOUT
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
@@ -357,7 +357,7 @@ C Trace?
 
 C *****************************************************************
       SUBROUTINE TRNSF4(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -400,7 +400,7 @@ C Perform rotation.
 
 C *****************************************************************
       SUBROUTINE TRNSF5(NVRIS,XX,YY,ZZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
 
@@ -497,7 +497,7 @@ C           where the X-axis is the line joining the 1st and 2nd
 C           face vertices.
 
       SUBROUTINE PANGS(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/PANGL/PAZI,PELV,PTILT

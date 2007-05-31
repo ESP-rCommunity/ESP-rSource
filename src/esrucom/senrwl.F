@@ -28,9 +28,9 @@ C ***************** READUAL *********************
 C READUAL reads the data fron an existing UA library.
 
       subroutine READUAL(IUALF)
-#include "building.h"
-#include "uncertainty.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -355,8 +355,8 @@ C ***************** WRITUAL *********************
 C WRITUAL reads the data fron an existing UA library.
 
       subroutine WRITUAL(IUALF)
-#include "building.h"
-#include "uncertainty.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -498,9 +498,9 @@ C IELM defines which element.
 C 0=all; 1=distributions; 2=locations; 3=uncertainties.
 
       subroutine listual(ISEC,IELM)
-#include "building.h"
-#include "uncertainty.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 

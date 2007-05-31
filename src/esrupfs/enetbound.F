@@ -114,9 +114,9 @@ C************************************** ENETASGN *******************************
       SUBROUTINE ENETASGN
 
 C Includes
-#include "building.h"
-#include "power.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'power.h'
+      INCLUDE 'plant.h'
 
 C Trace
       COMMON/OUTIN/IUOUT,IUIN
@@ -441,8 +441,8 @@ C ******************************* ENETB2PU *************************************
       SUBROUTINE ENETB2PU
 
 C Includes
-#include "building.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'power.h'
 
 
 C Trace

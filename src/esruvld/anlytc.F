@@ -45,7 +45,7 @@ C *********************************************************************
 C AnlCnd
 C *********************************************************************
       SUBROUTINE AnlCnd
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -305,7 +305,7 @@ C *********************************************************************
 C VldAdv
 C *********************************************************************
       SUBROUTINE VldAdv
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/GR1D04/GAM,RGAM
@@ -493,8 +493,8 @@ C ****************************   VldCon    ****************************
 C VldCon
 C *********************************************************************
       SUBROUTINE VldCon
-#include "epara.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -628,7 +628,7 @@ C ****************************   VConEd    ****************************
 C VConEd 
 C *********************************************************************
       SUBROUTINE VConEd(I,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
 
@@ -717,8 +717,8 @@ C ******************************************************************
 C NPEign estimates the number of positive eigen value
 C ******************************************************************
       FUNCTION NPEign(Beta)
-#include "building.h"
-#include "validation.h"
+      INCLUDE 'building.h'
+      INCLUDE 'validation.h'
 
       COMMON/Vld01/NLayer,Cond(ME),Dens(ME),Cp(ME),DX(ME),NPLyr(ME)
       COMMON/Vld02/Tinit,IndBO,IndBI,Tout,Tin,Hout,Hin
@@ -765,8 +765,8 @@ C ******************************************************************
 C VldP estimates the VldP value
 C ******************************************************************
       FUNCTION VldP(L,Beta,XX)
-#include "building.h"
-#include "validation.h"
+      INCLUDE 'building.h'
+      INCLUDE 'validation.h'
 
       COMMON/Vld01/NLayer,Cond(ME),Dens(ME),Cp(ME),DX(ME),NPLyr(ME)
       COMMON/Vld03/Alpha(ME),VX(MEP1)
@@ -782,8 +782,8 @@ C ******************************************************************
 C VldQ estimates the VldQ value
 C ******************************************************************
       FUNCTION VldQ(L,Beta,xx)
-#include "building.h"
-#include "validation.h"
+      INCLUDE 'building.h'
+      INCLUDE 'validation.h'
 
       DOUBLE PRECISION Beta,Omg,OmgL,VldQ
 
@@ -799,8 +799,8 @@ C ******************************************************************
 C Omg estimates the Omg value
 C ******************************************************************
       FUNCTION Omg(L,Beta)
-#include "building.h"
-#include "validation.h"
+      INCLUDE 'building.h'
+      INCLUDE 'validation.h'
 
       COMMON/Vld03/Alpha(ME),VX(MEP1)
 
@@ -838,7 +838,7 @@ C *********************************************************************
 C VCpyDr
 C *********************************************************************
       SUBROUTINE VCpyDr(NPER,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -912,7 +912,7 @@ C *********************************************************************
 C VMP111  modifies the variables of the validation model.
 C *********************************************************************
       SUBROUTINE VMP111
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -991,7 +991,7 @@ C VSaveP  saves the variables of the validation model into associated
 C         files.
 C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1195,8 +1195,8 @@ C *********************************************************************
 C VAn111  analytical solution.
 C *********************************************************************
       SUBROUTINE VAn111(ier)
-#include "building.h"
-#include "validation.h"
+      INCLUDE 'building.h'
+      INCLUDE 'validation.h'
 
       COMMON/FILEP/IFIL
       COMMON/Vld01/NLayer,Cond(ME),Dens(ME),Cp(ME),DX(ME),NPLyr(ME)

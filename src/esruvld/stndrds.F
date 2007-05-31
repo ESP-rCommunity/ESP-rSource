@@ -29,7 +29,7 @@ C selection of or information about one or more of these.
 C iexfil is the file unit number.
 C exfil is the validation models file name 
       subroutine STNDRDS
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -216,7 +216,7 @@ C IFLG - =1 select all models automatically
 C        =0 allow user selection
 C IRPT - report to file (=1) or screen (=2) or unknown (=0, will ask)
       SUBROUTINE RUNSTD(LVFILE,LGROUP,IFLG,IRPT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -252,12 +252,14 @@ C irecdata - zone and surface number for results recovery (=0 if all)
       character outstr*124,word*20,t24*24,t72*72
       character LVFILE*72,LGROUP*42,tgroup*42
       character H*72,outs*256,doit*248
-      character xfile*72,tg*1,delim*1,t12*12
+      character xfile*144,tg*1,delim*1,t12*12
       character chkresult*8
       
-      logical XST,ok,dok,CLOSE
+      logical XST,ok,dok,CLOSE,unixok
       
 C      write (6,*) 'Debug: call pars:',LVFILE,LGROUP,iflg,irpt
+
+      call isunix(unixok)
 
 C Initialise variables.
       IVFILE=IFIL+1
@@ -431,7 +433,11 @@ C Process selected models.
       endif
       if (irpt.eq.1) then
  9      itu=ixunit
-        write(xfile,'(a)')'/tmp/Stand_tests.txt'
+        if(unixok)then
+          write(xfile,'(a)')'/tmp/Stand_tests.txt'
+        else
+          write(xfile,'(a)')'Stand_tests.txt'
+        endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','exported_res',IER)
         XST=.false.
         call findfil(xfile,XST)
@@ -606,7 +612,7 @@ C dispfl is the file containing the results
 C imod is the current case.
 
       subroutine dotdatrecover(dispfl,imod,iopt)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
       common/OUTIXSTN/IUOUT,IUIN
       common/FILEP/IFIL
 

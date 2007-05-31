@@ -1,8 +1,8 @@
 C------------------------
           SUBROUTINE PLAN
 C------------------------
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

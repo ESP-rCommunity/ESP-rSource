@@ -22,7 +22,7 @@ C PRO
 C ESRU event profiles database manager.
 
       program pro
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 C default file names for databases
@@ -231,8 +231,8 @@ C   casual gains to the operations file,
 C   air flow patterns to the operations file,
 C   control information to the configuration control file.
       SUBROUTINE  CASFMK
-#include "epara.h"
-#include "esprdbfile.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'esprdbfile.h'
 
       integer igraphiclib  ! external definition
 
@@ -591,8 +591,8 @@ C Mid level profile editing facility.  In the case of a new profile
 C dummy data is displayed first. NFLAG='N' new profile, NFLAG='E'
 C existing profile.
       SUBROUTINE  EDPROF(ITM,NFLAG,IER)
-#include "epara.h"
-#include "esprdbfile.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'esprdbfile.h'
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN

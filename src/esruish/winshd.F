@@ -25,7 +25,7 @@ C relating to window shading devices.  After computation the predicted
 C 24 hour shading profile can be associated with any user-specified
 C object body window.
       SUBROUTINE WINSHD
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT

@@ -28,7 +28,7 @@ C   calculates connections stack pressure,
 C   shows simulation progress.
       SUBROUTINE MFRSET(IFCLM,LAST)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)

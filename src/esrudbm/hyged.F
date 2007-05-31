@@ -46,9 +46,9 @@ C and the current category ic and item iit. Ino is the menu index
 C the user selected and iract informs the parent code what to do
 C when EITCOMMON returns.
       subroutine eitcommon(IFB,idbh,ic,iit,ino,ACT,iract,primod,IER)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 C providing paramaters MGDB,MGCL,MGIT
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -177,9 +177,9 @@ C EDMAT2: Material & construction item display (only). If ACT='H' present
 C tabular listing as a pop-up. Assumes that current database is open on
 C unit IFB.
       subroutine edmat2(db,IFB,idbh,ic,iit,ACT,IER)
-#include "building.h"
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
@@ -479,8 +479,8 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edmat(IFB,idbh,ic,iit,ACT,IER)
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -853,8 +853,8 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edacous(IFB,idbh,ic,iit,ACT,IER)
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1158,8 +1158,8 @@ C a tabular listing and return,, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edcolour(IFB,idbh,ic,iit,ACT,IER)
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1372,8 +1372,8 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edtransp(IFB,idbh,ic,iit,ACT,IER)
-#include "espriou.h"
-#include "esprdbfile.h"
+      INCLUDE 'espriou.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1554,7 +1554,7 @@ C ************* BKITEM
 C BKITEM: Put current item in alternative common block structure for later
 C recovery.
       SUBROUTINE BKITEM(idbh,class,item,ic,iit)
-#include "esprdbfile.h" 
+      INCLUDE 'esprdbfile.h' 
 
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/bgendb6/bittag,bitmenu
@@ -1611,7 +1611,7 @@ C Backing item common.
 C ************* RCVITEM
 C RCVITEM: Recover item from alternative common block structure.
       SUBROUTINE RCVITEM(idbh,class,item,ic,iit)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/bgendb6/bittag,bitmenu
@@ -1668,7 +1668,7 @@ C Backing item common.
 C ************* CPITEM
 C CPITEM: Copy item iitorig to catg iccopy returning index of copied item as iitcopy. 
       SUBROUTINE CPITEM(IFB,idbh,icorig,iitorig,iccopy,iitcopy,act,ier)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1826,7 +1826,7 @@ C ************* MVITEM
 C MVITEM: Move item iitorig in icorig to catg icmove returning index of moved 
 C item as iitmove. 
       SUBROUTINE MVITEM(IFB,idbh,icorig,iitorig,icmove,iitmove,ier)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1921,7 +1921,7 @@ C Because it makes use of prsmenu() the calling code may need to issue
 C a call scandbhd for the main database.
       subroutine choseitem(db,ACT,curitem,curdb,selitem,selmenu,itmsel,
      &  icatsel,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2053,7 +2053,7 @@ C category of the selected item. Curdb is the calling db type, ctype
 C is the requested category to select from. 
       subroutine choseitct(db,ACT,curitem,curdb,ctype,selitem,selmenu,
      &  itmsel,icatsel,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 

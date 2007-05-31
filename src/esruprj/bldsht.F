@@ -1,7 +1,7 @@
 C Blind control file: creation, editing, reading & writing.
 C << not referenced in any module - common blocks can be removed >>
       SUBROUTINE  BLDFMK(ITRC,ICOMP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -279,7 +279,7 @@ C ************* EDBLCTL
 C Edit blind control period IN.
       SUBROUTINE EDBLCTL(ITRC,ICOMP,IN,IER)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/B2/NBC(MCOM),IBCS(MCOM,MBP),IBCF(MCOM,MBP),BT(MCOM,MBP,5),

@@ -25,7 +25,7 @@ C act = 'z' for zone air status, act = 'p' for plant
 C component status, act = 'u' for user supplied points.
       SUBROUTINE PSYCHART(act)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -533,8 +533,8 @@ C chart, but first does some bounds checking.
 C IPCOMP: zero is ext dbT, > zero is component index, < zero is zone.
       SUBROUTINE PSYPLOT(X,Y,IPCOMP,NOD)
 
-#include "plant.h"
-C#include "building.h"
+      INCLUDE 'plant.h'
+C      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
@@ -647,9 +647,9 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKPSYCMP(head,IS,NEL,IER)
 
-#include "epara.h"
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'epara.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

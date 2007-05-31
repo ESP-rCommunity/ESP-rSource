@@ -131,11 +131,11 @@ C*******************************************************************************
      &                                 iExclude_Plt_Comp,
      &                                 iExclude_Ele_Comp)
       implicit none
-#include "plant.h"
-#include "building.h"
-#include "power.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'power.h'
 C CETC named constants 
-#include "CETC_definitions.h" 
+      INCLUDE 'CETC_definitions.h' 
 C---------------------------------------------------------------------
 C     Hybird Componenet data
 C---------------------------------------------------------------------

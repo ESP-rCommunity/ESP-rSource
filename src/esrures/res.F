@@ -53,8 +53,8 @@ C           - Principle use is for function button facility on workstations.
 
 C For operational details refer to the ESP-r program user's manual.
       program res
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
@@ -129,8 +129,8 @@ C Significant figure reporting limit (NSIGFIG).
       logical     unixok,there,OK
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,xfile,LTMP,LCFGF,actf,Lflpar
-      character inf*144,LCMDFL*144,outs248*248
+      CHARACTER*72 H,LTMP,LCFGF,actf,Lflpar
+      character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
       character path*72,upath*72,esprc*72,spsname*8,paction*16

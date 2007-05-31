@@ -39,7 +39,7 @@ C thermal conductivity menu and according to user selections it
 C calls other subroutines or returns back to INITPF (bld.F or bps.F).
 C ********************************************************************
       SUBROUTINE LKMENU(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/HELP/IHELPM
       common/pophelp/h(60)
@@ -256,7 +256,7 @@ C This routine is called when the user wants to define the
 C thermal conductivity by zone.
 C ****************************************************************
       SUBROUTINE LKZONE(ICOMP,INDX)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -314,7 +314,7 @@ C via which the user will decide in which surface he want to define
 C the thermal conductivity .
 C ******************************************************************
       SUBROUTINE SURFMN(ICOMP,TEXT,INPICK,IVALS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -339,7 +339,7 @@ C Routine will be called when the user wants to define the
 C thermal conductivity by surface.
 C ****************************************************************
       SUBROUTINE KCONST(ICOMP,INDX,TEXT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -394,7 +394,7 @@ C Routine will be called when the user wants to define the
 C thermal conductivity by layer.
 C ****************************************************************
       SUBROUTINE KLAYER(ICOMP,INDX,TEXT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -434,7 +434,7 @@ C which the user decides which layers to define the
 C thermal conductivity.
 C *******************************************************************
       SUBROUTINE LAYRMN(I,TEXT,INPICK,IVALL)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -468,7 +468,7 @@ C WRTLYR fills up the layer name by specifying the zone and surface
 C names beside the layer number.
 C *********************************************************************
       SUBROUTINE WRTLYR(ICOMP,ICNST,ILYR,NAMELYR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -558,7 +558,7 @@ C Checks the legality of the thermal configuration statements defined
 C by the linear thermal conductivity menu .
 C *********************************************************************
       SUBROUTINE KCHECK(ICOMP,KERR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON

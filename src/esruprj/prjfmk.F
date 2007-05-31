@@ -52,7 +52,7 @@ C facility just after the common blocks have been filled
 C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -845,7 +845,7 @@ C EDAFCTL: Edits thermostatic air flow control description.
 C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDAFCTL(ICOMP,IER)
 
-#include "building.h"
+      INCLUDE 'building.h'
       common/pophelp/h(60)
       COMMON/PREC2/VOL(MCOM)
       COMMON/P1/oprdesc,ctlstr
@@ -1156,8 +1156,8 @@ C Returns: NAC*,IACS*,IACF*,ACI*,ACV*,IPT*,TA* data in common.
 C IER=0 is OK.
       SUBROUTINE EDAIR(ICOMP,IER)
 
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -1567,7 +1567,7 @@ C  IDT day type
 C  IPER period (=0 then new)
 
       subroutine EDAIRFL(ICOMP,IDT,IPER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1787,7 +1787,7 @@ C ACI,ACV infiltration and ventilation rates
 C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
 
       subroutine ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
      &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
@@ -1906,7 +1906,7 @@ C CDAIRFL - copy/ delete air flow data.
 C  ICD - copy (=1) delete (=2) flag
 
       subroutine CDAIRFL(ICD)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
 
@@ -2131,7 +2131,7 @@ C << initial intent to guide later revisions?
 
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2453,7 +2453,7 @@ C ********************* CHKAIRFL *********************
 C CHKAIRFL - check air flow data for overlapping periods.
 
       subroutine CHKAIRFL
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
      &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
@@ -2975,7 +2975,7 @@ C PLTAIR - plot air flow data.
 C  ICOMP zone number
 
       subroutine PLTAIR(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PREC2/VOL(MCOM)
@@ -3144,8 +3144,8 @@ C EDCAS: Edits casual gains portion of a zone operations file.
 C Returns: ICGS*(),ICGF*(),CMGS*(),CMGL*(),RADC*(),CONC*() common.
 C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3952,8 +3952,8 @@ C SCASL: Import a profile from a profiles database to build casual
 C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
@@ -4233,7 +4233,7 @@ C  silent true if no user interaction requested.
 C If silent is true then use icgs & icgf parameters.
 
       subroutine EDCASGN(ICOMP,ICGT,IDT,IPER,silent,icgs,icgf)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
 
@@ -4629,7 +4629,7 @@ C  ICOMP zone number
 C  ICD - copy (=1) delete (=2) flag
 
       subroutine CDCASGN(ICOMP,ICD)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
 
@@ -4839,7 +4839,7 @@ C << different flow rate is required. Do we need to remember the
 C << initial intent to guide later revisions?
 
       subroutine IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -5256,7 +5256,7 @@ C PLTCASGN - plot casual gain data.
 C  ICOMP zone number
 
       subroutine PLTCASGN(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -5609,7 +5609,7 @@ C   idaytype - day type (weekdays = 1, sat = 2, sun = 3
 C   idp - point of insertion or deletion. 
 C   ier - set to 1 if there was a problem
       subroutine insdelcasper(icomp,idaytype,act,idp,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -5722,7 +5722,7 @@ C is passed act = 'wk' for weekday, 'sa' for saturday and
 C 'su' for sunday.
       subroutine initcasday(act,ier)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),

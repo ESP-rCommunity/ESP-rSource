@@ -40,7 +40,7 @@ C with the radiation flag set appropriately after the file has been
 C read in.
 C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKBCLM(ITRU,ICDESC,LASCI,IUNIT,IDS,IDF,silent,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -223,7 +223,7 @@ C of the period being transferred.
 C Item 3 will be replaced by global horizontal radiation (W/M**2),
 C if the radiation flag set was set to GH in the binary climate file.
       SUBROUTINE MKACLM(ACT,LASCI,IAF,IBD,IED,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLMDT0/CLAT,CLONG
@@ -411,7 +411,7 @@ C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -876,8 +876,8 @@ C Item 3 can be replaced by global horizontal radiation (W/M**2),
 C with the radiation flag set appropriately after the file has been
 C read in.
       SUBROUTINE EPWTOBCLM(LASCI,IUNIT,IER)
-#include "esprdbfile.h"
-#include "espriou.h"
+      INCLUDE 'esprdbfile.h'
+      INCLUDE 'espriou.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 

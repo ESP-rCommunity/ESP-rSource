@@ -73,7 +73,7 @@ C----------------------------------------------------------------------
      &               iPlant_Matrix  )
       implicit none
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 C----------------------------------------------------------------------
 C     Logical array indicating if plant components have support for 4th, 
 C     hydrogen matrix
@@ -213,9 +213,9 @@ C----------------------------------------------------------------------
      &            fCoefficients )
       implicit none
 
-#include "plant.h"
-#include "chemical_properties.h"
-#include "Hydrogen_demand_controller.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'chemical_properties.h'
+      INCLUDE 'Hydrogen_demand_controller.h'
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1348,7 +1348,7 @@ C----------------------------------------------------------------------
      &                             iGas_LAW)
 
       implicit none
-#include "building.h"
+      INCLUDE 'building.h'
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -1552,8 +1552,8 @@ C  None
 C----------------------------------------------------------------------
       subroutine Comp_Cyl_PostPro(iComponent, iStatus)
       implicit none
-#include "plant.h"
-#include "chemical_properties.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'chemical_properties.h'
 
 C External functions.     
       integer lnblnk

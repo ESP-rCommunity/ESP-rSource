@@ -29,8 +29,8 @@ C ******* Translate esp data to EnergyPlus file geom and materials for version 1
 C itrc (integer) =0 turns off reporting, =1 brief
 C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)

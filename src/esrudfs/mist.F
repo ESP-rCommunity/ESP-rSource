@@ -24,7 +24,7 @@ C  genmist - converts water content to mist visualisation input file.
 C ********************* GENMIST *********************
 C GENMIST converts water content to mist visualisation input file.
       subroutine GENMIST
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),

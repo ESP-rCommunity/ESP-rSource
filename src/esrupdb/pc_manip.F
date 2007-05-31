@@ -85,7 +85,7 @@ C The routine 'PCGET' is called to read
 C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -316,7 +316,7 @@ C ******** PCFIND *********
 C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC
@@ -365,7 +365,7 @@ C Deletes a component from the library.
 C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
-#include "plantdb.h"  
+      INCLUDE 'plantdb.h'  
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -482,7 +482,7 @@ C Error handling.
 C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
-#include "plantdb.h" 
+      INCLUDE 'plantdb.h' 
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -730,7 +730,7 @@ C Error handling.
 C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
-#include "plantdb.h" 
+      INCLUDE 'plantdb.h' 
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -1023,7 +1023,7 @@ C Error handling.
 
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC
@@ -1089,7 +1089,7 @@ C ********  PCUPDT **********
 C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
-#include "plantdb.h"
+      INCLUDE 'plantdb.h'
       common/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC

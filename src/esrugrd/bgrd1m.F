@@ -32,7 +32,7 @@ C ******************************  MENU1M  *****************************
 C MENU1D generates the 1D moisture node distribution menu.
 C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -286,7 +286,7 @@ C distribution menu after performing the request.
 
 C *********************************************************************
       SUBROUTINE HYGRIC(IZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
@@ -466,7 +466,7 @@ C ***************************    LISTMD   *****************************
 C LISTMD lists the node distribution in the text feedback window.
 C *********************************************************************
       SUBROUTINE LISTMD(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

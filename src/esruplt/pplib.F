@@ -26,7 +26,7 @@ C Thermal Conduction (solid to solid)
       SUBROUTINE PP11(IPCOMP,ISTATS,Conn1,Conn2,
      &                Cmn,Cm,Cn,TmP,TnP,RMm,RMn)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -71,7 +71,7 @@ C Thermal Conduction (with ambient solid block)
       SUBROUTINE PP12(IPCOMP,ISTATS,Conn1,
      &                Ces,CesP,Cs,CsP,TsP,TeP,RMs)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -105,7 +105,7 @@ C Surface Convection (with moist air)
      &               Cas,CasP,Cs,CsP,Cav,CavP,Cpma,CpmaP,Cc,
      &               RMs,RMsP,RMa,RMaP,TaP,TsP)  
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
 
@@ -152,7 +152,7 @@ C Surface Convection (with 2-phase fluid)
      &               RMs,RMsP,TrP,TsP,Tsat)
       
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
 
@@ -198,7 +198,7 @@ C Surface Convection (with 1-phase fluid)
      &               RMs,RMw,TwP,TsP)
       
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
 
@@ -239,7 +239,7 @@ C Surface convection (with ambient)
       SUBROUTINE PP24(IPCOMP,ISTATS,Conn1,
      &                Ces,CesP,RMs,Cs,Te,TeP,TsP)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -271,7 +271,7 @@ C Surface Radiation (with local surface)
       SUBROUTINE PP31(IPCOMP,ISTATS,Conn1,Conn2,
      &                Cst,CstP,Cs,Ct,TsP,TtP,RMs,RMt)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -316,7 +316,7 @@ C Surface radiation (with ambient surface)
       SUBROUTINE PP32(IPCOMP,ISTATS,Conn1,
      &                Ces,CesP,RMs,RMsP,Cs,CsP,Te,TeP,TsP)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -350,7 +350,7 @@ C Flow (Moist Air) upon Surface
      &               Cpam,CpamP,Cpa1,ho,Ao,Cd,CdP,Cdmax,
      &               RMs,RMa,Rmam,Rmvm,Ta0P,TamP,Ta1P,Ts,TsP)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       CHARACTER SURFACE*3
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
@@ -464,7 +464,7 @@ C Flow (Two-phase Fluid) upon Surface
       SUBROUTINE PP42(IPCOMP,ISTATS,Conn1,Conn2,Trm,Tr1,Tsat,PHASE,
      &                Crs,CrsP,Cr0,Cr0P,Cr1,Cr1P,Cs,Cpwm,CpwmP,Cpw1,
      &                RMs,RMw,RMwP,Tr0P,TrmP,Tr1P,TsP,Rmc)
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -554,7 +554,7 @@ C Flow (Single-phase Fluid) upon Surface
       SUBROUTINE PP43(IPCOMP,ISTATS,Conn1,Conn2,DELAY,Twm,Tw1,
      &                Csw,CswP,Cw0,Cw0P,Cw1,Cw1P,Cs,Cpwm,CpwmP,Cpw1,
      &                RMs,RMw,Tw0P,TwmP,Tw1P,TsP)
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
       logical close
@@ -648,7 +648,7 @@ C Flow (Moist Air) upon Surface: 2 node model
      &               Cpam,CpamP,ho,Ao,Cd,CdP,
      &               RMs,RMa,Rmv0,Ga0,Ta0P,Ta1,Ta1P,Ts,TsP)     
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 C      CHARACTER SURFACE*3
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
@@ -744,7 +744,7 @@ C Flow (single-phase fluid) upon Surface: 2 node model
      &               Cpw1,Cpw1P,
      &               RMs,RMsP,RMw,RMwP,Tw0P,Tw1P,Ts,TsP)     
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
@@ -807,7 +807,7 @@ C Flow Diverger (for all fluid types)
 
       SUBROUTINE PP51(IPCOMP,ISTATS,R)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
  
       IF(ISTATS.EQ.1) THEN
@@ -850,7 +850,7 @@ C Flow Multipier (for all fluid types)
 
       SUBROUTINE PP52(IPCOMP,ISTATS,R1,R2)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
  
 C Self-coupling coefficients
@@ -876,7 +876,7 @@ C Flow Inducer (for all fluid types)
 
       SUBROUTINE PP53(IPCOMP,ISTATS,Conn,Fm,R1,R2)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
  
 C Self-coupling coefficients
@@ -906,7 +906,7 @@ C Flow Converger (for moist air)
 
       SUBROUTINE PP61(IPCOMP,ISTATS,Ca1,Ca2,Ca3)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
  
       IF(ISTATS.EQ.1) THEN
@@ -940,7 +940,7 @@ C Flow Converger (for 2-phase fluid)
      &               Cpw1,Cpv1,Cpw2,Cpv2,Tr1,Tr2,
      &               Rmw1,Rmv1,Rmw2,Rmv2)
       
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
 
       Rmr1=Rmw1+Rmv1
@@ -988,7 +988,7 @@ C Flow Converger (for 1-phase fluid)
      &               Rmw1,Rmv1,Rmw2,Rmv2)
       
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
       logical close
  
@@ -1034,7 +1034,7 @@ C Flow Converger (for leak-in moist air from outside)
      &               Cpa0,Cpv0,Cpa1,Cpv1,Cpae,Cpve,
      &               Rma0,Rmv0,Rma1,Rmv1,Rmae,Rmve)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
  
       IF(ISTATS.EQ.1) THEN
@@ -1071,7 +1071,7 @@ C Flow (Moist Air) upon Water Spray: 2 node model
      &               Cpa2,Cpa2P,Cpw2,Cpw2P,Cav,CavP,C21,
      &               RMa2,RMw2,RMa2P,RMw2P,Ta1P,Ta2P,Tw1P,Tw2P)     
 
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha 
 
@@ -1143,7 +1143,7 @@ C Fluid Injection (water/steam to moist air)
       SUBROUTINE PP81(IPCOMP,ISTATS,Conn1,Ta2,
      &               Cr0,Ca1,Ca2,Rmw0,Rmv0,Rma1,Rmv1,Hfg,HfgP)
       
-#include "plant.h"
+      INCLUDE 'plant.h'
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
       logical close
 
@@ -1212,7 +1212,7 @@ C Fluid Accumulator (for Moist Air)
      &                Ca0,Ca0P,Ca,CaP,Ca2,Ca2P,
      &                Ta0P,Ta1P,Ta2P,Cm2,Ga1)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -1260,7 +1260,7 @@ C Fluid Accumulator (for Single-phase Fluid)
      &                Cw0,Cw0P,Cw1,Cw1P,Cpw2,Cpw2P,
      &                RMw2,RMw2P,Tw0P,Tw1P,Tw2P,Cm1)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -1317,7 +1317,7 @@ C Heat Injection (to solid)
 
       SUBROUTINE PP101(IPCOMP,ISTATS,Conn1,Cs,RMs,TsP,Q,QP)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -1354,7 +1354,7 @@ C Heat Injection (to Vapour-generating Fluid)
      &                Cvw,Cpw1,Cpw1P,
      &                RMw,RMwP,Rmv2,Rmv2P,Tw1P,
      &                Hfg,HfgP,Q,QP)
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 
@@ -1407,7 +1407,7 @@ C Heat Injection (to Moist Air)
       SUBROUTINE PP103(IPCOMP,ISTATS,Conn1,TaP,
      &                Ca,CaP,Rmc,RmcP,Hfg,HfgP,Q,QP)
 
-#include "plant.h"   
+      INCLUDE 'plant.h'   
       COMMON/Pctime/TIMSEC
       COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
 

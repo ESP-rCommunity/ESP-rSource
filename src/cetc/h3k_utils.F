@@ -70,8 +70,8 @@ C ------------------------------------------------------------------------------
 
       LOGICAL Function bInStartup() 
       IMPLICIT NONE
-#include "building.h"
-#include "MultiYear_simulations.h"
+      INCLUDE 'building.h'
+      INCLUDE 'MultiYear_simulations.h'
 
 C iss simulation start day  (1->365) as derived in bmatsv.F
 C isf  simulation end day  (1->365)
@@ -262,10 +262,10 @@ C ------------------------------------------------------------------------------
 
         SUBROUTINE TrackBuildingTimeSteps()
         IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
 	common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
         common/bldconpp/iBLTS
         INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its  
@@ -302,10 +302,10 @@ C ------------------------------------------------------------------------------
         SUBROUTINE TrackPlantTimeSteps()
          IMPLICIT NONE
   
-#include "building.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'h3kstore_parameters.h'
+      INCLUDE 'h3kstore_common.h'
 	common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
         common/pltcon/bPltCon,LastTSTP
         Real LastTSTP
@@ -509,7 +509,7 @@ C----------------------------------------------------------------------
      &   iAction
      &    )     
       implicit none
-#include "building.h"      
+      INCLUDE 'building.h'      
 
 C External functions.     
       integer lnblnk
@@ -624,7 +624,7 @@ C----------------------------------------------------------------------
      &   iAction
      &    )     
       implicit none
-#include "building.h"      
+      INCLUDE 'building.h'      
 
 C External functions.     
       integer lnblnk
@@ -737,7 +737,7 @@ C----------------------------------------------------------------------
      &   iAction
      &    )     
       implicit none
-#include "building.h"      
+      INCLUDE 'building.h'      
 
 C External functions.     
       integer lnblnk
@@ -850,7 +850,7 @@ C----------------------------------------------------------------------
      &   iAction
      &    )     
       implicit none
-#include "building.h" 
+      INCLUDE 'building.h' 
 
 C External function.
       integer lnblnk
@@ -1048,8 +1048,8 @@ C----------------------------------------------------------------------
 
       real function fConvert_TS_to_DAY ( iTS_bld, iTS_plt )
       implicit none
-#include "building.h"
-#include "MultiYear_simulations.h"
+      INCLUDE 'building.h'
+      INCLUDE 'MultiYear_simulations.h'
 
 C----------------------------------------------------------------------
 C     Passed arguements

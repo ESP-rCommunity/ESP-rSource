@@ -4,8 +4,8 @@ C    DRAW BODY IBB
 C   USED WHERE THE BODY IS CONVEX AND UNOBSCURED
 C   OR WHERE SINGLE BODY
 C
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
 C
 C***DIAG
 C***D      WRITE(20,*)' PERS2 BODY',IBB

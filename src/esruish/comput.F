@@ -25,7 +25,7 @@ C COMPUT: Sets up the parameters relating to shading computation.
 C ********************* COMPUT
 C 'COMPUT' Sets up the parameters relating to shading computation.
       SUBROUTINE COMPUT(ICOMP,IER,act)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT

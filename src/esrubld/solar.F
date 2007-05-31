@@ -37,7 +37,7 @@ C on internal and external surfaces.
 
       SUBROUTINE MZSOLR(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -170,7 +170,7 @@ C These energy transfers are computed for both the present
 C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
@@ -1515,7 +1515,7 @@ c mean time (Greenwich is the reference time zone for
 c Britain).
 
       SUBROUTINE MZSANG
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1745,7 +1745,7 @@ C Also the elevation and azimuth angles of incidence for
 C the bidirectional case.
       SUBROUTINE MZSCAI(ICOMP,II,CAI,ANGI,IND1,IND2,PSAZI2,
      &           PSELV2,IANGBI1,IANGBI2)
-#include "building.h"
+      INCLUDE 'building.h'
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -1833,7 +1833,7 @@ C accomodate call for MZSRAD0 from subroutine
 C "simple_solar_coll_coeff_gen".
 
       SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
 
@@ -1852,7 +1852,7 @@ C  SOLAR PROCESSING: incident comprises direct, sky diffuse
 C  and ground reflected components.
 
       SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER SNFNAM*72
@@ -2219,7 +2219,7 @@ C MZWINP2 interpolates bidirectional data.
 C Linear interpolation is assumed.
 
       SUBROUTINE MZWINP2(X1,X2,X3,X4,IANGBI1,IANGBI2,PSAZI2,PSELV2,Y)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       
@@ -2250,7 +2250,7 @@ C XF    is the transmission factor assuming incident diffuse.
 C ABTOT is the total absorbed.
 
       SUBROUTINE MZTMCA(ICOMP,ISUR,RAD,XF,ABTOT)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/COE32J/QTMCA(MS,MN,2)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -2364,7 +2364,7 @@ C IANS=0 ; no self-shading
 C IANS=1 ; self-shading occurs
 
       SUBROUTINE MZSFSH(ICOMP,IS,IANS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -2463,7 +2463,7 @@ c         radiation - relating to any window - between the
 c         receiving internal surfaces.
 
       SUBROUTINE MZSHDO(IYRD)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -2649,7 +2649,7 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons      
-#include "building.h"
+      INCLUDE 'building.h'
       INTEGER IXPOS
       REAL GREF         ! actual snow covered ground reflectivity for the hour
       INTEGER ITGREF    ! flag for ground reflectivity model used

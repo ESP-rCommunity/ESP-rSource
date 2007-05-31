@@ -43,7 +43,7 @@ C **************************    INITST    *****************************
 C INITST initializes the structured gridding variables.
 C *********************************************************************
       SUBROUTINE INITST
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -436,7 +436,7 @@ C FLLSRF fills up the internal surface node array for the structured
 C        mesh.
 C *********************************************************************
       SUBROUTINE FLLSRF(IComp,ISrf,Inod,Area)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -522,7 +522,7 @@ C ***************************     STUPST     **************************
 C STUPST Sets up the zone matrix for the zone with a structured mesh.
 C *********************************************************************
       SUBROUTINE STUPST(IComp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &ARF(MCOM,MS)
@@ -1286,7 +1286,7 @@ C MZSCFG calculates the longwave terms for internal surface nodes in
 C        structured mesh.
 C *********************************************************************
       SUBROUTINE MZSCFG(IComp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1402,7 +1402,7 @@ C *************************    SVITS1    ******************************
 C SVITS1 solves the structured mesh zone matrix iterratively.
 C *********************************************************************
       SUBROUTINE SVITS1(IComp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CCTL/ICASCF(MCOM)
@@ -1499,7 +1499,7 @@ C SVITS2 solves the structured mesh zone matrix based on default 1D
 C        gridding iterratively.
 C *********************************************************************
       SUBROUTINE SVITS2(IComp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CCTL/ICASCF(MCOM)
@@ -1647,7 +1647,7 @@ C BACKSD performs the back substitution process after adapting the
 C        control function for structured mesh.
 C *********************************************************************
       SUBROUTINE BACKSD
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
@@ -1683,7 +1683,7 @@ C Present term.
 
 C *********************************************************************
       subroutine TEMPSD (icomp)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/GR3D132/T3F(MNOD3)
@@ -1723,7 +1723,7 @@ C ***************************   save3d  ***********************************
 C SAVE3D saves the multi-D and structured mesh system matrix coefficients.
 C *************************************************************************
       subroutine save3d
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF

@@ -32,8 +32,8 @@ C    mode = 2 : Read data pointers only.
 
       subroutine opnpdb(mode)
 
-#include "plant.h"
-#include "esprdbfile.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
@@ -142,7 +142,7 @@ C  mode = 2 : skip reading component parameters
 C
       subroutine rcdata(ipc,mode)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       PARAMETER (IRECLN = 20)      
 
@@ -288,7 +288,7 @@ C*********************** update ************************
 C update descriptions for selected components
       subroutine update
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
@@ -318,7 +318,7 @@ C Fill array 'pcdesc' with description of each component
 C in database.
       subroutine descpc
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
@@ -352,7 +352,7 @@ C *********************** getmfs ************************
 C This subroutine reads mass flow component data 
 C from plant component database.
       subroutine getmfc(ipc,nconns)
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       PARAMETER (IRECLN = 20)
  

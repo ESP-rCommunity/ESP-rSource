@@ -33,7 +33,7 @@ C MENU1D generates the 1D node distribution menu. It is called via the
 C main multi-D gridding menu.
 C *********************************************************************
       SUBROUTINE MENU1D
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -287,7 +287,7 @@ C *******************************  AUTG1D  ****************************
 C AUTG1D generates the variable node distribution menu.
 C *********************************************************************
       SUBROUTINE AUTG1D
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
@@ -508,7 +508,7 @@ C ******************************  LUMPMN  *****************************
 C LUMPMN generates the lumped construction menu.
 C *********************************************************************
       SUBROUTINE LUMPMN
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -903,7 +903,7 @@ C ***************************    LISTND   *****************************
 C LISTND lists the node distribution in the text feedback window.
 C *********************************************************************
       SUBROUTINE LISTND
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON

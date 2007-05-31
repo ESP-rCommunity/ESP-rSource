@@ -1,7 +1,7 @@
 C----------------------------------------------------
       SUBROUTINE INPUT(INIT)
-#include "viewer.h"
-#include "viewer.h2"
+      INCLUDE 'viewer.h'
+      INCLUDE 'viewer.h2'
 
       integer igraphiclib  ! external definition
 

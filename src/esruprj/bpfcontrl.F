@@ -37,12 +37,12 @@ C STFMENU: Copies menu and prompts for period editing.  It expects the common
 C          block sctl to have been filled for the current period.
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
-#include "building.h"
-#include "plant.h"
-#include "epara.h"
-#include "net_flow.h"
-#include "control.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'epara.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'power.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1059,11 +1059,11 @@ C ***** totctlper
 C Finds the current number of periods in all control loops
 C of type icfoc.
       subroutine totctlper(icfoc,ncper)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'power.h'
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
@@ -1147,7 +1147,7 @@ C of type icfoc.
 C *********** EBCNTRL
 C Edit building control function II.
       SUBROUTINE EBCNTRL(ITRC,II,IV,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -1156,14 +1156,17 @@ C Edit building control function II.
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      DIMENSION SALT(21),IVALS(21)
+      DIMENSION SALT(22),IVALS(22)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
-      character outsa*84,outsb*84,outsc*84,ltmp*248
+      character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48
       logical close1,close2,close3,close4,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
+      dimension icsn(4)! for passing sensor location to
+      integer icsn
+      integer lastndx  ! to keep track of last data position used.
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -1316,7 +1319,7 @@ C law can be jumped around.
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
-     &      iclaw.eq.21)then
+     &      iclaw.eq.21.or.iclaw.eq.22)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1361,6 +1364,7 @@ C starting up the menu based control period definition.
         SALT(19)=' Multi-sensor heating/cooling          '
         SALT(20)=' Evaporative source (surface)          '
         SALT(21)='Slave Capacity Controller              '
+        SALT(22)='VAV cooling with CAV reheat (BETA)     '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1427,7 +1431,7 @@ C starting up the menu based control period definition.
         H(57)='Further details within each control law interface.'
         H(58)=' '
   63    CALL EPICKS(IX,IVALS,' ',' Control law: ',
-     &    40,21,SALT,'control law (indented=old or obscure)',IER,58)
+     &    40,22,SALT,'control law (indented=old or obscure)',IER,58)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -1684,8 +1688,11 @@ C Control with separate on/off setpoints for heating and cooling.
         elseif(IBCLAW(II,JJ,KK).eq.11)then
 
 C Match temp to a function of multi-sensor values (ideal mode).
-C << this logic is used for the case of a setpoint temperature
-C << defined in a temporal file.
+C This logic is also used for the case of a setpoint temperature
+C defined in a temporal file.  Note that users should first have
+C setup the control via the context->temporal menu so it is usually
+C not required that a user do subsequent editing to the zone control
+C law ll details.
           H(1)=' - Refer ESP-r Data Model section 9 '
           if(itrc.gt.0)then
             call edisp(iuout,' ')
@@ -1700,16 +1707,26 @@ C << defined in a temporal file.
             ndx=0
             if(I6.gt.2) I6=2
             DO 123 L=1,I6              
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
               ndx=8+4*(L-1)
               call edisp(iuout,' Auxliary Sensor Details')              
               write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
-             call edisp(iuout,outs)
-             if(INT(cm(7)).eq.4)then
-              ndx=12+(L-1)+4*(I6-1)         
-              write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
               call edisp(iuout,outs)
-             endif
-123        continue   
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
+              if(INT(cm(7)).eq.4)then
+                ndx=12+(L-1)+4*(I6-1)         
+                write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
+                call edisp(iuout,outs)
+              endif
+123         continue   
           endif
 
           H(1)=' The number of data items required is in the range'
@@ -1726,11 +1743,16 @@ C << defined in a temporal file.
           H(12)='   `   `  `    `     `                2       14 '
           H(13)=' weighting of aux`y sensors           2       16 '
           H(14)=' '
-          H(15)='plus 1 item for scaling factor (i.e. a % offset)'
-          H(16)='plus 1 item for offset factor (absolute offset) '
-          H(17)=' - Refer ESP-r Data Model section 9 '
+          H(15)='PLUS 1 item for scaling factor (i.e. a % offset)'
+          H(16)='PLUS 1 item for offset factor (absolute offset) '
+          H(17)=' '
+          H(18)='NOTE: if you are using this control to get a setpoint'
+          H(19)='from a temporal file a zone control might already have'
+          H(20)='created within the model context->temporal data menu.'
+          H(21)=' '
+          H(22)=' '
           CALL EASKR(cm(1),' ',' No. of misc data items ',
-     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,17)
+     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,22)
 
   53      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
           H(1)='Heat delivery is normally set high so that the '
@@ -1762,52 +1784,85 @@ C << defined in a temporal file.
           H(3)=' 2: (ref sensor)-(least value of aux sensors)'
           H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
           H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
-          CALL EASKR(cm(7),' ',' Multi-sensor mode ? ',
+          CALL EASKR(cm(7),' ',' Multi-sensor mode (see help)?',
      &      1.,'F',4.,'F',0.,' multi-sensor mode',IER,5)
           
 C Auxiliary sensor details,
           I6=INT(cm(6))  
           H(1)='The sensor details are essentially the same as '
           H(2)='required in a control point sensor ie. '
-          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(3)=' 1st aux item >0 is a zone and or surface, =0 any zone,'
           H(4)='   = -1 measuring plant component,  '
           H(5)='   = -2 measuring mix air:radiant,'
           H(6)='   = -3 ambient where the 2nd item is:'
           H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
           H(8)='        3 = wind dir, 4 = diffuse rad, '
           H(9)='        5 = direc norm rad, 6 = RH'
-          h(10)=' '
-          H(11)=' - Refer ESP-r Data Model section 9 '
+          h(10)='  = -5 an item in a temporal file AND the 2nd aux item'
+          h(11)='       is the column of the temporal item.'
+          h(12)='       NOTE: these would already be set for you if'
+          h(12)='       you used the context->temporal data menu'
+          h(13)='       option to associate a temporal setpoint item'
+          h(14)='       with a model.'
+          h(15)=' '
+          h(16)=' 2nd item is used to further specify the location '
+          h(17)=' 3rd item is used to further specify the location '
+          h(18)=' 4th item is always zero '
+          H(19)=' - Refer ESP-r Data Model section 9 '
           DO 125 L=1,I6
             ndx=8+4*(L-1)
-            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-     &        -3.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,13)
-            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,13)          
-            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,13)          
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,13)
-125       continue          
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
+            CALL EASKR(cm(ndx),' ',
+     &        ' Aux sensor detail 1st item (see help)?',
+     &        -5.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,19)
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,19)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,19)          
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sensor detail 4th item (always use zero)?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,19)
+125       continue 
+          lastndx=ndx+4         
           
           I7=INT(cm(7))
           if(I7.eq.4)then
-           DO 126 L=1,I6
+            DO 126 L=1,I6
 C Weighted auxiliary sensors mode,
-            ndx=12+(L-1)+4*(I6-1)         
-            H(1)=' The sensor weightings must total exactly 100.0'
-            CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
-     &        0.,'F',100.,'F',50.,' Aux sensor weighting',IER,1)
-126        continue
+              ndx=lastndx  ! set to next slot after aux senor data.        
+              H(1)='The sensor weightings must total exactly 100.0'
+              H(2)='This allows you to discount one of the sensors.'
+              if(i6.eq.1) cm(ndx)=100.0  ! if only one sensor.
+              CALL EASKR(cm(ndx),' ',
+     &          'Sensor weighting (between 0.0 & 100.0)?',
+     &          0.,'F',100.,'F',50.,' Aux sensor weighting',IER,2)
+126         continue
+          else
+            ndx=nint(cm(1))  ! set this so scaling next to last entry. 
+            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1)   
           endif
 
-C At end of data add in scaling factor and offset.
-          H(1)=' The sensor weightings must total exactly 100.0'
-          CALL EASKR(cm(ndx+1),' ',' Scaling factor ? ',
-     &        0.,'F',10.,'F',1.,' scaling factor',IER,1)
-          H(1)=' The sensor weightings must total exactly 100.0'
+C At end of data add in scaling factor and offset. Typically
+C a scaling factor is 1.0
+          H(1)='The sensor scaling factor is applied to the sensed'
+          H(2)='value at each timestep e.g. (20C sensed x 1.1) would'
+          H(3)='request a 10% rise over measured. '
+          if(cm(ndx).lt.0.01) cm(ndx+1)=1.0
+          CALL EASKR(cm(ndx),' ',' Scaling factor ? ',
+     &        0.,'F',10.,'F',1.,' scaling factor',IER,3)
+          H(1)='The sensor offset allows you to modify the sensed'
+          H(2)='value by a fixed amount. '
           CALL EASKR(cm(ndx+1),' ',' Offset factor ? ',
-     &        0.,'F',10.,'F',1.,' offset factor',IER,1)
+     &        -10.,'F',10.,'F',1.,' offset factor',IER,2)
         elseif(IBCLAW(II,JJ,KK).eq.12)then
 
 C Match temp to a function of multi-sensor values (on-off mode).
@@ -1827,6 +1882,16 @@ C Match temp to a function of multi-sensor values (on-off mode).
               call edisp(iuout,' Auxiliary Sensor Details')
               write(outs,'(4F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),cm(ndx+3)
               call edisp(iuout,outs)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
               if(INT(cm(7)).eq.4)then
                 ndx=12+(L-1)+4*(I6-1)         
                 write(outs,'(a,F9.2)')' Weighting for sensor ',cm(ndx)
@@ -1887,18 +1952,41 @@ C Match temp to a function of multi-sensor values (on-off mode).
 
 C Auxiliary sensor details,
           I6=INT(cm(6))          
-          H(1)='The items are essentially the same as required in a'
-          H(2)=' control point sensor. '
+          H(1)='The sensor details are essentially the same as '
+          H(2)='required in a control point sensor ie. '
+          H(3)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(4)='   = -1 measuring plant component,  '
+          H(5)='   = -2 measuring mix air:radiant,'
+          H(6)='   = -3 ambient where the 2nd item is:'
+          H(7)='        0 = db, 1 = sol-air, 2 = wind velo, '
+          H(8)='        3 = wind dir, 4 = diffuse rad, '
+          H(9)='        5 = direc norm rad, 6 = RH'
+          h(10)=' '
+          h(11)=' 2nd item is used to further specify the location '
+          h(12)=' 3rd item is used to further specify the location '
+          h(13)=' 4th item is always zero '
+          H(14)=' - Refer ESP-r Data Model section 9 '
           DO 135 L=1,I6
             ndx=8+4*(L-1)
-            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-     &        -3.,'F',0.,'-',0.,' Aux sen detail 1st item',IER,2)
-            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,2)          
-            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,2)
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
-     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,2)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
+            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ?',
+     &        -3.,'F',0.,'-',0.,' Aux sen detail 1st item',IER,14)
+            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,14)          
+            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,14)
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sen detail 4th item (always use zero)?',
+     &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,14)
 135       continue 
 
           I7=INT(cm(7))
@@ -1969,74 +2057,6 @@ C Logic Optimum Start Controller.
             goto 77
           endif
           goto 92
-
-C          if(itrc.gt.0)then
-C            call edisp(iuout,' ')
-C            call edisp(iuout,' Logic Optimum Start control data is:')
-C            call edisp(iuout,' Htg cpcy, Set pt, Temp Diff, DTOA,
-C     & Min time diff, Init. Guess Opt.')
-C            write(outs,'(6F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
-C            call edisp(iuout,outs)
-C            call edisp(iuout,' ')
-            
-C            I7=INT(cm(7))
-C            IF(I7.EQ.1)THEN
-C              call edisp(iuout,' Init. Guess')
-C              write(outs,'(1F9.2)')4.
-C            ELSEIF(I7.EQ.2)THEN
-C              call edisp(iuout,' Init. Guess')
-C              write(outs,'(1F9.2)')cm(8)
-C            ELSEIF(I7.EQ.3)THEN
-C              call edisp(iuout,' B&J Cofts.')
-C              write(outs,'(3F9.2)')cm(8),cm(9),cm(10)
-C            ENDIF
-C          endif
-
-C          H(1)=' The number of data items required is in the range'
-C          H(2)=' 6 to 8 and depends on the initial guess selected:'
-C          H(3)=' If initial guess user-defined  - 6 items required;'
-C          H(4)=' If Birtles & John Eqn. estimate - 8 items rqd.' 
-C          H(5)=' - Refer ESP-r Data Model section 9 '
-C          CALL EASKR(cm(1),' ',' No. of misc data items ?',
-C     &      6.,'F',8.,'F',6.,'no. of misc data items',IER,5)
-C          CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
-C     &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
-C          CALL EASKR(cm(3),' ',' Heating set-point [deg.C] ? ',
-C     &      -100.,'F',100.,'F',20.,' htg set-point',IER,0)
-C          CALL EASKR(cm(4),' ',' Temp differential ? ',
-C     &      0.,'F',0.,'-',2.,'temp diffnl',IER,0)
-C          CALL EASKR(cm(5),' ',' Desired time of arrival (DTAO) ? ',
-C     &      0.,'F',0.,'-',4.,' DTOA',IER,0)
-
-C          H(1)=' If the difference between successive estimates is'
-C          H(2)=' less then the `Min. Time Diff`, then the earliest'
-C          H(3)=' time is accepted as the `Optimum Start Time`.'
-C          CALL EASKR(cm(6),' ',' Min time diff. ? ',
-C     &      0.,'F',0.,'-',0.1,' Min time diff.',IER,3)
-
-C          H(1)=' The initial guess may be one of the following'
-C          H(2)=' 3 options:-'
-C          H(2)=' 1 = Default of 4.00 a.m.;'
-C          H(3)=' 2 = User-Defined time;'
-C          H(4)=' 3 = Birtles & John Eqn. estimate.'
-C          CALL EASKR(cm(7),' ',' Initial Guess ? ',
-C     &      0.,'F',3.,'-',1.,' Initial Guess',IER,4)
-
-C          I7=INT(cm(7))
-C          IF(I7.EQ.1)THEN
-C             cm(8)=4.
-C          ELSEIF(I7.EQ.2)THEN
-C             CALL EASKR(cm(8),' ',' Initial Guess ? ',
-C     &       0.,'F',24.,'F',4.,'Initial Guess',IER,0)
-C          ELSEIF(I7.EQ.3)THEN
-C             CALL EASKR(cm(8),' ',' B&J Eqn 1st Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 1st Coeft ',IER,0)
-C             CALL EASKR(cm(9),' ',' B&J Eqn 2nd Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 2nd Coeft ',IER,0)
-C             CALL EASKR(cm(10),' ',' B&J Eqn 3rd Coeft ? ',
-C     &       0.,'-',0.,'-',1.,'B&J Eqn 3rd Coeft ',IER,0)
-C          ENDIF
-
         elseif(IBCLAW(II,JJ,KK).eq.16)then
 
 C Logic Optimum Stop Controller.
@@ -2260,6 +2280,16 @@ C If no cooling capacity then set cooling set point to 100C.
               write(outs,'(6F9.2)')cm(ndx),cm(ndx+1),cm(ndx+2),
      &                             cm(ndx+3),cm(ndx+4),cm(ndx+5)
               call edisp(iuout,outs)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+              icsn(1)=nint(cm(ndx))
+              icsn(2)=nint(cm(ndx+1))
+              icsn(3)=nint(cm(ndx+2))
+              icsn(4)=nint(cm(ndx+3))
+              SSTR=' '
+              call decodesensor(0,icsn,SSTR,SSTRB,ier)
+              call edisp(iuout,SSTR)
 140         continue   
           endif
 
@@ -2282,7 +2312,7 @@ C If no cooling capacity then set cooling set point to 100C.
           H(17)='altered and you will be returned to the main menu. '
 
           I8=int(cm(8))
-          CALL EASKI(I8,' ',' No. of aux sensors ',
+          CALL EASKI(I8,' ',' Number of aux sensors (see help)',
      &      0,'F',MSEN,'F',3,'no. of aux sensors',IERI,17)
           if(ieri.eq.-3) goto 92
           cm(1)=7.+6.*I8
@@ -2306,22 +2336,33 @@ C Auxiliary sensor details,
           H(16)='that auxiliary sensor.'
           DO 141 L=1,I8
             ndx=9+6*(L-1)
+
+C Collect up the current information and generate a descriptive
+C string to remind the user.
+            icsn(1)=nint(cm(ndx))
+            icsn(2)=nint(cm(ndx+1))
+            icsn(3)=nint(cm(ndx+2))
+            icsn(4)=nint(cm(ndx+3))
+            SSTR=' '
+            call decodesensor(0,icsn,SSTR,SSTRB,ier)
+            call edisp(iuout,SSTR)
             call edisp(iuout,' ')
             WRITE(outs,'(a,i2,a)')' For aux sensor ',L,' define....'
             call edisp(iuout,outs)
-            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ? ',
+            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ?',
      &        -3.,'F',0.,'-',1.,' Aux sensor detail 1st item',IER,16)
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ? ',
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 2nd item',IER,16)
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ? ',
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 3rd item',IER,16)
-            CALL EASKR(cm(ndx+3),' ',' Aux sensor detail 4th item ? ',
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sensor detail 4th item (always use zero)?',
      &        0.,'F',0.,'-',0.,' Aux sensor detail 4th item',IER,16)
 
-            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ? ',
+            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ?',
      &        0.,'F',0.,'-',0.,' Aux sensor heating set-point',IER,16)
 
-            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ? ',
+            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ?',
      &        0.,'F',0.,'-',0.,' Aux sensor cooling set-point',IER,16)
 141       continue
  
@@ -2418,9 +2459,9 @@ C Surface area and HTC picked up from ESP-r
             cm(11)=ubasw                     
           endif
         
-        elseif(IBCLAW(II,JJ,KK).eq.21)then
+        elseif(IBCLAW(II,JJ,KK).eq.21.or.IBCLAW(II,JJ,KK).eq.22)then
  
-C Slave Capacity Controller
+C Slave Capacity Controller or VAV controller.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -2475,9 +2516,9 @@ C Extract from working array to bmiscd() common structure
 C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
-#include "building.h"
-#include "plant.h"
-#include "DG_controller_include.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'DG_controller_include.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -3264,7 +3305,8 @@ C Auxiliary sensor details,
      &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,3)          
             CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
      &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,3)          
-            CALL EASKR(cm(ndx+3),' ',' Aux sen detail 4th item ? ',
+            CALL EASKR(cm(ndx+3),' ',
+     &        ' Aux sen detail 4th item (always use zero)? ',
      &        0.,'F',0.,'-',0.,' Aux sen detail 4th item',IER,3)
  93       CONTINUE    
           
@@ -3300,8 +3342,8 @@ C Extract from working array to pmiscd() common structure
 C *********** EFCNTRL
 C Edit flow control function II.
       SUBROUTINE EFCNTRL(II,IV,IER)
-#include "building.h"
-#include "net_flow.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -3737,8 +3779,8 @@ C Extract from working array to fmiscd() common structure
 C *********** EGCNTRL
 C Edit global control function II.
       SUBROUTINE EGCNTRL(ITRC,II,IV,IER)
-#include "building.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'control.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4004,9 +4046,9 @@ C flow control, nsup is the number of supplemental items for associated
 C flow connections.It is assumed that the user will make one selection only.
       subroutine senloc(prompt,title,icfoc,II,isn1,isn2,isn3,isn4,
      &  isense,nsup,errmsg,IER)
-#include "building.h"
-#include "net_flow.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'epara.h'
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -4586,9 +4628,9 @@ C flow control, nsup is the number of supplemental items for associated
 C flow connections.It is assumed that the user will make one selection only.
       SUBROUTINE actloc(prompt,title,icfoc,II,isn1,ian1,ian2,ian3,
      &  errmsg,IER)
-#include "building.h"
-#include "net_flow.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'epara.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4957,7 +4999,7 @@ C PROMPT1 and PROMPT2 are text prompt strings
 C NH is number of help strings.
 
       SUBROUTINE ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,NH)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
 
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
@@ -4997,9 +5039,9 @@ C    that is not supported yet. The calling routine should then
 C    deal with the dialogs using standard sequential method.
       subroutine editctlperiod(head,icfoc,icloop,iday,iper,nper,
      &  loopdaytype,prevstart,act,ier)
-#include "building.h"
-#include "control.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'control.h'
+      INCLUDE 'epara.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -5026,7 +5068,7 @@ C   for control law one.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
-      DIMENSION VERT(35),SALT(21),IVALS(21)
+      DIMENSION VERT(35),SALT(22),IVALS(22)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -5249,7 +5291,7 @@ C control law to trap changes.
           SALT(5)= 'PID control action for heating/cooling '
           SALT(6)= ' Flux connection between zone & plant  '
           SALT(7)= 'Multi-stage control with hysteresis    '
-          SALT(8)= 'Variable supply temp with constraints  '
+          SALT(8)= 'CAV variable supply T with constraints '
           SALT(9)= ' Heat pipe from `outside` to inside    '
           SALT(10)='Separate flux ON & OFF set points      '
           SALT(11)=' Match sensed/recorded value (ideal)   '
@@ -5263,6 +5305,7 @@ C control law to trap changes.
           SALT(19)=' Multi-sensor heating/cooling          '
           SALT(20)=' Evaporative source (surface)          '
           SALT(21)='Slave Capacity Controller              '
+          SALT(22)='VAV cooling with CAV reheat (BETA)     '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -5332,7 +5375,7 @@ C Re-instanciate help specifically for summary of control laws.
           H(57)='Further details within each control law interface.'
           H(58)=' '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,21,SALT,'control law (indented=old or obscure)',IER,58)
+     &      42,22,SALT,'control law (indented=old or obscure)',IER,58)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -5514,6 +5557,19 @@ C the new menu structure return to the calling subroutine.
               cmlocal(4)=1000.0
               cmlocal(5)=0.0
               cmlocal(6)=0.0
+              cmlocal(7)=0.0
+              cmlocal(8)=0.0
+              cmlocal(9)=0.0
+              cmlocal(10)=0.0
+              cmlocal(12)=0.0
+              goto 90
+            elseif(iclaw.eq.22)then
+              cmlocal(1)=6.0
+              cmlocal(2)=1000.0        ! reset to default values
+              cmlocal(3)=12.0
+              cmlocal(4)=20.0
+              cmlocal(5)=1.0
+              cmlocal(6)=0.20
               cmlocal(7)=0.0
               cmlocal(8)=0.0
               cmlocal(9)=0.0
@@ -5800,6 +5856,8 @@ C it points to the same zone as is used by the master controller.
      &          'Slave actuator must be in the slave zone!',
      &          '(please update actuator location)','W')
             endif
+          elseif(iclaw.eq.22)then
+            continue    ! no postprocessing (yet)
           else
 
 C << other control laws where processing is required... >>
@@ -5824,10 +5882,10 @@ C ****** stfmenu
 C Stfmenu copies menu and prompts for period editing.  It expects the common
 C block sctl to have been filled for the current period.
       subroutine stfmenu(icfoc,ier)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
 
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
@@ -6066,7 +6124,7 @@ C Depending on the current number of miscel items also do humidity.
           h(1)='This implements an ideal proportional controller with'
           h(2)='optional integral (reset) action and/or derivative'
           h(3)='(rate) action time or to represent full PID.'
-          h(4)=''
+          h(4)=' '
           h(5)='A proportional action produces an output in proportion'
           h(6)='to the error sensed so there is usally an offset from'
           h(7)='the desired setpoint. Simple to implement and stable'
@@ -6722,8 +6780,8 @@ C and cooling (initial part of the input is similar to control 10).
             prompt1(7)='User start (value two ),4.00 a.m. (value one)'
             prompt2(7)='and Birtles (value three) '
             ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
-            menu(8)='Initial guess for start time (hours) '
-            prompt1(8)='Initial guess for start time (hours) '
+            menu(8)='Initial guess for start (hr)'
+            prompt1(8)='Initial guess for start time (hours)'
             prompt2(8)=' '
             ndec(8)=3; vmin(8)=0.0; vmax(8)=24.0; vdef(8)=4.0
             menu(9)=' '
@@ -6741,17 +6799,17 @@ C and cooling (initial part of the input is similar to control 10).
             prompt2(7)='(value one), User start (value two)'
             ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
             menu(8)='Birtles & John Eqn. heating coef'
-            prompt1(8)='Birtles & John Eqn. heating coef '
+            prompt1(8)='Birtles & John Eqn. heating coef'
             prompt2(8)='(see the referenced paper) '
             ndec(8)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
-            menu(9)='Birtles & John Eqn. building coef'
-            prompt1(9)='Birtles & John Eqn. building coef '
+            menu(9)='Birtles & John Eqn. build coef'
+            prompt1(9)='Birtles & John Eqn. build coef'
             prompt2(9)='(see the referenced paper) '
-            ndec(9)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
-            menu(10)='Birtles & John Eqn. building coef'
-            prompt1(10)='Birtles & John Eqn. building coef '
+            ndec(9)=2; vmin(9)=0.0; vmax(9)=99999.0; vdef(9)=1.0
+            menu(10)='Birtles & John Eqn. build coef'
+            prompt1(10)='Birtles & John Eqn. building coef'
             prompt2(10)='(see the referenced paper) '
-            ndec(10)=2; vmin(8)=0.0; vmax(8)=99999.0; vdef(8)=1.0
+            ndec(10)=2; vmin(10)=0.0; vmax(10)=99999.0; vdef(10)=1.0
           endif
         elseif(iclaw.eq.16)then
           menu(1)=' '
@@ -6851,6 +6909,76 @@ C and cooling (initial part of the input is similar to control 10).
           prompt1(4)='Maximum slave cooling capacity (W) (for when'
           prompt2(4)='the master control is at 100%)'
           ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=1000.0
+        elseif(iclaw.eq.22)then
+
+C Variable supply volume cooling control which reverts to a CAV system
+C using reheat for heating mode.
+          h(1)='This control represents an ideal air based '
+          h(2)='environmental control system that delivers air '
+          h(3)='at a variable flow rate and a fixed supply temp'
+          h(4)='for cooling to a desired setpoint.'
+          h(5)=' '
+          h(6)='In heating mode it reverts to a CAV system at the'
+          h(7)='minimal supply flow rate with reheat applied up to a '
+          h(8)='maximum flux to reach the desired setpoint.'
+          h(9)=' '
+          h(10)='There is a single desired room setpoint (C) so'
+          h(11)='the control law will cycle between VAV and CAV '
+          h(12)='model under low-load conditions. '
+          h(13)=' '
+          h(14)='It is recommended that a short timestep be used with'
+          h(15)='this control ( 1 - 5 minutes). '
+          h(16)=' '
+          h(17)='This control law can be used to check whether an '
+          h(18)='air based system is able to meet demand patterns in '
+          h(19)='a room prior to specification of a detailed component'
+          h(20)='model. If flow rates or supply temperature are not '
+          h(21)='well sepecified then the room temperature will drift '
+          h(22)='as expected. '
+          h(23)=' '
+          h(24)='Specification of minimum flow rate is a compromise '
+          h(25)='between what is required for CAV heating and excess '
+          h(26)='cooling in low-load conditions. '
+          h(27)=' '
+          h(28)='Typically the maximum flow rate would be equivalent '
+          h(29)='to 12-20ach in the zone. Low max flow rates can result'
+          h(30)='in failure to meet the desired temperature. And high'
+          h(31)='minimum flow rates can result in overcooling in mild '
+          h(32)='conditions. '
+          h(33)=' '
+          h(34)='Additional performance data (e.g. flow rates, reheat)'
+          h(35)='if you invoke control trace at simulation time.'
+          h(36)=' '
+          h(37)='NOTE: THIS LAW SHOULD BE CONSIDERED BETA version.'
+          h(38)=' '
+          H(39)='You are given the option to discard changes when you '
+          H(40)='exit the period. '
+          nctlhelp=40
+          nmenulines=6    ! set to the last cm index used.
+          menu(1)=' '
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Reheat maximum capacity (W)'
+          prompt1(2)='Reheat maximum capacity (W) is injected into '
+          prompt2(2)='the CAV supply stream. '
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=99999.0; vdef(2)=1000.0
+          menu(3)='Supply air temperature (C)'
+          prompt1(3)='Supply air temperature (C)'
+          prompt2(3)=' '
+          ndec(3)=3; vmin(3)=-10.0; vmax(3)=100.0; vdef(3)=12.0
+          menu(4)='Desired room air temp (C)'
+          prompt1(4)='Desired room air temperature (C)'
+          prompt2(4)=' '
+          ndec(4)=3; vmin(4)=-10.0; vmax(4)=100.0; vdef(4)=20.0
+          menu(5)='Air supply flow max rate (m^3/s)'
+          prompt1(5)='Air supply flow maximum rate (m^3/sec) '
+          prompt2(5)=' '
+          ndec(5)=4; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=1.0
+          menu(6)='Air supply flow min rate (m^3/s)'
+          prompt1(6)='Air supply flow minimum rate (m^3/sec) '
+          prompt2(6)=' '
+          ndec(6)=4; vmin(6)=0.0; vmax(6)=100.0; vdef(6)=0.5
         else
           h(1)=' '
           h(2)=' '

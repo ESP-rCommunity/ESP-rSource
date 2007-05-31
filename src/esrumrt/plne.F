@@ -152,7 +152,7 @@ C clockwise when viewed from the outside the unit normals within this
 C routine will point outwards from the body.
 C This version is sized for MRT in terms of PNTLST.
       SUBROUTINE MPLNEQN(ITRC,ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       DIMENSION PNTLST(1000),CG(3),VNORM(3),EQN(4),
      &          PNT(MV,3),E(MV,3),VN(MV,3),EV1(3),EV2(3),EV3(3)

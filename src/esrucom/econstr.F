@@ -54,8 +54,8 @@ C ABSI    - solar absorptivity of internal surfaces.
 C ABSE    - solar absorptivity of external surfaces.
 
       SUBROUTINE ECONST(LCONS,IUNIT,ICOMP,ITRC,ITRU,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -300,7 +300,7 @@ C by this name is overwritten).  zname is the zone name (12 char), ICOMP
 C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -450,8 +450,8 @@ C ****************** CONINF
 C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -676,8 +676,8 @@ c ITPREP  - index pointing to replacement thermophysical properties
 c         (not used in the current implementation),
 
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1003,7 +1003,7 @@ C THERMS saves a non-linear thermophysical properties configuration
 C file.
 C *********************************************************************
       SUBROUTINE THERMS(FLTHRM,IIN,IOUT,ITRC,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
@@ -1041,7 +1041,7 @@ C THERMR reads a non-linear thermophysical properties configuration
 C file.
 C *********************************************************************
       SUBROUTINE THERMR(FLTHRM,IIN,IOUT,ITRC,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -1137,8 +1137,8 @@ C ******** ERBIWIN
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
       subroutine erbiwin(itrc,itru,iua,lua,ier)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)

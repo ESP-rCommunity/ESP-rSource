@@ -25,8 +25,8 @@ C DFDSV saves the room air movement description file (version 2).
 C IUF unit number for CFD input file. IER=0 indicates no error.
 
       SUBROUTINE DFDSV(IUF,IZONE,IER)
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
 
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
@@ -473,9 +473,9 @@ C          geometry model (needed for graphic feedback scaling).
 C ********************* DFDREAD *********************
 C DFDREAD - Reads the CFD configuration file (version 2,2.1 and 2.2)
       SUBROUTINE DFDREAD(IZONE,itrc,itu,IER)
-#include "cfd.h"
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
 C Grid and Geometry definition:
 C   NREG(?,ICFD) - Number of regions in each direction(?: 1- x, 2- y, 3- z).
@@ -1685,7 +1685,7 @@ C Print message about version number
 C ********************* NEW2OLD *********************
 C NEW2OLD - Copies new data structure to old.
       SUBROUTINE NEW2OLD
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
 C Grid and Geometry definition:
 C   NREG(?,ICFD) - Number of regions in each direction(?: 1- x, 2- y, 3- z).
@@ -1950,8 +1950,8 @@ C Consequentially the number of new nodes created will be equal to the
 C number of openings in CFD domain. The nodes created here are internal
 C and constant pressure (type 1) type nodes.
        subroutine CFMFSU(IV,ITRC,IND,ICN,OPENNAM)
-#include "cfd.h"
-#include "net_flow.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ICFNOD/ICFD,ICP
@@ -2080,7 +2080,7 @@ C ************************* MFLISTemp
 C MFLISTemp - list common block contents for debugging only.
       SUBROUTINE MFLISTemp
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -2251,7 +2251,7 @@ C Error trap
 C ********************* CFDDEFLT *********************
 C CFDDEFLT - Sets default values for all data items.
       SUBROUTINE CFDDEFLT
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/MFCFD/NCNRMV,ICNRMV(MCFND,MNZ),NCNON,ICNON(2*MCFND,MNZ)
@@ -2358,7 +2358,7 @@ C contaminants defined in the CFD domain to be non - zero. If any
 C contaminant is zero it is set to the default value unity
 
       SUBROUTINE SCHCHK
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/SCHMTT/SCHMT(MCTM),GFM(MCTM),VCRIT(MCTM),TBOIL(MCTM),
      &       TCRIT(MCTM),ISCHMT(MCTM)
@@ -2380,7 +2380,7 @@ C This subroutine checks the boundary conditions of all boundary cells
 C (blockages are yet not considered) to be defined
 
       SUBROUTINE BCEKCK(ITRC)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/OUTIN/IUOUT,IUIN

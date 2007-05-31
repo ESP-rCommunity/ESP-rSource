@@ -72,7 +72,7 @@ C Room Surfaces', Energy and Buildings, 30 233-244.
 
       SUBROUTINE HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HEIGHT,APRAT)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -643,7 +643,7 @@ C the same correlation as vertical surfaces.
 
       SUBROUTINE HTCEXT(ICOR,HC,ICOMP,ISUR)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -985,7 +985,7 @@ C surface based on the surface orientation, the direction of heat flow,
 C and the user-specified simulation toggle.
       SUBROUTINE SELCOR1(ICOMP,ISUR,inRout,TA,TS,ICOR)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/HCTHRY/IHCT,icorexhct
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
 

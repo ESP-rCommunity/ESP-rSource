@@ -30,7 +30,7 @@ C Mzini1 initialises climatic data and future air
 C temperature variable.
 
       subroutine mzini1
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/c1/ncomp,ncon
       common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
@@ -54,7 +54,7 @@ C Mzini2 initialises the nodal energy injection terms.
 
       subroutine mzini2(icomp)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/coe31s/hrs(mcom,ms,ms),zhrs(mcom,ms)
       common/coe32s/qslif(mcom,ms),qslef(mcom,ms),qtmcaf(mcom,ms,mn)
@@ -101,7 +101,7 @@ C injections to each node in the discretisation scheme.
 
       subroutine mznasg(icomp)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/pvalc/tpc(mcom,ms,mn),qpc(mcom)
       common/pvals/tps(mcom,ms),qps(mcom)

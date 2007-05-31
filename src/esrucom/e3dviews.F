@@ -233,7 +233,7 @@ C NAP & NBP are the number of vertices in the surface.
 C IANTX & IBNXT are the index of the next point.  
       SUBROUTINE  MATPOLS(NAP,AX,AY,AZ,IANXT,TMAT,SBBOX,
      &                    NBP,BX,BY,BZ,IBNXT,IERR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
@@ -360,7 +360,7 @@ C     ISTAT =  1 ALL THE POLYGON IS OUTSIDE THE VIEW FRUSTRUM
 C     ISTAT = -1 THE POLYGON STRADDLES THE VIEW FRUSTRUM
 
       SUBROUTINE CLIPSUR(NAP,AX,AY,AZ,ISTAT)
-#include "building.h"
+      INCLUDE 'building.h'
 
 C View frustrum clip flags.
       COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
@@ -448,7 +448,7 @@ C     MPL   =  Max. number of vertices in polygon structure
 C-------- PLNOFSUR ----
 C Find equation of plane (as in PLNBX) but for AX(MV),AY(MV,AZ(MV).
       SUBROUTINE  PLNOFSUR(NAP,AX,AY,AZ,EQN,IFBOX)
-#include "building.h"
+      INCLUDE 'building.h'
       DIMENSION  AX(MV),AY(MV),AZ(MV),EQN(4)
 
       IFD = 0
@@ -570,7 +570,7 @@ C CUTSUR: cuts a surface (of max MV vertices) within a viewing frustrum.
 C This might result in a extra points and cause IAPNT to be returned
 C as a different index. 
       SUBROUTINE  CUTSUR(NA,NAP,IAPNT,AX,AY,AZ,IANXT,ISTAT)
-#include "building.h"
+      INCLUDE 'building.h'
 
 C View frustrum clip flags.
       COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
@@ -683,7 +683,7 @@ C ORIGESP returns a surface/body indicating the site origin. It is 1
 C metre in each direction. Note: this does not reset any of the other
 C zone geometry common blocks or the connection based common blocks.
       SUBROUTINE ORIGESP
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -727,7 +727,7 @@ C---- SITE2D -----------------------------------------------------------
 C SITE2D Returns the 2D viewing coords of the current site extremes
 C found in common block RAY5.
       SUBROUTINE SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
@@ -779,8 +779,8 @@ C Find maximum 2D y coordinate.
 C ***************** BNDOBJ 
 C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C XMN,YMN,ZMN are the model minimum bounds.
@@ -1049,7 +1049,7 @@ C      ENDIF
 C ********** INLNST
 C INLNST: Initializes surface linestyle array line style.
       SUBROUTINE INLNST(ITYP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/C1/NCOMP,NCON
       COMMON/RAY6/LINSTY(MCON)
@@ -1064,7 +1064,7 @@ C ********** INLNSTG
 C INLNSTG: Initializes ground surface linestyle array line style.
 C linstyg=1 std line, =2 double width line, =3 close dotted line.
       SUBROUTINE INLNSTG(ITYP)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/RAY6G/LINSTYG(MGRT)
       do 10 I=1,MGRT
         LINSTYG(I) = ITYP
@@ -1076,7 +1076,7 @@ C ********* SAVEVIEW
 C SAVEVIEW: Save the current wireframe view information (eye/view points,
 C angle of view and bounds.
       subroutine saveview
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,
@@ -1108,7 +1108,7 @@ C ********* RECOVIEW
 C RECOVIEW: Recover wireframe view information (eye/view points,
 C angle of view and bounds.
       subroutine recoview
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,

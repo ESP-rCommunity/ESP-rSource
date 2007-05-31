@@ -17,7 +17,7 @@ C Boston, MA 02111-1307 USA.
 C Compute srface visibility.
       SUBROUTINE  SURVIS
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON /VISIB/ IVIS(MSM,MSM), IARECT(MSM,MSM)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       COMMON /ZZZ/  ZMIN(MSM,MSM), ZMAX(MSM,MSM)
@@ -87,7 +87,7 @@ C IANS = 1 IF K DOES NOT OBSTRUCT
 
       SUBROUTINE  VTEST(I,J,K,IANS)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON /XXX/  XMIN(MSM,MSM), XMAX(MSM,MSM)
       COMMON /YYY/  YMIN(MSM,MSM), YMAX(MSM,MSM)
       COMMON /ZZZ/  ZMIN(MSM,MSM), ZMAX(MSM,MSM)

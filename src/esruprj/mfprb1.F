@@ -38,9 +38,9 @@ C description subroutines. The user can create, edit or list a
 C fluid flow model description file. 
       SUBROUTINE MFPROB(IER)
 
-#include "net_flow.h"
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
@@ -681,10 +681,10 @@ C       'E' - Edit
 C       'C' - Copy
 C 
       SUBROUTINE MFNDES(MOD,INOD)
-#include "net_flow.h"
-#include "building.h"
-#include "epara.h"
-#include "esprdbfile.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1316,7 +1316,7 @@ C       'E' - Edit
 C       'C' - Copy
       SUBROUTINE MFCDES(MOD,ICMP)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -1530,7 +1530,7 @@ C             connections between nodes I and J
 
       SUBROUTINE MFLDES(MOD,ICON)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -1816,8 +1816,8 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
       SUBROUTINE MFWRED
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -2054,9 +2054,9 @@ C << fans run at a given fraction at different periods of the day.    >>
 C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
-#include "building.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

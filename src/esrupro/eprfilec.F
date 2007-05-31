@@ -26,7 +26,7 @@ C ***************** TRIPRO
 C TRIPRO reads data supplied from an ASCII profiles db and writes
 C it to a NEW events profiles database file.
       SUBROUTINE TRIPRO(ITRU,IFA,LASCI,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
@@ -114,7 +114,7 @@ C remainder of the line after the first word (NCG).
 C **************** TROPRO 
 C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
-#include "esprdbfile.h"
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)

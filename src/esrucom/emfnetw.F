@@ -37,7 +37,7 @@ C Reads allow comments and most input data checks are performed.
 C It assumes that the file is already open.
       SUBROUTINE EMFREAD(IFPRB,ITRC,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
 
 C Network flow commons are as follows:
 C Network size
@@ -179,7 +179,7 @@ C Read number of nodes, components, interconnections and wind reduction.
         CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','no of nodes',IER)
         CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','no of compnt',IER)
         CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connct',IER)
-        CALL EGETWR(OUTSTR,K,WRED,0.,10.,'F','wind reduction',IER)
+        CALL EGETWR(OUTSTR,K,WRED,0.,10.,'W','wind reduction',IER)
         IF(IER.NE.0) GOTO 1001
       ELSE
         CALL USRMSG('looking for at least 4 items in',OUTSTR,'W')
@@ -472,7 +472,7 @@ C Mfcmpsupcheck: check flow components for correct number of supplemental
 C data items.
       subroutine mfcmpsupcheck(ICMP,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)
@@ -875,7 +875,7 @@ C ****************** MFERR
 C MFERR Error trap routine.
       SUBROUTINE MFERR(ICMP,MSG,IER)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -897,8 +897,8 @@ C ************************* MFLIST
 C MFLIST Fluid flow file: list common block contents.
       SUBROUTINE MFLIST(itru)
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -1156,7 +1156,7 @@ C Error trap
 C***** Error checking.
       SUBROUTINE CNTERR(ICMP,NEWDI)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -1178,7 +1178,7 @@ C***** Error checking.
 C**** GETND returns mass flow node index matching NAME. If not found
 C return 0 index with the message ermsg if in verbose mode (ivbs=1).
       subroutine GETND(NAME,index,ivbs,MSG)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1207,7 +1207,7 @@ C**** GETCN returns mass flow connection index matching two node names
 C and associated component. If not found return 0 index
 C with the message msg if in verbose mode (ivbs=1).
       subroutine GETCN(NDPOS,NDNEG,CMPID,index,ivbs,MSG)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1247,7 +1247,7 @@ C**** GETCMP returns mass flow component index matching name
 C If not found return 0 index with the message
 C msg if in verbose mode (ivbs=1).
       subroutine GETCMP(NAME,index,ivbs,MSG)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1277,7 +1277,7 @@ C ********************* MFWRIT
 C MFWRIT Fluid flow model file: dump data to file.
       SUBROUTINE MFWRIT(IFPRB)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)

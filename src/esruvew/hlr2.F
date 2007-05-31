@@ -1,6 +1,6 @@
         SUBROUTINE HLR2(IEDGE)
 C
-#include "viewer.h2"
+      INCLUDE 'viewer.h2'
 
         COMMON/HLRV/DIV,TI,TJ,DZI,DZJ,DYI,DYJ,FX,FY,KS1,
      &  KS2,KS3,KS4,SX,SY,SZ,MAXX,DXI,KS,TT,MI,XMI,XMJ,

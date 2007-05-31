@@ -108,17 +108,17 @@ c Variables passed in call
 
 
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
-#include "gshp_common.h"
+      INCLUDE 'gshp_common.h'
 
-#include "gcep_common.h"
+      INCLUDE 'gcep_common.h'
 
 c Common for the number of time steps per hour
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -644,9 +644,9 @@ c Variables passed in call
 
        INTEGER isys
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Local variables
       REAL heat_eir_fplr
@@ -699,13 +699,13 @@ c **********************************************************************
 c Variable in call
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Set the part-load performance coefficients for the three types of air-source
 c heat pump systems. The coefficients for the part-load performance are based
@@ -826,15 +826,15 @@ c Variables passed in call
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
-#include "furnace_common.h"
+      INCLUDE 'furnace_common.h'
 
 c Local variables
       REAL jj(10,10),y(10),f(10),x(10),error,error_x4,x4_old,x4_new

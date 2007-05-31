@@ -39,7 +39,7 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
 
       SUBROUTINE MFTABL(itrc,IFRES,ier)
 
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -346,9 +346,9 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
 C
       SUBROUTINE MFRTBL(itrc,IFRES,ier)
 
-#include "building.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)

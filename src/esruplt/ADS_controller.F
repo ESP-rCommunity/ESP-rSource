@@ -42,8 +42,8 @@ C-----------------------------------------------------------------------------
        SUBROUTINE ADS_stg_controller(iterp)
        IMPLICIT NONE
 
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
 C-----------------------------------------------------------------------------
 C ESP-r COMMONs

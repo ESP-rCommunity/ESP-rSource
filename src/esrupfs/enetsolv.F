@@ -39,7 +39,7 @@ C control-related adjustments to the electrical network, solves the network,
 C post-processes and stores the results.
 
       SUBROUTINE ENETSOLV
-#include "CETC_definitions.h"
+      INCLUDE 'CETC_definitions.h'
 
 
 C Setting up the boundary conditions and network state.
@@ -100,8 +100,8 @@ C are available: the default Newton-Raphson solution and the simpler but slower
 C Gauss-Siedel solution (used mainly as a reference solver).
 
       SUBROUTINE ENETMATX
-#include "power.h"
-#include "building.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -251,8 +251,8 @@ C ******************************************************************************
 
       SUBROUTINE EJMTXSET
 
-#include "power.h"
-#include "building.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -528,9 +528,9 @@ C network power flow.
 
       SUBROUTINE ENETGAUS
 
-#include "power.h"
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -676,9 +676,9 @@ C network power flow.
 
       SUBROUTINE ENETNEWR(MODE)
 
-#include "power.h"
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -876,8 +876,8 @@ C has converged, based on the ctiteria set by the user in ENETPARAM
 
       SUBROUTINE ENETCOVG
 
-#include "power.h"
-#include "building.h"
+      INCLUDE 'power.h'
+      INCLUDE 'building.h'
 
 C Trace
       COMMON/TC/ITC,ICNT

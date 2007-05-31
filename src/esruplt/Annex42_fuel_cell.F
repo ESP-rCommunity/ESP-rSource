@@ -70,9 +70,9 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE SOFC_A42_static(IPCOMP)
       IMPLICIT NONE
-#include "Annex42_fuel_cell.h"
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'Annex42_fuel_cell.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
 C--------------------------------------------------------------------------------------------
 C Common blocks.
@@ -875,11 +875,14 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE SOFC_A42_coeffgen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-#include "Annex42_fuel_cell.h"
-#include "plant.h"
-#include "building.h"
-#include "ground_temp_mains_common.h"
-#include "dhw_common.h"
+      INCLUDE 'Annex42_fuel_cell.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
+      INCLUDE 'ground_temp_mains_common.h'
+      INCLUDE 'dhw_common.h'
+
+C External functions
+      integer lnblnk
 
 C--------------------------------------------------------------------------------------------
 C Common blocks.
@@ -4706,7 +4709,7 @@ C should be thoroughly examined through detailed testing.
 
       FUNCTION Shomate(calcprop,tempC,gas,IUOUT)
       IMPLICIT NONE
-#include "Annex42_fuel_cell.h"
+      INCLUDE 'Annex42_fuel_cell.h'
 
 C---------------------------------------------------------------------------------
 C Declare local variables.

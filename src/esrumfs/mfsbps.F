@@ -84,10 +84,10 @@ C Sets known constant pressure nodes pressures and reset other nodes
 
       SUBROUTINE MFLWSU
 
-#include "building.h"
-#include "net_flow.h"
-#include "plant.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 
@@ -276,10 +276,10 @@ C STIME  - is used to transfer the simulation time to mfs
 
       SUBROUTINE MFLWCA(ISCALL,STIME)
 
-#include "building.h"
-#include "net_flow.h"
-#include "plant.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'cfd.h'
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

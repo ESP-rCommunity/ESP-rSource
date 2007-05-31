@@ -506,7 +506,7 @@ C ******************************************************************************
 
       SUBROUTINE ENETTBL(MODE)
 
-#include "power.h"
+      INCLUDE 'power.h'
 
 C Array of recovered data
       COMMON/ERECOV/NVAL1,NVAL2,EVAL1(MERAWD),EVAL2(MERAWD)
@@ -537,7 +537,7 @@ C Electrical network results library details.
       INTEGER NVAL1,NVAL2,EFILT
   
       CHARACTER MODE*1,EVLABU*4,EVLABS*16,OUTPUTS*216,SOUTP*18,OUTS*124,
-     &DELIM*1,XFILE*72,HDR1*216,HDR2*216,DESCR*7,DESCR1*10,PDESCR*60,
+     &DELIM*1,XFILE*144,HDR1*216,HDR2*216,DESCR*7,DESCR1*10,PDESCR*60,
      &SDESCR*44,ELRFLNAM*72,SSTR*3,TG*1
 
 C Initialise the output string 
@@ -819,7 +819,7 @@ C MOGEHED outputs the appropriate header information for the electrical
 C network corresponding to graphical result display.
 
       SUBROUTINE MOGEHED
-#include "power.h"
+      INCLUDE 'power.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -916,8 +916,8 @@ C  ***********************************************************************
 
       SUBROUTINE ENRFILT
 
-#include "power.h"
-#include "epara.h"
+      INCLUDE 'power.h'
+      INCLUDE 'epara.h'
 
       COMMON/ENFILT/EFILT(MERAWD)
       COMMON/ERECOVL/EVLABS(MERAWD),EVLABU(MERAWD)

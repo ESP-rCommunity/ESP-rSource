@@ -277,7 +277,7 @@ C RVB - reporting verbosity, 's'= silent.
 C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,file,RVB,IERR)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad2/mono,intext,ifocz

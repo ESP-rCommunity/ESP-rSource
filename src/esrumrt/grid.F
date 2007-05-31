@@ -22,7 +22,7 @@ C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C GRID places a grid on a surface.
       SUBROUTINE  GRID(ierror)
 
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON /PLNEC/ PEQN(4,MSM), PCG(3,MSM), BOX(3,2,MSM),
      &               STMAT(4,4,MSM), SRMAT(4,4,MSM)
       COMMON /CELLS/ NCELL(MSM), NCPT(MSM), IGFACT

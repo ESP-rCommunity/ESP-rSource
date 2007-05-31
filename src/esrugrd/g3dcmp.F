@@ -65,7 +65,7 @@ C GRDSRF is the main controller for surfaces discretization. It
 C displays the main menu for surfaces.
 C *********************************************************************
       SUBROUTINE GRDSRF(IZ,IDRW1,IDRW2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -280,7 +280,7 @@ C *****************************  DRWSRF  ******************************
 C DRWSRF draws a surface with it's associated gridding lines.
 C *********************************************************************
       SUBROUTINE DRWSRF(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
@@ -357,7 +357,7 @@ C *****************************  SRFBND  ******************************
 C SRFBND defines the boundary of a surface.
 C *********************************************************************
       SUBROUTINE SRFBND(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -425,7 +425,7 @@ C *******************************  DFTGRD  ****************************
 C DFTGRD generates the default gridding for a surface.
 C *********************************************************************
       SUBROUTINE DFTGRD(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -616,7 +616,7 @@ C ************************     SRFIND     *****************************
 C SRFIND defines the surfaces indentation from inside.
 C *********************************************************************
       SUBROUTINE SRFIND
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -651,7 +651,7 @@ C ***************************   HRZGRD   ******************************
 C HRZGRD creates a horrizontal grid line in a surface.
 C *********************************************************************
       SUBROUTINE HRZGRD(IS,XVALU,ZVALU)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -727,7 +727,7 @@ C ****************************    VRTGRD   ****************************
 C VRTGRD creates a vertical grid line in a surface.
 C *********************************************************************
       SUBROUTINE VRTGRD(IS,XVALU,ZVALU)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -801,7 +801,7 @@ C **************************    DELINE    *****************************
 C DELINE deletes last gridding line.
 C *********************************************************************
       SUBROUTINE DELINE(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -833,7 +833,7 @@ C **************************    VRTNUM    *****************************
 C VRTNUM defines the 3D vertex number from its X and Z coordinates.
 C *********************************************************************
       SUBROUTINE VRTNUM(IS,X,Z,NUM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D05/NVRTB(MS),NVRTD(MS),NVRTA(MS)
@@ -858,7 +858,7 @@ C ****************************   CKGRDL   *****************************
 C CKGRDL checks if the gridding line does exist.
 C *********************************************************************
       SUBROUTINE CKGRDL(IS,XCRN,ZCRN,XMIN,ZMIN,NUM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -897,7 +897,7 @@ C GRDEDG is the main controller for edges discretization. It displays
 C the main menu for edges.
 C *********************************************************************
       SUBROUTINE GRDEDG(IZ,IDRW1,IDRW2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -1137,7 +1137,7 @@ C DRWEDG draws the selected edge after checking it's existance. It
 C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWEDG(IEG)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
@@ -1269,7 +1269,7 @@ C **************************   CONEDG   *******************************
 C CONEDG displays the edge construction menu.
 C *********************************************************************
       SUBROUTINE CONEDG(IZ,IEG)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1531,7 +1531,7 @@ C FHCEDG draws the free hand sketch for the cross section of a given
 C edge with it's gridding lines.
 C *********************************************************************
       SUBROUTINE FHCEDG(IZ,IEG,IL)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -1612,7 +1612,7 @@ C ***************************   TOTEDG   ******************************
 C TOTEDG determines the total number of edges in the zone.
 C *********************************************************************
       SUBROUTINE TOTEDG
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1668,7 +1668,7 @@ C *************************     INDEDG     ****************************
 C INDEDG Initializes the edges gridding.
 C *********************************************************************
       SUBROUTINE INDEDG
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -1736,7 +1736,7 @@ C EDGNUM defines the number of the edge in a zone from it's associated
 C two surfaces.
 C *******************************************************************
       SUBROUTINE EDGNUM(IS1,IS2,IV1,IV2,NUM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -1762,7 +1762,7 @@ C ***************************    EDGCRT    ****************************
 C EDGCRT creates new edges or appends new edge to existing one.
 C *********************************************************************
       SUBROUTINE EDGCRT(IS1,IS2,IV1,IV2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1830,7 +1830,7 @@ C GRDCRN is the main controller for corners discretization. It displays
 C the main menu for corners.
 C *********************************************************************
       SUBROUTINE GRDCRN(IZ,IDRW1,IDRW2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2079,7 +2079,7 @@ C DRWCRN draws the selected corner after checking it's existance. It
 C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWCRN(ICR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
@@ -2205,7 +2205,7 @@ C **************************   CONCRN   *******************************
 C CONCRN displays the corner construction menu.
 C *********************************************************************
       SUBROUTINE CONCRN(IZ,ICR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2468,7 +2468,7 @@ C FHCCRN draws the free hand sketch for the cross section of a given
 C corner with it's gridding lines.
 C *********************************************************************
       SUBROUTINE FHCCRN(IZ,ICR,IL)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -2554,7 +2554,7 @@ C **************************     INDCRN     ***************************
 C INDCRN initializes the corners dimensions.
 C *********************************************************************
       SUBROUTINE INDCRN
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -2686,7 +2686,7 @@ C CRNNUM defines the number of the corner in a zone from it's associated
 C three surfaces. If the corner does not exist a new one will be created.
 C *******************************************************************
       SUBROUTINE CRNNUM(IS1,IS2,IS3,IV1,NUM)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -2725,7 +2725,7 @@ C ***************************   TOTCRN   ******************************
 C TOTCRN determines the total number of corners in the zone.
 C *********************************************************************
       SUBROUTINE TOTCRN
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)

@@ -42,17 +42,17 @@ c *********************************************************************
 
       IMPLICIT NONE
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "gshp_common.h"
+      INCLUDE 'gshp_common.h'
 
-#include "gcep_common.h"
+      INCLUDE 'gcep_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 
 

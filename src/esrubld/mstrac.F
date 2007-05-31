@@ -24,7 +24,7 @@ C NB this subroutine is called (BUT commented) from MZMSTR.
 C NB output units 93 & 94 should be opened and closed within MZNUMA.
 C *********************************************************************
       SUBROUTINE WRITEM(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -51,7 +51,7 @@ C NB this subroutine is called (BUT commented) from MZMSTR.
 C NB output unit number 95 should be opened and closed within MZNUMA.
 C *******************************************************************
       SUBROUTINE MSTRAC(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
@@ -126,7 +126,7 @@ C Construction moisture nodes.
 
 C ********************************************************************
       SUBROUTINE WRTCFP(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)

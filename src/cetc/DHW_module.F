@@ -40,10 +40,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
       
       
 !Function Type Declaration
@@ -178,10 +178,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_WaterDraw()
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its           
@@ -233,10 +233,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"      
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'      
+      INCLUDE 'ground_temp_mains_common.h'
 
 
 !Local Variables
@@ -295,10 +295,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"      
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'      
+      INCLUDE 'ground_temp_mains_common.h' 
 !Local Variables
 
       
@@ -325,10 +325,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
 
         IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 
 !Local Variables
@@ -364,10 +364,10 @@ c Variables Used From Module
 
 
        IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"       
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'       
+      INCLUDE 'ground_temp_mains_common.h' 
 
 c Local Variables
        REAL   fWaterTemp
@@ -403,10 +403,10 @@ c Variables Used From Module
 
 
        IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"       
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'       
+      INCLUDE 'ground_temp_mains_common.h' 
 
 
 c Local Variables
@@ -437,10 +437,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
        
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"            
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'            
+      INCLUDE 'ground_temp_mains_common.h' 
                       
 c Formula simply mutliply the power by the timestep (in seconds)
         fDHW_PilotEnergy = fPilotEnergyRate
@@ -467,10 +467,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"      
-#include "ground_temp_mains_common.h"    
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'      
+      INCLUDE 'ground_temp_mains_common.h'    
       
 c This formua determines the energy injected to room by the pilot light by
 c multplying the pilot energy to space factor by the Pilot energy expending during the timestep.         
@@ -493,10 +493,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_FuelEnergyRequired()
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
       REAL   fEnergy
       
@@ -551,10 +551,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_EnergyToZone()
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 c Formula         
 c Parasitic losses to room from water in tank losing energy. 
@@ -584,10 +584,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_PipeGains()
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 c Formula         
 
@@ -620,10 +620,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       FUNCTION fDHW_PipeLosses()
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 c Formula         
 c PipeLoss in Watts from Hot Water pipes this was obtain from Ken coopers report and in Brian Bradley's code for Hot2000
@@ -652,10 +652,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 cVariables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"       
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'       
 
 c Local variables
 
@@ -770,10 +770,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       
      
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
       
 
       SELECT CASE (iTankType)
@@ -835,10 +835,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"       
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'       
 
     
 !Local Variables      
@@ -873,10 +873,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 c Variables Use from Modules      
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 
       REAL   fWaterDrawGreaterThanTank
@@ -926,10 +926,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
            
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 !Local Vars
       REAL   fMaxOutputOfInjectorPerTstep
@@ -963,10 +963,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
 !Local Variables 
       REAL   fTotalEnergyInTank
@@ -1022,10 +1022,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
         
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 c Local variables
       REAL   fMaxOutputOfInjectorPerTstep
@@ -1060,10 +1060,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 c Local variables
       SELECT CASE (iFuelType)
@@ -1089,10 +1089,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1170,10 +1170,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
 !Calculated Values
 
@@ -1198,10 +1198,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
  
 C Note this should be changed to the zone temperature that  the tank is in. 
       fRoomTemp = 20.0
@@ -1223,10 +1223,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1289,10 +1289,10 @@ C ------------------------------------------------------------------------------
       SUBROUTINE DHW_READIN
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h" 
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h' 
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1640,10 +1640,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'
+      INCLUDE 'ground_temp_mains_common.h'
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -1708,10 +1708,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
        
       
       IMPLICIT NONE
-#include "building.h"
-#include "dhw_parameters.h"
-#include "dhw_common.h"  
-#include "ground_temp_mains_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'dhw_parameters.h'
+      INCLUDE 'dhw_common.h'  
+      INCLUDE 'ground_temp_mains_common.h'
     
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       DIMENSION MTHNAM(12)

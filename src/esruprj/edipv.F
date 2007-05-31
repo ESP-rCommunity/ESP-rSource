@@ -32,9 +32,9 @@ C ************* IPVCMD
 C IPVCMD acts on command line IPV directives. Allows model to be
 C altered based on information held in IPV definition.
       subroutine IPVCMD(act,inf)
-#include "building.h"
-#include "uncertainty.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'espriou.h'
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -258,8 +258,8 @@ C Update the IPV file for changes in periods etc.
 C ************* IPVDAT
 C Define information used in generating IPV.
       subroutine ipvdat(act)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1806,7 +1806,7 @@ C ************* IPV2SIMPAR
 C Copy relevant data from IPV description to simulation parameter
 C sets. See subroutine IPVDAT for common block descriptions.
       subroutine ipv2simpar(act)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1970,8 +1970,8 @@ C in clmsyn.F Logic includes logic that if the heating or cooling
 C derived from scaling is less than a simple time multiplier then
 C the time multiplier is used.
       SUBROUTINE getmultip
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

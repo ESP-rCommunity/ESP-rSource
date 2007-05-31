@@ -22,7 +22,7 @@ C *********************************************************************
 C EMSTRR reads a zone moisture data file.
 C *********************************************************************
       SUBROUTINE EMSTRR(LMSTR,IUNIT,ICOMP,ITRC,ITRU,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -146,7 +146,7 @@ C *********************************************************************
 C EMSTRW writes a zone moisture data file.
 C *********************************************************************
       SUBROUTINE EMSTRW(LMSTR,IUNIT,ICOMP,ITRC,ITRU,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

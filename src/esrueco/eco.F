@@ -39,9 +39,9 @@ C  ILoss (Integer) = Flag to include the break & loos or not in the calculation 
 C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed)
 
       PROGRAM eco
-#include "building.h"
-#include "LCA.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'LCA.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -159,7 +159,7 @@ C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8, Oldunit*8
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
 
       INTEGER IWHICH
@@ -1033,94 +1033,4 @@ C Dummy routine (needed for call back from c).
       return
       end
 
-
-C CTLEXP ***********
-C CTLEXP: Control feedback to export wireframe or text feedback area.
-C Assign user-specified export file - checking if local or remote.
-C tg is a character T or G specifying text or graphic 
-C info being saved.
-      subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      common/rpath/path
-
-      character*(*) msg
-      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
-      character longtfile*144
-      logical concat
-
-C Each call is a toggle. If open then close text or graphics command
-C file. For the graphics ask if file should be further converted.
-      ixopen=ixopen+1
-      if(ixopen.GT.1)ixopen=0
-      if(ixopen.eq.0)then
-        CALL edisp(IUOUT,' ')
-        WRITE(outs,'(3a)') ' The file ',xfile ,' has been saved. '
-        CALL edisp(IUOUT,outs)
-        write(outs,'(a,a)') 'closing export file: ',xfile
-        call usrmsg(outs,' ','-')
-        if(tg.eq.'T')then
-          CALL ERPFREE(ixunit,ISTAT)
-        elseif(tg.eq.'G')then
-          if(ixloc.eq.1)then
-            longtfile=' '
-            call addpath(xfile,longtfile,concat)
-          else
-            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
-          endif
-          call wwcsetend
-          call wwcclose(longtfile)
-        endif
-      elseif(ixopen.eq.1)then
-        ixloc=0
-        if(path.ne.'./'.and.path.ne.' ')then
-           write(outs,'(A,A)') ' The current path is: ',path
-           call edisp(iuout,outs)
-         h(1)='If using path then name appended to path. Otherwise'
-         h(2)='file put in folder where application was started.'
-         h(3)='If `local` choice you may also give an absolute'
-         h(4)='addressed file name ie. /tmp/junk.exp '
-           CALL EASKAB(' The problem is in a remote folder... ',
-     &      ' place export file:','using current path',
-     &      'in local (or absolute) folder',ixloc,4)
-        endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
-        call easks(xfile,' export file name: ',' ',72,
-     &    ' ','export file name',IER,2)
-
-        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
-     &                       ' for export.'
-        call usrmsg(outs,' ','p')
-        if(ixloc.eq.1)then
-          if(tg.eq.'T')then
-            call efopseq(ixunit,xfile,4,IER)
-            if(ier.ne.0)return
-          elseif(tg.eq.'G')then
-
-C Writing remotely, add the path to the given file name before
-C passing request to wwlib.c
-            longtfile=' '
-            call addpath(xfile,longtfile,concat)
-            call wwcopen(longtfile)
-            call wwcsetstart
-          endif
-        else
-          if(tg.eq.'T')then
-            CALL ERPFREE(ixunit,ISTAT)
-            call FPOPEN(ixunit,ISTAT,1,3,xfile)
-            if(ISTAT.lt.0)return
-          elseif(tg.eq.'G')then
-            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
-            call wwcopen(longtfile)
-            call wwcsetstart
-          endif
-        endif
-        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
-     &    ' >> to ',xfile(1:lnblnk(xfile))
-        call usrmsg(outs,' ','p')
-      endif
-      RETURN
-      END
 

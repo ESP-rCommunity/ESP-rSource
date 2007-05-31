@@ -162,17 +162,17 @@ c Variables passed in call
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
-#include "gshp_common.h"
+      INCLUDE 'gshp_common.h'
 
-#include "gcep_common.h"
+      INCLUDE 'gcep_common.h'
 
 c Common for the number of time steps per hour
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -469,11 +469,11 @@ c **********************************************************************
 c Variables passed in call
       REAL tout,rhout,wout,hout,cpout,den_out
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Common for the weather data
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -535,11 +535,11 @@ c Variables passed in call
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Local variables
       REAL RET_AIR_TEMP,RET_AIR_HUM_RATIO,ENTH_MOIST_AIR,
@@ -602,11 +602,11 @@ c Variables passed in call
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Common for the weather data
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -664,11 +664,11 @@ c **********************************************************************
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Commons for present and future zone dry-bulb temperatures 
 c and sensible loads
@@ -763,11 +763,11 @@ c **********************************************************************
 c Variables passed in call
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Commons for present and future humidity ratios
       common/pvalg/gpa(mcom)
@@ -1056,11 +1056,11 @@ c *********************************************************************
 
 c Variables passed in call
       INTEGER isys
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
       SYS_FLOW_RATE = 6.037e-5 * ss_capacity(isys)
 
@@ -1094,13 +1094,13 @@ c **********************************************************************
 c Variables passed in call
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Local Variables
       REAL tdb1r,den1r,cp1r,w1r,fan_capr,tdb2r,h2r,
@@ -1652,11 +1652,11 @@ c **********************************************************************
 
       IMPLICIT NONE
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Variables passed in call
       REAL density,zone_mass_flow(mcom)
@@ -1706,11 +1706,11 @@ c **********************************************************************
 
       IMPLICIT NONE
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Variables passed in call
       REAL plr,out_hum_ratio,zone_mass_flow(mcom)
@@ -1782,11 +1782,11 @@ c **********************************************************************
      &           ieconomizer_control,economizer_cooling_max)
 
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
 c Variables passed in call
       REAL sensible_cooling_cap,economizer_cooling_max
@@ -2445,18 +2445,18 @@ c **********************************************************************
      &           rlatent_load,shr,fan_power_auto_local,ss_cooling_cap)
 
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
-#include "hvac_common.h"
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'hvac_common.h'
 c Variables passed in call
       REAL sensible_cooling_load,plr_heat_pump,plf_heat_pump,
      &     rlatent_load,shr,fan_power_auto_local,ss_cooling_cap
 
       INTEGER isys,ifan_operation_local
 
-C #include "hvac_parameters.h"
-C#include "hvac_common.h"
+C       INCLUDE 'hvac_parameters.h'
+C      INCLUDE 'hvac_common.h'
 
 
 c Local variables
@@ -2865,13 +2865,13 @@ c Variables passed in call
 
       INTEGER isys
 
-#include "building.h"
+      INCLUDE 'building.h'
 
-#include "hvac_parameters.h"
+      INCLUDE 'hvac_parameters.h'
 
-#include "hvac_common.h"
+      INCLUDE 'hvac_common.h'
 
-#include "ashp_common.h"
+      INCLUDE 'ashp_common.h'
 
 c Local variables
       REAL fan_energy,FAN_ENERGY_CON,outdoor_fan_energy,

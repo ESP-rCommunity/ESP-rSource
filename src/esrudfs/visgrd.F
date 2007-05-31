@@ -42,7 +42,7 @@ C POLY - creates a polygon for each flow vector.  The flow vectors are defined
 C  by start and end points in cartesian co-ordinates.  It is necessary
 C  to represent these by polygons to perform the point containment tests.
       SUBROUTINE POLY(i,j,k)
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
       common/TvecXYZ/TvecXbeg(ntcelx,ntcely,ntcelz),
@@ -214,9 +214,9 @@ C ********************* PbyP *********************
 C PbyP - Examines each flow vector in turn to determine which
 C  mesh points it covers.  Sets the contents of the IOSHD array.
       SUBROUTINE PbyP(ICOMP,IM,ISUR,ILAY,ISCALAR,IBR)
-#include "building.h"
-#include "cfd.h"
-#include "flowvis.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
+      INCLUDE 'flowvis.h'
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
@@ -724,7 +724,7 @@ C  the contents of the IOSHD array.  Currently, only a black and
 C  white image is created.  The format of the bitmap file was
 C  deduced by examining files created by the `bitmap' program.
       SUBROUTINE MAKBIT
-#include "flowvis.h"
+      INCLUDE 'flowvis.h'
 
       common/FILEP/IFIL
 
@@ -808,7 +808,7 @@ C MAKXPM - creates an X-picmap ASCII file of the flow vectors based on
 C  the contents of the IOSHD array.  The format of the bitmap file was
 C  deduced by examining files created by the `bitmap' program.
       SUBROUTINE MAKXPM(TMIN,TMAX)
-#include "flowvis.h"
+      INCLUDE 'flowvis.h'
 
       common/FILEP/IFIL
 
@@ -1037,7 +1037,7 @@ C It then computes the local co-ordinates of the face under
 C consideration.
 C This is a pared-down version of TRNSF1 from esruish/trnsf.F
       SUBROUTINE TRNSF1(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/PANGL/PAZI,PELV,PTILT
       COMMON/TRNSF/A(5),B(5),C(3),XOR,YOR,ZOR
@@ -1104,7 +1104,7 @@ C It is based on esruish's TRNSF2 routine, but the sun angle
 C calculations have been removed and the transformed co-ordinates
 C are returned to the calling routine.
       SUBROUTINE TRNSF2
-#include "cfd.h"
+      INCLUDE 'cfd.h'
 
       COMMON/TRNSF/A(5),B(5),C(3),XOR,YOR,ZOR
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
@@ -1173,7 +1173,7 @@ C centre point co-ordinate (local co-ordinates) of each grid rectangle.
 C It is based largely on esruish's MESH routine, but glazed surfaces
 C have been excluded.
       SUBROUTINE MESH(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -1225,7 +1225,7 @@ C   PTILT - is the angle between the face X-axis and the horizontal
 C           where the X-axis is the line joining the 1st and 2nd
 C           face vertices.
       SUBROUTINE PANGS(IS)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/PANGL/PAZI,PELV,PTILT

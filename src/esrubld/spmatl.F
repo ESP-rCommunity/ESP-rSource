@@ -40,7 +40,7 @@ C SPMCMP 53 - phase change material
 
       subroutine SPMMOD(ICOMP)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       common/spmfxst/ispmxist,spflnam 
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -118,7 +118,7 @@ C verified against experimental data.
 
       subroutine SPMCMP1(ICOMP,ISPMNOD)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -460,7 +460,7 @@ C experimental data.
 
       subroutine SPMCMP2(ICOMP,ISPMNOD)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
 C Special materials
       COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
@@ -620,10 +620,10 @@ C of the component has only beed roughly verified.
 
       subroutine SPMCMP3(ICOMP,ISPMNOD)
 
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 
@@ -975,7 +975,7 @@ C of the component has only been roughly verified.
 
       subroutine SPMCMP4(ICOMP,ISPMNOD)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1240,7 +1240,7 @@ C of the component has only been roughly verified.
 
       subroutine SPMCMP51(ICOMP,ISPMNOD)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1616,7 +1616,7 @@ C tests, though not experimental data.
 
       subroutine SPMCMP53(ICOMP,ISPMNOD)
 
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1902,7 +1902,7 @@ C   items, STRSPM(*,5) - descriptive string for the data item.
       subroutine SPMCMP5(ICOMP,ISPMNOD)
       implicit none
 
-#include "building.h"
+      INCLUDE 'building.h'
 
 C----------------------------------------------------------------------------
 C Passed variables

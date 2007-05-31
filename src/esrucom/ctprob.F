@@ -37,8 +37,8 @@ C Dump contaminant model to file
 C Definitions of most variables is given in ctread.F
 
       SUBROUTINE CTWRIT(IFCTM)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -288,8 +288,8 @@ C -inant definition
 C Definitions of most variables is given in ctread.F
 
       SUBROUTINE CTPROB
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -873,8 +873,8 @@ C Add, delete, edit chemical reaction information
 C Definitions of most variables is given in ctread.F
 
       SUBROUTINE CSIACR(NADC,MEDIT)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/POPHELP/H(60)
 
@@ -1056,8 +1056,8 @@ C or NLP=2 (link source/sink to node)
 C Definitions of most variables is given in ctread.F
 
       SUBROUTINE SCNLNK(NLP)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/POPHELP/H(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -1231,7 +1231,7 @@ C Definitions of most variables is given in ctread.F
 C NADC is the action to take 1 = add, 2 = delete, 3 = copy
 C ISPMNU is ??
       SUBROUTINE CSIADC(NADC,ISPMNU)
-#include "net_flow.h"
+      INCLUDE 'net_flow.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -1904,8 +1904,8 @@ C Definitions of most variables is given in ctread.F
 C NADC is ??
 C MEDIT is ??
       SUBROUTINE CTIADC(NADC,MEDIT)
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -2227,8 +2227,8 @@ C Definitions of most variables is given in ctread.F
 
       SUBROUTINE CTLIST(INDEX)
 
-#include "net_flow.h"
-#include "building.h"
+      INCLUDE 'net_flow.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN

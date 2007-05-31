@@ -82,7 +82,7 @@ c ***********************************************************************
       
       LOGICAL FUNCTION AreWindowsOpen()
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 
 
 C Future values common block.
@@ -232,7 +232,7 @@ C
 C     *******************************************************************
       SUBROUTINE AreWindowsOpenDebug
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 C     Debug Common Blocks.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL	QFP,QFF

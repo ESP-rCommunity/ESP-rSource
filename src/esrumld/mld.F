@@ -19,9 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       program mld
-#include "building.h"
-#include "mould.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'mould.h'
+      INCLUDE 'esprdbfile.h'
 
       common/minfo/mno(MOULD),species(MOULD)
       common/meqn/a0(MOULD),a1(MOULD),a2(MOULD),a3(MOULD)

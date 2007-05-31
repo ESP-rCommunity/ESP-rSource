@@ -369,7 +369,7 @@ C        write(6,*) 'the module is ',module,' request to initialise only'
         if(initonly.eq.0)then
           CALL PHELPD('mld opening',7,'-',0,0,IER)
         endif
-      elseif(module(1:3).eq.'mrt')then
+      elseif(module(1:3).eq.'mrt'.or.module(1:3).eq.'vwf')then
         H(1)='MRT attrib & calc: Reads a viewfactor file which'
         H(2)='  includes the definition of MRT sensors within a'
         H(3)='  zone.  The user may calculate viewfactors for the'
@@ -388,7 +388,7 @@ C        write(6,*) 'the module is ',module,' request to initialise only'
         H(16)='Display surface info: list out the attributes of'
         H(17)='  the surfaces [depending on trace verbosity] '
         if(initonly.eq.0)then
-          CALL PHELPD('mrt opening',17,'-',0,0,IER)
+          CALL PHELPD('vwf opening',17,'-',0,0,IER)
         endif
       elseif(module(1:3).eq.'pdb')then
         h(1) =' The MENU commands have the following meaning :'

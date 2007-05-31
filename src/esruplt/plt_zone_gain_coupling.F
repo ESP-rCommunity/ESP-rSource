@@ -92,8 +92,8 @@ C----------------------------------------------------------------------
      &                cContext   )
      
       implicit none
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
 C----------------------------------------------------------------------
 C     Passed variables
@@ -635,7 +635,7 @@ C
 C----------------------------------------------------------------------
       subroutine plt_zone_gain_zero ()
       implicit none
-#include "plant.h"           
+      INCLUDE 'plant.h'           
 C----------------------------------------------------------------------
 C     Local variables 
 C----------------------------------------------------------------------
@@ -684,7 +684,7 @@ C
 C----------------------------------------------------------------------
       subroutine plt_zone_gain_calc ()
       implicit none
-#include "plant.h"           
+      INCLUDE 'plant.h'           
 C----------------------------------------------------------------------
 C     Local variables 
 C----------------------------------------------------------------------
@@ -741,7 +741,7 @@ C----------------------------------------------------------------------
      &                fGain,
      &                iGain_Type)
       implicit none
-#include "plant.h"           
+      INCLUDE 'plant.h'           
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -911,7 +911,7 @@ C
 C----------------------------------------------------------------------
       real function fPltZone_convective_gain ( iZone, iTimeRow )
       implicit none
-#include "plant.h"      
+      INCLUDE 'plant.h'      
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -987,7 +987,7 @@ C
 C----------------------------------------------------------------------
       real function fPltZone_radiant_gain ( iZone, iTimeRow )
       implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -1066,7 +1066,7 @@ C
 C----------------------------------------------------------------------
       real function fSurface_radiant_gain ( iZone, iSurface, iTimeRow )
       implicit none
-#include "plant.h"      
+      INCLUDE 'plant.h'      
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -1148,7 +1148,7 @@ C----------------------------------------------------------------------
      &                                     iNode,
      &                                     iTimeRow )
       implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 C----------------------------------------------------------------------
 C     Passed arguements
 C----------------------------------------------------------------------
@@ -1221,7 +1221,7 @@ C    fCoefficients: Array of matrix coefficients
 C----------------------------------------------------------------------
       subroutine MiscPlantHeatGain(iIndex,fCoefficients,iMatrix)
       implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 
       integer iIndex
       real fCoefficients(mpcoe)

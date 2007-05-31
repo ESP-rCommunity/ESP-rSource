@@ -45,9 +45,9 @@ C QP     - reactive power for present (1) and future (2) time step.
 C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
-#include "building.h"
-#include "tdf2.h"
-#include "power.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'power.h'
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -530,7 +530,7 @@ C  GELV: window edge azimuthal and elevational angles.
 C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/BTIME/BTIMEP,BTIMEF
 
@@ -1153,7 +1153,7 @@ C Average illumination for this light zone:
       ELSE
 
 C Loop through each sensor point, calculate the illumination due
-C to each external default window and summate.  Each window will
+C to each external window and summate.  Each window will
 C have a different solar contribution depending on whether or
 C not it can see the sun.  To regain information on the associated
 C surfaces, loop as in dayfac.f.  Note suma is total sensed lux
@@ -1178,19 +1178,22 @@ C information.
   201       CONTINUE
 
 C Continue only if this surface is vertical, is TMC, has 4 vertices
-C  and is connectedto either the exterior or another real zone.  
+C and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
             IF(ITMCFL(ICOMP,J).GT.0)THEN
               call eclose(PELV(ICOMP,J),0.00,0.70,close)
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
                   WRITE(ITU,843)ICOMP,J
-  843             format('Zone ',I2,'TMC',I2,' not 4 vertexes!')
+  843             format('Zone ',I2,'TMC surf ',I2,' not 4 vertexes!')
+
+C This would be a good place to calculate an alternative bounding box
+C for use in width/height calculations.
+C << to be done >>
                 ENDIF
 
 C Test if the TMC is rectangular and calculate window width
 C and high WIDTH, HIGH:
-closea,closeb,closec,closed,closee,closef
                 call eclose(XPL(1),XPL(2),0.01,closea)
                 call eclose(XPL(1),XPL(3),0.01,closeb)
                 call eclose(XPL(1),XPL(4),0.01,closec)
@@ -1276,6 +1279,10 @@ C subroutine ANGS:
                       call eclose(ZPL(1),ZPLTEM,0.01,close)
                       IF(.NOT.close)ZZ2=ZPL(M)
   557               CONTINUE
+
+C If the surface is 4-sided the width calculation works.
+C However, if the surface has different edges, then the
+C calculation of width and height could be incorrect.
                     WIDTH=SQRT((XX1-XX2)**2+(YY1-YY2)**2)
                     HIGH=ABS(ZZ1-ZZ2)
 
@@ -1905,7 +1912,7 @@ C if so see if it is active for the current glazing and substitute
 C the visible transmittance.
 
       SUBROUTINE DWINVT(IZONE,ISURF,VT,BLIND)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -1956,7 +1963,7 @@ C If ACTIVE=1.0 then there is a potential casual gain/occupants,
 C if ACTIVE=0. then no matching casual gain/occupants.
 
       SUBROUTINE HUNTA(IZONE,IH,ACTIVE)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 

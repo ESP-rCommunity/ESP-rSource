@@ -27,12 +27,12 @@ C ************ prjqa
 C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
-#include "building.h"
-#include "net_flow.h"
-#include "control.h"
-#include "plant.h"
-#include "tdf2.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'esprdbfile.h'
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -40,7 +40,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-#include "espriou.h"
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       common/FILEP/IFIL
@@ -197,7 +197,7 @@ C Remember if each zone is fully attributed.
       character SSPARENT*12
       character zname*12,SNAME*12,cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*72,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248
@@ -261,8 +261,10 @@ C Check if Unix-based or DOS based.
       endif
 
 C Assume file names not included and destination to screen (zero)
+C and itu set so QA report is written to screen.
       fileinfo=0
       destination=0
+      itu = iuout
 
 C Setup the selection menu.
     3 INO=-4
@@ -1853,7 +1855,7 @@ C Mupdate checks whether current model should be updated and guides
 C the user through several of the tasks. Assumes that the user is
 C not browsing.
       subroutine mupdate(ier)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/appw/iappw,iappx,iappy
@@ -2073,7 +2075,7 @@ C resistance of an air gap.
 C << NOTE: this routine gets close for some constructions, but
 C << some variables are off - further debugging required.
       subroutine ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       

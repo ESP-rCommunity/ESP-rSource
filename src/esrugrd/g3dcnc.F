@@ -40,7 +40,7 @@ C ************************    SCVCNC    *******************************
 C SCVCNC creates the connections for each control voulme in surfaces.
 C *********************************************************************
       SUBROUTINE SCVCNC(IZ,IS,ICV,AREC)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -107,7 +107,7 @@ C ADJCNC creates the adjacent connections for control volumes in
 C surfaces.
 C *********************************************************************
       SUBROUTINE ADJCNC(IZ,IS,ICV1,Y1,Y2,COND)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -201,7 +201,7 @@ C CSSEOI connects the nodes in the srf-srf and srf-edge connections
 C with outside or inside ambient.
 C *********************************************************************
       SUBROUTINE CSSEOI(IZ,INSIDX)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -435,8 +435,8 @@ C *************************    LMPEDG    ******************************
 C LMPEDG creates control volumes and connections for lumped edge.
 C *********************************************************************
       SUBROUTINE LMPEDG(IZ,IEG)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -577,8 +577,8 @@ C ****************************    DISEDG    ***************************
 C DISEDG creates control volumes and connections for discretised edge.
 C *********************************************************************
       SUBROUTINE DISEDG(IZ,IEG)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -769,8 +769,8 @@ C *************************     LMPCRN     ****************************
 C LMPCRN creates control volumes and connections for lumped corner.
 C *********************************************************************
       SUBROUTINE LMPCRN(IZ,ICR)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -906,8 +906,8 @@ C **************************    DISCRN    *****************************
 C DISCRN creates control volumes and connections for discretised corner.
 C *********************************************************************
       SUBROUTINE DISCRN(IZ,ICR)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1082,7 +1082,7 @@ C **************************   CNCISS   *******************************
 C CNCISS creates the connections with the srf-srf connection surfaces.
 C *********************************************************************
       SUBROUTINE CNCISS(IZ,ISS,GLBX,GLBY,GLBZ,COND,Y1,Y2,Z1,Z2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D52/NDZSS(MSSZ),DZSS(MSSZ,MZSS)
       COMMON/GR3D53/NDYSS(MSSZ),DYSS(MSSZ,MYSS)
@@ -1134,7 +1134,7 @@ C **************************   CNCISE   *******************************
 C CNCISE creates the connections with the srf-edge connection surfaces.
 C *********************************************************************
       SUBROUTINE CNCISE(IZ,ISE,GLBX,GLBY,GLBZ,COND,Y1,Y2,Z1,Z2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D57/NDZSE(MSEZ),DZSE(MSEZ,MZSE)
       COMMON/GR3D58/NDYSE(MSEZ),DYSE(MSEZ,MYSE)
@@ -1186,7 +1186,7 @@ C **************************   CNCIEE   *******************************
 C CNCIEE creates the connections with the edge-edge connection surfaces.
 C *********************************************************************
       SUBROUTINE CNCIEE(IZ,IEE,GLBX,GLBY,GLBZ,COND,X1,X2,Y1,Y2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D62/NDXEE(MEEZ),DXEE(MEEZ,MXEE)
       COMMON/GR3D63/NDYEE(MEEZ),DYEE(MEEZ,MYEE)
@@ -1238,7 +1238,7 @@ C **************************   CNCIEC   *******************************
 C CNCIEC creates the connections with edge-corner connection surfaces.
 C *********************************************************************
       SUBROUTINE CNCIEC(IZ,IEC,GLBX,GLBY,GLBZ,COND,X1,X2,Y1,Y2)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D67/NDXEC(MECZ),DXEC(MECZ,MXEC)
       COMMON/GR3D68/NDYEC(MECZ),DYEC(MECZ,MYEC)

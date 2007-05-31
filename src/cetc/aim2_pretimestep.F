@@ -130,9 +130,9 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIM2_READIN
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
-#include "espriou.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       integer lnblnk
@@ -737,9 +737,9 @@ C   USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "building.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
       COMMON/PREC2/VOL(MCOM)
       REAL VOL
 
@@ -793,8 +793,8 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
 
 C Set the flue height.
       AIM2_flue_height = AIM2_eaves_height + 1.5
@@ -843,8 +843,8 @@ C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
 
 C Type declarations for local variables.
       INTEGER i,j,k,n
@@ -967,8 +967,8 @@ C     USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
 
 C Declarations for local variables.
       INTEGER ifound,j
@@ -1019,8 +1019,8 @@ C      USE AIM2_CALC_DATA
 C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1157,12 +1157,12 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h"
-#include "hvac_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
-#include "furnace_common.h"
-#include "hvac_common.h"
+      INCLUDE 'building.h'
+      INCLUDE 'hvac_parameters.h'
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'furnace_common.h'
+      INCLUDE 'hvac_common.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1334,8 +1334,8 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1438,8 +1438,8 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1563,10 +1563,10 @@ C AIM2_report decodes the AIM-2 common blocks into a brief report.
       subroutine AIM2_report(itru,ier)
 
       IMPLICIT NONE
-#include "building.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'aim2_parameters.h'      
+      INCLUDE 'aim2_common.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       integer lnblnk

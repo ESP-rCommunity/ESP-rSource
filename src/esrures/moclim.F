@@ -40,8 +40,8 @@ C     X1= value of climatic parameter at time T1
 C     X2= value of climatic parameter at time T2
 
       SUBROUTINE MOCLIM(ID,icget)
-#include "building.h"
-#include "tdf2.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

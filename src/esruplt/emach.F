@@ -46,7 +46,7 @@ C voltage vector of a plant component from power factor information.
 
       SUBROUTINE EMACH001(IPCOMP,PR,PQ,PA)
 
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C Common block for load flow simulation
 C Plant
@@ -88,7 +88,7 @@ C zero.
 
        SUBROUTINE EMACH002(ipcomp,plt_dc_pwr,plt_ac_pwr)
        implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 
 C ESP-r COMMON blocks
 

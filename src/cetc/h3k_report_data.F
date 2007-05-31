@@ -88,7 +88,7 @@ C*******************************************************************************
 
       SUBROUTINE H3K_transport_build_data(i_zone)
       IMPLICIT NONE
-#include "building.h"
+      INCLUDE 'building.h'
 
 C.....Passed variable
       integer i_zone            ! None number
@@ -670,8 +670,8 @@ C*******************************************************************************
      &     )
       IMPLICIT NONE
 
-#include "building.h"
-#include "MultiYear_simulations.h"
+      INCLUDE 'building.h'
+      INCLUDE 'MultiYear_simulations.h'
       
 C.....Declare passed variables
       real     btimep, btimef   ! building present & future time (0.0->23.999..)
@@ -868,7 +868,7 @@ C
 C**********************************************************************************************
       subroutine h3k_transport_plant_data()
       implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 C.....ESP-r commons
       common/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)  ! Control data for each component
       integer NPCOMP, NCI
@@ -1211,8 +1211,8 @@ C**********************************************************************
 
       implicit none
 
-#include "plant.h"
-#include "building.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN                 ! trace output unit numbers
       integer iuout, iuin
@@ -1547,7 +1547,7 @@ C
 C**********************************************************************************************
       subroutine h3k_transport_plant_comp_data()
       implicit none
-#include "plant.h"
+      INCLUDE 'plant.h'
 C.....ESP-r commons (see documentation above)
       common/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       integer NPCDAT, IPOFS1, IPOFS2
@@ -1673,8 +1673,8 @@ C*******************************************************************************
 
 C     Load misc. named parameters:
 C       total_load / hvac_load / occupant_load / cluster_load / total_gen
-#include "CETC_definitions.h"
-#include "power.h"
+      INCLUDE 'CETC_definitions.h'
+      INCLUDE 'power.h'
 
 C The electrical nodes common
       common/enod/

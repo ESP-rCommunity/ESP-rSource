@@ -55,8 +55,8 @@ CUse module for GCEP data
 C        USE GCEP_INPUT
 
 	IMPLICIT NONE
-#include "gcep_parameters.h"
-#include "gcep_common.h"
+      INCLUDE 'gcep_parameters.h'
+      INCLUDE 'gcep_common.h'
       COMMON/OUTIN/IUOUT,IUIN
 	INTEGER IUOUT,IUIN
 

@@ -57,8 +57,8 @@ C ************* CLRPRB
 C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
-#include "building.h"
-#include "cfd.h"
+      INCLUDE 'building.h'
+      INCLUDE 'cfd.h'
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/AFNZN/zmfn1,zmfn2
@@ -455,7 +455,7 @@ C ***** Find toggles for active description buttons and check to
 C see if there are images associated with descriptive buttons.
       subroutine cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-#include "building.h"
+      INCLUDE 'building.h'
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -530,10 +530,10 @@ C Loop through all zones to see if there is a domain flow description.
 
 C ***** Notice that a active description button has been pressed.
       subroutine cfgpk(act)
-#include "building.h"
-#include "plant.h"
-#include "net_flow.h"
-#include "control.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'control.h'
       common/pophelp/h(60)
       common/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -686,8 +686,8 @@ C ***************** ERUTIL
 C ERUTIL Reads a zone utility file and fills the common blocks INDICS
 C and UDESC. ITRU unit number for user output, IER=0 OK. 
       SUBROUTINE ERUTIL(IFIL,LFIL,IZ,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 C espriou.h provides currentfile.
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -931,8 +931,8 @@ C EGOMST:  Reads site obstruction data as ASCII strings, with or without
 C range checking and printed summary. An obstruction block name (up to
 C 12 characters) may be included as an option and is returned via BLKNAME. 
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -1073,7 +1073,7 @@ C ************** MKGOMST
 C MKGOMST: Creates an annotated site obstruction file based 
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -1138,14 +1138,14 @@ C ************* ERMRT
 C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
-#include "building.h"
-#include "espriou.h"
+      INCLUDE 'building.h'
+      INCLUDE 'espriou.h'
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      common/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common /cube5/fstgrp,fstsur,lstsur,strtgr
 
 C Error subroutine and error details for dll mode.
@@ -1252,7 +1252,7 @@ C Read surface data line(s).
         IRV=NZS
         CALL EGETWRA(IUF,VA,IRV,0.,0.9999,'F','view factors',IER)
         DO 14 J=1,NZS
-          VWF(I,J)=VA(J)
+          VEWF(I,J)=VA(J)
    14   CONTINUE
   330 CONTINUE
 
@@ -1285,20 +1285,20 @@ C Write out trace if requested.
 C MS senstive, change is MS>68.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
-            write(outs,9993)I,(VWF(I,J),J=1,NZS)
+            write(outs,9993)I,(VEWF(I,J),J=1,NZS)
  9993       format(I3,1X,22F5.2)
             call edisp(itru,outs)
           elseif(NZS.ge.23.and.NZS.le.44)then
-            write(outs,9993)I,(VWF(I,J),J=1,22)
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=23,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,NZS)
             call edisp(itru,outs)
           elseif(NZS.ge.45.and.NZS.le.68)then
-            write(outs,9993)I,(VWF(I,J),J=1,22)
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=23,44)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
-            write(outs,'(1x,22F5.2)')(VWF(I,J),J=45,NZS)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
@@ -1409,12 +1409,12 @@ C ICOMP is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C act character*1 if 'a' then area weighted, if 'r' ray traced.
       SUBROUTINE EMKMRT(LMRT,LGEOM,NZS,IUF,ICOMP,act,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
       character zname*12,zdesc*64,LMRT*72,LGEOM*72,CUBN*6,act*1
@@ -1452,7 +1452,7 @@ C Write matrix, one line at a time. Begin by copying data to a single
 C dimension array and then generating & writing out as much as 248 chars.
       DO 930 I = 1,NZS
         do 32 j = 1,NZS
-          rval(j)=VWF(i,j)
+          rval(j)=VEWF(i,j)
   32    continue
         itrunc=1
         ipos=1
@@ -1468,7 +1468,7 @@ C because it might influence use of view factors in bps.
       DO 462 I =  1,NZS
         fr=0.0
         DO 461 J =  1,NZS
-          fr=fr+VWF(i,j)
+          fr=fr+VEWF(i,j)
 461     CONTINUE
         WRITE(IUF,4060)i,fr
 4060    FORMAT(' sum over row ',i2,' is : ',F14.10)
@@ -1528,7 +1528,7 @@ C ****** stuf4xyz
 C stuf4xyz instanciates 4 vertices in x(MV),y(MV),z(MV) from raw data.
 C Useful for block shapes prior to call to PLEQN.
       subroutine stuf4xyz(x,y,z,x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4)
-#include "building.h"
+      INCLUDE 'building.h'
       dimension x(MV), y(MV), z(MV)
       X(1) = x1
       Y(1) = y1
@@ -1556,7 +1556,7 @@ C The normal will point out from the surface if the vertices are
 C passed in anti-clockwise.
 
       SUBROUTINE PLEQN(X,Y,Z,NP,CG,EQN,IERPLN)
-#include "building.h"
+      INCLUDE 'building.h'
 
       DIMENSION X(MV), Y(MV), Z(MV), CG(3), EQN(4)
       DIMENSION VA(3), VB(3), VC(3), VN(3)
@@ -1670,7 +1670,7 @@ C verticies.  For solid bodies whose faces have been described anti-
 C clockwise when viewed from the outside the unit normals within this
 C routine will point outwards from the body.
       SUBROUTINE EPLNEQN(ITRC,ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
-#include "building.h"
+      INCLUDE 'building.h'
 
       DIMENSION PNTLST(100),CG(3),VNORM(3),EQN(4),
      &          PNT(MV,3),E(MV,3),VN(MV,3),EV1(3),EV2(3),EV3(3)
@@ -1814,7 +1814,7 @@ C DX,DZ are the window offsets, DDX,DDZ are the window width & hieght,
 C XXW,YYW,ZZW are the transformed window coords in surface coord system.
       SUBROUTINE ETRANSW(ITRC,ITRU,N,X,Y,Z,OFFSET,DX,DZ,DDX,DDZ,
      &                   XXW,YYW,ZZW)
-#include "building.h"
+      INCLUDE 'building.h'
       DIMENSION  X(MV),Y(MV),Z(MV),XXW(4),YYW(4),ZZW(4)
       DIMENSION  TMAT(4,4),RMAT(4,4)
       DIMENSION  VP(3),EP(3),EQN(4)
@@ -1887,7 +1887,7 @@ C NB       = no. base surf vertices,
 C XB,YB,ZB = base surf vertex arrays,
 C XT,YT,ZT =  transformed surf vertex arrays,
       SUBROUTINE TRANSUR(ITRC,ITRU,NB,XB,YB,ZB,OFFSET,XT,YT,ZT,sname)
-#include "building.h"
+      INCLUDE 'building.h'
       DIMENSION  XB(MV),YB(MV),ZB(MV),XT(MV),YT(MV),ZT(MV)
       DIMENSION  VP(3),EQN(4),TRNS(3)
       CHARACTER sname*28,outs*144,out96*96
@@ -2064,7 +2064,7 @@ C ***************** ESCZONE
 C ESZONE makes a copy of the current contents of common blocks G1 G3
 C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ESCZONE(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/G0/CTYPE
       COMMON/SG0/CTYPE1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -2115,7 +2115,7 @@ C **************** ERCZONE
 C ERZONE recovers the saved contents of common blocks G1 G2 G3
 C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ERCZONE(ICOMP)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G0/CTYPE
       COMMON/SG0/CTYPE1
@@ -2171,8 +2171,8 @@ C to be deleted (passed back as a negative zone number).
 C If MOD = t or T then the focus is thermophysical.
 C It is assumed that the user will make one selection only.
       SUBROUTINE EASKGEOF(PROMPT,CFGOK,IZONE,MOD,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2454,8 +2454,8 @@ C operations defined, `s` note shading defined, `z` note zone attrib
 C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, `-` zone names only.
       SUBROUTINE ASKZONE(IZONE,IDZONE,prompt,title,mod,errmsg,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -2756,8 +2756,8 @@ C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, 'b' obstruction blocks,
 C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -3073,8 +3073,8 @@ C index IS. It assumes that a geometry file has been read in.
 C If MOD = '-' name list only, MOD = 'M' attribute Many, MOD = 'A'
 C show attributes in list.
       SUBROUTINE EASKSUR(IZONE,IS,MOD,PROMPT1,PROMPT2,IER)
-#include "building.h"
-#include "epara.h"
+      INCLUDE 'building.h'
+      INCLUDE 'epara.h'
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3233,8 +3233,8 @@ C optionally the node index (inode). It assumes that relevant
 C databases have been opened.
 
       subroutine asksnode(icomp,is,ilay,inode,ier)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3365,7 +3365,7 @@ C DESCR: descriptive string 25 characters wide
 C IC   : connection number.
 
       SUBROUTINE SURADJ(IZONE,ISFN,IE,TMP,IZC,ISC,IC,DESCR)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3429,7 +3429,7 @@ C *****************************    FLNAME    **************************
 C FLNAME provides a name for a defined file type.
 C *********************************************************************
       SUBROUTINE FLNAME(ICOMP,FILENM,FLTYP,EXT,NHLP,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -3478,7 +3478,7 @@ C of truncation.
 C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -3538,7 +3538,7 @@ C of character length (length) to be used in reports.
 C Similar to code ZLIST in esrures/utils.F. 
 
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       dimension list(insize)
       CHARACTER zname*12,zdesc*64,zdescr*248,outs*248,outsd*248

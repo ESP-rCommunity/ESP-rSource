@@ -29,11 +29,11 @@ C common blocks into the file and unit specified in COMMON/C21.
 C This version uses generic databases.
       SUBROUTINE EMKCFGG(act,IER)
 
-#include "building.h"
-#include "tdf2.h"
-#include "uncertainty.h"
-#include "net_flow.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'tdf2.h'
+      INCLUDE 'uncertainty.h'
+      INCLUDE 'net_flow.h'
+      INCLUDE 'esprdbfile.h'
 C espprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -939,7 +939,7 @@ C information in common blocks  which are filled by reading the
 C system configuration file. If ICF=1 then display with zone and surface names 
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
-#include "building.h"
+      INCLUDE 'building.h'
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -1026,7 +1026,7 @@ C CEN 13791 boundary condition start.
 
 C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob,ier)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

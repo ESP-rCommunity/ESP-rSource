@@ -98,8 +98,8 @@ C
 C *********************************************************************
       SUBROUTINE ENETREAD(MODE)
 
-#include "power.h"
-#include "espriou.h"
+      INCLUDE 'power.h'
+      INCLUDE 'espriou.h'
 C Common Blocks
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1008,7 +1008,7 @@ C *********************************************************************
 
       SUBROUTINE ENETWRITE
 
-#include "power.h"
+      INCLUDE 'power.h'
 C
 C Common Blocks
 

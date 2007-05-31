@@ -50,8 +50,8 @@ C----------------------------------------------------------------------
       subroutine Boundry_Condition_Control()
       implicit none
 
-#include "building.h"
-#include "plant.h"
+      INCLUDE 'building.h'
+      INCLUDE 'plant.h'
 
 C----------------------------------------------------------------------
 C     ESP-r commons 
@@ -203,8 +203,8 @@ C----------------------------------------------------------------------
      &                                 iPlant_matrix  )
       implicit none
 
-#include "plant.h"
-#include "CETC_definitions.h"
+      INCLUDE 'plant.h'
+      INCLUDE 'CETC_definitions.h'
 
 C----------------------------------------------------------------------
 C     Passed arguements

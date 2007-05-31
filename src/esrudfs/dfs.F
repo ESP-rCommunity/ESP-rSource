@@ -27,8 +27,8 @@ C DFS - Stand-alone CFD module.
 C Passed iappw, iappx, iappy as pixel width of application, left and top offsets.
 C if these are 0 then use default values.
       program dfs
-#include "cfd.h"
-#include "building.h"
+      INCLUDE 'cfd.h'
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

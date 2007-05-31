@@ -38,7 +38,7 @@ C ***************************    INSPTS    ****************************
 C INSPTS defines the intersection points in a surface.
 C *********************************************************************
       SUBROUTINE INSPTS
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -132,7 +132,7 @@ C INS2LN determines the intersection point for two lines in the same
 C        plan.
 C *********************************************************************
       SUBROUTINE INS2LN(IS,IL1,IL2,XINTR,ZINTR,IER)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
@@ -171,7 +171,7 @@ C *****************************  CVSSRF  ******************************
 C CVSSRF creates the control volumes for the surfaces.
 C *********************************************************************
       SUBROUTINE CVSSRF
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -448,7 +448,7 @@ C BAVRTX defines the line number within which the required vertex was
 C found. It also returns the number of the vertex before and after it.
 C *********************************************************************
         SUBROUTINE BAVRTX(ISCH,IS,IV,ILEX,NLIN,ILIN,INMV,IVX)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/GR3D43/XINT(MS,MGV),ZINT(MS,MGV),NCVS(MS,MGV)
       COMMON/GR3D45/NLINT,NVLNT(MLS),IVLNT(MLS,MLS),ILINBT(MLBS,2)
@@ -534,8 +534,8 @@ C CZCNVS controls the generation of zone's nodes, control volumes,
 C and connections.
 C *********************************************************************
       SUBROUTINE CZCNVS(IZ,IER)
-#include "building.h"
-#include "esprdbfile.h"
+      INCLUDE 'building.h'
+      INCLUDE 'esprdbfile.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -749,7 +749,7 @@ C CNCSEC creates the nodes ,and control volumes for connection surfaces
 C ( srf-srf,srf-edge, edge-edge, and edge-crn ).
 C *********************************************************************
       SUBROUTINE CNCSEC
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -1276,7 +1276,7 @@ C ***************************    CVNODE    ****************************
 C CVNODE creates control volumes and nodes for surface control volumes.
 C *********************************************************************
       SUBROUTINE CVNODE(IS,AREC,DISX,DISZ)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -1332,7 +1332,7 @@ C *****************************   CNCSRF   ***************************
 C CNCSRF controls the creation of the connections for surfaces.
 C *********************************************************************
       SUBROUTINE CNCSRF(IZ,INSIDX)
-#include "building.h"
+      INCLUDE 'building.h'
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
