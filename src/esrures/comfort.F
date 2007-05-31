@@ -73,7 +73,7 @@ C Pre calculated data (filtered).
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
-      character xfile*72,ITEMS*25,tg*1,delim*1,act*1
+      character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
@@ -330,12 +330,12 @@ C Casual gain type.  Ask user which constitutes occupancy.
         goto 78
       elseif(ino.eq.11)then
 
-C Start mrt session.
+C Start espvwf session.
         dok=.false.
-        h(1)='A `mrt analysis` assess comfort at a specific position'
+        h(1)='A `vwf analysis` assess comfort at a specific position'
         h(2)='within a zone and makes use of viewfactors from a pre-'
         h(3)='defined body to the surfaces in the zone. '
-        CALL ASKOK(' ',' Proceed with local mrt analysis?',OK,dok,3)
+        CALL ASKOK(' ',' Proceed with local vwf analysis?',OK,dok,3)
         IF(OK)then
 
 C Get logical name of terminal type, expand problem name
@@ -357,10 +357,10 @@ C and change any / to \.
             longtfile=longtfiledos
           endif
 
-          write(doit,'(7a)') 'mrt -mode ',tmode,
+          write(doit,'(7a)') 'espvwf -mode ',tmode,
      &       ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &       ' -zone ',ZN(1:lnblnk(ZN)),' &'
-          call usrmsg(doit,'starting mrt analysis.','-')
+          call usrmsg(doit,'starting vwf analysis.','-')
           call runit(doit,tmode)
         endif
       else

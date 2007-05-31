@@ -56,7 +56,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER H*72,OPTITM*54,DSOPT*12
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
-      CHARACTER xfile*72,tg*1,delim*1
+      CHARACTER xfile*144,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
       dimension RVA(20),IVA(24)
 
@@ -193,6 +193,7 @@ C List database.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
+          write(xfile,'(a)') 'optical_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
           write(outs248,'(2a)') 'In the optical database: ',
      &      LOPTDB(1:lnblnk(LOPTDB))
@@ -204,6 +205,8 @@ C List database.
         SOPT='ALL'
         CALL EROPTDB(1,itu,SOPT,GDESCR,IER)
         if(irpt.eq.2)then
+
+C Toggle the export file closed.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db',IER)
         endif
       ELSEIF(INO.EQ.NITMS-3)THEN

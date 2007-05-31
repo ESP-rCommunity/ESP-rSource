@@ -283,8 +283,7 @@ C If in graphic mode use graphic faciltiies to edit the number.
 
 C Include a cancel option.
         cancel='cancel'
-        CALL openaskaltbox(PROMP1,PROMP2,cancel,iwidth)
-C        CALL openaskbox(PROMP1,PROMP2,iwidth)
+        CALL openaskcnclbox(PROMP1,PROMP2,cancel,iwidth)
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP+1,IHW,IER)
@@ -295,8 +294,7 @@ C        CALL openaskbox(PROMP1,PROMP2,iwidth)
           call dupphelp(dh)
           call updhelp(dh,2,IHW)
         endif
-        CALL askaltdialog(ask,cancel,idef,iquery)
-C        CALL askdialog(ask,idef,iquery)
+        CALL askcncldialog(ask,cancel,idef,iquery)
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
@@ -1375,7 +1373,7 @@ C When writing out the combined text, put a space between each section.
       return
       end
 
-C ************* EASKCMD
+C ************* EASKSCMD
 C EASKSCMD is a facility for asking the user for a text string which
 C incorporates the prompt, alternative command, error messages and
 C help facilities as follows:
@@ -5150,7 +5148,7 @@ C delimiter:
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124
-      character xfile*72,tg*1,delim*1,dg*1
+      character xfile*144,tg*1,delim*1,dg*1
 
 C If delimiter set to alternative then process text before edisp call.
       if(delim.eq.'-')then

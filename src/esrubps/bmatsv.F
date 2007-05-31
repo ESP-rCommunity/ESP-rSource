@@ -259,6 +259,8 @@ C Indicies of start, end, current & future indicies
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+      character LBSIMP*72
+
 C Flag for whether there is basesimp file
       logical bsm_flag
 

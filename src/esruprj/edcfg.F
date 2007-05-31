@@ -725,7 +725,7 @@ C to the unit number 42.
 
 C Write surface attributes that might be of interest. Find
 C lowest and highest point and cog of surface.
-          write(42,'(2a,i3,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
+          write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
@@ -1257,7 +1257,7 @@ C Begin with high level menu.
       ITEMS(3)   ='b  constructions                 '
       ITEMS(4)   ='c  operation                     '
       ITEMS(5)   =' _____________________________   '
-      WRITE(ITEMS(6),'(A,I3,A)') ' Topology ... (',NCON,' connections)'
+      WRITE(ITEMS(6),'(A,I4,A)') ' Topology ... (',NCON,' connections)'
       ITEMS(7)   ='d  connections & anchors         '
       ITEMS(8)   =' _____________________________   '
       ITEMS(9)   =' Options ...                     ' 
@@ -1960,19 +1960,28 @@ C Also update lodlabel commons before writing out.
             H(2)='data for the zone surfaces.'
             CALL EASKS(CFILE,' New construction file name:',
      &        ' ',72,'new.con','construction file',IER,2)
-            IF(CFILE.NE.' ')THEN
+            IF(CFILE(1:2).NE.'  ')THEN
               QUIET=.false.
+              write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
               CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
-                DO 61 ISS=1,NZSUR(NCOMP)
+                do 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
    61           continue
-                LTWIN(NCOMP)=DFILE
-                ITW(NCOMP)=1
-                QUIET=.false.
-                CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
+                H(1)='A zone tmc file contains optical data for the'
+                H(2)='data zone surfaces.'
+                CALL EASKS(DFILE,' New zone tmc file name:',
+     &            ' ',72,'new.tmc','tmc file',IER,2)
+                if(DFILE(1:2).NE.'  ')then
+                  write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
+                  ITW(NCOMP)=1
+                  QUIET=.false.
+                  CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
+                else
+                  goto 90
+                endif
               endif
             else
               goto 90

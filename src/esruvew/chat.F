@@ -29,7 +29,7 @@ C Redirected text/graphics parameters.
       character*12 M(23)
       character*5 XEQ,YEQ,ZEQ
       character wins*20,outs*124,H*72,hold*36
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       logical close,OK
 
 C MENU OF COMMANDS

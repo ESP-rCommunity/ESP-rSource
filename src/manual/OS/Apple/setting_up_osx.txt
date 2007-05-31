@@ -1,15 +1,19 @@
-These instructions assume OS X 10.2 (jaguar).
+These instructions assume OS X 10.4 (or newer). It is
+possible to compile on 10.3.9.
 
-Download from Apple the software developers kit, the full Apple X11
-environment and Fink.
+Download from Apple (or from the Install DVD) the software 
+developers kit, the full Apple X11 environment. You will
+also need the compiling support tool Fink and optionally
+Fink Commander.
 
 It is necessary to register to download and use the software
 developers kit (there is no cost). Install this first.
 
-Follow the instructions on the Apple site to download Apple's X11.
-There are two parts to this: the first includes the X11 library, 
-fonts, Xserver etc., the second includes the `include` folders
-and C header files needed to compile and link with X11.
+Follow the instructions on the Apple site to download Apple's X11
+or find it on your Install DVD. There are two parts to this: the 
+first includes the X11 library, fonts, Xserver etc., the second 
+includes the `include` folders and C header files needed to 
+compile and link with X11.
 
 Fink is a developement environment for Open source software.
 It holds information about several thousand packages and
@@ -72,4 +76,6 @@ ln -s /Users/esru /usr/esru
 When compiling esp-r use the OS X option in the Install script.
 Do not use Fink to compile esp-r, use the esp-r Install script.
 
-
+Also note that the ESP-r Installer works best with GCC 3.3
+and g77.  The gfortran and GCC 4.0 available on OSX are
+not quite ready.

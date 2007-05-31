@@ -65,7 +65,7 @@ C SNAPSH is a logical flag to request variation in header.
       logical SNAPSH,close
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
       dimension ITEM(24)
-      CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*72
+      CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*144
       character SLABEL*32,GLABEL*20
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
@@ -773,7 +773,7 @@ C act='p' iget parameters already set.
       dimension YMAX(MZS), YMIN(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS), YTOT(MZS)
       dimension TMAX(MZS), TMIN(MZS)
-      character xfile*72,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character outs*124,act*1
       character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124

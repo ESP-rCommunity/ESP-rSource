@@ -568,7 +568,7 @@ C out its zones, floor area, weighting and set description.
         CALL EGETWI(OUTSTR,K,imetget(imset),0,99,'W','metric iget',IER)
         CALL EGETWI(OUTSTR,K,imetmsc(imset,1),0,32,'W','metric msc',IER)
         CALL EGETWI(OUTSTR,K,imetmsc(imset,2),0,32,'W','metric msc',IER)
-        CALL EGETWI(OUTSTR,K,nzmg(imset),0,32,'W','nb of zones',IER)
+        CALL EGETWI(OUTSTR,K,nzmg(imset),0,MCOM,'W','nb of zones',IER)
         CALL EGETWR(OUTSTR,K,emgflr(imset),1.,9999.,'W','metric flr',
      &    IER)
         CALL EGETWR(OUTSTR,K,emgsca(imset),1.,9999.,'W','metric scale',
@@ -588,7 +588,7 @@ C Read in the associated zones.
           CALL STRIPC(ifu,OUTSTR,99,ND,1,'list of zones',IER)
           K=0
           do 142 ij=1,nzmg(imset)
-            CALL EGETWI(OUTSTR,K,izmg(imset,ij),0,32,'W','zone lst',
+            CALL EGETWI(OUTSTR,K,izmg(imset,ij),0,MCOM,'W','zone lst',
      &        IER)
   142     continue
         endif
@@ -599,7 +599,7 @@ C One of the sets of energy (demand/capacity) associated data.
         iset=0
       elseif(WORD(1:8).eq.'*energy_')then
         iset=iset+1
-        CALL EGETWI(OUTSTR,K,nzedg(iset),0,32,'W','nb of zones',IER)
+        CALL EGETWI(OUTSTR,K,nzedg(iset),0,MCOM,'W','nb of zones',IER)
         CALL EGETWI(OUTSTR,K,idgmsc(iset,1),0,32,'W','demand msc',IER)
         CALL EGETWI(OUTSTR,K,idgmsc(iset,2),0,32,'W','demand msc',IER)
         CALL EGETWI(OUTSTR,K,iaggr,0,1,'W','aggregate toggle',IER)
@@ -610,7 +610,7 @@ C One of the sets of energy (demand/capacity) associated data.
           CALL STRIPC(ifu,OUTSTR,99,ND,1,'list of zones',IER)
           K=0
           do 143 ij=1,nzedg(iset)
-            CALL EGETWI(OUTSTR,K,izedg(iset,ij),0,32,'W','zone lst',
+            CALL EGETWI(OUTSTR,K,izedg(iset,ij),0,MCOM,'W','zone lst',
      &        IER)
   143     continue
         endif
@@ -666,7 +666,7 @@ C See ripvdat for IPV common block information.
       common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
      &              is2sprs,is2sprf,is1sums,is1sumf
 
-      dimension list(32)
+      dimension list(32)  ! zone lists currently limited to 32 max.
 
       character ipvtitl*40,ipvvers*40,ipvsynop*248,lipvimg*72
       character ipvadesc*40,zedsdoc*12,outs*124
