@@ -518,7 +518,10 @@ C << for now assume that the file passed is not an exemplar >>
           confirm=.false.
           ckpath=.true.
           call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-          if(ier.eq.-1)goto 3
+          if(ier.eq.-3)then
+            ier=0
+            goto 3  ! cancel detected, redisplay menu
+          endif
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
@@ -531,7 +534,10 @@ C << for now assume that the file passed is not an exemplar >>
           confirm=.false.
           ckpath=.true.
           call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-          if(ier.eq.-1)goto 3
+          if(ier.eq.-3)then
+            ier=0
+            goto 3  ! cancel detected, redisplay menu
+          endif
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
@@ -939,6 +945,11 @@ C used and there is no need to check the path.
                   ckpath=.false.
                 endif
                 call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+                if(ier.eq.-3)then
+                  ier=0
+                  goto 3  ! cancel detected, redisplay menu
+                endif
+
                 call tstamp('>','PRJ: continuing with exemplar')
               endif
             endif
@@ -956,6 +967,10 @@ C 'UNKNOWN' then ask for actual name to create or read.
             confirm=.true.
             ckpath=.true.
             call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            if(ier.eq.-3)then
+              ier=0
+              goto 3  ! cancel detected, redisplay menu
+            endif
           else
 
 C Something was passed in via the command line so offer choice.
@@ -987,11 +1002,19 @@ C Find the path and local file name.
               confirm=.false.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              if(ier.eq.-3)then
+                ier=0
+                goto 3  ! cancel detected, redisplay menu
+              endif
             elseif(IW.eq.2)then
               itisanexemplar=.false.
               confirm=.true.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              if(ier.eq.-3)then
+                ier=0
+                goto 3  ! cancel detected, redisplay menu
+              endif
             elseif(IW.eq.3)then
               INO=-2
               GOTO 3

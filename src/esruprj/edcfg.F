@@ -3362,6 +3362,10 @@ C logic which determines if we actually are browsing.
      &      'config file name',IER,17)
         endif
 
+C Cancel request, return and ensure that the calling code deals with
+C the -3 ier passed back.
+        if(ier.eq.-3) return
+
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '
         call st2file(LTMP,LCMDFL)
