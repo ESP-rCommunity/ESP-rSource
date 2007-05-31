@@ -26,7 +26,7 @@ C Common G1M is used to hold expanded surface list data.
 
       SUBROUTINE  FILEIN(ITRC,ITRU,IER)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -97,7 +97,7 @@ C ***************** ESMZON
 C ESMZON makes a copy of the current contents of common blocks G1
 C into G1M.
       SUBROUTINE ESMZON
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM

@@ -118,9 +118,9 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIMS_tank1_fuel_static_temp(IPCOMP)
       
       IMPLICIT NONE
-      INCLUDE 'aims_common.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "aims_common.h"
+#include "plant.h"
+#include "building.h"
 C Ian: 2004-05-31 (begin).
 C The code formerly USEd MODULEs FC_fluids and FC_tanks, which contain data on
 C fuel molecular weights, LHV, HHV, etc. These have been replaced with the header
@@ -129,8 +129,8 @@ C blocks with variables that duplicate local variables in this subroutine. There
 C the local variables used in this subroutine must be altered in order to accommodate
 C this change. The code will not currently compile with g77 nor with IMPLICIT NONE.
 C THEREFORE THIS CODE MUST BE CHANGED.
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "SOFC.h"
+#include "cogen_tanks.h"
 C Ian: 2004-05-31 (end).
 
 C     INPUT Argument IPCOMP
@@ -488,9 +488,9 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIMS_tank1_fuel_coeff_gen(IPCOMP,COUT,ISTATS)
 
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'aims_common.h'
+#include "plant.h"
+#include "building.h"
+#include "aims_common.h"
 C Ian: 2004-05-31 (begin).
 C The code formerly USEd MODULEs FC_fluids and FC_tanks, which contain data on
 C fuel molecular weights, LHV, HHV, etc. These have been replaced with the header
@@ -499,8 +499,8 @@ C blocks with variables that duplicate local variables in this subroutine. There
 C the local variables used in this subroutine must be altered in order to accommodate
 C this change. The code will not currently compile with g77 nor with IMPLICIT NONE.
 C THEREFORE THIS CODE MUST BE CHANGED.
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "SOFC.h"
+#include "cogen_tanks.h"
 C Ian: 2004-05-31 (end).
 
 C Passed Arguments 
@@ -1341,9 +1341,9 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIMS_DHW_load(T_tank)
       
       IMPLICIT NONE
-      INCLUDE 'aims_common.h'
-      INCLUDE 'cogen_tanks.h'
-      INCLUDE 'dhw_common.h'
+#include "aims_common.h"
+#include "cogen_tanks.h"
+#include "dhw_common.h"
       
        COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
        INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS 

@@ -47,8 +47,8 @@ c               2: zone plant flux.
 c               3: zone temperature and plant flux.
 
       subroutine minptb
-      INCLUDE 'building.h'
-      INCLUDE 'monitor.h'
+#include "building.h"
+#include "monitor.h"
 
       common/outin/iuout,iuin
       common/c1/ncomp,ncon
@@ -152,8 +152,8 @@ c values are assigned to zone temperatures is called
 c after the start-up period.
 
       subroutine zngrph(iss,isf,instep,mode)
-      INCLUDE 'building.h'
-      INCLUDE 'monitor.h'
+#include "building.h"
+#include "monitor.h"
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB, LNMVRL, LNDRRL

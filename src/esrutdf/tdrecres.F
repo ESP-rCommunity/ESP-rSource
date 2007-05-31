@@ -37,7 +37,7 @@ C ITC maps fields >> VAL index where VAL(1) is the fractional julain
 C day and VAL(2...) are timestep fields.
 
       SUBROUTINE RCTDFR(ITRC,ID,IJ,time,VAL,ISDAT,IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/tdset/itdyear,itdbdoy,itdedoy

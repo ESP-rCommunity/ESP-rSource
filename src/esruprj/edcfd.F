@@ -52,8 +52,8 @@ C ITRU unit number for user output, IUF unit number for CFD input file.
 C IER=0 indicates no error.
 
       SUBROUTINE CFDCOMP(izone,iuf,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -355,8 +355,8 @@ C IUF unit number for CFD input file.
 C IER=0 indicates no error.
 
       SUBROUTINE CFDGGRD(izone,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -999,7 +999,7 @@ C CFDSVAR: controls the editing of CFD solution variables.
 C IER=0 indicates no error.
 
       SUBROUTINE CFDSVAR(IER)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
@@ -1194,8 +1194,8 @@ C ************************ CFDEDAT ************************
 C CFDEDAT: controls the editing of CFD equations.
 
       SUBROUTINE CFDEDAT
-C       INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+C #include "building.h"
+#include "cfd.h"
 
 C      common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1657,8 +1657,8 @@ C ITRU unit number for user output.
 C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -1962,8 +1962,8 @@ C EDAIRO controls the editing of CFD air flow opening boundary variables.
 C IER=0 indicates no error.
 
       SUBROUTINE EDAIRO(IAO,IER)
-C      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+C#include "building.h"
+#include "cfd.h"
 
       common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
@@ -2195,8 +2195,8 @@ C ************************** MFCONF **************************
 C MFCONF defines conflation of CFD and mfs 
 
       SUBROUTINE MFCONF(ICFD)
-      INCLUDE 'cfd.h'
-      INCLUDE 'net_flow.h'
+#include "cfd.h"
+#include "net_flow.h"
 
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
@@ -2248,8 +2248,8 @@ C EDSLDB controls the editing of CFD solid boundary variables.
 C IER=0 indicates no error.
 
       SUBROUTINE EDSLDB(IZONE,ISB,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
@@ -2449,8 +2449,8 @@ C EDSRC controls the editing of CFD sources - humidity, CO2, etc.
 C IER=0 indicates no error.
 
       SUBROUTINE EDSRC(ISB,IER)
-      INCLUDE 'cfd.h'
-      INCLUDE 'net_flow.h'
+#include "cfd.h"
+#include "net_flow.h"
 
       common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
@@ -3167,7 +3167,7 @@ C EDBLK controls the editing of CFD blockages to flow
 C IER=0 indicates no error.
 
       SUBROUTINE EDBLK(ISB,IER)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
@@ -3322,7 +3322,7 @@ C ************************** HANDSHK **************************
 C HANDSHK controls the editing of the handshaking mechanism.
 
       SUBROUTINE HANDSHK(IHST,IER)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -3393,7 +3393,7 @@ C PIKCELS controls the editing of the cells defining a boundary region.
 
       SUBROUTINE PIKCELS(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
@@ -3706,7 +3706,7 @@ C ************* TOPBOT
 C TOPBOT: Define upper and lower curvilinear x-section for use in
 C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3896,9 +3896,9 @@ C GRIDDEF - define gridding via regions and specify number of cells
 C and cell distribution for each region.
 
       SUBROUTINE GRIDDEF(IAX,NRG,NTC,TOTDIS,NCEL,REG,plaw,ierr)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "cfd.h"
+#include "epara.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -4296,7 +4296,7 @@ C PROMPT1 and PROMPT2 are text prompt strings
 C NH is number of help strings.
 
       SUBROUTINE ASKMFNOD(IOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -4326,7 +4326,7 @@ C then silently return all connections associated with the node
 C (absolute value of INODE).
 
       SUBROUTINE ASKMFCON(INODE,NNPK,ICPK,PROMPT1,PROMPT2)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)

@@ -27,8 +27,8 @@ C a tabular listing and return, if ACT='H' present tabular listing
 C as a pop-up, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edmlc(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
 
       COMMON/OUTIN/IUOUT,IUIN

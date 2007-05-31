@@ -29,8 +29,8 @@ C ********************* RINTERA ****************************************
 
       SUBROUTINE RINTERA(INTER,IERROR,CFGSCN)
 
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 
 C Open the file passed via the command line for b2e - usually "b2e_inter"
       COMMON/OUTIN/IUOUT,IUIN
@@ -273,9 +273,9 @@ C BHSTR - an array holding a descriptive string for each column of data.
 
       SUBROUTINE READBTF(IERROR)
 
-      INCLUDE 'b2e.h'
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "b2e.h"
+#include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -513,8 +513,8 @@ C*end_data
 
       SUBROUTINE TDFUDWR(MODE,IERROR)
 
-      INCLUDE 'b2e.h'
-      INCLUDE 'espriou.h'
+#include "b2e.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -603,7 +603,7 @@ C This subroutine decodes the header strings from labview
 
       SUBROUTINE BHDECODE(BHDSTR1,BHDSTR2,IERROR)
 
-      INCLUDE 'b2e.h'
+#include "b2e.h"
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
@@ -755,8 +755,8 @@ C mode determines  the type of prediction done.
 
 C Common blocks
 
-      INCLUDE 'building.h'
-      INCLUDE 'b2e.h'
+#include "building.h"
+#include "b2e.h"
 
       COMMON/OUTIN/IUIN,IUOUT
 
@@ -866,7 +866,7 @@ C simulation pattern selects suitable data to return to the bems system
       SUBROUTINE SCANRES(MODE,ISIMUL,NSIMUL)
 
 # include "building.h"
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
 

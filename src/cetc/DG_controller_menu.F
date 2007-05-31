@@ -24,9 +24,9 @@ C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE DG_controller_menu(fDG_configuration)
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h' 
-      INCLUDE 'DG_controller_include.h'
+#include "building.h"
+#include "plant.h" 
+#include "DG_controller_include.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/H(60)

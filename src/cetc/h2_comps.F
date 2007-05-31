@@ -52,8 +52,8 @@ C******************************************************************************
           SUBROUTINE H2_electrolyser_static_temp( IPCOMP )
           IMPLICIT NONE
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
 C-----------------------------------------------------------------------------------
 C Passed variables
@@ -272,8 +272,8 @@ C*******************************************************************************
           SUBROUTINE H2_electrolyser_coeff_gen( IPCOMP, COUT, ISTATS)
           IMPLICIT NONE
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
 C External functions.     
       integer lnblnk

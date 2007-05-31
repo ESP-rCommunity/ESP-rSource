@@ -35,7 +35,7 @@ C        the routine.
       SUBROUTINE MCDBSCAN(TYPE,MODE,SSTR,VAR,SPMISC,NIT,IER)
 
 # include "building.h" 
-      INCLUDE 'power.h' 
+#include "power.h" 
 
       COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/FILEP/IFIL

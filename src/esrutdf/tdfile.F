@@ -59,8 +59,8 @@ C            commons.
 C  Check whether it is an ascii file or a binary file. Depending on
 C which create the scratch or ascii version.
       subroutine supplyandcheck(tfile,act,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 C Related to TDF ITEMS file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRC/ITRC
@@ -408,7 +408,7 @@ C the file is an asci or unsupported version).
 C If the version is 1 or 2 then details of the fields of each item
 C will be read in. If version 3 then only a limited header is expected.
       SUBROUTINE ERTDF(ITRC,IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -663,7 +663,7 @@ C ************* EWTDF
 C EWTDF writes an binary (scratch) TDF file from info in common blocks.
 C IER=0 OK, IER=1 problem. 
       SUBROUTINE EWTDF(IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
@@ -822,7 +822,7 @@ C   additional columns of default data will be written. If iadcols is
 C   negative then fewer columns will be written.
 C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       SUBROUTINE EWTDFA(ITRC,AFIL,IAFIL,iiadcols,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
@@ -1010,7 +1010,7 @@ C their timestep data).
 C Note that a call with act='i' is assumed to happen after a call with
 C act='c'.
       SUBROUTINE TDFAIMPT(ITRC,AFIL,IAFIL,act,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFFT/LTDF,LTDFA
@@ -1384,7 +1384,7 @@ C ERTABU reads one timesteps info from binary TDF file.
 C ITREC is the timestep record to read. ITRC is the 
 C trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE ERTABU(ITRC,ITREC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1427,7 +1427,7 @@ C ************* EWTABU
 C EWTABU writes one timesteps Tabular info to TDF file from the array TAB. 
 C ITREC is the record to be written.  ITRC is the trace level.
       SUBROUTINE EWTABU(ITRC,ITREC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1466,7 +1466,7 @@ C Note: only writes out the number of columns of data that are
 C actually used in the file. However, if ewtaba is being called
 C to alter the number of columns check the value of iadcols.
       SUBROUTINE EWTABA(ITREC,RDOTY,iafil,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
@@ -1519,7 +1519,7 @@ C TAB file write errors.
 C ************* CLRTAB 
 C CLRTAB clears the current working tabular timestep data.
       SUBROUTINE CLRTAB
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
 C For current timestep item clear tabular array.

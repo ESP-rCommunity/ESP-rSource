@@ -27,7 +27,7 @@ C DECOMP: Reduces the projected 8 pt shadow 'box' to equivalent outline.
 C **************** SHDCON *************************
 C 'SHDCON' controls shading computation.
       SUBROUTINE SHDCON(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/TC/ITC,ICNT
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),Y0(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
@@ -150,7 +150,7 @@ C grid (for opaque and transparent surfaces) to establish if
 C the point is within or outwith the object body face and
 C shadow polygon.
       SUBROUTINE SHDTST(IS)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/SHAD2/ISHD,XS(6),ZS(6)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
@@ -186,7 +186,7 @@ C equivalent shadow polygon outline.  Note points 1 to 4 refer
 C to the top of the box and 5 to 8 to the bottom (anti-clockwise
 C order from the top).
       SUBROUTINE DECOMP(ITRC,ICOMP,IB,II,JJ)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

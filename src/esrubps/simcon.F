@@ -36,11 +36,11 @@ C called the required number of times, saving results after each simulation.
 
       subroutine SIMCON
 C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "uncertainty.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -268,11 +268,11 @@ C The 'INFO' command outputs the current simulation period
 C and information on the saved result set.
 
       SUBROUTINE MZSIML
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'monitor.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+#include "monitor.h"
+#include "cfd.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -635,9 +635,9 @@ C Unknown.
 C ************ SIMTOG
 C Set simulation toggles.
       subroutine simtog
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'net_flow.h'
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1494,8 +1494,8 @@ C                within each hour.
 C TIMSEC       - length of time increment in seconds
 
       SUBROUTINE MZSPER
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"
+#include "MultiYear_simulations.h"
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1680,7 +1680,7 @@ C ******************* askaboutcfd ****************
 C askaboutcfd confirms simulation periods for CFD assessments.
       subroutine askaboutcfd
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1762,9 +1762,9 @@ C MZSIMH outputs simulation period and wait time information
 C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "plant.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2118,7 +2118,7 @@ C ITRACE  - trace call index for appropriate subroutine.
 C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2411,9 +2411,9 @@ C parameters. If itru=iuout then goes to the display,
 C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "plant.h"
+#include "esprdbfile.h"
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave

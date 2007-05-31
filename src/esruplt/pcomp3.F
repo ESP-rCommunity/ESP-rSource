@@ -36,8 +36,8 @@ c  cmp99c   3 node (isv=20) CHP engine component.
 c ******************** CMP30C ********************
 
       subroutine cmp30c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt
@@ -196,8 +196,8 @@ C            1 Inter-node fluid heat capacity rate (W/K)
 C            2 condensate flow rate (kg/s)
 
       subroutine cmp43c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt
@@ -561,8 +561,8 @@ C       It should not be used yet because it is still
 C       being tested.
 
       SUBROUTINE CMP67C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -849,8 +849,8 @@ C           17 Slope of surface or tracking axis (degrees)
 C           18 Azimuth of surface or tracking axis (degrees)
 
       SUBROUTINE CMP70C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1215,8 +1215,8 @@ C  WVEL  - Wind velocity (10*m/s)
 C ************************************************
       SUBROUTINE CMP71C(IPCOMP,COUT,ISTATS)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1701,8 +1701,8 @@ C VKK      - The Von Karman constant
 C ************************************************ 
       SUBROUTINE CMP72C(IPCOMP,COUT,ISTATS)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       
       COMMON/TC/ITC,ICNT
@@ -2034,8 +2034,8 @@ c    BDATA : None.
 c    CDATA : None.
 
       subroutine cmp92c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt
@@ -2140,8 +2140,8 @@ C            1 Inter-node fluid heat capacity rate (W/K)
 C            2 Hot fluid temperature (C)
 
       SUBROUTINE CMP93C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2432,8 +2432,8 @@ C       CDATA: none
 C ************************************************
 
       SUBROUTINE CMP94C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2872,8 +2872,8 @@ C
 
       SUBROUTINE CMP98C(IPCOMP,COUT,ISTATS)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3132,8 +3132,8 @@ C           18 Incremental UA
 C     CDATA: 1  Loading for CHP unit (%)
 
       SUBROUTINE CMP99C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3462,8 +3462,8 @@ C RA - refraction angle
 C RI - refraction index
       SUBROUTINE TRAP(AI,N,K,D,AP,RI,TA)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

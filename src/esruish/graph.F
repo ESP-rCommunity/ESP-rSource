@@ -32,7 +32,7 @@ C ************* GRAPH *************************
 C GRAPH Displays selected body surface and superimposes the shaded
 C areas.
       SUBROUTINE GRAPH(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -190,7 +190,7 @@ C ************* FACDRW *****************
 C FACDRW draws the elevation of the surface.
       SUBROUTINE FACDRW(IHOUR,ICOMP,ISUR,NV,XMIN,XMAX,ZMIN,ZMAX,
      &            Xadd,Zadd,SCA)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -236,7 +236,7 @@ C SHDDRW plots point on a surface to represent shaded portion.
 C ISHAD=1 100 PERCENT SHADING. ISHAD=2 MIXED SHADING/INSOLATION CASE.
 C << 100% case should test for point within surface >>.
       SUBROUTINE SHDDRW(IS,ISHAD,IOSHD)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -265,7 +265,7 @@ C ************* SITPLN *****************
 C SITPLN Scales and draws the site plan showing the object boundary
 C and the surrounding obstruction blocks.
       SUBROUTINE SITPLN(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL

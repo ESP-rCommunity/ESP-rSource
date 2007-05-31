@@ -30,13 +30,13 @@ C Control editing of system configuration file and allow updated
 C information to be saved into a new file. ITRU unit number for user 
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'control.h'
-      INCLUDE 'gnetwk.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "plant.h"
+#include "uncertainty.h"
+#include "net_flow.h"
+#include "control.h"
+#include "gnetwk.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
@@ -725,7 +725,7 @@ C to the unit number 42.
 
 C Write surface attributes that might be of interest. Find
 C lowest and highest point and cog of surface.
-          write(42,'(2a,i4,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
+          write(42,'(2a,i3,2a)',iostat=ios,err=13) '*Surfaces',tab,NCON,
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
@@ -1152,7 +1152,7 @@ C ************* EDZCOMP
 C Control editing of zone composition ITRU unit number for user 
 C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -1257,7 +1257,7 @@ C Begin with high level menu.
       ITEMS(3)   ='b  constructions                 '
       ITEMS(4)   ='c  operation                     '
       ITEMS(5)   =' _____________________________   '
-      WRITE(ITEMS(6),'(A,I4,A)') ' Topology ... (',NCON,' connections)'
+      WRITE(ITEMS(6),'(A,I3,A)') ' Topology ... (',NCON,' connections)'
       ITEMS(7)   ='d  connections & anchors         '
       ITEMS(8)   =' _____________________________   '
       ITEMS(9)   =' Options ...                     ' 
@@ -1960,28 +1960,19 @@ C Also update lodlabel commons before writing out.
             H(2)='data for the zone surfaces.'
             CALL EASKS(CFILE,' New construction file name:',
      &        ' ',72,'new.con','construction file',IER,2)
-            IF(CFILE(1:2).NE.'  ')THEN
+            IF(CFILE.NE.' ')THEN
               QUIET=.false.
-              write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
               CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
-                do 61 ISS=1,NZSUR(NCOMP)
+                DO 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
    61           continue
-                H(1)='A zone tmc file contains optical data for the'
-                H(2)='data zone surfaces.'
-                CALL EASKS(DFILE,' New zone tmc file name:',
-     &            ' ',72,'new.tmc','tmc file',IER,2)
-                if(DFILE(1:2).NE.'  ')then
-                  write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
-                  ITW(NCOMP)=1
-                  QUIET=.false.
-                  CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
-                else
-                  goto 90
-                endif
+                LTWIN(NCOMP)=DFILE
+                ITW(NCOMP)=1
+                QUIET=.false.
+                CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
               endif
             else
               goto 90
@@ -3245,8 +3236,8 @@ C location is already known). If itisanexemplar=true then ensure that
 C browse is set to true in any case because the user has previously
 C selected an exemplar model.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       common/FILEP/IFIL
       common/pophelp/h(60)

@@ -83,8 +83,8 @@ C passed to subroutines ERECC and EREGC respectively where
 C conversion to the 'G1' format takes place.
  
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
 C CTYPE (3 char) - zone shape type (REC, REG or GEN)
@@ -603,7 +603,7 @@ C user output, IER=0 OK IER=1 problem. IWF = 3 create/overwrite,=4 check
 C with user before overwriting.
 
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
@@ -751,7 +751,7 @@ C height of the enclosure and angle of rotation between the length side
 C and due east (anticlockwise positive) are taken from the
 C calling subroutine EGOMIN and converted into the common block G1.
       SUBROUTINE ERECC(XO,YO,ZO,DX,DY,DZ,A)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
@@ -888,7 +888,7 @@ C each wall in an anticlockwise direction (defining a polygon in a plan
 C view) as well as the floor & ceiling heights are passed to EREGC and
 C the GEN description returned via common G1.
       SUBROUTINE EREGC(NW,Z1,Z2,XX,YY)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION XX(MS),YY(MS)
 
@@ -963,7 +963,7 @@ C Rotate a zone by ANG degrees and return information via common G1.
 C X1,Y1 is the point to rotate about.
 
       SUBROUTINE ESCROT(ANG,X1,Y1)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       PI = 4.0 * ATAN(1.0)
@@ -986,7 +986,7 @@ C ************* SURINFO
 C Display surface details and attributes in a tabular format. Make use 
 C of information currently in Common blocks G1 G6 G7.
       SUBROUTINE SURINFO(ICOMP,ITRU,context)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/SFIG/NSIGFIG
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1047,7 +1047,7 @@ C OTHERINFO returns an English description in OTHSTR of the boundary
 C condition at the other side of a surface (based on information in
 C the connections file).
       SUBROUTINE OTHERINFO(izone,isurf,OTHSTR)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1114,7 +1114,7 @@ C 'ZINFOREP' takes data from the zone geometry commons and produces
 C a high level report channel (itu). It assumes that common blocks
 C (G1,G7,PREC2,PREC2,PREC17,PREC20,C20) have been filled.
       SUBROUTINE ZINFOREP(itu,icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/OUTIN/IUOUT,IUIN
       common/SFIG/NSIGFIG
@@ -1177,7 +1177,7 @@ C PELV  - plane elevation angle
 C VOL   - zone bounded volume
 C << IOUT is not used >>
       SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,VOL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION SNA(MS),XSUM(MS),YSUM(MS),ZSUM(MS)
@@ -1289,7 +1289,7 @@ C SSURCOG(MCON,3) - vertex weighted COG of polygon,
 C SSURVN(MCON,3)  - unit normal vector from COG of polygon.
 C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1476,7 +1476,7 @@ c relationships. Fills common block G8. Assumes that the surface is
 C in the current zones common blocks.
 C act is '-' derive geometric data or 'c' also determine parent
       subroutine suredgeadj(itrc,act,izone,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1787,7 +1787,7 @@ C VCOORD : X,Y & Z coordinates of each vertice in zone.
 C NZNVER : number of vertices associated with each connection.
 C NZJVN : topology of vertices associated with each connection.
       SUBROUTINE ZDATA(ITRC,IER,NZONES,ISFSUM)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1888,7 +1888,7 @@ C 'FILSUR' Fills the common block G5 with default assumptions.
 C If ISUR=0 do all surfaces otherwise if ISUR>0 for one surface.
 C FILSUR is called from << >>.
       SUBROUTINE FILSUR(itru,ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -1935,7 +1935,7 @@ C INSINFO provides an English description of default insolation
 C options chosen by the user in the geometry file based on 
 C NDP(ICOMP) and IDPN(ICOMP,?) from common G4.
       SUBROUTINE INSINFO(ICOMP,ITRU)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1970,7 +1970,7 @@ C and a list of surfaces associated with each vertex.  The second
 C prints a list of surface numbers and the list of vertices which 
 C define them.  Information is gathered from common block G1. 
       SUBROUTINE VERINFO(ITRU)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION ISASSO(MS)
       CHARACTER OUTSTR*124
@@ -2015,7 +2015,7 @@ C ********************** ZINDEX
 C ZINDEX is passed a string (which might be a zone name or an index) and
 C returns an index to the matching zone.  If no match then returns 0. 
       SUBROUTINE ZINDEX(STRING,index)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2090,7 +2090,7 @@ C SNAMDUP is passed a proposed surface name and checks to see that
 C it is unique (thus OK = TRUE) if duplicate then OK = FALSE.
 C If 'is' is passed as 0 then check all, otherwise exclude surface is. 
       SUBROUTINE SNAMDUP(STRING,icomp,is,ok)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
@@ -2124,7 +2124,7 @@ C lstsf is the list of surface indices, sdescr is the string returned
 C and length is its maximum length. 
 C << G6 could be used here >>
       subroutine surlist(icomp,nbsur,lstsf,sdescr,length,ierr)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       
       dimension lstsf(mcom,ms),iva(ms)

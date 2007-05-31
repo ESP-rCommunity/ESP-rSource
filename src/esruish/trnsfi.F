@@ -28,7 +28,7 @@ C re-expressed in terms of the new local coordiante system
 C for use in POINT.
       SUBROUTINE TRNSF1I(IS)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/OUTPCH/ICOUT

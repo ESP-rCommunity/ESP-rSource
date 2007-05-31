@@ -28,7 +28,7 @@ C NGRID - number of grid points (after point containment)
 C PEQN - equation of plane - does this need to be passed back???
 C IER - error counter - used??
       SUBROUTINE GRID(IS,igmaj,igmin,IVS,IVE,TFRM,GPTS,NGRID,PEQN,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -180,7 +180,7 @@ C XT,YT,ZT test point
 C INSURF - if = 1 then inside surface.
 
       SUBROUTINE INSIDE3D(X,Y,Z,NV,XT,YT,ZT,INSURF)
-      INCLUDE 'building.h'
+#include "building.h"
 
       DIMENSION X(MV),Y(MV),Z(MV)
       DIMENSION COG(3),VC(3),TV(3),PA(3),PB(3)

@@ -32,7 +32,7 @@ C  The format is the same as PHOENICS output files which can be read by
 C  PHOTON (PHOENICS graphic analyser)
 
       SUBROUTINE PRNPHI(TITLE,ifl)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
@@ -112,7 +112,7 @@ C  PHOTON (PHOENICS graphic analyser)
 C ********************* REAOLD *********************
 C REAOLD - Read variable fields in the previous time-step.
       subroutine REAOLD(ifl)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/VARp/Up(ntcelx,ntcely,ntcelz),Vp(ntcelx,ntcely,ntcelz),
      1            Wp(ntcelx,ntcely,ntcelz),TEp(ntcelx,ntcely,ntcelz),
@@ -193,7 +193,7 @@ c          incalT=.true.
 C ********************* PRNNEW *********************
 C PRNNEW - Write variable fields in the present time-step.
       subroutine PRNNEW(ifl)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
@@ -241,7 +241,7 @@ C IEX - flag for excel output=1 (i,j,k headings omited)
 C IEX = 0 write i,j,k headings
 C      arr-the array, arrtit - its title up to 10 characters
        subroutine scan3di(arr,arrtit,IEX)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/FILEP/IFIL
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -281,7 +281,7 @@ C      arr-the array, arrtit - its title up to 10 characters
 
 C ******** SCANall- scans (3D) arrays
       subroutine scanall 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/COEF/AP(ntcelx,ntcely,ntcelz),AE(ntcelx,ntcely,ntcelz),
      1            AW(ntcelx,ntcely,ntcelz),AN(ntcelx,ntcely,ntcelz),
@@ -305,7 +305,7 @@ C ******** SCANall- scans (3D) arrays
 
 C*****************
       subroutine tecplotend
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/FILEP/IFIL
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),

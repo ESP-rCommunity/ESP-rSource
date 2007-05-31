@@ -58,7 +58,7 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE H2_wind_convert
       IMPLICIT NONE
-      INCLUDE 'H2_wind.h'
+#include "H2_wind.h"
 
       COMMON/FILEP/IFIL
       INTEGER	IFIL
@@ -254,7 +254,7 @@ C ------------------------------------------------------------------------------
       SUBROUTINE H2_wind_establish(IDYP,BTIMEP,PTIMEF,QElecT)
       IMPLICIT NONE
 
-      INCLUDE 'H2_wind.h'
+#include "H2_wind.h"
 
 
 C for debugging - writing to console

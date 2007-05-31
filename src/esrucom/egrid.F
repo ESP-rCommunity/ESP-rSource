@@ -31,7 +31,7 @@ C **************************    READ1D    *****************************
 C READ1D reads the 1D building gridding configuration file.
 C *********************************************************************
       SUBROUTINE READ1D(FLGRID,IIN,IOUT,ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -106,7 +106,7 @@ C **************************    SAVE1D    *****************************
 C SAVE1D saves the 1D building gridding configuration file.
 C *********************************************************************
       SUBROUTINE SAVE1D(FLGRID,IIN,IOUT,ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -147,7 +147,7 @@ C NDCONS automatically distributes nodes for a given construction
 C based on the thermophysical properties of layers.
 C *********************************************************************
       SUBROUTINE NDCONS(ICOMP,I)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -256,7 +256,7 @@ C ******************************  NODTWO  ******************************
 C NODTWO assignes two (default) nodes for each layer in the building.
 C *********************************************************************
       SUBROUTINE NODTWO(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

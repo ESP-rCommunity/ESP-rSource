@@ -30,7 +30,7 @@ C ******************** M3BCTL
 C The main 3D building control function executive.
 
       SUBROUTINE M3BCTL
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -130,7 +130,7 @@ C CF3VAR determines the sensed condition associated
 C with the sensor defined for the control function.
 
       SUBROUTINE CF3VAR(TCTL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
@@ -181,7 +181,7 @@ C ******************** B3CL01
 C An ideal controller.
 
       SUBROUTINE B3CL01
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT

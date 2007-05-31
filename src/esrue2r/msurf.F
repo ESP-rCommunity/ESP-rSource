@@ -33,7 +33,7 @@ C             check if a surface is rectangular.
 C IRECT: -1 not rectangular; 0 error; 1 rectangular.
 
       subroutine checkrec(ISURF,IRECT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -110,7 +110,7 @@ C  PARAMET    Generate parametric equations for a rectangular surface.
 C             surf = x(S,T) + y(S,T) + z(S,T)
 
       subroutine PARAMET(ISURF,SVALS,TVALS,TFORM,IR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

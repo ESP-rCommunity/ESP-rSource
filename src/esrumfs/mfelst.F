@@ -29,8 +29,8 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C          interaction is begun.
       SUBROUTINE ASKNOD(head,MOD,IS,IER)
 
-      INCLUDE 'net_flow.h'
-      INCLUDE 'epara.h'
+#include "net_flow.h"
+#include "epara.h"
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -220,8 +220,8 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKCMP(head,MOD,IS,IER)
 
-      INCLUDE 'net_flow.h'
-      INCLUDE 'epara.h'
+#include "net_flow.h"
+#include "epara.h"
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -410,8 +410,8 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C          interaction is begun.
       SUBROUTINE ASKCON(head,MOD,INODPS,INODNE,IC,IER)
 
-      INCLUDE 'net_flow.h'
-      INCLUDE 'epara.h'
+#include "net_flow.h"
+#include "epara.h"
     
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG

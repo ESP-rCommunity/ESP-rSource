@@ -104,13 +104,13 @@ C----------------------------------------------------------------------
      &            fCoefficients,
      &            iPlant_Matrix )
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
-      INCLUDE 'cetc_cogen.h'
-      INCLUDE 'Hydrogen_PEMFC.h'
-      INCLUDE 'chemical_properties.h'
-      INCLUDE 'Hydrogen_demand_controller.h'
+#include "cetc_cogen.h"
+#include "Hydrogen_PEMFC.h"
+#include "chemical_properties.h"
+#include "Hydrogen_demand_controller.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1620,11 +1620,11 @@ C----------------------------------------------------------------------
 
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'chemical_properties.h'
-      INCLUDE 'cetc_cogen.h'
-      INCLUDE 'Hydrogen_PEMFC.h'
+#include "building.h"
+#include "plant.h"
+#include "chemical_properties.h"
+#include "cetc_cogen.h"
+#include "Hydrogen_PEMFC.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1958,12 +1958,12 @@ C----------------------------------------------------------------------
       subroutine H2_PEMFC_Collect_Data ( iComp, iModel_Type, bDebug )
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
-      INCLUDE 'cetc_cogen.h'
-      INCLUDE 'Hydrogen_PEMFC.h'
-      INCLUDE 'chemical_properties.h'
+#include "cetc_cogen.h"
+#include "Hydrogen_PEMFC.h"
+#include "chemical_properties.h"
 
 C.....Plant component configuration data - read from input file
       common/pdbdt/adata,bdata
@@ -2414,9 +2414,9 @@ C-----------------------------------------------------------------------
       subroutine H2_PEMFC_H3Kreports_module (
      &                 iComponent, iStatus, iModel_Type )
       implicit none
-      INCLUDE 'plant.h'
-      INCLUDE 'cetc_cogen.h'
-      INCLUDE 'Hydrogen_PEMFC.h'
+#include "plant.h"
+#include "cetc_cogen.h"
+#include "Hydrogen_PEMFC.h"
 
 C External functions.     
       integer lnblnk

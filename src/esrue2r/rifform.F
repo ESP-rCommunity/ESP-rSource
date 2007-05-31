@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -361,7 +361,7 @@ C and basic assumptions about type of use.
 C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1a/aglzfil

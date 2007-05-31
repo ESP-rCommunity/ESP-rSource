@@ -29,7 +29,7 @@ C ******************** MZHCFV ********************
 C MZHCFV reads the convection regime file.
 
       SUBROUTINE MZHCFV(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/ER/IER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -323,8 +323,8 @@ C ******************** MZHCFV2 ********************
 C MZHCFV2 reads the convection-regime file (version 2)
 
       SUBROUTINE MZHCFV2(ICOMP)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 
       COMMON/ER/IER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -683,7 +683,7 @@ c MZSHIN assigns the zone associated shading file for use
 c later within the simulation time-stepping.
 
       SUBROUTINE MZSHIN(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
@@ -891,7 +891,7 @@ c IVF - determines whether this information is available
 c        or not.
 
       SUBROUTINE MZVFIN(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
@@ -904,7 +904,7 @@ c        or not.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/V2/CFB(MCOM,MST,MST)
-      COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
+      COMMON/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
@@ -914,10 +914,10 @@ C Read viewfactor & MRT sensor file.
       itrc=0
       CALL ERMRT(ITRC,iuout,IUNIT,LVIEW(ICOMP),ICOMP,IER)
 
-c Transfer VEWF array to CFB.
+c Transfer VWF array to CFB.
       DO 30 I=1,NSUR
         do 35 J=1,NSUR
-          CFB(ICOMP,I,J)=VEWF(I,J)
+          CFB(ICOMP,I,J)=VWF(I,J)
           if(CFB(ICOMP,I,J).LT.0..OR.CFB(ICOMP,I,J).GT.1.)then
             write(outs,'(A,2I3,A)') ' View between surfs ',I,J,
      &                              ' out of range.'

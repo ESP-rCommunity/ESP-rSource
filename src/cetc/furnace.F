@@ -88,17 +88,17 @@ c Declare variables passed in call
       REAL heating_load,furnace_energy,pilot_energy_con,plrf,
      &     plff
 
-      INCLUDE 'building.h'
+#include "building.h"
  
-      INCLUDE 'h3kstore_parameters.h'
+#include "h3kstore_parameters.h"
 
-      INCLUDE 'hvac_parameters.h'
+#include "hvac_parameters.h"
 
-      INCLUDE 'hvac_common.h'
+#include "hvac_common.h"
 
-      INCLUDE 'furnace_common.h'
+#include "furnace_common.h"
 
-      INCLUDE 'h3kstore_common.h'
+#include "h3kstore_common.h"
 
 
 C HVAC_CALC_DATA common used to pass pass furnace part-load ratio to AIM-2 model
@@ -223,9 +223,9 @@ c Declare variables passed in call
       INTEGER isys,isys_type
       REAL plrf
 
-      INCLUDE 'hvac_parameters.h'
+#include "hvac_parameters.h"
 
-      INCLUDE 'furnace_common.h'
+#include "furnace_common.h"
       
 c Declare local variables
       REAL hir
@@ -291,9 +291,9 @@ c ************************************************************************
 c Declare variables passed in call
       INTEGER isys,isys_type
 
-      INCLUDE 'hvac_parameters.h'
+#include "hvac_parameters.h"
 
-      INCLUDE 'furnace_common.h'
+#include "furnace_common.h"
 
 c For all furnaces, except condensing and induced draft, the plff 
 c equation is based on two correlation coefficients af and bf which depend

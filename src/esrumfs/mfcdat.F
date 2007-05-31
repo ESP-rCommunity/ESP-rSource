@@ -22,7 +22,7 @@ C ***************** MFCDAT
 C Fills valid fluid flow component type arrays
       SUBROUTINE MFCDAT
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
       COMMON/MFLOW6/IVALCM(MCMV)
       COMMON/MFLOW7/LVALCM(MCMV)
 

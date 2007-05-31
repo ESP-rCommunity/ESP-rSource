@@ -34,7 +34,7 @@ C from the relevant thermal properties file identified in
 C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -124,8 +124,8 @@ C Assumes that geometry file has been read and surface
 C attributes are known. 
 
       SUBROUTINE GZPDBE(ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
@@ -206,7 +206,7 @@ C MOFMXN determines the maximum and minimum values of the
 C temperature profiles to be displayed.
 
       SUBROUTINE MOFMXN(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -262,7 +262,7 @@ C VAL1(1+NN+1) inside surface temperatures,
 C VAL1(1+NN+2) inside air temperature.
 
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -358,7 +358,7 @@ C MOFAXS draws the axis relating to construction
 C temperature graphical output.
 
       SUBROUTINE MOFAXS(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
@@ -383,7 +383,7 @@ C MOFHED outputs the appropriate header information
 C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -476,7 +476,7 @@ C ******************** MOFDRW
 C MOFDRW displays the construction temperature profiles.
 
       SUBROUTINE MOFDRW(ICOMP,ISUR,act)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

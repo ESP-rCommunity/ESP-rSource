@@ -28,7 +28,7 @@ C P gives a plan.  Inpic is the number of zones, ivals is a
 C array of selected zones to include.
 C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

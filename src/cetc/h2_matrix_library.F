@@ -56,8 +56,8 @@ C
 C--------------------------------------------------------------------------
       subroutine HVAC_model_static_temp(iComponent)
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
 C--------------------------------------------------------------------------
 C     ESP-r common blocks
@@ -362,9 +362,9 @@ C===============================================================================
      &     iStats)
       implicit none 
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h' 
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h" 
 
 C External functions.     
       integer lnblnk
@@ -1833,7 +1833,7 @@ C===============================================================================
      &     iStats)
       implicit none 
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C External functions.     
       integer lnblnk
@@ -2454,7 +2454,7 @@ C===============================================================================
      &     iStats)
       implicit none 
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C External functions.     
       integer lnblnk
@@ -3464,7 +3464,7 @@ C===========================================================================
       Subroutine H2_storage_post_process (iComponentIndex) 
       implicit none 
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C External functions.     
       integer lnblnk
@@ -3911,7 +3911,7 @@ C===============================================================================
       subroutine zero_H2_Flow (iComponent, fCoeffArray)
       implicit none
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C-------------------------------------------------------------------------------------
 C     Passed variables

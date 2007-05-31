@@ -33,10 +33,10 @@ C subsequent simulation.   Each control function and loop
 C is read from the system control strategy file.
 
       subroutine mzcstr(ier)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+#include "espriou.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -203,7 +203,7 @@ C data items required for the building-side type -6
 C `Function Generator` sensor .
 
       SUBROUTINE BFGRSD
-      INCLUDE 'building.h'
+#include "building.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -346,8 +346,8 @@ C PFGRSD is used to obtain the supplementary data items required for
 C the plant-side type -6 `Function Generator` sensor.
 
       SUBROUTINE PFGRSD
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -489,8 +489,8 @@ C FFGRSD is used to assign the supplementary data items required for
 C  mass flow sensor type -6 `Function Generator` sensor.
 
       SUBROUTINE FFGRSD
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "building.h"
+#include "net_flow.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)

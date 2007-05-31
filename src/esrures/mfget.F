@@ -57,7 +57,7 @@ C ******************** MOFLOWSU ********************
 C MOFLOWSU clears commons/ sets default values.
 
       SUBROUTINE MOFLOWSU
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
@@ -104,8 +104,8 @@ C MFMENU The choices are put into the array IMFGETNO in the
 C columns listed above.
 
       SUBROUTINE MFMENU
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -147,7 +147,7 @@ C air flow reporting.
 
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
-      character H*72,xfile*144,tg*1,delim*1
+      character H*72,xfile*72,tg*1,delim*1
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,SUFFIX*6
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
@@ -1744,7 +1744,7 @@ C ************************ GOMFGETSU ************************
 C GOMFGETSU: Sets up arrays for mass flow data recovery.
 
       SUBROUTINE GOMFGETSU
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
       COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
@@ -1804,7 +1804,7 @@ C GOMFGET: Retrieves data from the mass flow result library according
 C to arrays IMFGETNO and MFRECVR.
 
       SUBROUTINE GOMFGET(IDAY,IHR,ITS)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -2060,7 +2060,7 @@ C ************************ MASS2VOL ************************
 C MASS2VOL: Converts mass flow rate to volume flow rate (kg/s) -> (m^3/s)
 
       SUBROUTINE MASS2VOL(ICON,VFLOW1,VFLOW2)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -2099,7 +2099,7 @@ C    connections should be counted.
 C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
 
       SUBROUTINE MFSUMCON(IG,IUNIT,FLIN,FLOUT)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -2346,7 +2346,7 @@ C ************************ MFCLIM ************************
 C MFCLIM: returns requested climate parameter for given timestep.
 
       SUBROUTINE MFCLIM(IDAY,IHR,ITS,IPAR,VAL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2400,9 +2400,9 @@ C Get required data item.
 C ************************ EDMFGOGET ************************
 C EDMFGOGET allows removal of output requests for flow networks.
       SUBROUTINE EDMFGOGET
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "epara.h"
+#include "building.h"
+#include "net_flow.h"
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG

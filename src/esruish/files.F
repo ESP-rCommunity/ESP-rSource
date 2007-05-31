@@ -61,7 +61,7 @@ C ************** SIFILE
 C SIFILE: Opens a shading/insolation file, if it exists then it scans
 C the file and fills common block data (DATA1, shdglob, stins).
       SUBROUTINE SIFILE(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       
@@ -181,7 +181,7 @@ C IREC is the start record where data for the months shading data
 C is written. IREC is updated to the next record after the
 C insolation hash array position when the subroutine returns.
       SUBROUTINE SWRT(IREC)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -225,7 +225,7 @@ C SSAVE: Checks and writes shading portion of a SHADING/INSOLATION FILE.
 C Called from subroutine comput once per month.
 C It returns ier as non-zero if there is a problem.
       SUBROUTINE SSAVE(ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/DATA2/ICAL
       common/ract/paction
@@ -434,7 +434,7 @@ C ************** RETRV1 *********************
 C 'RETRV1' Retrives all input information from the header block of the
 C transitional shading file.
       SUBROUTINE RETRV1
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/G0/ETYPE
@@ -791,7 +791,7 @@ C returned as the next record after the insolation data that has
 C been written.
       SUBROUTINE IWRT(IREC)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/OUTIN/IUOUT,IUIN
@@ -869,7 +869,7 @@ C ISAVE checks and writes insolation data to a SHADING/INSOLATION file.
 C It is called by inscom.
       SUBROUTINE ISAVE
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/DATA2/ICAL
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 

@@ -32,9 +32,9 @@ C     degree days and radiation patterns.
 C ********* rdblist
 C Scan list of climate databases and present selection to user.
       subroutine rdblist(idblfil,cdblfil,clmdb,ier)
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
-      INCLUDE 'espriou.h'
+#include "epara.h"
+#include "esprdbfile.h"
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -259,7 +259,7 @@ C Parse this item of the climatelist file.
 C ********* matchcdb
 C Scan list of climate databases for name and return database.
       subroutine matchcdb(idblfil,cdblfil,alias,clmdb,ier)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       dimension name(60)
@@ -371,7 +371,7 @@ C Scan climatelist file of for documentation and typical periods
 C which might match the current database. Should be called if
 C the climate file was not selected via scan of climatelist.
       subroutine scancdblist(idblfil,cdblfil,clmdb,ok,ier)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) clmdb
@@ -740,8 +740,8 @@ C Edit/create an item for climatelist file. Data fields include
 C five seasons and typical assessment periods, documentation
 C strings.
       subroutine editemclimatelist()
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1477,7 +1477,7 @@ C degree days and radiation patterns. If act = `?` then user is
 C asked to confirm whether the best-fit week is to be used in the
 C climatelist.
       SUBROUTINE DDRADSUM(act)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

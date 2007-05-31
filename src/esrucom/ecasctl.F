@@ -64,8 +64,8 @@ C DCOEF    - Value of given Daylight coefficient
 C IDCFID   - Daylight coefficient sensor ID
 
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -459,7 +459,7 @@ C CASCTMK - write casual gain control file.
 C ACT - 's' do not ask the user for confirmation of file write.
 
       SUBROUTINE CASCTMK(LCGCIN,ICOMP,ACT,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

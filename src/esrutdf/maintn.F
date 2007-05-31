@@ -35,7 +35,7 @@ C ITINSRT is used to insert a new temporal item.
 C IFOC, the item array index at the point where the action is to take place. 
 C IER=0 OK, IER=1 problem.
       SUBROUTINE ITINSRT(ITRC,IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -198,7 +198,7 @@ C ************* ITDEL ************************************************
 C ITDEL is used to delete an instance in the db.
 C IFOC, the item array index at the point where the action is to take place. 
       SUBROUTINE ITDEL(ITRC,IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
@@ -332,7 +332,7 @@ C have already been created.  The information in IFOC2 is overwritten.
 C Tabular columns are copied as required.
 
       SUBROUTINE ITCOPY(ITRC,IFOC,IFOC2,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
@@ -429,7 +429,7 @@ C ************* REFSHG ******************************************
 C REFSHG Refresh instance with generic attributes (placement, 
 C help, indices, default values).
       SUBROUTINE REFSHG(IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
      &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
       COMMON/TDFLD1/TDFDES(MIT,MBITS)

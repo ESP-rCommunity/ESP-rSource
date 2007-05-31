@@ -39,8 +39,8 @@ C       an almost vertical edge to arrive at a convex vertex with its
 C       nature containing a face of that vertex, so the removal of
 C       faces incident to the vertex is done in all cases.
 
-      INCLUDE 'viewer.h'
-      INCLUDE 'viewer.h2'
+#include "viewer.h"
+#include "viewer.h2"
 
 C   common data for passing to HLR2
 

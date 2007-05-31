@@ -62,12 +62,12 @@ c ***********************************************************************
 c Variables passed in call
       INTEGER isys
       REAL heating_load, baseboard_energy, plr_baseboard, plf_baseboard
-      INCLUDE 'building.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'hvac_common.h'
-      INCLUDE 'furnace_common.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "h3kstore_parameters.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "furnace_common.h"
+#include "h3kstore_common.h"
 
 
 

@@ -43,7 +43,7 @@ C MLCIndex (Integer) : MLC index in the BCF file corresponding to XMLC
 
       FUNCTION MLCIndex(XMLC)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EIAhigh/NbComp,NbMat,IMatID(MMLC,ME),ImatDbID(0:MMAT-1),
      &               LCIATag
@@ -141,8 +141,8 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
 
       SUBROUTINE SurfEquiCalc(IZone,Method, IairAbso)
 
-      INCLUDE 'building.h'
-      INCLUDE 'acoustic.h'
+#include "building.h"
+#include "acoustic.h"
 
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -366,8 +366,8 @@ C Tmean   : Mean reverberation time over all frequencies (1/3 octave)
 
       SUBROUTINE TRevCalc
 
-      INCLUDE 'building.h'
-      INCLUDE 'acoustic.h'
+#include "building.h"
+#include "acoustic.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/PREC2/VOL(MCOM)

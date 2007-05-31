@@ -31,7 +31,7 @@ C Window geometry is defined relative to a local coordinate
 C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON

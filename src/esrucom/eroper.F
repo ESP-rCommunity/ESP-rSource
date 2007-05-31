@@ -130,8 +130,8 @@ C Maximum number of air change periods/day MA=5
 C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -714,8 +714,8 @@ C Maximum number of air change periods/day MA=5
 C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE ERZSCHED(IUO,FILE,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1112,8 +1112,8 @@ C it so a user can decide if they want to use it. It is written to
 C not alter any common blocks.
 
       SUBROUTINE ZSCHEDHINT(IUO,FILE,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1317,8 +1317,8 @@ C the file to be written to (confirm if to be overwritten).
 C ICOMP is the zone number.
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -1535,7 +1535,7 @@ C ******************* VENTINF
 C VNTINFO provides an English description of scheduled air flow and
 C control from zone operation common block data.
       SUBROUTINE VENTINF(ICOMP,ITRU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/P1/oprdesc,ctlstr
       COMMON/PREC2/VOL(MCOM)
@@ -1670,7 +1670,7 @@ C CASINFO provides an English description of scheduled casual gains
 C from zone operation common block data.
       SUBROUTINE CASINF(ICOMP,ITRU)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/P1/oprdesc,ctlstr
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -1827,7 +1827,7 @@ C Parameters:
 C   icomp - current zone.
 C   ier - set to 1 if there was a problem
       subroutine checkcascount(icomp,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2162,7 +2162,7 @@ C    ix is the destination
 C    jx is the source
 
       SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -2237,7 +2237,7 @@ C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
 C    are the temporary variables.
       SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgt,icgs,icgf,cmgs,cmgl,
      &  radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -2329,7 +2329,7 @@ C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
 C    are the temporary variables.
       SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgt,icgs,icgf,cmgs,cmgl,
      &  radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -2416,7 +2416,7 @@ C PROCESSOLDCAS: Processes gains in an old format operations file.
 C Passed the zone index.
 C Returns IER=0 if all ok.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3207,7 +3207,7 @@ C ******************* checksort *********************
 C checksort does a quick check of casual gains for sorted state.
 C not extensive, but should catch most issues.
       subroutine checksort(icomp,idaytype,problem,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),

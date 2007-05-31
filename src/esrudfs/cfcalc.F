@@ -36,8 +36,8 @@ C             certain cells.
 C ********************* CFCALC *********************
 C CFCALC - CFD solution manager.
       SUBROUTINE CFCALC(ITIMST,TSTEP,IMFSAC,IBLACT,CONVER)
-      INCLUDE 'cfd.h'
-      INCLUDE 'building.h'
+#include "cfd.h"
+#include "building.h"
 
       COMMON/POPHELP/H(60)
       common/outin/iuout,iuin
@@ -328,8 +328,8 @@ C Initialise plot counter.
       IPLOT=0
 
 C Iteration loop.
- 320  NPLT=MAXIT/100
-      IF (mod(MAXIT,100).NE.0) NPLT=NPLT+1
+ 320  NPLT=MAXIT/50
+      IF (mod(MAXIT,50).NE.0) NPLT=NPLT+1
       ICALL=0
 
 C If in text mode, print monitoring headlines.
@@ -646,7 +646,7 @@ C Format statements.
 C ********************* INIT *********************
 C INIT - Initialize simulation variables.
       SUBROUTINE INIT
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
@@ -755,7 +755,7 @@ C            temperature according to the massflowrate
 C            and sets it uniform to the whole CFD domain 
 
       SUBROUTINE UNIFORMT
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/INITIA/UINIT(MNZ),VINIT(MNZ),WINIT(MNZ),PINIT(MNZ),
      &              TINIT(MNZ),TEINIT(MNZ),EDINIT(MNZ)
@@ -812,7 +812,7 @@ C PROPS - Calculate fluid properties which are dependent on the solution.
 C ICALL stops the initisation of blockage data until after the first iteration.
       SUBROUTINE PROPS(ICALL)
 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
@@ -966,7 +966,7 @@ C CALCU - Calculate coefficients of the matrix of the momentum
 C  conservation equation on x direction and solve the matrix to 
 C  obtain velocity component in X direction.
       SUBROUTINE CALCU
-      INCLUDE 'cfd.h'
+#include "cfd.h"
       
       COMMON/ICFNOD/ICFD,ICP
       COMMON/UVEL/RESORU,NSWPU,URFU,FSDTU,DXEPU(ntcelx),DXPWU(ntcelx),
@@ -1352,7 +1352,7 @@ C CALCV - Calculate coefficients. of the matrix of the momentum
 C  conservation equation on y direction and solve the matrix 
 C  to obtain velocity component in y direction.
       SUBROUTINE CALCV
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VVEL/RESORV,NSWPV,URFV,FSDTV,DYNPV(ntcely),DYPSV(ntcely),
@@ -1729,7 +1729,7 @@ C CALCW - Calculate coefficients. of the matrix of the momentum
 C  conservation equation on z direction and solve the matrix 
 C  to obtain velocity component in z direction.
       SUBROUTINE CALCW 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/PCOR/RESORM,NSWPP,URFP,FSDTP,IPREF,JPREF,KPREF
       COMMON/ICFNOD/ICFD,ICP
@@ -2141,7 +2141,7 @@ C ********************* CALCP *********************
 C CALCP - Calculate coefficients of the matrix of the mass conservation 
 C  equation and solve the matrix to obtain pressure corrections.
       SUBROUTINE CALCP
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/PCOR/RESORM,NSWPP,URFP,FSDTP,IPREF,JPREF,KPREF
@@ -2463,7 +2463,7 @@ C CALCT - Calculate the coefficients of the matrix of the energy
 C  equation and solve the matrix to obtain temperatures.
 C
       SUBROUTINE CALCT
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -2723,7 +2723,7 @@ C ********************* CALCTE *********************
 C CALCTE - Calculate coefficients. of the matrix of the turbulent 
 C  energy equation and solve the matrix.
       SUBROUTINE CALCTE
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/TEN/RESORK,NSWPK,URFK,FSDTK
@@ -3067,7 +3067,7 @@ C ********************* CALCED *********************
 C CALCED - Calculate coefficients. of the matrix of the energy 
 C  dissipation equation and solve the matrix.
       SUBROUTINE CALCED
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/TDIS/RESORE,NSWPD,URFE,FSDTE
@@ -3342,7 +3342,7 @@ C Solution of difference equation.
 C ********************* INDBND *********************
 C INDBND - Initialize some boundary conditions.
       SUBROUTINE INDBND
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
      &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
@@ -3454,7 +3454,7 @@ C variable VOLArea is used to store the ratio of real to actual
 C opening area.  If no area is specified then VOLArea is set to 1.0
 
       SUBROUTINE DEFINESSO 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/GEOM3/AreaHLP(ntcelx,ntcely),AreaHLU(ntcelx,ntcely),
@@ -3536,7 +3536,7 @@ C again during the same simulation (as will happen in conflated runs).
 C ********************* INOUT *********************
 C INOUT - Set up all inlet and outlet conditions.
       SUBROUTINE INOUT
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/BNDCND/FLWIN,XMONIN
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
@@ -3822,7 +3822,7 @@ C RECRES - Modify residuals for all scalar variables if pressure is
 C fixed in a cell.
 
       FUNCTION RECRES(RESRM)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
@@ -3858,7 +3858,7 @@ C ********************* VELDERIV *********************
 C VELDERIV - Calculate the velocity derivitives for use in turbulence equations.
 
       subroutine VELDERIV(I,J,K,DUDY,DUDZ,DVDX,DVDZ,DWDX,DWDY)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),

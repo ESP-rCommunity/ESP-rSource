@@ -106,7 +106,7 @@ C ELECNET is the main controlling routine for the electrical network
 C definition.  
 
       SUBROUTINE ELECNET
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -461,7 +461,7 @@ C of which is selected
 
       SUBROUTINE ELNODLST(MODE,IPK)
 
-      INCLUDE 'epara.h'
+#include "epara.h"
 # include "power.h"
 
 C Commons
@@ -660,7 +660,7 @@ C of which is selected
 
       SUBROUTINE ELHYBLST(MODE,IPK)
 
-      INCLUDE 'epara.h'
+#include "epara.h"
 # include "power.h"
 
 C Commons
@@ -848,7 +848,7 @@ C of which is selected
 
       SUBROUTINE ELPOWLST(MODE,IPK)
 
-      INCLUDE 'epara.h'
+#include "epara.h"
 # include "power.h"
 
 C Commons
@@ -1038,7 +1038,7 @@ C of which is selected
 
       SUBROUTINE ELCNCLST(MODE,IPK)
 
-      INCLUDE 'epara.h'
+#include "epara.h"
 # include "power.h"
 
 C Commons
@@ -1229,7 +1229,7 @@ C of which is selected
 
       SUBROUTINE ELCONLST(MODE,IPK)
 
-      INCLUDE 'epara.h'
+#include "epara.h"
 # include "power.h"
 
 C Commons
@@ -1420,8 +1420,8 @@ C 'CPY' - copy a node in the current list.
       SUBROUTINE EDENOD(MODE,INOD)
 
 # include "power.h"
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
 
 C Commons
@@ -2201,9 +2201,9 @@ C 'CPY' - copy a HVAC/PV/Lighting/equipment load component.
 
       SUBROUTINE EDEHYB(MODE,IHYB)
 
-      INCLUDE 'power.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "power.h"
+#include "plant.h"
+#include "building.h"
 
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -2702,7 +2702,7 @@ C 'CPY' - copy a power component.
 
       SUBROUTINE EDEPOW(MODE,IPOW)
 
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)  
@@ -3199,7 +3199,7 @@ C 'CPY' - copy a connection.
 
       SUBROUTINE EDECNC(MODE,ICNC)
 
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -3524,7 +3524,7 @@ C 'CPY' - copy a connection.
 
       SUBROUTINE EDECON(MODE,ICON)
 
-      INCLUDE 'power.h'
+#include "power.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
 
@@ -4058,7 +4058,7 @@ C nodes with different base voltage values are connected by a transformer and
 C that it is of the correct base voltage value. 
 
       SUBROUTINE ENETCHECK
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 

@@ -45,8 +45,8 @@ C different from RATIO if half-hour centred solar data is used.
 
       SUBROUTINE MZCLMI(IOPT,PATMOS,X1,X2,RATIO,RATIOS,QFFX,TFX,QDFX,
      &VFX,DFX,HFX,TWBFX,HEXTFX,GEXTFX)
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 
 C TDF commons.
       COMMON/DNORGH/IRTYPE
@@ -130,8 +130,8 @@ C because the plant can operate at some subset of the building
 C time step.
 
       SUBROUTINE MZCLMPT(ITYP)
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/trc/itrc

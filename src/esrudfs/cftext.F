@@ -39,7 +39,7 @@ C PRNTXT - write dfs results to an ASCII file.
 C ********************* PRNTXT *********************
 C PRNTXT -write dfs results to an ASCII file.
       SUBROUTINE PRNTXT(ifl)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/FLUPRf/URFVIS,VISCOS,PRANDT,SH,

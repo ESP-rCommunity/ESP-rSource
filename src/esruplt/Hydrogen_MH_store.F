@@ -84,12 +84,12 @@ C----------------------------------------------------------------------
 
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
-      INCLUDE 'CETC_definitions.h'
-      INCLUDE 'Hydrogen_demand_controller.h'
+#include "building.h"
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
+#include "CETC_definitions.h"
+#include "Hydrogen_demand_controller.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1638,9 +1638,9 @@ C
 C----------------------------------------------------------------------
       subroutine MH_Validate_Inputs ( iComponent )
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
+#include "building.h"
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
 
 C----------------------------------------------------------------------
 C     Passed argument
@@ -1906,9 +1906,9 @@ C-------------------------------------------------------------------------
      &     fH_absorbed_kmols )
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 
 
 C-----------------------------------------------------------------------
@@ -1992,8 +1992,8 @@ C-----------------------------------------------------------------------
      &     )
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
 
 C-----------------------------------------------------------------------
 C     Passed arguements
@@ -2711,9 +2711,9 @@ C-------------------------------------------------------------------------
 
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 C-------------------------------------------------------------------------
 C     Passed arguements
 C-------------------------------------------------------------------------
@@ -2908,8 +2908,8 @@ C-----------------------------------------------------------------------
      &    fPressure, 
      &    fTemperature )
       implicit none
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
 C-----------------------------------------------------------------------
 C     Passed arguements
 C-----------------------------------------------------------------------
@@ -3088,9 +3088,9 @@ C----------------------------------------------------------------------
      &     fTemperature )
       implicit none 
 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 
 
 C----------------------------------------------------------------------
@@ -3229,9 +3229,9 @@ C----------------------------------------------------------------------
      &     fTemperature )
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -3427,9 +3427,9 @@ C----------------------------------------------------------------------
      &     fH2_free_kmol_TRAN,
      &     fH_abs_kmol_TRAN )
       implicit none
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 
 C External functions.     
       integer lnblnk
@@ -3500,10 +3500,10 @@ C
 C----------------------------------------------------------------------
       subroutine MH_hydride_PostPro(iComponent, iStatus)
       implicit none
-      INCLUDE 'plant.h'
-      INCLUDE 'chemical_properties.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'CETC_definitions.h'
+#include "plant.h"
+#include "chemical_properties.h"
+#include "Hydrogen_MH_store.h"
+#include "CETC_definitions.h"
 
 C External functions.     
       integer lnblnk
@@ -3870,9 +3870,9 @@ C
 C-----------------------------------------------------------------------
       subroutine MH_debug_PCT ( iComponent )
       implicit none 
-      INCLUDE 'plant.h'
-      INCLUDE 'Hydrogen_MH_store.h'
-      INCLUDE 'chemical_properties.h'
+#include "plant.h"
+#include "Hydrogen_MH_store.h"
+#include "chemical_properties.h"
 
       integer iComponent 
 C-----------------------------------------------------------------------

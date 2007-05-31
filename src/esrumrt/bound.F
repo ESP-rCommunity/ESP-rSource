@@ -25,7 +25,7 @@ C BOUND tests if k intersects the volume between I and J.
 C     IANS = 0   NO INTERSECTION
 C          = 1   INTERSECTS
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       logical closex,closey,closez, close
 

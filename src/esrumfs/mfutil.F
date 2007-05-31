@@ -42,7 +42,7 @@ C             connections between nodes I and J
 
       SUBROUTINE MFLOAD(IFPRB,IER)
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -266,7 +266,7 @@ C     IER    - 0 they do match; 1 they don't match
 
       SUBROUTINE MFCRIM(IFRES,IER)
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -501,7 +501,7 @@ C     DIMFAC - factor for calculating the appropriate flow dimension
 
       SUBROUTINE MFSNFL(IDIM,NODE,NODC,FLIN,FLUT)
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -577,7 +577,7 @@ C     DIMFAC - factor for calculating the appropriate flow dimension
 
       SUBROUTINE MFSTFL(IDIM,FLWIN,FLWUT)
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)

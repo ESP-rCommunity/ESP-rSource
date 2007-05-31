@@ -32,7 +32,7 @@ C ************* clickonbitmap
 C Control interface for defining vertices or a floor plan extrusion
 C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2630,7 +2630,7 @@ C inpm is the input mode.
       subroutine shifoverlays(xbmnorth,xbmorigin,invert,nw,idfxoffset,
      &  idfyoffset,inpm,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &  ipxw,ipyw,nipwhis,ipxwhis,ipywhis)
-      INCLUDE 'building.h'
+#include "building.h"
 
       logical xbmnorth,xbmorigin
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
@@ -2697,7 +2697,7 @@ C inpm is the input mode << >>.
      &  xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,iytn2,
      &  ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis,
      &  iphisznst,iphisznfn,completed)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       logical xbmnorth,xbmorigin,xbmgrid,xbmscale,completed,within
@@ -2886,7 +2886,7 @@ C inpm is the input mode.
      &  iwidth,ihight,inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,
      &  invert,nw,ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &  ipyw,nipwhis,ipxwhis,ipywhis)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 

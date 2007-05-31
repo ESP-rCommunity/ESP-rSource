@@ -30,7 +30,7 @@ C MOZCAS process breakdown data for zones.
 C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       SUBROUTINE MOZCAS(IZONE,IANZSE,NIT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -59,7 +59,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       logical SNAPSH
       
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
+      character outs*124,xfile*72,tg*1,delim*1,lodlabel*6
 
       CHARACTER zname*12,zdesc*64
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
@@ -291,7 +291,7 @@ C Provide sums and averages for zone energy breakdowns.
 C CALLS: MOEGET    CALLED BY: MOZCAS
 
       SUBROUTINE MOZSUM(IZONE,IANZSE)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -417,7 +417,7 @@ C         GCFRAC,CASTYP
 C CALLED BY: MOZSUM
 
       SUBROUTINE MOEGET(IZONE,IDAY)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -529,7 +529,7 @@ C ******************** CSCONV ********************
 C CSCONV is a mid-level routine to return the convection
 C at an inside surface for each timestep in a day.
       SUBROUTINE CSCONV(IDAY,IZONE,ISFN,Q)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       DIMENSION Q(MTS)

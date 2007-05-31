@@ -151,7 +151,7 @@ C 2 - flip about horiz
 C 3 - rotate by IDAT degrees 
 C 
       SUBROUTINE ICNTFM(ITFM)
-      INCLUDE 'gnetwk.h'
+#include "gnetwk.h"
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -367,7 +367,7 @@ C ************ dupicname ************
 C Check for duplicate icon names (against the name of icon
 C index icn).
       subroutine dupicname(icn)
-      INCLUDE 'gnetwk.h'
+#include "gnetwk.h"
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),

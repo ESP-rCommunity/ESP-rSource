@@ -26,7 +26,7 @@ C  MAKS3D - draws flow vectors on screen in 3D.
 C C ********************* MAKS2D *********************
 C MAKS2D - draw 2d slices on screen.
       SUBROUTINE MAKS2D(ISUR,ilayer,name)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -139,7 +139,7 @@ C ********************* MAKS3D *********************
 C MAKS3D - draw flows in 3d on screen using scaling factors of 
 C first view.
       SUBROUTINE MAKS3D
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2

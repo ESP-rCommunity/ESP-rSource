@@ -66,8 +66,8 @@ C Use module for GSHP data
 
 
        IMPLICIT NONE
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
        COMMON/FILEP/IFIL
        COMMON/ER/IER
        COMMON/OUTIN/IUOUT,IUIN
@@ -216,10 +216,10 @@ C ************************************************************************
 
       IMPLICIT NONE
 C Initiates reading of global variables (common for all)
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
 C Use inputs specific to vertical configuration
-      INCLUDE 'gshp_v1_common.h'
+#include "gshp_v1_common.h"
 
 
 
@@ -396,10 +396,10 @@ C ****************************************************************************
        IMPLICIT NONE
 
 C Initiates reading of global variables (common for all)
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
 C Use inputs specific to configuration
-      INCLUDE 'gshp_hs_common.h'
+#include "gshp_hs_common.h"
 
 
        COMMON /OUTIN/ IUOUT, IUIN
@@ -494,10 +494,10 @@ C *****************************************************************************
 
        IMPLICIT NONE
 C Initiates reading of global variables (common for all)
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
 C Use inputs specific to vertical configuration
-      INCLUDE 'gshp_hs_common.h'
+#include "gshp_hs_common.h"
        COMMON /OUTIN/ IUOUT, IUIN
 
        common/gshpinfo/igshp
@@ -594,10 +594,10 @@ C ****************************************************************************
 
        IMPLICIT NONE
 C Initiates reading of global variables (common for all)
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
 C Use inputs specific to vertical configuration
-      INCLUDE 'gshp_sl_common.h'
+#include "gshp_sl_common.h"
        COMMON /OUTIN/ IUOUT, IUIN
        common/gshpinfo/igshp
        common/gshpfile/gshpfile
@@ -701,10 +701,10 @@ C ****************************************************************************
 
        IMPLICIT NONE
 C Initiates reading of global variables (common for all)
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "gshp_common.h"
+#include "ground_temp_mains_common.h"
 
        COMMON /OUTIN/ IUOUT, IUIN
        common/gshpinfo/igshp
@@ -878,8 +878,8 @@ c *********************************************************************
 
        IMPLICIT NONE
 C Initiates reading of global variables (common for all)
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'gshp_common.h'
+#include "hvac_parameters.h"
+#include "gshp_common.h"
 
        common/simsdy/iss,isf
 

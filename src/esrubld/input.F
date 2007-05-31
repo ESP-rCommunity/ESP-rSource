@@ -100,10 +100,10 @@ C laprob  - fluid flow description file
 
       subroutine mzinpt(IREP,IER)
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'tdf2.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "plant.h"
+#include "tdf2.h"
+#include "esprdbfile.h"
       PARAMETER (MSTMC=1)
       integer igraphiclib  ! external definition
 
@@ -643,7 +643,7 @@ C checks if user wants to re-specify simulation start-up period.
 C IREP=1 implies no reporting or data checking.
 
       SUBROUTINE MZPREC(IREP,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1181,8 +1181,8 @@ C MZUTIL reads the zone optional zone files if included in model.
 C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
@@ -1306,7 +1306,7 @@ C Climate and control are as specified in the configuration file.
 C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -1429,7 +1429,7 @@ C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       subroutine ckcurmatch(prob,iprob,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

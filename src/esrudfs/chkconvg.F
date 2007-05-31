@@ -24,8 +24,8 @@ C  CHECK - Checks if CFD convergence has been reached.
 C ********************* CHECK *********************
 C CHECK -Checks if CFD convergence has been reached.
       SUBROUTINE CHECK(MAXIT,CONVER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       common/outin/iuout,iuin
       common/pophelp/h(60)

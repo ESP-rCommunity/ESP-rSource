@@ -43,7 +43,7 @@ C  Polygon together with two other points form the triangles.
 C  I3DA = 1 if surface is not normalised (normalised surfaces
 C  only need x and y values)
 
-      INCLUDE 'plylib.h'
+#include "plylib.h"
       DIMENSION  APOL(MPL)
 
       REAL VECPROD(3),X0,Y0,Z0

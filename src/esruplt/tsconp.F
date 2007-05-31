@@ -72,7 +72,7 @@ c               ptsdat(?,8): 1st component number.
 c               ptsdat(?,9): 2nd component number...etc.  }
 
       subroutine ptscin
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -298,7 +298,7 @@ c  2) Component time constant is the smallest.
 c  3) Component time constant is the largest.
 
       subroutine ptsc1(itstpp,ratiop,nptspd)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/tsconp/iptsc,nptscp,ptsdat(24,20)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -366,7 +366,7 @@ c absolute difference value. Remember that the time-step value
 c at this hour is smller than the previuos hour.
 c
       subroutine ptsc2(itstpp,ratiop,iterp)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/tsconp/iptsc,nptscp,ptsdat(24,20)
       common/pctstp/ntstpp

@@ -35,9 +35,9 @@ C at any point in time it is necessary to use a temporary
 C file to manage the reading and saving of this db.
 
       SUBROUTINE EDOPT(IER)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "epara.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -56,7 +56,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER H*72,OPTITM*54,DSOPT*12
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
-      CHARACTER xfile*144,tg*1,delim*1
+      CHARACTER xfile*72,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
       dimension RVA(20),IVA(24)
 
@@ -193,7 +193,6 @@ C List database.
           itu = iuout
         elseif(irpt.eq.2)then
           itu = ixunit
-          write(xfile,'(a)') 'optical_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
           write(outs248,'(2a)') 'In the optical database: ',
      &      LOPTDB(1:lnblnk(LOPTDB))
@@ -205,8 +204,6 @@ C List database.
         SOPT='ALL'
         CALL EROPTDB(1,itu,SOPT,GDESCR,IER)
         if(irpt.eq.2)then
-
-C Toggle the export file closed.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db',IER)
         endif
       ELSEIF(INO.EQ.NITMS-3)THEN
@@ -551,7 +548,7 @@ C Make a copy of current db.
 C ******************* EDITOPT 
 C EDITOPT edits one set of optical properties via common block. 
       SUBROUTINE EDITOPT(IW,GTYPE,GDESCR,edited,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -929,7 +926,7 @@ C ******************* EMKOPTD
 C EMKOPTD writes a item to the glazing optical database. Assumption
 C that file has already been opened.
       SUBROUTINE EMKOPTD(ITOPT,GTYPE,GDESCR,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       CHARACTER GTYPE*12,GDESCR*36
 
@@ -961,7 +958,7 @@ C For each layer extract tmc info.
 C ************* OPT2ED 
 C OPT2ED takes the current GOPT common and copies it into GOPTED.
       SUBROUTINE OPT2ED
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
@@ -987,7 +984,7 @@ C OPT2ED takes the current GOPT common and copies it into GOPTED.
 C ************* ED2OPT 
 C ED2OPT takes the current GOPTED common and copies it back into GOPT.
       SUBROUTINE ED2OPT
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
@@ -1013,7 +1010,7 @@ C ED2OPT takes the current GOPTED common and copies it back into GOPT.
 C ************* CLROPT
 C CLROPT clears common block GOPTED and sets it up for a new set.
       SUBROUTINE CLROPT(nl,layout)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
       character layout*7
@@ -1055,7 +1052,7 @@ C CLROPT clears common block GOPTED and sets it up for a new set.
 C ************* IMPOPT
 C IMPOPT clears common block GOPTED and sets it up for a new set.
       SUBROUTINE IMPOPT(iwin4,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1236,7 +1233,7 @@ C If inserting air gaps do it here, except for the inside layer.
 C ************* IMPWIS
 C IMPWIS clears common block GOPTED and sets it up for a new set.
       SUBROUTINE IMPWIS(iwis,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1426,9 +1423,9 @@ C ******* edbioptics
 C edbioptics controls the specification of bi-directional
 C optic properties. These are usually the result of measurements.
       subroutine edbioptics()
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "epara.h"
+#include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 1 for the present.
       PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)

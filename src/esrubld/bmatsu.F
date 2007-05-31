@@ -92,7 +92,7 @@ c where E is the number of homogeneous elements in the
 c multilayered construction.
 
       SUBROUTINE MZCOE1(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -291,7 +291,7 @@ c if the imposed computational time-step is less than one
 c hour.
 
       SUBROUTINE MZCOE2(TSTEP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -401,8 +401,8 @@ c MZCOE1.   The complete equation-set can then be
 c solved simultaneously at the current simulation time-step.
 
       SUBROUTINE MZSETU(ICOMP)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -997,7 +997,7 @@ C ****************************  LUMPED  *******************************
 C LUMPED creates the coefficients for lumped constructions.
 C *********************************************************************
       SUBROUTINE LUMPED(ICOMP,I)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

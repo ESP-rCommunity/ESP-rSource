@@ -45,8 +45,8 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
 C Itwhich is the index of the item selected from the database and
 C Icwhich is its category. Idbh is the position in the hash table.
       subroutine edselcat(IFB,idbh,itwhich,icwhich,action,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "epara.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -81,7 +81,7 @@ C Backup of documentation (for editing).
 
       character CLDES*38,action*1,KEY*1,tab*1,catlist*32
       character head*37,h*72,t72*72,t12*12,c8*8,t248*248
-      CHARACTER xfile*144,tg*1,delim*1
+      CHARACTER xfile*72,tg*1,delim*1
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
@@ -552,15 +552,6 @@ C List one or more categories.
             delim = 'C'
           endif
           itu = ixunit
-          lnfile=lnblnk(gendbfn(idbh))
-
-C Note: when gendbfn moves from 72 to 144 chare then the 2nd write
-C statement should be altered.
-          if(lnfile.lt.130)then
-            write(xfile,'(2a)') gendbfn(idbh)(1:lnfile),'.report'
-          else
-            write(xfile,'(2a)') gendbfn(idbh)(1:72),'.report'
-          endif
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','db text',IER)
         elseif(irpt.eq.3)then
           goto 40
@@ -667,8 +658,8 @@ C EDSELITEM: Given a generic db, provides a list of items in category ic.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Itwhich is the index of the db item selected.
       subroutine edselitem(IFB,idbh,itwhich,ic,action,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "epara.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -1266,7 +1257,7 @@ C else if act='i' then setup documentation to reflect import of a legacy
 C database file. Idbh is position in hash table. afile is the legacy file
 C if known.
       subroutine intdbdoc(idbh,act,afil,ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -1469,7 +1460,7 @@ C EDCATDOC: Edit category level documentation (act = c). Assumes that common blo
 C are current (i.e. scandbhd already called). If changes made update
 C the current database.
       subroutine edcatdoc(IFB,idbh,ic,act,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1590,7 +1581,7 @@ C  newgcat: Depending on the db type create a new class and place in it one
 C item of the current database type. Iclnew is the new class and
 C iitnew is the new item associated with it.
       subroutine newgcat(IFB,idbh,iclnew,iitnew,ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1780,7 +1771,7 @@ C ************* newgitem
 C  newgitem: Depending on the db type create a new instance of an item for
 C subsequent editing. Icl is the class the item is associated with.
       subroutine newgitem(IFB,idbh,icl,iit,ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -2101,7 +2092,7 @@ C are the same whether the item is to be inserted in a binary
 C db or used in the creation of a new minimal db. Used by 
 C newgitem and agdbnew.
       subroutine instanitm(db,type,iit,ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
@@ -2326,7 +2317,7 @@ C AGDBNEW: Create a minimal boilerplate ascii generic database which can be read
 C in and converted to a new binary db file. Act is << >>. Db is the
 C type of database to create, idbh is its position in the hash table.
       subroutine agdbnew(IFA,AFIL,db,idbh,act,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,

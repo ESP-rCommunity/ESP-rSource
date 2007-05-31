@@ -46,8 +46,8 @@ C     simtyp - holds description of simulation type.
 
       subroutine newnet(iedit,mode)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
  
       COMMON/C8/LPNAM
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
@@ -559,7 +559,7 @@ C   tadata(?,2..n) - value of each parameter.
 
       subroutine pcdefn
 
-      INCLUDE 'plant.h'
+#include "plant.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
@@ -684,7 +684,7 @@ C   all these arrays are defined in 'plantdf.h'
 C   idcon(?) - assigns a connection id number
       subroutine condef(emod,ipcon)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
       common/pcnam/pcname(mpcom)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -1030,8 +1030,8 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
       subroutine cntdef(emod,icont)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
@@ -1239,7 +1239,7 @@ C selected node number (knode).
 
       subroutine getnod(ipcomp,knode)
  
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
@@ -1273,7 +1273,7 @@ C with description of each component in database.
 
       subroutine initiv(ipcomp)
 
-      INCLUDE 'plant.h' 
+#include "plant.h" 
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
@@ -1324,7 +1324,7 @@ C ******************** askpar ************************
 C askpar selects parameters of component (ipc) to edit.
       subroutine askpar(nitm,ival,ipc)
 
-      INCLUDE 'plant.h' 
+#include "plant.h" 
 
       common/pophelp/h(60)
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA) 
@@ -1444,7 +1444,7 @@ C ******************** stype ************************
 C stype: Displays general system types for user selection.
       subroutine stype(ix,ival)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
  
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1521,7 +1521,7 @@ C ival is an array of components. ival(1) is updated to be
 C      the component selected.
       subroutine showpc(ix,ival)
    
-      INCLUDE 'plant.h'
+#include "plant.h"
       common/pophelp/h(60)
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
@@ -1651,7 +1651,7 @@ C ******************** gettrs ************************
 C gettrs Display TRNSYS model types
       subroutine gettrs(ix,ival)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
       common/pophelp/h(60)
       common/trnsys/ittype(mpcom), loctrs(mpcom), idbct(mpcom), ntypes
 
@@ -1683,8 +1683,8 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ECMPLST(head,MOD,IS,IER)
 
-      INCLUDE 'epara.h'
-      INCLUDE 'plant.h'
+#include "epara.h"
+#include "plant.h"
 
 C Electrical details for specified plant components
       common/pcelflg/ipcelf(mpcom)
@@ -1907,7 +1907,7 @@ C  Phase - which phase the component is connected to 1-3 or 4 all three.
 
       subroutine eledit(IPCOMP)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/pcnam/pcname(mpcom)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -2086,8 +2086,8 @@ C of a particular zone surface as a containment for or to embed a plant componen
 C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2193,7 +2193,7 @@ C IPCNLINK2 - the linked plant component node no
 C IPCLINKT  - the linkage type
       SUBROUTINE SCANBPLINK
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN  
       COMMON/FILEP/IFIL
@@ -2265,9 +2265,9 @@ C ASKBPLINK presents a list of plant component linkages returning the index IS.
 C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKBPLINK(head,MOD,IS,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "epara.h"
+#include "building.h"
+#include "plant.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
@@ -2485,8 +2485,8 @@ C D - delete
 
       SUBROUTINE EDBPLINK(MODE,IS)
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
 C Commons for control variables
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),

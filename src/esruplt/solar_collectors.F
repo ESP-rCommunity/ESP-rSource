@@ -42,8 +42,8 @@ C---- Set implicit to none to force declaration of all variables
       
 C---- Include statements
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
 C---- Arguments
 
@@ -264,8 +264,8 @@ C---- Set implicit to none to force declaration of all variables
 
 C---- Include statements
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
 C---- Arguments
 

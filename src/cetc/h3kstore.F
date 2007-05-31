@@ -49,10 +49,10 @@ c     This routine is currently only called at the begining of MZNUMA.
 c**********************************************************************
       SUBROUTINE H3KSTORE_ZERO_DATA
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
 
 
@@ -232,10 +232,10 @@ c     None. Sums up Monthly versions of energy Variables above..
      &     fpilot_energy,
      &     PLR)
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -304,11 +304,11 @@ c     None. Sums up Monthly versions of energy Variables above..
 C      USE Ventilation_Data
 
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-      INCLUDE 'Ventilation_Data.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "Ventilation_Data.h"
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -371,12 +371,12 @@ c
       SUBROUTINE H3KSTORE_AIM2_DATA(AIM2_total)
 
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
+#include "h3kstore_common.h"
       character outs*124
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -442,10 +442,10 @@ c     None. Sums up Monthly versions of energy Variables above..
       SUBROUTINE H3KSTORE_FNDTN_LOSSES(ICOMP,idyp,QBS)
 
         IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 C Inputs
         INTEGER ICOMP
         INTEGER idyp
@@ -510,10 +510,10 @@ c     and stores it in sum_plr_capacity_bin(isystem,ipercent)
 
       SUBROUTINE H3KSTORE_SUM_PLR_BIN_HOURS(isystem,PLR)
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 c     Common for the number of time steps per hour
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
@@ -585,10 +585,10 @@ c     Copyright 2000: NRCan Buildings Group
      &     fQCASC               !Casual Conv
      &     )
       Implicit None
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
 C     These commons are required for
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -665,10 +665,10 @@ C     ndbph is number of data blocks/hr for monitor function.
 
       SUBROUTINE H3KSTORE_SAVELEVEL5(ICOMP,IDAY,ITSMUS,ndbph)
       IMPLICIT NONE
-      INCLUDE 'building.h'
+#include "building.h"
 
-C           INCLUDE 'cfd.h'
-      INCLUDE 'monitor.h'
+C     #include "cfd.h"
+#include "monitor.h"
 
 
       COMMON/TC/ITC,ICNT
@@ -1357,11 +1357,11 @@ c     ********************************************************************
      &     )
 
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-c      INCLUDE 'SOFC.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+c#include "SOFC.h"
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/ptime/ptimep,ptimef
@@ -1473,10 +1473,10 @@ c     ********************************************************************
      &     f_EL_heatdump        ! rate of energy dumped (W)
      &     )
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
       REAL    q_EL_element     ! element power
       REAL    q_EL_capture_future ! element -> water
@@ -1534,10 +1534,10 @@ c     ********************************************************************
      &     f_FF_heatdump        ! rate of energy dumped from tank
      &     )
             IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
       REAL    f_FF_Vdot_fuel_STP
       REAL    q_FF_capture_future                                   
       REAL    T_FF_node1_future      
@@ -1581,10 +1581,10 @@ c     Copyright 2000: NRCan Buildings Group
 c     ********************************************************************      
       SUBROUTINE H3KSTORE_Zone_Temp_Averages(iZone,fZone_Temp)
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   iZONE,IDAYN,iMonth
@@ -1642,13 +1642,13 @@ c                                for the previous timestep, in W
 
       SUBROUTINE H3KSTORE_PLANT_ELEC
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-      INCLUDE 'SOFC.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1810,11 +1810,11 @@ c     ********************************************************************
       SUBROUTINE H3KSTORE_Plant_TimeSteps() 
 
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-      INCLUDE 'SOFC.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP 
@@ -1894,11 +1894,11 @@ c     ********************************************************************
       SUBROUTINE H3KSTORE_Plnt_TS_Sum_Monthly
 
            IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-      INCLUDE 'SOFC.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP 
       common/ptime/ptimep,ptimef
@@ -1992,12 +1992,12 @@ c********************************************************************
 
       IMPLICIT NONE 
 
-      INCLUDE 'building.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
+#include "cogen_tanks.h"
 
 C.....Time 
       fPreviousTimestepHour          = fCurrentTimestepHour

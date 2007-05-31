@@ -37,8 +37,8 @@ C               network need not be matched
 
       SUBROUTINE MZINPT
 
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 

@@ -1,6 +1,6 @@
       SUBROUTINE BERROR(IE,IB)
 
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
       COMMON/OUTIN/IUOUT,IUIN
       character outs *124
 

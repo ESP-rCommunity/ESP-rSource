@@ -71,10 +71,10 @@ C ============================================================================
       FUNCTION fDHW_DepthAmplitudeMod()
      
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'dhw_parameters.h'
-      INCLUDE 'dhw_common.h'
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"
+#include "ground_temp_mains_common.h"
 
 C This line was obtained from B.Bradley H2KDHW.F HOT2000 code file line 205 
 C and is related to the Ken Cooper model.
@@ -111,10 +111,10 @@ C===========================================================================
       FUNCTION fDHW_LimitMeanGroundTemp()
         
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'dhw_parameters.h'
-      INCLUDE 'dhw_common.h'     
-      INCLUDE 'ground_temp_mains_common.h'       
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"     
+#include "ground_temp_mains_common.h"       
               
       IF (fDHW_ground_temp_avg .lt. 5.0) THEN
         fDHW_LimitMeanGroundTemp = 5.0
@@ -150,10 +150,10 @@ C==========================================================================
       FUNCTION iDHW_GroundOffset()
         
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'dhw_parameters.h'
-      INCLUDE 'dhw_common.h'        
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"        
+#include "ground_temp_mains_common.h"
 
 C Select Offset Modifier based on Mean Ground Temperature
       IF (fDHW_ground_temp_avg .lt. 5.0) THEN
@@ -196,10 +196,10 @@ C========================================================================
       FUNCTION fDHW_ColdMainTemp(iMonth)
       
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'dhw_parameters.h'
-      INCLUDE 'dhw_common.h'   
-      INCLUDE 'ground_temp_mains_common.h'  
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"   
+#include "ground_temp_mains_common.h"  
 
 c First set the ground temperature average and amplitude to appropriate values
 c based on flag set in subroutine DHW_READIN
@@ -265,8 +265,8 @@ C =======================================================================
       SUBROUTINE Ground_Temp_Profile      
         
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'ground_temp_mains_common.h' 
+#include "building.h"
+#include "ground_temp_mains_common.h" 
 
 C Call to the function fTemp_Ground_Avg to calculate the average ground 
 C temperature.       
@@ -310,8 +310,8 @@ C============================================================================
       FUNCTION fTemp_Ground_Avg()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"      
+#include "ground_temp_mains_common.h"
 
       REAL Temp_Ambient_Avg_sum      ! sum of monthly average ambient DB temps
       REAL fAnnual_ambient_avg       ! average of the annual ambient DB temps
@@ -366,8 +366,8 @@ C=============================================================================
       FUNCTION fTemp_Ground_Amp()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"      
+#include "ground_temp_mains_common.h"
 
 C Find amplitude of ground temperature profile. Equation 16 in Moore's report
       fTemp_Ground_Amp = fTemp_Ambient_Amp()
@@ -401,8 +401,8 @@ C===========================================================================
       FUNCTION fTemp_Ground_phaseshift()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h' 
+#include "building.h"      
+#include "ground_temp_mains_common.h" 
 
 C Find ground temperature phase shift. Equation 17 in Moore's report
       fTemp_Ground_phaseshift = fTemp_Ambient_phaseshift()
@@ -437,8 +437,8 @@ C=====================================================================
       FUNCTION fTemp_Ambient_Amp()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"      
+#include "ground_temp_mains_common.h"
     
 C This equation calls two functions fS_1 and fC_1 which calculate the coefficients
 C to fit the monthly cosine curve for ground temperature. Equation contained in
@@ -471,8 +471,8 @@ C==============================================================================
       FUNCTION fTemp_Ambient_phaseshift()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"      
+#include "ground_temp_mains_common.h"
 
 C Equation in Appendix A of Moore's report
       fTemp_Ambient_phaseshift =  atan((fS_1())/(fC_1()))
@@ -503,9 +503,9 @@ C===========================================================================
       FUNCTION fS_1()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'dhw_parameters.h'
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"      
+#include "dhw_parameters.h"
+#include "ground_temp_mains_common.h"
 
       INTEGER i
 
@@ -539,9 +539,9 @@ C===========================================================================
       FUNCTION fC_1()
       
       IMPLICIT NONE
-      INCLUDE 'building.h'      
-      INCLUDE 'ground_temp_mains_common.h'
-      INCLUDE 'dhw_parameters.h'
+#include "building.h"      
+#include "ground_temp_mains_common.h"
+#include "dhw_parameters.h"
 
       INTEGER i     
 
@@ -576,9 +576,9 @@ C==========================================================================
       SUBROUTINE Daily_DBT(iday_number)
 
       IMPLICIT NONE
-      INCLUDE 'building.h'           
-      INCLUDE 'ground_temp_mains_common.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"           
+#include "ground_temp_mains_common.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C ICLIM,LCLIM (for climate file)
 
@@ -645,8 +645,8 @@ C=============================================================================
       SUBROUTINE CLM_DEG_DAY
 
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'ground_temp_mains_common.h'   
+#include "building.h"
+#include "ground_temp_mains_common.h"   
        
        INTEGER I,J                         ! counters
        REAL Base_Temp                      ! degree day calculation base temperature

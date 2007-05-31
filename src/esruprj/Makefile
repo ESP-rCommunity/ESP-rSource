@@ -15,22 +15,21 @@ PROG = prj$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
+OBJECTS = prj.o anlytc.o arrow.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfgmsc.o cfgrid.o cgd.o \
-	  clickonbitmap.o common3dv.o context.o ctlexp.o ctlwrt.o ctprob.o \
-	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
-	  e3dviews.o ecasctl.o econstr.o econtrol.o edatabase.o edcasctl.o \
-	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o edmrt.o \
-	  edobs.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
-	  egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
-	  eroper.o esru_misc.o esystem.o exlgrad.o filelist.o folders.o \
-	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o \
-	  mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
-	  MultiYear_climate.o mvalid.o \
+	  clickonbitmap.o common3dv.o context.o ctlwrt.o ctprob.o ctread.o dossupport.o \
+	  e2eplus.o e3dviews.o ecasctl.o econstr.o \
+	  econtrol.o edatabase.o edcasctl.o edcfd.o edcfg.o edcon.o edcondb.o \
+	  eddb.o edgeo.o edipv.o edmrt.o edobs.o edoptic.o edpro.o edspmtl.o edtopol.o \
+	  edzone.o egeometry.o egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o \
+	  enetprj.o enetrewr.o eroper.o esru_misc.o esystem.o filelist.o \
+	  folders.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o mcdbscn.o \
+	  mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
-	  sendflt.o senrwl.o sensa.o sort.o spmisc.o stndrds.o startup.o tdfile.o 
-	   
+	  sendflt.o senrwl.o sensa.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
+	  aim2_pretimestep.o DHW_module.o exlgrad.o DG_controller_menu.o \
+	  MultiYear_climate.o ground_temp_mains.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -62,9 +61,6 @@ cgd.F:
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
-ctlexp.F:
-	rm -f ctlexp.F
-	ln -s $(COMdir)/ctlexp.F .
 ctprob.F:
 	rm -f ctprob.F
 	ln -s $(COMdir)/ctprob.F .
@@ -216,15 +212,15 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	anlytc.F aim2_pretimestep.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
-	cfgrid.F cgd.F common3dv.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
-	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
-	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \
-	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
-	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
-	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	senrwl.F setup.F sort.F spmisc.F stndrds.F startup.F tdfile.F \
-	$(INCLdir)/espinstalldir.h 
+	anlytc.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F cfgrid.F cgd.F common3dv.F ctprob.F \
+	ctread.F e3dviews.F dossupport.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
+	egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F \
+	esru_misc.F esystem.F filelist.F h3k_utils.F initalc.F item.F mcdbscn.F mfcdat.F \
+	mfelst.F mfnmsc.F mfrlst.F mvalid.F net2pdf.F newnet.F nwkrewr.F plelev.F \
+	pltcfg.F psychro.F rcdblist.F rwipv.F senrwl.F setup.F sort.F spmisc.F \
+	stndrds.F startup.F tdfile.F \
+	aim2_pretimestep.F DHW_module.F exlgrad.F DG_controller_menu.F \
+	MultiYear_climate.F $(INCLdir)/espinstalldir.h ground_temp_mains.F
 
 
 

@@ -23,8 +23,8 @@ C     MZGCTL: global control executive.
 
       SUBROUTINE MZGCTL
 
-      INCLUDE 'building.h'
-      INCLUDE 'control.h'
+#include "building.h"
+#include "control.h"
 
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -130,8 +130,8 @@ C GCFVAR determines the sensed condition associated
 C with the sensor defined for the global control function.
 
       SUBROUTINE GCFVAR(GVAR)
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -290,8 +290,8 @@ C Which is currently not supported.
 C ******************** GFMVAR
 
       SUBROUTINE GFMVAR
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -377,8 +377,8 @@ C Which is not supported..
 C *******  GCL01 Global On-Off controller.
 
       SUBROUTINE GCL01
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 
@@ -448,8 +448,8 @@ C *******  GCL01 Global On-Off controller.
 C *******  GCL02 Global Capacity Management controller.
 
       SUBROUTINE GCL02
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       COMMON/GCLSOL/igf,IDTYPG,IPERG
 
@@ -513,8 +513,8 @@ C *******  GCL02 Global Capacity Management controller.
 C *******  GCL03 Global "Sequence On" Controller.
 
       SUBROUTINE GCL03
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 
@@ -571,8 +571,8 @@ C nsloop = number of scheduled loops
 C *******  GCL04 Global "Free-float" Controller.
 
       SUBROUTINE GCL04
-      INCLUDE 'control.h'
-      INCLUDE 'building.h'
+#include "control.h"
+#include "building.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 

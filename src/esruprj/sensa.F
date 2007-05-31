@@ -31,8 +31,8 @@ C             the model.
 
 C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -184,9 +184,9 @@ C actions common depending on the value of ITYP.
 C ITYP: 1=changes, 2=locations, 3=actions
 
       subroutine DISPOPT(ITYP,IUALF)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "epara.h"
+#include "uncertainty.h"
 C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       parameter (muadel=50)
 
@@ -396,7 +396,7 @@ C ***************** DEFUAL *********************
 C DEFUAL create a set of default uncertainties
 
       subroutine DEFUAL
-      INCLUDE 'uncertainty.h'
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -442,7 +442,7 @@ C CNGDEF allows the user to define the distribution of an uncertainty.
 C ICDEF  If equal to zero then add a new definition, else edit.
 
       subroutine CNGDEF(ICDEF,IERR)
-      INCLUDE 'uncertainty.h'
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -602,8 +602,8 @@ C ITEM   If equal to zero then add a new definition, else edit.
 C IERR is zero is ok, 101 if there was a problem with the location
 C   specification and 2 if there was a cancel issued during editing.
       subroutine LOCDEF(ITEM,IERR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -828,7 +828,7 @@ C to model the described uncertainty.
 C ITEM   If equal to zero then add a new definition, else edit. 
 
       subroutine LINKDEF(ITEM,IERR)
-      INCLUDE 'building.h'
+#include "building.h"
 # include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -911,8 +911,8 @@ C into an array, then sorting them via a bubble search removing
 C any duplicates.
 
       subroutine UPELM(IPRIM,PRIMLIST,IER)
-      INCLUDE 'building.h'
-C       INCLUDE 'epara.h'
+#include "building.h"
+C #include "epara.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
 

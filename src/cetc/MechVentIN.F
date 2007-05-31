@@ -30,7 +30,7 @@ c ---
 
 c
       Implicit None
-      INCLUDE 'Ventilation_Data.h'
+#include "Ventilation_Data.h"
 c
 c Declarations for local variables and variables passed in common blocks.
       character outs*124,OUTSTR*124
@@ -443,7 +443,7 @@ c
 C      USE Ventilation_data
 c
       IMPLICIT NONE
-      INCLUDE 'Ventilation_Data.h'
+#include "Ventilation_Data.h"
       Integer i, j
       INTEGER ICRAWL_SPACE_ZONE
 c ----The following include shall become redundant

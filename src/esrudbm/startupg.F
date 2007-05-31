@@ -104,7 +104,7 @@ C Where list of climate files is held.
       character journcmd*20,jfile*72
       character altdot*72
       character upath*72
-      INCLUDE 'espinstalldir.h'
+#include "espinstalldir.h"
 
 C Check if running in dll mode, if so clear most of the
 C initial values because they will not be used.
@@ -394,7 +394,7 @@ C It uses espinstalldir.h which was created by the Install
 C script with the current esp-r install directory held
 C in a string instpath.
       SUBROUTINE ESCGDEF(dfdblbl,defdbfl,IFDEF,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
@@ -406,7 +406,7 @@ C Defaults.
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
       logical unixok,dll
-      INCLUDE 'espinstalldir.h'
+#include "espinstalldir.h"
 
 C Assume default db names (in case of failure to find defaults
 C file or failure reading it).
@@ -784,7 +784,7 @@ C Help message for parpsf.
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      elseif(appn(1:3).eq.'mrt'.or.appn(1:3).eq.'vwf')then
+      elseif(appn(1:3).eq.'mrt')then
         call edisp(iuout,'The viewfactor calculation module.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')

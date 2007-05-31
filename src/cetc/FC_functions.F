@@ -47,7 +47,7 @@ C ------------------------------------------------------------------------------
 
       FUNCTION H_gas(tempC,igas,IUOUT)
       IMPLICIT NONE
-      INCLUDE 'SOFC.h'
+#include "SOFC.h"
 
 C Declare local variables.
       REAL tempC,tempR,H_gas_old,H_gas
@@ -91,8 +91,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE H3K_HeatGainsFromModels(iZoneNumber, H3KGains)
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
+#include "building.h"
+#include "SOFC.h"
 
       COMMON/PREC2/VOL(MCOM)
       REAL VOL

@@ -27,8 +27,8 @@ C  EDBUILD: edits building information for system configuration file.
 C ********** pregist
 C Register a new project. Parameter act = 'i' then initial pass.
       subroutine pregist(act,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       common/FILEP/IFIL
@@ -69,7 +69,7 @@ C Calendar.
       dimension nwlistf(50)
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical OKI,concat,unixok,clkok
+      logical OKI,concat,unixok
 
       character dstmp*24,LCFTMP*24
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
@@ -102,45 +102,33 @@ C Ask for source file, brief description and log file. Offer
 C editing of log file, images, hypertext link and results summary.
       IER=0
 
+C Default data for new system configuration file.
+      call clrprb
+      icfgv=3
+      INDCFG=0
+      XLAT=50.0
+      SLAT=50.0
+      XLON=0.0
+      SLON=0.0
+      IXPOS=1
+      GREF=0.2
+      NCOMP=0
+      noimg=0
+      LPNF='UNKNOWN'
+      LPRJLG='UNKNOWN'
+      nbdaytype=0
+
   289 H(1)='The system configuration file holds the definition'
       H(2)='of the zone(s) and/ or plant and/ or control to be'
       H(3)='simulated, including references to associated files.'
       h(4)='The `root` name you supply will be used in a series of'
       h(5)='system level files. '
-      h(6)=' '
-      h(7)='If you selected this option in error click on continue.'
       LCFTMP='  '
-      CALL EASKSCMD(LCFTMP,
+      CALL EASKS(LCFTMP,
      &  ' System configuration name? (root name for model) ',
-     &  ' ','continue',clkok,24,'new_model','system root name',IER,7)
-      call usrmsg(' ',' ','-')
-      if(clkok)then
-        return         ! User clicked on continue button.
-      else
-
-C Trap for blank root name.
-        IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
-
-C User did not cancel so instanciate data for new model.
-        call clrprb
-        icfgv=3
-        INDCFG=0
-        XLAT=50.0
-        SLAT=50.0
-        XLON=0.0
-        SLON=0.0
-        IXPOS=1
-        GREF=0.2
-        NCOMP=0
-        noimg=0
-        LPNF='UNKNOWN'
-        LPRJLG='UNKNOWN'
-        nbdaytype=0
-        call st2file(LCFTMP,LCMDFL)
-      endif
-C      CALL EASKS(LCFTMP,
-C     &  ' System configuration name? (root name for model) ',
-C     &  ' ',24,'new_model','system root name',IER,5)
+     &  ' ',24,'new_model','system root name',IER,5)
+      IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
+      call st2file(LCFTMP,LCMDFL)
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -493,7 +481,7 @@ C information.
 C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1002,7 +990,7 @@ C ************* EDBUILD
 C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN

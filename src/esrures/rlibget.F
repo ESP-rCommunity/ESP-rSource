@@ -68,7 +68,7 @@ C Given IDAY, IZONE returns FRAC (in common GVAL) at each time step.
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GCFRAC(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -131,7 +131,7 @@ C Given IDAY, IZONE returns QCASR (within common GVAL) if save level 2 - 4.
 C CALLS: GFIXED
 
       SUBROUTINE GCASR(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -155,7 +155,7 @@ C Given IDAY, IZONE returns values in the array QCASC (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GCASC(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -178,7 +178,7 @@ C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZRH(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -201,7 +201,7 @@ C Given IDAY, IZONE returns values in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZDP(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -243,7 +243,7 @@ C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GZLLH(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -274,7 +274,7 @@ C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GZLLC(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -305,7 +305,7 @@ C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GZLL(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -330,7 +330,7 @@ C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GZSPM1(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -355,7 +355,7 @@ C Given IDAY, IZONE returns values in (in common GVAL).
 C CALLS: GFIXED
 
       SUBROUTINE GZSPM2(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -405,7 +405,7 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZQSL(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -439,7 +439,7 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZQM(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -466,7 +466,7 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZQMH(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -496,7 +496,7 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GZQMC(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -526,7 +526,7 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GTMCON(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -551,7 +551,7 @@ C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOUTOPQ(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -575,7 +575,7 @@ C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOUTTRN(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -599,7 +599,7 @@ C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOPQIN(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -623,7 +623,7 @@ C from the results library for a given day and zone for ISAVE=2 - 4.
 C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GTRNIN(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -672,7 +672,7 @@ C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GQV1(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -696,7 +696,7 @@ C Given IDAY, IZONE, ISFN  returns values at each timestep in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GQV2(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -721,7 +721,7 @@ C at each time-step in common GVAL.
 C CALLS: GFIXED
 
       SUBROUTINE GTMC(IDAY,IZONE,ISFN,ISNN,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -842,7 +842,7 @@ C or ISAVE = 4.
 C Given IDAY, IZONE returns GSURIC at each time step in common XDUM.
 C CALLS:  CSCONV
       SUBROUTINE GSURIC(IDAY,IZONE,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -909,7 +909,7 @@ C GILLUM recover external lux level from solar data as in INTLUM.
 C Given IDAY, returns sky lux level at each time step in common XDUM.
 C CALLS: 
       SUBROUTINE GILLUM(IDAY)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/AVRAGE/IDAVER
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1142,7 +1142,7 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GZTMS(IDAY,IZ,ISET,ITS,ZTMS,ZTMSO,TMA,TMCON,QW1,QW2,
      &                                                          QSA,RH)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1209,7 +1209,7 @@ C Given IDAY, IZONE & ITS it returns QI(MS),QE(MS),QSA,TQI,TQE.
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GZSOLA(IDAY,IZ,ITS,QI,QE,QSA,TQI,TQE)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1260,7 +1260,7 @@ C ZTMC (the node temperatures within a surface at a particular
 C time step).  Given IDAY, IZONE, ISFN & ITS it returns ATMC(ME).
 
       SUBROUTINE GATMC(IDAY,IZONE,ISFN,ITS,ATMC)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1318,7 +1318,7 @@ C CALLS: MOREC1 MOREC2
       SUBROUTINE GSURFB(IDAY,IZONE,ISFN,ITS,TSout,qswrdi,qlwrdi,qconvi,
      &          qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,
      &          qlwrsk,qswrde)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1369,7 +1369,7 @@ C returns FLUX(MS).
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE G4ALLS(IDAY,IZONE,ITS,IGET,FLUX)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1424,7 +1424,7 @@ C 13 = shortwave radiation.
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE G4FLUX(IDAY,IZONE,ISFN,IGET,FLUX)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1475,7 +1475,7 @@ C ICJ is column to jump to (passed by higher level).
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GFIXED(IDAY,IZONE,ISET,IRJ,ICJ)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1522,7 +1522,7 @@ C max and min occurances as offsets from the output period start day in
 C hours.
 
       SUBROUTINE MMAPER
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1709,7 +1709,7 @@ C given day, zone, and timestep without computational overhead.
 C CALLS: MOREC1 MOREC2
 
       SUBROUTINE HASHL
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

@@ -37,8 +37,8 @@ c SELECTED MISCELLANEOUS DATA SUCH AS SURFACE AREAS ETC.
 c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       SUBROUTINE  MZLS1
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -329,8 +329,8 @@ c header block associated with the current simulation
 c save set.
 
       SUBROUTINE MZLS2
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -550,9 +550,9 @@ C time-stepping scheme; 0 when it does not.
 C ndbph is number of data blocks/hr for monitor function.
 
       SUBROUTINE MZLS3(ICOMP,IDAY,ITSMUS,ndbph)
-      INCLUDE 'building.h'
-C      INCLUDE 'cfd.h'
-      INCLUDE 'monitor.h'
+#include "building.h"
+C#include "cfd.h"
+#include "monitor.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -1691,7 +1691,7 @@ c MZLS4 saves the start address of the next result-set
 c in the appropriate record (2-31) in the building results library.
 
       SUBROUTINE MZLS4
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1724,7 +1724,7 @@ c Save start address of next result-set.
 
 c ******************** MZLS5 ********************
       SUBROUTINE MZLS5(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -1776,8 +1776,8 @@ C Possibly all calculations should use the IVTHPZ in the future?
 
       SUBROUTINE SURBAL(ICOMP)
 
-      INCLUDE 'building.h'
-C      INCLUDE 'cfd.h'
+#include "building.h"
+C#include "cfd.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

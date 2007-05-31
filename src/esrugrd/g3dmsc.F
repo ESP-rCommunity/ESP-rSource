@@ -94,7 +94,7 @@ C        11             q           q-th ground cross section
 C        12             r           r-th ground boundary surface
 C *********************************************************************
       SUBROUTINE GRAAPH(IDRW1,IDRW2)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -148,7 +148,7 @@ C *************************     SUPORT      ***************************
 C SUPORT displays the multi-D gridding support facilities menu.
 C *********************************************************************
       SUBROUTINE SUPORT(IZ)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -530,7 +530,7 @@ C *****************************  INGRD3  ******************************
 C INGRD3 initialize the multi-D gridding variables.
 C *********************************************************************
       SUBROUTINE INGRD3
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -690,7 +690,7 @@ C *************************     INTCNC     ****************************
 C INTCNC initializes the multi-D connection surfaces variables.
 C *********************************************************************
       SUBROUTINE INTCNC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -897,7 +897,7 @@ C *************************    INDCNC    *****************************
 C INDCNC Initializes the connection surfaces indentations.
 C *********************************************************************
       SUBROUTINE INDCNC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -946,7 +946,7 @@ C CHCK3D check the 3D configuration information and generates warning
 C massege when un-acceptable information is detected.
 C *********************************************************************
       SUBROUTINE CHCK3D(IWRNG,IERRR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -1050,7 +1050,7 @@ C ADDSSY checks if no interval is defined at the rquired level in Y
 C it will create one and updates the associated arrays. [srf-srf]
 C *********************************************************************
       SUBROUTINE ADDSSY(ISS,YVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
 
       COMMON/GR3D53/NDYSS(MSSZ),DYSS(MSSZ,MYSS)
@@ -1078,7 +1078,7 @@ C ADDSSZ checks if no interval is defined at the rquired z-level in
 C srf-srf, it will create one and updates the associated arrays.
 C *********************************************************************
       SUBROUTINE ADDSSZ(ISS,ZVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
 
       COMMON/GR3D52/NDZSS(MSSZ),DZSS(MSSZ,MZSS)
@@ -1106,7 +1106,7 @@ C ADDSEY checks if no interval is defined at the rquired y-level in
 C srf-edg, it will create one and updates the associated arrays.
 C *********************************************************************
       SUBROUTINE ADDSEY(ISE,YVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D58/NDYSE(MSEZ),DYSE(MSEZ,MYSE)
 
@@ -1133,7 +1133,7 @@ C ADDSEZ checks if no interval is defined at the rquired level in Z
 C it will create one and updates the associated arrays.
 C *********************************************************************
       SUBROUTINE ADDSEZ(ISE,ZVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
 
       COMMON/GR3D57/NDZSE(MSEZ),DZSE(MSEZ,MZSE)
@@ -1161,7 +1161,7 @@ C ADDEEX checks if no interval is defined at the rquired level in X
 C it will create one and updates the associated arrays. [edge-edge]
 C *********************************************************************
       SUBROUTINE ADDEEX(IEE,XVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D62/NDXEE(MEEZ),DXEE(MEEZ,MXEE)
 
@@ -1188,7 +1188,7 @@ C ADDEEY checks if no interval is defined at the rquired level in Y
 C it will create one and updates the associated arrays. [edge-edge]
 C *********************************************************************
       SUBROUTINE ADDEEY(IEE,YVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D63/NDYEE(MEEZ),DYEE(MEEZ,MYEE)
 
@@ -1215,7 +1215,7 @@ C ADDECX checks if no interval is defined at the rquired level in X
 C it will create one and updates the associated arrays. [edge-corner]
 C *********************************************************************
       SUBROUTINE ADDECX(IEC,XVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D67/NDXEC(MECZ),DXEC(MECZ,MXEC)
 
@@ -1242,7 +1242,7 @@ C ADDECY checks if no interval is defined at the rquired level in Y
 C it will create one and updates the associated arrays. [edge-corner]
 C *********************************************************************
       SUBROUTINE ADDECY(IEC,YVALU)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D68/NDYEC(MECZ),DYEC(MECZ,MYEC)
 
@@ -1269,7 +1269,7 @@ C CNCLNE defines connection surface type for a control volume
 C ( ICL > 0 : boundary line, ICL < 0 : another control volume ).
 C *********************************************************************
       SUBROUTINE CNCLNE(IS,I,J,ICL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D42/NVLN(MS,MLS),IVLN(MS,MLS,MLS)
@@ -1291,7 +1291,7 @@ C **************************     FDSCV2     ***************************
 C FDSCV2 finds the adjacent control volume for the current one.
 C *********************************************************************
       SUBROUTINE FDSCV2(IS,ICV1,I,J,ICV2)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D44/NCVSF(MS),NCVV(MS,MCVS),ICVV(MS,MCVS,MCVV)
 
@@ -1318,7 +1318,7 @@ C ISEFNS finds the type and number of the adjacent connection surface
 C for the current surface.
 C *********************************************************************
       SUBROUTINE ISEFNS(IS,ICL,ISSE,NSSE,ILN)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
@@ -1351,7 +1351,7 @@ C *****************************   ISEFNE   ****************************
 C ISEFNE finds the number of the srf-edge connection surface.
 C *********************************************************************
       FUNCTION ISEFNE(IEG,IS)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
 
@@ -1369,7 +1369,7 @@ C NEDEDG define the number of the coolinear edge-edge connection. If
 C it does not exist, a new one will be created.
 C *********************************************************************
       SUBROUTINE NEDEDG(ITYP,IEG1,IEG2,IV1,IV2,IV3,NUM)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D61/NUMEE,IBDYEE(MEEZ,2),IVRTEE(MEEZ)
 
@@ -1413,7 +1413,7 @@ C ****************************   IECFNE   *****************************
 C IECFNE finds the number of the edge-corner connection surface.
 C *********************************************************************
       FUNCTION IECFNE(ICN,IS1,IS2)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -1437,7 +1437,7 @@ C IEECFN finds the type (edge-edge or edge-corner) and number of the
 C adjacent connection surface for the current edge.
 C *********************************************************************
       SUBROUTINE IEECFN(IEG,IV,IEEC,NEEC)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
@@ -1471,7 +1471,7 @@ C **************************     CMVRTS    ****************************
 C CMVRTS determines if a vertex is included in a surface.
 C *********************************************************************
       SUBROUTINE CMVRTS(IV1,IS2,YES)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -1493,7 +1493,7 @@ C PROJCT determines the projection of a node defined by (XC,ZC)
 C on a line defined by (IV1,IV2).
 C *********************************************************************
       SUBROUTINE PROJCT(IS,IV1,IV2,XC,ZC,XPRJ,ZPRJ)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D43/XINT(MS,MGV),ZINT(MS,MGV),NCVS(MS,MGV)
 
@@ -1515,7 +1515,7 @@ C with respect to the connection surface defined by two vertices
 C (IV1,IV2).
 C *********************************************************************
       SUBROUTINE RELPOS(IS,IV1,IV2,XC,ZC,XREL,ZREL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D43/XINT(MS,MGV),ZINT(MS,MGV),NCVS(MS,MGV)
 
@@ -1532,7 +1532,7 @@ C EFDIST Function returns the effective distance between two nodes of
 C which one belonges to srf-edge connection surface.
 C *********************************************************************
       FUNCTION EFDIST(ISP,NSP,XA,YA,ZA,XB,YB,ZB)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D90/DCOSSS(MSSZ,3,3),DCOSSE(MSEZ,3,3)
       COMMON/GR3D91/DCOSEE(MEEZ,3,3),DCOSEC(MECZ,3,3)
@@ -1575,7 +1575,7 @@ C **************************   PNTLNE   *******************************
 C PNTLNE checks if a point is on a line.
 C *********************************************************************
       SUBROUTINE PNTLNE(IS,IL,IV,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
@@ -1609,7 +1609,7 @@ C *****************************   RORDER   ****************************
 C RORDER  reorders the vertex list for all the lines within a surface.
 C *********************************************************************
       SUBROUTINE RORDER(IS)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
@@ -1656,7 +1656,7 @@ C *******************************  ANGL2G  ****************************
 C ANGL2G determines the angle between two lines in space via cosine law.
 C *********************************************************************
       SUBROUTINE ANGL2G(ISP1,IFP1,THETA2D)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1T/XFT(MV),ZFT(MV)
 
@@ -1674,7 +1674,7 @@ C ANGL2P determines the angle between a line between two points and the
 C positive x axes in the transformed plane.
 C *********************************************************************
       SUBROUTINE ANGL2P(IS,ISP1,IFP1,THETA2D)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
 
@@ -1691,7 +1691,7 @@ C ***************************    PLNORM    ****************************
 C PLNORM defines the direction cosines for a plane in space.
 C *********************************************************************
       SUBROUTINE PLNORM(IV1,IV2,IV3,PLNRM)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION VECT1(3),VECT2(3),PLNRM(3)
@@ -1714,7 +1714,7 @@ C ***************************    LINORM     ***************************
 C LINORM defines the direction cosines for a line in space.
 C *********************************************************************
       SUBROUTINE LINORM(IV1,IV2,XYZLIN)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION XYZLIN(3)
@@ -1733,7 +1733,7 @@ C ***************************     ANGCOS     **************************
 C ANGCOS defines the angle between two vectors in space from cosine law.
 C *********************************************************************
       SUBROUTINE ANGCOS(IV1,IV2,IV3,THETA)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -1755,7 +1755,7 @@ C *************************    GCOORD    ******************************
 C GCOORD determines the global coordinate.
 C *********************************************************************
       SUBROUTINE GCOORD(ISP,NSP,XND,YND,ZND,GX,GY,GZ)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1844,7 +1844,7 @@ C *************************    AREACN    ******************************
 C AREACN determines the area and centroid location for a set of vertices.
 C *********************************************************************
       SUBROUTINE AREACN(NCRD,XCRD,ZCRD,AREC,XCNT,ZCNT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
 

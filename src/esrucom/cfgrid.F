@@ -29,7 +29,7 @@ C ************************** GRID **************************
 C GRID:    Controling routine for all gridding.
 
       SUBROUTINE GRID(ier)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -125,7 +125,7 @@ C REG - linear size of regions.
 C DIST - linear dimension of grid cells.
 
       SUBROUTINE GRIDIST(IR,IC,PLAW,NCEL,REG,DIST,ICELL,NDIM)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       dimension PLAW(MNREG,MNZ),NCEL(MNREG,MNZ),REG(MNREG,MNZ)
       dimension DIST(NDIM)
@@ -195,7 +195,7 @@ C ************************** GRIDGEO **************************
 C GRIDGEO: Calculate geometrical properties and interpolation factors.
 
       SUBROUTINE GRIDGEO
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/CONST/GREAT,small,GRAV
       COMMON/UVEL/RESORU,NSWPU,URFU,FSDTU,DXEPU(ntcelx),
@@ -412,8 +412,8 @@ C IS - total number of grid points in x direction.
 C KS - total number of grid points in z direction.
 
       SUBROUTINE GRIDCRV(IS,KS,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GEOMCURV/XP(ntcelx),YP(ntcely),ZP(ntcelz),

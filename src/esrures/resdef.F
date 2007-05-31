@@ -34,8 +34,8 @@ C for access by the various result recovery and display
 C routines.
 
       SUBROUTINE MORFIL(iftype)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -282,7 +282,7 @@ C RSNAME   - Results set aide memoir held in common /SETNAM/ local version is
 C TNAME (temporary value) 
 
       SUBROUTINE MORESS
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -565,7 +565,7 @@ C IAV         - specifies whether results should be averaged over
 C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
 
       SUBROUTINE MOOPER
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -692,7 +692,7 @@ C NZ   - number of zones for output.
 C NZNO - zone number of each.
 
       SUBROUTINE MOZDFN
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -788,8 +788,8 @@ C All other common variables are defined in the subroutine
 C where they are first referenced.
 
       SUBROUTINE MOINIT(ISTREC)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 
@@ -1210,7 +1210,7 @@ C result-set. The user-defined zones for output are
 C also checked for consistency.
 
       SUBROUTINE MOCHEK(IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

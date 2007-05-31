@@ -26,7 +26,7 @@ C ******************** DRAWESP
 C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
       SUBROUTINE DRAWESP(ITRC,ier)
-      INCLUDE 'building.h'
+#include "building.h"
       PARAMETER  (MPL = 200 )
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)

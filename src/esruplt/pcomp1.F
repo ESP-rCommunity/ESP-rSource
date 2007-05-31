@@ -189,7 +189,7 @@ C Subroutine mach1 calcuates the reactive power component and
 C voltage vector of a plant component from power factor information.  
       SUBROUTINE EMACH001(IPCOMP,PR,PQ,PA)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C Common block for load flow simulation
 C Plant
@@ -230,7 +230,7 @@ C holding the load flow simulation data to zero.
 
       SUBROUTINE EMACH002(ipcomp,plt_dc_pwr,plt_ac_pwr)
       implicit none
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C ESP-r COMMON blocks
 
@@ -272,8 +272,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP01C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -435,8 +435,8 @@ C For the steam humidifier a conmstant effectiveness of 99% is assumed.
 
 
       SUBROUTINE CMP02C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -693,9 +693,9 @@ C            3 Overall efficiency (-)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE CMP03C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "plant.h"
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -920,8 +920,8 @@ C     PCDATF/P
 C            1 Water vapour rate extracted from moist air (kg/s)
 
       SUBROUTINE CMP04C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1157,8 +1157,8 @@ C     BDATA: none
 C     CDATA: 1 Heating duty (W)
 
       SUBROUTINE CMP05C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1341,8 +1341,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP06C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -1527,8 +1527,8 @@ c     bdata: none
 c     cdata: mass flow fraction entering damper.
 
       subroutine cmp07c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt
@@ -1693,8 +1693,8 @@ C     PCDATF/P
 C            1 Water vapour rate extracted from moist air (kg/s)
 
       SUBROUTINE CMP09C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1963,8 +1963,8 @@ C     PCDATF/P
 C            1 Water vapour rate extracted from moist air (kg/s)
 
       SUBROUTINE CMP10C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -2235,8 +2235,8 @@ C            6 Inlet water temperature (C)
 C     CDATA: 1 Water flow rate (kg/s)
 
       SUBROUTINE CMP11C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -2462,8 +2462,8 @@ C            2 Heat exchanger net face area (m^2)
 C     CDATA: none
 
       SUBROUTINE CMP12C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -2740,8 +2740,8 @@ C detailed in IEA annex X s8.
 C
 C
       SUBROUTINE CMP14C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3046,8 +3046,8 @@ C            2 Air/solid   inter-node thermal conductance (W/K)
 C            3 Water/solid inter-node thermal conductance (W/K)
 
       SUBROUTINE CMP40C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -3406,8 +3406,8 @@ C            1 Air/solid   inter-node thermal conductance (W/K)
 C            2 Water/solid inter-node thermal conductance (W/K)
 
       SUBROUTINE CMP41C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT

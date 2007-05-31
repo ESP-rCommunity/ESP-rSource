@@ -32,7 +32,7 @@ C *************************************************************
 
       subroutine mycostat(imod,tdb,rh)
 
-      INCLUDE 'mould.h'
+#include "mould.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 

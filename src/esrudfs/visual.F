@@ -36,7 +36,7 @@ C ********************* VISOUT *********************
 C VISOUT - define the parameters for the visualization of results.
 
       subroutine VISOUT(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -451,7 +451,7 @@ C VISMAK - create images for specified views and frames in an animation,
 C  IFRAME=-1 if cfd stand alone.
 
       subroutine VISMAK(ICOMP,IFRAME)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -496,10 +496,9 @@ C For each view generate image.
      &     outs,GENVEW,dok,1)
         endif
 
-C Generate name of image depending on type and allow 3 digits for
-C the frame number.
+C Generate name of image depending on type.
         if (GENVEW) then
-          write (t12,'(a,i3.3)') LBITrt(ICOMP,IM)(1:9),IFRAME
+          write (t12,'(a,i2.2)') LBITrt(ICOMP,IM)(1:10),IFRAME
           call st2name(t12,name)
           if (imgtyp.eq.1) then
             write (TLBIT,'(a,a4)') name(1:lnblnk(name)),'.bmp'
@@ -536,8 +535,8 @@ C ilayer  Layer of CFD cells to view.
 C imgtyp  Output image type.
 
       subroutine FTV(ICOMP,IM,ISUR,ilayer,name)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       common/pophelp/h(60)
@@ -677,7 +676,7 @@ C ********************* GENVEC *********************
 C GENVEC - Calculates velocity vectors at `P' grid points and prints 
 C  results in format for use in the flow visualization routines.
       SUBROUTINE GENVEC(vecfil)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/FILEP/IFIL
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
@@ -800,7 +799,7 @@ C ********************* GETVECLIB *********************
 C GETVECLIB - Calculates velocity vectors at `P' grid points and prints 
 C  results in format for use in the flow visualization routines.
       SUBROUTINE GETVECLIB(vecfil)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
 
@@ -892,7 +891,7 @@ C Remember to close file.
 C ********************* GETVEC *********************
 C GETVEC - reads in the flow vector file produced by dfs.
       SUBROUTINE GETVEC(vecfil)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       common/FILEP/IFIL
 
@@ -964,8 +963,8 @@ C        directions. The number of pixels depends on the resolution specified by
 C        the user and the geometry of the zone.
 
       SUBROUTINE SETRES(ISUR)
-      INCLUDE 'cfd.h'
-      INCLUDE 'flowvis.h'
+#include "cfd.h"
+#include "flowvis.h"
 
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -1044,8 +1043,8 @@ C       contains specifications on bitmap images to generate during the progress
 C       of bps-dfs conflated simulations.
 
       SUBROUTINE rdFVP(ICOMP,ier)
-      INCLUDE 'cfd.h'
-      INCLUDE 'building.h'
+#include "cfd.h"
+#include "building.h"
 
       common/FILEP/IFIL
 
@@ -1141,7 +1140,7 @@ C wrFVP writes the contents of the flow-visualization parameters file,
 C   which contains specifications on bitmap images to generate.
 
       SUBROUTINE wrFVP(ICOMP,ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/FILEP/IFIL
 

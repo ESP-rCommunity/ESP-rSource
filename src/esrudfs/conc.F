@@ -57,8 +57,8 @@ C Therefore we will make the implementation universal - the Schmidt
 C number is given in the input "dfd"-file. 
 C 
       SUBROUTINE CALCCONC(ICTMNO) 
-      INCLUDE 'cfd.h'
-      INCLUDE 'net_flow.h'
+#include "cfd.h"
+#include "net_flow.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
@@ -495,7 +495,7 @@ C laminar or turbulent cases - at solid walls the BC's are
 C always of the zero-gradient type. 
 
       SUBROUTINE BNDARCON(ICTMNO)                                                      
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
      &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
@@ -1026,7 +1026,7 @@ C humidity due to solid face for blockages.
 C Zero-gradient type of BC's are applied 
 C
       SUBROUTINE BLKBNDC(IBLK)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -1125,9 +1125,9 @@ C Calculates turbulent Schmidt Number for contaminant gases
 C following procedure given in PhD Thesis by Aizaz Samuel
 
       SUBROUTINE SCHMIDTT(GFM,VCRIT,TBOIL,TCRIT,TRSHMT)
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "net_flow.h"
+#include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)

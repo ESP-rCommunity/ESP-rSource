@@ -21,10 +21,10 @@ C Boston, MA 02111-1307 USA.
 C `CTLWRT` Takes configuration control common block data and saves to
 C an ascii file.
       SUBROUTINE CTLWRT(IUNIT,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'control.h'
+#include "building.h"
+#include "plant.h"
+#include "net_flow.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/c1/ncomp,ncon

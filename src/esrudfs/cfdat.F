@@ -33,9 +33,9 @@ C           geometry model (needed for graphic feedback scaling).
 C ********************* CFDDTA *********************
 C CFDDTA - Reads the CFD configuration file.
       SUBROUTINE CFDDTA(itrc,itu,ICOMP,IBLD,IMFN,IER)
-      INCLUDE 'cfd.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'building.h'
+#include "cfd.h"
+#include "net_flow.h"
+#include "building.h"
 
 C If IBLD=1 there is thermal conflation and mapping between
 C           dfs and bps surfaces must be provided.
@@ -1389,7 +1389,7 @@ C Error trap on read error.
 C ********************* IGETCN *********************
 C IGETCN - Identify mass flow connection. (used for coupling purpose)
       FUNCTION IGETCN(OUTSTR,WORD,WORD1,WORD2,IER)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1426,7 +1426,7 @@ C ********************* IGETND *********************
 C IGETND - Identify mass flow network node associated with a CFD node.
 C          (used for coupling purpose)
       FUNCTION IGETND(OUTSTR,WORD,IER)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1456,7 +1456,7 @@ C ********************* IDSURF *********************
 C IDSURF - Identify ESP-r building surface number (used for thermal conflation).
 C   This function identify bld surface associate with cfd surface.
       FUNCTION IDSURF(SURF)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/ICFNOD/ICFD,ICP
@@ -1478,7 +1478,7 @@ C   This function identify bld surface associate with cfd surface.
 C ********************* INICNT *********************
 C INICNT - Initialize some constant parameters.
       SUBROUTINE INICNT
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
@@ -1560,8 +1560,8 @@ C CFDSBREAD reads in the data and sets the variables describing the CFD
 C solid boundaries.
 
       SUBROUTINE CFDSBREAD(IFL,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
 
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -2025,8 +2025,8 @@ C  geometry model.  By so doing, it fills the `G1' common block.
 C  The geometry is given in the site co-ordinate system,
 C  with the origin at the lower southwest corner of the CFD domain.
       SUBROUTINE SETGEO
-      INCLUDE 'cfd.h'
-      INCLUDE 'building.h'
+#include "cfd.h"
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX

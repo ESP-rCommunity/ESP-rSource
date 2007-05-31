@@ -35,7 +35,7 @@ C necessary before displaying the zone.
 C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE ADJVIEW(ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -237,7 +237,7 @@ C If so it loads the geometric description within an obstruction file
 C into common block BG1 and then converts into viewing coords, 
 C clips the image and draws it.
       SUBROUTINE DRAWOBS(IFOC,ier)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -393,7 +393,7 @@ C DRWSEN loads the geometric description within an MRT sensor file
 C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
       SUBROUTINE DRWSEN(ier)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -507,7 +507,7 @@ C Complete the polygon.
 
 C ****** Routine to draw ground topology.
       SUBROUTINE EGRNDR(IER)
-      INCLUDE 'building.h'
+#include "building.h"
       PARAMETER  (MPL = 200 )
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -650,7 +650,7 @@ C DSGRID draws a dotted grid at a given reference height RH, grid
 C density GD, and dot density LD within
 C the viewport with the current scaling factors etc.
       SUBROUTINE DSGRID(RH,GD,LD,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -771,7 +771,7 @@ C EMKVIEW constructs a 'viewer' format file. The trace level defines
 C whether information about the zones is displayed or not.
       SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -790,9 +790,7 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       LOGICAL  CFGOK,OK,dok
-
-C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
-      DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
+      DIMENSION IVALS(MCOM),JGVNT(MGRT,8)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
@@ -842,21 +840,13 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
             goto 83
           ENDIF
 
-C Backup JVN to JVNZ
-          do 121 J=1,nsur
-            K=NVER(J)
-            do 122 L=1,K
-              JVNZ(J,L)=JVN(J,L)
-  122       continue
-  121     continue
-
 C Write surface information to the viewer file. First invert edges.
           DO 120 J=1,NSUR
             K=NVER(J)
             DO 130 L=1,K/2
-              ITEMP=JVNZ(J,L)
-              JVNZ(J,L)=JVNZ(J,K+1-L)
-              JVNZ(J,K+1-L)=ITEMP
+              ITEMP=JVN(J,L)
+              JVN(J,L)=JVN(J,K+1-L)
+              JVN(J,K+1-L)=ITEMP
   130       CONTINUE
   120     CONTINUE
 
@@ -868,7 +858,7 @@ C Write to output file.
             WRITE(IUO,'(3F8.3)')X(J),Y(J),Z(J)
    40     CONTINUE
           DO 50 J=1,NSUR
-            WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVNZ(J,K),K=1,NVER(J))
+            WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     CONTINUE
         ENDIF
 

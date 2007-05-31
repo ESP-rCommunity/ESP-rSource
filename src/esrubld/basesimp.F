@@ -33,11 +33,11 @@ C ******************** BASEREAD ********************
 C BASEREAD     Reads the data contained in the .bsm file.
 
       SUBROUTINE BASEREAD(ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 c espriou.h provides currentfile
 c common block for ground temperature profiles.
-      INCLUDE 'ground_temp_mains_common.h'
+#include "ground_temp_mains_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -326,7 +326,7 @@ C ******************** BSFCCTL ********************
 C BSFCCTL     Controls calculation of BASESIMP heat loss factors.
 
       SUBROUTINE BSFCCTL
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -469,7 +469,7 @@ C ******************** BSFACS ********************
 C BSFACS     Calcualte heat-loss factors for BASESIMP foundation.
 
       SUBROUTINE BSFACS(icon,intflg)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/BSdata/bsHEIG(MCOM),bsDEPT(MCOM),bsLENG(MCOM),bsWIDT(MCOM),
@@ -638,7 +638,7 @@ C BSTEMP     Calcualtes basement air-point temperature to use as driving potenti
 C            in calculating heat transfer to BASESIMP foundation.
 
       SUBROUTINE BSTEMP(ICOMP,TBSAVG)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -741,8 +741,8 @@ C BSHEAT     Calcualtes heat transfer to soil and outdoor air through the
 C            BASESIMP foundation for the current time step.
 
       SUBROUTINE BSHEAT(ICOMP,ICON,TBSAVG,Qtotal)
-      INCLUDE 'building.h'
-      INCLUDE 'ground_temp_mains_common.h'
+#include "building.h"
+#include "ground_temp_mains_common.h"
 
       COMMON/BSHLF/Sag(MCON),Sbgavg(MCON),Sbgvar(MCON),Bphase(MCON)
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
@@ -810,7 +810,7 @@ C            with BASESIMP boundary conditions.
 
 
       SUBROUTINE BSCONV(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)

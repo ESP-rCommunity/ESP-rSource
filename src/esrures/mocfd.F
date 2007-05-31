@@ -24,7 +24,7 @@ C ******************** MOCFD ********************
 C MOCFD 
 
       SUBROUTINE MOCFD
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       integer igraphiclib  ! external definition
 
@@ -114,8 +114,8 @@ C ******************** RCFDLIBH ********************
 C RCFDLIBH - read CFD library 
 
       SUBROUTINE RCFDLIBH(IER)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -256,7 +256,7 @@ C metric in results listing (i.e. U velocity; V velocity for the same
 C control volume will be at NRJ+1; Wvel at NRJ+2; T at NRJ+3 etc)
 
       SUBROUTINE CFDHASH(ITIM,IDOM,IX,IY,IZ,NRJ,NCJ)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/cfdhsh/NCFDSZ,NRCFDOM(MNZ)
 
@@ -276,7 +276,7 @@ C ********************* MCFDM *********************
 C MCFDM - define the parameters for the visualization of results.
 
       subroutine MCFDM(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -802,8 +802,8 @@ C   ICFTS - CFD timestep to read (use this value if +ive otherwise
 C      use first timestep of output period)
 
       SUBROUTINE RDCFDAT(ICFTS)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

@@ -22,7 +22,7 @@ C ****************************   READST    ****************************
 C READST read ASCII structured mesh data file.
 C *********************************************************************
       SUBROUTINE READST(IComp,ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -292,7 +292,7 @@ C ****************************   SAVEST    ****************************
 C SAVEST 
 C *********************************************************************
       SUBROUTINE SAVEST(IComp,ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

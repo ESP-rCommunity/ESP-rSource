@@ -30,8 +30,8 @@ c strategy file.
 
 
       SUBROUTINE MZCSTR(IER)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -127,8 +127,8 @@ C data items required for the plant-side type -6
 C `Function Generator` sensor .
 
       SUBROUTINE PFGRSD
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
       
       common/outin/iuout,iuin
       

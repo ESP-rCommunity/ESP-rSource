@@ -30,8 +30,8 @@ C EXTRACTS: writes an ascii exchange file beginning at TIMEJD.
 C TDFUPD: updates TDF file from an exchange file.
 
       program tdf
-      INCLUDE 'epara.h'
-      INCLUDE 'tdf2.h'
+#include "epara.h"
+#include "tdf2.h"
 
 C The following parameters are defined as integers in epara.h:
 C CREATE,PREV,NEXT,EDIT,LIST,NONE
@@ -819,7 +819,7 @@ C Not one of the legal menu choices.
 C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       common/tdset/itdyear,itdbdoy,itdedoy
@@ -858,7 +858,7 @@ C ********************* glbset
 C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/TRC/ITRC
       common/pophelp/h(60)
@@ -966,7 +966,7 @@ C module b2e and the code which generates the file is in daproc.F
 C as routine TDFUDWR. Only the tdf module needs routine tdfupd.
 C ITRC is the trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1145,7 +1145,7 @@ C of data beginning at TIMEJD. ITRC is the trace level,
 C IER=0 OK, IER=1 problem. 
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,

@@ -35,7 +35,7 @@ C investigated. All menu commands are defined in the ESP
 C user's manual.
 
       SUBROUTINE MOGRAF
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -162,7 +162,7 @@ C investigated.
 C act='p' iget parameters already set.
 
       SUBROUTINE MOWLIN(act)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -561,7 +561,7 @@ C MOGHED outputs the appropriate header information corresponding
 C to graphical result display.
 
       SUBROUTINE MOGHED
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -713,8 +713,8 @@ C ****************************************************
 
               SUBROUTINE MOCDAT(IZON,IDAY,TME)
          
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
@@ -890,7 +890,7 @@ C Set flag for changing labels,
 C ********************** MOCGDW ***********************
 C Draws the control graph(s).
       SUBROUTINE MOCGDW(CPVAL,IR,IZONE,J,II,TSTART,TFINSH,TIME,TIMEL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV

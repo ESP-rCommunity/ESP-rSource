@@ -142,9 +142,9 @@ C      within the subroutine).
 C  itu is the output channel for reporting (if itrc is > zero).
 C  itrc the level of reporting (zero is quiet).
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
@@ -724,7 +724,7 @@ C ************************* findpc *********************
 C This subroutine finds component index by searching 
 C through pcname(?) until a match is found.
       subroutine findpc(npcomp,word,ipc)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/pcnam/pcname(mpcom)
       character pcname*15, word*(*)

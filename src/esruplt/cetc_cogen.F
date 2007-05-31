@@ -118,8 +118,8 @@ C----------------------------------------------------------------------
      &                fHeat_output   )
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'cetc_cogen.h'
+#include "plant.h"
+#include "cetc_cogen.h"
 
 C-----------------------------------------------------------------------
 C     Passed variables
@@ -502,8 +502,8 @@ C----------------------------------------------------------------------
      &              fHeat_Output )
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'cetc_cogen.h'
+#include "plant.h"
+#include "cetc_cogen.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -616,9 +616,9 @@ C----------------------------------------------------------------------
      &              bDebug )
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'cetc_cogen.h'
+#include "building.h"
+#include "plant.h"
+#include "cetc_cogen.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1004,8 +1004,8 @@ C----------------------------------------------------------------------
      &                                fTS_frac_remaining )
       implicit none
 
-      INCLUDE 'plant.h'      
-      INCLUDE 'cetc_cogen.h'
+#include "plant.h"      
+#include "cetc_cogen.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements

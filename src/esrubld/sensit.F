@@ -38,8 +38,8 @@ C SENRNS asks for the preferred SA technique and calculates the number of
 C simulations to be run.
 
       SUBROUTINE SENRNS(IER)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -153,7 +153,7 @@ C ******************** DSA ********************
 C DSA calls the correct routines to edit data in memory for a Diff SA.
 
       SUBROUTINE DSA(IZONE)
-      INCLUDE 'uncertainty.h'
+#include "uncertainty.h"
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
@@ -239,7 +239,7 @@ C MCSA calls the correct routines to edit data in memory for a
 C Monte-Carlo SA.
 
       SUBROUTINE MCSA(IZONE)
-      INCLUDE 'uncertainty.h'
+#include "uncertainty.h"
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
@@ -324,8 +324,8 @@ C ******************** FCTA ********************
 C FCTA calls the correct routines to edit data in memory for a factorial analysis
 
       SUBROUTINE FCTA(IZONE)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
@@ -401,9 +401,9 @@ C IZ, IS: current zone and surface being checked (these are listed in
 C               the common/ua2/ arrays).
 
       SUBROUTINE UAE01(IZONE,IACT,DIR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "uncertainty.h"
+#include "esprdbfile.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -586,9 +586,9 @@ C IZ, IS: current zone and surface being checked (these are listed in
 C               the common/ua2/ arrays).
 
       SUBROUTINE UAE02(IZONE,IACT,DIR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "uncertainty.h"
+#include "esprdbfile.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -756,8 +756,8 @@ C ******************** UAE04 ********************
 C UAE04 edits casual gains in memory.
 
       SUBROUTINE UAE04(IZONE,IACT,DIR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/C1/NCOMP,NCON
 
@@ -1069,8 +1069,8 @@ C ******************** UAE05 ********************
 C UAE05 edits convection coefficients algorithm choice.
 
       SUBROUTINE UAE05(IZONE,IACT,DIR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/C1/NCOMP,NCON
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1125,8 +1125,8 @@ C ******************** UAZ01 ********************
 C UAZ01 edits surface properties in memory.
 
       SUBROUTINE UAZ01(IZONE,IACT,DIR)
-      INCLUDE 'building.h'
-      INCLUDE 'uncertainty.h'
+#include "building.h"
+#include "uncertainty.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/PREC2/VOL(MCOM)
@@ -1186,7 +1186,7 @@ C NEL = number of matching elements
 C IEL = index of matching elements
 
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -1219,7 +1219,7 @@ C and given direction or magnitude (DIR).
 C ICHK: -1 check min val, +1 check max val, 0 check both vals
 
       SUBROUTINE UAEDIT (VAL,ICFLAG,UPval,DOWNval,DIR,ichk,vmin,vmax)
-      INCLUDE 'building.h'
+#include "building.h"
 
 
       if (ICFLAG.eq.1) then

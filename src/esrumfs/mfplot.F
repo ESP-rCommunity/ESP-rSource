@@ -37,10 +37,10 @@ C     NTSPH  - number of simulation time steps per hour
 C     VOL() -  volume used for calculating change rate in case IDIM=3
 
       SUBROUTINE MFPLOT(itrc,itru,IFRES,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

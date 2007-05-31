@@ -62,8 +62,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP53C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -422,8 +422,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP54C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -553,8 +553,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP55C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -699,9 +699,9 @@ C     BDATA: 1 Overall fan efficiency  (-)
 C     CDATA: 1 Volume flow rate  (m^3/s)
 
       SUBROUTINE CMP56C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "plant.h"
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1164,8 +1164,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP57C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1464,8 +1464,8 @@ C     CDATA: none
 
 
       SUBROUTINE CMP58C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1836,8 +1836,8 @@ C     BDATA: 1 Specific heat of heater element (weighed average) (J/kgK)
 C     CDATA: 1 Electric power input  (W)
 
       SUBROUTINE CMP60C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2214,8 +2214,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP64C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2405,8 +2405,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP65C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2594,8 +2594,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP66C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2790,8 +2790,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP68C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

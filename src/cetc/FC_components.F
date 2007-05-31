@@ -139,9 +139,9 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_static_template(IPCOMP)
       IMPLICIT NONE
-      INCLUDE 'SOFC.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "SOFC.h"
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER	IUOUT,IUIN
@@ -632,10 +632,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_coeff_generator(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h'
-      INCLUDE 'SOFC.h'
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h"
+#include "SOFC.h"
 
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1728,7 +1728,7 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE FC_eloads_convert
       IMPLICIT NONE
-      INCLUDE 'SOFC.h'
+#include "SOFC.h"
 
       COMMON/FILEP/IFIL
       INTEGER	IFIL
@@ -1999,8 +1999,8 @@ c     &                               q_HVAC_elec)
       SUBROUTINE FC_eloads_establish(IDYP,BTIMEP,PTIMEF,q_nonHVAC_elec,
      &                               q_HVAC_elec)
       IMPLICIT NONE
-      INCLUDE 'SOFC.h'
-      INCLUDE 'plant.h'
+#include "SOFC.h"
+#include "plant.h"
 
 C-------------------------------------------------------------------------------
 C     ESP-r commons
@@ -2201,8 +2201,8 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE FC_eloads_manage
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'SOFC.h'
+#include "plant.h"
+#include "SOFC.h"
 
       SELECT CASE(FC_control)
 
@@ -2311,12 +2311,12 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE FC_thermal_priority_type1
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER	IUOUT,IUIN
 
@@ -2583,11 +2583,11 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE FC_pump_fan_comp_number
       IMPLICIT NONE
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'hvac_parameters.h'
-      INCLUDE 'h3kstore_parameters.h'
-      INCLUDE 'h3kstore_common.h'
+#include "building.h"
+#include "plant.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
 C Common blocks used for Plant Additional Outputs (PCAOUT)
 C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h) 
@@ -2664,8 +2664,8 @@ C-------------------------------------------------------------------------------
       Subroutine FC_data_transport(iComponentIndex)
 
       implicit none 
-      INCLUDE 'plant.h'
-      INCLUDE 'SOFC.h'     
+#include "plant.h"
+#include "SOFC.h"     
 
 C.....Passed variables 
       integer iComponentIndex   ! index of FC in plant component network

@@ -13,8 +13,8 @@ C When the user is finished subroutine finplt is called
 C It closes down the plotter if it has been used
 C and says 'viewer bye-bye', and does a stop.
 
-      INCLUDE 'viewer.h'
-      INCLUDE 'viewer.h2'
+#include "viewer.h"
+#include "viewer.h2"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/NNAAMM/NAMDS,NAMPIC
@@ -29,7 +29,7 @@ C Redirected text/graphics parameters.
       character*12 M(23)
       character*5 XEQ,YEQ,ZEQ
       character wins*20,outs*124,H*72,hold*36
-      character xfile*144,tg*1,delim*1
+      character xfile*72,tg*1,delim*1
       logical close,OK
 
 C MENU OF COMMANDS
@@ -675,7 +675,7 @@ C ****** SET PICTURE NAME
 
       COMMON/NNAAMM/NAMDS,NAMPIC
       CHARACTER NAMDS*30,NAMPIC*40
-      INCLUDE 'viewer.h'
+#include "viewer.h"
 
       IF (IPROJ.EQ.1)THEN
            NAMPIC(1:4)='Orth'

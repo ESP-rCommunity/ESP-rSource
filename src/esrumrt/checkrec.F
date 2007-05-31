@@ -25,7 +25,7 @@ c  of viewfactors.
 
       subroutine checkrec
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -284,7 +284,7 @@ C                  .false. otherwise
 
 C+++++++++++++++++++++++++
        subroutine schryf
-      INCLUDE 'building.h'
+#include "building.h"
        COMMON/OUTIN/IUOUT,IUIN
        COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
        COMMON /VISIB/ IVIS(MSM,MSM), IARECT(MSM,MSM)

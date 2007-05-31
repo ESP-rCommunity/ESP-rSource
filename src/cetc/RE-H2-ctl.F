@@ -13,9 +13,9 @@ C evaluation of all powoc models?  Need to think about this.
 C-----------------------------------------------------------------------------------------
       SUBROUTINE RESH2_Ctl
       IMPLICIT NONE
-      INCLUDE 'power.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'BATTERY.h'
+#include "power.h"
+#include "plant.h"
+#include "BATTERY.h"
 
 
 C-----------------------------------------------------------------------------------------
@@ -394,8 +394,8 @@ C-------------------------------------------------------------------------------
 
       SUBROUTINE RESH2_Ctl_Read
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'power.h'
+#include "plant.h"
+#include "power.h"
 
 C-----------------------------------------------------------------------------------------
 C COMMON declarations

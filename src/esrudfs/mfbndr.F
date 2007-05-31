@@ -51,9 +51,9 @@ C NFNDN   = total number of opn_nod (original mfs nodes are 1 to NNOD-
 C           NFNDN and opn_nodes are NNOD-NFNDN+1 to NNOD
 C ********************* MFBNDR *********************
       SUBROUTINE MFBNDR(INTL)
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "net_flow.h"
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
@@ -306,8 +306,8 @@ C and if massflows and pressures from this run are within a tolerance of
 C the previous run values ICORROK=0 else ICORROK=3 and more mutual 
 C cfd-mfs iterations are done.
       SUBROUTINE MFSCORR(ICORROK)
-      INCLUDE 'net_flow.h'
-      INCLUDE 'cfd.h'
+#include "net_flow.h"
+#include "cfd.h"
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       common/outin/iuout,iuin

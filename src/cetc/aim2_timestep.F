@@ -108,8 +108,8 @@ C      USE AIM2_CALC_DATA
 C      USE HVAC_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
 
@@ -328,9 +328,9 @@ C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
-      INCLUDE 'building.h'
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "building.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       REAL TFA,QFA
@@ -451,8 +451,8 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,AIM2_X
@@ -505,8 +505,8 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs
@@ -578,9 +578,9 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-      INCLUDE 'building.h'
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "building.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -652,8 +652,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -695,8 +695,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Y,AIM2_R,AIM2_X,AIM2_Fw
@@ -783,8 +783,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
 C Type declarations for variables passed in calling statement.
@@ -825,8 +825,8 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
@@ -881,8 +881,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"
+#include "aim2_common.h"
 
 C Declarations for variables passed in calling statement.
       REAL AIM2_Ctotal,AIM2_Fw,AIM2_Pw,AIM2_Qwind
@@ -928,8 +928,8 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -1019,8 +1019,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -1121,9 +1121,9 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-      INCLUDE 'building.h'
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "building.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
       COMMON/PREC2/VOL(MCOM)
       REAL VOL
 
@@ -1186,8 +1186,8 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
 
@@ -1238,9 +1238,9 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-      INCLUDE 'building.h'
-      INCLUDE 'aim2_parameters.h'      
-      INCLUDE 'aim2_common.h'
+#include "building.h"
+#include "aim2_parameters.h"      
+#include "aim2_common.h"
       COMMON/PREC2/VOL(MCOM)
       REAL VOL
 

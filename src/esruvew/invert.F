@@ -1,6 +1,6 @@
 C---------------------------------------------------
       SUBROUTINE  INVERT
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
 
       N = 0
       L1 = LIB
@@ -19,7 +19,7 @@ C---------------------------------------------------
       END
 C---------------------------------------------------
       SUBROUTINE  INV(N,L1,L2)
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
 
       DO 100 I = 1,N/2
         J = L1 + I - 1

@@ -52,8 +52,8 @@ C Use module for GCEP data
 C     USE GCEP_INPUT
 
 	IMPLICIT NONE
-      INCLUDE 'gcep_parameters.h'
-      INCLUDE 'gcep_common.h'
+#include "gcep_parameters.h"
+#include "gcep_common.h"
       COMMON/FILEP/IFIL
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
@@ -180,8 +180,8 @@ C Initiates reading of global variables (common for all)
 C      USE GCEP_INPUT
        IMPLICIT NONE
 
-      INCLUDE 'gcep_parameters.h'
-      INCLUDE 'gcep_common.h'
+#include "gcep_parameters.h"
+#include "gcep_common.h"
       common/gcepinfo/igcep
       common/gcepfile/gcepfile
        

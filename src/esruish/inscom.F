@@ -29,7 +29,7 @@ C  INSORT  sets up mesh points for transparent surfaces.
 C  transp  transformed a point on surface to 3d coords space.
       SUBROUTINE INSCOM(ICOMP,ICSTAT,act)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -285,7 +285,7 @@ C Subroutine 'igeoms' reads appropriate information if a transitional
 C shading file is not used.
       SUBROUTINE IGEOMS(IIC)
 
-      INCLUDE 'building.h'
+#include "building.h"
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
       COMMON/TC/ITC,ICNT
@@ -369,7 +369,7 @@ C     = 0         undefined
 
       SUBROUTINE INSOLC
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -628,7 +628,7 @@ C This routine reads the transitional shading file if one exists.
 C It extracts surface shading information.
       SUBROUTINE INWSHD(ISUR,IHR,IG,MODES)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
@@ -716,7 +716,7 @@ C Read opaque shading information.
 
 C ************ incai.f
       SUBROUTINE INCAI(IHOUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/OUTPCH/ICOUT
@@ -826,7 +826,7 @@ C   kk: window (??)
 C   jj: hour
       subroutine insort(icomp,ii,kk,jj)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
@@ -982,7 +982,7 @@ C     ROUTINE ORTTRN       to give vertices in global co-ords.
 
       SUBROUTINE  TRANSP(N,X,Y,Z,DX,DZ,XXW,YYW,ZZW)
 
-      INCLUDE 'building.h'
+#include "building.h"
       DIMENSION  X(MTV),Y(MTV),Z(MTV)
       DIMENSION  TMAT(4,4),RMAT(4,4)
       DIMENSION  VP(3),EP(3),EQN(4)

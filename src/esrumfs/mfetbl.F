@@ -27,9 +27,9 @@ C     IDIM   - flow units: kg/s (IDIM=1), m^3/hr (IDIM=2), 1/hr (IDIM=3)
 C     NDONAM - name of node(s) corresponding to column contents
       SUBROUTINE MFETBL(itrc,IFRES,ier)
 
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "net_flow.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)

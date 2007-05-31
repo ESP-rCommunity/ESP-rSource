@@ -56,8 +56,8 @@ C----------------------------------------------------------------------
       subroutine PFS_TimeRow_Manipulate(iOperation)
       implicit none
 
-      INCLUDE 'power.h'
-      INCLUDE 'CETC_definitions.h'
+#include "power.h"
+#include "CETC_definitions.h"
 
 C----------------------------------------------------------------------
 C     Passed variables

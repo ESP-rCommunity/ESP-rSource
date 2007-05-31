@@ -46,7 +46,7 @@ C of inter-fabric temperature and condensation conditions.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
-      character H*72,xfile*144,tg*1,delim*1,act*1
+      character H*72,xfile*72,tg*1,delim*1,act*1
 
 C Setup for menu.
    3  ITEM(1) ='2 select result set    '
@@ -149,7 +149,7 @@ C MOIHED outputs the appropriate header information corresponding
 C to the fabric temperature or condensation information.
 
       SUBROUTINE MOIHED(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -239,7 +239,7 @@ C If izrh=0 then use current zone RH, if izrh>0 then use izrh value for
 C zone RH. If iverb=0 then report only summary, if iverb=1 report each
 C timestep.
       SUBROUTINE MOSURC(IZONE,izrh,iverb)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTPCH/ICOUT
       common/exporttg/xfile,tg,delim
@@ -256,7 +256,7 @@ C timestep.
 
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
-      character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
+      character outs*124,xfile*72,TDESCR*5,DESCR1*10,DESCR*7
       character zname*12,zdesc*64,tg*1,delim*1
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       logical found
@@ -362,8 +362,8 @@ C and saturated vapour pressure through any defined
 C multilayered construction at any user-specified time.
 
       SUBROUTINE MOINTC(IZ)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
@@ -472,7 +472,7 @@ C the results database and computes the vapour pressure
 C and saturated vapour pressure gradients.
 
       SUBROUTINE MOPRES(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -642,7 +642,7 @@ C MOIAXS draws the axes relating to interstitial
 C condensation graphical output.
 
       SUBROUTINE MOIAXS(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
@@ -677,7 +677,7 @@ C MOIDRW displays the saturated vapour pressure and
 C and vapour pressure gradients.
 
       SUBROUTINE MOIDRW(ICOMP,ISUR)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -739,8 +739,8 @@ C FINDCND reports on condensation within a zone over the reporting
 C period.
 
       SUBROUTINE FINDCND(ICOMP)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -773,7 +773,7 @@ C IPRZ is primitive db ref for each layer.
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
-      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
+      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*72,zname*12,zdesc*64
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

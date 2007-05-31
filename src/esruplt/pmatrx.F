@@ -121,9 +121,9 @@ C             array 'PC'.
 C ntcoe     : Total number of coefficients in compact matrix including
 C             new non-zero elements.
       SUBROUTINE MZPMXT(IUNIT)
-      INCLUDE 'plant.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "net_flow.h"
+#include "building.h"
 
       PARAMETER (SMALL=1.0E-20)
 
@@ -741,9 +741,9 @@ C building & plant configuration solution process is necessary
 C ITERP is an iteration counter inside the plant solution process
 C
       SUBROUTINE MZPMRX(ITERA)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h'
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h"
 
       COMMON/SHOUT/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
@@ -1048,8 +1048,8 @@ C generated equation coefficients are for energy balance (1), or
 C first phase mass balance (2), or second phase mass balance (3)
 C
       SUBROUTINE MZPMSU(ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1485,8 +1485,8 @@ C INDX stores pivoting information in case of LU-decomposition method
 
       SUBROUTINE MZPMSV(ISTATS)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1633,8 +1633,8 @@ C
 C MZNASS adjusts all plant related history variables (incl. CSVP)
 C
 C      SUBROUTINE MZNASS
-C      INCLUDE 'plant.h'
-C      INCLUDE 'building.h'
+C#include "plant.h"
+C#include "building.h"
 C
 C      COMMON/TC/ITC,ICNT
 C      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1750,7 +1750,7 @@ C backsubstitution of the known right hand side vector B (size N)
 C
       SUBROUTINE JSOLVS(A,N,NP,X,B)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
 C Automatic arrays are a g77 extention providing
 C pseudo-dynamic memory allocation, and permit the
@@ -1976,7 +1976,7 @@ C The column number of row coefficients is sorted in ascending order.
 C In effect the subroutine builds a compact matrix by assigning
 C appropriate pointers and data to integer arrays.
       subroutine cmabld(npmcoe,npnod,istat)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common/packa/nrowc(mpnode,2,mpvar),iptrd(mpnode),
      &             iptrod(mcoefg,mpvar),ntcoe
@@ -2037,7 +2037,7 @@ C First A is reduced to an upper triangular state 'U' then the
 C solution vector b (size npnod) is then generated through
 C backsubstitution of the known right hand side vector b.
       subroutine cmaslv(a,b,npmcoe,npnod,istats)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       dimension a(npmcoe),b(npnod)
 
@@ -2191,9 +2191,9 @@ C-----------------------------------------------------------------
 
       implicit none
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h'
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h"
 
       common/c9/
      &     npcomp,              ! # of components in network

@@ -20,8 +20,8 @@ C Boston, MA 02111-1307 USA.
 
       program pdb
 
-      INCLUDE 'plantdb.h'
-      INCLUDE 'esprdbfile.h'
+#include "plantdb.h"
+#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 
@@ -375,7 +375,7 @@ C 'nitems'      : allowed number of components to be selected
 C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
-      INCLUDE 'plantdb.h'
+#include "plantdb.h"
       common/pophelp/h(60)
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC

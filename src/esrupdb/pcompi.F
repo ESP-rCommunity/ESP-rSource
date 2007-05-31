@@ -30,7 +30,7 @@ C component entry from the user and puts it into the common
 C blocks PCBLKA and PCBLKB.
 
       SUBROUTINE PCRD
-      INCLUDE 'plantdb.h'
+#include "plantdb.h"
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -504,7 +504,7 @@ C PCRDF of ESRUpdb, reads, from file (unit=IUFIL), the data
 C for one plant component entry and puts it into the common
 C blocks PCBLKA and PCBLKB.
       SUBROUTINE PCRDF(IUFIL)
-      INCLUDE 'plantdb.h' 
+#include "plantdb.h" 
       common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -818,8 +818,8 @@ C is assumed to already be open)
 C if act is 'h' write the header boilerplate
 C if act is 'g' write generic item.
       SUBROUTINE PCRDFGDB(IUFIL,act)
-      INCLUDE 'plantdb.h' 
-      INCLUDE 'esprdbfile.h'
+#include "plantdb.h" 
+#include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)

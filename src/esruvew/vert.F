@@ -3,7 +3,7 @@
 C ISID is the number of the face to create
 C       $ is the exit label on an error
 
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
       COMMON/OUTIN/IUOUT,IUIN
 
       DOUBLE PRECISION SIP,COS1,COS2,COS3,AB,S1,S2,S3
@@ -179,7 +179,7 @@ C       Normal is wrong way round; exchange first two vertices
 
 C-----------------------------------------------------------------
       SUBROUTINE BODY(NP1,NP2,NF1,NF2)
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
       COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION AV(3,3)

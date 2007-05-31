@@ -36,7 +36,7 @@ C        the routine.
       SUBROUTINE ECDBSCAN(TYPE,MODE,SSTR,VAR,SPMISC,NIT,IER)
 
 # include "building.h" 
-      INCLUDE 'power.h' 
+#include "power.h" 
 
       COMMON/ECMPDBNAM/ECMPDBFL
       COMMON/FILEP/IFIL

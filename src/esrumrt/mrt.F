@@ -22,7 +22,7 @@ C ESRU: mrt
 
 C Revised to take in configuration file and zone focus.
       program mrt
-      INCLUDE 'building.h'
+#include "building.h"
 
       integer igraphiclib  ! external definition
 
@@ -782,7 +782,7 @@ C *********** CALVF
 C Calculate viewfactors for a zone.
       SUBROUTINE CALVF(ICOMP)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)

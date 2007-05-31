@@ -456,7 +456,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSPRESS(RHO,T)
 c     Finds the Pressure (Pa)
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,PRDELTA,PHIRDELTA,TAU,DELTA
       REAL RHOC
       COMMON /CRIT/ TC,R,RHOC
@@ -474,7 +474,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSENERGY(RHO,T)
 c     Finds the internal energy (J/Kg)
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,POTAU,PRTAU,PHIOTAU,PHIRTAU,DELTA
       REAL RHOC
       COMMON /CRIT/ TC,R,RHOC
@@ -493,7 +493,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSENTR(RHO,T)
 c     Finds the the Entropy (J/(KgK))
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,PHIOTAU,PHIRTAU,POTAU,PRTAU,PHIO,PHIR,TAU,DELTA,PO,PR
       REAL RHOC
       COMMON /CRIT/ TC,R,RHOC
@@ -514,7 +514,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSENTH(RHO,T)
 c     Finds the enthalpy (J/Kg)
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PHIOTAU,POTAU,PHIRTAU,PRTAU,PHIRDELTA,
      &     PRDELTA
       REAL RHOC
@@ -535,7 +535,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSCV(RHO,T)
 c     Finds the Isochoric heat capacity (J/(KgK))
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PHIOTAUTAU,POTAUTAU,PHIRTAUTAU,PRTAUTAU
       REAL RHOC
       COMMON /CRIT/ TC,R,RHOC
@@ -557,7 +557,7 @@ c     As a side it also finds the Isochoric heat capacity (J/(KgK))
 c     this could speed up some programs.
 c     NOTE - CV is an output NOT an input
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PHIRDELTATAU,PRDELTA,PHIRDELTA,PRDELTADELTA,
      &     PHIRDELTADELTA,PRDELTATAU
       REAL RHOC
@@ -586,7 +586,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSSOUND(RHO,T)
 C     Finds the speed of sound (m/s)
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,POTAUTAU,PHIOTAUTAU,PRTAUTAU,PHIRTAUTAU,
      &     PRDELTADELTA,PHIRDELTADELTA,PRDELTATAU,PHIRDELTATAU,
      &     PHIRDELTA,PRDELTA
@@ -616,7 +616,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSSOUND2(RHO,T)
 C     Finds the square of the speed of sound (m/s)
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,POTAUTAU,PHIOTAUTAU,PRTAUTAU,PHIRTAUTAU,
      &     PRDELTADELTA,PHIRDELTADELTA,PRDELTATAU,PHIRDELTATAU,
      &     PHIRDELTA,PRDELTA
@@ -646,7 +646,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSJOULE(RHO,T)
 C     Finds the Joule-Thomson coefficient(dT/dP)_h  ()
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,POTAUTAU,PHIOTAUTAU,PRTAUTAU,PHIRTAUTAU,
      &     PRDELTA,PHIRDELTA,PRDELTADELTA,PHIRDELTADELTA,PRDELTATAU,
      &     PHIRDELTATAU
@@ -675,7 +675,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSTHROTTLE(RHO,T)
 C     Finds the Isothermal throttling coefficient(dh/dp)_T ()
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PRDELTA,PHIRDELTA,PRDELTADELTA,
      &     PHIRDELTADELTA,PRDELTATAU,PHIRDELTATAU
       REAL RHOC
@@ -699,7 +699,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION IAPWSBETA(RHO,T)
 C     Finds the Isentropic temperature-pressure coefficient(dT/dp)_s ()
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,POTAUTAU,PHIOTAUTAU,PRTAUTAU,PHIRTAUTAU,
      &     PRDELTA,PHIRDELTA,PRDELTADELTA,PHIRDELTADELTA,PRDELTATAU,
      &     PHIRDELTATAU
@@ -730,7 +730,7 @@ c     Finds (dpdr)_t
 c     it also outputs P(Pa) so as to speed up UNWRAPDEN.
 c     P is an output NOT an input
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PRDELTA,PHIRDELTA,PRDELTADELTA,
      &     PHIRDELTADELTA,bit3
       REAL RHOC
@@ -756,7 +756,7 @@ c     it also outputs P(Pa) so as to speed up UNWRAPDEN.
 c     P is an output NOT an input
       implicit none
       REAL RHOC
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       REAL TC,R,TAU,DELTA,PRDELTA,PHIRDELTA, PRDELTATAU,PHIRDELTATAU
       COMMON /CRIT/ TC,R,RHOC
 
@@ -1468,7 +1468,7 @@ c                P - pressure
 c                nit - max. iterations
 c                limit - max. percent. of drho/r
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       INTEGER i,nit
 c give an estimate on liquid density
       rho = 1000.00
@@ -1499,7 +1499,7 @@ c                P - pressure
 c                nit - max. iterations
 c                limit - max. percent. of drho/r
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       INTEGER i,nit
 c     gives a quick estimate of density
       rho=p/(461.51 *t)
@@ -1539,7 +1539,7 @@ C     ANOTHER MORE RELIABLE METHOD.
 
 **********************************
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       INTEGER i,nit
 
       lim=limit/100. 
@@ -1570,7 +1570,7 @@ c                nit - max. iterations
 c                limit - max. percent. of dt/t
 
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       INTEGER i,nit
 
 c     gives a quick estimate of density
@@ -1604,7 +1604,7 @@ c                nit - max. iterations
 c                limit - max. percent. of dt/t
 
       implicit none
-      INCLUDE 'WaterProperties.h'
+#include "WaterProperties.h"
       INTEGER i,nit
 
 c     gives a quick estimate of temperature

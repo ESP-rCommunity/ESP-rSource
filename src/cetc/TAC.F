@@ -92,9 +92,9 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE TAC_1_static_template(IPCOMP)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'TAC.h'
+#include "plant.h"
+#include "building.h"
+#include "TAC.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -332,10 +332,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE TAC_1_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'TAC.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "TAC.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1081,9 +1081,9 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE TAC_coldtank_static_temp(IPCOMP)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'TAC.h'
+#include "plant.h"
+#include "building.h"
+#include "TAC.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1256,9 +1256,9 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE TAC_coldtank_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'TAC.h'
+#include "plant.h"
+#include "building.h"
+#include "TAC.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN

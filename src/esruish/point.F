@@ -9,7 +9,7 @@ C ************* POINT1 **********************
 C 'POINT1' determines if a specified point is within or outwith any
 C specified object body face boundary.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV),XWFT(MG,4),ZWFT(MG,4)
       DIMENSION C(2*MV+2)
@@ -90,7 +90,7 @@ C outwith any shadow boundary from common SHAD2.
 C  'INWPT1' decides if a specified point is within or outwith
 C  the internal surface transparent section.
       SUBROUTINE INWPT1(IS,IG,XX,ZZ,IANS)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G2C/NSA(MS),XWPC(MS,MG,4),ZWPC(MS,MG,4)
       DIMENSION C(2*MV+2)
       IANS=0

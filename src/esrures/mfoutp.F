@@ -34,8 +34,8 @@ C to be displayed and so visually investigated.
 C act='p' iget parameters already set.
 
       SUBROUTINE MFOUTP(act)
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "building.h"
+#include "net_flow.h"
 C act='p' iget parameters already set.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -90,7 +90,7 @@ C Simulator parameters.
       character graftitle*64,grlbl*24,t24*24,LTIME*5
       character LAPROB*72,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character xfile*144,tg*1,delim*1,tab*1
+      character xfile*72,tg*1,delim*1,tab*1
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)
@@ -1012,7 +1012,7 @@ C PROMPT1 and PROMPT2 are text prompt strings
 C NH is number of help strings.
 
       SUBROUTINE ASKMFNOD(IOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1038,7 +1038,7 @@ C PROMPT1 and PROMPT2 are text prompt strings
 C NH is number of help strings.
 
       SUBROUTINE ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,NH)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
@@ -1066,7 +1066,7 @@ C then silently return all connections associated with the node
 C (absolute value of INODE).
 
       SUBROUTINE ASKMFCON(INODE,NNPK,ICPK)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -1139,7 +1139,7 @@ C MOMFGHED outputs the appropriate header information corresponding
 C to graphical result display of network flows.
 
       SUBROUTINE MOMFGHED
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)

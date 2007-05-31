@@ -77,8 +77,8 @@ C----------------------------------------------------------------------
      &                            bCriticalErr )
 
       implicit none
-      INCLUDE 'building.h'     
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"     
+#include "MultiYear_simulations.h"
 
 C External functions.     
       integer lnblnk
@@ -450,8 +450,8 @@ C
 C----------------------------------------------------------------------      
       subroutine Check_MY_clm_db(bAutoOK,cAction,bCriticalErr)
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'      
+#include "building.h"
+#include "MultiYear_simulations.h"      
 
 C External functions.     
       integer lnblnk
@@ -644,8 +644,8 @@ C----------------------------------------------------------------------
 
       subroutine MY_clm_db_menu ()
       implicit none 
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"
+#include "MultiYear_simulations.h"
 
 C External functions.     
       integer lnblnk
@@ -1322,8 +1322,8 @@ C----------------------------------------------------------------------
       subroutine Spec_MY_clm_db(cAction,bFileExists,bCreate)
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'      
+#include "building.h"
+#include "MultiYear_simulations.h"      
 
 C External functions.     
       integer lnblnk
@@ -1513,8 +1513,8 @@ C
 C----------------------------------------------------------------------      
       subroutine Sort_MY_clm_db(cContext,cAction,bOrderChanged)
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'      
+#include "building.h"
+#include "MultiYear_simulations.h"      
 
 C----------------------------------------------------------------------
 C     Passed variable
@@ -1639,8 +1639,8 @@ C----------------------------------------------------------------------
       subroutine Fill_MY_clm_db(cContext,cAction,
      &                          bCriticalErr,bNonContigious)
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'      
+#include "building.h"
+#include "MultiYear_simulations.h"      
 C----------------------------------------------------------------------
 C     Passed variable
 C----------------------------------------------------------------------
@@ -1766,8 +1766,8 @@ C
 C----------------------------------------------------------------------      
       subroutine Prune_MY_clm_db(cContext,cAction,bDuplicates)
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'      
+#include "building.h"
+#include "MultiYear_simulations.h"      
 C----------------------------------------------------------------------
 C     Passed variable
 C----------------------------------------------------------------------
@@ -1874,8 +1874,8 @@ C----------------------------------------------------------------------
       subroutine Save_MY_clm_db ( iFile_num, bCriticalErr,bSaveOk )
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"
+#include "MultiYear_simulations.h"
 
 C External functions.     
       integer lnblnk
@@ -2022,8 +2022,8 @@ C----------------------------------------------------------------------
       subroutine Write_MY_clm_db ( iFile_num, bCriticalErr,bSaveOk )
       implicit none
 
-      INCLUDE 'building.h'
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"
+#include "MultiYear_simulations.h"
 
 C External functions.     
       integer lnblnk

@@ -32,7 +32,7 @@ C necessary before displaying the zone.
 C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE CADJVIEW(ITRC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -87,7 +87,7 @@ C ******************** CDRAWESP
 C CDRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
       SUBROUTINE CDRAWESP(ITRC,ier)
-      INCLUDE 'building.h'
+#include "building.h"
       PARAMETER  (MPL = 200 )
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)

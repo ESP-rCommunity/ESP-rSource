@@ -48,7 +48,7 @@ c           used as the characteristic dimension (rather than APRAT)
 c           in the computation of convection coefficients.
 
       SUBROUTINE MZAREA(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -129,7 +129,7 @@ c Common block variables are:
 c VOL    - zone bounded volume
 
       SUBROUTINE MZVOLM(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -180,7 +180,7 @@ c           in res to compute surface
 c           convection coefficients.
 
       SUBROUTINE MZPAZI(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
@@ -231,7 +231,7 @@ c This routine is invoked only if a zone view factor file is
 c unavailable.
 
       SUBROUTINE MZVFCL(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -306,7 +306,7 @@ c ICC3 &
 c TIA3
 
       SUBROUTINE MZVENC(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -459,8 +459,8 @@ C CGLAT - latent gain (zone, day type, gain type, period)
 C CGCTL - gain control fraction (present/future, gain type)
 
       SUBROUTINE MZCASG(ICOMP)
-      INCLUDE 'building.h'
-      INCLUDE 'power.h'
+#include "building.h"
+#include "power.h"
 
       common/trc/itrc
       COMMON/TC/ITC,ICNT
@@ -1150,7 +1150,7 @@ c Common block variables are:
 c ITCNST  - number of start-up days
 
       SUBROUTINE MZTCON(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -1234,7 +1234,7 @@ c AI & AE - solar absorptivity of each internal and external
 c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

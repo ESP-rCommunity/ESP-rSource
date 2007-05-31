@@ -52,7 +52,7 @@ C ARP    - present time adjacent incident radiation & casual etc.
 C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

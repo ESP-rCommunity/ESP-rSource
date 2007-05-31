@@ -1,6 +1,6 @@
 C----------------------------------------------------
       SUBROUTINE  EXT(NFILE,INUSE,ISCLOC,TEXT,LOOK)
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
 
       COMMON/OUTIN/IUOUT,IUIN
 

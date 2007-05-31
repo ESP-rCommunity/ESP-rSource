@@ -24,8 +24,8 @@ C File naming convention:  UNKNOWN - required but not yet defined,
 C blank or NONE not required and not yet defined.
 
       program e2r
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -716,7 +716,7 @@ C Radiance visualisation/ calculation after reading in current rif file.
 C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -864,7 +864,7 @@ C *************** opendb ***************
 C Open the common databases - primitive constructions, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -925,7 +925,7 @@ C        call edisp(iuout,' opened optical properties db.')
 C ************* inqu_tmc *************
 C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

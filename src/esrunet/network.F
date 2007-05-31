@@ -129,8 +129,8 @@ C ************************* NETWORK ********************************
 C This is the main network management routine.
       PROGRAM NETWORK
 
-      INCLUDE 'gnetwk.h'
-      INCLUDE 'building.h'
+#include "gnetwk.h"
+#include "building.h"
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1135,7 +1135,7 @@ C to handle deletion of icons.
       SUBROUTINE NETWMIC(IMODE,IMOPT)
 
 # include "gnetwk.h"
-      INCLUDE 'epara.h'
+#include "epara.h"
 
       COMMON/POPHELP/H(60)  
 
@@ -1875,7 +1875,7 @@ C This routine manages the creation of connections, the routine can
 C be called from the c-side to delete a connection (mode='c')
 
         SUBROUTINE NETWMCO(IMODE,IMOPT)     
-      INCLUDE 'gnetwk.h'
+#include "gnetwk.h"
 
 C Connection commons
       COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
@@ -3109,9 +3109,9 @@ C Select a real value based on external information held in
 C a .summary file for the current model. Up to 6 real values
 C are returned. If ier=-1 then summary file was not available.
       subroutine selrelexttag(exttag,AVAL,SVAL,ier)
-      INCLUDE 'net_flow.h'
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "net_flow.h"
+#include "building.h"
+#include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3577,7 +3577,7 @@ C List a portion of external information held in a .summary
 C file for the current model. File is assumed to be open on
 C unit iuex.
       subroutine listexttag(exttag,ier)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)

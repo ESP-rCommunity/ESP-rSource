@@ -44,7 +44,7 @@ C if act = 'M' return days PMV in GVAL.
 C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -73,7 +73,7 @@ C Pre calculated data (filtered).
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
-      character xfile*144,ITEMS*25,tg*1,delim*1,act*1
+      character xfile*72,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
@@ -330,12 +330,12 @@ C Casual gain type.  Ask user which constitutes occupancy.
         goto 78
       elseif(ino.eq.11)then
 
-C Start espvwf session.
+C Start mrt session.
         dok=.false.
-        h(1)='A `vwf analysis` assess comfort at a specific position'
+        h(1)='A `mrt analysis` assess comfort at a specific position'
         h(2)='within a zone and makes use of viewfactors from a pre-'
         h(3)='defined body to the surfaces in the zone. '
-        CALL ASKOK(' ',' Proceed with local vwf analysis?',OK,dok,3)
+        CALL ASKOK(' ',' Proceed with local mrt analysis?',OK,dok,3)
         IF(OK)then
 
 C Get logical name of terminal type, expand problem name
@@ -357,10 +357,10 @@ C and change any / to \.
             longtfile=longtfiledos
           endif
 
-          write(doit,'(7a)') 'espvwf -mode ',tmode,
+          write(doit,'(7a)') 'mrt -mode ',tmode,
      &       ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &       ' -zone ',ZN(1:lnblnk(ZN)),' &'
-          call usrmsg(doit,'starting vwf analysis.','-')
+          call usrmsg(doit,'starting mrt analysis.','-')
           call runit(doit,tmode)
         endif
       else
@@ -521,7 +521,7 @@ c Variables in common block LET1 are input variables.
       real lr,icl,im,kclo
 c     character*10 word(52)
 
-      INCLUDE 'gagge.h'
+#include "gagge.h"
 
 c Data entry: variables in common block LET1.
       ttsk   = 33.7
@@ -636,7 +636,7 @@ c Variables in common block LET2 are computed in this routine.
       subroutine letinit(ta,erftr,vel,rhpa,act,clo)
 
       real lr,icl,im,kclo
-      INCLUDE 'gagge.h'
+#include "gagge.h"
 
 c Set initial values for physiological variables:
 c initial conditions at physiological thermal neutrality and
@@ -719,7 +719,7 @@ c Variables in common block LET3 are computed in this routine.
 
       subroutine letloop(ta,erftr,vel,rhpa,act,clo)
       real lr,icl,im,kclo
-      INCLUDE 'gagge.h'
+#include "gagge.h"
 
 c Dry heat balance : solve for tcl and chr.
  21   tclold=tcl
@@ -932,7 +932,7 @@ C Variables in common block LET3 are computed in this routine.
       subroutine letindex(ta,erftr,vel,rhpa,act,clo,set,pme,pmv)
 
       real lr,icl,ias,ims,icls,im,kclo,kclos
-      INCLUDE 'gagge.h'
+#include "gagge.h"
 
 C Statement Functions: calculation of ET* and SET* by Newton's
 C iterative technique requires successive evaluations of the same
@@ -1257,7 +1257,7 @@ C assumed to be in ioucpz(izone,[1-24]), saturdays ioucpz(izone,[25-48]),
 C sundays ioucpz(izone,[49-72]), This hash table will need altering 
 C if sub-hour casual gains definitions are implemented. 
       subroutine scnocup(ier)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -1424,8 +1424,8 @@ C        write(6,*) 'ioucpz (sun)',(ioucpz(izone,j),j=49,72)
 C ******** getocup
 C Looks up occupancy patterns and returns in ioc for a given zone/day/hour.
       subroutine getocup(izone,iday,ih,ioc,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1527,7 +1527,7 @@ C ************************ LOCOMF ************************
 C LOCOMF: calculate local discomfort.
 
       SUBROUTINE LOCOMF(IDAY,IZONE,ICP,IMP,ISET)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)

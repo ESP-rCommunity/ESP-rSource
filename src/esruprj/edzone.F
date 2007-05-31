@@ -33,8 +33,8 @@ C ************* SCRZONE
 C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -465,7 +465,7 @@ C Read in control file if defined.
 C ************* NEWZONE 
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -839,10 +839,10 @@ C default assumptions for other zone files.
 C ************* DELZONE
 C DELZONE systematicly removes a thermal zone.
       SUBROUTINE DELZONE(ITRC,IWHICH,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'esprdbfile.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "net_flow.h"
+#include "esprdbfile.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1471,7 +1471,7 @@ C act = 'sat' surface attribute. act = 'str' surf transform.
 C act = 'ob+' or 'ob-' obstruction changes.
 C IER=0 OK. 
       SUBROUTINE WARNMOD(ICOMP,act)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1532,7 +1532,7 @@ C should be called with act = 'i' (initialise) when entering a zone and
 C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -1680,7 +1680,7 @@ C the two vertices (i.e. it discards matches beyond the end points.
 C It assumes that calling code will decide whether the distance
 C can be used. 
       subroutine pointtoline(ipoint,iwhich1,iwhich2,offset,match)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       dimension vd(3),vd1(3),vd2(3)
       logical match
@@ -1743,7 +1743,7 @@ C ifvrt1 and ifvert2 are nearest two vertices on the edge (zero if
 C   nothing found).
 C      subroutine twodpointtoline(itx,ity,icomp,ioffset,ifsurf1,ifsurf2,
 C     &  ifvrt1,ifvrt2,match)
-C      INCLUDE 'building.h'
+C#include "building.h"
 
 C << logic needs to be written >>
 

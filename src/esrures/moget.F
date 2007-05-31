@@ -184,7 +184,7 @@ C ************************ GOMSETUP ************************
 C Set default values for IGETNO array and associated plotting/ labeling arrays.
 
       SUBROUTINE GOMSETUP
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -232,8 +232,8 @@ C Reset to no choices and current result set.
 C ************************ EDGOGET ************************
 C EDGOGET allows removal of output requests.
       SUBROUTINE EDGOGET
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "building.h"
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -379,8 +379,8 @@ C The choices are put into the array IGETNO in the columns listed
 C above.
 
       SUBROUTINE GOMENU
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -433,7 +433,7 @@ C TDF commons.
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
-      character H*72,xfile*144,tg*1,delim*1
+      character H*72,xfile*72,tg*1,delim*1
       character SLABEL*32,GLABEL*20,SUFFIX*8,lodlabel*6
       character ll1*8,ll2*8,ll3*8
       CHARACTER zname*12,zdesc*64,outs*124,pifltog*4,lpifl*72
@@ -2969,7 +2969,7 @@ C GOGET: Retrieves data from the result library according to array IGETNO.
 C All NGET metrics are recovered by repeatedly calling GOGETIT.
 
       SUBROUTINE GOGET(IDAY)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -3041,7 +3041,7 @@ C GOGETIT Retrieves data from the result library according to array IGETNO and K
 C This recovers one day.
 
       SUBROUTINE GOGETIT(KGET,IDAY,ISTART,IEND)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3738,7 +3738,7 @@ C Memory is referenced if the data is held there otherwise MMACAL is
 C called to calculate the values.
 
       subroutine MMACHK(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
@@ -4076,7 +4076,7 @@ C e.g. for a flux (W) the energy for the given period (Wh).
 C For IROC=0 or 1 the value DAVE is the average value for the period.
 
       subroutine MMACAL(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV

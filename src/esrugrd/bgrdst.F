@@ -217,8 +217,8 @@ C ****************************   LCLCMP    ****************************
 C LCLCMP displays the local components indices menu.
 C *********************************************************************
       SUBROUTINE LCLCMP(IZ)
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -382,7 +382,7 @@ C ****************************   DFNGRD    ****************************
 C DFNGRD displays the grid data menu.
 C *********************************************************************
       SUBROUTINE DFNGRD
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -655,7 +655,7 @@ C *************************      EDTMSH      **************************
 C EDTMSH allows editing mesh widths.
 C *********************************************************************
       SUBROUTINE EDTMSH(NDim,LDim,DimName)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -701,7 +701,7 @@ C *************************      DVDMSH      **************************
 C DVDMSH allows dividing mesh widths.
 C *********************************************************************
       SUBROUTINE DVDMSH(NDim,LDim,IndDim)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -813,7 +813,7 @@ C *************************      DLTMSH      **************************
 C DLTMSH allows deleting mesh widths.
 C *********************************************************************
       SUBROUTINE DLTMSH(NDim,LDim,IndDim)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -901,7 +901,7 @@ C CHKREF checks if this width is referenced in the material or boundary
 C         geometries.
 C *********************************************************************
       SUBROUTINE CHKREF(ILvl,IndDim,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
       COMMON/GRSD52/IMRowS(MMTR),IMRowE(MMTR)
@@ -930,8 +930,8 @@ C ****************************   DFNMTR    ****************************
 C DFNMTR displays the material geometry menu.
 C *********************************************************************
       SUBROUTINE DFNMTR(IComp)
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1121,7 +1121,7 @@ C ****************************   MTRINP    ****************************
 C MTRINP allows editing and adding material geometries.
 C *********************************************************************
       SUBROUTINE MTRINP(I)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1200,8 +1200,8 @@ C ****************************   DFNBND    ****************************
 C DFNBND displays the surface boundary menu.
 C *********************************************************************
       SUBROUTINE DFNBND
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1381,7 +1381,7 @@ C ****************************   BNDINP    ****************************
 C BNDINP allows editing and adding boundary geometries.
 C *********************************************************************
       SUBROUTINE BNDINP(I)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1460,7 +1460,7 @@ C ***************************      SLCTZN     *************************
 C SLCTZN displays the zone selection menu.
 C *********************************************************************
       SUBROUTINE SLCTZN(ITRC,SZN,IZ,ZONOK)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1632,7 +1632,7 @@ C INTSTM controls the drawing of the free hand sketch for the cross
 C section of a given gridding level.
 C *********************************************************************
       SUBROUTINE INTSTM
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -1736,7 +1736,7 @@ C FHDSTR draws the free hand sketch for the cross section of a given
 C gridding level in the layer dimension.
 C *********************************************************************
       SUBROUTINE FHDSTR(IRow)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -1893,7 +1893,7 @@ C FHDSTC draws the free hand sketch for the cross section of a given
 C gridding level in the layer dimension.
 C *********************************************************************
       SUBROUTINE FHDSTC(ICol)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -2052,7 +2052,7 @@ C FHDSTL draws the free hand sketch for the cross section of a given
 C gridding level in the layer dimension.
 C *********************************************************************
       SUBROUTINE FHDSTL(ILay)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS

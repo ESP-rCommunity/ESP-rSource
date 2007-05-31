@@ -6,10 +6,9 @@ PROG = viewer$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
-	  ctlexp.o dossupport.o ext.o hlr.o hlr2.o input.o invert.o \
-	  pconvt.o pers1.o pers2.o plan.o plot.o select.o shrink.o \
-	  spout.o startup.o transf.o vert.o
+OBJECTS = viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o ext.o \
+	  hlr.o hlr2.o input.o invert.o pconvt.o pers1.o pers2.o plan.o \
+	  plot.o select.o shrink.o spout.o startup.o transf.o vert.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -17,12 +16,6 @@ $(PROG): $(OBJECTS)
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
-ctlexp.F:
-	rm -f ctlexp.F
-	ln -s $(COMdir)/ctlexp.F .
-dossupport.F:
-	rm -f dossupport.F
-	ln -s $(COMdir)/dossupport.F .
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
@@ -32,4 +25,4 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	c2fdum.F ctlexp.F startup.F dossupport.F
+	c2fdum.F startup.F 

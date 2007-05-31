@@ -23,15 +23,15 @@ C ESCSYS scans a system configuration file for fabric related
 C file names. No range checking is done, ie assumed to have
 C been checked elsewhere.  
       SUBROUTINE ESCSYS(FILE,IUC,IUF,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'tdf2.h'
-      INCLUDE 'cfd.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'dhw_common.h'
-      INCLUDE 'MultiYear_simulations.h'
-      INCLUDE 'bc_data.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "net_flow.h"
+#include "tdf2.h"
+#include "cfd.h"
+#include "uncertainty.h"
+#include "dhw_common.h"
+#include "MultiYear_simulations.h"
+#include "bc_data.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -40,7 +40,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       PARAMETER (MSTMC=1)

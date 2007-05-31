@@ -41,8 +41,8 @@ C IMPMLC: Imports from legacy construction file (AFIL) to a generic
 C construction db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. Idbh is position in hash table.
       subroutine impmlc(IFA,AFIL,IFB,BFIL,idbh,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -382,7 +382,7 @@ C IMPRIMMAT: Imports from legacy ascii materials file (AFIL) to a generic
 C materials db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine imprimmat(IFA,AFIL,IFB,BFIL,idbh,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -718,7 +718,7 @@ C IMPRESSC: Imports from legacy pressure coef file (AFIL) to a generic
 C wind pressure db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine impressc(IFA,AFIL,IFB,BFIL,idbh,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -921,7 +921,7 @@ C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C profile db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1147,7 +1147,7 @@ C ************* MKAPRC (copy from edcondb.F)
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1210,7 +1210,7 @@ C File errors.
 C **************** TROPRO (copied from eprfilec.F)
 C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN

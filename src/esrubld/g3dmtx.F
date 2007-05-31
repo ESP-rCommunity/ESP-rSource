@@ -50,7 +50,7 @@ C **************************    UD1TMP    *****************************
 C UD1TMP updates the temperature array.
 C *********************************************************************
       SUBROUTINE UD1TMP(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D101/NNODT(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
@@ -96,7 +96,7 @@ C        number is not equal to the current zone number convective only
 C        boundary will be assumed.
 C *********************************************************************
       SUBROUTINE MZ3SU1(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -420,7 +420,7 @@ C MZ3SU2 completes the setting-up of the time-dependent coefficients for
 C 3D zones.
 C *********************************************************************
       SUBROUTINE MZ3SU2(ICOMP,SUMA1,SUMA2,SUMA3)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC2/VOL(MCOM)
 
@@ -531,7 +531,7 @@ C MZ3SU3 completes the setting-up of the time-dependent coefficients for
 C 3D ground.
 C *********************************************************************
       SUBROUTINE MZ3SU3
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
@@ -568,7 +568,7 @@ C ENRGYO determines the present and future terms for outside surface
 C node.
 C *********************************************************************
       SUBROUTINE ENRGYO(IZ,IS,QHPNOP,QHPNOF,Q3PTOT,Q3FTOT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
       COMMON/COE33/QELWP(MS),QELWF(MS)
@@ -590,7 +590,7 @@ C ENRGYI determines the present and future terms for inside surface
 C node.
 C *********************************************************************
       SUBROUTINE ENRGYI(ICOMP,I1S,SUM,Q3PTOT,Q3FTOT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -613,7 +613,7 @@ C *************************    SHWV3D    ******************************
 C SHWV3D determines the total energy absorbed by a "tmc".
 C *********************************************************************
       SUBROUTINE SHWV3D(ICOMP,IS,IL,VOLM,Q3PTOT,Q3FTOT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/COE32J/QTMCA(MS,MN,2)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -640,7 +640,7 @@ C *************************      LWRD3D      **************************
 C LWRD3D creates the longwave terms for an internal surface node.
 C *********************************************************************
       SUBROUTINE LWRD3D(ICOMP,IS,ND1,QTRMF,SUM)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -685,7 +685,7 @@ C VZHRPF determines the present and future values for internal longwave
 C radiation.
 C *********************************************************************
       SUBROUTINE VZHRPF(ICOMP,I1S,ND1,ZHR3P,ZHR3F)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -711,7 +711,7 @@ C *************************    FORW3D    ******************************
 C FORW3D performs the forward reduction process for the zone matrix.
 C *********************************************************************
       SUBROUTINE FORW3D(ICOMP,ISNSR,B1,B2,B3)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CCTL/ICASCF(MCOM)
@@ -846,7 +846,7 @@ C **************************    UD2TMP    *****************************
 C UD2TMP updates the temperature file.
 C *********************************************************************
       SUBROUTINE UD2TMP
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
@@ -866,7 +866,7 @@ C CONT3D solves the equation (b1*t+b2*q=b3)in  terms of the associated
 C control function.
 C *********************************************************************
       SUBROUTINE CONT3D(ICOMP,ISNSR,B1,B2,B3)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -1045,7 +1045,7 @@ C **************************    SVQTMP    *****************************
 C SVQTMP saves the solution given by CONT3D in the temperature file.
 C *********************************************************************
       SUBROUTINE SVQTMP(ICOMP,ISNSR,TNP,QNP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/CCTL/ICASCF(MCOM)
@@ -1075,7 +1075,7 @@ C BACK3D performs the back substitution process after adapting the
 C control function.
 C *********************************************************************
       SUBROUTINE BACK3D
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
@@ -1134,7 +1134,7 @@ C ****************************    FILL1D    ***************************
 C FILL1D fills the 1D temperature and energy variables.
 C *********************************************************************
       SUBROUTINE FILL1D(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

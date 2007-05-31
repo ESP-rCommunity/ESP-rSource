@@ -41,7 +41,7 @@ C interest and output metric must be specified before the calculations
 C can proceed.
 
       SUBROUTINE MOSA
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -122,7 +122,7 @@ C ******************** SAINTRA ********************
 C SAINTRA calculates summary statistics within result sets.
 
       SUBROUTINE SAINTRA
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -406,7 +406,7 @@ C ******************** SAINTER ********************
 C SAINTER calculates summary statistics within result sets.
 
       SUBROUTINE SAINTER
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -832,7 +832,7 @@ C ******************** SAPARSEN ********************
 C SAPARSEN calculates individual parameter uncertainties.
 
       SUBROUTINE SAPARSEN
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1051,7 +1051,7 @@ C SANOVA calculates summary statistics between result sets - most
 C importantly an analysis of variance table.
 
       SUBROUTINE SANOVA
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1163,7 +1163,7 @@ C  NO - number of observations
 C NTO - total number of observations
 
       SUBROUTINE DIFFOW(NT,ND,TT,GT,NO,NTO)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1217,8 +1217,8 @@ C Calculate differences.
 C ******************** WHSET ********************
 C WHSET displays currently chosen sets and lets user toggle selections.
       SUBROUTINE WHSET
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1385,7 +1385,7 @@ C INTERACT - calculate the all the interactions given an interaction
 C of NINTER parameters. For NPAR parameters.
 C IPT(x,y) - pointer to parameters 'y' for interaction 'x'
       subroutine INTERACT(NPAR,NINTER,ICOMB,IPT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       dimension IPT(MNRS,MNFA)
 

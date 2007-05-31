@@ -127,20 +127,18 @@ void	pausems_(long int* msec);
 void	pauses_(long int* is);
 void	drawswl(int xa,int ya,int xb,int yb);
 void	esymbol_(long int* x,long int* y,long int* sym,long int* size);
-void	qbox_(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
-void	dbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
-void	okbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
+void	qbox_(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
+void	dbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
+void	okbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
 void	doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long int* use_font,
-	int* b_bottom,int* b_left,char* topic,char act);
+	int* b_bottom,int* b_left,char* topic,int act);
 void	dosymbox(box dobox,int asklen,long int* sav_font,long int* use_font,int* b_bottom,
-	int* b_left,char* topic,char act);
-void	altbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
-void	alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
-void	abcdboxs(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,char act);
+	int* b_left,char* topic,int act);
+void	altbox(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
+void	alt2box(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
+void	abcdboxs(char* msg,int msglen,int asklen,int* b_bottom,int* b_left,int act);
 void	openaskbox_(char* msg1,char* msg2,long int* asklen,int len1,int len2);
 void	openaskaltbox_(char* msg1,char* msg2,char* alt,long int* asklen,int len1,
-	int len2,int len3);
-void	openaskcnclbox_(char* msg1,char* msg2,char* cncl,long int* asklen,int len1,
 	int len2,int len3);
 void	openask2altbox_(char* msg1,char* msg2,char* alt,char* alt2,long int* asklen,int len1,
 	int len2,int len3,int len4);
@@ -152,7 +150,6 @@ void	egphelp_(long int* impx,long int* impy,long int* ipflg,
 	long int* ishowmoreflg,long int* uresp);
 void	askdialog_(char* sstr,long int* id,long int* iq,int f_len);
 void	askaltdialog_(char* sstr,char* alt,long int* id,long int* iq,int f_len,int a_len);
-void	askcncldialog_(char* sstr,char* cncl,long int* id,long int* iq,int f_len,int a_len);
 void	ask2altdialog_(char* sstr,char* alt,char* alt2,long int* id,long int* iq,
 	int f_len,int a_len,int b_len);
 void	msgbox_(char* msg1,char* msg2,int len1,int len2);

@@ -29,7 +29,7 @@ C MatIndex (Integer) : Material index in the BCF file corresponding to XMat
 
       FUNCTION MatIndex(XMat)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EIAhigh/NbComp,NbMat,IMatID(MMLC,ME),ImatDbID(0:MMAT-1),
@@ -361,9 +361,9 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 
 
       SUBROUTINE SCNBCF(IUC,BCFfile,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'LCA.h'
-      INCLUDE 'acoustic.h'
+#include "building.h"
+#include "LCA.h"
+#include "acoustic.h"
 
 
       COMMON/OUTIN/IUOUT,IUIN

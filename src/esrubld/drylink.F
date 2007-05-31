@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       SUBROUTINE DRYLINK(icomp,qganp1,qganf1,qganp2,qganf2,wganp,wganf)
-      INCLUDE 'building.h'
+#include "building.h"
 
       PARAMETER (HF = 6.1, DIFFCO = 1.7E-10)
 

@@ -1,7 +1,7 @@
 C Plot functions.
 
       SUBROUTINE PLOTTC(ICOL)
-      INCLUDE 'viewer.h'
+#include "viewer.h"
  
 C PLOTTC SETS CURRENT DISPLAY COLOUR
       IF(IOUTD.EQ.1)GO TO 10
@@ -27,7 +27,7 @@ C      COMMON/BPIC2/SCFXY
 C   PEN INDEX NOW AS TEKTRONIX I.E.
 C    1   DRAW(PEN DOWN)  0   MOVE(PEN UP)   <0  DASHED LINE
 
-      INCLUDE 'viewer.h'
+#include "viewer.h"
 
       COMMON /FIL/ IFUSE, IFO
       DATA SX,SY,LP/0.,0.,3/
@@ -181,7 +181,7 @@ C--------------------------------------------------------
 
 C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
 
-      INCLUDE 'viewer.h'
+#include "viewer.h"
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C SET OUTPUT DEVICE
@@ -212,7 +212,7 @@ C--------------------------------------------------------
 C PLTFIL generates a pic file for use in forms package.
       SUBROUTINE PLTFIL
 
-      INCLUDE 'viewer.h'
+#include "viewer.h"
       COMMON /FIL/ IFUSE, IFO
       COMMON/NNAAMM/ NAMDS,NAMPIC
       COMMON/OUTIN/IUOUT,IUIN

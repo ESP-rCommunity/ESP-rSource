@@ -48,8 +48,8 @@ c The 'Delete' command deletes the last simulation result
 c set saved in the solutions library.
 
       SUBROUTINE MZSIML
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/FILEP/IFIL
@@ -558,7 +558,7 @@ c MZSIMH outputs simulation period and wait time information
 c prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -643,7 +643,7 @@ c ITRACE  - trace call index for appropriate subroutine.
 c ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

@@ -38,7 +38,7 @@ C **************************    MENUGM    *****************************
 C MENUGM displays the ground modelling menu.
 C *********************************************************************
       SUBROUTINE MENUGM(IDRW1)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -363,8 +363,8 @@ C **************************    GNDBND    *****************************
 C GNDBND displays the ground boundary menu.
 C *********************************************************************
       SUBROUTINE GNDBND(IDRW1)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -703,8 +703,8 @@ C ****************************    GNDMSH    ***************************
 C GNDMSH controls ground gridding.
 C *********************************************************************
       SUBROUTINE GNDMSH(IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -855,7 +855,7 @@ C *************************    MKCVGZ    ******************************
 C MKCVGZ performs gridding per ground layer.
 C *********************************************************************
       SUBROUTINE MKCVGZ(IZZ,VZZ)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
 
@@ -903,7 +903,7 @@ C *************************    MKCVGY    ******************************
 C MKCVGY performs gridding per line of volumes within a ground layer.
 C *********************************************************************
       SUBROUTINE MKCVGY(IZZ,VZZ,IYY,VYY)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
 
@@ -951,8 +951,8 @@ C *****************************    MKCVGX    **************************
 C MKCVGX performs gridding per one material volume.
 C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -1183,7 +1183,7 @@ C *****************************    SAVEGM    **************************
 C SAVEGM saves the ground modelling configuration.
 C *********************************************************************
       SUBROUTINE SAVEGM
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1264,7 +1264,7 @@ C *************************    READGM    ******************************
 C READGM reads the ground modelling configuration.
 C *********************************************************************
       SUBROUTINE READGM
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1413,7 +1413,7 @@ C ****************************    FHCGND    ***************************
 C FHCGND draws a cross section (one layer) of ground.
 C *********************************************************************
       SUBROUTINE FHCGND(IL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
@@ -1488,7 +1488,7 @@ C ****************************    FHCBSF    ***************************
 C FHCBSF draws one of the six faces for ground.
 C *********************************************************************
       SUBROUTINE FHCBSF(ISRF)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
@@ -1626,7 +1626,7 @@ C ******************************    DRWGND     ************************
 C DRWGND draws the complete ground domain.
 C *********************************************************************
       SUBROUTINE DRWGND
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),

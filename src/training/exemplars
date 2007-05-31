@@ -84,10 +84,6 @@
 *cfg	/usr/esru/esp-r/training/cellular_earth/cfg/cellular_earth.cfg
 *root	/usr/esru/esp-r/training/cellular_earth
 *item
-*name	two offices and passage with bounding zones above/below 
-*cfg	/usr/esru/esp-r/training/cellular_bound/cfg/cellular_bounded.cfg
-*root	/usr/esru/esp-r/training/cellular_bound
-*item
 *name	two offices and passage with CO2 tracking (windows open)
 *cfg	/usr/esru/esp-r/training/cellular_contam/cfg/cellular_contam_bc.cfg
 *root	/usr/esru/esp-r/training/cellular_contam
@@ -120,12 +116,8 @@
 *cfg	/usr/esru/esp-r/training/cellular_flh/cfg/cellular_flh.cfg
 *root	/usr/esru/esp-r/training/cellular_flh
 *item
-*name	two offices and passage with simple CAV HVAC controller
+*name	two offices and passage with simple CV HVAC controller
 *cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_cvvt.cfg
-*root	/usr/esru/esp-r/training/cellular_cvvt
-*item
-*name	two offices and passage with ideal VAV/CAV HVAC controller
-*cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_vav.cfg
 *root	/usr/esru/esp-r/training/cellular_cvvt
 *item
 *name	two offices and passage with separate ON OFF controller

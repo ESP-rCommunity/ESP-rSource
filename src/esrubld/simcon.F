@@ -35,7 +35,7 @@ C SIMCON sets the final parameters before executing a simulation.  MZNUMA is
 C called the required number of times, saving results after each simulation. 
 
       subroutine SIMCON
-      INCLUDE 'uncertainty.h'
+#include "uncertainty.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -202,9 +202,9 @@ C The 'INFO' command outputs the current simulation period
 C and information on the saved result set.
 
       SUBROUTINE MZSIML
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'monitor.h'
+#include "building.h"
+#include "plant.h"
+#include "monitor.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -501,8 +501,8 @@ C Unknown.
 C ************ SIMTOG
 C Set simulation toggles.
       subroutine simtog
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1386,8 +1386,8 @@ C MZSIMH outputs simulation period and wait time information
 C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1678,7 +1678,7 @@ C ITRACE  - trace call index for appropriate subroutine.
 C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1962,8 +1962,8 @@ C parameters. If itru=iuout then goes to the display,
 C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave

@@ -100,7 +100,7 @@ C MOMNRD computes the mean radiant temperature from opaque
 C surface temperature information. Note
 C << TA QM no longer used, but ordering not changed. >>
       SUBROUTINE MOMNRD(ICOMP,TA,TS,QM,NS,TMNRD)
-      INCLUDE 'building.h'
+#include "building.h"
 
       DIMENSION TS(MS),QM(MS)
 
@@ -123,7 +123,7 @@ C MOMRTS computes the mean radiant temperature from opaque
 C surface temperature information.
 C << GEP, GIP, QM, TA not used >>
       SUBROUTINE MOMRTS(ICOMP,TA,TS,QM,NS,OP,GEP,GIP,TMRTS)
-      INCLUDE 'building.h'
+#include "building.h"
 
       DIMENSION TS(MS),QM(MS),OP(MS)
 
@@ -148,7 +148,7 @@ C MORESL computes the resultant temperature from opaque
 C surface temperature information.
 C << QM not used >>
       SUBROUTINE MORESL(ICOMP,TA,TS,QM,NS,TRESL)
-      INCLUDE 'building.h'
+#include "building.h"
 
       DIMENSION TS(MS),QM(MS)
 
@@ -174,7 +174,7 @@ C surface, window temperature information.
 C IOPT - specific temperature differences.
 
       SUBROUTINE SENMRT(IDAY,IZONE,ISENS,ISET,IOPT)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -183,7 +183,7 @@ C IOPT - specific temperature differences.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
+      common/MRTF/FFL(MCUB,6,MSM),VWF(MS,MS)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

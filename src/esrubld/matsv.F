@@ -49,7 +49,7 @@ C be done prior to the time loop because the necessary adjacency
 C information is not established until the simulation commences.
 
       subroutine mzwdar(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -93,7 +93,7 @@ C MTXCTL controls the zone heat matrix solving process according to the
 C sensor location of the associated control function.
 C *********************************************************************
       SUBROUTINE MTXCTL(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -201,7 +201,7 @@ C The main controller for the matrix handling and
 C solution relating to air point temperature control.
 
       subroutine mzmrx1(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -234,7 +234,7 @@ C The main controller for the matrix handling and
 C solution relating to surface temperature control.
 
       subroutine mzmrx2(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -268,7 +268,7 @@ C and solution relating to intra-constructional temperature
 C control.
 
       subroutine mzmrx3(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -302,7 +302,7 @@ C and solution relating to mixed air/ mean radiant
 C temperature control.
 
       subroutine mzmrx4(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -366,7 +366,7 @@ C mzsad1 where the next-to-surface coefficient can be eliminated
 C from the corresponding surface equation.
 
       subroutine mzcnf1(icomp,iconst)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -494,7 +494,7 @@ C  node coefficient can be eliminated from the corresponding surface
 C  equation and the control node coefficient introduced if appropriate.
 
       subroutine mzcnf2(icomp,iconst)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -755,7 +755,7 @@ C                            coefficients and coefficient 1
 C                            is zero.
 
       subroutine mzsad1(icomp,iconst)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
@@ -877,7 +877,7 @@ C                           and coefficient 4 is introduced.
 
       subroutine mzsad2(icomp,iconst)
 
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
@@ -1091,7 +1091,7 @@ C The last equation is solved in 'mzpst1' and the back
 C substitution is completed.
 
       subroutine mzcms1(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
 
@@ -1254,7 +1254,7 @@ C The last equation is solved in 'mzpst1' and the back
 C substitution completed.
 
       subroutine mzcms2(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
 
@@ -1467,7 +1467,7 @@ C N3 relates to the present term
 C N5 relates to the control term
 
       subroutine mzcms3(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
 
@@ -1643,7 +1643,7 @@ C The last equation is solved in 'mzpst1' where the back
 C substitution is completed by a call to 'mzback'.
 
       subroutine mzcms4(icomp)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
 
@@ -1724,7 +1724,7 @@ C construction control point case - and solves for the
 C intra-nodal temperatures.
 
       subroutine mzcnb1(icomp,iconst)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/prec1/sna(mcom,ms),zoa(mcom)
       common/conadj/wa(ms,mn,6)
@@ -1754,7 +1754,7 @@ C temperatures.
 
       subroutine mzcnb2(icomp,iconst)
       
-      INCLUDE 'building.h'
+#include "building.h"
       
       common/prec1/sna(mcom,ms),zoa(mcom)
       common/conadj/wa(ms,mn,6)
@@ -1818,8 +1818,8 @@ C terms of the control function information previously
 C defined.
 
       subroutine mzpst1(b1,b2,b3,icomp,qf)
-      INCLUDE 'building.h'
-      INCLUDE 'control.h'
+#include "building.h"
+#include "control.h"
 
       common/tc/itc,icnt
 
@@ -2102,7 +2102,7 @@ C be re-established to include the radiant and convective
 C input.
 
       subroutine mzback(q)
-      INCLUDE 'building.h'
+#include "building.h"
 
       common/outin/iuout,iuin
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -2245,8 +2245,8 @@ C ****************************    MZGSUP    ***************************
 C MZGSUP controls the simulation within the 3D ground start up period.
 C *********************************************************************
       SUBROUTINE MZGSUP(ISS)
-      INCLUDE 'building.h'
-      INCLUDE 'tdf2.h'
+#include "building.h"
+#include "tdf2.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -2428,7 +2428,7 @@ C **************************    FILL1G    *****************************
 C FILL1G fills up the 1D ground temperature array.
 C *********************************************************************
       SUBROUTINE FILL1G
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/C1/NCOMP,NCON
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3

@@ -1,6 +1,6 @@
       SUBROUTINE PCONVT(NFILE,N1,N2)
 
-      INCLUDE 'viewer.h2'
+#include "viewer.h2"
 
       PARAMETER (MNF=10, MTR=100)
 

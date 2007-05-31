@@ -28,8 +28,8 @@ C ASSESS - Decides whether to pass the CFD-calculated convection coefficients
 C to the thermal domain for inclusion in the zone matrix.
 
       SUBROUTINE ASSESS(ICOMP,ISUR)
-      INCLUDE 'building.h'
-      INCLUDE 'cfd.h'
+#include "building.h"
+#include "cfd.h"
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
       common/htccfd/HCICFD(MCOM,MS)

@@ -106,7 +106,7 @@ C connected nodes are of a type as expected by the corresponding
 C CMP??C coefficient generator routine
 
       SUBROUTINE MZSDAT
-      INCLUDE 'plant.h'
+#include "plant.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -301,8 +301,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 
       SUBROUTINE CMP01S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -364,8 +364,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP02S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -438,8 +438,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP03S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -514,8 +514,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP04S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -588,8 +588,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP05S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -656,8 +656,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP06S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -721,8 +721,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       subroutine cmp07s(ipcomp)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -786,8 +786,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP09S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -862,8 +862,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP10S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -942,8 +942,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP11S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1022,8 +1022,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP12S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1098,8 +1098,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP14S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1168,8 +1168,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP20S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1235,8 +1235,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP21S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1308,8 +1308,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP22S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1373,8 +1373,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP23S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1438,8 +1438,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP24S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1514,8 +1514,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP25S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1597,8 +1597,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP26S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1683,8 +1683,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP27S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1756,8 +1756,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP28S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1814,8 +1814,8 @@ C whether the number of connections to this component is correct
 C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
       subroutine cmp29s(ipcomp)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1879,8 +1879,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 
       SUBROUTINE CMP30S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1952,8 +1952,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP31S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2031,8 +2031,8 @@ C node 1 represents water              (ISV=20)
 C node 2 represents water              (ISV=20)
 C
       SUBROUTINE CMP32S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2109,8 +2109,8 @@ C node 1 represents gas                (ISV=21)
 C node 2 represents water              (ISV=20)
 C
       SUBROUTINE CMP33S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2188,8 +2188,8 @@ C node 2 represents gas                (ISV=21) (1 connection)
 C node 3 represents gas                (ISV=21)
 C
       SUBROUTINE CMP34S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2279,8 +2279,8 @@ C node 2 represents air            (ISV=21)
 C node 3 represents water          (ISV=20)
 C
       SUBROUTINE CMP40S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2368,8 +2368,8 @@ C node 2 represents air            (ISV=21)
 C node 3 represents water          (ISV=20)
 C
       SUBROUTINE CMP41S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2453,8 +2453,8 @@ C node 1 represents solid&air material (ISV=21)
 C node 2 represents water              (ISV=20)
 C
       SUBROUTINE CMP43S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2536,8 +2536,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP50S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2609,8 +2609,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP51S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2690,8 +2690,8 @@ C node 2 represents air            (ISV=21)
 C node 3 represents water          (ISV=20)
 C
       SUBROUTINE CMP67S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2769,8 +2769,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP70S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2851,8 +2851,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP71S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2914,8 +2914,8 @@ C
 
       SUBROUTINE CMP72S(IPCOMP)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2977,8 +2977,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP90S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3047,8 +3047,8 @@ c node 1 is external wall
 c node 2 is zone air
 C
       subroutine cmp91s(ipcomp)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3118,8 +3118,8 @@ C component is correct and whether the connected nodes are of a type as
 C expected by the corresponding coefficient generator routine.
 C
       SUBROUTINE CMP92S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3170,8 +3170,8 @@ C Nodes 1 to 5 are cold fluid nodes.
 C Nodes 6 to 10 are solid nodes.
 C Connection to this component is via nodes 1 and 5.
       SUBROUTINE CMP93S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3248,8 +3248,8 @@ C of control variables have been specified, whether the number of
 C connections is correct and whether the connections are to the
 C correct fluid type.
        SUBROUTINE CMP94S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -3306,8 +3306,8 @@ C of control variables have been specified, whether the number of
 C connections is correct and whether the connections are to the
 C correct fluid type.
        SUBROUTINE CMP98S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -3370,8 +3370,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE CMP99S(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

@@ -113,8 +113,8 @@ C           network need not be matched.
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -124,15 +124,15 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
-      INCLUDE 'net_flow.h'
-      INCLUDE 'tdf2.h'
-      INCLUDE 'cfd.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'gnetwk.h'
-      INCLUDE 'dhw_common.h'
-      INCLUDE 'MultiYear_simulations.h'
-      INCLUDE 'bc_data.h'
-      INCLUDE 'espriou.h'
+#include "net_flow.h"
+#include "tdf2.h"
+#include "cfd.h"
+#include "uncertainty.h"
+#include "gnetwk.h"
+#include "dhw_common.h"
+#include "MultiYear_simulations.h"
+#include "bc_data.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       PARAMETER (MSTMC=1)
@@ -2554,7 +2554,7 @@ C information in common blocks  which are filled by reading the
 C system configuration file. If ICF=1 then display with zone and surface names 
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -2581,51 +2581,51 @@ C Trap out of range IC1 and IE1 variables.
       ZST1=zname(IC1(ICON))
       IF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8985)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 8985   FORMAT(I4,1X,a,' in ',a,' is External')
+ 8985   FORMAT(I3,2X,a,' in ',a,' is External')
       ELSEIF(ICT(ICON).EQ.1.AND.ICF.GT.0)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,8984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
- 8984     FORMAT(I4,1X,a,' in ',a,' >|< Identical environment ')
+ 8984     FORMAT(I3,2X,a,' in ',a,' >|< Identical environment ')
         else
           WRITE(CXSTR,8987)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 8987     FORMAT(I4,1X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
+ 8987     FORMAT(I3,2X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ELSEIF(ICT(ICON).EQ.2.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8983)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1)),
      &                   IC2(ICON),IE2(ICON)
- 8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
+ 8983   FORMAT(I3,2X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &    I4,' W rad')
       ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
         SST2=SNAME(IC2(ICON),IE2(ICON))
         ZST2=zname(IC2(ICON))
         WRITE(CXSTR,8982)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1)),
      &                        SST2(1:LNBLNK(SST2)),ZST2(1:LNBLNK(ZST2))
- 8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)
+ 8982   FORMAT(I3,2X,a,' in ',a,' >|< ',a,' in ',a)
       ELSEIF(ICT(ICON).EQ.4.AND.ICF.GT.0)THEN
         IF(IC2(ICON).GT.0)THEN
           WRITE(CXSTR,8981)ICON,SST1(1:LNBLNK(SST1)),
      &                     ZST1(1:LNBLNK(ZST1)),IC2(ICON)
- 8981     FORMAT(I4,1X,a,' in ',a,' >|< ground profile',I2)
+ 8981     FORMAT(I3,2X,a,' in ',a,' >|< ground profile',I2)
         ELSEIF(IC2(ICON).EQ.-3)THEN
           WRITE(CXSTR,8998)ICON,SST1(1:LNBLNK(SST1)),
      &                     ZST1(1:LNBLNK(ZST1))
- 8998     FORMAT(I4,1X,a,' in ',a,' >|< 3D ground model')
+ 8998     FORMAT(I3,2X,a,' in ',a,' >|< 3D ground model')
         ELSE
           WRITE(CXSTR,8980)ICON,SST1(1:LNBLNK(SST1)),
      &                     ZST1(1:LNBLNK(ZST1)),IE2(ICON)
- 8980     FORMAT(I4,1X,a,' in ',a,
+ 8980     FORMAT(I3,2X,a,' in ',a,
      &         ' >|< user def ground profile',I2)
         ENDIF
       ELSEIF(ICT(ICON).EQ.5.AND.ICF.GT.0)THEN
         WRITE(CXSTR,7984)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 7984   FORMAT(I4,1X,a,' in ',a,' is adiabatic')
+ 7984   FORMAT(I3,2X,a,' in ',a,' is adiabatic')
 C BASESIMP start.
       ELSEIF(ICT(ICON).EQ.6.AND.ICF.GT.0)THEN
         WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
- 7986   FORMAT(I4,1X,a,' in ',a,' is BASESIMP fndtn')
+ 7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
@@ -2633,11 +2633,11 @@ C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1))
- 9984     FORMAT(I4,1X,a,' in ',a,' >|< Identical CEN 13791 ')
+ 9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical CEN 13791 ')
         else
           WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
      &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
+ 9987     FORMAT(I3,2X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ENDIF
@@ -2650,7 +2650,7 @@ C HZSTOCN scans the current connections list and builds an
 C array IZSTOCN(MCOM,MS) which holds the connection index.
 
       SUBROUTINE HZSTOCN
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)

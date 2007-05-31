@@ -266,7 +266,7 @@ C ENCPOL converts 'GEN' type data (COMMON/G1M) to a Polygon
 C data structure.
       SUBROUTINE  ENCPOL(I,NA,NAP,IAPNT,APOL)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
 

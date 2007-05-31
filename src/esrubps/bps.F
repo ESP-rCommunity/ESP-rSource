@@ -129,13 +129,13 @@ C SubBps can be used where bps needs to be called as
 C a subroutine rather than as an application.
       subroutine SubBps
 
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'uncertainty.h'
-      INCLUDE 'net_flow.h'
-      INCLUDE 'MultiYear_simulations.h'
-      INCLUDE 'cfd.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "plant.h"
+#include "uncertainty.h"
+#include "net_flow.h"
+#include "MultiYear_simulations.h"
+#include "cfd.h"
+#include "esprdbfile.h"
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.

@@ -32,7 +32,7 @@ C spmlabel - text label describing special materal (max 16 chars).
 C spmflg   - flag indicating whether special materials are active (0 or 1).
       subroutine SPMINIT
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -191,7 +191,7 @@ C flag ispmxist is greater than 0 i.e. when special materials have been
 C defined.
 
       subroutine SPMWRIT
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

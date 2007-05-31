@@ -26,10 +26,10 @@ C ********** bcfwrite ********
 C bcfwrite takes a list of constructions (clist) and builds
 C a bcf file. ilen is the number of constructions.
       subroutine bcfwrite(ifa,file,act,ilen,clist,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'espriou.h'
+#include "building.h"
+#include "espriou.h"
 C espriou.h provides currentfile.
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
       COMMON/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF

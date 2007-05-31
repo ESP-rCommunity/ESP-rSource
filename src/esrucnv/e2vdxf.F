@@ -24,7 +24,7 @@ C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2vdxf(itrc,incobs,ichop)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -414,7 +414,7 @@ C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2thf(itrc,incobs,ichop)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

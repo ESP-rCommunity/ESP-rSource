@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C e2dxf takes an esp-r problem definition and creates a zip
 C file.
       subroutine e2zip(itrc,incobs,ichop)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

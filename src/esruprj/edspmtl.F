@@ -33,8 +33,8 @@ C EG - edit/add renewables
 C IER=0 OK, IER=1 problem.
 
       SUBROUTINE EDSPLIST(MODE,IVAL,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/filep/ifil
@@ -336,11 +336,11 @@ C Number of miscellaneous data items
 C Data items.
 
       subroutine EDSPM(ISPM,MODE,ITRU)
-      INCLUDE 'net_flow.h'
-      INCLUDE 'building.h'
-      INCLUDE 'power.h'
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "net_flow.h"
+#include "building.h"
+#include "power.h"
+#include "epara.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)

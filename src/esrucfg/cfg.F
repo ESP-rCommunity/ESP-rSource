@@ -32,11 +32,11 @@ C  lindir - returns alpha and theta angles of a line.
 C  surbox - find bounding box and centre of a surface.
 
       program cfg
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 C espriou.h provides currentfile.
       integer igraphiclib  ! external definition
 
@@ -983,7 +983,7 @@ C CONFIG processes the vertex data and presents close matches for
 C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
      &  M4SKP,M5SKP,M6SKP,M7SKP,OTHEROK)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1812,7 +1812,7 @@ C ESACON import surface connection attributes into the problem topology
 C common block C3 while taking into account confirmation preferences.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2221,7 +2221,7 @@ C edges have different angles 'ALPHA' and 'THETA' where:
 C         ALPHA is measured from the X axis on the XY plane.
 C         THETA is measured from the XY plane.
       SUBROUTINE SFCRNR(DACC,IZN, JSURF, NAPICS, COORD)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -2306,7 +2306,7 @@ C Alpha lies in the XY plane and theta measured from the XY plane.
 C Find bounding box and center related to a surface. Dx is cushion
 C to place around the box (m).
       subroutine surbox(iz,is,dx,cx,cy,cz,sxmx,sxmn,symx,symn,szmx,szmn)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       SXMX=-1.E+7
       SYMX=-1.E+7

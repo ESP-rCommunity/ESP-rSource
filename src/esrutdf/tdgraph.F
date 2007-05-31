@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       SUBROUTINE TMPLOT(ITRC,IFOC,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB

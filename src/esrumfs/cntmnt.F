@@ -36,8 +36,8 @@ C AFLOWM   = Airmass flow matrix with reaction rate coefficients ((K))
 
       SUBROUTINE MZCONT
 
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -312,7 +312,7 @@ C to CCONC(NNOD,NCONTM)
 
       SUBROUTINE PRERES
 
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -405,8 +405,8 @@ C ISTYP  = Source/sink type
 C RCMGL  = Rate of contaminant mass gained/lost from each source/sink
 
       SUBROUTINE CTSASM
-      INCLUDE 'net_flow.h'
-      INCLUDE 'building.h'
+#include "net_flow.h"
+#include "building.h"
 
 C Simulation time commons
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS

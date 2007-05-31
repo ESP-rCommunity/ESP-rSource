@@ -29,7 +29,7 @@ C  CHITMSL - a copy of CHITMS but for longer strings (300 characters).
 C *********************** EMKRAD ***********************
 C EMKRAD controls the creation and editing of radiance scene descriptions.
       SUBROUTINE EMKRAD
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -239,7 +239,7 @@ C Recover previous view.
 C *********************** MKVREND ***********************
 C MKVREND controls the creation and editing of visualisations and renderings.
       SUBROUTINE MKVREND
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

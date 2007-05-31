@@ -75,7 +75,7 @@ C This routine initialises all the electrical network and solution
 C parameters prior to the start of an electrical network simulation. 
 C 
       SUBROUTINE ENETSINI
-      INCLUDE 'power.h'
+#include "power.h"
 
 C The PER-UNIT electrical network state variables.
       COMMON/ENETVPU/VOLTPUP(MENOD),VOLTPUF(MENOD)
@@ -213,7 +213,7 @@ C NHREC    - the number of records used to store hybrid component data
 C **************************************************************************************
       SUBROUTINE ENETLIBH 
 
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -367,8 +367,8 @@ C ******************************* ENETCBAZ  ************************************
 C 
       SUBROUTINE ENETCBAZ
 
-      INCLUDE 'power.h'
-      INCLUDE 'building.h' 
+#include "power.h"
+#include "building.h" 
 
 C Trace
       COMMON/OUTIN/IUOUT,IUIN
@@ -721,8 +721,8 @@ C ******************************************************************************
 
       SUBROUTINE ENETZ2PU
 
-      INCLUDE 'power.h'
-      INCLUDE 'building.h'
+#include "power.h"
+#include "building.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -1076,8 +1076,8 @@ C impedance matrix.
 
       SUBROUTINE ENETCPUY
 
-      INCLUDE 'power.h'
-      INCLUDE 'building.h'
+#include "power.h"
+#include "building.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -1277,8 +1277,8 @@ C YADM(I,J) - an enntry in the admittance matrix
 
       SUBROUTINE ENETADMY
 
-      INCLUDE 'power.h'
-      INCLUDE 'building.h'
+#include "power.h"
+#include "building.h"
 
 C Trace
       COMMON/TC/ITC,ICNT
@@ -1420,7 +1420,7 @@ C ******************************************************************************
 
        SUBROUTINE ENETPARAM
 
-      INCLUDE 'power.h'
+#include "power.h"
 
       COMMON/ENETSIMP/ENETMAXI,ENETSLVT,ENETVCVG,ENETACVG,ENETVLIM,
      &ENODCVGF(MENOD),CVGCHK

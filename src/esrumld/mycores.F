@@ -46,7 +46,7 @@ C    4-mould information
 
       subroutine mycorecv(irecov,imld)
 
-      INCLUDE 'mould.h'
+#include "mould.h"
 
       common/outin/iuout,iuin
       common/moupk/ispp(mould),a(4,mould),mldnam(mould)
@@ -242,7 +242,7 @@ C ****************** mycograph *****************************
 
       subroutine mycograph
 
-      INCLUDE 'mould.h'
+#include "mould.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -434,7 +434,7 @@ C Reset plot records.
 C ********************
 C subroutine curvedraw 
       subroutine curvedraw(imld)
-      INCLUDE 'mould.h'
+#include "mould.h"
 
       common/outin/iuout,iuin
       common/grphlim/xmin,xmax,ymin,ymax

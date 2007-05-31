@@ -73,7 +73,7 @@ C        BTHDT(ITHF,ITHEQ,3) : maximum temperature
 C
 C **************************************************************
       SUBROUTINE THMENU(ITRC)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -426,7 +426,7 @@ C THRMEQ displayes the thermal equations menu . This subroutine
 C is called by THMENU .
 C ****************************************************************
       SUBROUTINE THRMEQ(ITHF)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -711,7 +711,7 @@ C Error messages
 C *****************************  THERMC  ******************************
 
       SUBROUTINE THERMC(ICHCK)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
@@ -961,7 +961,7 @@ C THCHKS  checks  if  there is any  overlapping in  defining the thermal
 C properties of layers.
 C *********************************************************************  
       SUBROUTINE THCHKS(I1,J1,I2,IZ,IS,IL,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
@@ -996,7 +996,7 @@ C THCHKF  checks  if  there is any  overlapping in  defining the thermal
 C properties of layers in the same thermal function.
 C *********************************************************************  
       SUBROUTINE THCHKF(IF,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)

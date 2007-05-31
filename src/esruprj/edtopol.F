@@ -34,8 +34,8 @@ C ************* EDCONN
 C Edit connection attributes in common block __ via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -274,7 +274,7 @@ C **************** CONXMENU
 C CONXMENU returns an English description in CXITM of the inter-connection 
 C information. 
       SUBROUTINE CONXMENU(ICON,CXITM)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
@@ -387,8 +387,8 @@ C **************** anchor
 C anchor defines and instanciates anchor points (a list of connections
 C associated with a concept).
       subroutine anchor(ifoc,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
@@ -934,8 +934,8 @@ C **************** easkconn
 C Select one or more connections from a list.
       subroutine easkconn(inpic,iconnpk,lconnpk,promp1,promp2,ermsg,
      &  ltype,ier,nhelp)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1118,8 +1118,8 @@ C idsta and anchora.
 C << Note: this procedure is somewhat out of date. Its function
 C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1445,7 +1445,7 @@ C << only do this for the actual number of sets >>
 C ******** serchrpl
 C Serchrpl handles search and replace of composition attributes.
       subroutine serchrpl(act,itrc,ier)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

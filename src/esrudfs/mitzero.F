@@ -26,7 +26,7 @@ C ********************* MITlenV *********************
 C MITlenV  Calculates local mean velocity and length scale for the MIT 0-eqn model.
       SUBROUTINE MITlenV(I,J,K,rleng,Vmean)
 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
      1            Wf(ntcelx,ntcely,ntcelz),
      2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),

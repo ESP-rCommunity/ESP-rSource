@@ -157,8 +157,8 @@ C RecSTr(MMLC,ME,MIMP) REAL = Impacts of the surfacic layer trans.[kg/mlinear*]
 C NM (Integer): dummy variable : Material ID related to Ist Composite and the Jth layer
 
       SUBROUTINE PRECALC
-      INCLUDE 'building.h'
-      INCLUDE 'LCA.h'
+#include "building.h"
+#include "LCA.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 

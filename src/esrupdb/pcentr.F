@@ -26,7 +26,7 @@ C The routine 'PCEDIT' can be used to edit
 C user input data before the routine.
 C 'PCPUT' is called to add it to the datatbase.
         SUBROUTINE PCENTR
-      INCLUDE 'plantdb.h' 
+#include "plantdb.h" 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

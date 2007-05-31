@@ -60,8 +60,8 @@ C     BDATA: none
 C     CDATA: 1 Heating duty (W)
 C
       SUBROUTINE CMP20C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -267,8 +267,8 @@ C     PCDATF/P
 C            1 Inter-node fluid heat capacity rate (W/K)
 
       SUBROUTINE CMP21C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -498,8 +498,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP22C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -657,8 +657,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE CMP23C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -810,9 +810,9 @@ C            3 Overall efficiency (-)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE CMP24C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "plant.h"
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1033,8 +1033,8 @@ C            1 Holds boiler actual ON/OFF state (-)
 C            2 Inter-node fluid heat capacity rate (W/K)
 
       SUBROUTINE CMP25C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1278,8 +1278,8 @@ C     PCDATF/P
 C            1 Inter-node fluid heat capacity rate (W/K)
 
       SUBROUTINE CMP26C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1514,8 +1514,8 @@ C            1 Inter-node fluid heat capacity rate (W/K)
 C            2 Total radiator heat emission (W)
 
       SUBROUTINE CMP27C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1786,8 +1786,8 @@ C
 C     PCDATF(IPCOMP,1): Supplied electrical energy (W).
 
       SUBROUTINE CMP28C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1984,8 +1984,8 @@ c     bdata: none
 c     cdata: mass flow fraction entering damper. 
 
       subroutine cmp29c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt
@@ -2145,8 +2145,8 @@ C
 
 
       SUBROUTINE CMP31C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2385,8 +2385,8 @@ C REF:OPSYS - simulation of thermal systems P169.
 C     
 C   
       SUBROUTINE CMP32C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2675,8 +2675,8 @@ C REF:OPSYS - simulation of thermal systems P169.
 C     
 C   
       SUBROUTINE CMP33C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2954,8 +2954,8 @@ C
 C     CDATA: 1 ON/OFF signal 
       SUBROUTINE CMP34C(IPCOMP,COUT,ISTATS)
 C
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3355,8 +3355,8 @@ C            1 Air temperature of coupled building zone (C)
 C            2 Surface temperature of coupled wall in 1 (C)
 
       SUBROUTINE CMP50C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3528,8 +3528,8 @@ C            2 Surface temperature of "viewed" wall in 1 (C)
 C            3 Surface temperature of mount wall in 1 (C)
 
       SUBROUTINE CMP51C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3687,8 +3687,8 @@ C     CDATA: 1 air temperature (C)
 C            2 water temperature (C)
 
       SUBROUTINE CMP90C(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3791,8 +3791,8 @@ c            3 Air changes per hour
 c     cdata: 1 Heat gain load (W)
 
       subroutine cmp91c(ipcomp,cout,istats)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       common/outin/iuout,iuin
       common/tc/itc,icnt

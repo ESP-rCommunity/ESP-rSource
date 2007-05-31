@@ -104,7 +104,7 @@ C Where list of climate files is held.
       character journcmd*20,jfile*72
       character altdot*72
       character upath*72
-      INCLUDE 'espinstalldir.h'
+#include "espinstalldir.h"
 
 C Check if running in dll mode, if so clear most of the
 C initial values because they will not be used.
@@ -394,7 +394,7 @@ C It uses espinstalldir.h which was created by the Install
 C script with the current esp-r install directory held
 C in a string instpath.
       SUBROUTINE ESCDEF(dfdblbl,defdbfl,IFDEF,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
@@ -406,7 +406,7 @@ C Defaults.
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
       logical unixok,dll
-      INCLUDE 'espinstalldir.h'
+#include "espinstalldir.h"
 
 C Assume default db names (in case of failure to find defaults
 C file or failure reading it).
@@ -868,7 +868,7 @@ C Help message for parpsf.
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
-      elseif(appn(1:3).eq.'mrt'.or.appn(1:3).eq.'vwf')then
+      elseif(appn(1:3).eq.'mrt')then
         call edisp(iuout,'The viewfactor calculation module.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
@@ -1837,8 +1837,8 @@ C Parse command line paramters for ecnv.
       integer termtype
       integer i,itrc,itmprm,iobs,ichop
       real conv
-      character argument*72,prog*48,inf*144,outs*248,appn*24
-      character iform*24,oform*24,ouf*144,ucfg*72,mode*8
+      character argument*72,prog*48,inf*72,outs*124,appn*24
+      character iform*24,oform*24,ouf*72,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'
       iform = 'UNKNOWN'
@@ -1936,9 +1936,9 @@ C If one parameter.
         write(outs,'(4a)') 'Starting ecnv in ',
      &    oform(1:lnblnk(oform)),' mode with in file ',
      &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,100)
+C        call edisp(iuout,outs)
         write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
-        call edisp248(iuout,outs,100)
+C        call edisp(iuout,outs)
         return
       endif
       end

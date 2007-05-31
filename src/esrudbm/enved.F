@@ -23,9 +23,9 @@ C Environmental construction impacts display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvci(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 C espriou.h provides currentfile.
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -357,8 +357,8 @@ C display and editing. If ACT='T' then produce a tabular listing
 C and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvi(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'espriou.h'
-      INCLUDE 'esprdbfile.h'
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -585,8 +585,8 @@ C Environmental material effects display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvf(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'espriou.h'
-      INCLUDE 'esprdbfile.h'
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -923,8 +923,8 @@ C prefabrication assembly display and editing. If ACT='T'
 C then produce a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edenvp(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'espriou.h'
-      INCLUDE 'esprdbfile.h'
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1133,7 +1133,7 @@ C Environmental impact item popup display.
 C Assumes that current database is open on unit IFB.
 C << this might need to rescan header of IFB >>
       subroutine epopenv(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:

@@ -25,9 +25,9 @@ C Event profiles item display and editing.  If ACT='T' then produce
 C a tabular listing and return, otherwise present editing menu.
 C Assumes that current database is open on unit IFB.
       subroutine edprof(IFB,idbh,ic,iit,ACT,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'espriou.h'
-      INCLUDE 'esprdbfile.h'
+#include "epara.h"
+#include "espriou.h"
+#include "esprdbfile.h"
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -445,7 +445,7 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
  
       SUBROUTINE ELSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 
       CHARACTER*600 OUTSTR,STRING,TMP
       CHARACTER loutstr*248

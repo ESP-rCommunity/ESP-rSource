@@ -151,10 +151,10 @@ C-------------------------------------------------------------------------------
       SUBROUTINE DG_controller(iterp)
       IMPLICIT NONE
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'DG_controller_include.h'
-      INCLUDE 'CETC_definitions.h'
+#include "plant.h"
+#include "building.h"
+#include "DG_controller_include.h"
+#include "CETC_definitions.h"
                                 
 
       common/tc/itc,icnt
@@ -1169,9 +1169,9 @@ C bHW_tank          ! Flag indicating if cold water tank exists.
 
       IMPLICIT NONE
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'DG_controller_include.h'
+#include "plant.h"
+#include "building.h"
+#include "DG_controller_include.h"
 C-------------------------------------------------------------------------------------
 C     Required common blocks
 C-------------------------------------------------------------------------------------
@@ -1659,7 +1659,7 @@ C thermal_control_signal
 C--------------------------------------------------------------------------------
 C     Common declarations
 C--------------------------------------------------------------------------------
-      INCLUDE 'DG_controller_include.h'
+#include "DG_controller_include.h"
 
 
 C--------------------------------------------------------------------------------

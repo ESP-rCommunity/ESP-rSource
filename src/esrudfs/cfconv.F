@@ -25,7 +25,7 @@ C  CFCONV - Calculate convection coefficients based on the CFD predictions.
 C ********************* CFAREA *********************
 C CFAREA - Calculates the area of ESP-r surfaces covered by CFD solid boundaries.
       SUBROUTINE CFAREA(NCNST)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CFDARE/ATCFD(MNSBZ)
@@ -89,8 +89,8 @@ C---------low or high.
 C ********************* CFCONV *********************
 C CFCONV - Calculate convection coefficients based on the CFD predictions.
       SUBROUTINE CFCONV(TAIR,HC,SFNAM,NCNST)
-      INCLUDE 'cfd.h'
-      INCLUDE 'building.h'
+#include "cfd.h"
+#include "building.h"
 
 
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB

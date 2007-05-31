@@ -26,9 +26,9 @@ C associated with this zone. If one does not exist then allow user
 C to create one.
 C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "epara.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
@@ -610,7 +610,7 @@ C ************* ECROBS
 C ECROBS: Read in existing obstruction file or create a fresh one.
 C If silent is true then either create or deference silently.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -807,7 +807,7 @@ C Provide default values for the new obstructions file.
 C ************* EDOBSB 
 C EDOBSB: Edit details of an obstruction block.
       SUBROUTINE EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1062,8 +1062,8 @@ C STEP 7 - Derive new obstructions.
 C IRS is the selected surface, AZI is its asimuth, RTK is the thickness
 C of the reveal (adj wall), OWID is the width of the obstruction block.
       SUBROUTINE EREVEAL(ICOMP,IRS,azim,elev,RTK,OWID,blkroot,mat,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

@@ -87,7 +87,7 @@ C *********************** SUBROUTINE TRNSDLAY ***********************
 
       Subroutine TRNSDLAY(IPCOMP,DELAY,TP0,TP1,Ts,N,DY,Cf1,Cfs,
      &                    TF0,TFm,TF1)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       COMMON/Pctime/TIMSEC
       COMMON/DELAY/TEMPF(MPCOM,MDLY),YPOSF(MPCOM,MDLY),NSECTF(MPCOM),

@@ -72,9 +72,9 @@ C----------------------------------------------------------------------
       subroutine process_BC_data_file(
      &    iBase_File_num, bAutoOK, bFatal_Error )
       implicit none
-      INCLUDE 'building.h'
-      INCLUDE 'bc_data.h'
-      INCLUDE 'MultiYear_simulations.h'
+#include "building.h"
+#include "bc_data.h"
+#include "MultiYear_simulations.h"
 
 C External functions.     
       integer lnblnk
@@ -1051,7 +1051,7 @@ C
 C------------------------------------------------------------------------
       logical function bInquire_BC_Name_Exists ( cCol_name )
       implicit none
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 C------------------------------------------------------------------------
 C     Passed arguements 
 C------------------------------------------------------------------------
@@ -1106,7 +1106,7 @@ C----------------------------------------------------------------------
      &                                   iInterp_method,
      &                                   cContext       )
       implicit none
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 
 C External functions.     
       integer lnblnk
@@ -1222,7 +1222,7 @@ C----------------------------------------------------------------------
      &                                   iInterp_method,
      &                                   cContext       )
       implicit none
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -1482,7 +1482,7 @@ C----------------------------------------------------------------------
 
       subroutine get_BC_row( iRow, fValues, cContext )
       implicit none
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 
 C External functions.     
       integer lnblnk
@@ -1576,7 +1576,7 @@ C----------------------------------------------------------------------
       subroutine report_BC_data()
       implicit none
 
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 
 C External functions.     
       integer lnblnk
@@ -1729,7 +1729,7 @@ C----------------------------------------------------------------------
 
       subroutine cleanup_BC_data()
       implicit none
-      INCLUDE 'bc_data.h'
+#include "bc_data.h"
 
 C External functions.     
       integer lnblnk

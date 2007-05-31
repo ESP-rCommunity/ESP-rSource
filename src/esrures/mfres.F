@@ -22,7 +22,7 @@ C *************** MFREADH
 C MFREADH reads header for fluid flow simulation binary results file.
 
       SUBROUTINE MFREADH(IFRES,ITRC)
-      INCLUDE 'net_flow.h'
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB

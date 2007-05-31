@@ -55,9 +55,9 @@ C      USE GCEP_INPUT
 	
       IMPLICIT NONE
 
-      INCLUDE 'building.h'
-      INCLUDE 'gcep_parameters.h'
-      INCLUDE 'gcep_common.h'
+#include "building.h"
+#include "gcep_parameters.h"
+#include "gcep_common.h"
       common/gcepinfo/igcep
       common/gcepfile/gcepfile
 

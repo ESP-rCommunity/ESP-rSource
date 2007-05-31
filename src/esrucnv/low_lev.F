@@ -23,7 +23,7 @@ C Set of low level routines.
 C ***** face3d
 C face3d are triangles or quads which are general surfaces in autocad.
       subroutine face3d
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       integer gcode,innum,ioin,ioout,ioblk
@@ -121,7 +121,7 @@ C Writing to temporary block file, do it in viewer format.
 C this subroutine processes the 'LINE' command in .dxf file of
 C autocad and translates it if it is extruded.
       subroutine genlin
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -305,7 +305,7 @@ C autocad and skip over it.
 
 C ****** genarc
       subroutine genarc 
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

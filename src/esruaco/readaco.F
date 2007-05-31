@@ -56,8 +56,8 @@ C IW(Integer) : 1 = read BCF silently (=2 if not)
 
 
       SUBROUTINE SCNACO(IEask,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'acoustic.h'
+#include "building.h"
+#include "acoustic.h"
 
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -250,8 +250,8 @@ C   1 = should exist, message & error -301 if not.
 C IW(Integer) : 1 = read ACO silently (=2 if not)
 
       SUBROUTINE SCNZONEACO(ZoneName,IEask,IER)
-      INCLUDE 'building.h'
-      INCLUDE 'acoustic.h'
+#include "building.h"
+#include "acoustic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EVGENL/BCFOK
@@ -447,7 +447,7 @@ C XPubFur (Char)          : Public or Furniture name to find
 
       FUNCTION IPubFur(Itype,XPubFur)
 
-      INCLUDE 'acoustic.h'
+#include "acoustic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 

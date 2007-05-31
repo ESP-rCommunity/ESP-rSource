@@ -37,7 +37,7 @@ C ITRC is the trace level, ITRU is the ouput channel, IUO is the
 C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -69,18 +69,11 @@ C IBCGT() - type of gain for each day type and period
       COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
-C idmdver is the version of dispersed demands.
-C idmdver =0 standard, idmdver =1 with header
-      common/b3ver/idmdver
-
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Flags noting whether casual gain periods are currently sorted.
-      logical sorted,problem
 
       DIMENSION ITEM(13)
       CHARACTER dmdsdesc*248,tcname*248,bdmds*72
@@ -103,8 +96,6 @@ C GFILE is the default file name for project gains file.
         bdmds=GFILE
       endif
 
-C Initially assume periods are not sorted.
-      sorted=.false.
       MODOPR=.FALSE.
 
 C If the model calendar has not yet been setup confirm what to
@@ -197,34 +188,6 @@ C default data.
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
         CALL ERBDMD(ITRC,ITRU,IUO,IER)
-
-C Do cursory check to see if the file is sorted.
-        sorted=.true.
-        problem=.false.
-        call dmdchecksort(1,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Weekday demands might be unsorted or not span whole day.')
-        endif
-        problem=.false.
-        call dmdchecksort(2,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Saturday demands might be unsorted or not span whole day.')
-        endif
-        problem=.false.
-        call dmdchecksort(3,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Sunday demands might be unsorted or not span whole day.')
-        endif
-      ELSE
-
-C << place for future user choices >>
-        idmdver=1
       ENDIF
 
   20  write(ITEM(1),'(A,A25)')'a notes: ',dmdsdesc(1:25)
@@ -285,43 +248,6 @@ C Help text for this menu.
 30    CALL EMENU('Project demands',ITEM,NITEMS,INO)
 
       IF(INO.EQ.NITEMS)THEN
-
-C If not sorted then warn the user prior to exiting.
-        sorted=.true.
-        problem=.false.
-        call dmdchecksort(1,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Weekday demands might be unsorted or not span whole day.')
-        endif
-        problem=.false.
-        call dmdchecksort(2,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Saturday demands might be unsorted or not span whole day.')
-        endif
-        problem=.false.
-        call dmdchecksort(3,problem,ier)
-        if(problem)then
-          sorted=.false.
-          call edisp(iuout,
-     &      'Sunday demands might be unsorted or not span whole day.')
-        endif
-        if(.NOT.sorted)then
-          dok=.true.
-          h(1)='The dispersed demand periods do not cover the entire'
-          h(2)='day or might have gaps or overlaps. You should correct'
-          h(3)='this prior to leaving this facility. If you say no then'
-          h(4)='the dispersed demands might be mis-interpreted. '
-          CALL askok(
-     &      ' Periods might not cover entire day or have gaps. Do you',
-     &      ' want to edit the periods at this time?',OK,dok,4)
-          IF(OK) goto 20
-        endif
-
-C If the file changed then warn the user about lost data.
         if(MODOPR)then
           if(browse)return
           dok=.true.
@@ -423,8 +349,6 @@ C   Weekday cannot be set by this method.
 C List contents.
         call BDMDINF(iuout,IER)
       ELSEIF(INO.EQ.11)THEN
-
-C Save common block information to file. 
         call edisp(ITRU,' ')
         if(bdmds(1:2).EQ.'  '.or.bdmds(1:7).eq.'UNKNOWN')then
           LTMP=GFILE
@@ -435,24 +359,13 @@ C Save common block information to file.
    9    H(1)='A project demands file contains building level info'
         H(2)='on fans, pumps, lifts, DHW casual gains which may '
         H(3)='be applied to an integrated performance view. '
-        CALL EASKS(LTMP,' Dispersed demands file name: ',
+        CALL EASKS(LTMP,' Demands file name: ',
      &    ' ',72,GFILE,'demands file',IER,3)
         IF(LTMP(1:2).NE.'  ')THEN
           bdmds=LTMP
         ELSE
           GOTO 9
         ENDIF
-
-C If older version check with user about upgrade.
-        if(idmdver.eq.0)then
-          dok=.true.
-          h(1)='Older file format does not include a date stamp.'
-          h(2)='If you say ok then a newer format will be used. '
-          CALL askok(
-     &      ' Older format (without date stamp) detected. Do you wish',
-     &      ' to save changes with current format ?',OK,dok,2)
-          if(ok) idmdver=1
-        endif
 
 C Merge current information into a descriptive file
 C and save the system configuration file if not browsing.
@@ -502,8 +415,8 @@ C based on the day type passed.
 C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
       SUBROUTINE EDBCAS(ITRU,IWSS,IER)
 
-      INCLUDE 'building.h'
-      INCLUDE 'epara.h'
+#include "building.h"
+#include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -837,8 +750,8 @@ C Import a profile from a profiles database to build project demand
 C patterns.
       SUBROUTINE  SBCASL(IN,IDAY,IER)
 
-      INCLUDE 'building.h'
-      INCLUDE 'esprdbfile.h'
+#include "building.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
@@ -995,9 +908,7 @@ C            Saturday and Sunday etc respectively.
 C Maximum number of demands/day       MC=20
 
       SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
-      INCLUDE 'building.h'
-#include "espriou.h"
-C espriou.h provides currentfile.
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1015,74 +926,31 @@ C IBCGT() - type of gain (1-7)
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
       common/IPVDMD/idmdinc(7)
-      common/b3ver/idmdver
 
 C Calendar commons.
       common/calena/calename,calentag(10),calendayname(10)
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
-      character dllsubr*12,dllmesg*124,WORD*20,outs*124
       character calename*32,calentag*12,calendayname*32
-      character dstmp*24
       CHARACTER*6 blodlabel
       integer idt  ! local counter of day type.
-      logical dll
 
       IER=0
-
-C Check if running in dll mode.
-      call isadll(dll)
 
 C Initialise project data file.
       CALL EFOPSEQ(IUO,bdmds,1,IER)
       IF(IER.NE.0)THEN
-        write(outs,'(3a)') 'Dispersed demands file ',
-     &    bdmds(1:lnblnk(bdmds)),' could not be opened.'
-        if(dll)then
-          dllsubr='ERBDMD'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call edisp(iuout,outs)
-          IER=1
-          RETURN
-        endif
+        IER=1
+        RETURN
       ENDIF
-      write(currentfile,'(a)') bdmds(1:lnblnk(bdmds))
-      
+
 C Read lines from file, discarding comments. To allow for operation
 C names with spaces copy directly from OUTSTR rather than parsing
 C it into words. Use long strip for notes line. 
       CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
       IF(IER.NE.0)RETURN
-
-C Detect header and set a version number.
-      if(loutstr(1:10).eq.'*Dispersed')then
-        if(loutstr(12:14).eq.'1.0')then
-          idmdver=1
-        elseif(loutstr(12:14).eq.'2.0')then
-          idmdver=2
-        endif
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
-        IF(IER.NE.0) goto 1002
-        K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
-        IF(IER.NE.0) goto 1002
-        if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
-        endif
-        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'dispersed notes',IER)
-        dmdsdesc=LOUTSTR
-      else
-        dmdsdesc=LOUTSTR
-        idmdver=0
-      endif
-
+      dmdsdesc=LOUTSTR
 
 C Loop through all of the calendar day types.
       do 30 idt=1,nbdaytype
@@ -1114,48 +982,13 @@ C Set related IPV inclusion index to 1.
      &      IER)
           CALL EGETWR(OUTSTR,K,BCONC(idt,I),0.0,1.,'W','cas conv frac',
      &      IER)
-          if(IBCGS(idt,I).GT.IBCGF(idt,I))then
-
-C If periods are out of sync then return with a warning.
-            write(outs,'(3a)') ' Period start-end mismatch in...',
-     &        OUTSTR(1:50),'...'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
-          endif
-
+          IF(IBCGS(idt,I).GT.IBCGF(idt,I))goto 1006
           X=BRADC(idt,I)+BCONC(idt,I)
-          if(X.GT.1.02)then
-
-C If radiant plus convective is over unity warn.
-            write(outs,'(3a)') ' Radiant & convec frc>1.02 in...',
-     &        OUTSTR(1:50),'...'
-            if(dll)then
-              dllsubr='ERBDMD'
-              dllmesg=outs
-              ier=2
-              CALL ERPFREE(IUO,ISTAT)
-              return
-            else
-              call edisp(iuout,outs)
-              IER=1
-              CALL ERPFREE(IUO,ISTAT)
-              RETURN
-            endif
-          endif
-          IF(X.LT.0.95.AND.ITRC.GT.1)call edisp(iuout,
+          IF(X.GT.1.)goto 1015
+          IF(X.LT..95.AND.ITRC.GT.1)call edisp(iuout,
      &                            ' Demand rad:con sum < 1.0')
    40   CONTINUE
-        IF(IER.NE.0) goto 1002
+        IF(IER.NE.0)RETURN
    30 continue
 
 C Check to see if demand labels have been added to the end of the file
@@ -1182,39 +1015,36 @@ C Check for areas associated with each demand label.
  1233   CONTINUE
       ENDIF      
 
- 1235 CONTINUE    ! jump back point if types were not found.
+ 1235 CONTINUE
 
-C Distributed demands reporting if requested.
+C Deman reporting if requested.
       if(ITRC.GE.1)call BDMDINF(iuout,IER)
 
 C Now free project data file.
-      CALL ERPFREE(IUO,ISTAT)
+    7 CALL ERPFREE(IUO,ISTAT)
       RETURN
 
 C Error messages.
+ 1000 IER=1
+      call edisp(iuout,' Project demands file error.')
+      GOTO 7
+
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup '
+      blodlabel(1)='Occup'
       blodlabel(2)='Lights'
       blodlabel(3)='SmPowr'      
-      blodlabel(4)='Fans  '
-      blodlabel(5)='Pumps '
-      blodlabel(6)='Lifts '      
-      blodlabel(7)='DHW   '      
+      blodlabel(4)='Fans'
+      blodlabel(5)='Pumps'
+      blodlabel(6)='Lifts'      
+      blodlabel(7)='DHW'      
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
-      if(dll)then
-        dllsubr='ERBDMD'
-        dllmesg=outs
-        ier=2
-        CALL ERPFREE(IUO,ISTAT)
-        return
-      else
-        call edisp(iuout,outs)
-        IER=1
-        CALL ERPFREE(IUO,ISTAT)
-        RETURN
-      endif
+ 1006 call edisp(iuout,' Period start - end mismatch in the line ...')
+      call edisp(iuout,outstr)
+      goto 1000
+ 1015 call edisp(iuout,' Radiant & convec fractions > 1.0 in...')
+      call edisp(iuout,outstr)
+      goto 1000
 
       END
 
@@ -1225,7 +1055,7 @@ C has been checked.  OPFIL is the name of the file to be
 C written to (confirm if to be overwritten).
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE EMKBDMD(IUO,OPFIL,IER)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1234,7 +1064,6 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 
       COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-      common/b3ver/idmdver
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
@@ -1246,7 +1075,6 @@ C Calendar commons.
       CHARACTER dmdsdesc*248,bdmds*72,OPFIL*72
       character calename*32,calentag*12,calendayname*32
       CHARACTER*6 blodlabel
-      character dstmp*24
 
       IER=0
 
@@ -1258,24 +1086,12 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
-C Write version number and date for this file if newer.
+C << consider a version number and date for this file >>
 C << also consider just putting it in the configuration file >>
-      call dstamp(dstmp)
-      if(idmdver.eq.0)then
-        WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
-     &    OPFIL(:lnblnk(OPFIL))
-  31    FORMAT('# project demands defined in: ',/,'# ',a)
-      elseif(idmdver.eq.1)then
-        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
-     &    '*Dispersed 1.0  # dispersed demands for model'
-        WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
-     &  '  # latest file modification '
-      elseif(idmdver.eq.2)then
-        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
-     &    '*Dispersed 2.0 # dispersed demands for model'
-        WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
-     &  '  # latest file modification '
-      endif
+
+      WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
+     &  OPFIL(:lnblnk(OPFIL))
+  31  FORMAT('# project demands defined in: ',/,'# ',a)
 
 C Write documentation.
       WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)dmdsdesc(1:lnblnk(dmdsdesc))
@@ -1318,7 +1134,7 @@ C BDMDINF provides an English description of non-specific project demands
 C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/BL1/dmdsdesc,bdmds
 
 C Descriptive label for a zone load or casual gain types.
@@ -1369,199 +1185,3 @@ C Calendar commons.
 
       RETURN
       END
-
-C ************* dmdcheckcascount
-C checkcascount scans current P3 & P3TYPE commons and refreshes 
-C dmdloadcount() & dmdload24() in common blocks dmdloadcnt & dmdloadall
-C Parameters:
-C   ier - set to 1 if there was a problem
-      subroutine dmdcheckcascount(ier)
-#include "building.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Support for up to 10 calendar day types
-C NBCAS() number of gains on each day type.
-C IBCGS(),IBCGF() - start and finish hours of each demand
-C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
-C BRADC(),BCONC(), - radiant and convective portions of each demand
-C IBCGT() - type of gain for each day type and period
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
-C dmdloadcount(gaintype,daytype) - nb of each gain type (whether
-C   absolute or W/m2).
-C dmdloadm2count(gaintype,daytype) - nb of each m2 gain types.
-C dmdloadmixed(gaintype,daytype) - if zero then nothing, if one
-C   then all non-zero are absolute, if two then all (non-zero) are in
-C   W/m2 or person/m2, if three then non-zero are mixed.
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
-     &               dmdloadmixed(7,10)
-
-      common/dmdloadall/dmdload24(7,10,2)
-      logical dmdload24
-
-C Keep track of how many non-zero positive and negative casual
-C gain types - in order to figure out value of loadmixed.
-      integer dmdloadnonzero,dmdloadm2nonzero
-      dimension dmdloadnonzero(7,10),dmdloadm2nonzero(7,10)
-
-      integer ij,ik   ! for counters
-      integer idtype  ! for the type of dispersed demand
-      integer idindex ! for neagtive types of dispersed demand
-
-C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
-      do 40 ij=1,7
-        do 41 ik=1,10
-          dmdloadcount(ij,ik)=0
-          dmdloadm2count(ij,ik)=0
-          dmdloadm2nonzero(ij,ik)=0
-          dmdloadmixed(ij,ik)=0
-          dmdload24(ij,ik,1)=.false.
-          dmdload24(ij,ik,2)=.false.
- 41     continue
- 40   continue
-
-C Debug..
-      write(6,*) 'Nb of daytype periods for dispersed demands...'
-
-C Loope through each possible day type (ik) and period (ij).
-      do 42 ik=1,10
-        if(NBCAS(ik).gt.0)then
-          do 43 ij=1,NBCAS(ik)
-            idtype=IBCGT(ik,ij)
-            if(idtype.gt.0.and.idtype.le.7)then
-              dmdloadcount(idtype,ik)=dmdloadcount(idtype,ik)+1
-              if(CBMGS(ik,ij).gt.0.0)then
-                dmdloadnonzero(idtype,ik)=dmdloadnonzero(idtype,ik)+1
-              endif
-              if(IBCGS(ik,ij).eq.0)dmdload24(idtype,ik,1)=.true. 
-              if(IBCGF(ik,ij).eq.24)dmdload24(idtype,ik,2)=.true. 
-
-C Determine if any of the casual gain types were mixed.
-              if(dmdloadnonzero(idtype,ik).eq.0.and.
-     &           dmdloadm2nonzero(idtype,ik).eq.0)then
-                dmdloadmixed(idtype,ik)=0
-              elseif(dmdloadnonzero(idtype,ik).gt.0.and.
-     &               dmdloadm2nonzero(idtype,ik).eq.0)then
-                dmdloadmixed(idtype,ik)=1
-              elseif(dmdloadnonzero(idtype,ik).eq.0.and.
-     &               dmdloadm2nonzero(idtype,ik).gt.0)then
-                dmdloadmixed(idtype,ik)=2
-              elseif(dmdloadnonzero(idtype,ik).ne.
-     &               dmdloadm2nonzero(idtype,ik))then
-                dmdloadmixed(idtype,ik)=3
-              endif
-            elseif(idtype.lt.0)then
-              idindex=iabs(idtype)
-              dmdloadcount(idindex,ik)=dmdloadcount(idindex,ik)+1
-              dmdloadm2count(idindex,ik)=dmdloadm2count(idindex,ik)+1
-              if(CBMGS(ik,ij).gt.0.0)then
-                dmdloadm2nonzero(idindex,ik)=
-     &            dmdloadm2nonzero(idindex,ik)+1
-              endif
-              if(IBCGS(ik,ij).eq.0)dmdload24(idindex,ik,1)=.true. 
-              if(IBCGF(ik,ij).eq.24)dmdload24(idindex,ik,2)=.true. 
-
-C Determine if any of the casual gain types were mixed.
-              if(dmdloadnonzero(idindex,ik).eq.0.and.
-     &           dmdloadm2nonzero(idindex,ik).eq.0)then
-                dmdloadmixed(idindex,ik)=0
-              elseif(dmdloadnonzero(idindex,ik).gt.0.and.
-     &               dmdloadm2nonzero(idindex,ik).eq.0)then
-                dmdloadmixed(idindex,ik)=1
-              elseif(dmdloadnonzero(idindex,ik).eq.0.and.
-     &               dmdloadm2nonzero(idindex,ik).gt.0)then
-                dmdloadmixed(idindex,ik)=2
-              elseif(dmdloadnonzero(idindex,ik).ne.
-     &               dmdloadm2nonzero(idindex,ik))then
-                dmdloadmixed(idindex,ik)=3
-              endif
-            endif
- 43       continue
-
-C Debug..
-          write(6,*) ik,' loadcount loadm2count loadmixed'
-          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
-     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
-     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
-          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
-     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
-     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
-          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
-     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
-     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
-        endif
- 42   continue
-      return
-      end
-
-C ******************* dmdchecksort *********************
-C dmdchecksort does a quick check of dispersed demands for sorted state.
-C not extensive, but should catch most issues.
-      subroutine dmdchecksort(idaytype,problem,ier)
-#include "building.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-
-      common/b3ver/idmdver
-
-C Descriptive label for each project demands type.
-      common/bloadlabel/blodlabel(7)
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
-     &               dmdloadmixed(7,10)
-
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-      common/dmdloadall/dmdload24(7,10,2)
-      logical dmdload24
-
-C logical problem set to true if daytype might not be sorted.
-      logical problem
-      character outs*124
-      character calename*32,calentag*12,calendayname*32
-      CHARACTER*6 blodlabel
-
-      if(idmdver.eq.0)then
-        call edisp(iuout,'older format dispersed demands file detected')
-        problem = .true.
-        return
-      endif
-
-C Check how many distributed demands there are for each type on each day type.
-      call dmdcheckcascount(ier)
-
-C How many for each type?
-      do 42 igt=1,7
-        n1=dmdloadcount(igt,idaytype)
-
-C See if first period is 0hr or 1hr and last period is 24.
-        if(n1.gt.0.and.(.NOT.dmdload24(igt,idaytype,1)))then
-          write(outs,'(4a)')'Initial ',blodlabel(igt),
-     &      ' period does not start at zero for ',calentag(idaytype)
-          call edisp(iuout,outs)
-          problem = .true.
-        endif
-
-        if(n1.gt.0.and.(.NOT.dmdload24(igt,idaytype,2)))then
-          write(outs,'(4a)') 'Last ',blodlabel(igt),
-     &      ' period not 24 for daytype ',calentag(idaytype)
-          call edisp(iuout,outs)
-          problem = .true.
-        endif
-  42  continue
-      return
-      end

@@ -23,7 +23,7 @@ C SIEDIT edit the contents of a shading/insolation file.
 
 C SILIST lists the contents of a shading/insolation file.
       SUBROUTINE SILIST(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -39,7 +39,7 @@ C SILIST lists the contents of a shading/insolation file.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SN*12
       CHARACTER*3 month(12)
-      character outs*124,H*72,tg*1,delim*1,xfile*144
+      character outs*124,H*72,tg*1,delim*1,xfile*72
       logical OK,DOK,close1,close2
 
 C ntmc()=1 surface is source of insulation, ntnc()=0 not an insulation source.
@@ -263,7 +263,7 @@ C Error handling.
 C***** SIEDIT edit the contents of a shading/insolation file.
 C Also allow data to be imported and exported.
       SUBROUTINE SIEDIT(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN

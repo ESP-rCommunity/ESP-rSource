@@ -135,10 +135,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_fuel_static_temp(IPCOMP)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "cogen_tanks.h"
 
 
       COMMON/OUTIN/
@@ -587,10 +587,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_fuel_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "cogen_tanks.h"
 
 
       COMMON/OUTIN/
@@ -1825,10 +1825,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_elec_static_temp(IPCOMP)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "cogen_tanks.h"
 
 
       COMMON/OUTIN/
@@ -2151,10 +2151,10 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_elec_coeff_gen(IPCOMP,COUT,ISTATS)
       IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'SOFC.h'
-      INCLUDE 'cogen_tanks.h'
+#include "plant.h"
+#include "building.h"
+#include "SOFC.h"
+#include "cogen_tanks.h"
 
 
       COMMON/OUTIN/
@@ -2865,8 +2865,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE Press_WCH_pipe_static_temp(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2947,8 +2947,8 @@ C     BDATA: none
 C     CDATA: none
 
       SUBROUTINE Press_WCH_pipe_coeff_gen(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3144,8 +3144,8 @@ C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
 C
       SUBROUTINE Press_WCH_pump_static_temp(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3238,9 +3238,9 @@ C            4 Pressure (kPa)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE Press_WCH_pump_coeff_gen(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'net_flow.h'
+#include "plant.h"
+#include "building.h"
+#include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

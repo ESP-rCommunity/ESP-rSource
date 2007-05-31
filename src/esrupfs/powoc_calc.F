@@ -54,7 +54,7 @@ C    subsequently determines the generation or load of the power-only component.
 
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_CALC(IPWC)
-      INCLUDE 'power.h'
+#include "power.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
@@ -198,8 +198,8 @@ C                   [from common/ENETPOWC]
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_nonHVACld(IPWC)
       implicit none 
-      INCLUDE 'building.h'
-      INCLUDE 'power.h'
+#include "building.h"
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -291,8 +291,8 @@ C    fGet_nonHVACld  Occupant-driven electric loads
 C --------------------------------------------------------------------------------
       real function fGet_nonHVACld(cFileName)
       implicit none 
-      INCLUDE 'building.h'
-      INCLUDE 'power.h'
+#include "building.h"
+#include "power.h"
 
 C External functions.     
       integer lnblnk
@@ -482,8 +482,8 @@ C        the fuel cell and imposed on the electrical network.
 C
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_CETC_HVAC_ld(IPWC)
-      INCLUDE 'SOFC.h'
-      INCLUDE 'power.h'
+#include "SOFC.h"
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -609,7 +609,7 @@ C                   [from common/ENETPOWC]
 
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_OUTSIDE_ld(IPWC)
-      INCLUDE 'power.h'
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -746,7 +746,7 @@ C                      transformer losses (W).
 C
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_TRANSFORMER_loss(IPWC)
-      INCLUDE 'power.h'
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -847,7 +847,7 @@ C                      transformer, transmission and distribution losses (W).
 C
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_TxDx_loss(IPWC)
-      INCLUDE 'power.h'
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -945,8 +945,8 @@ C                      [from common/ENETPOWC]
 C
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_Bldg_PCU(IPWC)
-      INCLUDE 'power.h'
-      INCLUDE 'plant.h'
+#include "power.h"
+#include "plant.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -1065,7 +1065,7 @@ C    QTotalWindSupply  The power supplied from the wind farm (W).
 
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_Wind_Supp_Elec(IPWC)
-      INCLUDE 'power.h'
+#include "power.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -1223,10 +1223,10 @@ C     PENODG(i)        Real power generation on node 'i'; i is the node receivin
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_PCU(IPWC)
       implicit none
-      INCLUDE 'power.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h'
+#include "power.h"
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h"
 
 C External functions.     
       integer lnblnk
@@ -1673,9 +1673,9 @@ C                   [from common/ENETPOWC]
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_nonHVACld_BCD(iComponent)
       implicit none
-      INCLUDE 'plant.h'      
-      INCLUDE 'power.h'
-      INCLUDE 'Hydrogen_demand_controller.h'
+#include "plant.h"      
+#include "power.h"
+#include "Hydrogen_demand_controller.h"
 
 C---------------------------------------------------------------------------------
 C     Passed variables

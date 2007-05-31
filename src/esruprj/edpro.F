@@ -37,8 +37,8 @@ C   casual gains to the operations file,
 C   air flow patterns to the operations file,
 C   control information to the configuration control file.
       SUBROUTINE  CASFMK(L144,ier)
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "epara.h"
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       common/FILEP/IFIL
@@ -264,8 +264,8 @@ C existing profile. Asciupdate is set to true if the profile has
 C been edited so that the calling routine will know to write out
 C a fresh ASCII version file.
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'esprdbfile.h'
+#include "epara.h"
+#include "esprdbfile.h"
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
@@ -594,11 +594,11 @@ C ***************** TRIPRO
 C TRIPRO reads data supplied from an ASCII profiles db and writes
 C it to a NEW events profiles database file.
       SUBROUTINE TRIPRO(ITRU,IFA,LASCI,IER)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
-      INCLUDE 'espriou.h'
+#include "espriou.h"
 C espriou.h provides currentfile.
 
       common/pophelp/h(60)
@@ -693,8 +693,8 @@ C remainder of the line after the first word (NCG).
 C **************** TROPRO 
 C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
-      INCLUDE 'esprdbfile.h'
-      INCLUDE 'espriou.h'
+#include "esprdbfile.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)

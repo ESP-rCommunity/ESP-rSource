@@ -34,7 +34,7 @@ C act='t' only text output allowed.
 C act='p' iget parameters already set.
 C index is the goget index.
       SUBROUTINE MODGRF(act,index)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -67,7 +67,7 @@ C Format of the IPV report.
 C  = 1 is human readable text, 2 is tab separated, 3 is java
       common/IPVFORMAT/ipvform,ipvversion
 
-      character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
+      character outs*124,outsn*124,outsd*124,H*72,xfile*72,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
       character SLABEL*32,GLABEL*20,TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
@@ -739,7 +739,7 @@ C MODHED outputs the appropriate header information
 C corresponding to graphical result display.
 
       SUBROUTINE MODHED(act,zlist,iocupf,ialstused)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -862,7 +862,7 @@ C ******************** MODDRW ********************
 C MODDRW draws a histogram of the frequency distribution.
 
       SUBROUTINE MODDRW(IG,alabel)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL

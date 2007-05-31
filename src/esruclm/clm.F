@@ -24,7 +24,7 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -82,7 +82,7 @@ C Climate list common.
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
-      character path*72,upath*72,esprc*72,xfile*144,tg*1,delim*1
+      character path*72,upath*72,esprc*72,xfile*72,tg*1,delim*1
       character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
@@ -851,24 +851,8 @@ C Toggle trace level.
         IF(ITRC.GT.2)ITRC=0
       ELSEIF(INO.EQ.19)THEN
 
-C Feedback channel. Suggest an initial name for the export file.
-C Currently LCLIM is only 72 characters but once it is 144 char
-C then the 130 logic can be added into the 2nd write statement.
-        if(ixopen.eq.0)then
-          llt=lnblnk(LCLIM)
-          if(llt.lt.130)then
-            write(xfile,'(2a)') LCLIM(1:llt),'.report'
-          else
-            write(xfile,'(2a)') LCLIM(1:72),'.report'
-          endif
-        endif
+C Feedback channel.
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Data',IER)
-        if(ixopen.eq.1)then
-          call usrmsg(
-     &      'Any text based reports you request will now be sent to',
-     &      'the export file. Return here and toggle off when done.',
-     &      'W')
-        endif
       ELSEIF(INO.EQ.20)THEN
 
 C Delimiter.
@@ -926,7 +910,7 @@ C hour in any specified day.
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
-      character outs*124,xfile*144,tg*1,delim*1,h*72
+      character outs*124,xfile*72,tg*1,delim*1,h*72
       logical ok,dok
 
 C If in type 8 terminal make the text display area larger before
@@ -1124,6 +1108,92 @@ C Clear common blocks for a new climate file.
       return
       end
 
+C CTLEXP *********** ( same as prj version )
+C CTLEXP: Control feedback to export wireframe or text feedback area.
+C Assign user-specified export file - checking if local or remote.
+C tg is a character T or G specifying text or graphic 
+C info being saved.
+      subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/rpath/path
+
+      character*(*) msg
+      character H*72,xfile*72,path*72,outs*124,tg*1,tfile*72
+      character longtfile*144
+      logical concat
+
+C Each call is a toggle. If open then close text or graphics command
+C file. For the graphics ask if file should be further converted.
+      ixopen=ixopen+1
+      if(ixopen.GT.1)ixopen=0
+      if(ixopen.eq.0)then
+        write(outs,'(a,a)') 'closing export file: ',xfile
+        call usrmsg(outs,' ','-')
+        if(tg.eq.'T')then
+          CALL ERPFREE(ixunit,ISTAT)
+        elseif(tg.eq.'G')then
+          if(ixloc.eq.1)then
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+          else
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+          endif
+          call wwcsetend
+          call wwcclose(longtfile)
+        endif
+      elseif(ixopen.eq.1)then
+        ixloc=0
+        if(path.ne.'./'.and.path.ne.' ')then
+           write(outs,'(A,A)') ' The current path is: ',path
+           call edisp(iuout,outs)
+         h(1)='If using path then name appended to path. Otherwise'
+         h(2)='file put in folder where application was started.'
+         h(3)='If `local` choice you may also give an absolute'
+         h(4)='addressed file name ie. /tmp/junk.exp '
+           CALL EASKAB(' The problem is in a remote folder... ',
+     &      ' place export file:','using current path',
+     &      'in local (or absolute) folder',ixloc,4)
+        endif
+        h(1)='This file is a text file which can be used in'
+        h(2)='reports or for third party tools. '
+        call easks(xfile,' export file name: ',' ',72,
+     &    ' ','export file name',IER,2)
+
+        write(outs,'(A,A,A)')' opened ',xfile(1:lnblnk(xfile)),
+     &                       ' for export.'
+        call usrmsg(outs,' ','p')
+        if(ixloc.eq.1)then
+          if(tg.eq.'T')then
+            call efopseq(ixunit,xfile,4,IER)
+            if(ier.ne.0)return
+          elseif(tg.eq.'G')then
+
+C Writing remotely, add the path to the given file name before
+C passing request to wwlib.c
+            longtfile=' '
+            call addpath(xfile,longtfile,concat)
+            call wwcopen(longtfile)
+            call wwcsetstart
+          endif
+        else
+          if(tg.eq.'T')then
+            CALL ERPFREE(ixunit,ISTAT)
+            call FPOPEN(ixunit,ISTAT,1,3,xfile)
+            if(ISTAT.lt.0)return
+          elseif(tg.eq.'G')then
+            write(longtfile,'(a)') xfile(1:lnblnk(xfile))
+            call wwcopen(longtfile)
+            call wwcsetstart
+          endif
+        endif
+        write(outs,'(1x,A,A,A)') msg(:lnblnk(msg)),
+     &    ' >> to ',xfile(1:lnblnk(xfile))
+        call usrmsg(outs,' ','p')
+      endif
+      RETURN
+      END
 
 C ************* PERSTR (compact variant of lib/esru_cut_lib.f EPERSTR
 C PERSTR creates three strings representing the start and stop

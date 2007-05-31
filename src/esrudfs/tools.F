@@ -27,7 +27,7 @@ C       arr-the array, arrtit - its title up to 10 characters
 
 C ********* scan3di
        subroutine scan3di(arr,arrtit,IEX)
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/FILEP/IFIL
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -66,7 +66,7 @@ C ********* scan3di
       end
 
       subroutine scanall 
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/COEF/AP(ntcelx,ntcely,ntcelz),AE(ntcelx,ntcely,ntcelz),
      1            AW(ntcelx,ntcely,ntcelz),AN(ntcelx,ntcely,ntcelz),
@@ -91,7 +91,7 @@ C ********* scan3di
 c*********************************************************************
       subroutine tecplotend
 c*********************************************************************
-      INCLUDE 'cfd.h'
+#include "cfd.h"
 
       COMMON/FILEP/IFIL
       COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),

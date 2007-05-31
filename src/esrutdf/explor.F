@@ -61,8 +61,8 @@ C The common blocks ??? are updated by this routine.
 C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C IALT is the number of text alternatives available for a text field.
       SUBROUTINE EDTITEM(ITRC,IFOC,IER)
-      INCLUDE 'tdf2.h'
-      INCLUDE 'epara.h'
+#include "tdf2.h"
+#include "epara.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -734,7 +734,7 @@ C Set up to allow user to specify the association between one of more
 C columns in an import file and fields in a tabular instance.
 C IPS is the timestep to insert data at.
       SUBROUTINE EDIMPT(ITRC,IFOC,IPS,IER)
-      INCLUDE 'tdf2.h'
+#include "tdf2.h"
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

@@ -22,7 +22,7 @@ C ***************************** MZCOE4M ********************************
 C MZCOE4M 
 C *********************************************************************
       SUBROUTINE MZCOE4M(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -144,7 +144,7 @@ C ***************************** MZCOE5 ********************************
 C MZCOE5 
 C *********************************************************************
       SUBROUTINE MZCOE5(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -416,7 +416,7 @@ C Xair in (kgv/Kgair), and Uair in (Kgv)
 
 C ********************************************************************
       SUBROUTINE HTFLX2(ICOMP,I,IME,DXl,FLXp2,FLXf2)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GR1D04/GAM,RGAM
       COMMON/MOIST23/TMPp(MS,MNM),TMPf(MS,MNM)
@@ -460,7 +460,7 @@ C Calculate heat flux in (W/m2).
 
 C **********************************************************************
       SUBROUTINE MSTCAP(ICOMP,I,IL,IN,CAPUv,CAPMl)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -513,7 +513,7 @@ C CAPUv in (J/m2 K).
 
 C **********************************************************************
       SUBROUTINE SHTNEF(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -567,7 +567,7 @@ C counting for the possible different temperature node distribution.
 C Implicitness degrees between 0 and 1 inclusive are allowed.
 C *********************************************************************
       SUBROUTINE DELUAF(ICOMP)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

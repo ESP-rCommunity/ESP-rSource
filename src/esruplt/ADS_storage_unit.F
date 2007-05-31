@@ -127,9 +127,9 @@ C-------------------------------------------------------------------------------
 
        SUBROUTINE ADS_stg_static_template(IPCOMP)
        IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'ADS_storage.h'
+#include "plant.h"
+#include "building.h"
+#include "ADS_storage.h"
 
 
 C------------------------------------------------------------------------------------
@@ -500,9 +500,9 @@ C-------------------------------------------------------------------------------
 
        SUBROUTINE ADS_stg_coeff_gen(IPCOMP,COUT,ISTATS)
        IMPLICIT NONE
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'ADS_storage.h'
+#include "plant.h"
+#include "building.h"
+#include "ADS_storage.h"
 
 
 C------------------------------------------------------------------------------------

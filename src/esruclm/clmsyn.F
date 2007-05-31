@@ -1268,7 +1268,7 @@ C for the given period.
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-      character H*72,outs*124,DESCR*7,DESCR1*10,xfile*144,tg*1,delim*1
+      character H*72,outs*124,DESCR*7,DESCR1*10,xfile*72,tg*1,delim*1
       logical ok,dok
 
       H(1)='Degree day calculations are derived from a specific '

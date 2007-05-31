@@ -54,8 +54,8 @@ C 3. The routine also establishes plant component containment future
 C    temperatures, PCNTMF, if defined to exist
  
       SUBROUTINE MZPADJ(ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

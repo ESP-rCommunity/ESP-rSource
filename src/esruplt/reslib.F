@@ -40,8 +40,8 @@ c library must be specified to which any subsequent
 c simulation results will be transferred.
 
       SUBROUTINE MZLIBF
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

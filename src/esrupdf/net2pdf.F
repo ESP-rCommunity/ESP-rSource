@@ -23,7 +23,7 @@ C files and converts them to a plant network file.
 
       SUBROUTINE NET2PNF
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

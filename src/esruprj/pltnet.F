@@ -35,7 +35,7 @@ C   IFPNF  - unit number for plant configuration file.
 C ************ epltnet
 C epltnet selects how a network of plant components is defined/edited.
       subroutine epltnet(iedit,ier)
-      INCLUDE 'esprdbfile.h'
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -126,7 +126,7 @@ C Exit.
 C ************************* edcomp ***************************
 C edcomp supports editing of network plant components.
       subroutine edcomp(ipcomp)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD) 
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA) 
@@ -253,7 +253,7 @@ C condel deletes a plant connection (lpick) selected by the user
 C and this item is removed from the list and the list compacted.
       subroutine condel(lpick)
 
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -308,7 +308,7 @@ C containment, but ONLY if the component is not associated
 C with any connections. Logic revised July 2005.
        SUBROUTINE DELCOMP(IPCOMP)
        
-      INCLUDE 'plant.h'
+#include "plant.h"
          
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -460,8 +460,8 @@ C ASKPCMP presents a list of plant components returning the index IS.
 C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKPCMP(head,MOD,IS,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'plant.h'
+#include "epara.h"
+#include "plant.h"
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
@@ -675,9 +675,9 @@ C ASKPCON presents a list of plant connections returning the index IS.
 C If MOD = 'M' then include option to add an item when the appropriate
 C interaction is begun.
       SUBROUTINE ASKPCON(head,MOD,IS,IER)
-      INCLUDE 'epara.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "plant.h"
+#include "building.h"
 
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -935,9 +935,9 @@ C If MOD = 'M' then include option to add an item then the appropriate
 C interaction is begun.
       SUBROUTINE ASKCONT(head,MOD,IS,IER)
 
-      INCLUDE 'epara.h'
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "epara.h"
+#include "plant.h"
+#include "building.h"
       COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)  
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -1136,8 +1136,8 @@ C components currently in the network as well as details of
 C connections and containments.
 
        SUBROUTINE LISTPNF
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 
@@ -1223,8 +1223,8 @@ C    mode = 2 : Read data pointers only.
 
       subroutine opnpdb(mode)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
@@ -1334,8 +1334,8 @@ C  mode = 2 : skip reading component parameters
 C
       subroutine rcdata(ipc,mode)
 
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)      
 
@@ -1476,8 +1476,8 @@ C*********************** update ************************
 C update descriptions for selected components
       subroutine update
 
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
@@ -1503,8 +1503,8 @@ C Fill array 'pcdesc' with description of each component
 C in database.
       subroutine descpc
 
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       COMMON /dbdat/ NPCDB, ITMLOC(MAXPC,2)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1533,8 +1533,8 @@ C *********************** getmfs ************************
 C This subroutine reads mass flow component data 
 C from plant component database.
       subroutine getmfc(ipc,nconns)
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       PARAMETER (IRECLN = 20)
  

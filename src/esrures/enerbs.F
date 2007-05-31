@@ -31,7 +31,7 @@ C MOSCAS process breakdown data for surfaces.
 C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       SUBROUTINE MOSCAS(IZONE,ISFN,IANZSE)
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
@@ -149,7 +149,7 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
 
       SUBROUTINE MOSCS1(IZONE,ISFN,IANZSE,IE,IZC)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -276,7 +276,7 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
       SUBROUTINE MOSCS2(IZONE,ISFN,IANZSE,IE,IZC)
 
-      INCLUDE 'building.h'
+#include "building.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -438,7 +438,7 @@ C Provide sums and averages for surface energy breakdowns.
 C CALLS: MOSRGT    CALLED BY: MOSCS1 MOSCS2
 
       SUBROUTINE MOSSUM(IZONE,ISFN,IANZSE,IE,IUSERD)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -544,7 +544,7 @@ C This will require quite a bit of work; try to include some
 C of the surface convection, conduction, storage calcs here.
 
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
-      INCLUDE 'building.h'
+#include "building.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

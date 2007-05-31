@@ -39,8 +39,8 @@ C  and whether the connected nodes are of a type as expected by the
 C  corresponding coefficient generator routine.
 C
       SUBROUTINE RadFloor_StaticTemp(IPCOMP)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -151,8 +151,8 @@ C     1 Maximum indoor surface temperature (C)
 C     2 Minimum indoor surface temperature (C)
 
       SUBROUTINE RadFloor_CoeffGen(IPCOMP,COUT,ISTATS)
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
+#include "plant.h"
+#include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -675,9 +675,9 @@ C     ****************************************************
       SUBROUTINE RadFloor_store(iOperation)
       IMPLICIT NONE
 
-      INCLUDE 'plant.h'
-      INCLUDE 'building.h'
-      INCLUDE 'CETC_definitions.h'
+#include "plant.h"
+#include "building.h"
+#include "CETC_definitions.h"
 
 C     Flag indicating if radiant floor is active.
       COMMON/RadFloor/RadFloor_active

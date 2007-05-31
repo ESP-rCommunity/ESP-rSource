@@ -30,7 +30,7 @@ C    SYSOUTP: display performance (tabular/graphic/stats) of components.
 C ******************** PLTTAB ********************
 C PLTTAB handles results view/setup requests for plant.
       subroutine plttab
-      INCLUDE 'plant.h'
+#include "plant.h"
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -87,7 +87,7 @@ C               5=misc ??)
 
       dimension mcomp(mpcom), ipcndx(mpcom), ivals(15)
       CHARACTER ITEM(26)*23
-      character outs*124,xfile*144,tg*1,delim*1,MTITLE*22,h*72
+      character outs*124,xfile*72,tg*1,delim*1,MTITLE*22,h*72
       character pcname*15,pcnam1(mpcom)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
@@ -668,7 +668,7 @@ C ******************** SELPC ********************
 C SELPC displays a selection list of plant components
 C for the user to select from.
       subroutine selpc(mnpc,mcomp,pcnam1,npc)
-      INCLUDE 'plant.h'
+#include "plant.h"
       common/pophelp/h(60)
       dimension mcomp(mpcom)
 
@@ -699,8 +699,8 @@ C opnplt opens plant result file and fills header with
 C simulation related information. It is passed npc the
 C number of plant components used in the network.
       subroutine opnplt(npc,imode,ier)
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
@@ -966,8 +966,8 @@ C irec is the initial record to scan.
 C nnode (??) is returned 
 C naout (number of additional output data) is returned.
       subroutine dbdat(ipc,irec,nnode,naout)
-      INCLUDE 'plant.h'
-      INCLUDE 'esprdbfile.h'
+#include "plant.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1059,7 +1059,7 @@ C file.
 C State space variables data and additional outout
 C data are stored in CSV?M and APCOUT arrays respectively.
       subroutine fnddat(ii,ipc,ier)
-      INCLUDE 'plant.h'
+#include "plant.h"
 
       COMMON/pres/iunitp
       COMMON/LIBRCP/IRCPLP,nblock
@@ -1174,8 +1174,8 @@ C imediately after starting res because the file passed on
 C the command line was a plant results file.
 
       SUBROUTINE SYSOUTP(act,imode)
-      INCLUDE 'building.h'
-      INCLUDE 'plant.h'
+#include "building.h"
+#include "plant.h"
 C act='p' iget parameters already set.
       PARAMETER (MSYSRS=20)
 

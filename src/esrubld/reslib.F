@@ -42,8 +42,8 @@ C simulation results will be transferred.
 C If there is a mass flow simulation then request it's
 C results library as well.
       SUBROUTINE MZLIBF
-      INCLUDE 'building.h'
-      INCLUDE 'power.h'
+#include "building.h"
+#include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
