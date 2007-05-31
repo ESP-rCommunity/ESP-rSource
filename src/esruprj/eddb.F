@@ -2440,6 +2440,10 @@ C and LCOPY for the system cp call.
             CALL EASKF(lltmp,' Event profile db(source)? ',
      &        ' ',96,DPRFDB,'binary events db',IER,2)
           endif
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3) goto 40  ! redisplay menu.
+
           LPRFDB=lltmp
         endif
         h(1)='The suggested name of this database is based on the '
@@ -2564,6 +2568,10 @@ C name with the full path.
           CALL EASKF(lltmp,' Event profile db? ',
      &      ' ',96,DPRFDB,'binary events db',IER,2)
         endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3) goto 40  ! redisplay menu.
+
         if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
           LPRFDB=lltmp
         else
@@ -2626,6 +2634,9 @@ C Ask for the ASCII file name and then confirm the binary db name.
      &      ' ',96,DPRFDB,'binary events db',IER,2)
         endif
 
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3) goto 40  ! redisplay menu.
+
         if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
 
 C Do conversion and then to prove that the file was correctly
@@ -2654,6 +2665,8 @@ C Test the returned file and if it is not readable reset LPRFDB.
           write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
           CALL EASKF(LCOPY,' Event profiles database?',
      &      ' ',144,DOPTDB,'Event profiles database',IER,5)
+          if(ier.eq.-3) goto 40   ! cancel detected, redisplay menu.
+
           LPRFDB=LCOPY
           moddb=.true.
           goto 44
@@ -2678,6 +2691,7 @@ C name with the full path.
             CALL EASKF(lltmp,' Event profile db? ',
      &        ' ',144,DPRFDB,'binary events db',IER,2)
           endif
+          if(ier.eq.-3) goto 40  ! a cancel was detected, redisplay menu.
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
             LPRFDB=lltmp
             moddb=.true.
@@ -2704,6 +2718,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
      &      fs,'databases',fs
           CALL EASKF(LCOPY,' Event profiles database?',
      &      ' ',144,DOPTDB,'Event profiles database',IER,5)
+          if(ier.eq.-3) goto 40   ! a cancel was detected, redisplay menu.
           LPRFDB=LCOPY
           moddb=.true.
           goto 44
@@ -3046,6 +3061,10 @@ C and LCOPY for the system cp call.
             CALL EASKF(lltmp,' Optical properties database?',
      &        ' ',96,DOPTDB,'optical properties database',IER,3)
           endif
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
+
           LOPTDB=lltmp
         endif
         h(1)='The suggested name of this database is based on the '
@@ -3158,6 +3177,8 @@ C Test the returned file and if it is not readable reset LOPTDB.
           write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
           CALL EASKF(LCOPY,' Optical properties database?',
      &      ' ',144,DOPTDB,'optical properties database',IER,6)
+          if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
+
           LOPTDB=LCOPY
           moddb=.true.
           goto 44
@@ -3178,6 +3199,8 @@ C For X11 and text allow user to type in a file name.
             CALL EASKF(lltmp,' Optical properties database?',
      &        ' ',144,DOPTDB,'optical properties database',IER,3)
           endif
+          if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
+
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
             LOPTDB=lltmp
           else
@@ -3215,6 +3238,8 @@ C call to eroptdb and if this is not successful reset LOPTDB.
      &      fs,'databases',fs
           CALL EASKF(LCOPY,' Optical properties database?',
      &      ' ',144,DOPTDB,'optical properties database',IER,6)
+          if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
+
           LOPTDB=LCOPY
           moddb=.true.
           goto 44
