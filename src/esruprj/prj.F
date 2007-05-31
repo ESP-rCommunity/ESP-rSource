@@ -2336,6 +2336,7 @@ C an offset from prj start position.
         h(3)='The all option does each in sequence. '
         call easkabcd('IPV recovery options:',' ','intermediate',
      &    'scan intermediate ->annual','all','continue',IRT,3)
+        if(IRT.eq.4) goto 39  ! redisplay menu.
 
 C Extract only for the number of assessments required. Note: the strings
 C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
@@ -2492,9 +2493,11 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        H(8) ='And if you decide not to do the comparison that is'
+        H(9) ='ok as well.'
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'cancel comparison',' ',IWM,9)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -2505,6 +2508,8 @@ C Toggle delimeter.
           delim = 'C'
         elseif(iwm.eq.5)then
           delim = 'X'
+        elseif(iwm.eq.6)then
+          goto 39  ! redisplay menu.
         endif
 
  41     llt=lnblnk(basefile)
@@ -2529,6 +2534,12 @@ C Toggle delimeter.
           CALL EASKF(basefile,'IPV base case report file ?',
      &      ' ',96,'xxx.rep','IPV base report',IER,2)
         endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 39  ! redisplay menu.
+        endif
+
         lnf=lnblnk(basefile)
         inquire (file=basefile(1:lnf),exist=xst)
         if(xst)then
@@ -2567,6 +2578,12 @@ C Ask the name of the design variant file.
           CALL EASKF(variantfile,'IPV variant report file ?',
      &      ' ',96,'xxx.rep','IPV variant report',IER,2)
         endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 39  ! redisplay menu.
+        endif
+
         lnf=lnblnk(variantfile)
         inquire (file=variantfile(1:lnf),exist=xst)
         if(xst)then
@@ -2619,9 +2636,6 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
-C     &      anu_tot_bld(1)
-C          call eddisp(iuout,outs)
           call edisp(iuout,'For the variant model:')
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
@@ -2634,9 +2648,6 @@ C          call eddisp(iuout,outs)
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
-C     &      anu_tot_bld(2)
-C          call eddisp(iuout,outs)
           call edisp(iuout,' ')
           write(outs,'(4a)')'Diff between ',
      &      basefile(1:lnblnk(basefile)),
@@ -2664,7 +2675,6 @@ C          call eddisp(iuout,outs)
           anu_ht_thrm_bld(3)=anu_ht_thrm_bld(1)-anu_ht_thrm_bld(2)
           anu_cl_m2(3)=anu_cl_m2(1)-anu_cl_m2(2)
           anu_cl_bld(3)=anu_cl_bld(1)-anu_cl_bld(2)
-C          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
           anu_tot_bld(3)=anu_tot_bld(1)-anu_tot_bld(2)
           anu_ht_cap_m2(3)=anu_ht_cap_m2(1)-anu_ht_cap_m2(2)
           anu_ht_cap_bld(3)=anu_ht_cap_bld(1)-anu_ht_cap_bld(2)
@@ -2681,9 +2691,6 @@ C          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
      &      anu_cl_m2(3),
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
-C     &      anu_tot_bld(3)
-C          call eddisp(iuout,outs)
 
 C If comma separated delimeter then also write out a single line
 C summary (Patch for IEA_Annex 46).
@@ -2759,18 +2766,6 @@ C                write(6,*) outstr(1:lnblnk(outstr))
      &              'cool dmd',IER)
                 endif
 
-C Get the total data line, 2nd is the value.
-C                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
-C                k=5
-C                CALL EGETW(OUTSTR,K,WORD1,'W','total',IFLAG)
-C                write(6,*) outstr(1:lnblnk(outstr))
-C                if(im2)then
-C                  CALL EGETWR(OUTSTR,K,anu_tot_m2(ipass),0.,0.,'-',
-C     &              'total m2',IER)
-C                else
-C                  CALL EGETWR(OUTSTR,K,anu_tot_bld(ipass),0.,0.,'-',
-C     &              'total bld',IER)
-C                endif
                 goto 143
               endif
             elseif(id1.eq.74)then
