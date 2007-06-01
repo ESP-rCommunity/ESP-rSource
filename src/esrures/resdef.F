@@ -248,7 +248,28 @@ C header block.
       else
         ISTREC=MNRS
       endif
-      CALL MOINIT(ISTREC)
+      CALL MOINIT(ISTREC,IER)
+
+C If the user was asked to browse for the model configuration file
+C and it was not found or there was a cancel then ier will be returned
+C as -3 so set iftype to -2 to signal a problem.
+      if(ier.eq.-3)then
+        call usrmsg(
+     &    'A cancel when browsing for the model configuration file',
+     &    'will probably cause problems. Try loading results again.',
+     &    'W')
+        iftype=-2
+      elseif(ier.eq.-4)then
+        call usrmsg(
+     &    'An issue with the climate file was encountered. This will',
+     &    'cause problems. Try finding climate again respecifying.',
+     &    'W')
+      elseif(ier.eq.-5)then
+        call usrmsg(
+     &    'An issue with the results file header was encountered. This',
+     &    'will cause problems. Try re-running the simulation.',
+     &    'W')
+      endif
 
 C Note: flow results are opened at call to mfoutp.
       RETURN
@@ -794,7 +815,9 @@ C SNA     - net opaque surface area for each surface.
 C All other common variables are defined in the subroutine
 C where they are first referenced.
 
-      SUBROUTINE MOINIT(ISTREC)
+C ISTREC is the start record.
+C ier is zero if no problems and -3 if user issued a cancel.
+      SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
 #include "esprdbfile.h"
 
@@ -842,6 +865,7 @@ C longtmp is the model configuration file with full path.
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+      IER=0
       IUNIT=IFIL
       IREC=ISTREC+2
       IBP=1
@@ -1101,6 +1125,8 @@ C but if using GTK then we need the full length to avoid truncation.
      &      ' Corresponding system configuration file name ? ',
      &      96,' ','configuration file',IER,4)
         endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
         if (longtmp.eq.' ') goto 45
       ENDIF
       
@@ -1152,6 +1178,8 @@ C but if using GTK then we need the full length to avoid truncation.
           CALL EASKF(longtmp,' Model configuration file ?',' ',96,
      &      DFCFG,'config file name',IER,3)
         endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 
@@ -1192,14 +1220,17 @@ C Also recover the solar radiation flag from the climate file.
     2 RETURN
 
   102 call usrmsg(' ',' Climate file cannot be assigned.','W')
+      ier=-4
       goto 2
  1000 write(outs,'(A,I4)')'MOINIT: error @ rec ',IREC
       call edisp(iuout,outs)
       CALL EPWAIT
+      ier=-5
       goto 2
  1001 write(outs,'(A,I4)')'MOINIT: error @ rec ',IREC
       call edisp(iuout,outs)
       CALL EPWAIT
+      ier=-5
       goto 2
 
  1006 call usrmsg(' Could not read name of configuration file',
