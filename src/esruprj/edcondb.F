@@ -1363,13 +1363,13 @@ C or a gas (g), include additional items.
         WRITE(PELM(16),'(A,F11.8)')'p gap viscosity T deriv  :',visco(2)
         WRITE(PELM(17),'(A,F8.4)') 'q gap density (kg/m**3)  :',
      &    gapden(1)
-        WRITE(PELM(18),'(A,F9.6)') 'r gap density T deriv    :',
+        WRITE(PELM(18),'(A,F10.6)')'r gap density T deriv    :',
      &    gapden(2)
         WRITE(PELM(19),'(A,F9.6)') 's gap Prandtl number     :',
      &    prandtl(1)
         WRITE(PELM(20),'(A,F9.6)') 't gap Prandtl T deriv    :',
      &    prandtl(2)
-        WRITE(PELM(21),'(A,F9.6)') 'u gap Spec Ht (J/(kg-K)  :',
+        WRITE(PELM(21),'(A,F9.3)') 'u gap Spec Ht (J/(kg-K)  :',
      &    gapsht(1)
         WRITE(PELM(22),'(A,F9.6)') 'v gap Spec Ht deriv      :',
      &    gapsht(2)
@@ -1392,13 +1392,13 @@ C or a gas (g), include additional items.
      &    visco(3)
         WRITE(PELM(20),'(A,F11.8)')'t gap visc @ 20C (kg/msK):',
      &    visco(4)
-        WRITE(PELM(21),'(A,F9.6)') 'u gap dens @-10C (kg/m^3):',
+        WRITE(PELM(21),'(A,F9.3)') 'u gap dens @-10C (kg/m^3):',
      &    gapden(1)
-        WRITE(PELM(22),'(A,F9.6)') 'v gap dens @  0C (kg/m^3):',
+        WRITE(PELM(22),'(A,F9.3)') 'v gap dens @  0C (kg/m^3):',
      &    gapden(2)
-        WRITE(PELM(23),'(A,F9.6)') 'w gap dens @ 10C (kg/m^3):',
+        WRITE(PELM(23),'(A,F9.3)') 'w gap dens @ 10C (kg/m^3):',
      &    gapden(3)
-        WRITE(PELM(24),'(A,F9.6)') 'x gap dens @ 20C (kg/m^3):',
+        WRITE(PELM(24),'(A,F9.3)') 'x gap dens @ 20C (kg/m^3):',
      &    gapden(4)
         WRITE(PELM(25),'(A,F9.6)') 'y gap Prandtl number     :',
      &    prandtl(1)

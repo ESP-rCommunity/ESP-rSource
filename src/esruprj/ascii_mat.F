@@ -500,7 +500,7 @@ C common block arrays so that future reads are more efficient.
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
               write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
-     &          f8.5,f8.6,f10.8,f10.8,f8.4,f8.6,2f8.6,2f8.6)')
+     &          f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
@@ -510,7 +510,7 @@ C common block arrays so that future reads are more efficient.
      &          matgapsht(J,2)
             elseif(matopaq(J)(1:1).eq.'h')then
               write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f8.5,
-     &          4f10.8,4f8.6,2f8.6)')
+     &          4f11.8,4f9.6,f9.6,f9.3)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
