@@ -112,6 +112,13 @@ C name with the full path.
      &    'library file',IER,7)
         endif
 
+C If user cancel set iftype to -2 and return (assume calling code
+C will act on this.
+        if(ier.eq.-3)then
+          iftype=-2
+          return
+        endif
+
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
           LCMDFL=ltmpc
         else

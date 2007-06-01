@@ -395,7 +395,10 @@ C Assume multilayer input from IFIL+9.
 
 C Initialise results library.
       CALL MORFIL(iftype)
-      if(iftype.eq.-1) then
+      if(iftype.eq.-2)then
+        iftype=0
+        goto 4    ! user canceled the file browse jump to menu.
+      elseif(iftype.eq.-1) then
 
 C Get the name of the configuration file name 
 C Read the plant configuration file.
@@ -543,6 +546,10 @@ C Test for illegal menu pick.
         IDEFLT=1
         call tstamp('>','RES: open new results database')
         CALL MORFIL(itype)
+        if(iftype.eq.-2)then
+          iftype=0
+          goto 4    ! user canceled the file browse jump to menu.
+        endif
         CALL MORESS
 
         CALL MOGCFG

@@ -701,6 +701,7 @@ C ******************** opnplt ********************
 C opnplt opens plant result file and fills header with
 C simulation related information. It is passed npc the
 C number of plant components used in the network.
+C If user cancels file browse set ier to -3.
       subroutine opnplt(npc,imode,ier)
 #include "plant.h"
 #include "esprdbfile.h"
@@ -774,6 +775,7 @@ C name with the full path.
           CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
      &      'library file',IER,4)
         endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
         if(LTMP(1:2).eq.'  '.or.LTMP(1:4).eq.'UNKN')goto 6
       else
@@ -1243,7 +1245,7 @@ C Begin with the menu type=4 (performance metrics).
       menutype=4
       ideflt=1
       call opnplt(npcomp,imode,ier)
-      if(ier.ne.0) return
+      if(ier.ne.0) return  ! a -3 signals user cancel during file browse.
 
 C Define prompt.
       outs='  '
