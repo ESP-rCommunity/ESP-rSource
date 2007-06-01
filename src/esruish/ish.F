@@ -120,6 +120,11 @@ C Significant figure reporting limit (NSIGFIG).
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       DIMENSION MTHNAM(12),ITEMS(20),ISADD(12),ISHD(12)
       LOGICAL MODIFY,MODLEN,MODBND,XST
       LOGICAL    OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,tok
@@ -143,6 +148,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('ish ')
+      cAppName = 'ish'
       IUOUT=6
       IUIN=5
       LIMTTY=24

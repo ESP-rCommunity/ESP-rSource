@@ -124,6 +124,12 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/pres/iunitp
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
@@ -142,6 +148,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('res ')
+      cAppName = 'res'
       IUOUT=6
       IUIN=5
       ICOUT=0

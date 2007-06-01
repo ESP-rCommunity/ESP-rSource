@@ -52,6 +52,12 @@ C Where exemplars list and default db list are kept.
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       character LCMDFL*144,inf*144,H*72,outs248*248
@@ -63,6 +69,7 @@ C Defaults.
 C Some initial values, which may be changed later:
       call ezero
       call curmodule('pro ')
+      cAppName = 'pro'
       IUOUT=6
       IUIN=5
       ICOUT=0

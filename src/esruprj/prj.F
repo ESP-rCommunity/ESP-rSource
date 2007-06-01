@@ -136,6 +136,11 @@ C Dispersed demands notes and file name.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit,foundutl
@@ -169,6 +174,7 @@ C Dispersed demands notes and file name.
 C Initialize variables and recover command line arguments.
       call ezero
       call curmodule('prj ')
+      cAppName = 'prj'
       ITRC=0
       IUOUT=6
       IUIN=5

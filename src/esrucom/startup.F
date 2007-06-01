@@ -619,6 +619,9 @@ C        call edisp248(iuout,outs,90)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif( argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -718,6 +721,9 @@ C        call edisp(iuout,outs)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1011,6 +1017,9 @@ C        call edisp(iuout,outs)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")  
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1133,6 +1142,9 @@ C        call edisp248(iuout,outs,90)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1245,6 +1257,9 @@ C        call edisp248(iuout,outs,90)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1365,6 +1380,9 @@ C        call edisp(iuout,outs)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1471,6 +1489,9 @@ C        call edisp248(iuout,outs,90)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1570,6 +1591,9 @@ C        call edisp(iuout,outs)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1664,6 +1688,9 @@ C        call edisp(iuout,outs)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1777,6 +1804,9 @@ C        call edisp248(iuout,outs,90)
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit          
+          call ESPrVersion("detailed","quit")
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1984,3 +2014,191 @@ C If islash > 0 then root and file name
 
       RETURN
       END
+
+
+C ******* ESPrVersion
+C Spit out ESP-r versioning information, and optionally quit
+      subroutine ESPrVersion(cType,cAction)
+      implicit none
+      
+C PASSED VARIABLES 
+      character cType*16             ! Flag indicating if version/build
+                                     !  info should be dumped 
+                        
+      character cAction*16           ! Flag indicating if the 
+                                     !  procedure should kill the 
+                                     !  calling program after 
+                                     !  displaying versioning informaiton 
+C COMMONS
+C Output channels
+      common/outin/iuout,iuin
+      integer iuout, iuin
+
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
+C LOCAL VARIABLES
+C declare variables describing version and build information
+
+      character cBuilder*32          ! User who compiled system
+      character cArchitecture*32     ! Machine archictecture
+      character cOperSystem*32       ! Operating system
+      character cOSversion*32        ! OS flavour/version
+      character cHost*256            ! Host name
+      character cDate*64             ! Build date 
+      logical   bVersioned           ! Flag indicating if repository 
+                                     !   is versioned
+      character cURL*256             ! Repository URL
+      character cVersion*32          ! Repository version
+      character cBranch*32           ! Branch name 
+      character cRevision*32         ! Revision number 
+      character cState*32            ! Flag indicating repository state.
+      character cCC*32               ! Flags for compilers
+      character cFC*32                !
+      character cCPL*32               !
+      character cXML_support*32       ! Flags for compile-time options
+      character cXlibrary*32          !
+      
+      character cTemp_a*124, cTemp_b*124 ! Temporary strings
+      
+C include dynamically-created installation information. 
+#include "build_info.h"
+      
+      write(cTemp_a,"(A,A,A)") "This is ", cAppName(1:lnblnk(cAppName)), 
+     &                 ", part of the ESP-r system."
+      
+      call edisp(iuout,cTemp_a)
+      
+      write(cTemp_a,"(A)") 
+     &  "Copyright 2001-2007 Energy Systems Research Unit."
+      
+      call edisp(iuout,cTemp_a)
+      
+      if ( .not. bVersioned ) then
+
+C.......Write out non-versioned disclaimer.        
+        
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") 
+     &  "This copy of ESP-r is not under versioning control. Using un-"
+
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") 
+     &  "versioned copies of ESP-r may prevent you from reconstituting"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") 
+     &  "models and reproducing simulation results in the future. You"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") 
+     &  "can obtain a versioned copy of ESP-r here:"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") 
+     &  "   http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+      
+      else
+C........Information about versioning:
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+                 
+        write (cTemp_a,"(A)") "Version information:"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A,A,A,A)") "  -Branch:     ",
+     &           cVersion(1:lnblnk(cVersion))," ",
+     &        cBranch(1:lnblnk(cBranch))
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A,A)")   "  -Revision:   ",
+     &           cRevision(1:lnblnk(cRevision))
+        call edisp(iuout,cTemp_a)        
+
+        write (cTemp_a,"(A,A)")   "  -State:      ",
+     &           cState(1:lnblnk(cState))
+        call edisp(iuout,cTemp_a)          
+       
+         
+      endif
+
+      if ( cType(1:8) == "detailed" ) then
+
+C     Now report build information
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") "Build information:"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A,A)")   "  -Date:       ",
+     &          cDate(1:lnblnk(cDate))
+        call edisp(iuout,cTemp_a)              
+        write (cTemp_a,"(A,A)")   "  -User:       ",
+     &         cBuilder(1:lnblnk(cBuilder))
+        call edisp(iuout,cTemp_a) 
+        
+        write (cTemp_a,"(A,A,A,A,A,A)")   "  -Platform:   ",
+     &         cArchitecture(1:lnblnk(cArchitecture)),":",
+     &         cOperSystem(1:lnblnk(cOperSystem)),":",
+     &         cOSversion(1:lnblnk(cOSversion))
+        call edisp(iuout,cTemp_a)      
+        
+        write (cTemp_a,"(A,A)")   "  -Host:       ",
+     &         cHost(1:lnblnk(cHost))
+        call edisp(iuout,cTemp_a) 
+        
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") "Compilers:"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A,A)")   "  -Fortran:    ",
+     &         cFC(1:lnblnk(cFC))
+        call edisp(iuout,cTemp_a) 
+        
+        write (cTemp_a,"(A,A)")   "  -C:          ",
+     &         cCC(1:lnblnk(cCC))
+        call edisp(iuout,cTemp_a) 
+        
+        write (cTemp_a,"(A,A)")   "  -C++:        ",
+     &         cCPL(1:lnblnk(cCPL))
+        call edisp(iuout,cTemp_a)       
+        
+        write (cTemp_a,"(A)") ""
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,"(A)") "Compile-time options:"
+        call edisp(iuout,cTemp_a)      
+        
+              
+        write (cTemp_a,"(A,A)")   "  -XML output: ",
+     &         cXML_support(1:lnblnk(cXML_support))
+        call edisp(iuout,cTemp_a) 
+        
+        write (cTemp_a,"(A,A)")   "  -X Library:  ",
+     &         cXlibrary(1:lnblnk(cXlibrary))
+        call edisp(iuout,cTemp_a)        
+    
+      endif 
+    
+C Quit, if requested. Otherwise, return              
+      if ( cAction(1:4) == "quit" ) then
+        STOP
+      endif   
+
+      return
+      end 

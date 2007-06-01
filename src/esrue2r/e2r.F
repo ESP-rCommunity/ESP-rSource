@@ -101,6 +101,11 @@ C Project journal on/off, unit number, cmd, file name.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
@@ -130,6 +135,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
+      cAppName = 'e2r'
       IUIN = 5
       IUOUT = 6
       IFIL = 10

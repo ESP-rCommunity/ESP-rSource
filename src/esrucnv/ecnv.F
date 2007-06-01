@@ -91,6 +91,12 @@ C SHOCCshlFile - path to SHOCC .shl file for SHOCC'd project library
 C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       common/SHOCCcfg/bSHOCCed,SHOCCshlFile,bZoneSHOCCed(mcom),
      &                SHOCCshzFile(mcom)
+     
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12     
+     
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
@@ -132,6 +138,8 @@ C storage.
       LIMIT=20
       itrc=1
       NSIGFIG=3
+
+      cAppName = 'encv'
 
 C Get command line parameters.
       call parcnv(itrc,conv,incobs,ichop,itmprm,iformat,oformat,inf,ouf,

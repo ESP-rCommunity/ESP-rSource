@@ -56,6 +56,11 @@ C Where default db list is kept.
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
@@ -67,6 +72,7 @@ C Defaults.
 C Initialize global common data.
       call ezero
       call curmodule('mld ')
+      cAppName = 'mld'
       IUOUT=6
       IUIN=5
       IFIL=10

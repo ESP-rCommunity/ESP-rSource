@@ -85,6 +85,12 @@ C Significant figure reporting limit (NSIGFIG).
 C Backup of documentation (for editing) bkdoc is the text, 
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL OK,dok,statusok
       LOGICAL moddb,unixok,browse,status
@@ -106,6 +112,7 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
 
       call ezero
       call curmodule('dbm ')
+      cAppName = 'dbm'
       IUOUT=6
       IUIN=5
       IFIL=11

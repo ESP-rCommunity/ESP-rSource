@@ -91,6 +91,12 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       integer fstgrp,fstsur,lstsur,strtgr
@@ -153,6 +159,7 @@ C     temp(i)           : Temperature for surface i. [C]
 C Initialize global common data.
       call ezero
       call curmodule('vwf ')
+      cAppName = 'vwf'
       IUIN=5
       IUOUT=6
       LIMTTY=24

@@ -118,6 +118,10 @@ C ACO specific commons
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
 
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
@@ -139,6 +143,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('aco ')
+      cAppName = 'aco'
       ITRC=1
       IUIN = 5
       IUOUT = 6

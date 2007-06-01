@@ -77,6 +77,11 @@ C Climate list common.
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       dimension ITEM(22)
       character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
@@ -93,6 +98,7 @@ C Climate list common.
 C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
+      cAppName = 'clm'
       tab = CHAR(9)
       ITRC=1
       IUOUT=6

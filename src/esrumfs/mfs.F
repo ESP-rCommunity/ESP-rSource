@@ -98,6 +98,11 @@ C Once per hour storage of results, averaged over that hour.
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
       CHARACTER H*72,OUTSTR*124,inf*144,outs*124
@@ -120,6 +125,8 @@ C Initialize global common data.
       IDAYF=0
       IDAYL=0
       IAPRES=11
+
+      cAppName = 'mfs'
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

@@ -198,6 +198,11 @@ C to edit.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       dimension idomain(MNWKTYP),nbcat(MNWKTYP),
      &  cattag(MNWKTYP,MICNCAT),catmenu(MNWKTYP,MICNCAT),
      &  nbicons(MNWKTYP,MICNCAT),icontag(MNWKTYP,MICNCAT,MICN),
@@ -228,6 +233,7 @@ C Initialize global common data. IUEX is file unit for the
 C model external data summary.
       CALL EZERO
       call curmodule('net ')
+      cAppName = 'net'
       IUOUT=6
       IUIN=5
       IFIL=10

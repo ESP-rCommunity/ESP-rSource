@@ -1128,6 +1128,119 @@ fi
 # End ESP-r directory management
 #--------------------------------------------------------------
 
+#--------------------------------------------------------------
+# Get SVN build info for versioning purposes.
+#--------------------------------------------------------------
+ 
+ # Get time of build 
+ time=`date`
+ 
+ # Get system information.
+ architecture=`uname -m`
+ system=`uname -s`
+ os_flavour=`uname -r`
+ host=`uname -n`
+
+ # Try to collect svn information
+ svn_info="svn info 2>&1"
+ 
+ svnnotfound=`svn info 2>&1 | grep "command not found"`
+ notworkingcopy=`svn info 2>&1 | grep "is not a working copy"`
+ 
+ if [ "$svnnotfound" != "" ] || [ "$notworkingcopy" != "" ]; then
+   versioned_repository="no";
+ else
+   versioned_repository="yes"
+ fi
+ 
+ # If svn is available and repository is under versioning,
+ # get misc svn information
+ if [ "$versioned_repository" = "yes" ]; then
+   revision_number=`svn info 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
+   URL=`svn info 2>&1 | grep "^URL" | sed "s/URL: //g"`
+   
+   
+   # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
+   branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
+   branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
+   
+   # Strip leading 'branches', if any
+   branch_name=`echo $branch_name | sed "s/branches\///g"`
+   # Strip trailing 'src'
+   branch_name=`echo $branch_name | sed "s/\/src//g"`
+   
+   # Now determine if URL describes development branch, a sub-branch,
+   # or the trunk
+   
+   # Default version to sub-branch...
+   version="Sub-branch"
+   
+   if [ "$URL" = "trunk" ]; then
+     version="Trunk"
+   fi
+    
+   if [ "$URL" = "development_branch" ]; then
+     version="Development branch"
+   fi 
+
+   # Use svn status to deterine if repository has 
+   # been locally modified (denoted by M/G/C status)
+   # 
+   svn_status=`svn status 2>&1 | grep "^[MGC]" `
+   if [ "$svn_status" != "" ]; then
+    state="Locally modified"
+   else
+    state="Vanilla"
+   fi
+        
+ fi
+ 
+#--------------------------------------------------------------
+# Now write out build information into automatically generated
+# header file.
+#--------------------------------------------------------------
+  echo "C      build_info.h"                                              >  ${SRCdir}/include/build_info.h
+  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
+  echo "C      This file contains versioning and build information"       >> ${SRCdir}/include/build_info.h
+  echo "C      for the ESP-r system. It is generated automatically"       >> ${SRCdir}/include/build_info.h
+  echo "C      by the Install script each time ESP-r is recompiled---"    >> ${SRCdir}/include/build_info.h
+  echo "C      any changes should be made in the Install scipt, and "     >> ${SRCdir}/include/build_info.h
+  echo "C      not in this file"                                          >> ${SRCdir}/include/build_info.h
+  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
+  echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
+  echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
+  echo "       "                                                          >> ${SRCdir}/include/build_info.h
+  echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
+  echo "       cArchitecture     = \"${architecture}\""                   >> ${SRCdir}/include/build_info.h       
+  echo "       cOperSystem       = \"${system}\""                         >> ${SRCdir}/include/build_info.h 
+  echo "       cOSversion        = \"${os_flavour}\""                     >> ${SRCdir}/include/build_info.h 
+  echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h 
+  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h  
+  if [ "${versioned_repository}" = "yes" ]; then
+    echo "       bVersioned        = .TRUE. "                             >> ${SRCdir}/include/build_info.h 
+  else                                                                     
+    echo "       bVersioned        = .FALSE. "                            >> ${SRCdir}/include/build_info.h 
+  fi
+  echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
+  echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
+  
+  echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
+  echo "       cVersion          = \"$version\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
+  echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
+  echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
+  # Add compilers, x-libraries & xml/xsl status
+  echo "       cCC               = \"$CC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cFC               = \"$FC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cCPL              = \"$CPL\""                              >> ${SRCdir}/include/build_info.h 
+  echo "       cXML_support      = \"$xml_support\""                      >> ${SRCdir}/include/build_info.h 
+  echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h 
+  
+  
+#--------------------------------------------------------------
+# 
+#--------------------------------------------------------------
+
 ####### create an installdir.h file so startup.F knows where to look
   echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
   echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
@@ -2023,6 +2136,7 @@ if [ "$delete_temp_files" = "yes" ]; then
   echo "  "
   echo "Removing binary materials db from exemplars ..."
   cd ${SRCdir}/
+  rm include/build_info.h
   rm -f training/glenview/databases/constr.db1
   rm -f training/cellular_furn/dbs/cellular.materials
   rm -f training/cellular_hires/dbs/cellular.materials

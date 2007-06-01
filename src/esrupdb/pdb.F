@@ -63,6 +63,11 @@ C Mass flow components data
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
      &              ltpcmp(maxcon), isdifc(maxcon)
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(9)*26 
       CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
@@ -77,6 +82,7 @@ C is <200 then take % of default, otherwise use passed width.
 C If left & top offsets are 0 then use defaults.
       call ezero
       call curmodule('pdb ')
+      cAppName = 'pdb'
       IUOUT=6
       IUIN=5
       IFIL=10
