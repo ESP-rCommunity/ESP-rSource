@@ -1056,6 +1056,9 @@ C << ascii materials file.
 
 C Write a scratch file which can be read in to create a binary material.
 C Include typical categories with one item in each.
+
+C << extend logic to support newer ASCII material database file >>
+
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
           write(LTMPFL,'(2a)') cfgroot(1:lr),'.materialdb.a'
