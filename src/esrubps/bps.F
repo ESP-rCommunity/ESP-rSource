@@ -531,19 +531,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       CALL EDISP(IUOUT,' ')
 
-C If dll write version, otherwise do standard banner.
-      if(dll)then
-        CALL EDISP(IUOUT, cBpsVersion)
-      else
-        write(outs,'(2a)')
-     &    ' ESP-r Simulator: Version 10.8 of April 2007.',
-     &    ' Copyright 2001-7 Energy'
-        call edisp(IUOUT,outs)
-        write(outs,'(2a)')
-     &   ' Systems Research Unit, University of',
-     &   ' Strathclyde, Glasgow, Scotland.'
-        call edisp(IUOUT,outs)
-      endif
+C Write version.
+      CALL ESPrVersion("quiet","continue")
       CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

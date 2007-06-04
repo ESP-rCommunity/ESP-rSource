@@ -163,16 +163,7 @@ C messages to stderr in case of rule script program control.
       ICOUT=IUOUT
       IF(MMOD.EQ.-6) ICOUT=0
 
-      CALL EDISP(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Mould Analysis: Version 1.4a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      CALL EDISP(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Initialise the ststistical results
       imstat=0

@@ -358,13 +358,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.3')
-      call edisp(IUOUT,' ')
-      call edisp(IUOUT,' (ESP-r Project Manager Version 5.9 of')
-      call edisp(IUOUT,' April 2007, Copyright 2001-7 Energy ')
-      call edisp(IUOUT,' Systems Research Unit, University of ')
-      call edisp(IUOUT,' Strathclyde, Glasgow, Scotland.)')
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get user's custom settings
 C if defined.

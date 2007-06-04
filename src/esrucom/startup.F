@@ -2063,19 +2063,83 @@ C declare variables describing version and build information
       
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
       
+C Arrays mapping binary names to longer descriptions
+      
+      integer iBinCount
+      parameter (iBinCount=22)
+      
+      character cBinNames*8
+      character cBinDesc*72 
+      dimension cBinNames(iBinCount)
+      dimension cBinDesc(iBinCount)
+      
+      integer iBinIndex, iCurIndex
+
+      
+      data cBinNames / 'aco', 'b2e', 'bps', 'dbm', 'dfs', 'c2e', 'cfg', 
+     &                 'clm', 'e2r', 'ecnv', 'eco', 'grd', 'ish', 'mfs',
+     &                 'mld', 'mrt', 'net', 'pdb', 'prj', 'res', 'tdf', 
+     &                 'vew' /
+      
+      
+      data cBinDesc / 'Acoustics Analysis Module',
+     &                'BEMS link',
+     &                'Integrated Building Performance Simulator',
+     &                'Database Manager',
+     &                'Domain Flow Solver',
+     &                ' ',
+     &                'Topology Tool',
+     &                'Climate Analysist Tool',
+     &                'Radiance link',
+     &                'Data Conversion Utility',
+     &                ' ',
+     &                'Construction Gridding Tool',
+     &                'Shading Analysis Tool',
+     &                'Mass Flow Solver',
+     &                'Mould analysis tool',
+     &                'Mean Radiant Temperature Module',
+     &                'Network tool',
+     &                'Plant Database Tool',
+     &                'Project Manager',
+     &                'Results Analysis Tool',
+     &                'Temporal Definition Tool',
+     &                'Hidden Line Viewer' /
+     
+      save cBinNames, cBinDesc
+      
 C include dynamically-created installation information. 
 #include "build_info.h"
       
-      write(cTemp_a,"(A,A,A)") "This is ", cAppName(1:lnblnk(cAppName)), 
-     &                 ", part of the ESP-r system."
+      
+C Determine index of current application in cBinNames/cBinDesc arrays      
+      do iCurIndex = 1, iBinCount
+      
+        if ( cAppName(1:lnblnk(cAppName)) .eq. 
+     &       cBinNames(iCurIndex)(1:lnblnk(cBinNames(iCurIndex)))) then 
+          
+          iBinIndex = iCurIndex
+          
+        endif 
+      enddo
+      
+C Write out header ('ESP-r XYZ tool (xyx)'). 
+C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
+
+      write(cTemp_a,"(A,A,A,A,A)") "ESP-r ", 
+     &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), " (",
+     &       cAppName(1:lnblnk(cAppName)),")"
       
       call edisp(iuout,cTemp_a)
       
+C Write out copyright information       
       write(cTemp_a,"(A)") 
      &  "Copyright 2001-2007 Energy Systems Research Unit."
       
       call edisp(iuout,cTemp_a)
       
+      
+C Check if source was versioned (that is, was svn available, and 
+C is it a working copy)
       if ( .not. bVersioned ) then
 
 C.......Write out non-versioned disclaimer.        
@@ -2163,6 +2227,7 @@ C     Now report build information
         write (cTemp_a,"(A)") ""
         call edisp(iuout,cTemp_a)
         
+C Compilers        
         write (cTemp_a,"(A)") "Compilers:"
         call edisp(iuout,cTemp_a)
         
@@ -2181,6 +2246,7 @@ C     Now report build information
         write (cTemp_a,"(A)") ""
         call edisp(iuout,cTemp_a)
         
+C Compile-time options        
         write (cTemp_a,"(A)") "Compile-time options:"
         call edisp(iuout,cTemp_a)      
         

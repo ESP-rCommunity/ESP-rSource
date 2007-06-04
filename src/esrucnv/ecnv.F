@@ -186,11 +186,7 @@ C Assume there are no obstructions.
       doobs=.FALSE.
 
       call edisp(IUOUT,' ')
-      write(outs,'(3a)')
-     & ' ESP-r Data Conversion: Version 2.5a of January 2006.',
-     & ' Copyright 2001-6 Energy Systems Research Unit, University',
-     & ' of Strathclyde, Glasgow, Scotland.'
-      call edisp248(IUOUT,outs,100)
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)

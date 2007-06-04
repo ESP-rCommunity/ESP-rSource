@@ -167,15 +167,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       endif
-      call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Plant db manager: Version 2.6a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("quiet","continue")
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

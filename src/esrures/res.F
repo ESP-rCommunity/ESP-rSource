@@ -306,10 +306,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
-      write(outs,'(2a)')
-     & ' ESP-r Results Analysis Tool: Version 7.5 of April 2007.',
-     & ' Copyright 2001-7 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("quiet","continue")
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'

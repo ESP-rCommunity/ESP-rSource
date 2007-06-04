@@ -161,15 +161,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
       call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r BEMS Link: Version 1.3a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.

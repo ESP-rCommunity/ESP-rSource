@@ -216,17 +216,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL EDISP(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Construction Gridding: Version 2.6a of January 2006.',
-     &  ' Copyright '
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' 2001-6 Energy Systems Research Unit, University of',
-     & ' Strathclyde,'
-      call edisp(IUOUT,outs)
-      CALL EDISP(IUOUT,' Glasgow Scotland. ')
-      CALL EDISP(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

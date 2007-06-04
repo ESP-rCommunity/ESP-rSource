@@ -358,9 +358,7 @@ C graphic display to compensate.
         call startbuffer()
        ENDIF
 
-      call edisp(iuout,' ')
-      call edisp(iuout,' eco: Version 1.3a of January 2006.')
-      call edisp(iuout,' ')
+       CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

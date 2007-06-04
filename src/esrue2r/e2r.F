@@ -366,10 +366,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      write(outs,'(2a)')
-     &  ' ESP-r - Radiance: Version 3.16a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("quiet","continue")
+      
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow Scotland.'

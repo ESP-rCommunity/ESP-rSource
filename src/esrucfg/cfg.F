@@ -285,16 +285,7 @@ C Debug
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Topology tool: Version 1.13a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get user's custom settings.
       call edisp(IUOUT,' ')

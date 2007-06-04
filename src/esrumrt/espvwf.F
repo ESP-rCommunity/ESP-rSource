@@ -297,15 +297,7 @@ C Debug
         write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
      &    mdispl,nifgrey,ncset,ngset,nzonec
       ENDIF
-      call edisp(iuout,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r View Factors: Version 2.14a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("quiet","continue")
       call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.

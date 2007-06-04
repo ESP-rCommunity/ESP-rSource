@@ -326,16 +326,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(iuout,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Acoustics: Version 2.3a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

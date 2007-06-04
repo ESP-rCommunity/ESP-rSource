@@ -351,15 +351,7 @@ C in the c-interface code.
         CALL NWKSMOD(ISE,ICO,IDA)
       ENDIF
 
-      write(outs,'(2a)')
-     &  ' ESP-r Network Tool: Version 1.9a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("quiet","continue")
 
 C Initialise the network on first entry and clear screen and draw grid.
       CALL NWKINIT
