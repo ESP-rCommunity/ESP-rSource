@@ -358,7 +358,7 @@ C graphic display to compensate.
         call startbuffer()
        ENDIF
 
-       CALL ESPrVersion("quiet","continue")
+       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

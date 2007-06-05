@@ -351,7 +351,7 @@ C in the c-interface code.
         CALL NWKSMOD(ISE,ICO,IDA)
       ENDIF
 
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 C Initialise the network on first entry and clear screen and draw grid.
       CALL NWKINIT

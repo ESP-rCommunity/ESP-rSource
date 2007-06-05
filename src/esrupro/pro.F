@@ -159,7 +159,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
       
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
       
 
       call edisp(IUOUT,' ')

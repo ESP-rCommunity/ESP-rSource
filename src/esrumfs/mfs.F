@@ -254,7 +254,7 @@ C messages to stderr in case of rule script program control.
       IF(MMOD.EQ.-6) ICOUT=0
 
 C Show version
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)

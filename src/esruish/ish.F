@@ -279,7 +279,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 
 C Find the user's home folder then get user's custom settings.

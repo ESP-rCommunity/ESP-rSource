@@ -633,94 +633,96 @@ esac
 # database files
 #---------------------------------------------------------
 
-# Debugging
-B="none"
-while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
-do
-  if [ "$B" != "none" ]; then
-      echo ""
-      echo " Please answer yes or no (y/n)."  
+if [ "$mode" = "interactive" ]; then
+  # Debugging
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo " Please answer yes or no (y/n)."  
+    else
+      echo " ESP-r can optionally retain debugging symbols and "
+      echo " object files for use with a debugging program such"
+      echo " as GDB."
+      echo " " 
+    fi
+    
+    case "${debugging}" in
+      yes) echo " Retain debugging symbols? (y/n) [y]";;
+      *)   echo " Retain debugging symbols? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${debugging}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    debugging="yes"
   else
-    echo " ESP-r can optionally retain debugging symbols and "
-    echo " object files for use with a debugging program such"
-    echo " as GDB."
-    echo " " 
+    debugging="no"
   fi
   
-  case "${debugging}" in
-    yes) echo " Retain debugging symbols? (y/n) [y]";;
-    *)   echo " Retain debugging symbols? (y/n) [n]";;
-  esac
-    
-  read B
-  if [ "$B" = "" ]; then
-    case "${debugging}" in
-      yes) B="y";;
-      *)   B="n";;
-    esac 
+  
+  # System databases 
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo "Please answer yes or no (y/n)."
+    fi
+      case "${install_dbs}" in
+      yes) echo " Install ESP-r database files? (y/n) [y]";;
+      *)   echo " Install ESP-r database files? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${install_dbs}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    install_dbs="yes"
+  else
+    install_dbs="no"
   fi
-done
-if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
-  debugging="yes"
-else
-  debugging="no"
+  
+  # Training files
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo "Please answer yes or no (y/n)."
+    fi
+      case "${install_training}" in
+      yes) echo " Install training files? (y/n) [y]";;
+      *)   echo " Install training files? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${install_training}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    install_training="yes"
+  else
+    install_training="no"
+  fi
+
 fi
-
-
-# System databases 
-B="none"
-while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
-do
-  if [ "$B" != "none" ]; then
-      echo ""
-      echo "Please answer yes or no (y/n)."
-  fi
-    case "${install_dbs}" in
-    yes) echo " Install ESP-r database files? (y/n) [y]";;
-    *)   echo " Install ESP-r database files? (y/n) [n]";;
-  esac
-    
-  read B
-  if [ "$B" = "" ]; then
-    case "${install_dbs}" in
-      yes) B="y";;
-      *)   B="n";;
-    esac 
-  fi
-done
-if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
-  install_dbs="yes"
-else
-  install_dbs="no"
-fi
-
-# Training files
-B="none"
-while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
-do
-  if [ "$B" != "none" ]; then
-      echo ""
-      echo "Please answer yes or no (y/n)."
-  fi
-    case "${install_training}" in
-    yes) echo " Install training files? (y/n) [y]";;
-    *)   echo " Install training files? (y/n) [n]";;
-  esac
-    
-  read B
-  if [ "$B" = "" ]; then
-    case "${install_training}" in
-      yes) B="y";;
-      *)   B="n";;
-    esac 
-  fi
-done
-if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
-  install_training="yes"
-else
-  install_training="no"
-fi
-
 
 #---------------------------------------------------------
 # Assign universal flags and variables.
@@ -1225,21 +1227,33 @@ fi
 # Get SVN build info for versioning purposes.
 #--------------------------------------------------------------
  
+ # Ensure that build information is always recompiled into 
+ # every binary - touch common file startup.F
+ touch ${SRCdir}/esrucom/startup.F
+ 
  # Get time of build 
  time=`date`
  
- # Get system information.
+ # Get system information. (host not used at present)
  architecture=`uname -m`
  system=`uname -s`
  os_flavour=`uname -r`
  host=`uname -n`
 
+
+ # Digest version information in Version text file
+ release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
+
  # Try to collect svn information
- svn_info="svn info 2>&1"
+ #svn_info_command="cat /home/aferguso/svn_info.txt"
+ #svn_status_command="cat /home/aferguso/svn_status.txt"
  
- svnnotfound=`svn info 2>&1 | grep "command not found"`
- notworkingcopy=`svn info 2>&1 | grep "is not a working copy"`
+ svn_info_command="svn info"
+ svn_status_command="svn status"
  
+ svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
+ notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
+
  if [ "$svnnotfound" != "" ] || [ "$notworkingcopy" != "" ]; then
    versioned_repository="no";
  else
@@ -1249,10 +1263,9 @@ fi
  # If svn is available and repository is under versioning,
  # get misc svn information
  if [ "$versioned_repository" = "yes" ]; then
-   revision_number=`svn info 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
-   URL=`svn info 2>&1 | grep "^URL" | sed "s/URL: //g"`
-   
-   
+   revision_number=`$svn_info_command 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
+   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+      
    # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
    branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
    branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
@@ -1266,20 +1279,20 @@ fi
    # or the trunk
    
    # Default version to sub-branch...
-   version="Sub-branch"
+   source="Sub-branch"
    
-   if [ "$URL" = "trunk" ]; then
-     version="Trunk"
+   if [ "$branch_name" = "trunk" ]; then
+     source="Trunk"
    fi
     
-   if [ "$URL" = "development_branch" ]; then
-     version="Development branch"
+   if [ "$branch_name" = "development_branch" ]; then
+     source="Development branch"
    fi 
 
    # Use svn status to deterine if repository has 
    # been locally modified (denoted by M/G/C status)
    # 
-   svn_status=`svn status 2>&1 | grep "^[MGC]" `
+   svn_status=`$svn_status_command 2>&1 | grep "^[MGC]" `
    if [ "$svn_status" != "" ]; then
     state="Locally modified"
    else
@@ -1287,6 +1300,7 @@ fi
    fi
         
  fi
+ 
  
 #--------------------------------------------------------------
 # Now write out build information into automatically generated
@@ -1304,21 +1318,42 @@ fi
   echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
+  echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
+#  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h     
   echo "       cArchitecture     = \"${architecture}\""                   >> ${SRCdir}/include/build_info.h       
   echo "       cOperSystem       = \"${system}\""                         >> ${SRCdir}/include/build_info.h 
   echo "       cOSversion        = \"${os_flavour}\""                     >> ${SRCdir}/include/build_info.h 
-  echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h 
-  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h  
+  
+  # Set flag indicating if this is a 'release' build
+  # A release MUST be built from a versioned copy 
+  # of TRUNK in a Vanilla state.
+  if [ "$versioned_repository" = "yes" ] &&
+     [ "$source" = "Trunk"             ] &&
+     [ "$state"  = "Vanilla"           ];  then
+    echo "       bRelease          = .TRUE."                              >> ${SRCdir}/include/build_info.h   
+  else
+    echo "       bRelease          = .FALSE."                             >> ${SRCdir}/include/build_info.h   
+  fi  
+  
+  echo "       cRelease_num      = \"${release}\""                        >> ${SRCdir}/include/build_info.h  
+  
   if [ "${versioned_repository}" = "yes" ]; then
     echo "       bVersioned        = .TRUE. "                             >> ${SRCdir}/include/build_info.h 
   else                                                                     
     echo "       bVersioned        = .FALSE. "                            >> ${SRCdir}/include/build_info.h 
   fi
+  
+  if [ "$state" = "Vanilla" ]; then
+    echo "       bModified         = .FALSE."                             >> ${SRCdir}/include/build_info.h 
+  else 
+    echo "       bModified         = .TRUE."                              >> ${SRCdir}/include/build_info.h 
+  fi
+  
   echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
   echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
   
   echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
-  echo "       cVersion          = \"$version\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h 
   echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
   echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
   echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
@@ -1326,10 +1361,13 @@ fi
   echo "       cCC               = \"$CC\""                               >> ${SRCdir}/include/build_info.h 
   echo "       cFC               = \"$FC\""                               >> ${SRCdir}/include/build_info.h 
   echo "       cCPL              = \"$CPL\""                              >> ${SRCdir}/include/build_info.h 
-  echo "       cXML_support      = \"$xml_support\""                      >> ${SRCdir}/include/build_info.h 
+  if [ "$xml_support" = "yes" ]; then
+    echo "       cXML_support      = \"supported\""                       >> ${SRCdir}/include/build_info.h 
+  else
+    echo "       cXML_support      = \"unsupported\""                     >> ${SRCdir}/include/build_info.h 
+  fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h 
-  
-  
+
 #--------------------------------------------------------------
 # 
 #--------------------------------------------------------------

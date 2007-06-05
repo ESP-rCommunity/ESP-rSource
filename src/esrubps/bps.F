@@ -532,7 +532,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       CALL EDISP(IUOUT,' ')
 
 C Write version.
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
       CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

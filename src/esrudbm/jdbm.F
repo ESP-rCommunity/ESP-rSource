@@ -212,7 +212,7 @@ C        call charsusingfnt(ifs,icw,nlines)
       IF(MODEL.NE.-6)ICOUT=IUOUT
 
 C Display copywrite based on current text display width.
-      !CALL ESPrVersion("quiet","continue")
+      !CALL ESPrVersion("summary")
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get user's custom settings.

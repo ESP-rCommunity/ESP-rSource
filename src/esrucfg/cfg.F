@@ -285,7 +285,7 @@ C Debug
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call edisp(IUOUT,' ')

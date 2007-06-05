@@ -216,7 +216,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

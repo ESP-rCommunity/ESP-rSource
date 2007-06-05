@@ -163,7 +163,7 @@ C messages to stderr in case of rule script program control.
       ICOUT=IUOUT
       IF(MMOD.EQ.-6) ICOUT=0
 
-      CALL ESPrVersion("quiet","continue")
+      CALL ESPrVersion("summary")
 
 C Initialise the ststistical results
       imstat=0
