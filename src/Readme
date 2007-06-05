@@ -22,9 +22,10 @@ Contents
 ===========================================================
 1. ACKNOWLEDGMENTS
 
-ESP-r is developed and distributed by Energy Systems
-Research Unit (ESRU), in collaboration with researchers
-and practitioners around the world.
+ESP-r is developed and distributed by the Energy Systems
+Research Unit (ESRU) of the University of Strathclyde and
+Natural Resources Canada (NRCan), in collaboration with
+researchers and practitioners around the world.
 
 Send inquiries to:
 
@@ -112,7 +113,7 @@ Ian.Beausoleil-Morrison@nrcan.gc.ca) to arrange one.
 ===========================================================
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Unix, Linux, Cygwin, MinGW and
+ESP-r has been installed Solaris, Linux, Cygwin, MinGW and
 MAC OS X systems, using a variety of compiler and graphics
 library combinations. Some of these configurations have been
 thoroughly tested and are regarded as 'stable', while
@@ -124,7 +125,7 @@ Installation on common Linux distributions (including
 Mandrake, Redhat/Fedora and Gentoo) has proven robust, and 
 you can use it with confidence on these systems. 
 
-ESP-r is used less often on UNIX, Cygwin, MinGW and OS X. 
+ESP-r is used less often on Solaris, Cygwin, MinGW and OS X. 
 systems. These systems are not be available to some ESP-r 
 developers, and some (such as MinGW) provide no standard 
 environment on which ESP-r developers can rely to ensure the 
@@ -141,12 +142,12 @@ Architectures
 ESP-r is presently only supported on 32 bit systems.
 Installations on MinGW and OS X are regarded as 'beta'.
 
-                      +------+------+------+------+------+
-                      | UNIX |Linux |Cygwin|MinGW | OS X |
-+---------------------+------+------+------+------+------+
-| 32-bit              |  S   |  S   |  S   |  B   |  S   |
-| 64-bit              |  X   |  X   |  X   |  X   |  X   |
-+---------------------+------+------+------+------+------+
+                      +-------+------+------+------+------+
+                      |Solaris|Linux |Cygwin|MinGW | OS X |
++---------------------+-------+------+------+------+------+
+| 32-bit              |  S    |  S   |  S   |  B   |  S   |
+| 64-bit              |  X    |  X   |  X   |  X   |  X   |
++---------------------+-------+------+------+------+------+
  S = Stable
  B = Beta testing
  X = Not supported
@@ -163,13 +164,13 @@ between GCC 3 and GCC4 builds. Until these differences
 are resolved, use of GCC4 builds are recommended only for
 testing purposes.
 
-                      +------+------+------+------+------+
-                      | UNIX |Linux |Cygwin|MinGW | OS X |
-+---------------------+------+------+------+------+------+
-| Sun cc  / f90       |  S   |  -   |  -   |  -   |  -   |
-| gcc 3.X / g77       |  S   |  S   |  S   |  B   |  S   |
-| gcc 4.X / gFrotran  |  X   |  B   |  X   |  X   |  X   |
-+---------------------+------+------+------+------+------+
+                      +-------+------+------+------+------+
+                      |Solaris|Linux |Cygwin|MinGW | OS X |
++---------------------+-------+------+------+------+------+
+| Sun cc  / f90       |  S    |  -   |  -   |  -   |  -   |
+| gcc 3.X / g77       |  S    |  S   |  S   |  B   |  S   |
+| gcc 4.X / gFrotran  |  X    |  B   |  X   |  X   |  X   |
++---------------------+-------+------+------+------+------+
  S = Stable
  B = Beta testing
  X = Not supported
@@ -196,13 +197,13 @@ ESP-r interface using the GTK interface, and GTK versions
 of ESP-r can be installed on all platforms provided the
 GTK libraries are available.  
 
-                      +------+------+------+------+------+
-                      | UNIX |Linux |Cygwin|MinGW | OS X |
-+---------------------+------+------+------+------+------+
-| X11                 |  S   |  S   |  S   |  -   |  S   |
-| GTK                 |  B   |  B   |  B   |  B   |  B   |
-| no graphics         |  S   |  S   |  S   |  B   |  S   |
-+---------------------+------+------+------+------+------+
+                      +-------+------+------+------+------+
+                      |Solaris|Linux |Cygwin|MinGW | OS X |
++---------------------+-------+------+------+------+------+
+| X11                 |  S    |  S   |  S   |  -   |  S   |
+| GTK                 |  B    |  B   |  B   |  B   |  B   |
+| no graphics         |  S    |  S   |  S   |  B   |  S   |
++---------------------+-------+------+------+------+------+
  S = Stable
  B = Beta testing
  X = Not supported
@@ -442,7 +443,7 @@ Since ESP-r is most commonly used on Linux systems and
 has proven robust on this platform, regression testing is
 performed on linux systems.  When possible, cross-platform
 testing is performed using each of the other supported
-platforms (UNIX, Cygwin, MinGW and OS X). However,
+platforms (Solaris, Cygwin, MinGW and OS X). However,
 limited access to these platforms and the greater variety
 of configurations exhibited by these systems limits the
 amount of testing that can be performed, and ESP-r may
@@ -459,8 +460,8 @@ on each of ESP-r's supported platforms:
                                All differences are expected as introduced
                                in r665 and r904.
   ---------------------------------------------------------------------
-  Unix      2007-03-29 (r922)  A cross platform test was performed
-                               comparing Unix output to linux results.
+  Solaris   2007-03-29 (r922)  A cross platform test was performed
+                               comparing Solaris output to linux results.
                                Trivial numerical differences were
                                observed in all test cases, while some
                                non-trivial numerical differences were

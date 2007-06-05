@@ -259,6 +259,14 @@ C ************
       return
       end
 
+      subroutine openaskcnclbox(msg1,msg2,cncl,iasklen)
+      character*(*) msg1,msg2,cncl
+      write(6,*) msg1
+      write(6,*) msg2
+      write(6,*) cncl
+      return
+      end
+
       subroutine strip_leading_space(line)
       character*(*) line
       character fstr*124
@@ -293,6 +301,11 @@ C ************
 
       subroutine askaltdialog(sstr,alt,id,iq)
       character*(*) sstr,alt
+      return
+      end
+
+      subroutine askcncldialog(sstr,cncl,id,iq)
+      character*(*) sstr,cncl
       return
       end
 
