@@ -628,6 +628,99 @@ case $xLibs in
   noX) targets=" libnoX $targets";;
 esac
 
+#---------------------------------------------------------
+# Query about debugging, installation of training and 
+# database files
+#---------------------------------------------------------
+
+# Debugging
+B="none"
+while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+do
+  if [ "$B" != "none" ]; then
+      echo ""
+      echo " Please answer yes or no (y/n)."  
+  else
+    echo " ESP-r can optionally retain debugging symbols and "
+    echo " object files for use with a debugging program such"
+    echo " as GDB."
+    echo " " 
+  fi
+  
+  case "${debugging}" in
+    yes) echo " Retain debugging symbols? (y/n) [y]";;
+    *)   echo " Retain debugging symbols? (y/n) [n]";;
+  esac
+    
+  read B
+  if [ "$B" = "" ]; then
+    case "${debugging}" in
+      yes) B="y";;
+      *)   B="n";;
+    esac 
+  fi
+done
+if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+  debugging="yes"
+else
+  debugging="no"
+fi
+
+
+# System databases 
+B="none"
+while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+do
+  if [ "$B" != "none" ]; then
+      echo ""
+      echo "Please answer yes or no (y/n)."
+  fi
+    case "${install_dbs}" in
+    yes) echo " Install ESP-r database files? (y/n) [y]";;
+    *)   echo " Install ESP-r database files? (y/n) [n]";;
+  esac
+    
+  read B
+  if [ "$B" = "" ]; then
+    case "${install_dbs}" in
+      yes) B="y";;
+      *)   B="n";;
+    esac 
+  fi
+done
+if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+  install_dbs="yes"
+else
+  install_dbs="no"
+fi
+
+# Training files
+B="none"
+while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+do
+  if [ "$B" != "none" ]; then
+      echo ""
+      echo "Please answer yes or no (y/n)."
+  fi
+    case "${install_training}" in
+    yes) echo " Install training files? (y/n) [y]";;
+    *)   echo " Install training files? (y/n) [n]";;
+  esac
+    
+  read B
+  if [ "$B" = "" ]; then
+    case "${install_training}" in
+      yes) B="y";;
+      *)   B="n";;
+    esac 
+  fi
+done
+if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+  install_training="yes"
+else
+  install_training="no"
+fi
+
 
 #---------------------------------------------------------
 # Assign universal flags and variables.
@@ -1397,15 +1490,6 @@ if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
 fi
 
-if [ "$mode" = "interactive" ]; then
-  echo "  "
-  echo "(Re)install training and validation models, manual and tutorial (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_training="no"
-  fi
-fi
 
 if [ "$install_training" = "yes" ]; then
   echo " "
@@ -1747,15 +1831,6 @@ fi
 ##### End Install training, manual & tutorial files.
 
 ##### Install databases
-if [ "$mode" = "interactive" ]; then
-  echo " "
-  echo "(Re)install system databases (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_dbs="no"
-  fi
-fi
 
 if [ "$install_dbs" = "yes" ]; then
   # remove existing binary databases
@@ -2051,23 +2126,17 @@ echo " ... done."
 fi
 
 ##### Install and  Clean up
-if [ "$mode" = "interactive" ] && [ "$install_exes" = "prompt" ]; then
-  echo " "
-  echo "Install ESP-r executables (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_exes="no"
-  else
-    install_exes="yes"
-  fi
+cd ${SRCdir}
+echo "Installing executables..."
+if [ "$debugging" = "no" ]; then
+  make ESPdir=${ESPdir} EXE=${EXE} strip
 fi
-  
-if [ "$install_exes" = "yes" ] || [ "$install_exes" = "prompt" ]; then
-  cd ${SRCdir}
-  echo "Installing executables..."
-  make ESPdir=${ESPdir} EXE=${EXE} install
-  echo "Installing executables...done."
+make ESPdir=${ESPdir} EXE=${EXE} install
+if [ "$debugging" = "no" ]; then
+  make EXE=${EXE} clean
+fi
+echo "Installing executables...done."
+
 
 # Makeup an appropriate esp-r script.
 if [ ${MCTYPE} = sun ]; then
@@ -2114,52 +2183,33 @@ elif [ ${MCTYPE} = mingw ]; then
   echo "@rem batch file to start project manager - associate with cfg files" > ${ESPdir}/bin/esp-r.cmd
   echo "start prj -file %1" >> ${ESPdir}/bin/esp-r.cmd
 fi
-fi
 
-if [ "$mode" = "interactive" ]; then
-  echo " "
-  echo "Remove temporary files created during install process (y/n) [y]?"
-  read A
-  echo " "
-    
-  if [ "$A" = "n" ]; then
-    delete_temp_files="no"
-  fi
-
-elif [ "$debugging" = "yes" ]; then
-  delete_temp_files="no"
-fi  
-
-if [ "$delete_temp_files" = "yes" ]; then
-  cd ${SRCdir}
-  make EXE=${EXE} clean
-  echo "  "
-  echo "Removing binary materials db from exemplars ..."
-  cd ${SRCdir}/
-  rm include/build_info.h
-  rm -f training/glenview/databases/constr.db1
-  rm -f training/cellular_furn/dbs/cellular.materials
-  rm -f training/cellular_hires/dbs/cellular.materials
-  rm -f training/cellular_contam/dbs/cellular.materials
-  rm -f training/cellular_hvac/dbs/cellular.materials
-  rm -f training/cellular_flh/dbs/cellular.materials
-  rm -f training/cellular_natv/dbs/cellular.materials
-  rm -f training/cellular_bc/dbs/cellular.materials
-  rm -f training/cellular_cvvt/dbs/cellular.materials
-  rm -f training/cellular_pv/dbs/cellular_pv.materials
-  rm -f training/house/svph/dbs/linford.materialdb
-  rm -f training/cellular_shd/dbs/cellular.materials
-  rm -f training/cellular_earth/dbs/cellular.materials
-  rm -f training/cellular_bound/dbs/cellular.materials
-  rm -f training/glenview/databases/constr.db1
-  rm -f training/constr/tp_sub/dbs/tp_sub.material
-  rm -f training/plant/wch/dbs/db_prc
-  rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
-  rm -f validation/CEN/13791/databases/prim.db
-  rm -f validation/CEN/13791/databases/WM_A.clm
-  rm -f validation/CEN/13791/databases/WM_B.clm
-  rm -f validation/CEN/13791/databases/Cond.clm
-fi
+echo "  "
+echo "Removing binary materials db from exemplars ..."
+cd ${SRCdir}/
+rm include/build_info.h
+rm -f training/glenview/databases/constr.db1
+rm -f training/cellular_furn/dbs/cellular.materials
+rm -f training/cellular_hires/dbs/cellular.materials
+rm -f training/cellular_contam/dbs/cellular.materials
+rm -f training/cellular_hvac/dbs/cellular.materials
+rm -f training/cellular_flh/dbs/cellular.materials
+rm -f training/cellular_natv/dbs/cellular.materials
+rm -f training/cellular_bc/dbs/cellular.materials
+rm -f training/cellular_cvvt/dbs/cellular.materials
+rm -f training/cellular_pv/dbs/cellular_pv.materials
+rm -f training/house/svph/dbs/linford.materialdb
+rm -f training/cellular_shd/dbs/cellular.materials
+rm -f training/cellular_earth/dbs/cellular.materials
+rm -f training/cellular_bound/dbs/cellular.materials
+rm -f training/glenview/databases/constr.db1
+rm -f training/constr/tp_sub/dbs/tp_sub.material
+rm -f training/plant/wch/dbs/db_prc
+rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
+rm -f validation/CEN/13791/databases/prim.db
+rm -f validation/CEN/13791/databases/WM_A.clm
+rm -f validation/CEN/13791/databases/WM_B.clm
+rm -f validation/CEN/13791/databases/Cond.clm
 
 echo " "
 echo "Installation complete.  Please consult file ${SRCdir}/env/README."

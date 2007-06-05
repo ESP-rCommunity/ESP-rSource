@@ -211,8 +211,11 @@ ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
 
+strip:  
+	strip $(PROG)
+
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	cp $(PROG) $(ESPbin)
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
