@@ -2170,6 +2170,9 @@ C Arrays mapping binary names to longer descriptions
      
       save cBinNames, cBinDesc
       
+C References:
+      integer lnblnk
+      
 C include dynamically-created installation information. 
 #include "build_info.h"
       
