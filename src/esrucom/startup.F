@@ -2173,12 +2173,17 @@ C Arrays mapping binary names to longer descriptions
 C include dynamically-created installation information. 
 #include "build_info.h"
       
-C Check that arguement is OK. cType is set programmically,
+C Deterimine of summary or details 
+      if ( cType(1:7) == "details" ) then
+        bBuild_Info = .true.
+      elseif ( cType(1:7) == "summary" ) then
+        bBuild_Info = .false. 
+      else
+C cType is set programmically,
 C and needs only rudementry error trapping.
-      if ( cType(1:7) .ne. "summary" .and. cType(1:7) .ne. "details" )
-     &  STOP " Arguement to ESPrVersion must be 'summary' or 'details'"
+        STOP " Arguement to ESPrVersion must be 'summary' or 'details'"
+      endif 
 
-      
 C Determine index of current application in cBinNames/cBinDesc arrays      
       do iCurIndex = 1, iBinCount
       
@@ -2191,12 +2196,6 @@ C Determine index of current application in cBinNames/cBinDesc arrays
       enddo
 
      
-
-      
-      if ( cType(1:7) == "details" ) then                 
-        bBuild_Info = .true.
-      endif 
-      
 C Write out header ('ESP-r XYZ tool (xyx)'). 
 C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
       
@@ -2291,10 +2290,10 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
      &       cRevision(1:lnblnk(cRevision))
   
             if ( bModified ) then
-              write (cTemp_a,"(A,A)"), cTemp_a(1:lnblnk(cTemp_a)),
+              write (cTemp_a,"(A,A)") cTemp_a(1:lnblnk(cTemp_a)),
      &         " (locally modified)"
             else 
-              write (cTemp_a,"(A,A)"), cTemp_a(1:lnblnk(cTemp_a)),
+              write (cTemp_a,"(A,A)") cTemp_a(1:lnblnk(cTemp_a)),
      &         " (unmodified)"
             endif
              
@@ -2334,5 +2333,4 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
 
       return
-      end 
-      
+      end

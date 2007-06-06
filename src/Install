@@ -2165,15 +2165,16 @@ fi
 
 ##### Install and  Clean up
 cd ${SRCdir}
-echo "Installing executables..."
+echo " "
+echo -n " Installing executables..."
 if [ "$debugging" = "no" ]; then
-  make ESPdir=${ESPdir} EXE=${EXE} strip
+  make ESPdir=${ESPdir} EXE=${EXE} strip  >/dev/null 2>&1
 fi
-make ESPdir=${ESPdir} EXE=${EXE} install
+make ESPBinDir=${ESPbin} EXE=${EXE} install  >/dev/null 2>&1
 if [ "$debugging" = "no" ]; then
-  make EXE=${EXE} clean
+  make EXE=${EXE} clean  >/dev/null 2>&1
 fi
-echo "Installing executables...done."
+echo "Done."
 
 
 # Makeup an appropriate esp-r script.

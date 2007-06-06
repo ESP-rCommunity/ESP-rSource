@@ -143,11 +143,11 @@ visvec.F:
 	rm -f visvec.F
 	ln -s $(DFSdir)/visvec.F .
 
-strip:  
-	strip $(PROG)
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
 install:
-	cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \

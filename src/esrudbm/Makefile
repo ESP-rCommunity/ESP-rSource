@@ -65,11 +65,11 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
 
-strip:  
-	strip $(PROG)
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
-install:
-	cp $(PROG) $(ESPbin)
+install: 
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean :
 	rm -f core $(PROG) $(OBJECTS) c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \

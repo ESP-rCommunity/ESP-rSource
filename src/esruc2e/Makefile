@@ -10,11 +10,11 @@ OBJECTS = prcoef.o suple.o suprf.o supwi.o sup2.o wind.o
 $(PROG) : $(OBJECTS)
 	$(MFC) $(FFLAGS) -o $(PROG) $(OBJECTS)
 
-strip:  
-	strip $(PROG); 
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
 install:
-	cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS)
