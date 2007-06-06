@@ -107,6 +107,30 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
@@ -653,6 +677,8 @@ C First material (which will never be air).
 C Now, for each unique material write description.
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
+
+      call eclose(matver,1.1,0.01,closemat)
       do 25 iy = 1,nmat
         if(iprndx(iy).gt.0)then
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
@@ -662,8 +688,23 @@ C Now, for each unique material write description.
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        'MATERIAL:WINDOWGLASS',com
           endif
-          CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+          if(closemat)then
+            legmat=iprndx(iy)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          else
+            CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
+     &        DBSHT,E,A,DRV,TITL,NAM)
+          endif
 
 C Make up name. t12a holds the thickness as a string w/o leading blanks
 C (but only use the initial 7 characters of t12a.

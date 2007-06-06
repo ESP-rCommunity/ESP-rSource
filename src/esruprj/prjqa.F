@@ -1351,7 +1351,7 @@ C flow as well as internal partition (horizontal 0.13 both sides).
 C Note: ISO 6946 advises use of horizontal hc value for surfaces where
 C heat flow direction is unknown. This assumption is used in
 C the U and UA reporting below.
-                call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
+                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
 
 C Debug.
 C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
@@ -1832,7 +1832,7 @@ C MLC database reporting.
           call mlcrefs(mlcname,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,IFMAT,imlc,imerr)
+              call etmldb(2,itu,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
@@ -1860,6 +1860,7 @@ C the user through several of the tasks. Assumes that the user is
 C not browsing.
       subroutine mupdate(ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/appw/iappw,iappx,iappy
@@ -2078,10 +2079,35 @@ C If a negative conductivity is supplied the abs value represents the
 C resistance of an air gap.
 C << NOTE: this routine gets close for some constructions, but
 C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
+      subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
       
       dimension thick(8),rho(8),Cp(8),cond(8)
       CHARACTER DESC*48,NAM*72
@@ -2099,9 +2125,25 @@ C subroutine admit works from inside to outside.
 C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       layer=LAYERS(IFOC)+1
+      call eclose(matver,1.1,0.01,closemat)
       do 5 IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+        if(closemat)then
+          legmat=IPR(IFOC,IL)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+     &      DBSHT,E,A,DRV,TITL,NAM)
+        endif
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)
 

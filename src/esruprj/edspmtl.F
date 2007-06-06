@@ -371,6 +371,30 @@ C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),spdesc(40),
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
@@ -1019,11 +1043,27 @@ C Write menu displaying a list of layer names
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
         write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
+        call eclose(matver,1.1,0.01,closemat)
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
-     &             DBSHT,E,A,DRV,TITL,NAM)
+          if(closemat)then
+            legmat=IPR(imatch,j)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          else
+            CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
+     &        DBSHT,E,A,DRV,TITL,NAM)
+          endif
           IF(IER.EQ.1) THEN
              call edisp(iuout,' Found an error reading PCDB!')
           ENDIF

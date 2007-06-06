@@ -130,16 +130,14 @@ C     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
-C   if return is negative then there is no pointer.
+C   if return is negative then there is no pointer. Index includes
+C   zero to accommodate the implied air material.
 C    integer mathash
-C    common/mathasharray/mathash(600)
+C    common/mathasharray/mathash(0:600)
 
 C << Idea: have something like parsemlcdesc that goes and looks
 C << for a material that matches either the legacy index or
 C << the short material name.
-
-C << What about AIR?
-C << could have an array index zero for categories?
 
 C << What further information differences are there with
 C << EnergyPlus and DOE-2?
@@ -219,7 +217,7 @@ C legacy ASCII material database LASCI opened on unit IFA.
      &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
@@ -232,7 +230,7 @@ C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
 C Fill the hash table with not included marker (-1)
-      do 42 ih=1,600
+      do 42 ih=0,600
         mathash(ih)=-1
   42  continue
 
@@ -281,10 +279,10 @@ C matdbitems counter and creating a new name.
           matlegindex(matdbitems)=NCODE
           matcatindex(matdbitems)=I
 
-C << If later the order of the array changes then it will probably
-C << be necessary to rebuild the mathash array.
+C If later the order of the array changes then it will probably
+C be necessary to rebuild the mathash array. << ?? >>
 
-          if(NCODE.gt.0.and.NCODE.le.600)then
+          if(NCODE.ge.0.and.NCODE.le.600)then
             mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
           endif
           write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
@@ -312,10 +310,6 @@ C << be necessary to rebuild the mathash array.
 
 C Default thickness does not exist in legacy file so set a place
 C holder based on typcial classes (for databases with 15-17 classes)
-
-C << Have a look at logic when the user has requested a material db
-C << from scratch...
-
           if(matcats.ge.15.and.matcats.le.17)then
             matopaq(matdbitems)='-'
             if(I.eq.1.or.I.eq.2)then
@@ -366,6 +360,42 @@ C Assume that this category is glass. ?? WIS data
   20    CONTINUE
   10  CONTINUE
 
+C If there has been no air material read in then add in one more
+C category for air and fill it with the default information that
+C the standard call to ERPCDB would have returned.
+      if(mathash(0).eq.-1)then
+        matcats=matcats+1
+        matcatitems(matcats)=1
+        write(matcatname(matcats),'(a)') 'GAPS'
+        write(matcatdoc(matcats),'(a,i2,a)')
+     &    'Category (',matcats,') holds the implied air material '
+        matdbitems=matdbitems+1   ! increment counter
+        matlegindex(matdbitems)=0
+        matcatindex(matdbitems)=matcats
+        mathash(0)=matdbitems  ! set up pointer from legacy index to array
+        write(matname(matdbitems),'(a)') 'mat_000'
+        write(matdoc(matdbitems),'(a)') 
+     &    'Air layer with default properties'
+        matdbcon(matdbitems)=0.0
+        matdbden(matdbitems)=0.0
+        matdbsht(matdbitems)=0.0
+        matdboute(matdbitems)=0.99
+        matdbine(matdbitems)=0.99
+        matdbouta(matdbitems)=0.99
+        matdbina(matdbitems)=0.99
+        matdbdrv(matdbitems)=1.0
+        matdbthick(matdbitems)=25.0
+        matopaq(matdbitems)='-'
+        matirtran(matdbitems)=0.0
+        matsoldrtrn(matdbitems)=0.0
+        matsoldrotrfl(matdbitems)=0.0
+        matsoldrinrfl(matdbitems)=0.0
+        matvistran(matdbitems)=0.0
+        matvisotrfl(matdbitems)=0.0
+        matvisinrfl(matdbitems)=0.0
+        matrender(matdbitems)=0.0
+      endif
+
 C Debug.
 C      write(6,*) 'matdbitems ',matdbitems
 C      write(6,*) 'matcatitems ',matcatitems
@@ -412,7 +442,7 @@ C Notes on variables at top of file.
      &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
       character tab*1,outs*248,outsd*248
       character LASCI*72
       integer matcount,matcatcount  ! used to increment arrays
@@ -563,7 +593,7 @@ C current ASCII material database LASCI opened on unit IFA.
      &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(16)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72,WORD*24
@@ -584,7 +614,7 @@ C Proceed with header.
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
 C Fill the hash table with not included marker (-1)
-        do 42 ih=1,600
+        do 42 ih=0,600
           mathash(ih)=-1
   42    continue
       else
@@ -634,7 +664,7 @@ C class index IC is used for subsequent items.
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
         CALL EGETWI(OUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE
-        if(NCODE.gt.0.and.NCODE.le.600)then
+        if(NCODE.ge.0.and.NCODE.le.600)then
           mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
         endif
         CALL EGETWI(OUTSTR,K,matcatindex(matdbitems),1,MGCL,'F',
@@ -775,16 +805,17 @@ C        inext is slot found.
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
-C   if return is negative then there is no pointer.
+C   if return is negative then there is no pointer. The array
+C   starts at zero to account for the implied air magerial.
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
       integer ip,inext,ilook
 
 C Set inext to 601 in case nothing found. If mathash array item
 C is negative then it has not yet been used. Calling code should
 C be sure to instanciate mathash with the material array index.
       inext=601
-      if(ip.gt.0.and.ip.le.599)then
+      if(ip.gt.1.and.ip.le.599)then
         do 42 ilook=ip,600
           if(mathash(ilook).lt.0)then
             inext=ilook

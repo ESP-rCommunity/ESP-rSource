@@ -48,6 +48,30 @@ C espriou.h provides currentfile.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72
       CHARACTER RSTR*124
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
@@ -63,6 +87,9 @@ C If materials database not opened, do it now.
         CALL USRMSG(' opened materials db',' ','-')
         MATDBOK=.TRUE.
       ENDIF
+
+C Find version of materials database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C Free unit and check if composite file exists.
       IER=0
@@ -179,8 +206,25 @@ C values, otherwise get element name from materials db.
               DRAIR(I,IL,3)=VAL
             ELSE
               ier=0
-              CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
+
+C If an air layer include the R values in the display.
+              if(closemat)then
+                legmat=IPR(I,IL)   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
+              else
+                CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
      &                      DBSHT,E,A,DRV,TITL,NAM)
+              endif
               if(ier.eq.1) matmiss=matmiss+1
 
               DRAIR(I,IL,1)=0.0
@@ -213,7 +257,7 @@ C not have required checking the contents of the materials
 C database. ETMLDB does ( it creates those messages about 
 C a material having all zero values). Keep track of how
 C many of these instances. If there are
-        CALL ETMLDB(ITRC,ITRU,IFMAT,I,imerr)
+        CALL ETMLDB(ITRC,ITRU,I,imerr)
         if(imerr.eq.1) matmiss=matmiss+1
         IF(imerr.NE.0.and.matmiss.gt.5)GOTO 99
   10  CONTINUE
@@ -354,11 +398,37 @@ C If opposite matches continue otherwise set layermatch to false and exit.
 C *************** ETMLDB
 C ETMLDB provides reporting on current description of a composite
 C construction based on contents of common MLC.
-      SUBROUTINE ETMLDB(ITRC,ITRU,IFMAT,IFOC,ier)
+      SUBROUTINE ETMLDB(ITRC,ITRU,IFOC,ier)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GVALCAL/CLAMDA(MMLC)
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*124,DESC*48,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
@@ -378,6 +448,9 @@ C Pick up general description of the composite.
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
       ENDIF
+
+C Check version of materials database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C Reporting based on report level.
       IF(ITRC.GT.1)THEN
@@ -399,8 +472,23 @@ C Reporting based on report level.
       DO 15, IL=1,LAYERS(IFOC)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+        if(closemat)then
+          legmat=IPR(IFOC,IL)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+     &      DBSHT,E,A,DRV,TITL,NAM)
+        endif
         IF(IER.EQ.1)RETURN
         IF(IPR(IFOC,IL).EQ.0)THEN
           WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
@@ -460,7 +548,7 @@ C Include admittance calculations (use TM33 Table 4.5 values for admittance calc
 C << NOTE this code needs further debugging.
 C      Rsi=0.12
 C      Rso=0.06
-C      call ADMIT(ITRC,ITRU,IFMAT,IFOC,Rsi,Rso)
+C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
@@ -478,10 +566,36 @@ C QPAQ.
 C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
 C on contents of common MLC.
-      SUBROUTINE ETMLDBU(ITRC,ITRU,IFMAT,IFOC,UVH,UVU,UVD,UVI)
+      SUBROUTINE ETMLDBU(ITRC,ITRU,IFOC,UVH,UVU,UVD,UVI)
 #include "building.h"
+#include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       CHARACTER OUTSTR*124,DESC*48,NAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
@@ -490,6 +604,9 @@ C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       IF(ITRC.GE.1)THEN
       ENDIF
+
+C Check version of material database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C Reset U value reporting local variables.
       RT=0.
@@ -504,8 +621,23 @@ C Reset U value reporting local variables.
       DO 15, IL=1,LAYERS(IFOC)
 
 C If an air layer include the R values in the display.
-        CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+        if(closemat)then
+          legmat=IPR(IFOC,IL)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
+     &      DBSHT,E,A,DRV,TITL,NAM)
+        endif
         IF(IER.EQ.1)RETURN
         IF(IPR(IFOC,IL).EQ.0)THEN
           RT=RT+DRAIR(IFOC,IL,1)
@@ -604,7 +736,7 @@ C in the materials database.
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)
-      CALL ETMLDB(2,iuout,IFMAT,ISEL,imerr)
+      CALL ETMLDB(2,iuout,ISEL,imerr)
       call edisp(iuout,
      & ' ISO 6946 U value assumes: Rso=0.04 & Rsi=0.13 (m**2deg.C/W)')
       RETURN
@@ -621,6 +753,9 @@ C previously opened and other parts of the code will close it when
 C appropriate.  E is the element emissivity, A is the solar absorb, DRV
 C is the diffusion resistance, TITL is the classification title, PNAM is
 C the material name.
+
+C Note: this subroutine is for use with the binary materials file
+C rather than the matdatarray common blocks.
 
       SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
      &                  DRV,TITL,PNAM)
@@ -679,9 +814,11 @@ C Air layer encountered so put in zeroes.
       END
 
 C *************** EMKAMLD 
-C EMKAMLD: Creates an ascii constructions database based on the
+C EMKAMLD: Creates a legacy ascii constructions database based on the
 C current contents of common MLC.  In the case of an air layer sub-
 C stitute the U value for each layer.
+
+C This subroutine uses the material array data in matdatarray if available.
       SUBROUTINE EMKAMLD(ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -689,6 +826,31 @@ C stitute the U value for each layer.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       DIMENSION PNAM(ME)
       CHARACTER DESC*48,NAM*72,TITL*72,PNAM*72
 
@@ -703,6 +865,9 @@ C Assume that data on composites is in common MLC.
         IER=1
         RETURN
       ENDIF
+
+C Check version of material database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C The ASCII file will be overwritten if it exists.
       CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
@@ -725,8 +890,23 @@ C of DRAIR.
           IF(IPR(I,IL).EQ.0)THEN
             WRITE(PNAM(IL),'(A,1X,3F6.3)')'air',(DRAIR(I,IL,IY),IY=1,3)
           ELSE
-            CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
-     &                      DBSHT,E,A,DRV,TITL,NAM)
+            if(closemat)then
+              legmat=IPR(I,IL)   ! which legacy index
+              if(legmat.ge.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
+            else
+              CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
+     &          DBSHT,E,A,DRV,TITL,NAM)
+            endif
             PNAM(IL)=NAM
           ENDIF
   116   CONTINUE

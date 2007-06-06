@@ -35,12 +35,17 @@ C ************* ELISTC
 C ELISTC: Controls display and editing of materials.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
+
+C Note: this subroutine is only for use with the binary materials
+C database file and data structures. It should not be called if
+C the ascii based materials data structures are used.
       SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
+
       LOGICAL     OK,DOK,MODDB,chgdb
       DIMENSION ICLN(30),CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       DIMENSION EDBCON(19),EDBDEN(19),EDBSHT(19),EE(19),EA(19),EDRV(19)
@@ -531,7 +536,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
      &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
@@ -1759,8 +1764,31 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
-      logical moddb,chgdb,layermatch
+      logical moddb,chgdb,layermatch,closemat
 
       CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
@@ -1916,11 +1944,11 @@ C If user canceled the listing the reset unit to iuout and loop back.
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then
-            call etmldb(itrc,itu,IFMAT,IM,imerr)
+            call etmldb(itrc,itu,IM,imerr)
           elseif(irpt.eq.2)then
-            call etmldb(1,itu,IFMAT,IM,imerr)
+            call etmldb(1,itu,IM,imerr)
           elseif(irpt.eq.3)then
-            call etmldb(2,itu,IFMAT,IM,imerr)
+            call etmldb(2,itu,IM,imerr)
           endif
    45   continue
         call edisp(itu,
@@ -2185,11 +2213,31 @@ C First check if mlc is transparent
           CALL EDISP(IUOUT,' ')
         ELSE
 
-C Get number of non-air layers of glass
+C Get number of non-air layers of glass.
+
+C << todo: make use of the single lay optics from the materials commons
+C << to supply much of the information needed for the g-value calculation.
+
+          call eclose(matver,1.1,0.01,closemat)
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
-            CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
+            if(closemat)then
+              legmat=IPR(IWH,ILAY)   ! which legacy index
+              if(legmat.ge.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
+            else
+              CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
+            endif
             IF(IER.EQ.1)RETURN
             IF(IPR(IWH,ILAY).EQ.0)GOTO 501
             IPN=IPN+1
@@ -2272,7 +2320,7 @@ C Edit block identified by KEYIND, remind user of details and then
 C bring up an editing facility.
         CALL KEYIND(NITMS,INO,IFOC,IO)
         CALL EDISP(iuout,' ')
-        call etmldb(2,iuout,IFMAT,IFOC,imerr)
+        call etmldb(2,iuout,IFOC,imerr)
         CALL EPMENSV
         CALL EDWALL(ITRC,IFOC,moddb,IER)
         CALL EPMENRC
@@ -2323,7 +2371,33 @@ C << if needed.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       logical moddb,chdb,showother,layermatch,layermatcha,modgeo
+      logical closemat
 
       dimension SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
@@ -2401,9 +2475,25 @@ C Editing menu.
 C Detail menu.
       M=8
       RT=0.
+      call eclose(matver,1.1,0.01,closemat)
       DO 23, IL=1,LAYERS(IFOC)
-        CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
+        if(closemat)then
+          legmat=IPR(IFOC,IL)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
+        endif
         IF(IER.EQ.1)RETURN
 
 C Calculate standard U value and display as well.

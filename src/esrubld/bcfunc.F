@@ -5934,6 +5934,30 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
       CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
@@ -6024,6 +6048,9 @@ C Update or reset properties based on above logic.
       CHANGED=.false.
       if (itpmod(ICMP).and.(.not.usealt)) then
         CHANGED=.true.
+
+C Find version of materials database. If 1.1 then use material arrays.
+        call eclose(matver,1.1,0.01,closemat)
       
 C Reset properties by reading in zone descriptor files.
         write (6,*)'Resetting tp properties at btimef ',btimef
@@ -6066,8 +6093,23 @@ C common.  Gather information about each layer. Read in the
 C primitive db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
-            call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
+            if(closemat)then
+              legmat=ipr(ic,i)   ! which legacy index
+              if(legmat.ge.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                dbcon=matdbcon(matarrayindex)
+                dbden=matdbden(matarrayindex)
+                dbsht=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                drv=matdbdrv(matarrayindex)
+                write(titl,'(a)') 'placeholder'
+                write(nam,'(a)') matname(matarrayindex)(1:32)
+              endif
+            else
+              call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
      &            dbsht,e,a,drv,titl,nam)
+            endif
             if(ier.eq.1)return
             if(ipr(ic,i).ne.0)then
               con(ii,i)=dbcon
