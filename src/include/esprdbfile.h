@@ -10,8 +10,8 @@ C MGCL - (integer) number of categories in a generic database
 C MGIT - (integer) number of items in a generic database
       integer MGDB,MGCL,MGIT 
       parameter (MGDB=13)
-      parameter (MGCL=30)
-      parameter (MGIT=500)
+      parameter (MGCL=36)
+      parameter (MGIT=600)
 
 C Array of generic database file names (72 char).
       common/gendbf/gendbfn(MGDB)

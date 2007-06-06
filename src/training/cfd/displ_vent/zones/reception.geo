@@ -1,7 +1,7 @@
 # geometry of reception defined in: ../zones/reception.geo
-GEN  reception              # type   zone name
-      30      13   0.000    # vertices, surfaces, rotation angle 
-#  X co-ord, Y co-ord, Z co-ord 
+GEN  reception  reception describes a waiting room for a doctors office  # type, name, descr
+      30      13   0.000    # vertices, surfaces, rotation angle
+#  X co-ord, Y co-ord, Z co-ord
       1.00000     1.00000     0.00000  # vert   1
       9.00000     1.00000     0.00000  # vert   2
       9.00000     4.50000     0.00000  # vert   3
@@ -46,17 +46,17 @@ GEN  reception              # type   zone name
    4, 19, 20, 21, 22,
    4, 23, 24, 25, 26,
    4, 27, 28, 29, 30,
-# number of default windows within each surface 
-   0  0  0  0  0  0  0  0  0  0  0  0  0
+# unused index
+ 0,0,0,0,0,0,0,0,0,0,0,0,0
 # surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+ 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
     3   0   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
+# id  surface      geom  loc/  construction environment
 # no  name         type  posn  name         other side
   1, south         OPAQ  VERT  extern_wall  EXTERIOR       
   2, east          OPAQ  VERT  extern_wall  EXTERIOR       
-  3, pasg          OPAQ  VERT  intern_wall  SIMILAR        
+  3, pasg          OPAQ  VERT  partition    SIMILAR        
   4, north         OPAQ  VERT  extern_wall  EXTERIOR       
   5, part_a        OPAQ  VERT  int_part     office         
   6, part_b        OPAQ  VERT  int_part     office         
@@ -68,4 +68,4 @@ GEN  reception              # type   zone name
  12, door_w        OPAQ  VERT  door         EXTERIOR       
  13, glz_e         TRAN  VERT  d_glz        EXTERIOR       
 # base
-   9   0   0   0    48.00
+  0  0  0  0  0  0    48.00 1

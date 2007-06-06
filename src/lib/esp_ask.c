@@ -3,6 +3,7 @@
    Functions:
       askdialog - prompt for a text entry (with help, default and cancel options).
       askdialogcmd - prompt for a text entry (with help, default, cancel, alternative cmd options).
+      askdialogcncl - prompt for a text entry (with help, default, user specified cancel cmd options).
       askdialog2cmd - prompt for a text entry (with help, default, cancel, two alternative cmd options).
       askreal - prompt for a real number entry (with help, default and cancel options).
       askint - prompt for a integer entry (with help, default and cancel options). <<not here yet>>
@@ -210,6 +211,115 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
        case GTK_RESPONSE_CANCEL:
          *ier=-3;
          no_valid_event = FALSE;
+         break;
+       case 98:
+         *ier=2;
+         no_valid_event = FALSE;
+         break;
+       case 99:
+         *ier=-2;
+         no_valid_event = FALSE;
+         break;
+       default:
+         *ier=-1;
+         no_valid_event = FALSE;
+         break;
+       }
+     }
+   gtk_widget_destroy (askbox);
+
+}
+
+/* ***** askdialogcncl_() ask for text input with user defined cancel option */
+/* This matches openaskcnclbox and askcncldialog in the X11 code where a specific
+ * string is passed for the go-back/cancel opion. In this case the GTK supplied
+ * cancel button is not needed.
+*/
+void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1, int lenrep, int lencncl)
+/* q1 is the question being posed to the user
+   reply is the reply but has the current value from the fortran side
+   cncl is an cancel command string from the fortran side
+   ier tracks if the default (-2), cncl option (2) have been selected (requires
+     a suitable actions on the fortran side).
+   lenq1 is passed length of prompt, lenrep is passed length of reply, lencncl is passed length of cncl.
+*/
+{
+   GtkWidget *askbox, *entry, *label;
+   gchar *reply_local;
+   gchar *question_local;
+   gchar *cncl_local;
+   gint result;
+   int no_valid_event;
+   int lnq1,lnrep,lncncl1;	/* for non-blank lengths */
+   gint lnblankstr;		/* for the blank string */
+   long int ibx,iby,more;	/* set default position of help */
+   long int ipflg,iuresp;	/* response from pop-up help */
+   char blankstr[90];
+
+   *ier=0;	/* Reset value of ier flag */
+
+/* create a string full of blanks for use in clearing reply_local */
+   strcpy(blankstr,"                                                                                         ");
+   lnblankstr=lenrep-1;
+
+   f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
+   reply_local = g_strndup(reply, (gsize) lnblankstr);	/* start with the text highlighted */
+
+/* find out actual length of each prompt and then total length with a space between. */
+   lnq1 = 0;
+   f_to_c_l(q1,&lenq1,&lnq1);
+   question_local = g_strndup(q1, (gsize) lnq1);
+   lncncl1 = 0;
+   f_to_c_l(cncl,&lencncl,&lncncl1);
+   cncl_local = g_strndup(cncl, (gsize) lncncl1);
+
+/* debug g_print("phrase %s\n",question_local); */
+/* debug g_print("text is %s\n",reply_local); */
+/* debug g_print("cncl is %s\n",cncl_local); */
+/* debug g_print("nb of help lines %d\n",help_lines); */
+
+   /* Create the widgets */
+   askbox = gtk_dialog_new_with_buttons("Text request with go-back option",
+     GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
+     GTK_STOCK_HELP, GTK_RESPONSE_HELP,"Use default", 99,
+     GTK_STOCK_OK, GTK_RESPONSE_OK,cncl_local,98,NULL);
+
+   label = gtk_label_new (question_local);
+   entry = gtk_entry_new ();
+
+   /* Define entry box properties */
+   gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
+   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
+   gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
+   gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
+
+
+   /* Pack widgets and display */
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),entry);
+   gtk_widget_show_all (askbox);
+
+   /* Set dialog properties and wait for user response */
+   gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
+   gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
+
+   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
+      example, a help dialog directly from here */
+   no_valid_event = TRUE;
+   while ( no_valid_event) {
+     result = gtk_dialog_run (GTK_DIALOG (askbox));
+     switch (result) {
+       case GTK_RESPONSE_OK:
+       /* Terminate this string properly for return to fortran via strcpy. */
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
+         strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
+         g_print ("askdialogcncl reply is now %s",reply);  /* debug */
+         g_free (reply_local);
+	 no_valid_event = FALSE;
+         break;
+       case GTK_RESPONSE_HELP:
+         ibx= 0; iby= 0; more = 0;
+         egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
          break;
        case 98:
          *ier=2;

@@ -1360,7 +1360,7 @@ C askmfpar displays/edits a list of associated mass flow data
 C fpr the component (ipc).
       subroutine askmfpar(ipc)
 
-#include"plant.h"
+#include "plant.h"
       common/outin/iuout,iuin
       common/pophelp/h(60)
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 

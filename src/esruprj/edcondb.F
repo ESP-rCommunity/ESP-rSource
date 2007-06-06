@@ -125,6 +125,12 @@ C List one or more classifications.
           itu = ixunit
           write(xfile,'(a)') 'material_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 40
+          endif
         elseif(irpt.eq.3)then
           goto 40
         endif
@@ -141,7 +147,7 @@ C List one or more classifications.
             call edisp(itu,outs)
             call edisp(itu,' ')
             call edisp(itu,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Diffus|Description')
+     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
             call edisp(itu,
      &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
             IDB=IC*20-20
@@ -436,7 +442,7 @@ C Identified one of the materials to edit or select.
      &        '        Specific Heat J/(kg deg.C) ')
             call edisp(iuout,' ')
             call edisp(iuout,
-     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Diffus|Description')
+     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
      &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
             WRITE(outs,244)IDBE(IFOC),EDBCON(IFOC),EDBDEN(IFOC),
@@ -520,9 +526,9 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden,matprandtl
+      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
       common/mathasharray/mathash(600)
@@ -615,6 +621,12 @@ C List one or more classifications.
           itu = ixunit
           write(xfile,'(a)') 'material_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 40
+          endif
         elseif(irpt.eq.3)then
           goto 40
         endif
@@ -629,7 +641,7 @@ C List one or more classifications.
             call edisp(itu,outs)
             call edisp(itu,' ')
             call edisp(itu,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Diffus|Description')
+     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
             call edisp(itu,
      &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
 
@@ -692,6 +704,23 @@ C Add another category to the database << not yet tested >>
           matvisotrfl(ILNE)=0.5
           matvisinrfl(ILNE)=0.5
           matrender(ILNE)=0.0
+
+          matgapcnd(ILNE,1)=0.0
+          matgapcnd(ILNE,2)=0.0
+          matgapcnd(ILNE,3)=0.0
+          matgapcnd(ILNE,4)=0.0
+          matvisco(ILNE,1)=0.0
+          matvisco(ILNE,2)=0.0
+          matvisco(ILNE,3)=0.0
+          matvisco(ILNE,4)=0.0
+          matgapden(ILNE,1)=0.0
+          matgapden(ILNE,2)=0.0
+          matgapden(ILNE,3)=0.0
+          matgapden(ILNE,4)=0.0
+          matprandtl(ILNE,1)=0.0
+          matprandtl(ILNE,2)=0.0
+          matgapsht(ILNE,1)=0.0
+          matgapsht(ILNE,2)=0.0
           chgdb=.true.
         endif
         goto 40
@@ -737,6 +766,14 @@ C Remember the array index that goes with the menu position (m).
      &          matname(J)(1:8),': ',matdoc(J)(1:17)
    25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
             elseif(matopaq(J).eq.'t')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+            elseif(matopaq(J).eq.'g')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+            elseif(matopaq(J).eq.'h')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
      &          matname(J)(1:8),': ',matdoc(J)(1:17)
@@ -848,7 +885,33 @@ C end of the array.
           CALL EMENU('Copy material',PDBM,NITMS,IW)
           IWHICH=iwhicharray(IW)
           ILNE=matdbitems+1
-          matlegindex(ILNE)=-99
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and maek up initial name based
+C on the original.
+          ip=matlegindex(IWHICH)
+          call getnextascislot(ip,inext)
+          if(inext.le.600)then 
+            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+            matlegindex(ILNE)=inext
+            mathash(inext)=ILNE
+          else
+            write(matname(ILNE),'(2a)') 
+     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+            matlegindex(ILNE)=-99
+          endif
+
+C If there is room add a note about its origin.
+          ils=lnblnk(matdoc(IWHICH))
+          iln=lnblnk(matname(IWHICH))
+          if(ils.le.200)then
+            write(matdoc(ILNE),'(4a)') 
+     &        matdoc(IWHICH)(1:ils),' (copy of ',
+     &        matname(IWHICH)(1:iln),')'
+          else
+            matdoc(ILNE)=matdoc(IWHICH)
+          endif
           matdbcon(ILNE)=matdbcon(IWHICH)
           matdbden(ILNE)=matdbden(IWHICH)
           matdbsht(ILNE)=matdbsht(IWHICH)
@@ -859,9 +922,6 @@ C end of the array.
           matdbdrv(ILNE)=matdbdrv(IWHICH)
           matdbthick(ILNE)=matdbthick(IWHICH)
           matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
-          write(matname(ILNE),'(2a)') 
-     &      matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
-          matdoc(ILNE)=matdoc(IWHICH)
           matopaq(ILNE)=matopaq(IWHICH)
           matirtran(ILNE)=matirtran(IWHICH)
           matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
@@ -871,6 +931,23 @@ C end of the array.
           matvisotrfl(ILNE)=matvisotrfl(IWHICH)
           matvisinrfl(ILNE)=matvisinrfl(IWHICH)
           matrender(ILNE)=matrender(IWHICH)
+
+          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+          matvisco(ILNE,1)=matvisco(IWHICH,1)
+          matvisco(ILNE,2)=matvisco(IWHICH,2)
+          matvisco(ILNE,3)=matvisco(IWHICH,3)
+          matvisco(ILNE,4)=matvisco(IWHICH,4)
+          matgapden(ILNE,1)=matgapden(IWHICH,1)
+          matgapden(ILNE,2)=matgapden(IWHICH,2)
+          matgapden(ILNE,3)=matgapden(IWHICH,3)
+          matgapden(ILNE,4)=matgapden(IWHICH,4)
+          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
           matdbitems=matdbitems+1
           matcatitems(IC)=matcatitems(IC)+1
           MODDB=.TRUE.
@@ -889,8 +966,10 @@ C copy the contents of material > IWHICH into the next lower one.
             CALL USRMSG(' ',' Which item of list? ','-')
             CALL EMENU('delete material',PDBM,NITMS,IW)
             IWHICH=iwhicharray(IW)
+            ip=matlegindex(IWHICH)  ! remove legacy index from the hash table.
+            mathash(ip)=-1
             DO 791 IVV=IWHICH,matdbitems-1
-              matlegindex(IVV)=matlegindex(IVV+1)-1
+              matlegindex(IVV)=matlegindex(IVV+1)
               matdbcon(IVV)=matdbcon(IVV+1)
               matdbden(IVV)=matdbden(IVV+1)
               matdbsht(IVV)=matdbsht(IVV+1)
@@ -912,6 +991,23 @@ C copy the contents of material > IWHICH into the next lower one.
               matvisotrfl(IVV)=matvisotrfl(IVV+1)
               matvisinrfl(IVV)=matvisinrfl(IVV+1)
               matrender(IVV)=matrender(IVV+1)
+
+              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
+              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
+              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
+              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
+              matvisco(IVV,1)=matvisco(IVV+1,1)
+              matvisco(IVV,2)=matvisco(IVV+1,2)
+              matvisco(IVV,3)=matvisco(IVV+1,3)
+              matvisco(IVV,4)=matvisco(IVV+1,4)
+              matgapden(IVV,1)=matgapden(IVV+1,1)
+              matgapden(IVV,2)=matgapden(IVV+1,2)
+              matgapden(IVV,3)=matgapden(IVV+1,3)
+              matgapden(IVV,4)=matgapden(IVV+1,4)
+              matprandtl(IVV,1)=matprandtl(IVV+1,1)
+              matprandtl(IVV,2)=matprandtl(IVV+1,2)
+              matgapsht(IVV,1)=matgapsht(IVV+1,1)
+              matgapsht(IVV,2)=matgapsht(IVV+1,2)
   791       CONTINUE
             matdbitems=matdbitems-1
             matcatitems(IC)=matcatitems(IC)-1
@@ -929,8 +1025,19 @@ C Add a material, initiate it to the values of last material in class.
                 endif
   793         continue
               if(lastcatitem.gt.0)then
-                matname(ILNE)='new_material'
-                matlegindex(ILNE)=-99
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices and make up name and index based on inext value.
+                ip=matlegindex(lastcatitem)
+                call getnextascislot(ip,inext)
+                if(inext.le.600)then 
+                  write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+                  matlegindex(ILNE)=inext
+                  mathash(inext)=ILNE
+                else
+                  matname(ILNE)='new_material'
+                  matlegindex(ILNE)=-99
+                endif
                 matdbcon(ILNE)=matdbcon(lastcatitem)
                 matdbden(ILNE)=matdbden(lastcatitem)
                 matdbsht(ILNE)=matdbsht(lastcatitem)
@@ -941,7 +1048,17 @@ C Add a material, initiate it to the values of last material in class.
                 matdbdrv(ILNE)=matdbdrv(lastcatitem)
                 matdbthick(ILNE)=matdbthick(lastcatitem)
                 matcatindex(ILNE)=matcatindex(lastcatitem)  ! keep in same category
-                matdoc(ILNE)=matdoc(lastcatitem)
+
+C If there is room add a note about its origin.
+                ils=lnblnk(matdoc(lastcatitem))
+                iln=lnblnk(matname(lastcatitem))
+                if(ils.le.200)then
+                  write(matdoc(ILNE),'(4a)') 
+     &              matdoc(IWHICH)(1:ils),' (derived from ',
+     &              matname(lastcatitem)(1:iln),')'
+                else
+                  matdoc(ILNE)=matdoc(lastcatitem)
+                endif
                 matopaq(ILNE)=matopaq(lastcatitem)
                 matirtran(ILNE)=matirtran(lastcatitem)
                 matsoldrtrn(ILNE)=matsoldrtrn(lastcatitem)
@@ -951,7 +1068,25 @@ C Add a material, initiate it to the values of last material in class.
                 matvisotrfl(ILNE)=matvisotrfl(lastcatitem)
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
+
+                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
+                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
+                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
+                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
+                matvisco(ILNE,1)=matvisco(lastcatitem,1)
+                matvisco(ILNE,2)=matvisco(lastcatitem,2)
+                matvisco(ILNE,3)=matvisco(lastcatitem,3)
+                matvisco(ILNE,4)=matvisco(lastcatitem,4)
+                matgapden(ILNE,1)=matgapden(lastcatitem,1)
+                matgapden(ILNE,2)=matgapden(lastcatitem,2)
+                matgapden(ILNE,3)=matgapden(lastcatitem,3)
+                matgapden(ILNE,4)=matgapden(lastcatitem,4)
+                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
+                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
+                matgapsht(ILNE,1)=matgapsht(lastcatitem,1)
+                matgapsht(ILNE,2)=matgapsht(lastcatitem,2)
                 matdbitems=matdbitems+1
+                matcatitems(IC)=matcatitems(IC)+1
 
 C Browse/Edit the details of this new item. Mark as unmodified first
 C and then resetn MODDB and chgdb if mod is true.
@@ -993,7 +1128,7 @@ C and then resetn MODDB and chgdb if mod is true.
      &        '        Specific Heat J/(kg deg.C) ')
             call edisp(iuout,' ')
             call edisp(iuout,
-     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Diffus|Description')
+     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
      &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
             WRITE(outs,244)matlegindex(IFOC),matdbcon(IFOC),
@@ -1040,7 +1175,7 @@ C Work with local name.
       WRITE(PELM(5),'(A,2X,F8.2)') 'd Specific Heat:',DBSHT
       WRITE(PELM(6),'(A,2X,F8.2)') 'e Emissivity   :',E
       WRITE(PELM(7),'(A,2X,F8.2)') 'f Absorptivity :',A
-      WRITE(PELM(8),'(A,F10.2)')   'g Diffusion res:',DRV
+      WRITE(PELM(8),'(A,F10.2)')   'g Vapour resis :',DRV
       PELM(9) =' _____________________ '
       PELM(10)='? Help                 '
       PELM(11)='- Exit                 '
@@ -1083,10 +1218,11 @@ C Help text for this menu.
             CALL EASKR(A,' ',' Surface absorptance : ',
      &             0.01,'W',0.99,'W',0.9,'absorptance',IER,2)
       ELSEIF(IW.EQ.8)THEN
-        H(1)='Diffusion resistance factor for vapour transfer is '
-        H(2)='defined in the ESP-r glossary. It is dimensionless. '
-        CALL EASKR(DRV,' ',' Diffusion resistance : ',
-     &         1.0,'W',20000.,'W',1.,'diffusion resistance',IER,2)
+        H(1)='Vapour resistvity for vapour transfer has units'
+        H(2)='of MNs g^-1m^-1. Used to support assessments of'
+        H(3)='condensation within constructions. '
+        CALL EASKR(DRV,' ','Vapour resistvity (MNs g^-1m^-1):',
+     &         1.0,'W',20000.,'W',1.,'vapour resistvity',IER,3)
       ELSEIF(IW.EQ.10)THEN
         CALL PHELPD('material attributes',2,'-',0,0,IER)
       ELSE
@@ -1126,15 +1262,19 @@ C mod is returned as true if data has changed.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden,matprandtl
+      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,4)
-      DIMENSION PELM(28)
+     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
+      DIMENSION PELM(29)
       CHARACTER H*72,PELM*40,tnam*32,tdoc*248,message*32
       real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
       real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
       real visotrfl,visinrfl,render
       logical modify,dok,ok,mod
+
+C Local variables for gas materials.
+      real gapcnd,visco,gapden,prandtl,gapsht
+      dimension gapcnd(4),visco(4),gapden(4),prandtl(2),gapsht(2)
 
 C If index is outwith range just return.
       if(index.gt.0.and.index.le.matdbitems)then
@@ -1145,8 +1285,8 @@ C If index is outwith range just return.
 
 C Work with local variables.
       modify=.false.
-      tnam = matname(index)
-      tdoc = matdoc(index)
+      write(tnam,'(a)') matname(index)(1:lnblnk(matname(index)))
+      write(tdoc,'(a)') matdoc(index)(1:lnblnk(matdoc(index)))
       DBCON = matdbcon(index)
       DBDEN = matdbden(index)
       DBSHT = matdbsht(index)
@@ -1164,8 +1304,22 @@ C Work with local variables.
       visotrfl= matvisotrfl(index)
       visinrfl= matvisinrfl(index)
       render= matrender(index)
-
-C << air gap data needs local variables >>
+      gapcnd(1)= matgapcnd(index,1)
+      gapcnd(2)= matgapcnd(index,2)
+      gapcnd(3)= matgapcnd(index,3)
+      gapcnd(4)= matgapcnd(index,4)
+      visco(1)= matvisco(index,1)
+      visco(2)= matvisco(index,2)
+      visco(3)= matvisco(index,3)
+      visco(4)= matvisco(index,4)
+      gapden(1)= matgapden(index,1)
+      gapden(2)= matgapden(index,2)
+      gapden(3)= matgapden(index,3)
+      gapden(4)= matgapden(index,4)
+      prandtl(1)= matprandtl(index,1)
+      prandtl(2)= matprandtl(index,2)
+      gapsht(1)= matgapsht(index,1)
+      gapsht(2)= matgapsht(index,2)
 
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
@@ -1173,12 +1327,12 @@ C << air gap data needs local variables >>
       WRITE(PELM(3),'(A,1X,F9.3)') 'c Conductivity (W/(m-K)  :',DBCON
       WRITE(PELM(4),'(A,1X,F8.2)') 'd Density (kg/m**3)      :',DBDEN
       WRITE(PELM(5),'(A,1X,F8.2)') 'e Specific Heat (J/(kg-K):',DBSHT
-      WRITE(PELM(6),'(A,1X,F8.2)') 'f Emissivity out (-)     :',EOUT
-      WRITE(PELM(7),'(A,1X,F8.2)') 'g Emissivity in (-)      :',EIN
-      WRITE(PELM(8),'(A,1X,F8.2)') 'h Absorptivity out (-)   :',AOUT
-      WRITE(PELM(9),'(A,1X,F8.2)') 'i Absorptivity in (-)    :',AIN
-      WRITE(PELM(10),'(A,F9.2)')  'j Diffusion rest (?)     :',dbdrv
-      WRITE(PELM(11),'(A,F9.2)')  'k Default thickness (mm) :',THICK
+      WRITE(PELM(6),'(A,1X,F8.3)') 'f Emissivity out (-)     :',EOUT
+      WRITE(PELM(7),'(A,1X,F8.3)') 'g Emissivity in (-)      :',EIN
+      WRITE(PELM(8),'(A,1X,F8.3)') 'h Absorptivity out (-)   :',AOUT
+      WRITE(PELM(9),'(A,1X,F8.3)') 'i Absorptivity in (-)    :',AIN
+      WRITE(PELM(10),'(A,F9.2)')   'j Vapour res (MNs g^-1m^-1):',dbdrv
+      WRITE(PELM(11),'(A,F9.2)')   'k Default thickness (mm) :',THICK
 
 C Depending on whether the item is legacy (-), opaque (o), transp (t),
 C or a gas (g), include additional items.
@@ -1200,31 +1354,57 @@ C or a gas (g), include additional items.
        WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
         m=20
       elseif(matopaq(index).eq.'g')then
-        X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data+temp correction)'
-        WRITE(PELM(13),'(A,F9.3)') 'm Conduct (W/(m-K)   :',X
-        WRITE(PELM(14),'(A,F8.6)') 'n Conduct T deriv    :',X
-        WRITE(PELM(15),'(A,F7.3)') 'o Viscosity (kg/msK) :',X
-        WRITE(PELM(16),'(A,F8.6)') 'p Viscosity T deriv  :',X
-        WRITE(PELM(17),'(A,F8.2)') 'q Density (kg/m**3)  :',X
-        WRITE(PELM(18),'(A,F8.6)') 'r Density T deriv    :',X
-        m=18
+        WRITE(PELM(13),'(A,F8.5)') 'm gap conduct (W/(m-K)   :',
+     &    gapcnd(1)
+        WRITE(PELM(14),'(A,F9.6)') 'n gap conduct T deriv    :',
+     &    gapcnd(2)
+        WRITE(PELM(15),'(A,F11.8)')'o gap viscosity (kg/msK) :',visco(1)
+        WRITE(PELM(16),'(A,F11.8)')'p gap viscosity T deriv  :',visco(2)
+        WRITE(PELM(17),'(A,F8.4)') 'q gap density (kg/m**3)  :',
+     &    gapden(1)
+        WRITE(PELM(18),'(A,F10.6)')'r gap density T deriv    :',
+     &    gapden(2)
+        WRITE(PELM(19),'(A,F9.6)') 's gap Prandtl number     :',
+     &    prandtl(1)
+        WRITE(PELM(20),'(A,F9.6)') 't gap Prandtl T deriv    :',
+     &    prandtl(2)
+        WRITE(PELM(21),'(A,F9.3)') 'u gap Spec Ht (J/(kg-K)  :',
+     &    gapsht(1)
+        WRITE(PELM(22),'(A,F9.6)') 'v gap Spec Ht deriv      :',
+     &    gapsht(2)
+        m=22
       elseif(matopaq(index).eq.'h')then
-        X=0.0
         WRITE(PELM(12),'(A)')  'l type >>gas (data at 4 temps)'
-        WRITE(PELM(13),'(A,F7.3)') 'm Cond @-10C (W/(m-K):',X
-        WRITE(PELM(14),'(A,F7.3)') 'n Cond @  0C (W/(m-K):',X
-        WRITE(PELM(15),'(A,F7.3)') 'o Cond @ 10C (W/(m-K):',X
-        WRITE(PELM(16),'(A,F7.3)') 'p Cond @ 20C (W/(m-K):',X
-        WRITE(PELM(17),'(A,F7.3)') 'q Visc @-10C (kg/msK):',X
-        WRITE(PELM(18),'(A,F7.3)') 'r Visc @  0C (kg/msK):',X
-        WRITE(PELM(19),'(A,F7.3)') 's Visc @ 10C (kg/msK):',X
-        WRITE(PELM(20),'(A,F7.3)') 't Visc @ 20C (kg/msK):',X
-        WRITE(PELM(21),'(A,F7.3)') 'u Dens @-10C (kg/m^3):',X
-        WRITE(PELM(22),'(A,F7.3)') 'v Dens @  0C (kg/m^3):',X
-        WRITE(PELM(23),'(A,F7.3)') 'v Dens @ 10C (kg/m^3):',X
-        WRITE(PELM(24),'(A,F7.3)') 'v Dens @ 20C (kg/m^3):',X
-        m=24
+        WRITE(PELM(13),'(A,F9.5)') 'm gap cond @-10C (W/(m-K):',
+     &    gapcnd(1)
+        WRITE(PELM(14),'(A,F9.5)') 'n gap cond @  0C (W/(m-K):',
+     &    gapcnd(2)
+        WRITE(PELM(15),'(A,F9.5)') 'o gap cond @ 10C (W/(m-K):',
+     &    gapcnd(3)
+        WRITE(PELM(16),'(A,F9.5)') 'p gap cond @ 20C (W/(m-K):',
+     &    gapcnd(4)
+        WRITE(PELM(17),'(A,F11.8)') 'q gap visc @-10C (kg/msK):',
+     &    visco(1)
+        WRITE(PELM(18),'(A,F11.8)')'r gap visc @  0C (kg/msK):',
+     &    visco(2)
+        WRITE(PELM(19),'(A,F11.8)')'s gap visc @ 10C (kg/msK):',
+     &    visco(3)
+        WRITE(PELM(20),'(A,F11.8)')'t gap visc @ 20C (kg/msK):',
+     &    visco(4)
+        WRITE(PELM(21),'(A,F9.3)') 'u gap dens @-10C (kg/m^3):',
+     &    gapden(1)
+        WRITE(PELM(22),'(A,F9.3)') 'v gap dens @  0C (kg/m^3):',
+     &    gapden(2)
+        WRITE(PELM(23),'(A,F9.3)') 'w gap dens @ 10C (kg/m^3):',
+     &    gapden(3)
+        WRITE(PELM(24),'(A,F9.3)') 'x gap dens @ 20C (kg/m^3):',
+     &    gapden(4)
+        WRITE(PELM(25),'(A,F9.6)') 'y gap Prandtl number     :',
+     &    prandtl(1)
+        WRITE(PELM(26),'(A,F9.6)') 'z gap spec Ht (J/(kg-K)  :',
+     &    gapsht(1)
+        m=26
       endif
       PELM(m+1) =' _____________________ '
       PELM(m+2)='? Help                 '
@@ -1254,8 +1434,8 @@ C updating the common blocks.
           CALL ASKOK(' ','Accept changes in material (see help)?',
      &      OK,dok,2)
           if(OK)then
-            matname(index) = tnam
-            matdoc(index) = tdoc
+            write(matname(index),'(a)') tnam(1:lnblnk(tnam))
+            write(matdoc(index),'(a)') tdoc(1:lnblnk(tdoc))
             matdbcon(index) = DBCON
             matdbden(index) = DBDEN
             matdbsht(index) = DBSHT
@@ -1273,10 +1453,24 @@ C updating the common blocks.
             matvisotrfl(index) = visotrfl
             matvisinrfl(index) = visinrfl
             matrender(index) = render
+            matgapcnd(index,1) = gapcnd(1)
+            matgapcnd(index,2) = gapcnd(2)
+            matgapcnd(index,3) = gapcnd(3)
+            matgapcnd(index,4) = gapcnd(4)
+            matvisco(index,1) = visco(1)
+            matvisco(index,2) = visco(2)
+            matvisco(index,3) = visco(3)
+            matvisco(index,4) = visco(4)
+            matgapden(index,1) = gapden(1)
+            matgapden(index,2) = gapden(2)
+            matgapden(index,3) = gapden(3)
+            matgapden(index,4) = gapden(4)
+            matprandtl(index,1) = prandtl(1)
+            matprandtl(index,2) = prandtl(2)
+            matgapsht(index,1) = gapsht(1)
+            matgapsht(index,2) = gapsht(2)
             modify=.false.
             mod=.true.   ! pass this back to calling code.
-C << to here air gap data needs to be added >>
-
           endif
         endif
         RETURN
@@ -1294,7 +1488,7 @@ C << to here air gap data needs to be added >>
       ELSEIF(IW.EQ.2)THEN
         H(1)='Documentation (up to 248 char) is a really good idea'
         H(2)='and might include the source and test regime etc.'
-        CALL EASKS248(tdoc,' ',' Description of material? ',
+        CALL EASKS248(tdoc,' ',' Documentation for material? ',
      &    72,' ','material documentation',IER,2)
         if(tdoc(1:2).ne.'  ')then
           modify=.true.
@@ -1395,10 +1589,11 @@ C For legacy materials both faces should have the same value.
           modify=.true.
         endif
       ELSEIF(IW.EQ.10)THEN
-        H(1)='Diffusion resistance factor for vapour transfer is '
-        H(2)='defined in the ESP-r glossary. << units >>'
-        CALL EASKR(dbdrv,' ',' Diffusion resistance : ',
-     &         1.0,'W',20000.,'W',1.,'diffusion resistance',IER,2)
+        H(1)='Vapour resistvity for vapour transfer has units'
+        H(2)='of MNs g^-1m^-1. Used to support assessments of'
+        H(3)='condensation within constructions. '
+        CALL EASKR(dbdrv,' ','Vapour resistvity (MNs g^-1m^-1): ',
+     &         1.0,'W',20000.,'W',1.,'vapour resistvity',IER,3)
         modify=.true.
       ELSEIF(IW.EQ.11)THEN
         H(1)='Thickness (mm) is the typical/default thickness of this'
@@ -1463,8 +1658,58 @@ C Offer to toggle between different types.
           goto 3
         elseif(matopaq(index).eq.'t')then
 
-C << Single layer optical properties to be added >>
-          call usrmsg('This facility not yet available.',' ','-')
+C Single layer optical properties editing.
+          if(IW.eq.13)then
+            H(1)='Longwave transmittance units (-) between 0.0 & 1.0'
+            CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
+     &        0.00,'W',1.00,'W',1.,'ir tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.14)then
+            H(1)='Solar transmittance units(-) between 0.0 & 1.0'
+            CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar direct tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.15)then
+            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The outside face is farthest from zone air.'
+            CALL EASKR(soldrotrfl,' ',
+     &        'Solar reflectance outside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar reflec outside',IER,2)
+            modify=.true.
+          elseif(IW.eq.16)then
+            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The inside face is nearest the zone air.'
+            CALL EASKR(soldrinrfl,' ',
+     &        'Solar reflectance inside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'solar reflec inside',IER,2)
+            modify=.true.
+          elseif(IW.eq.17)then
+            H(1)='Visible transmittance units are (-) between 0.0 & 1.0'
+            CALL EASKR(vistran,' ','Visible trans (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible tran',IER,1)
+            modify=.true.
+          elseif(IW.eq.18)then
+            H(1)='Visible reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The outside face is farthest from zone air.'
+            CALL EASKR(visotrfl,' ',
+     &        'Visible reflectance outside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible reflec outside',IER,2)
+            modify=.true.
+          elseif(IW.eq.19)then
+            H(1)='Visable reflectance units are (-) between 0.0 and 1.0'
+            H(2)='The inside face is nearest the zone air.'
+            CALL EASKR(visinrfl,' ',
+     &        'Visible reflectance inside face (-): ',
+     &        0.00,'W',1.00,'W',1.,'visible reflec inside',IER,2)
+            modify=.true.
+          elseif(IW.eq.20)then !render
+            H(1)='Colour rendering units are (?) between 0.0 & 100.0'
+            H(2)='<<more text to be added...>>'
+            CALL EASKR(visinrfl,' ',
+     &        'Colour rendering index (-): ',
+     &        0.00,'W',100.00,'W',1.,'colour rendering',IER,2)
+            modify=.true.
+          endif
           goto 3
         elseif(matopaq(index).eq.'g')then
 
@@ -1659,6 +1904,12 @@ C List database.
           itu = ixunit
           write(xfile,'(a)') 'construction_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','MLC db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 3
+          endif
         endif
         call edisp(itu,'In the MLC database: ')
         call edisp(itu, LFMUL)
@@ -2944,7 +3195,7 @@ C Proceed.
         WRITE(IFA,'(a)') '# class|no materials|description'
         WRITE(IFA,'(2a)') 
      &    '# for each item index|description| conduc. density. ',
-     &    'specific ht, emis. abs. diffusion res.'
+     &    'specific ht, emis. abs. vapour resistivity.'
         WRITE(IFA,'(I5,I5,3X,A)')IC,NE,IDESC(1:lnblnk(IDESC))
         IF(NE.GT.0)then
           DO 20 J=1,NE
@@ -3029,6 +3280,9 @@ C Depending on the connection type, add the full or half area of surface.
 C ******************* GVALUE *******************
 C Calculate g-value optical properties of systems given info on 
 C individual glazing layers. In accordance with BS EN 410:1998
+
+C << update to use single layer optical data common block data. >>
+
       SUBROUTINE GVALUE(IPN,TRNT,REF,OREF,OEMS,CLAMDA,G)
 
 C MPN is max number of tranparent glazings per multilayer construction

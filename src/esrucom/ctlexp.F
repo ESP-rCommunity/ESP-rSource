@@ -118,7 +118,7 @@ C and change any / to \.
      &       'in the model folder','user defined folder','continue',
      &       ixloc,6)
            if(ixloc.eq.3)then
-            ixopen=0
+             ixopen=0
              return    ! does ixopen need to be reset?
            endif
         else
@@ -145,6 +145,12 @@ C and change any / to \.
         else
           CALL EASKF(xfile,' Export file name? ',
      &      ' ',96,'export.txt','binary events db',IER,2)
+        endif
+
+C If user request cancel then return after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          return
         endif
 
 C The grt parameter file name might need to be changed.
@@ -316,6 +322,13 @@ C Each call is a toggle.
           CALL EASKF(xfile,' Export file name? ',
      &      ' ',96,'export.txt','binary events db',IER,2)
         endif
+
+C If user requested a cancel then return after resetting ixopen.
+        if(ier.eq.-3)then
+          ixopen=0
+          return
+        endif
+
         write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                       ' for export.'
         call edisp248(iuout,outs248,100)

@@ -808,6 +808,10 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
           itu = ixunit
           write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+          if(ier.eq.-3)then
+            destination = 0
+            itu = iuout
+          endif
         elseif(destination.eq.1)then
           destination = 0
           itu = iuout
