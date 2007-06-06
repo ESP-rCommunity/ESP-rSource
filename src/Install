@@ -70,6 +70,7 @@ preserve_espr_dir="yes"    # save existing ESP-r directory by default
 gnu_version="gcc3"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
+xLibs="X11"                # Default x-library
 
 
 #-----------------------------------------------------------
@@ -124,6 +125,9 @@ if [ $# -ne 0 ]; then
         --xml)          xml_support=yes;           shift;;
         --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --X11)          xLibs="X11";               shift;;
+        --GTK)          xLibs="GTK";               shift;;
+        --noX)          xLibs="noX";               shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -240,6 +244,10 @@ if [ $help -eq 1 ]; then
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
   echo "        alternatives are specified in command-line parameters."
+  echo " "
+  echo "    --X11, --GTK, --noX:"
+  echo "        Build ESP-r using the specified graphics library (that",
+  echo "        is; X11, GTK or noX for a console-only application)."
   echo " "
   echo "    --xml: Compile bps with support for direct export of results"
   echo "        in xml and csv formats. Requires the GNU libxml2 and"
@@ -468,7 +476,6 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
 else
   echo ""
   echo " The GNU compiler set will be used."
-  echo ""
 fi
 
 #-----------------------------------------------------------
@@ -492,7 +499,6 @@ if [ "$mode" = "interactive" ]; then
          echo " /usr/include or /usr/local/include. Support for  "
          echo " experimental XML output will be disabled, but the "
          echo " rest of the ESP-r installation will proceed normally. "
-         echo " "
       else
          # Libraries were found. Prompt user for inclusion.
          B="none"
@@ -502,6 +508,7 @@ if [ "$mode" = "interactive" ]; then
                echo ""
                echo "Please answer yes or no (y/n)."
             fi
+            echo " "  
             echo " Install with experimental XML output support? This may "
             case "${xml_support}" in
               yes) echo " significantly increase simulation run-time. (y/n) [y]";;
@@ -531,7 +538,6 @@ if [ "$mode" = "interactive" ]; then
       echo " "
       echo " Experimental XML output support. is presently not  "
       echo " available on ${platform}. XML support disabled."
-      echo " "
       xml_support="no"
    fi
 else
@@ -600,18 +606,15 @@ if [ "$mode" = "interactive" ]; then
      "$noX_prompt") xLibs=noX;;
   esac
 else
-
   # Assume X11 is available on all systems, except mingw
+  # Xll is defaulted to 
   if [ "$platform" = "mingw" ]; then
     xLibs=noX
-    echo ""
+    echo " "  
     echo " A text-only application will be compiled."
-    echo ""  
   else
-    xLibs=X11
-    echo ""
-    echo " The X11 libraries will be used."
-    echo ""  
+    echo " "  
+    echo " The $xLibs libraries will be used."
   fi 
 fi
 
