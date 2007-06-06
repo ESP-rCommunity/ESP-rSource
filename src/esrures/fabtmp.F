@@ -142,16 +142,43 @@ C IPRZ is primitive db ref for each layer.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       CHARACTER outs*124,DESC*48,NAM*72,TITL*72
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
 
-C Open the primitive construction db if not already done.
+C Open the material db if not already done.
       IF(.NOT.MATDBOK)THEN
         IER=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)return
         MATDBOK=.TRUE.
       ENDIF
+
+C Find version of materials database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C If the common block MLC has not yet been filled the read in the
 C conposite construction database.
@@ -181,16 +208,33 @@ C the element was not found.
           IF(DESC(IC)(1:12).EQ.SMLCN(ISUR))THEN
             ICKNE=LAYERS(IC)
 
-C Gather information about each layer. Read in the primitive db info.
+C Gather information about each layer. Read in the material db info.
+C But we do not do anything with the material properties, why are
+C we reading the raw data?
             DO 23 IL=1,LAYERS(IC)
-              CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+              if(closemat)then
+                legmat=IPR(IC,IL)   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
+              else
+                CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+     &             DBSHT,E,A,DRV,TITL,NAM)
+              endif
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
           ENDIF
    20   CONTINUE
         if(ICKNE.eq.0)then
-          write(outs,'(A,A,A,A,A)') ' The construction ',SMLCN(ISUR),
+          write(outs,'(5A)') ' The construction ',SMLCN(ISUR),
      &       ' of ',SNAME(ICOMP,ISUR),' was not found in the mlc db...'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
