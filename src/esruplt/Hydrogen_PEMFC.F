@@ -840,10 +840,10 @@ C........Testing & debugging code
 !          if ( nsinc .le. 20 ) then
 !             iControl_method = iEngine_deactivated
 !          elseif ( nsinc .lt. 40 ) then
-!             iControl_Method = iFuel_flow_controlled
+!             iControl_Method = iDimensionless_control
 !             fControl_Signal = 1.0
 !          elseif ( nsinc .lt. 60 ) then
-!             iControl_Method = iFuel_flow_controlled
+!             iControl_Method = iDimensionless_control
 !             fControl_Signal = 1.0 -
 !         &     float( nsinc - 40 ) / 20.0
 !          elseif ( nsinc .lt. 80 ) then
@@ -872,7 +872,7 @@ C...........Controller has deactivated the engine.
          endif
 
 
-         if ( iControl_method .eq. iFuel_flow_controlled ) then
+         if ( iControl_method .eq. iDimensionless_control ) then
 
 C...........If fuel flow control interface is active, control signal
 C...........must lie between 0 and 1. Set 'Desired fuel flow' variable
@@ -988,6 +988,7 @@ C-------------------------------------------------------------------------
      &                 iSystem_Status,
      &                 fOP_time,
      &                 iTarget_Mode,
+     &                 iCM_mandatory,
      &                 iOperating_mode_F,
      &                 fTS_mode_fractions,
      &                 bTS_modes,
@@ -1096,6 +1097,7 @@ C...........Assign present time row value to operating time
      &                 iSystem_Status,
      &                 fOP_time,
      &                 iTarget_Mode,
+     &                 iCM_mandatory,
      &                 iOperating_mode_F,
      &                 fTS_mode_fractions,
      &                 bTS_modes,
@@ -2426,7 +2428,7 @@ C Passed arguements
       integer iStatus
       integer iModel_Type
 
-C ESP-r commons necessary for reporting
+C.....ESP-r commons necessary for reporting
 
       common/pcnam/pcname(mpcom)        ! Plant component names
       character*15, pcname
@@ -2467,7 +2469,8 @@ C----------------------------------------------------------------------
 C........Get component name and length
          write(char_temp,'(A,A,A)')
      &      'plant/',
-     &      pcname(iComponent)(1:lnblnk(pcname(iComponent))),
+     &      pcname(iComponent)
+     &               (1:lnblnk(pcname(iComponent))),
      &      '/misc_data'
          call h3k_StoreString(char_temp,
      &                        iStorage_index(iComponent),

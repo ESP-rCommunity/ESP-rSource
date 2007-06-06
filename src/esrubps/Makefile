@@ -48,14 +48,13 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  water_tanks.o h3k_utils.o SetDllParms.o AIMS.o TAC.o\
 	  WaterProperties.o DG_controller.o elec_net_utilities.o window_control.o  \
 	  PEM_FC_pt1.o PEM_FC_pt2.o powoc_calc.o h3k_report_data.o radiant_floor.o DHW_module.o \
-	  h3k_plant_postprocess.o h2_matrix_library.o h2_components.o Stirling_CHP.o \
+	  h3k_plant_postprocess.o h2_matrix_library.o h2_components.o Annex42_combustion_CHP.o \
 	  chemical_properties.o h2_comps.o compressed_cylinder.o Hydrogen_PEMFC.o  \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o
-
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -568,9 +567,9 @@ h2_matrix_library.F:
 h2_components.F:
 	rm -f h2_components.F
 	ln -s $(CETCdir)/h2_components.F .
-Stirling_CHP.F:
-	rm -f Stirling_CHP.F
-	ln -s $(PLTdir)/Stirling_CHP.F .
+Annex42_combustion_CHP.F:
+	rm -f Annex42_combustion_CHP.F
+	ln -s $(PLTdir)/Annex42_combustion_CHP.F .
 chemical_properties.F:
 	rm -f chemical_properties.F
 	ln -s $(CETCdir)/chemical_properties.F
@@ -675,7 +674,7 @@ clean:
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
-	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
+	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \

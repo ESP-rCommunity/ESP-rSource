@@ -3761,9 +3761,9 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
   PLANT COMPONENT                                           No :     68
 
  Component Description
-    Generic type     : Stirling CHP: Dynamic model
-    Description      : Dynamic model of a Stirling CHP system
-    Insertion date   : 12 Aug 02 15:55
+    Generic type     : Internal combustion engine
+    Description      : Annex 42 model for ICE CHP systems
+    Insertion date   : 24 Jan 06 15:55
     Type: Single component                    Component code :   1020
 
  Nodal Scheme Description
@@ -3773,144 +3773,219 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     Variable type    :  29,  20,
 
  Miscellaneous Data
-    Adata items   :  64    Bdata items   :   0    Cdata items   :   2
- ADATA variables:
-    1 System Nominal rated output (W)
+    Adata items   : 103    Bdata items   :   0    Cdata items   :   2
+ Adata variables:
+    1 System maximum power (W)
       Value =   700.0          Range (Min Max):     1.0000        3.0000
-    2 Minimum fuel flow (kg/s)
+    2 System minimum power (W)
       Value =   8.77E-05       Range (Min Max):     1.0000        3.0000
-    3 Maximum fuel flow (kg/s)
-      Value =   2.00E-04       Range (Min Max):     1.0000        3.0000
-    4 Maximum cooling water outlet temp (oC)
+    3 Maximum cooling water outlet temp (oC)
       Value =   80.0           Range (Min Max):     0.0000        100.00
-    5 % hydrogen in fuel (mol/mol)
+    4 Fuel type (1: liquid fuel, 2: gaseous mixture)
+      Value =    2.0           Range (Min Max):     1.0000        2.0000
+    5 Liquid fuel heating value  (J/kg):
+      Value =   43.0E06        Range (Min Max):     0.0000        1.0E08
+    6 Liquid fuel CO2 factor (kg CO2 / kg fuel):
+      Value =   0.00000        Range (Min Max):     0.0000        1.0E08
+    7 % hydrogen in fuel gas mixture (mol/mol)
       Value =   0.0            Range (Min Max):     0.0000        1.0000
-    6 % methane in fuel (mol/mol)
+    8 % methane in fuel gas mixture (mol/mol)
       Value =   0.9476         Range (Min Max):     0.0000        1.0000
-    7 % ethane in fuel (mol/mol)
+    9 % ethane in fuel gas mixture (mol/mol)
       Value =   0.0270         Range (Min Max):     0.0000        1.0000
-    8 % propane in fuel (mol/mol)
+   10 % propane in fuel gas mixture (mol/mol)
       Value =   0.0023         Range (Min Max):     0.0000        1.0000
-    9 % butane in fuel (mol/mol)
+   11 % butane in fuel gas mixture (mol/mol)
       Value =   0.0000         Range (Min Max):     0.0000        1.0000
-   10 % pentane in fuel (mol/mol)
+   12 % pentane in fuel gas mixture (mol/mol)
       Value =   0.0000         Range (Min Max):     0.0000        1.0000
-   11 % hexane in fuel (mol/mol)
+   13 % hexane in fuel gas mixture (mol/mol)
       Value =   0.0000         Range (Min Max):     0.0000        1.0000
-   12 % carbon monoxide in fuel (mol/mol)
+   14 % methanol in fuel gas mixture (mol/mol)
       Value =   0.0000         Range (Min Max):     0.0000        1.0000
-   13 % carbon dioxide in fuel (mol/mol)
+   15 % ethanol  in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   16 % carbon monoxide in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   17 % carbon dioxide in fuel gas mixture (mol/mol)
       Value =   0.0055         Range (Min Max):     0.0000        1.0000
-   14 % nitrogen in fuel (mol/mol)
+   18 % nitrogen in fuel gas mixture (mol/mol)
       Value =   0.0176         Range (Min Max):     0.0000        1.0000
-   15 % oxygen in fuel (mol/mol)
+   19 % oxygen in fuel gas mixture (mol/mol)
       Value =   0.0000         Range (Min Max):     0.0000        1.0000
-   16 Max rate of change in fuel flow (kg/s^2)
+   20 Max rate of change in fuel flow (kg/s^2)
       Value =   -1.000         Range (Min Max):     -2.000        100.00
-   17 Max rate of change in power output (W/s)
+   21 Max rate of change in power output (W/s)
       Value =   -1.000         Range (Min Max):     -2.000        100.00
-   18 Dynamic thermal model flag (1: heat lag, 2: ther. mass)
-      Value =    1.000         Range (Min Max):     1.0000        2.0000
-   19 Power system thermal lag time constant (1/s)
-      Value =    500.0         Range (Min Max):     0.0000        1.0000  
-   20 Power system thermal mass (J/K)
+   22 Power system thermal mass (J/K)
       Value =    500.0         Range (Min Max):     0.0000        1.0000
-   21 Effective heat recovery coefficient (W/K)
+   23 Effective heat recovery UA coefficient (W/K)
       Value =     20.0         Range (Min Max):     0.0000        1.0000
-   22 Effective heat loss coefficient (W/K)
+   24 Effective heat loss UA coefficient (W/K)
       Value =     20.0         Range (Min Max):     0.0000        1.0000
-   23 Heat exchanger thermal mass (J/K)
-      Value =     20.0         Range (Min Max):     0.0000        1.0000
-   24 Start-up period duation (s)
-      Value =    500.0         Range (Min Max):     0.0000        10000.
-   25 Start-up period fuel flow (kg/s)
-      Value =    1.76E-05      Range (Min Max):     0.0000        1000.0
-   26 Net electric output at start-up (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
-   27 Steady-state thermal output at start-up (W)
-      Value =    2000.0        Range (Min Max):     -1E06         1E06
-   28 Cool down period duration (s)
+   25 Heat exchanger thermal mass (J/K)
+      Value =    500.0         Range (Min Max):     0.0000        1.0000
+   26 Startup period duration (s)
       Value =   1500.0         Range (Min Max):      0.0000       10000.
-   29 Cool-down period fuel flow (kg/s)
-      Value =      0.0         Range (Min Max):     0.0000        1000.0
-   30 Electric output at cool-down (W)
+   27 Cool-down period duration (s)
+      Value =   1500.0         Range (Min Max):      0.0000       10000.
+   28 Cool-down period mode (1: Mandatory, 2: optional)
+      Value =      1.0         Range (Min Max):      0.0000       10000.
+   29 Electric output at cool-down (W)
       Value =    -50.0         Range (Min Max):     -1E06         1E06
-   31 Steady-state thermal output at cool-down (W)
-      Value =    2000.0        Range (Min Max):     -1E06         1E06
-   32 Standby mode fuel flow (kg/s)
-      Value =      0.0         Range (Min Max):     0.0000        1000.0
-   33 Net electrical output in standby mode (W)
+   30 Net electrical output in standby mode (W)
       Value =    -50.0         Range (Min Max):     -1E06         1E06
-   34 Thermal output in standby mode (W)
-      Value =   0.0000         Range (Min Max):     -1E06         1E06
-   35 Correlation reference CW temperature (oC)
-      Value =     65.0         Range (Min Max):     0.0000         100.0
-   36 Correlation reference CW flow rate (kg/s)
-      Value =      0.0         Range (Min Max):     0.0000         100.0
-   37 Correlation reference Amb. temperature (oC)
-      Value =      0.0         Range (Min Max):     0.0000         100.0
-   38 Skin loss coefficient C0  (W)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   39 Skin loss coefficient C1 (W s/kmol)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   40 Skin loss coefficient C2 (W s^2/kmol^2)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   41 Skin loss coefficient C3 (W)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   42 Skin loss coefficient C4 (W/K)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   43 Steady-state thermal efficiency coefficient C0 (-)
-      Value =    1.0000        Range (Min Max):     1.0000        3.0000
-   44 Steady-state thermal efficiency coefficient C1 (s/kg)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   45 Steady-state thermal efficiency coefficient C2 (s^2/kg^2)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   46 Steady-state thermal efficiency coefficient C3 (1/oC)
-      Value =    3.72E-03      Range (Min Max):     1.0000        3.0000
-   47 Steady-state thermal efficiency coefficient C4 (1/oC^2)
-      Value =    4.98E-04      Range (Min Max):     1.0000        3.0000
-   48 Steady-state thermal efficiency coefficient C5 (1/W)
-      Value =    2.50E-04      Range (Min Max):     1.0000        3.0000
-   49 Steady-state thermal efficiency coefficient C6 (1/W^2)
-      Value =   -3.48E-08      Range (Min Max):     1.0000        3.0000
-   50 Steady-state electrical efficiency coefficient C0 (-)
-      Value =    9.09E-02      Range (Min Max):     1.0000        3.0000
-   51 Steady-state electrical efficiency coefficient C1 (s/kg)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   52 Steady-state electrical efficiency coefficient C2 (s^2/kg^2)
-      Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   53 Steady-state electrical efficiency coefficient C3 (1/oC)
-      Value =   -1.97E-04      Range (Min Max):     1.0000        3.0000
-   54 Steady-state electrical efficiency coefficient C4 (1/oC^2)
-      Value =    1.26E-05      Range (Min Max):     1.0000        3.0000
-   55 Steady-state electrical efficiency coefficient C5 (1/W)
-      Value =    3.29E-05      Range (Min Max):     1.0000        3.0000
-   56 Steady-state electrical efficiency coefficient C6 (1/W^2)
-      Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000
-   57 Gross heat input correlation minimum bound (W)
+   31 Power output correlation minimum bound (W)
       Value =    8000.0        Range (Min Max):     0.0000        1E-06
-   58 Gross heat input correlation maximum bound (W)
+   32 Power output correlation maximum bound (W)
       Value =    8400.0        Range (Min Max):     0.0000        1E-06
-   59 Cooling water temperature correlation minimum bound (oC)
+   33 Cooling water temperature correlation minimum bound (oC)
       Value =      60.0        Range (Min Max):     0.0000        100.00
-   60 Cooling water temperature correlation maximum bound (oC)
+   34 Cooling water temperature correlation maximum bound (oC)
       Value =      70.0        Range (Min Max):     0.0000        100.00
-   61 Cooling water flow correlation minimum bound (kg/s)
+   35 Cooling water flow correlation minimum bound (kg/s)
       Value =       0.0        Range (Min Max):     0.0000        100.00
-   62 Cooling water flow correlation maximum bound (kg/s)
+   36 Cooling water flow correlation maximum bound (kg/s)
       Value =     100.0        Range (Min Max):     0.0000        100.00
-   63 Ambient  temperature correlation minimum bound (oC)
-      Value =     -10.0        Range (Min Max):     -10.00        100.00
-   64 Ambient temperature correlation maximum bound (oC)
-      Value =     100.0        Range (Min Max):     0.0000        100.00
+   37 Performance map: Elec. efficiency correlation coeff. a0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   38 Performance map: Elec. efficiency correlation coeff. a1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   39 Performance map: Elec. efficiency correlation coeff. a2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   40 Performance map: Elec. efficiency correlation coeff. a3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   41 Performance map: Elec. efficiency correlation coeff. a4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   42 Performance map: Elec. efficiency correlation coeff. a5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   43 Performance map: Elec. efficiency correlation coeff. a6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   44 Performance map: Elec. efficiency correlation coeff. a7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   45 Performance map: Elec. efficiency correlation coeff. a8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   46 Performance map: Elec. efficiency correlation coeff. a9
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   47 Performance map: Elec. efficiency correlation coeff. a10
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   48 Performance map: Elec. efficiency correlation coeff. a11
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   49 Performance map: Elec. efficiency correlation coeff. a12
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   50 Performance map: Elec. efficiency correlation coeff. a13
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   51 Performance map: Elec. efficiency correlation coeff. a14
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   52 Performance map: Elec. efficiency correlation coeff. a15
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   53 Performance map: Elec. efficiency correlation coeff. a16
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   54 Performance map: Elec. efficiency correlation coeff. a17
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   55 Performance map: Elec. efficiency correlation coeff. a18
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   56 Performance map: Elec. efficiency correlation coeff. a19
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   57 Performance map: Elec. efficiency correlation coeff. a20
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   58 Performance map: Elec. efficiency correlation coeff. a21
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   59 Performance map: Elec. efficiency correlation coeff. a22
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   60 Performance map: Elec. efficiency correlation coeff. a23
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   61 Performance map: Elec. efficiency correlation coeff. a24
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   62 Performance map: Elec. efficiency correlation coeff. a25
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   63 Performance map: Elec. efficiency correlation coeff. a26
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   64 Performance map: Themal efficiency correlation coeff. b0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   65 Performance map: Themal efficiency correlation coeff. b1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   66 Performance map: Themal efficiency correlation coeff. b2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   67 Performance map: Themal efficiency correlation coeff. b3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   68 Performance map: Themal efficiency correlation coeff. b4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   69 Performance map: Themal efficiency correlation coeff. b5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   70 Performance map: Themal efficiency correlation coeff. b6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   71 Performance map: Themal efficiency correlation coeff. b7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   72 Performance map: Themal efficiency correlation coeff. b8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   73 Performance map: Themal efficiency correlation coeff. b9
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   74 Performance map: Themal efficiency correlation coeff. b10
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   75 Performance map: Themal efficiency correlation coeff. b11
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   76 Performance map: Themal efficiency correlation coeff. b12
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   77 Performance map: Themal efficiency correlation coeff. b13
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   78 Performance map: Themal efficiency correlation coeff. b14
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   79 Performance map: Themal efficiency correlation coeff. b15
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   80 Performance map: Themal efficiency correlation coeff. b16
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   81 Performance map: Themal efficiency correlation coeff. b17
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   82 Performance map: Themal efficiency correlation coeff. b18
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   83 Performance map: Themal efficiency correlation coeff. b19
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   84 Performance map: Themal efficiency correlation coeff. b20
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   85 Performance map: Themal efficiency correlation coeff. b21
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   86 Performance map: Themal efficiency correlation coeff. b22
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   87 Performance map: Themal efficiency correlation coeff. b23
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   88 Performance map: Themal efficiency correlation coeff. b24
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   89 Performance map: Themal efficiency correlation coeff. b25
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   90 Performance map: Themal efficiency correlation coeff. b26
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   91 Cooling water loop: pump configuration (1= internal, 2= external)
+      Value =       2.0        Range (Min Max):     0.0000          1.00
+   92 Performance map: cooling water flow correlation coeff. c0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   93 Performance map: cooling water flow correlation coeff. c1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   94 Performance map: cooling water flow correlation coeff. c2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   95 Performance map: cooling water flow correlation coeff. c3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   96 Performance map: cooling water flow correlation coeff. c4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   97 Performance map: cooling water flow correlation coeff. c5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   98 Performance map: cooling water flow correlation coeff. c6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   99 Performance map: cooling water flow correlation coeff. c7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  100 Performance map: cooling water flow correlation coeff. c8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  101 Performance map: Combustion air correlation coefficient d0 (kg/s)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
+  102 Performance map: Combustion air correlation coefficient d1 (-)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
+  103 Performance map: Combustion air correlation coefficient d2 ( 1 / kg/s)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
  CDATA variables:
     1 Control Method (-)
     2 Control Signal (-)
 
- Number of additional output parameters:     1
- Additional output variables:
-    1 Miscellaneous output           Type :    1
-
+ Number of additional output parameters:     0
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
@@ -3919,22 +3994,237 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
   PLANT COMPONENT                                           No :     69
 
  Component Description
-    Generic type     : Depriciated Model
-    Description      : Placeholder for model no longer in use
-    Insertion date   : 12 Aug 02 15:55
+    Generic type     : Stirling engine
+    Description      : Annex 42 model for Stirling CHP systems
+    Insertion date   : 24 Jan 06 15:55
     Type: Single component                    Component code :   1030
 
  Nodal Scheme Description
-    Number of nodes  :   1      No of nonzero matrix elements :      1
-    Matrix positions :   1,
-    Node connections :   1,
-    Variable type    :  20,
+    Number of nodes  :   2      No of nonzero matrix elements :      4
+    Matrix positions :   1,   2,   3,   4,
+    Node connections :   0,   1,
+    Variable type    :  29,  20,
 
  Miscellaneous Data
-    Adata items   :  0    Bdata items   :   0    Cdata items   :   0
+    Adata items   : 106    Bdata items   :   0    Cdata items   :   2
+ Adata variables:
+    1 System maximum power (W)
+      Value =   700.0          Range (Min Max):     1.0000        3.0000
+    2 System minimum power (W)
+      Value =   8.77E-05       Range (Min Max):     1.0000        3.0000
+    3 Maximum cooling water outlet temp (oC)
+      Value =   80.0           Range (Min Max):     0.0000        100.00
+    4 Fuel type (1: liquid fuel, 2: gaseous mixture)
+      Value =    2.0           Range (Min Max):     1.0000        2.0000
+    5 Liquid fuel heating value  (J/kg):
+      Value =   43.0E06        Range (Min Max):     0.0000        1.0E08
+    6 Liquid fuel CO2 factor (kg CO2 / kg fuel):
+      Value =   0.00000        Range (Min Max):     0.0000        1.0E08
+    7 % hydrogen in fuel gas mixture (mol/mol)
+      Value =   0.0            Range (Min Max):     0.0000        1.0000
+    8 % methane in fuel gas mixture (mol/mol)
+      Value =   0.9476         Range (Min Max):     0.0000        1.0000
+    9 % ethane in fuel gas mixture (mol/mol)
+      Value =   0.0270         Range (Min Max):     0.0000        1.0000
+   10 % propane in fuel gas mixture (mol/mol)
+      Value =   0.0023         Range (Min Max):     0.0000        1.0000
+   11 % butane in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   12 % pentane in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   13 % hexane in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   14 % methanol in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   15 % ethanol  in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   16 % carbon monoxide in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   17 % carbon dioxide in fuel gas mixture (mol/mol)
+      Value =   0.0055         Range (Min Max):     0.0000        1.0000
+   18 % nitrogen in fuel gas mixture (mol/mol)
+      Value =   0.0176         Range (Min Max):     0.0000        1.0000
+   19 % oxygen in fuel gas mixture (mol/mol)
+      Value =   0.0000         Range (Min Max):     0.0000        1.0000
+   20 Max rate of change in fuel flow (kg/s^2)
+      Value =   -1.000         Range (Min Max):     -2.000        100.00
+   21 Max rate of change in power output (W/s)
+      Value =   -1.000         Range (Min Max):     -2.000        100.00
+   22 Power system thermal mass (J/K)
+      Value =    500.0         Range (Min Max):     0.0000        1.0000
+   23 Effective heat recovery UA coefficient (W/K)
+      Value =     20.0         Range (Min Max):     0.0000        1.0000
+   24 Effective heat loss UA coefficient (W/K)
+      Value =     20.0         Range (Min Max):     0.0000        1.0000
+   25 Heat exchanger thermal mass (J/K)
+      Value =    500.0         Range (Min Max):     0.0000        1.0000
+   26 Nominal engine temperature (oC)
+      Value =    250.0         Range (Min Max):     0.0000        500.00
+   27 Fuel flow sensitivity to engine temp (-)
+      Value =    1.000         Range (Min Max):     10.000        0.0000
+   28 Electric output sensitivity to engine temp (-)
+      Value =    1.000         Range (Min Max):     10.000        0.0000
+   29 Ratio of maximum flow in startup SS value (-)
+      Value =    10.0          Range (Min Max):     0.0000        10.000
+   30 Cool down period duration (s)
+      Value =   1500.0         Range (Min Max):      0.0000       10000.
+   31 Cool-down period mode (1: Mandatory, 2: optional)
+      Value =      1.0         Range (Min Max):      0.0000       10000.
+   32 Electric output at cool-down (W)
+      Value =    -50.0         Range (Min Max):     -1E06         1E06
+   33 Net electrical output in standby mode (W)
+      Value =    -50.0         Range (Min Max):     -1E06         1E06
+   34 Power output correlation minimum bound (W)
+      Value =    8000.0        Range (Min Max):     0.0000        1E-06
+   35 Power output correlation maximum bound (W)
+      Value =    8400.0        Range (Min Max):     0.0000        1E-06
+   36 Cooling water temperature correlation minimum bound (oC)
+      Value =      60.0        Range (Min Max):     0.0000        100.00
+   37 Cooling water temperature correlation maximum bound (oC)
+      Value =      70.0        Range (Min Max):     0.0000        100.00
+   38 Cooling water flow correlation minimum bound (kg/s)
+      Value =       0.0        Range (Min Max):     0.0000        100.00
+   39 Cooling water flow correlation maximum bound (kg/s)
+      Value =     100.0        Range (Min Max):     0.0000        100.00
+   40 Performance map: Elec. efficiency correlation coeff. a0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   41 Performance map: Elec. efficiency correlation coeff. a1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   42 Performance map: Elec. efficiency correlation coeff. a2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   43 Performance map: Elec. efficiency correlation coeff. a3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   44 Performance map: Elec. efficiency correlation coeff. a4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   45 Performance map: Elec. efficiency correlation coeff. a5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   46 Performance map: Elec. efficiency correlation coeff. a6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   47 Performance map: Elec. efficiency correlation coeff. a7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   48 Performance map: Elec. efficiency correlation coeff. a8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   49 Performance map: Elec. efficiency correlation coeff. a9
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   50 Performance map: Elec. efficiency correlation coeff. a10
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   51 Performance map: Elec. efficiency correlation coeff. a11
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   52 Performance map: Elec. efficiency correlation coeff. a12
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   53 Performance map: Elec. efficiency correlation coeff. a13
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   54 Performance map: Elec. efficiency correlation coeff. a14
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   55 Performance map: Elec. efficiency correlation coeff. a15
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   56 Performance map: Elec. efficiency correlation coeff. a16
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   57 Performance map: Elec. efficiency correlation coeff. a17
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   58 Performance map: Elec. efficiency correlation coeff. a18
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   59 Performance map: Elec. efficiency correlation coeff. a19
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   60 Performance map: Elec. efficiency correlation coeff. a20
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   61 Performance map: Elec. efficiency correlation coeff. a21
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   62 Performance map: Elec. efficiency correlation coeff. a22
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   63 Performance map: Elec. efficiency correlation coeff. a23
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   64 Performance map: Elec. efficiency correlation coeff. a24
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   65 Performance map: Elec. efficiency correlation coeff. a25
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   66 Performance map: Elec. efficiency correlation coeff. a26
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   67 Performance map: Themal efficiency correlation coeff. b0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   68 Performance map: Themal efficiency correlation coeff. b1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   69 Performance map: Themal efficiency correlation coeff. b2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   70 Performance map: Themal efficiency correlation coeff. b3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   71 Performance map: Themal efficiency correlation coeff. b4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   72 Performance map: Themal efficiency correlation coeff. b5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   73 Performance map: Themal efficiency correlation coeff. b6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   74 Performance map: Themal efficiency correlation coeff. b7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   75 Performance map: Themal efficiency correlation coeff. b8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   76 Performance map: Themal efficiency correlation coeff. b9
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   77 Performance map: Themal efficiency correlation coeff. b10
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   78 Performance map: Themal efficiency correlation coeff. b11
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   79 Performance map: Themal efficiency correlation coeff. b12
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   80 Performance map: Themal efficiency correlation coeff. b13
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   81 Performance map: Themal efficiency correlation coeff. b14
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   82 Performance map: Themal efficiency correlation coeff. b15
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   83 Performance map: Themal efficiency correlation coeff. b16
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   84 Performance map: Themal efficiency correlation coeff. b17
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   85 Performance map: Themal efficiency correlation coeff. b18
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   86 Performance map: Themal efficiency correlation coeff. b19
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   87 Performance map: Themal efficiency correlation coeff. b20
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   88 Performance map: Themal efficiency correlation coeff. b21
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   89 Performance map: Themal efficiency correlation coeff. b22
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   90 Performance map: Themal efficiency correlation coeff. b23
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   91 Performance map: Themal efficiency correlation coeff. b24
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   92 Performance map: Themal efficiency correlation coeff. b25
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   93 Performance map: Themal efficiency correlation coeff. b26
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   94 Cooling water loop: pump configuration (1= internal, 2= external)
+      Value =       2.0        Range (Min Max):     0.0000          1.00
+   95 Performance map: cooling water flow correlation coeff. c0
+      Value =       0.5        Range (Min Max):     0.0000          1.00
+   96 Performance map: cooling water flow correlation coeff. c1
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   97 Performance map: cooling water flow correlation coeff. c2
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   98 Performance map: cooling water flow correlation coeff. c3
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+   99 Performance map: cooling water flow correlation coeff. c4
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  100 Performance map: cooling water flow correlation coeff. c5
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  101 Performance map: cooling water flow correlation coeff. c6
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  102 Performance map: cooling water flow correlation coeff. c7
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  103 Performance map: cooling water flow correlation coeff. c8
+      Value =       0.0        Range (Min Max):     0.0000          1.00
+  104 Performance map: Combustion air correlation coefficient d0 (kg/s)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
+  105 Performance map: Combustion air correlation coefficient d1 (-)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
+  106 Performance map: Combustion air correlation coefficient d2 ( 1 / kg/s)
+      Value =       0.5        Range (Min Max):     0.0000        100.00
+ CDATA variables:
+    1 Control Method (-)
+    2 Control Signal (-)
 
  Number of additional output parameters:     0
- 
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0

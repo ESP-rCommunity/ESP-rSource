@@ -1,0 +1,44 @@
+# boundary condition data file   
+*bc_data_file  
+*version,0.1
+#------------------------------------- 
+# period start date (DD/MM/YYYY) 
+*period_start,9,1,2000
+#------------------------------------- 
+# period frequency (seconds/sample) 
+*frequency,3600
+#------------------------------------- 
+# Boundary condition data. 
+#  
+# - data can be space/comma/tab separated 
+# - First row contains column headers  
+# - Second row contains column units   
+# - Subsequent rows contain column data.  
+*data_header, Time,   Source_temp,   Source_flow,   SE_ctl_signal,   SE_OP_target,   Troom
+*data_units,h,      oC,            kg/s,          -,               W,              oC
+*data_start
+0,65,0.2,0,0,20
+1,65,0.2,2,1000,20
+2,65,0,2,1000,20
+3,65,0,2,1000,20
+4,65,0.15,2,1000,20
+5,65,0.14,2,1000,20
+6,65,0.13,2,1000,20
+7,65,0.12,2,1000,20
+8,65,0.11,2,1000,20
+9,65,0.1,2,1000,20
+10,65,0.09,2,1000,20
+11,65,0.08,2,1000,20
+12,65,0.07,2,1000,20
+13,65,0.06,2,1000,20
+14,65,0.05,2,1000,20
+15,65,0.04,2,1000,20
+16,65,0.03,2,1000,20
+17,65,0.02,2,1000,20
+18,65,0.01,2,1000,20
+19,65,0,2,1000,20
+20,65,0,2,1000,20
+21,65,0,2,1000,20
+22,65,0,2,1000,20
+23,65,0,0,0,20
+*data_end

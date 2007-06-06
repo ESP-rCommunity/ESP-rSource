@@ -234,12 +234,15 @@ C ESP-r binaries without CETC files
 
 C This is a dummy routine used to permit compliation of
 C ESP-r binaries without CETC files
-      subroutine Stirling_coeff_gen (dummy_1,dummy_2,dummy_3)
+      subroutine A42_combustion_chp_coeff_gen (
+     & dummy_1,
+     & dummy_2,
+     & dummy_3,
+     & dummy_4)
       implicit none
 #include "plant.h"
-      integer dummy_1
-      real dummy_2 (mpcoe)
-      integer dummy_3
+      integer dummy_1, dummy_2, dummy_4
+      real dummy_3 (mpcoe)
 
       return
       end

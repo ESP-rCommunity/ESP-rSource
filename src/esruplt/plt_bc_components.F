@@ -114,11 +114,7 @@ C-----------------------------------------------------------------------
       real fConvert_current_TS_to_DAY ! Fn converting current timestep to day
       real fGet_BC_data_by_col        ! Fn collecting value of BC 
 
-C-----------------------------------------------------------------------
-C     Context buffer
-C-----------------------------------------------------------------------
-      write (cContext, '(A,A,I2)') 'Boundry_Condition_Control(): ',
-     &        'Collecting BC data for control loop ', icfp
+
 
 
 C-----------------------------------------------------------------------
@@ -143,6 +139,11 @@ C     error trap the other inputs.
 C-----------------------------------------------------------------------
 
       if ( iData_Count .ne. 2 ) then
+
+C........Context buffer
+         write (cContext, '(A,A,I2)') 'Boundry_Condition_Control(): ',
+     &        'Collecting BC data for control loop ', icfp         
+C........Error message
          write (cMsg, '(A,I2,A)') '2 data items were expected, but ',
      &       iData_Count, ' were provided.'
 
@@ -216,7 +217,10 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C     ESP-r Commons
 C----------------------------------------------------------------------
-
+C.....I/O
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+      
 C.....Network & control data
       common/c9/npcomp,nci,cdata
       integer npcomp            ! number of plant components
@@ -228,6 +232,31 @@ C.....Plant component configuration data - read from input file
       real adata(mpcom,madata) ! miscellaneous data for component
       real bdata(mpcom,mbdata) ! more miscellaneous data for component
 
+C.....Common containing plant componet mass diversion ratios 
+      common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),ipc2(mpcon),
+     &            ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
+      integer npcon            ! number of inter-component connections
+      integer ipc1             ! component number defining the receiving
+                               !   component
+      integer ipn1             ! node number defining the receiving component
+      integer ipct             ! plant component inter-connection type
+      integer ipc2             ! component number defining the sending
+                               !   component
+      integer ipn2             ! node number defining the sending component
+      real    pcondr           ! ratio of mass flow rate through the connection
+                               !   and the mass flow rate entering the receiving
+                               !   node for each plant component inter-connection
+      real    pconsd           ! supplementary data for plant component inter-
+                               !   connection
+
+C.....Plant component connection data
+      common/pcond/convar, icontp, icondx
+      real    convar(mpcon,mconvr)        ! state varibles for connections
+      integer icontp(mpcon)               ! type of each connection
+      integer icondx(mpcom,mnodec,mpconc) ! pointer to connections for each
+                                          ! component/node
+
+                               
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------
@@ -249,7 +278,25 @@ C----------------------------------------------------------------------
       logical bNoMaxFlow
 
       real fClose_tolerance           ! Tolerance for numerical comparisons
-      parameter (fClose_tolerance=0.1) 
+      parameter (fClose_tolerance=0.1)
+      logical bCloseToZero
+
+      logical bNoFlowControl   ! Flags indicating control of flow, temperature
+      logical bNoTempControl   !   have been disabled by a negitive control
+                               !   input.
+
+      logical bConnected       ! Flag indicating incomming connection
+                               !   exists                               
+      integer iConnection_Index   ! Index of incomming connection
+      real fConnection_Temp    ! Temperature of incomming connection.
+
+      character*124 cContext   ! Buffers used to write messages to
+      character*124 cMsg(2)    !   screen.
+      
+      logical bFatalError      ! Flag for error
+
+      bFatalError = .false.
+                                           
 C----------------------------------------------------------------------
 C     Get parameters
 C----------------------------------------------------------------------      
@@ -266,41 +313,217 @@ C----------------------------------------------------------------------
       fControlFlow = CData ( iIndex, 2 )  ! Kg/s
 
 C----------------------------------------------------------------------
+C     Determine if the model is connected to anything, and recover
+C     connection index, if so.                                                                        
+C----------------------------------------------------------------------
+      iConnection_Index = icondx ( iIndex, 1, 1 )
+
+      if ( iConnection_Index > 0 ) then
+C........Connection exists!
+         bConnected = .true.
+         fConnection_Temp = convar( iConnection_Index, 1 )
+         
+      else
+C........Connection doesn't exist!
+         bConnected = .false.
+      endif 
+                   
+      
+C----------------------------------------------------------------------
+C     Check if flow control is disabled: Is value less than zero?
+C
+C     Note: when flow control is disabled, the unit MUST be connected
+C           to an up stream component, whose connection will define
+C           the flow rate through the present component!
+C----------------------------------------------------------------------
+      call eclose ( fControlFlow, 0., fClose_tolerance, bCloseToZero )
+
+      if ( .not. bCloseToZero .and. fControlFlow < 0. ) then
+
+C.......Flow control is disabled.        
+        bNoFlowControl = .true.
+
+C.......is unit connected to an upstream component? If so, inform
+C.......user and issue fatal error.
+        if ( .not. bConnected ) then
+
+C.........Set error flag
+          bFatalError = .true.
+
+C.........Set error message
+          write (cMsg(1), '(A,A,g8.4)') 'Flow control disabled with ',
+     &          'negative control signal: ', fControlFlow
+          write (cMsg(2), '(A,A)') 'Flow control can only be ',
+     &          'disabled when upstream connection exists. '
+
+        endif 
+
+      else
+
+C.......Flow control is not disabled       
+        bNoFlowControl = .false.
+
+      endif
+
+C----------------------------------------------------------------------
+C     Check if temperature control is disabled: Is value less than zero?
+C
+C     Note: when temperature control is disabled, the unit MUST be connected
+C           to an up stream component, whose connection will define
+C           the temperature of present component!
+C----------------------------------------------------------------------
+      call eclose ( fControlTemp, 0., fClose_tolerance, bCloseToZero )
+
+      if ( .not. bCloseToZero .and. fControlTemp < 0. ) then
+
+C.......Temperature control is disabled
+        bNoTempControl = .true.
+
+C.......is unit connected to an upstream component? If so, inform
+C.......user and issue fatal error.
+        if ( .not. bConnected ) then
+
+C.........Set error flag
+          bFatalError = .true.
+
+C.........Set error message
+          write (cMsg(1), '(A,A,g8.4)') 'Temperature control disabled ',
+     &          'negative control signal: ', fControlTemp
+          write (cMsg(2), '(A,A)') 'Temperature control can only be ',
+     &          'disabled when upstream connection exists. '
+
+        endif 
+
+      else
+C.......Temperature control is not disabled.         
+        bNoTempControl = .false.
+      endif       
+
+      
+      
+C----------------------------------------------------------------------
 C     Check that ctl signal is within limits 
 C----------------------------------------------------------------------      
-      call eclose ( fMinTemp, -99.0, fClose_tolerance, bNoMinTemp )
-      call eclose ( fMaxTemp, -99.0, fClose_tolerance, bNoMaxTemp )
-      call eclose ( fMinFlow, -99.0, fClose_tolerance, bNoMinFlow )
-      call eclose ( fMaxFlow, -99.0, fClose_tolerance, bNoMaxFlow )
 
-      if ( fControlTemp .lt. fMinTemp .and. .not. bNoMinTemp )
-     &         fControlTemp = fMinTemp
+C.....Temperature      
+      if ( .not. bNoTempControl ) then 
+         
+         call eclose ( fMinTemp, -99.0, fClose_tolerance, bNoMinTemp )
+         call eclose ( fMaxTemp, -99.0, fClose_tolerance, bNoMaxTemp )
 
-      if ( fControlTemp .gt. fMaxTemp .and. .not. bNoMaxTemp )
-     &         fControlTemp = fMaxTemp
+         if ( fControlTemp .lt. fMinTemp .and. .not. bNoMinTemp )
+     &            fControlTemp = fMinTemp
 
-      if ( fControlFlow .lt. fMinFlow .and. .not. bNoMinFlow )
-     &         fControlFlow = fMinFlow
+         if ( fControlTemp .gt. fMaxTemp .and. .not. bNoMaxTemp )
+     &            fControlTemp = fMaxTemp
 
-      if ( fControlFlow .gt. fMaxFlow .and. .not. bNoMaxFlow )
-     &         fControlFlow = fMaxFlow
+      endif 
+
+C.....Flow          
+      if ( .not. bNoFlowControl ) then 
+         call eclose ( fMinFlow, -99.0, fClose_tolerance, bNoMinFlow )
+         call eclose ( fMaxFlow, -99.0, fClose_tolerance, bNoMaxFlow )
+
+         if ( fControlFlow .lt. fMinFlow .and. .not. bNoMinFlow )
+     &            fControlFlow = fMinFlow
+
+         if ( fControlFlow .gt. fMaxFlow .and. .not. bNoMaxFlow )
+     &            fControlFlow = fMaxFlow
+
+      endif
+
+C----------------------------------------------------------------------
+C     Stop if error is encountered:
+C----------------------------------------------------------------------
+      if ( bFatalError ) then
+
+         write (cContext,'(A,A,I2,A)') 'Plant temperature/flow source',
+     &      ' (Component number ', iIndex, '):'
+
+         call edisp( iuout, cContext )
+         call edisp( iuout, cMsg(1) )
+         call edisp( iuout, cMsg(2) )
+         
+         stop 'Fatal error!'
 
 
+      endif 
+      
+      
 C----------------------------------------------------------------------
 C     Set matrix coefficients
 C----------------------------------------------------------------------
       if ( iPlant_matrix .eq. iProp1stFlow ) then
-         fCoefficients (1) = 1.0
-         fCoefficients (2) = fControlFlow
+C........FIRST PHASE FLOW MATRIX
+C........If connected & flow rate uncontrolled, set outlet flow to
+C........inlet flow
+         if ( bNoFlowControl .and. bConnected ) then
+            fCoefficients (1) =  1.0
+            fCoefficients (2) = -1.0 * pcondr ( iConnection_Index )
+            fCoefficients (3) =  0.0
+
+C........If connected and flow rate controlled, set outlet flow to
+C........specified value
+         elseif ( .not. bNoFlowControl .and. bConnected ) then
+            fCoefficients (1) = 1.0
+            fCoefficients (2) = 0.0
+            fCoefficients (3) = fControlFlow
+           
+C........If unconnected, unit must be controlled. Set outlet flow to
+C........specified value        
+         elseif ( .not. bConnected ) then 
+
+C...........There's no connection, so second term in matrix coefficent 
+C...........vector disappers!
+            fCoefficients (1) = 1.0
+            fCoefficients (2) = fControlFlow
+    
+         endif
+
+         
       elseif ( iPlant_matrix .eq. iProp2ndFlow ) then
+
+C........SECOND PHASE FLOWS NOT SUPPORTED
          fCoefficients (1) = 1.0
          fCoefficients (2) = 0.0
+C........Zero third matrix coefficent, if connection exists
+         if ( bConnected ) fCoefficients (3) = 0.0
+         
       elseif ( iPlant_matrix .eq. iPropH2Flow )  then
+C........THIRD PHASE (HYDROGEN) FLOWS NOT SUPPORTED
          fCoefficients (1) = 1.0
          fCoefficients (2) = 0.0
+C........Zero third matrix coefficent, if connection exists
+         if ( bConnected ) fCoefficients (3) = 0.0
+         
       elseif ( iPlant_matrix .eq. iPropTemp )  then
-         fCoefficients (1) = 1.0
-         fCoefficients (2) = fControlTemp
+
+C........TEMPERATURE SOLUTION MATRIX
+C........If connected & temperature uncontrolled, set temperature to
+C........inlet connection temperature
+         if ( bNoTempControl .and. bConnected ) then
+            fCoefficients (1) =  1.0
+            fCoefficients (2) = -1.0 * fConnection_Temp
+            fCoefficients (3) =  0.0
+
+C........If connected and temperature controlled, set temperature to
+C........specified value
+         elseif ( .not. bNoTempControl .and. bConnected ) then
+            fCoefficients (1) = 1.0
+            fCoefficients (2) = 0.0
+            fCoefficients (3) = fControlTemp
+           
+C........If unconnected, unit must be controlled. Set Temperature to
+C........specified value        
+         elseif ( .not. bConnected ) then 
+
+C...........There's no connection, so second term in matrix coefficent 
+C...........vector disappers!
+            fCoefficients (1) = 1.0
+            fCoefficients (2) = fControlTemp
+    
+         endif
+      
       endif
 
       return
