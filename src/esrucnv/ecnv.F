@@ -94,6 +94,13 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
@@ -132,6 +139,7 @@ C storage.
       LIMIT=20
       itrc=1
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Get command line parameters.
       call parcnv(itrc,conv,incobs,ichop,itmprm,iformat,oformat,inf,ouf,

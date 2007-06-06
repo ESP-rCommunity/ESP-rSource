@@ -29,6 +29,7 @@ C if these are 0 then use default values.
       program dfs
 #include "cfd.h"
 #include "building.h"
+#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -88,6 +89,13 @@ C Commons used when conflated which should be cleared in stand alone mode.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER*24 ITEM(10)
       CHARACTER H*72,inf*144,LCFD*72,tfile*72,DFCFD*72,Lflpar*72
@@ -153,6 +161,7 @@ C File units.
       IFL=IFIL+1
       ICFLIB=IFIL+2
       ICFMON=IFIL+3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Temporary cfd file unit.
       ICFTMP=IFIL+4

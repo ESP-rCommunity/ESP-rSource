@@ -119,6 +119,14 @@ C ACO specific commons
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
 
@@ -150,6 +158,7 @@ C Initial assumptions (summary reporting).
       ITFS=1
       itrc=0
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Configuration file on IFIL+5.
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL +15.

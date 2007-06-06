@@ -102,6 +102,13 @@ C Project journal on/off, unit number, cmd, file name.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Materials data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
@@ -134,6 +141,7 @@ C Initialize global common data.
       IUOUT = 6
       IFIL = 10
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Assume configuration file is from IFIL+8, any leakage description
 C is fom IFIL+9 and ASCII viewing and geometry file reading on IFILE+1. 

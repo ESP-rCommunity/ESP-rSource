@@ -23,6 +23,7 @@ C ESRU: espvwf
 C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
+#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 
@@ -89,6 +90,13 @@ C Defaults.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -159,6 +167,7 @@ C Initialize global common data.
       LIMIT =24
       IFIL = 10
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, updated geometry on

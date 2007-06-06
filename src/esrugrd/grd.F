@@ -75,6 +75,13 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
@@ -98,6 +105,7 @@ C Initialize global common data.
       IMFS=1
       LIMTTY=20
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
       path='./'
       IDRW1=0
       call parsfz(MODL,iappw,iappx,iappy,inf,inz)
