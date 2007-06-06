@@ -1224,8 +1224,53 @@ fi
 #--------------------------------------------------------------
 
 #--------------------------------------------------------------
+# 
+#--------------------------------------------------------------
+
+####### create an installdir.h file so startup.F knows where to look
+  echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
+  echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
+  echo "       instpath = '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
+
+
+##### Initiate make:
+if [ "${make_msg_file}" = "" ]; then
+  echo " "
+  echo " Intended shell command:"
+  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
+  echo " "
+  echo " where the $xlibs libraries are in ${XINSTALLDIR}"
+fi
+  
+if [ "$mode" = "interactive" ]; then
+  A=x
+  while [ "$A" != y ] && [ "$A" != n ] && [ "$A" != "" ]
+  do
+    echo " " 
+    echo " Proceed with installation of esp-r modules (y/n) [y]?"
+    read A
+  done
+
+  if [ "$A" = "n" ]; then
+    echo " "
+    echo " Aborting ESP-r installation. "
+    echo " "
+    exit
+  fi 
+fi
+
+
+
+
+
+echo " "
+echo " Installing ESP-r system.  This may take some time."
+
+#--------------------------------------------------------------
 # Get SVN build info for versioning purposes.
 #--------------------------------------------------------------
+ 
+ echo -n "    - gathering versioning information from svn..."
  
  # Ensure that build information is always recompiled into 
  # every binary - touch common file startup.F
@@ -1298,7 +1343,10 @@ fi
    else
     state="Vanilla"
    fi
-        
+   
+   echo "Done."
+ else 
+   echo "Unavailable!"
  fi
  
  
@@ -1368,49 +1416,11 @@ fi
   fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h 
 
-#--------------------------------------------------------------
-# 
-#--------------------------------------------------------------
-
-####### create an installdir.h file so startup.F knows where to look
-  echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
-  echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
-  echo "       instpath = '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
 
 
-##### Initiate make:
-if [ "${make_msg_file}" = "" ]; then
-  echo " "
-  echo " Intended shell command:"
-  echo " make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir=${DESTdir} ESPdir=${ESPdir} WWLINK=${WWLINK} EXE="${EXE}" XINSTALLDIR=${XINSTALLDIR} CFLAGS=${CFLAGS} FFLAGS=${FFLAGS} LD_FLAGS=${LD_FLAGS} ULIBS=${ULIBS} xml_status=${xml_status} $targets"
-  echo " "
-  echo " where the $xlibs libraries are in ${XINSTALLDIR}"
-fi
-  
-if [ "$mode" = "interactive" ]; then
-  A=x
-  while [ "$A" != y ] && [ "$A" != n ] && [ "$A" != "" ]
-  do
-    echo " " 
-    echo " Proceed with installation of esp-r modules (y/n) [y]?"
-    read A
-  done
-
-  if [ "$A" = "n" ]; then
-    echo " "
-    echo " Aborting ESP-r installation. "
-    echo " "
-    exit
-  fi 
-fi
-
-
-
-
-
-echo " "
-echo " Installing ESP-r system.  This may take some time."
-
+#---------------------------------------------------------------------
+# Begin build 
+#---------------------------------------------------------------------
 targets="${targets} end_of_exes"
 # Build each executable, 1 by 1.
 while [ "${targets}" != "end_of_exes" ]
@@ -1429,7 +1439,7 @@ do
    targets=`echo $targets | sed 's/^[^ ]* //g'`
 
    # Let user know what's going on
-   echo "    - building ${target}"
+   echo -n "    - building ${target}... "
 
    # Empty 'make_msg_file' if it's defined
   if [ "$make_msg_file" != "" ]; then
@@ -1495,6 +1505,8 @@ do
         exit
       fi
 
+   else 
+     echo "Done."
    fi
    # delete message file, if necessary
    if [ "${make_msg_file}" != "" ]; then
@@ -2173,6 +2185,7 @@ fi
 make ESPBinDir=${ESPbin} EXE=${EXE} install  >/dev/null 2>&1
 if [ "$debugging" = "no" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
+  rm ${SRCdir}/include/build_info.h
 fi
 echo "Done."
 
@@ -2226,7 +2239,6 @@ fi
 echo "  "
 echo "Removing binary materials db from exemplars ..."
 cd ${SRCdir}/
-rm include/build_info.h
 rm -f training/glenview/databases/constr.db1
 rm -f training/cellular_furn/dbs/cellular.materials
 rm -f training/cellular_hires/dbs/cellular.materials
