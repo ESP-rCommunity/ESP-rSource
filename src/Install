@@ -2190,7 +2190,6 @@ fi
 make ESPBinDir=${ESPbin} EXE=${EXE} install  >/dev/null 2>&1
 if [ "$debugging" = "no" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
-  rm ${SRCdir}/include/build_info.h
 fi
 echo "Done."
 

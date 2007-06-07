@@ -103,6 +103,9 @@ clean:
 	cd $(SRCdir)/esrutdf; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
+	@if [ -f $(INCLdir)/espinstalldir.h ]; then rm $(INCLdir)/espinstalldir.h; fi
+	@if [ -f $(INCLdir)/build_info.h    ]; then rm $(INCLdir)/build_info.h;    fi
+	
 
 strip:
 	cd $(SRCdir)/esruaco; $(MAKE) strip
