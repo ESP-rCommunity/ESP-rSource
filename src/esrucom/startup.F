@@ -2206,7 +2206,7 @@ C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
 C.....ESP-r banner 
       if ( bRelease ) then 
 C.......Release version        
-        write(cTemp_a,"(A,A,A,A,A,A,A)") 
+        write(cTemp_a,'(A,A,A,A,A,A,A)') 
      &       "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), 
      &       " (",
@@ -2218,13 +2218,13 @@ C.......Release version
       
       else 
         
-        write(cTemp_a,"(A,A,A,A,A)") "ESP-r ", 
+        write(cTemp_a,'(A,A,A,A,A)') "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), " (",
      &       cAppName(1:lnblnk(cAppName)),
      &       ")."
         call edisp(iuout,cTemp_a)      
         
-        write(cTemp_a,"(A,A,A,A,A,A)") "This is a development copy of ", 
+        write(cTemp_a,'(A,A,A,A,A,A)') "This is a development copy of ", 
      &       cAppName(1:lnblnk(cAppName)),
      &       ", based on ESP-r release ",
      &       cRelease_Num(1:lnblnk(cRelease_Num)),"."
@@ -2236,7 +2236,7 @@ C.......Release version
       
 C Copyright information:
       call edisp(iuout," ")      
-      write(cTemp_a,"(A)") 
+      write(cTemp_a,'(A)') 
      &  "Copyright 2001-2007 Energy Systems Research Unit."
       
       call edisp(iuout,cTemp_a)      
@@ -2248,26 +2248,26 @@ C.......Write out non-versioned disclaimer.
         
         call edisp(iuout," ")
        
-        write (cTemp_a,"(A)") 
+        write (cTemp_a,'(A)') 
      &  "This copy of ESP-r is not under versioning control. Using un-"
 
         call edisp(iuout,cTemp_a)
         
-        write (cTemp_a,"(A)") 
+        write (cTemp_a,'(A)') 
      &  "versioned copies of ESP-r may prevent you from reconstituting"
         call edisp(iuout,cTemp_a)
         
-        write (cTemp_a,"(A)") 
+        write (cTemp_a,'(A)') 
      &  "models and reproducing simulation results in the future. You"
         call edisp(iuout,cTemp_a)
         
-        write (cTemp_a,"(A)") 
+        write (cTemp_a,'(A)') 
      &  "can obtain a versioned copy of ESP-r here:"
         call edisp(iuout,cTemp_a)
         
         call edisp(iuout," ")
         
-        write (cTemp_a,"(A)") 
+        write (cTemp_a,'(A)') 
      &  "   http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm"
         call edisp(iuout,cTemp_a)
               
@@ -2278,7 +2278,7 @@ C. .....Information about build:
         call edisp(iuout," ")
                  
                     
-          write (cTemp_a,"(A)") "Build information:"
+          write (cTemp_a,'(A)') "Build information:"
           call edisp(iuout,cTemp_a)
         
 C.........Source code version:
@@ -2286,46 +2286,46 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
           
           if ( bVersioned ) then 
             
-            write (cTemp_a,"(A,A,A,A,A)") 
+            write (cTemp_a,'(A,A,A,A,A)') 
      &       "  - SVN Source:       ",
      &       cBranch(1:lnblnk(cBranch)), 
      &       "@r",
      &       cRevision(1:lnblnk(cRevision))
   
             if ( bModified ) then
-              write (cTemp_a,"(A,A)") cTemp_a(1:lnblnk(cTemp_a)),
+              write (cTemp_a,'(A,A)') cTemp_a(1:lnblnk(cTemp_a)),
      &         " (locally modified)"
             else 
-              write (cTemp_a,"(A,A)") cTemp_a(1:lnblnk(cTemp_a)),
+              write (cTemp_a,'(A,A)') cTemp_a(1:lnblnk(cTemp_a)),
      &         " (unmodified)"
             endif
              
              
             else
-              write (cTemp_a,"(A)") 
+              write (cTemp_a,'(A)') 
      &       "  - SVN Source:       UNKNOWN"
             endif 
           call edisp(iuout,cTemp_a)      
           
 C.........Build Platform (e.g.: i686:LINUX:2.6.9-gentoo-r1)
-          write (cTemp_a,"(A,A,A,A,A,A)")   "  - Platform:         ",
+          write (cTemp_a,'(A,A,A,A,A,A)')   "  - Platform:         ",
      &         cArchitecture(1:lnblnk(cArchitecture)),":",
      &         cOperSystem(1:lnblnk(cOperSystem)),":",
      &         cOSversion(1:lnblnk(cOSversion))
           call edisp(iuout,cTemp_a)      
          
 C.........Compiliers ( eg: gcc/g++/g77)
-          write (cTemp_a,"(A,A,A,A,A,A)")   "  - Compilers:        ",
+          write (cTemp_a,'(A,A,A,A,A,A)')   "  - Compilers:        ",
      &         cCC(1:lnblnk(cCC)),"/",
      &         cCPL(1:lnblnk(cCPL)),"/",
      &         cFC(1:lnblnk(cFC))
         call edisp(iuout,cTemp_a)
         
-        write (cTemp_a,"(A,A)")   "  - Graphics Library: ",
+        write (cTemp_a,'(A,A)')   "  - Graphics Library: ",
      &         cXlibrary(1:lnblnk(cXlibrary))
         call edisp(iuout,cTemp_a)
         
-        write (cTemp_a,"(A,A)")   "  - XML output:       ",
+        write (cTemp_a,'(A,A)')   "  - XML output:       ",
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a) 
         
