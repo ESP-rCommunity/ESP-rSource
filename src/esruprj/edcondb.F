@@ -1924,11 +1924,12 @@ C List database.
         h(2)='text file or displayed.  Optical properties are'
         h(3)='included in detailed files or if the reporting level'
         h(4)='has been set to verbose. '
-        CALL EASKABC(' Reporting to:',' ',
-     &      'text feedback','summary file','detailed file',irpt,4)
+        CALL EASKABCD(' Reporting to:',' ',
+     &    'summary text feedback','detailed text feedback',
+     &    'summary file','detailed file',irpt,4)
         if(irpt.eq.1)then
           itu = iuout
-        elseif(irpt.eq.2.or.irpt.eq.3)then
+        elseif(irpt.eq.3.or.irpt.eq.4)then
           itu = ixunit
           write(xfile,'(a)') 'construction_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','MLC db text',IER)
@@ -1944,11 +1945,13 @@ C If user canceled the listing the reset unit to iuout and loop back.
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then
-            call etmldb(itrc,itu,IM,imerr)
+            call etmldb(1,itu,IM,imerr)   ! brief description
           elseif(irpt.eq.2)then
-            call etmldb(1,itu,IM,imerr)
+            call etmldb(2,itu,IM,imerr)   ! verbose description
           elseif(irpt.eq.3)then
-            call etmldb(2,itu,IM,imerr)
+            call etmldb(1,itu,IM,imerr)   ! brief description
+          elseif(irpt.eq.4)then
+            call etmldb(2,itu,IM,imerr)   ! verbose description
           endif
    45   continue
         call edisp(itu,
@@ -2761,14 +2764,22 @@ C reference.
      &        ' do you want to browse through the db ? ',OK,dok,2)
             IF(OK)then
               iwhich = 0
-              CALL ELISTC(iwhich,chdb,'-',IER)
+              if(closemat)then
+                CALL ELISTMAT(iwhich,chdb,'-',IER)
+              else
+                CALL ELISTC(iwhich,chdb,'-',IER)
+              endif
               if(iwhich.eq.0)then
                 H(1)='If air is correct then accept, otherwise'
                 H(2)='reselect from the list or abort the task.'
                 CALL EASKABC('Your selection is `0` i.e. air. Options:',
      &            ' ','accept','reselect material','abort',iwair,2)
                  if(iwair.eq.2)then
-                   CALL ELISTC(iwhich,chdb,'-',IER)
+                   if(closemat)then
+                     CALL ELISTMAT(iwhich,chdb,'-',IER)
+                   else
+                     CALL ELISTC(iwhich,chdb,'-',IER)
+                   endif
                  elseif(iwair.eq.3)then
                    ILED=-1
                    GOTO 3
@@ -3075,14 +3086,22 @@ C reference.
      &             ' do you want to browse through the db?',OK,dok,2)
         IF(OK)then
           iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          if(closemat)then
+            CALL ELISTMAT(iwhich,chdb,'-',IER)
+          else
+            CALL ELISTC(iwhich,chdb,'-',IER)
+          endif
           if(iwhich.eq.0)then
             H(1)='If air is correct then accept, otherwise'
             H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
      &        ' ','accept','reselect material','abort',iwair,2)
             if(iwair.eq.2)then
-              CALL ELISTC(iwhich,chdb,'-',IER)
+              if(closemat)then
+                CALL ELISTMAT(iwhich,chdb,'-',IER)
+              else
+                CALL ELISTC(iwhich,chdb,'-',IER)
+              endif
             elseif(iwair.eq.3)then
               ILED=-1
               GOTO 3

@@ -427,6 +427,8 @@ C Arrays of material properties.
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
+      integer lnam    ! length of material name
+      integer lfordoc ! length available for material documentation
       logical closemat
 
       DIMENSION PNAM(ME)
@@ -483,7 +485,13 @@ C If an air layer include the R values in the display.
             A=matdbina(matarrayindex)
             DRV=matdbdrv(matarrayindex)
             write(TITL,'(a)') 'placeholder'
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
+
+C Make up NAM as combination of matnam and matdoc.
+            lnam=lnblnk(matname(matarrayindex))
+            lfordoc = 72 - (lnam +4)    ! space left for doc
+            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
+     &        matdoc(matarrayindex)(1:lfordoc)
+C            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
         else
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
@@ -506,23 +514,26 @@ C Reporting.
         IF(ITRC.GT.1)THEN
           if(LAYERS(IFOC).eq.1)then 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:30)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             WRITE(OUTSTR,25)' Ext ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:30)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             WRITE(OUTSTR,25)' Int ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:30)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
           else 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:30)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
           endif
   24      FORMAT(I5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
   25      FORMAT(A5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(ITRC.EQ.1)THEN
+
+C Compact report has more room for material description.
           WRITE(OUTSTR,29)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &      PNAM(IL)(1:30)
+     &      PNAM(IL)(1:lnblnk(PNAM(IL)))
+C     &      PNAM(IL)(1:30)
   29      FORMAT(I5,I5,F8.1,1X,a)
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
@@ -849,6 +860,8 @@ C Arrays of material properties.
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
+      integer lnam    ! length of material name
+      integer lfordoc ! length available for material documentation
       logical closemat
 
       DIMENSION PNAM(ME)
@@ -901,13 +914,18 @@ C of DRAIR.
                 A=matdbina(matarrayindex)
                 DRV=matdbdrv(matarrayindex)
                 write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
+
+C Make up NAM as combination of matnam and matdoc.
+                lnam=lnblnk(matname(matarrayindex))
+                lfordoc = 72 - (lnam +4)    ! space left for doc
+                write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
+     &            matdoc(matarrayindex)(1:lfordoc)
               endif
             else
               CALL ERPCDB(IFMAT,IPR(I,IL),ITRU,IER,DBCON,DBDEN,
      &          DBSHT,E,A,DRV,TITL,NAM)
             endif
-            PNAM(IL)=NAM
+            write(PNAM(IL),'(a)') NAM(1:lnblnk(NAM))
           ENDIF
   116   CONTINUE
 
