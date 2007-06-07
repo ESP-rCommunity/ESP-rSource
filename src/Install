@@ -1266,7 +1266,6 @@ fi
 
 
 
-echo " "
 echo " Installing ESP-r system.  This may take some time."
 
 #--------------------------------------------------------------
@@ -1299,10 +1298,13 @@ echo " Installing ESP-r system.  This may take some time."
  svn_info_command="svn info"
  svn_status_command="svn status"
  
+ svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
  svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
  notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
 
- if [ "$svnnotfound" != "" ] || [ "$notworkingcopy" != "" ]; then
+ if [ "$svnnotfound" != "" ]    || 
+    [ "$notworkingcopy" != "" ] ||
+    [ "$svnrevision"    =  "" ];   then
    versioned_repository="no";
  else
    versioned_repository="yes"
