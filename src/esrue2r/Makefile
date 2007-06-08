@@ -8,7 +8,7 @@ PROG = e2r$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = e2r.o arrow.o c2fdum.o common3dv.o cread3dv.o e2rfile.o e2rform.o e2rvp.o \
+OBJECTS = e2r.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o e2rfile.o e2rform.o e2rvp.o \
 	  e3dviews.o ecasctl.o econstr.o edatabase.o egeometry.o egtgeom.o \
 	  eroper.o esru_misc.o grid.o inside.o msurf.o plelev.o radcfg.o radcmds.o \
 	  radctl.o rifform.o scsys.o sort.o startup.o
@@ -19,6 +19,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -73,6 +76,6 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F common3dv.F cread3dv.F e3dviews.F ecasctl.F econstr.F edatabase.F \
+	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F e3dviews.F ecasctl.F econstr.F edatabase.F \
 	egeometry.F egtgeom.F eroper.F esru_misc.F inside.F plelev.F scsys.F sort.F \
         startup.F 
