@@ -98,7 +98,7 @@ strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
 install:
-	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir)/$(PROG2); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
