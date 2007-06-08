@@ -3227,7 +3227,7 @@ C Not one of the legal menu choices.
 
 C ********* asksnode 
 C Subroutine asksnode provides a selection list for the layers
-C and nodes withing a construction. Passed zone index (icomp)
+C and nodes within a construction. Passed zone index (icomp)
 C and surface index (IS) and returns layer index (ilay) and
 C optionally the node index (inode). It assumes that relevant
 C databases have been opened.
@@ -3245,12 +3245,26 @@ C databases have been opened.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
 
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32,DESC*48,NAM*72,PNAM*20,H*72,outs*124
       CHARACTER SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      logical close  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
       imatch=0
@@ -3265,6 +3279,7 @@ C Check name of surface with construction name in MLC common.
          ier=1
          return
       endif
+      call eclose(matver,1.1,0.001,close)  ! check materials version.
         
 C Write menu displaying a list of layer names
       header=3
@@ -3275,17 +3290,26 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C Pick up the material name of each layer by reading data from
-C materials db.
+C materials db or from the.
         iel=IPR(imatch,j)
-        IF(iel.EQ.0)THEN
-          PNAM(j)='Air gap'
-        ELSE
-          NAM='  '
-          IR = iel + 1
-          READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
-     &       DRV,NAM
-          PNAM(j)=NAM(1:20)
-        ENDIF 
+        if(close)then
+          legmat=iel   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+            PNAM(j)=NAM(1:20)
+          endif
+        else
+          IF(iel.EQ.0)THEN
+            PNAM(j)='Air gap'
+          ELSE
+            NAM='  '
+            IR = iel + 1
+            READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,
+     &        A,DRV,NAM
+            PNAM(j)=NAM(1:20)
+          ENDIF
+        endif 
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
