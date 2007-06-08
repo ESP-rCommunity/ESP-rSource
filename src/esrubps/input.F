@@ -251,6 +251,13 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
@@ -259,6 +266,7 @@ C For reading in of bi-directional data.
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
+      DIMENSION ICLN(30)  ! for checking material db categories
 
 C HVAC AIM-2
       character hvacfile*72,LAIM2*72
@@ -266,7 +274,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll
+      logical dll,close
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -522,7 +530,7 @@ C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
       IF(.NOT.MATDBOK)THEN
   55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
+        if(ier.ne.0)then
           if(dll)then
             dllsubr='mzinpt'
             dllmesg='Problem opening materials database.'
@@ -533,8 +541,8 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
             ltmp=LFMAT
-  56        CALL EASKS(ltmp,' Primitive material db? ',
-     &        ' ',72,DFCON,'primitive constr db file name',IER,2)
+  56        CALL EASKS(ltmp,' Material database? ',
+     &        ' ',72,DFCON,'materials db file name',IER,2)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
               LFMAT=ltmp
               goto 55
@@ -542,14 +550,50 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
               goto 56
             endif
           endif
+        else
+
+C Also check to see if the file has correct info (using pattern of
+C code from esruprj/eddb.F subroutine opendb.
+          IREC=601
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1006)NCLASS,
+     &      (ICLN(I),I=1,30)
+          if(NCLASS.LE.0)then
+            goto 1006   ! no classifications so try alternatives
+          else
+            matver = 0.0
+            MATDBOK=.TRUE.
+            goto 139  !  a binary file found so carry on.
+          endif
+ 1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          if(ier.eq.-2)then
+            ier=0
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ier.ne.0)then
+              if(dll)then
+                dllsubr='mzinpt'
+                dllmesg='Problem opening materials database.'
+                ier=2
+                return
+              else
+                call usrmsg('No readable materials database was not',
+     &            'found or file was corrupt','W')
+              endif
+            else
+              call eclose(matver,1.1,0.001,close)
+              if(close) MATDBOK=.TRUE.
+            endif
+          elseif(ier.eq.0)then
+            call eclose(matver,1.1,0.001,close)
+            if(close) MATDBOK=.TRUE.
+          endif
         endif
-        MATDBOK=.TRUE.
       ENDIF
 
 C Read in the multilayer construction database so that it's
 C data may be accessed by control and reporting facilities.
 C Use file unit IAPROB to read db.
-      IFMUL=IAPROB
+ 139  IFMUL=IAPROB
       CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(.NOT.XST)then
