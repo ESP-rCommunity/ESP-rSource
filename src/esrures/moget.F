@@ -2356,6 +2356,12 @@ C Output redirect.
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
         endif
+
+C If user request cancel then return after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          goto 1
+        endif
       elseif(INO.EQ.24)then
 
 C Data presentation format (actual or rate of change).

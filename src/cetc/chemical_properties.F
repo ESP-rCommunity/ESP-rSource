@@ -32,9 +32,6 @@ C to characterize various ideal-gasses.
 C
 C Functions:
 C
-C   - fCount_carbon   |
-C   - fCount_hydrogen | -> Determine # of mols of C/H/O in a compound
-C   - fCount_Oxygen   |
 C   - bflamable         -> report if a compound can be oxidized
 C   - fEval_Mixture_MM  -> Determine the molar mass of a mixture
 C   - fEval_Compound_MM -> Determine molar mass of a compound
@@ -57,216 +54,6 @@ C  Thermodynamics", John Wiley & Sons, 1994.
 C
 C======================================================================
 
-C------------------ fCount_carbon -------------------------------------
-C
-C This is a very simple function that returns the number of
-C carbon mols in a compound
-C
-C inputs:
-C  - index of compound (checked against named constants in
-C    chemical_properties.h)
-C
-C Outputs:
-C  - number of carbon mols.
-C
-C----------------------------------------------------------------------
-      real function fCount_carbon ( iCompound )
-      implicit none
-#include "chemical_properties.h"
-
-      integer iCompound
-
-      if ( iCompound .eq. iHydrogen ) then
-         fCount_carbon = 0.0
-      elseif ( iCompound .eq. iWater_V .or.
-     &         iCompound .eq. iWater_l ) then
-         fCount_carbon = 0.0
-      elseif ( iCompound .eq. iOxygen ) then
-         fCount_carbon = 0.0
-      elseif ( iCompound .eq. iMethane ) then
-         fCount_carbon = 1.0
-      elseif ( iCompound .eq. iEthane ) then
-         fCount_carbon = 2.0
-      elseif ( iCompound .eq. iPropane ) then
-         fCount_carbon = 3.0
-      elseif ( iCompound .eq. iButane ) then
-         fCount_carbon = 4.0
-      elseif ( iCompound .eq. iPentane ) then
-         fCount_carbon = 5.0
-      elseif ( iCompound .eq. iHexane ) then
-         fCount_carbon = 6.0
-      elseif ( iCompound .eq. iC_Monoxide .or.
-     &         iCompound .eq. iC_Dioxide ) then
-         fCount_carbon = 1.0
-      endif
-      return
-      end
-C------------------ fCount_hydrogen -----------------------------------
-C
-C This is a very simple function that returns the number of
-C hydrogen mols in a compound
-C
-C inputs:
-C  - index of compound (checked against named constants in
-C    chemical_properties.h)
-C
-C Outputs:
-C  - Number of mols of hydrogen in compound
-C----------------------------------------------------------------------
-      real function fCount_hydrogen ( iCompound )
-      implicit none
-#include "chemical_properties.h"
-
-      integer iCompound
-
-      if ( iCompound .eq. iHydrogen ) then
-         fCount_hydrogen = 2.0
-      elseif ( iCompound .eq. iWater_V .or.
-     &         iCompound .eq. iWater_l ) then
-         fCount_hydrogen = 2.0
-      elseif ( iCompound .eq. iOxygen ) then
-         fCount_hydrogen = 0.0
-      elseif ( iCompound .eq. iMethane ) then
-         fCount_hydrogen = 4.0
-      elseif ( iCompound .eq. iEthane ) then
-         fCount_hydrogen = 6.0
-      elseif ( iCompound .eq. iPropane ) then
-         fCount_hydrogen = 8.0
-      elseif ( iCompound .eq. iButane ) then
-         fCount_hydrogen = 10.0
-      elseif ( iCompound .eq. iPentane ) then
-         fCount_hydrogen = 12.0
-      elseif ( iCompound .eq. iHexane ) then
-         fCount_hydrogen = 14.0
-      elseif ( iCompound .eq. iC_Monoxide .or.
-     &         iCompound .eq. iC_Dioxide ) then
-         fCount_hydrogen = 0.0
-      endif
-      return
-      end
-
-C------------------ fCount_Oxygen -------------------------------------
-C
-C This is a very simple function that returns the number of
-C oxygen mols in a compound
-C
-C inputs:
-C  - index of compound (checked against named constants in
-C    chemical_properties.h)
-C
-C Outputs:
-C  - Number of mols of oxygen in compound
-C
-C----------------------------------------------------------------------
-      real function fCount_oxygen ( iCompound )
-      implicit none
-#include "chemical_properties.h"
-
-      integer iCompound
-
-      if ( iCompound .eq. iHydrogen ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iWater_V .or.
-     &         iCompound .eq. iWater_l ) then
-         fCount_oxygen = 1.0
-      elseif ( iCompound .eq. iOxygen ) then
-         fCount_oxygen = 2.0
-      elseif ( iCompound .eq. iMethane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iEthane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iPropane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iButane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iPentane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iHexane ) then
-         fCount_oxygen = 0.0
-      elseif ( iCompound .eq. iC_Monoxide )then
-         fCount_Oxygen = 1.0
-      elseif ( iCompound .eq. iC_Dioxide ) then
-         fCount_oxygen = 2.0
-      endif
-
-      return
-      end
-C------------------ fCount_Nitrogen -------------------------------------
-C
-C This is a very simple function that returns the number of
-C nitrogen mols in a compound
-C
-C inputs:
-C  - index of compound (checked against named constants in
-C    chemical_properties.h)
-C
-C Outputs:
-C  - Number of mols of nitrogen in compound
-C
-C----------------------------------------------------------------------
-      real function fCount_nitrogen( iCompound )
-      implicit none
-#include "chemical_properties.h"
-
-      integer iCompound
-
-      if ( iCompound .eq. iNitrogen ) then
-         fCount_nitrogen = 2.0
-      else
-         fCount_nitrogen = 0.0
-      endif
-
-      return
-      end
-C------------------ fCompound_EF --------------------------------------
-C
-C This is a very simple function that returns the enthalpy of
-C formation for a given compound
-C
-C inputs:
-C  - index of compound (checked against named constants in
-C    chemical_properties.h)
-C
-C Outputs:
-C  - Compound's enthalpy of formation (J/kmol)
-C
-C----------------------------------------------------------------------
-      real function fCompound_EF ( iCompound )
-      implicit none
-#include "chemical_properties.h"
-
-      integer iCompound
-
-      if ( iCompound .eq. iHydrogen ) then
-         fCompound_EF = fEF_Hydrogen
-      elseif ( iCompound .eq. iWater_V ) then
-         fCompound_EF = fEF_Water_v
-      elseif ( iCompound .eq. iWater_l ) then
-         fCompound_EF = fEF_Water_l
-      elseif ( iCompound .eq. iOxygen ) then
-         fCompound_EF = fEF_Oxygen
-      elseif ( iCompound .eq. iMethane ) then
-         fCompound_EF = fEF_Methane
-      elseif ( iCompound .eq. iEthane ) then
-         fCompound_EF = fEF_Ethane
-      elseif ( iCompound .eq. iPropane ) then
-         fCompound_EF = fEF_Propane
-      elseif ( iCompound .eq. iButane ) then
-         fCompound_EF = fEF_Butane
-      elseif ( iCompound .eq. iPentane ) then
-         fCompound_EF = fEF_Pentane
-      elseif ( iCompound .eq. iHexane ) then
-         fCompound_EF = fEF_Hexane
-      elseif ( iCompound .eq. iC_Monoxide )then
-         fCompound_EF = fEF_C_Monoxide
-      elseif ( iCompound .eq. iC_Dioxide ) then
-         fCompound_EF = fEF_C_Dioxide
-      elseif ( iCompound .eq. iNitrogen ) then
-         fCompound_EF = fEF_Nitrogen
-      endif
-
-      return
-      end
 
 C------------------ fCompound_R ---------------------------------------
 C
@@ -343,17 +130,7 @@ C----------------------------------------------------------------------
 
       integer iCompound
 
-      if ( iCompound .eq. iWater_V   .or.
-     &     iCompound .eq. iWater_l   .or.
-     &     iCompound .eq. iOxygen    .or.
-     &     iCompound .eq. iC_Dioxide .or.
-     &     iCompound .eq. iNitrogen       ) then
-
-         bFlammable = .false.
-
-      else
-         bFlammable = .true.
-      endif
+      bFlammable = bIs_Oxidizable ( iCompound )
 
       return
       end
@@ -376,34 +153,47 @@ C----------------------------------------------------------------------
 
       integer iCompound
 
+C.....Table of compound molar masses. Populated on first call      
       real fMolar_Mass_Table(iCompound_count)
       save fMolar_Mass_Table
 
-      integer ii
+C.....Counters      
+      integer ii, jj
 
+C.....Element index (also the element's atomic number)
+      integer iElement_index      
+      
       logical bMolarMass
       save bMolarMass
       data bMolarMass / .false. /
 
-C.....References
-      real fCount_carbon    ! count # of mols of C in compound
-      real fCount_hydrogen  ! count # of mols of H in compound
-      real fCount_oxygen    ! count # of mols of O in compound
-      real fCount_nitrogen  ! count # of mols of N in compound
 
-C.....Check if masses have been initialized (see common
-C.....'init_Chem_prop' in chemical_properties.h)
+C.....Check if masses have been initialized
       if ( .not. bMolarMass ) then
 C----------------------------------------------------------------------
 C     Molar masses (kg/kmol).
 C----------------------------------------------------------------------
          do ii = 1, iCompound_count
-           fMolar_mass_Table ( ii )  =   fCount_carbon (ii)  * fMM_C
-     &                                 + fCount_hydrogen(ii) * fMM_H
-     &                                 + fCount_Oxygen(ii)   * fMM_O
-     &                                 + fCount_Nitrogen(ii) * fMM_N
+C...........Zero entry in table 
+            fMolar_Mass_Table(ii) = 0.
+
+C...........Loop through active elements
+            do jj=1, iActive_El_count
+
+C..............Get indicies of active elements
+               iElement_index = iActive_elements(jj)
+
+C..............Increment molar mass table with compound               
+               fMolar_Mass_Table(ii) = fMolar_Mass_Table(ii)
+     &           + float( iCompound_Composition (ii,iElement_index) )
+     &                * fElement_Molar_mass ( iElement_index )
+
+            enddo
+
          enddo
+
          bMolarMass = .true.
+      
       endif
 
 C.....Return requested molar mass
@@ -642,7 +432,7 @@ C.....On first call, populate LHV_table
 C........Loop through compounds
          do ii = 1, iCompound_count
 C...........If compound cannot be oxidized, report LHV as zero
-            if ( bFlammable ( ii ) ) then
+            if ( bIs_Oxidizable (ii) ) then
 C----------------------------------------------------------------------
 C              Determine reaction stoicheometry:
 C                 CxHyOz + (x + y/4 - z/2)O2 = x(CO2) + y/2(H2O)
@@ -650,27 +440,31 @@ C                                 A            B         C
 C----------------------------------------------------------------------
 
 C..............Carbon dioxide produced (CO2)
-               fB = fCount_carbon( ii )
-
+               fB = float(iCompound_Composition (ii, iElement_Carbon  ))
+               
 C..............water produced in reaction (H2O)
-               fC  = fCount_hydrogen (ii) / 2.0
-
+               fC  = float(iCompound_Composition(ii, iElement_Hydrogen))
+     &                 / 2.0
+               
 C..............oxygen required (O2)
-               fA = fCount_carbon (ii) + fCount_hydrogen(ii)/ 4.0
-     &                - fCount_Oxygen (ii) / 2.0
+               fA =   float(iCompound_Composition(ii,iElement_Carbon  ))
+     &              + float(iCompound_Composition(ii,iElement_Hydrogen))
+     &                   / 4.
+     &              - float(iCompound_Composition(ii,iElement_Oxygen  ))
+     &                   / 2.
 
 C----------------------------------------------------------------------
 C              Determine enthalpy of combustion @ 25oC, 100kPa
 C              LHV = ( product enthalpy of formation -
 C                             reactant enthalpy of formation )
 C----------------------------------------------------------------------
-               fLHV_table (ii) = fB  * fCompound_EF ( iC_Dioxide )
-     &                         + fC  * fCompound_EF ( iWater_V   )
-     &                         - 1.0 * fCompound_EF ( ii         )
+               fLHV_table (ii) = fB  * fEnthalpy_Formation (iC_Dioxide)
+     &                         + fC  * fEnthalpy_Formation (iWater_V  )
+     &                         - 1.0 * fEnthalpy_Formation (ii        )
 
-               fHHV_table (ii) = fB  * fCompound_EF ( iC_Dioxide )
-     &                         + fC  * fCompound_EF ( iWater_l   )
-     &                         - 1.0 * fCompound_EF ( ii         )
+               fHHV_table (ii) = fB  * fEnthalpy_Formation (iC_Dioxide)
+     &                         + fC  * fEnthalpy_Formation (iWater_l  )
+     &                         - 1.0 * fEnthalpy_Formation (ii        )
 
             else
                fLHV_table (ii) = 0.0
@@ -899,6 +693,57 @@ C----------------------------------------------------------------------
       return
       end
       
+C--------------------- fEval_element_mols_in_mixture ------------------
+C
+C This function counts the number of mols of an element occuring
+C in all compounds in a mixture, and reports the result as a
+C dimensionless ratio: # mols elemment / mol mixture
+C
+C Inputs:
+C  - Array containing fraction of each compound in the mixture
+C    * on a per-mol basis * (fComposition)
+C  - index of element of interest (iElement). Use named constants
+C    defined in chemical_properties.h
+C
+C Outputs:
+C  - real value describing ratio of element mols to mol of mixture.
+C
+C Assumptions:
+C   - composition array topology defined using the compound
+C     names from chemical_properties.h
+C
+C----------------------------------------------------------------------
+      real function fEval_element_mols_in_mixture ( fComposition,
+     &                                              iElement )
+      implicit none
+#include "chemical_properties.h"
+
+      real fComposition ( iCompound_count )
+      integer iElement
+
+      integer ii
+
+      real fMol_count
+
+      fMol_count = 0.0
+      do ii = 1, iCompound_count
+C----------------------------------------------------------------------
+C
+C       # of mols = ( # mols of compound / mol mixture )
+C                        * ( # mols of element / mol compound )
+C
+C----------------------------------------------------------------------
+        fMol_count = fMol_count + fComposition ( ii )
+     &     * float( iCompound_Composition( ii, iElement ) )
+      enddo
+      
+      fEval_element_mols_in_mixture = fMol_count
+      
+      return
+      end
+
+
+
 C------------------ bFlammable_Mixture----------------------------------
 C
 C This function returns 'true' if a mixture can be oxidized

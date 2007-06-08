@@ -664,6 +664,9 @@ C Output redirect to graphics, tabular listing or a text report.
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
         endif
+
+C If user request cancel reset ixopen to zero.
+        if(ier.eq.-3) ixopen=0
         goto 1
       elseif(INO.EQ.22)then
 

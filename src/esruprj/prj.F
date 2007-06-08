@@ -518,7 +518,10 @@ C << for now assume that the file passed is not an exemplar >>
           confirm=.false.
           ckpath=.true.
           call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-          if(ier.eq.-1)goto 3
+          if(ier.eq.-3)then
+            ier=0
+            goto 3  ! cancel detected, redisplay menu
+          endif
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
@@ -531,7 +534,10 @@ C << for now assume that the file passed is not an exemplar >>
           confirm=.false.
           ckpath=.true.
           call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
-          if(ier.eq.-1)goto 3
+          if(ier.eq.-3)then
+            ier=0
+            goto 3  ! cancel detected, redisplay menu
+          endif
 
           call edisp(iuout,' Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
@@ -763,12 +769,13 @@ C Present opening menu.
       IF(INO.EQ.MITEM)THEN
         if(changedit)then
           h(1)='If you exit without saving, recent changes could be'
-          h(2)='lost. If you select continue then you will be returned'
+          h(2)='lost. If you select cancel then you will be returned'
           h(3)='to the interface.'
           h(4)=' '
           h(5)='If you selected this option in error click continue. '
           CALL EASKABC('There are unsaved changes in the model.',
-     &      'options:','exit w/o saving','save & exit','continue',IW,5)
+     &      'options:','exit w/o saving','save & exit',
+     &      'continue using project manager',IW,5)
           if(iw.eq.3)then
             goto 3
           elseif(iw.eq.2)then
@@ -845,9 +852,9 @@ C Open an exemplar or existing model.
         h(1)='A list of example (exemplar) models is available or'
         h(2)='you can specify another existing model.'
         h(3)=' '
-        h(4)='If you selected this option in error click continue. '
+        h(4)='If you selected this option in error click cancel. '
         CALL EASKABC(' Model opening options:','  ',
-     &    'open an exemplar','open another model','continue',IW,4)
+     &    'open an exemplar','open another model','cancel',IW,4)
         if(iw.eq.3)then
           continue
         elseif(iw.eq.1)then
@@ -938,6 +945,11 @@ C used and there is no need to check the path.
                   ckpath=.false.
                 endif
                 call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+                if(ier.eq.-3)then
+                  ier=0
+                  goto 3  ! cancel detected, redisplay menu
+                endif
+
                 call tstamp('>','PRJ: continuing with exemplar')
               endif
             endif
@@ -955,6 +967,10 @@ C 'UNKNOWN' then ask for actual name to create or read.
             confirm=.true.
             ckpath=.true.
             call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            if(ier.eq.-3)then
+              ier=0
+              goto 3  ! cancel detected, redisplay menu
+            endif
           else
 
 C Something was passed in via the command line so offer choice.
@@ -964,11 +980,11 @@ C Something was passed in via the command line so offer choice.
             H(4)='passed to the Project Manager as a command line'
             H(5)='argument.'
             H(6)=' '
-            H(7)='If you selected this option in error click continue. '
+            H(7)='If you selected this option in error click cancel. '
             write(outs,'(a,a)') ' The command line included: ',
      &      LCMDFL(1:lnblnk(LCMDFL))
             CALL EASKABC(outs,' ','use it as the model',
-     &        'specify another','continue',IW,7)
+     &        'specify another','cancel',IW,7)
 
 C Find the path and local file name.
             if(IW.eq.1)then
@@ -986,11 +1002,19 @@ C Find the path and local file name.
               confirm=.false.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              if(ier.eq.-3)then
+                ier=0
+                goto 3  ! cancel detected, redisplay menu
+              endif
             elseif(IW.eq.2)then
               itisanexemplar=.false.
               confirm=.true.
               ckpath=.true.
               call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+              if(ier.eq.-3)then
+                ier=0
+                goto 3  ! cancel detected, redisplay menu
+              endif
             elseif(IW.eq.3)then
               INO=-2
               GOTO 3
@@ -1459,9 +1483,9 @@ C Invoke simulator.
           h(2)='which can be overwritten. The silent running mode '
           h(3)='uses the parameters to run in automatic mode. '
           h(4)=' '
-          h(5)='If you selected this option in error click continue.'
+          h(5)='If you selected this option in error click cancel.'
           CALL EASKABC('Simulation interaction options: (see help)',' ',
-     &      'run interactively','silent running mode','continue',
+     &      'run interactively','silent running mode','cancel',
      &      isauto,5)
           if(isauto.eq.1)then
             aut=' interactive'
@@ -1572,9 +1596,9 @@ C an offset from prj start position.
         H(12)='For models where this assumption is inappropriate'
         H(13)='the `Integrated` simulation option should be used.'
         H(14)=' '
-        H(15)='If you selected this option in error click continue.'
+        H(15)='If you selected this option in error click cancel.'
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
-     &      'Computational Fluid Dynamics','continue',IW,15)
+     &      'Computational Fluid Dynamics','cancel',IW,15)
         IF(IW.EQ.1)THEN
 
 C Execute mfs.
@@ -2230,19 +2254,19 @@ C IPV for the actual number of simulations required.
       h(28)=' *difference in heating, therms and cooling by area and'
       h(29)='  for the whole building.'
       h(30)=' '
-      h(31)='If you selected this in error click on continue. '
+      h(31)='If you selected this in error click cancel.'
       CALL EASKABCD('IPV options: (see help)',' ',
      &  'run required simulations','extract reports',
-     &  'compare reports','continue',irs,31)
+     &  'compare reports','cancel',irs,31)
       if(irs.eq.1)then
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
         h(4)=' '
-        h(5)='If you selected this option in error click continue.'
+        h(5)='If you selected this option in error click cancel.'
         CALL EASKABC('Simulation interaction options: (see help)',
      &    ' ','run interactively','silent running mode',
-     &    'continue',isauto,5)
+     &    'cancel',isauto,5)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
         call tchild(ICPMOD)
@@ -2315,9 +2339,9 @@ C an offset from prj start position.
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
         h(4)=' '
-        h(5)='If you selected this option in error click continue.'
+        h(5)='If you selected this option in error click cancel.'
         CALL EASKABC('IPV extraction options: (see help)',' ',
-     &    'run interactively','silent running mode','continue',
+     &    'run interactively','silent running mode','cancel',
      &    isauto,5)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
@@ -2335,7 +2359,8 @@ C an offset from prj start position.
         h(2)='libraries for each simulation are available. '
         h(3)='The all option does each in sequence. '
         call easkabcd('IPV recovery options:',' ','intermediate',
-     &    'scan intermediate ->annual','all','continue',IRT,3)
+     &    'scan intermediate ->annual','all','cancel',IRT,3)
+        if(IRT.eq.4) goto 39  ! redisplay menu.
 
 C Extract only for the number of assessments required. Note: the strings
 C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
@@ -2492,9 +2517,11 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        H(8) ='And if you decide not to do the comparison that is'
+        H(9) ='ok as well.'
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'cancel comparison',' ',IWM,9)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -2505,6 +2532,8 @@ C Toggle delimeter.
           delim = 'C'
         elseif(iwm.eq.5)then
           delim = 'X'
+        elseif(iwm.eq.6)then
+          goto 39  ! redisplay menu.
         endif
 
  41     llt=lnblnk(basefile)
@@ -2529,6 +2558,12 @@ C Toggle delimeter.
           CALL EASKF(basefile,'IPV base case report file ?',
      &      ' ',96,'xxx.rep','IPV base report',IER,2)
         endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 39  ! redisplay menu.
+        endif
+
         lnf=lnblnk(basefile)
         inquire (file=basefile(1:lnf),exist=xst)
         if(xst)then
@@ -2567,6 +2602,12 @@ C Ask the name of the design variant file.
           CALL EASKF(variantfile,'IPV variant report file ?',
      &      ' ',96,'xxx.rep','IPV variant report',IER,2)
         endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 39  ! redisplay menu.
+        endif
+
         lnf=lnblnk(variantfile)
         inquire (file=variantfile(1:lnf),exist=xst)
         if(xst)then
@@ -2619,9 +2660,6 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(1),
-C     &      anu_tot_bld(1)
-C          call eddisp(iuout,outs)
           call edisp(iuout,'For the variant model:')
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
@@ -2634,9 +2672,6 @@ C          call eddisp(iuout,outs)
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F7.2,F10.1)') 'Total ',anu_tot_m2(2),
-C     &      anu_tot_bld(2)
-C          call eddisp(iuout,outs)
           call edisp(iuout,' ')
           write(outs,'(4a)')'Diff between ',
      &      basefile(1:lnblnk(basefile)),
@@ -2664,7 +2699,6 @@ C          call eddisp(iuout,outs)
           anu_ht_thrm_bld(3)=anu_ht_thrm_bld(1)-anu_ht_thrm_bld(2)
           anu_cl_m2(3)=anu_cl_m2(1)-anu_cl_m2(2)
           anu_cl_bld(3)=anu_cl_bld(1)-anu_cl_bld(2)
-C          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
           anu_tot_bld(3)=anu_tot_bld(1)-anu_tot_bld(2)
           anu_ht_cap_m2(3)=anu_ht_cap_m2(1)-anu_ht_cap_m2(2)
           anu_ht_cap_bld(3)=anu_ht_cap_bld(1)-anu_ht_cap_bld(2)
@@ -2681,9 +2715,6 @@ C          anu_tot_m2(3)=anu_tot_m2(1)-anu_tot_m2(2)
      &      anu_cl_m2(3),
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
           call eddisp(iuout,outs)
-C          write(outs,'(a,F8.2,F10.0)') 'Total ',anu_tot_m2(3),
-C     &      anu_tot_bld(3)
-C          call eddisp(iuout,outs)
 
 C If comma separated delimeter then also write out a single line
 C summary (Patch for IEA_Annex 46).
@@ -2696,7 +2727,7 @@ C summary (Patch for IEA_Annex 46).
             call eddisp(iuout,outs)
           endif
 
-          CALL EASKAB('comparison options:',' ','exit',
+          CALL EASKAB('comparison options:',' ','back to menu',
      &      'do another report',IW,1)
           if(iw.eq.1)then
             return
@@ -2759,18 +2790,6 @@ C                write(6,*) outstr(1:lnblnk(outstr))
      &              'cool dmd',IER)
                 endif
 
-C Get the total data line, 2nd is the value.
-C                CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
-C                k=5
-C                CALL EGETW(OUTSTR,K,WORD1,'W','total',IFLAG)
-C                write(6,*) outstr(1:lnblnk(outstr))
-C                if(im2)then
-C                  CALL EGETWR(OUTSTR,K,anu_tot_m2(ipass),0.,0.,'-',
-C     &              'total m2',IER)
-C                else
-C                  CALL EGETWR(OUTSTR,K,anu_tot_bld(ipass),0.,0.,'-',
-C     &              'total bld',IER)
-C                endif
                 goto 143
               endif
             elseif(id1.eq.74)then
@@ -4348,9 +4367,9 @@ C View factors and radiant sensors
           h(1)='Area weighted calculations are the default treatment.'
           h(2)='Ray tracing is more accurate and time consuming.'
           h(3)=' '
-          h(4)='If you selected this option in error click continue. '
+          h(4)='If you selected this option in error click cancel. '
           CALL EASKABC('Viewfactor options:',' ',
-     &      'area weighted (quick)','ray traced','continue',IW,4)
+     &      'area weighted (quick)','ray traced','cancel',IW,4)
 
 C Updating viewfactors can require configuration file to be updated
 C before calling mrt.
@@ -4466,10 +4485,10 @@ C pressure distributions
         H(10)= 'copies the database, renames it and optionally allows'
         H(11)= 'you to edit it.'
         H(12)=' '
-        H(13)='If you selected this option in error click continue. '
+        H(13)='If you selected this option in error click cancel. '
         msg1='updating model for pressure db changes...'
         CALL EASKABC('Change to be made to ... (see help) ',
-     &  ' ','building parameters','database','continue',IW,13)
+     &  ' ','building parameters','database','cancel',IW,13)
         IF(IW.EQ.3)THEN
           RETURN
         ELSEIF(IW.EQ.2)THEN

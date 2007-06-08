@@ -14,3 +14,16 @@ These additional tests can be exercised by using 'tester.pl's
 '--file' option, e.g.
 
  ./tester.pl --path ../additional_tests reference_bps test_bps
+
+
+Additional Tests currently available:
+
+  - A42_combustion_cogen_comp_tests: Comparative testing  
+    suite comprising 44 test cases, which were  developed 
+    to support validation of the IEA/ECBCS Annex 42 
+    combustion cogeneration model
+    
+  - A42_fuel_cell_comp_tests: Comparative testing
+    suite comprising 44 test cases, which were  developed
+    to support validation of the IEA/ECBCS Annex 42
+    fuel cell model.

@@ -1608,6 +1608,12 @@ C Each call is a toggle.
             CALL EASKF(xfile,' Export file name? ',
      &        ' ',96,'export.txt','binary events db',IER,2)
           endif
+
+C If user request cancel then return after resetting ixopen to zero.
+          if(ier.eq.-3)then
+            ixopen=0
+            return
+          endif
         endif
         write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),
      &                       ' for export.'

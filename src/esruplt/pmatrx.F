@@ -1321,12 +1321,18 @@ C 1-node hydrogen compressor / decompressor
          ELSE IF ( ITYPE .EQ. 101 ) THEN
 C 1-node hydrogen storage model
             CALL  H2_storage_model( IPCOMP, OUT, ISTATS )
-         ELSE IF ( ITYPE .EQ. 102 ) THEN
-C 2-node dynamic  model of a Stirling-cycle CHP unit (Stirling_CHP.F)
-            CALL  stirling_coeff_gen ( IPCOMP, OUT, ISTATS )
-         ELSE IF ( ITYPE .EQ. 103 ) THEN
-C Placeholder for unsupported model
-            stop 'Model type 103 is not supported!'
+         ELSE IF ( ITYPE .EQ. 102 .OR. ITYPE .EQ. 103 ) THEN
+C IEA/ECBCS Annex 42 model for combustion-based CHP devices.
+
+C Note: ITYPE = 103 describes the Annex 42 combined Stirling
+C           engine and internal combustion engine CHP model,
+C       ITYPE = 102 describes an earlier model developed
+C           within Annex 42 for exclusive modelling of
+C           Stirling engines 
+            
+            CALL  A42_combustion_chp_coeff_gen
+     &                ( IPCOMP, ITYPE, OUT, ISTATS )            
+
          ELSE IF ( ITYPE .EQ. 104 ) THEN
 C 3-node electrolyser model
             CALL H2_electrolyser_coeff_gen( IPCOMP, OUT, ISTATS )
