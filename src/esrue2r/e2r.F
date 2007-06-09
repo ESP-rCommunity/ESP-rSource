@@ -896,13 +896,13 @@ C this to 24 words wide.
       CALL ERPFREE(IFMAT,ISTAT)
       call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
-        write(outs,'(a,a,a)') ' No primitive constructions db ',
+        write(outs,'(a,a,a)') ' No materials database ',
      &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
         MATDBOK=.FALSE.
       else
 
-C Also check to see if the file has correct info in 
+C Also check to see if the file has correct info. 
         IREC=601
         READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
      &    (ICLN(I),I=1,30)
@@ -919,7 +919,7 @@ C Also check to see if the file has correct info in
           ier=0
           call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
-            call usrmsg('No readable materials database was not found',
+            call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
           else
