@@ -41,9 +41,7 @@ rm -f *.cfg.*_res.data.par
 
 ./SIMULATE.shd bld_basic_shd.cfg $VERSION
 ./ANALYSE_4 bld_basic_shd.cfg.shd4_res $VERSION
-./ANALYSE_4 bld_basic_shd.cfg.shd42_res $VERSION
 ./ANALYSE_4 bld_basic_shd.cfg.shd4s_res $VERSION
-./ANALYSE_4 bld_basic_shd.cfg.shd42s_res $VERSION
 
 ./SIMULATE.infil  office_operations.cfg $VERSION
 ./ANALYSE_inf office_operations.cfg.infl_res $VERSION
