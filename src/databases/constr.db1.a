@@ -1,6 +1,7 @@
 # primitives construction db defined in constr.db1.a
    15    #  number of classifications
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     1    5   Brick
     1   Paviour brick
         0.960, 2000.000,  840.000,  0.930,  0.700,     12.000
@@ -10,19 +11,20 @@
         0.620, 1800.000,  840.000,  0.930,  0.700,     29.000
     4   Outer leaf brick
         0.960, 2000.000,  650.000,  0.900,  0.930,     25.000
-    5   Vermiculite insulating
+    5   Vermiculite insulating brick
         0.270,  700.000,  840.000,  0.900,  0.650,     12.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     2   12   Concrete
-   21   Light mix
+   21   Light mix concrete
         0.380, 1200.000,  653.000,  0.900,  0.650,      6.000
-   22   Aerated block
+   22   Aerated conc block
         0.240,  750.000, 1000.000,  0.900,  0.650,     10.000
    23   Aerated concrete
         0.160,  500.000,  840.000,  0.900,  0.650,     13.000
-   24   Refractory insulating
+   24   Refractory insulating concrete
         0.250,   10.000,  837.000,  0.900,  0.650,     12.000
-   25   Vermiculite aggregrate
+   25   Vermiculite aggregrate concrete
         0.170,  450.000,  837.000,  0.900,  0.650,     12.000
    26   No fines concrete
         0.960, 1800.000,  840.000,  0.900,  0.650,     18.000
@@ -30,15 +32,16 @@
         0.250, 1040.000,  960.000,  0.900,  0.650,      8.000
    28   Block inner (3% mc)
         0.510, 1400.000, 1000.000,  0.900,  0.650,     10.000
-   29   Foamed inner block(3%mc)
+   29   Foamed inner block (3%mc)
         0.160,  600.000, 1000.000,  0.900,  0.650,      6.000
-   30   Foamed outer block(5%mc)
+   30   Foamed outer block (5%mc)
         0.170,  600.000, 1000.000,  0.900,  0.650,      8.000
-   31   Glass reinforced
+   31   Glass reinforced concrete
         0.900, 1950.000,  840.000,  0.900,  0.650,     18.000
    32   Heavy mix concrete
         1.400, 2100.000,  653.000,  0.900,  0.650,     19.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     3    3   Metal
    41   Copper
       200.000, 8900.000,  418.000,  0.720,  0.650,  19200.000
@@ -46,13 +49,14 @@
        50.000, 7800.000,  502.000,  0.120,  0.200,  19200.000
    43   Aluminium
       210.000, 2700.000,  880.000,  0.220,  0.200,  19200.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     4   13   Wood
    61   Block (wood)
         0.160,  800.000, 2093.000,  0.900,  0.650,     11.000
-   62   Hardboard(medium)
+   62   Hardboard (medium)
         0.080,  600.000, 2000.000,  0.910,  0.700,    110.000
-   63   Hardboard(standard)
+   63   Hardboard (standard)
         0.130,  900.000, 2000.000,  0.910,  0.700,    140.000
    64   Fir (20% mc)
         0.140,  419.000, 2720.000,  0.900,  0.650,     12.000
@@ -74,7 +78,8 @@
         0.150,  700.000, 1420.000,  0.900,  0.650,    576.000
    73   Softboard
         0.560,  350.000, 1000.000,  0.900,  0.650,     13.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     5    7   Stone
    81   Sandstone
         1.830, 2200.000,  712.000,  0.900,  0.600,     29.000
@@ -90,7 +95,8 @@
         0.360, 1840.000,  840.000,  0.900,  0.600,      2.000
    87   Chippings
         0.960, 1800.000, 1000.000,  0.900,  0.600,      2.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     6    7   Plaster
   101   Dense plaster
         0.500, 1300.000, 1000.000,  0.910,  0.500,     11.000
@@ -106,9 +112,10 @@
         0.200,  720.000,  837.000,  0.910,  0.500,     11.000
   107   Gypsum plasterboard
         0.190,  950.000,  840.000,  0.910,  0.500,     11.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     7    7   Screeds and renders
-  121   Lightweight concrete
+  121   Lightweight concrete screed
         0.410, 1200.000,  840.000,  0.900,  0.800,     30.000
   122   Cast concrete screed
         1.280, 2100.000, 1007.000,  0.900,  0.650,     44.000
@@ -122,7 +129,8 @@
         1.130, 1431.000, 1000.000,  0.910,  0.500,     19.000
   127   Rendering (8% mc)
         0.790, 1329.000, 1000.000,  0.910,  0.500,     19.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     8   11   Tiles
   141   Clay tile
         0.850, 1900.000,  837.000,  0.900,  0.600,     52.000
@@ -146,7 +154,8 @@
         0.030,  290.000, 2000.000,  0.900,  0.600,      8.000
   151   Ceiling (plaster)
         0.380, 1120.000,  840.000,  0.900,  0.600,     12.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     9    7   Asphalt and bitumen
   161   Bitumen felt
         0.500, 1700.000, 1000.000,  0.900,  0.900,   1000.000
@@ -162,7 +171,8 @@
         0.060, 1090.000, 1000.000,  0.900,  0.900,   3000.000
   167   Asphalt reflective coat
         1.200, 2300.000, 1700.000,  0.300,  0.300,   1900.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    10    4   Asbestos
   181   Asbestos cement
         0.360, 1500.000, 1000.000,  0.900,  0.600,    300.000
@@ -172,7 +182,8 @@
         0.160, 2500.000, 1050.000,  0.900,  0.960,    300.000
   184   Asbestos insulation
         0.160,  577.000,  840.000,  0.900,  0.600,      3.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    11   19   Insulation materials (1)
   201   Fibreboard
         0.060,  300.000, 1000.000,  0.900,  0.500,     13.000
@@ -212,7 +223,8 @@
         0.070,  240.000,  180.000,  0.900,  0.500,      3.000
   219   Thermalite turbo block
         0.110,  480.000, 1050.000,  0.900,  0.650,     10.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    12    5   Carpet
   221   Wilton
         0.060,  186.000, 1360.000,  0.900,  0.600,     10.000
@@ -224,7 +236,8 @@
         0.100,  400.000, 1360.000,  0.900,  0.650,   1000.000
   225   Synthetic carpet
         0.060,  160.000, 2500.000,  0.900,  0.650,     10.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    13    4   Glass
   241   Glass block
         0.700, 3500.000,  837.000,  0.830,  0.050,  19200.000
@@ -234,15 +247,17 @@
         1.050, 2500.000,  750.000,  0.830,  0.050,  19200.000
   244   6mm Antisun
         1.050, 2500.000,  750.000,  0.590,  0.060,  19200.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    14    3   Earth
   261   Infusorial (9% mc)
         0.090,  480.000,  180.000,  0.900,  0.850,      5.000
   262   Gravel based
         0.520, 2050.000,  184.000,  0.900,  0.850,      2.000
-  263   Common earch
+  263   Common earth
         1.280, 1460.000,  879.000,  0.900,  0.850,      5.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    15    1   Insulation materials (2)
   281   Glass Fibre Quilt
         0.040,   12.000,  840.000,  0.900,  0.650,     30.000
