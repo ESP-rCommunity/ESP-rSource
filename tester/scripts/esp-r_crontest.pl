@@ -76,7 +76,7 @@ sub parse_forcheck($);
 # corresponding source folders
 %binlist = ( "aco"   =>   "esruaco",     
              "b2e"   =>   "esrub2e",     
-             "bps"   =>   "esrubs",
+             "bps"   =>   "esrubps",
              "c2e"   =>   "esruc2e",     
              "cfg"   =>   "esrucfg",     
              "clm"   =>   "esruclm",     
