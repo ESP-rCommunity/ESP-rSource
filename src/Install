@@ -70,6 +70,7 @@ preserve_espr_dir="yes"    # save existing ESP-r directory by default
 gnu_version="gcc3"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
+xLibs="X11"                # Default x-library
 
 
 #-----------------------------------------------------------
@@ -124,6 +125,9 @@ if [ $# -ne 0 ]; then
         --xml)          xml_support=yes;           shift;;
         --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --X11)          xLibs="X11";               shift;;
+        --GTK)          xLibs="GTK";               shift;;
+        --noX)          xLibs="noX";               shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -240,6 +244,10 @@ if [ $help -eq 1 ]; then
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
   echo "        alternatives are specified in command-line parameters."
+  echo " "
+  echo "    --X11, --GTK, --noX:"
+  echo "        Build ESP-r using the specified graphics library (that",
+  echo "        is; X11, GTK or noX for a console-only application)."
   echo " "
   echo "    --xml: Compile bps with support for direct export of results"
   echo "        in xml and csv formats. Requires the GNU libxml2 and"
@@ -468,7 +476,6 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
 else
   echo ""
   echo " The GNU compiler set will be used."
-  echo ""
 fi
 
 #-----------------------------------------------------------
@@ -492,7 +499,6 @@ if [ "$mode" = "interactive" ]; then
          echo " /usr/include or /usr/local/include. Support for  "
          echo " experimental XML output will be disabled, but the "
          echo " rest of the ESP-r installation will proceed normally. "
-         echo " "
       else
          # Libraries were found. Prompt user for inclusion.
          B="none"
@@ -502,6 +508,7 @@ if [ "$mode" = "interactive" ]; then
                echo ""
                echo "Please answer yes or no (y/n)."
             fi
+            echo " "  
             echo " Install with experimental XML output support? This may "
             case "${xml_support}" in
               yes) echo " significantly increase simulation run-time. (y/n) [y]";;
@@ -531,7 +538,6 @@ if [ "$mode" = "interactive" ]; then
       echo " "
       echo " Experimental XML output support. is presently not  "
       echo " available on ${platform}. XML support disabled."
-      echo " "
       xml_support="no"
    fi
 else
@@ -600,18 +606,15 @@ if [ "$mode" = "interactive" ]; then
      "$noX_prompt") xLibs=noX;;
   esac
 else
-
   # Assume X11 is available on all systems, except mingw
+  # Xll is defaulted to 
   if [ "$platform" = "mingw" ]; then
     xLibs=noX
-    echo ""
+    echo " "  
     echo " A text-only application will be compiled."
-    echo ""  
   else
-    xLibs=X11
-    echo ""
-    echo " The X11 libraries will be used."
-    echo ""  
+    echo " "  
+    echo " The $xLibs libraries will be used."
   fi 
 fi
 
@@ -628,6 +631,101 @@ case $xLibs in
   noX) targets=" libnoX $targets";;
 esac
 
+#---------------------------------------------------------
+# Query about debugging, installation of training and 
+# database files
+#---------------------------------------------------------
+
+if [ "$mode" = "interactive" ]; then
+  # Debugging
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo " Please answer yes or no (y/n)."  
+    else
+      echo " ESP-r can optionally retain debugging symbols and "
+      echo " object files for use with a debugging program such"
+      echo " as GDB."
+      echo " " 
+    fi
+    
+    case "${debugging}" in
+      yes) echo " Retain debugging symbols? (y/n) [y]";;
+      *)   echo " Retain debugging symbols? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${debugging}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    debugging="yes"
+  else
+    debugging="no"
+  fi
+  
+  
+  # System databases 
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo "Please answer yes or no (y/n)."
+    fi
+      case "${install_dbs}" in
+      yes) echo " Install ESP-r database files? (y/n) [y]";;
+      *)   echo " Install ESP-r database files? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${install_dbs}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    install_dbs="yes"
+  else
+    install_dbs="no"
+  fi
+  
+  # Training files
+  B="none"
+  while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
+  do
+    if [ "$B" != "none" ]; then
+        echo ""
+        echo "Please answer yes or no (y/n)."
+    fi
+      case "${install_training}" in
+      yes) echo " Install training files? (y/n) [y]";;
+      *)   echo " Install training files? (y/n) [n]";;
+    esac
+      
+    read B
+    if [ "$B" = "" ]; then
+      case "${install_training}" in
+        yes) B="y";;
+        *)   B="n";;
+      esac 
+    fi
+  done
+  if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
+    install_training="yes"
+  else
+    install_training="no"
+  fi
+
+fi
 
 #---------------------------------------------------------
 # Assign universal flags and variables.
@@ -1128,6 +1226,10 @@ fi
 # End ESP-r directory management
 #--------------------------------------------------------------
 
+#--------------------------------------------------------------
+# 
+#--------------------------------------------------------------
+
 ####### create an installdir.h file so startup.F knows where to look
   echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
   echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
@@ -1164,9 +1266,166 @@ fi
 
 
 
-echo " "
 echo " Installing ESP-r system.  This may take some time."
 
+#--------------------------------------------------------------
+# Get SVN build info for versioning purposes.
+#--------------------------------------------------------------
+ 
+ echo -n "    - gathering versioning information from svn..."
+ 
+ # Ensure that build information is always recompiled into 
+ # every binary - touch common file startup.F
+ touch ${SRCdir}/esrucom/startup.F
+ 
+ # Get time of build 
+ time=`date`
+ 
+ # Get system information. (host not used at present)
+ architecture=`uname -m`
+ system=`uname -s`
+ os_flavour=`uname -r`
+ host=`uname -n`
+
+
+ # Digest version information in Version text file
+ release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
+
+ # Try to collect svn information
+ #svn_info_command="cat /home/aferguso/svn_info.txt"
+ #svn_status_command="cat /home/aferguso/svn_status.txt"
+ 
+ svn_info_command="svn info"
+ svn_status_command="svn status"
+ 
+ svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
+ svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
+ notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
+
+ if [ "$svnnotfound" != "" ]    || 
+    [ "$notworkingcopy" != "" ] ||
+    [ "$svnrevision"    =  "" ];   then
+   versioned_repository="no";
+ else
+   versioned_repository="yes"
+ fi
+ 
+ # If svn is available and repository is under versioning,
+ # get misc svn information
+ if [ "$versioned_repository" = "yes" ]; then
+   revision_number=`$svn_info_command 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
+   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+      
+   # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
+   branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
+   branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
+   
+   # Strip leading 'branches', if any
+   branch_name=`echo $branch_name | sed "s/branches\///g"`
+   # Strip trailing 'src'
+   branch_name=`echo $branch_name | sed "s/\/src//g"`
+   
+   # Now determine if URL describes development branch, a sub-branch,
+   # or the trunk
+   
+   # Default version to sub-branch...
+   source="Sub-branch"
+   
+   if [ "$branch_name" = "trunk" ]; then
+     source="Trunk"
+   fi
+    
+   if [ "$branch_name" = "development_branch" ]; then
+     source="Development branch"
+   fi 
+
+   # Use svn status to deterine if repository has 
+   # been locally modified (denoted by M/G/C status)
+   # 
+   svn_status=`$svn_status_command 2>&1 | grep "^[MGC]" `
+   if [ "$svn_status" != "" ]; then
+    state="Locally modified"
+   else
+    state="Vanilla"
+   fi
+   
+   echo "Done."
+ else 
+   echo "Unavailable!"
+ fi
+ 
+ 
+#--------------------------------------------------------------
+# Now write out build information into automatically generated
+# header file.
+#--------------------------------------------------------------
+  echo "C      build_info.h"                                              >  ${SRCdir}/include/build_info.h
+  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
+  echo "C      This file contains versioning and build information"       >> ${SRCdir}/include/build_info.h
+  echo "C      for the ESP-r system. It is generated automatically"       >> ${SRCdir}/include/build_info.h
+  echo "C      by the Install script each time ESP-r is recompiled---"    >> ${SRCdir}/include/build_info.h
+  echo "C      any changes should be made in the Install scipt, and "     >> ${SRCdir}/include/build_info.h
+  echo "C      not in this file"                                          >> ${SRCdir}/include/build_info.h
+  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
+  echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
+  echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
+  echo "       "                                                          >> ${SRCdir}/include/build_info.h
+  echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
+  echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
+#  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h     
+  echo "       cArchitecture     = \"${architecture}\""                   >> ${SRCdir}/include/build_info.h       
+  echo "       cOperSystem       = \"${system}\""                         >> ${SRCdir}/include/build_info.h 
+  echo "       cOSversion        = \"${os_flavour}\""                     >> ${SRCdir}/include/build_info.h 
+  
+  # Set flag indicating if this is a 'release' build
+  # A release MUST be built from a versioned copy 
+  # of TRUNK in a Vanilla state.
+  if [ "$versioned_repository" = "yes" ] &&
+     [ "$source" = "Trunk"             ] &&
+     [ "$state"  = "Vanilla"           ];  then
+    echo "       bRelease          = .TRUE."                              >> ${SRCdir}/include/build_info.h   
+  else
+    echo "       bRelease          = .FALSE."                             >> ${SRCdir}/include/build_info.h   
+  fi  
+  
+  echo "       cRelease_num      = \"${release}\""                        >> ${SRCdir}/include/build_info.h  
+  
+  if [ "${versioned_repository}" = "yes" ]; then
+    echo "       bVersioned        = .TRUE. "                             >> ${SRCdir}/include/build_info.h 
+  else                                                                     
+    echo "       bVersioned        = .FALSE. "                            >> ${SRCdir}/include/build_info.h 
+  fi
+  
+  if [ "$state" = "Vanilla" ]; then
+    echo "       bModified         = .FALSE."                             >> ${SRCdir}/include/build_info.h 
+  else 
+    echo "       bModified         = .TRUE."                              >> ${SRCdir}/include/build_info.h 
+  fi
+  
+  echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
+  echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
+  
+  echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
+  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
+  echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
+  echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
+  # Add compilers, x-libraries & xml/xsl status
+  echo "       cCC               = \"$CC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cFC               = \"$FC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cCPL              = \"$CPL\""                              >> ${SRCdir}/include/build_info.h 
+  if [ "$xml_support" = "yes" ]; then
+    echo "       cXML_support      = \"supported\""                       >> ${SRCdir}/include/build_info.h 
+  else
+    echo "       cXML_support      = \"unsupported\""                     >> ${SRCdir}/include/build_info.h 
+  fi
+  echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h 
+
+
+
+#---------------------------------------------------------------------
+# Begin build 
+#---------------------------------------------------------------------
 targets="${targets} end_of_exes"
 # Build each executable, 1 by 1.
 while [ "${targets}" != "end_of_exes" ]
@@ -1185,7 +1444,7 @@ do
    targets=`echo $targets | sed 's/^[^ ]* //g'`
 
    # Let user know what's going on
-   echo "    - building ${target}"
+   echo -n "    - building ${target}... "
 
    # Empty 'make_msg_file' if it's defined
   if [ "$make_msg_file" != "" ]; then
@@ -1251,6 +1510,8 @@ do
         exit
       fi
 
+   else 
+     echo "Done."
    fi
    # delete message file, if necessary
    if [ "${make_msg_file}" != "" ]; then
@@ -1284,15 +1545,6 @@ if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
 fi
 
-if [ "$mode" = "interactive" ]; then
-  echo "  "
-  echo "(Re)install training and validation models, manual and tutorial (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_training="no"
-  fi
-fi
 
 if [ "$install_training" = "yes" ]; then
   echo " "
@@ -1634,15 +1886,6 @@ fi
 ##### End Install training, manual & tutorial files.
 
 ##### Install databases
-if [ "$mode" = "interactive" ]; then
-  echo " "
-  echo "(Re)install system databases (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_dbs="no"
-  fi
-fi
 
 if [ "$install_dbs" = "yes" ]; then
   # remove existing binary databases
@@ -1938,23 +2181,18 @@ echo " ... done."
 fi
 
 ##### Install and  Clean up
-if [ "$mode" = "interactive" ] && [ "$install_exes" = "prompt" ]; then
-  echo " "
-  echo "Install ESP-r executables (y/n) [y]?"
-  read A
-  echo " "
-  if [ "$A" = "n" ]; then
-    install_exes="no"
-  else
-    install_exes="yes"
-  fi
+cd ${SRCdir}
+echo " "
+echo -n " Installing executables..."
+if [ "$debugging" = "no" ]; then
+  make ESPdir=${ESPdir} EXE=${EXE} strip  >/dev/null 2>&1
 fi
-  
-if [ "$install_exes" = "yes" ] || [ "$install_exes" = "prompt" ]; then
-  cd ${SRCdir}
-  echo "Installing executables..."
-  make ESPdir=${ESPdir} EXE=${EXE} install
-  echo "Installing executables...done."
+make ESPBinDir=${ESPbin} EXE=${EXE} InstBins  >/dev/null 2>&1
+if [ "$debugging" = "no" ]; then
+  make EXE=${EXE} clean  >/dev/null 2>&1
+fi
+echo "Done."
+
 
 # Makeup an appropriate esp-r script.
 if [ ${MCTYPE} = sun ]; then
@@ -2001,51 +2239,32 @@ elif [ ${MCTYPE} = mingw ]; then
   echo "@rem batch file to start project manager - associate with cfg files" > ${ESPdir}/bin/esp-r.cmd
   echo "start prj -file %1" >> ${ESPdir}/bin/esp-r.cmd
 fi
-fi
 
-if [ "$mode" = "interactive" ]; then
-  echo " "
-  echo "Remove temporary files created during install process (y/n) [y]?"
-  read A
-  echo " "
-    
-  if [ "$A" = "n" ]; then
-    delete_temp_files="no"
-  fi
-
-elif [ "$debugging" = "yes" ]; then
-  delete_temp_files="no"
-fi  
-
-if [ "$delete_temp_files" = "yes" ]; then
-  cd ${SRCdir}
-  make EXE=${EXE} clean
-  echo "  "
-  echo "Removing binary materials db from exemplars ..."
-  cd ${SRCdir}/
-  rm -f training/glenview/databases/constr.db1
-  rm -f training/cellular_furn/dbs/cellular.materials
-  rm -f training/cellular_hires/dbs/cellular.materials
-  rm -f training/cellular_contam/dbs/cellular.materials
-  rm -f training/cellular_hvac/dbs/cellular.materials
-  rm -f training/cellular_flh/dbs/cellular.materials
-  rm -f training/cellular_natv/dbs/cellular.materials
-  rm -f training/cellular_bc/dbs/cellular.materials
-  rm -f training/cellular_cvvt/dbs/cellular.materials
-  rm -f training/cellular_pv/dbs/cellular_pv.materials
-  rm -f training/house/svph/dbs/linford.materialdb
-  rm -f training/cellular_shd/dbs/cellular.materials
-  rm -f training/cellular_earth/dbs/cellular.materials
-  rm -f training/cellular_bound/dbs/cellular.materials
-  rm -f training/glenview/databases/constr.db1
-  rm -f training/constr/tp_sub/dbs/tp_sub.material
-  rm -f training/plant/wch/dbs/db_prc
-  rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
-  rm -f validation/CEN/13791/databases/prim.db
-  rm -f validation/CEN/13791/databases/WM_A.clm
-  rm -f validation/CEN/13791/databases/WM_B.clm
-  rm -f validation/CEN/13791/databases/Cond.clm
-fi
+echo "  "
+echo "Removing binary materials db from exemplars ..."
+cd ${SRCdir}/
+rm -f training/glenview/databases/constr.db1
+rm -f training/cellular_furn/dbs/cellular.materials
+rm -f training/cellular_hires/dbs/cellular.materials
+rm -f training/cellular_contam/dbs/cellular.materials
+rm -f training/cellular_hvac/dbs/cellular.materials
+rm -f training/cellular_flh/dbs/cellular.materials
+rm -f training/cellular_natv/dbs/cellular.materials
+rm -f training/cellular_bc/dbs/cellular.materials
+rm -f training/cellular_cvvt/dbs/cellular.materials
+rm -f training/cellular_pv/dbs/cellular_pv.materials
+rm -f training/house/svph/dbs/linford.materialdb
+rm -f training/cellular_shd/dbs/cellular.materials
+rm -f training/cellular_earth/dbs/cellular.materials
+rm -f training/cellular_bound/dbs/cellular.materials
+rm -f training/glenview/databases/constr.db1
+rm -f training/constr/tp_sub/dbs/tp_sub.material
+rm -f training/plant/wch/dbs/db_prc
+rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
+rm -f validation/CEN/13791/databases/prim.db
+rm -f validation/CEN/13791/databases/WM_A.clm
+rm -f validation/CEN/13791/databases/WM_B.clm
+rm -f validation/CEN/13791/databases/Cond.clm
 
 echo " "
 echo "Installation complete.  Please consult file ${SRCdir}/env/README."

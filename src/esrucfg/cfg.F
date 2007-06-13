@@ -101,6 +101,12 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,OTHEROK,XST
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
@@ -121,6 +127,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('cfg ')
+      cAppName = 'cfg'
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -278,16 +285,7 @@ C Debug
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Topology tool: Version 1.13a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call edisp(IUOUT,' ')

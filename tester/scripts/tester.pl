@@ -70,8 +70,6 @@ sub parse_hash_recursively();
 sub create_historical_archive();
 sub process_historical_archive(); 
 sub create_report();
-sub mail_message($$$$$);
-sub ESPR_Results_mailer();
 #-------------------------------------------------------------------
 # Scope global variables. All variables beginning with a 'g' are
 # considered global, and may be used in subordinate routines.
@@ -216,12 +214,6 @@ my $Help_msg = "
          tested when the very-verbose option is active. 
 
     --echo: Report test configuration and quit.
-
-    --mailto <address>: This will email the results to the list given. This
-         is dependant on the unix 'mail' program. Will not work on windows.
-
-    --smtp_server <address>: This is required if you wish to use option '--mail_to'.
-         Ask your system administrator for your smtp server name.'
 
     
  SYNOPSIS:
@@ -583,8 +575,6 @@ $cmd_arguements =~ s/--historical_archive;/--historical_archive:/g;
 $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g;
 $cmd_arguements =~ s/--ref_res;/--ref_res:/g;
 $cmd_arguements =~ s/--test_res;/--test_res:/g;
-$cmd_arguements =~ s/--mailto;/--mailto:/g;
-$cmd_arguements =~ s/--smtp_server;/--smtp_server:/g;
 $cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
@@ -755,22 +745,7 @@ foreach $arg (@processed_args){
     
       last SWITCH;
     }
-    
-    if ( $arg =~ /^--mailto:/ ){
-      # Path to res for test bps
-      $arg =~ s/--mailto://g;
-      $gTest_params{"mailto_address"} = $arg ;
-    
-      last SWITCH;
-    }
 
-    if ( $arg =~ /^--smtp_server:/ ){
-      # Path to res for test bps
-      $arg =~ s/--smtp_server://g;
-      $gTest_params{"smtp_server_address"} = $arg ;
-    
-      last SWITCH;
-    }
     if ( $arg =~ /^--diff_data/ ){
       # invoke a thrid party diff to compare differning data files...
       $gTest_params{"diff_data_files"} = 1;
@@ -1282,10 +1257,6 @@ if ( $gTest_params{"create_archive"} ){
   create_historical_archive();
 }
 
-#------------------------------------------------------------------------
-# Mail results if desired.
-#------------------------------------------------------------------------
-ESPR_Results_mailer();
 #-----------------------------------------------------------------------
 # Clean up
 #-----------------------------------------------------------------------
@@ -3299,96 +3270,4 @@ sub format_my_number($$$){
   return $value;
 }
 
-sub mail_message($$$$$){
-my $worked;
-if ( eval "require Net::SMTP;" ) {
-my ($smtp_server,$To,$From,$Subject,$Message) = @_;
-my $smtp;
-if ( $smtp = Net::SMTP->new($smtp_server) )
-  {
-    # use the sender's address here
-    $smtp->mail($From);
-    # recipient's address	
-    $smtp->to($To);        # recipient's address
-    # Start the mail
-    $smtp->data();
-    	
-    # Send the header.
-    $smtp->datasend("To: $To\n");
-    $smtp->datasend("From: $From\n");
-    $smtp->datasend("Subject: $Subject\n");
-    
-    # Send the body.
-    $smtp->datasend("$Message\n");
-    
-    # Finish sending the mail
-    $smtp->dataend();
-    # Close the SMTP connection.
-    $smtp->quit();
-    #Set return status.
-    $worked = 1;            
-    # A successful message.	
-    print "Mail sent to $To via $smtp_server.\n"
-      }
-else
-  {
-    #E-mail failed. Tell user.
-    print "Socket Connection to SMTP server $smtp_server failed!\n";
-    print "Mail send failed!\n";
-    print "Verify the following.\n";
-    print "SMTP server = $smtp_server \n";
-    print "Email list = $To \n";
-    #Set return status.
-    $worked = 0 ;
-  }
-}
-else
-{
-print "NET::smtp not available. Cannot mail\n";
-  $worked = 0 ;
-}
-#Return status. 
-return $worked;
- }
 
-#This adds e-mail facility to the tester.
-
-sub ESPR_Results_mailer()
-  {
-    
-    if ( defined( $gTest_params{"mailto_address"} and  defined( $gTest_params{"smtp_server_address"} ) ) )
-      {
-	my $smtp_server =$gTest_params{"smtp_server_address"};
-	my $subject = "";
-	my $email_list = $gTest_params{"mailto_address"};
-	
-	#read in bps test_report
-	open INPUT, "<bps_test_report.txt";
-	#Ensure end of file variable is unset.
-	undef $/;
-	#Get the data from the file.
-	#Close data input.
-	my $content = <INPUT>;
-	close INPUT;
-	$/ = "\n";    
-	#Restore for normal behaviour later in script
-	
-	
-	if ( $gAll_tests_pass == 1 )
-	  {
-	    
-	    $subject = "ESP-r Testing Results Pass\n"
-	      
-	  }
-	else
-	  {
-	    $subject = "ESP-r Testing Results Fail\n"
-	  }
-	
-	print "Sending mail to $email_list using the smtp server $smtp_server.\n";
-	my $From = $ENV{USER}.'@esp-r.net';
-	mail_message( $smtp_server, $email_list, $From, $subject, $content);
-    
-
-      }
-  } 

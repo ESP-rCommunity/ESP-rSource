@@ -1,6 +1,5 @@
 # ESP-r install makefile called by INSTALL script.
 # (see README file before installing).
-
 SRCdir=`pwd`
 
 PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
@@ -78,34 +77,6 @@ vew:
 vww: 
 	cd $(SRCdir)/esruvww; $(MAKE)
 
-.PHONY: install
-install:
-	@cd $(SRCdir)
-	@if [ -f $(SRCdir)/esruaco/aco$(EXE) ]; then strip ./esruaco/aco$(EXE); cp ./esruaco/aco$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrub2e/b2e$(EXE) ]; then strip ./esrub2e/b2e$(EXE); cp ./esrub2e/b2e$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrubps/bps$(EXE) ]; then strip ./esrubps/bps$(EXE); cp ./esrubps/bps$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrudbm/dbm$(EXE) ]; then strip ./esrudbm/dbm$(EXE); cp ./esrudbm/dbm$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrudfs/dfs$(EXE) ]; then strip ./esrudfs/dfs$(EXE); cp ./esrudfs/dfs$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruc2e/c2e$(EXE) ]; then strip ./esruc2e/c2e$(EXE); cp ./esruc2e/c2e$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrucfg/cfg$(EXE) ]; then strip ./esrucfg/cfg$(EXE); cp ./esrucfg/cfg$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruclm/clm$(EXE) ]; then strip ./esruclm/clm$(EXE); cp ./esruclm/clm$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrue2r/e2r$(EXE) ]; then strip ./esrue2r/e2r$(EXE); cp ./esrue2r/e2r$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrucnv/ecnv$(EXE) ]; then strip ./esrucnv/ecnv$(EXE); cp ./esrucnv/ecnv$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrueco/eco$(EXE) ]; then strip ./esrueco/eco$(EXE); cp ./esrueco/eco$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrugrd/grd$(EXE) ]; then strip ./esrugrd/grd$(EXE); cp ./esrugrd/grd$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruish/ish$(EXE) ]; then strip ./esruish/ish$(EXE); cp ./esruish/ish$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumfs/mfs$(EXE) ]; then strip ./esrumfs/mfs$(EXE); cp ./esrumfs/mfs$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumld/mld$(EXE) ]; then strip ./esrumld/mld$(EXE); cp ./esrumld/mld$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrumrt/mrt$(EXE) ]; then strip ./esrumrt/mrt$(EXE); cp ./esrumrt/mrt$(EXE) $(ESPdir)/bin/espvwf$(EXE); fi
-	@if [ -f $(SRCdir)/esrunet/net$(EXE) ]; then strip ./esrunet/net$(EXE); cp ./esrunet/net$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrupdb/pdb$(EXE) ]; then strip ./esrupdb/pdb$(EXE); cp ./esrupdb/pdb$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruprj/prj$(EXE) ]; then strip ./esruprj/prj$(EXE); cp ./esruprj/prj$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrures/res$(EXE) ]; then strip ./esrures/res$(EXE); cp ./esrures/res$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esrutdf/tdf$(EXE) ]; then strip ./esrutdf/tdf$(EXE); cp ./esrutdf/tdf$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruvew/viewer$(EXE) ]; then strip ./esruvew/viewer$(EXE); cp ./esruvew/viewer$(EXE) $(ESPdir)/bin; fi
-	@if [ -f $(SRCdir)/esruvww/vww$(EXE) ]; then strip ./esruvww/vww$(EXE); cp ./esruvww/vww$(EXE) $(ESPdir)/bin; fi
-
-.PHONY: clean
 clean:
 	cd $(SRCdir)/lib;     $(MAKE) clean
 	cd $(SRCdir)/esruaco; $(MAKE) clean
@@ -131,6 +102,58 @@ clean:
 	cd $(SRCdir)/esrutdf; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
+	@if [ -f $(SRCdir)/include/espinstalldir.h ]; then rm $(SRCdir)/include/espinstalldir.h; fi
+	@if [ -f $(SRCdir)/include/build_info.h    ]; then rm $(SRCdir)/include/build_info.h;    fi	
+
+strip:
+	cd $(SRCdir)/esruaco; $(MAKE) strip
+	cd $(SRCdir)/esrub2e; $(MAKE) strip
+	cd $(SRCdir)/esrubps; $(MAKE) strip
+	cd $(SRCdir)/esrudbm; $(MAKE) strip
+	cd $(SRCdir)/esrudfs; $(MAKE) strip
+	cd $(SRCdir)/esruc2e; $(MAKE) strip
+	cd $(SRCdir)/esrucfg; $(MAKE) strip
+	cd $(SRCdir)/esruclm; $(MAKE) strip
+	cd $(SRCdir)/esrue2r; $(MAKE) strip
+	cd $(SRCdir)/esrucnv; $(MAKE) strip
+	cd $(SRCdir)/esrueco; $(MAKE) strip
+	cd $(SRCdir)/esrugrd; $(MAKE) strip
+	cd $(SRCdir)/esruish; $(MAKE) strip
+	cd $(SRCdir)/esrumfs; $(MAKE) strip
+	cd $(SRCdir)/esrumld; $(MAKE) strip
+	cd $(SRCdir)/esrumrt; $(MAKE) strip
+	cd $(SRCdir)/esrunet; $(MAKE) strip
+	cd $(SRCdir)/esrupdb; $(MAKE) strip
+	cd $(SRCdir)/esruprj; $(MAKE) strip
+	cd $(SRCdir)/esrures; $(MAKE) strip
+	cd $(SRCdir)/esrutdf; $(MAKE) strip
+	cd $(SRCdir)/esruvew; $(MAKE) strip
+	cd $(SRCdir)/esruvww; $(MAKE) strip
+
+InstBins:
+	cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrub2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrucfg; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrueco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrugrd; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruish; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrumfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrumld; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrumrt; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrunet; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrutdf; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esruvww; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz

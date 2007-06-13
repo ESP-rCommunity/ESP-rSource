@@ -198,6 +198,11 @@ C to edit.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       dimension idomain(MNWKTYP),nbcat(MNWKTYP),
      &  cattag(MNWKTYP,MICNCAT),catmenu(MNWKTYP,MICNCAT),
      &  nbicons(MNWKTYP,MICNCAT),icontag(MNWKTYP,MICNCAT,MICN),
@@ -228,6 +233,7 @@ C Initialize global common data. IUEX is file unit for the
 C model external data summary.
       CALL EZERO
       call curmodule('net ')
+      cAppName = 'net'
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -345,15 +351,7 @@ C in the c-interface code.
         CALL NWKSMOD(ISE,ICO,IDA)
       ENDIF
 
-      write(outs,'(2a)')
-     &  ' ESP-r Network Tool: Version 1.9a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Initialise the network on first entry and clear screen and draw grid.
       CALL NWKINIT

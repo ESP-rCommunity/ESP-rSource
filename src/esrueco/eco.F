@@ -139,6 +139,10 @@ C ECO specific commons
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
@@ -176,6 +180,7 @@ C      CHARACTER tab*1
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('eco ')
+      cAppName = 'eco'
 C      tab = CHAR(9)
       ITRC=1
       IUIN = 5
@@ -353,9 +358,7 @@ C graphic display to compensate.
         call startbuffer()
        ENDIF
 
-      call edisp(iuout,' ')
-      call edisp(iuout,' eco: Version 1.3a of January 2006.')
-      call edisp(iuout,' ')
+       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

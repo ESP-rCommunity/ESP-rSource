@@ -15,6 +15,12 @@ C VIEWER MAIN PROGRAM
 C Path to problem and command line file (if any).
       common/rpath/path
       common/rcmd/LCMDFL
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       logical     unixok
 
       character outs*124,inf*144,path*72,LCMDFL*144,H*72,fs*1
@@ -29,6 +35,7 @@ C call plot which does most everything else.
 C Initialise terminal and begin program.
       call ezero
       call curmodule('vew ')
+      cAppName = 'vww'
       IUIN = 5
       IUOUT = 6
       IFUSE = 7
@@ -113,7 +120,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL EDISP(iuout,' viewer - Version 1.5a of January 2006.')
+      CALL ESPrVersion("summary")
       call edisp(iuout,' Max no of:  points  surfaces  edges  bodies ')
       write(outs,'(11x,I8,I9,I8,I8)')MPT,MSF,MED,MBB
       call edisp(iuout,outs)

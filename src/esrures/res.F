@@ -124,6 +124,12 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/pres/iunitp
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
@@ -142,6 +148,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('res ')
+      cAppName = 'res'
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -299,10 +306,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
-      write(outs,'(2a)')
-     & ' ESP-r Results Analysis Tool: Version 7.5 of April 2007.',
-     & ' Copyright 2001-7 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'

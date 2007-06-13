@@ -101,6 +101,11 @@ C Project journal on/off, unit number, cmd, file name.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
@@ -130,6 +135,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
+      cAppName = 'e2r'
       IUIN = 5
       IUOUT = 6
       IFIL = 10
@@ -360,10 +366,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      write(outs,'(2a)')
-     &  ' ESP-r - Radiance: Version 3.16a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
+      
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow Scotland.'

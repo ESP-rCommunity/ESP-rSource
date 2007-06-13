@@ -89,6 +89,11 @@ C Commons used when conflated which should be cleared in stand alone mode.
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       CHARACTER*24 ITEM(10)
       CHARACTER H*72,inf*144,LCFD*72,tfile*72,DFCFD*72,Lflpar*72
       character path*72,upath*72,esprc*72,longtfile*144
@@ -119,6 +124,7 @@ C Set defaults.
 C Clear all arrays.
       call ezero
       call curmodule('dfs ')
+      cAppName = 'dfs'
 
 C Initialization for matlab.
       islice=2
@@ -306,16 +312,7 @@ C messages to stderr in case of rule script program control.
       IF(MMOD.EQ.-6) ICOUT=0
 
 C Show version.
-      CALL EDISP(IUOUT,'  ')
-      write(outs,'(2a)')
-     &  ' ESP-r Domain Flow Solver: Version 3.14a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      CALL EDISP(IUOUT,'  ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)

@@ -91,6 +91,12 @@ C SHOCCshlFile - path to SHOCC .shl file for SHOCC'd project library
 C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       common/SHOCCcfg/bSHOCCed,SHOCCshlFile,bZoneSHOCCed(mcom),
      &                SHOCCshzFile(mcom)
+     
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12     
+     
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
@@ -132,6 +138,8 @@ C storage.
       LIMIT=20
       itrc=1
       NSIGFIG=3
+
+      cAppName = 'encv'
 
 C Get command line parameters.
       call parcnv(itrc,conv,incobs,ichop,itmprm,iformat,oformat,inf,ouf,
@@ -178,11 +186,7 @@ C Assume there are no obstructions.
       doobs=.FALSE.
 
       call edisp(IUOUT,' ')
-      write(outs,'(3a)')
-     & ' ESP-r Data Conversion: Version 2.5a of January 2006.',
-     & ' Copyright 2001-6 Energy Systems Research Unit, University',
-     & ' of Strathclyde, Glasgow, Scotland.'
-      call edisp248(IUOUT,outs,100)
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
