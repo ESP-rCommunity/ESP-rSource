@@ -583,7 +583,7 @@ C ------------------------------------------------------------------------------
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      & ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR
-      INTEGER CONTP,ICONDX
+      INTEGER ICONTP,ICONDX
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
@@ -634,7 +634,6 @@ C-------------------------------------------------------------------------------
 
       INTEGER IPCOMP
       INTEGER ISTATS
-      INTEGER ICONTP
 
       INTEGER ITEMP
 
