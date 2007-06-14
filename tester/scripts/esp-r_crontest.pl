@@ -37,7 +37,7 @@ if ( ! @ARGV ){
   ./esp-r_crontest.pl <branch> <platform> <email adress>
 
   Example
-  ./esp-r_crontest.pl branch/development_branch linux ibeausol\@nrcan.gc.ca  
+  ./esp-r_crontest.pl branches/development_branch linux ibeausol\@nrcan.gc.ca  
 
  Other branches and platforms can be tested against by changing the
  \$branch and \$platform variables.  Lists of platforms are only available
@@ -48,7 +48,9 @@ if ( ! @ARGV ){
    - Perl 4+
    - subversion client
    - mail server (mailhost) 
-   - Perl NET\:\:smtp ";
+   - Perl NET\:\:smtp
+
+ ";
  
  print $synopsys;
  die();
@@ -96,6 +98,9 @@ sub parse_forcheck($);
              "tdf"   =>   "esrutdf",         
              "vew"   =>   "esruvew" );         
                           
+%binalias = ( "vew"    =>   "viewer",
+              "mrt"    =>   "espvwf" );                          
+                          
 $Test_base_URL="https://svn2.cvsdude.com/espr/esp-r/";
              
              
@@ -110,20 +115,21 @@ $smtp_server="Mailhost.nrcan.gc.ca";
 $branch_name=$ARGV[0];      
 #Platform archive to be tested against. 
 $Platform=$ARGV[1];
-#Notification list.         
-$mail_to=$ARGV[2];          
+#Comma separated notification list.         
+@addresses = split /,/, $ARGV[2];          
 #Vebosity 
 if ( $ARGV[3] =~ /-vv/ ){
   $veryverbose = 1;
   $verbose = 1;
 }elsif ( $ARGV[3] =~ /-v/ ){
   $verbose = 1;
-  $veryverbose = 0;
+  $veryverbose = 0
 }else{
   $verbose = 0;
   $veryverbose = 0;
 }
-
+$verbose =1 ;
+$veryverbose = 1;
 #If for some reason you wish to test against trunk..
 if ($branch_name eq "trunk")
 {
@@ -150,14 +156,15 @@ while ( -d $TestFolder ) {
 $mail_from= $ENV{USER}.'@esp-r.net';
 
 # Initialize results buffer
-$results="";
+$results  = "Automated test of ESP-r system\n";
+$results .= "Testing commenced on ".`date`."\n";
 
 # Report configuration
 stream_out("Configuration:\n");
 stream_out("  - Working directory: $TestFolder\n");
 stream_out("  - svn_source:        $branch_name\n");
 stream_out("  - archive platform:  $Platform\n");
-stream_out("  - email destination: $mail_to\n");
+stream_out("  - email destination: @addresses\n");
 
 
 main();
@@ -175,14 +182,16 @@ sub main()
   chdir("$TestFolder");
   stream_out("Done\n");
   
+  stream_out("Current path: ".getcwd()."\n");
+  
   # Check out code
   stream_out("\nChecking out $branch_name from ESP-r central...");
-  execute("svn co $Test_base_URL/$branch_name/ > /dev/null");
+  execute("svn co $Test_base_URL/$branch_name/");
   stream_out("Done\n");
   
   # Check out archived results
   stream_out("\nChecking out archived results for $Platform...");
-  execute("svn co https://132.156.178.22/espr/espr-test-results/$Platform/ > /dev/null");
+  execute("svn co https://132.156.178.22/espr/espr-test-results/$Platform/");
   stream_out("Done\n");
   
   #-----------------------------------------------------
@@ -190,20 +199,27 @@ sub main()
   #-----------------------------------------------------
   
   chdir("$TestFolder/$subbranch_name/src/");
-    
+  stream_out("Current path: ".getcwd()."\n");
   # Build a copy of ESP-r
   stream_out("\nBuilding X11 version of ESP-r for use with Forcheck.");
   buildESPr("X11","debug","onebyone");
   stream_out(" Done\n");
 
 
-  stream_out("\nRunning Forcheck static analyzer.");
+
+  
   chdir("$TestFolder/$subbranch_name/src/esrubps");
+  stream_out("Current path: ".getcwd()."\n");
   
   # Save user's existing FCKCNF variable
   $orig_FCKCNF = $ENV{FCKCNF};
+  stream_out("Old FCKCNF path: $ENV{FCKCNF}\n");
   $ENV{FCKCNF} = "$path/esp-r.cnf";
+  stream_out("New FCKCNF path: $ENV{FCKCNF}\n");
   
+  stream_out("Path to forchk binary".`which forchk`."\n");
+  
+  stream_out("\nRunning Forcheck static analyzer.");
   $results .= "========= RESULTS FROM STATIC ANALYSIS =========\n";
   
   # Invoke forcheck for each ESP-r binary
@@ -287,32 +303,31 @@ sub main()
     $results .= "\n - binary $bin: $Status\n";
     
     # Summarize results
-    $results .= "   Total errors:     Archive $old_msgs{\"Total error messages\"}, Repository $new_msgs{\"Total error messages\"} \n";
-    $results .= "   Total warnings:   Archive $old_msgs{\"Total warning messages\"}, Repository $new_msgs{\"Total warning messages\"} \n";
-    $results .= "   Total info msgs:  Archive $old_msgs{\"Total informational messages\"}, Repository $new_msgs{\"Total informational messages\"} \n";
+    $results .= "   Total errors:     Archive $old_msgs{\"Total error messages\"}, $branch_name $new_msgs{\"Total error messages\"} \n";
+    $results .= "   Total warnings:   Archive $old_msgs{\"Total warning messages\"}, $branch_name $new_msgs{\"Total warning messages\"} \n";
+    $results .= "   Total info msgs:  Archive $old_msgs{\"Total informational messages\"}, $branch_name $new_msgs{\"Total informational messages\"} \n";
     
     # Now append unmatched errors to result string 
     if ($Status =~ /Failed/){
       $results .= "   Summary of differences:\n";
     }
     foreach $code ( sort @error_codes ){
-      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, Repository $new_msgs{$code} ]\n";
+      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, $branch_name $new_msgs{$code} ]\n";
     }
     foreach $code ( sort @warning_codes ){
-      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, Repository $new_msgs{$code} ]\n";
+      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, $branch_name $new_msgs{$code} ]\n";
     }
     foreach $code ( sort @info_codes ){
-      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, Repository $new_msgs{$code} ]\n";
+      $results .= "     -> $code [ Instances: Archive $old_msgs{$code}, $branch_name $new_msgs{$code} ]\n";
     }
     
   }
   
-  # Reset FCKCNF
-  $ENV{FCKCNF} = $orig_FCKCNF;
-  
-
   stream_out("Done\n");
     
+  # Reset FCKCNF
+  $ENV{FCKCNF} = $orig_FCKCNF;
+  stream_out("Reset FCKCNF path: $ENV{FCKCNF}\n");
   
   #---------------------------------------
   # Build ESP-r 
@@ -359,7 +374,7 @@ sub main()
   
   stream_out("\nExercising bps over test suite...");
   chdir("$TestFolder/$subbranch_name/tester/scripts/");
-  execute("./tester.pl $TestFolder/esp-r/bin/bps  --historical_archive $TestFolder/$Platform/historical_archive.tar.gz -d $TestFolder/esp-r");
+  execute("./tester.pl $TestFolder/esp-r/bin/bps  --historical_archive $TestFolder/$Platform/historical_archive.tar.gz -d $TestFolder/esp-r -p $TestFolder/$subbranch_name/tester/");
   
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
   # Digest test report 
@@ -376,8 +391,14 @@ sub main()
   }else{
     $subject = "ESP-r automated test: Pass"
   }
-  mail_message($smtp_server,$mail_to,$mail_from,$subject,$results);
+  
+  foreach $address (@addresses){
+    mail_message($smtp_server,$address,$mail_from,$subject,$results);
+  }
   stream_out("Done\n");
+
+  system("echo @addresses > ~/cron_output.txt");
+  system("echo $results >> ~/cron_output.txt");
 
   stream_out("Deleting working directory $TestFolder...\n");
   execute("rm -fr $TestFolder");
@@ -439,7 +460,7 @@ else
 }
 else
 {
-print "NET::smtp not available. Cannot mail\n";
+  print "NET::smtp not available. Cannot mail\n";
 }
 #Return status. 
 return $worked;
@@ -473,17 +494,19 @@ sub buildESPr($$$){
     # Test each binary separately, omit training and databases.
     foreach $bin (sort keys %binlist){
         
-      if ( $bin =~/vew/ ){
-        $target = "viewer";
+      if ( defined ( $binalias{$bin} ) ){
+        $target = $binalias{$bin};
       }else{
         $target = $bin;
       }
       stream_out(".");
-      execute("./Install -d $TestFolder --xml --silent --$xLibs $Debug_flag --no_dbs --no_training --force $bin ");
+      $debug_temp = `./Install -d $TestFolder --xml --silent --$xLibs $Debug_flag --no_dbs --no_training --force $bin 2>&1`;
       if ( ! -r "$TestFolder/esp-r/bin/$target"      && 
-          ! -r "$TestFolder/esp-r/bin/$target.exe"     ){
+           ! -r "$TestFolder/esp-r/bin/$target.exe"     ){
         $Status="Failed";    
         $err_msg .= "    -> Binary $target could not be built.\n";
+        $debug .= " ERROR: Target: $TestFolder/esp-r/bin/$target: ".`ls -la $TestFolder/esp-r/bin/$target`;
+        $debug .= "\n $debug_temp \n\n";
       }
     }
   }else{
