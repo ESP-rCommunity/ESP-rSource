@@ -1317,9 +1317,8 @@ echo " Installing ESP-r system.  This may take some time."
    URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
       
    # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
-   branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
-   branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
-   
+   branch_name=`echo $URL | sed "s/^.*\/esp-r\///g"`
+      
    # Strip leading 'branches', if any
    branch_name=`echo $branch_name | sed "s/branches\///g"`
    # Strip trailing 'src'
