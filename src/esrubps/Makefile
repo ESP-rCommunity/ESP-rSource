@@ -6,6 +6,7 @@ DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
+PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
@@ -23,7 +24,7 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o bctlf.o \
 	  blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -111,6 +112,9 @@ adjb.F:
 adjp.F:
 	rm -f adjp.F
 	ln -s $(PLTdir)/adjp.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
@@ -656,7 +660,7 @@ clean:
 	rm -f core $(PROG) $(BPS_OBJECTS) $(XML_COBJECTS)    \
 	$(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)  \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
-	ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
+	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \

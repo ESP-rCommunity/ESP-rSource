@@ -22,6 +22,7 @@ C Project Manager: file eddb.f providing manipulation of
 C system databases:
 C  EDDB  : Controls specification/ browsing of databases.
 C  opendb: Standard opening of thermophysical and optical databases.
+C EDDBMAT Changes the materials database current cfg file references.
 C EDDBPROFILE Changes the events profile database current cfg file references.
 C EDDBOPT Changes the optical database current cfg file references.
 C EDDBCLM: Changes the climate database current cfg file references.
@@ -611,7 +612,10 @@ C Menu help text.
 
 C ********** opendb
 C Open materials constructions, multi-layer constructions and
-C optical properties databases.
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
 #include "esprdbfile.h"
@@ -621,8 +625,15 @@ C optical properties databases.
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
 
@@ -639,11 +650,51 @@ C this to 24 words wide.
         call edisp(iuout,outs)
         MATDBOK=.FALSE.
       else
-        MATDBOK=.TRUE.
+
+C Also check to see if the file has correct info in 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
+            MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable material database was found. ',
+     &          'check other warnings for advise.','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            call edisp(iuout,' Filled material data arrays...')
+            MATDBOK=.TRUE.
+          endif
+        endif
       endif
+
         
 C Read multilayer db information into common.
-      CALL ERPFREE(IFMUL,ISTAT)
+ 139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
@@ -795,8 +846,14 @@ C Default esp-r distribution path.
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,modcon,unixok,copydef,clkok,chgdb
+      logical moddb,modcon,unixok,copydef,clkok,chgdb,close
 
       character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -804,6 +861,7 @@ C Default esp-r distribution path.
       character cfgroot*24,LCFGF*72,fs*1,message*48
       character doit*248,LCOPY*72,dinstpath*48,APP*4
       character DFILE*72,LASCI*72,LTMPFL*72
+      DIMENSION ICLN(30)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -824,35 +882,47 @@ C If db does not exist offer the following choices:
       H(1)='The materials database holds the density, specific' 
       H(2)='heat, conductivity, diffusion resistance and surface'
       H(3)='absorption and emissivity of elements such as earth,' 
-      H(4)='stone, steel, oak etc.  This database is normally in' 
-      H(5)='a binaryformat for quick random access although an'
-      H(6)='ASCII form is available fortransfer between machine' 
-      H(7)='types.'
-      H(8)=' '
-      H(9)='The following options can be selected:'
+      H(4)='stone, steel, oak etc.  This database is available in' 
+      H(5)='a binary format for quick random access and there are'
+      H(6)='two ASCII form available (one exactly matches the ' 
+      H(7)='content of the binary file and an extended format file.'
+      H(8)='which allows more documentations and more categories '
+      H(9)='and more materials to be held). '
       H(10)=' '
-      H(11)='a) If the file exists than you can browse the database '
-      H(12)='   and if you have permission to update the file you'
-      H(13)='   can edit the entities in the database.'
-      H(14)=' '
-      H(15)='b) select another file: you will asked for a file'
-      H(16)='   name and if it is found you can browse or edit it.'
-      H(17)=' '
-      H(18)='c) make a new database: a new database will be created '
-      H(19)='   based on the file name you supply.'
+      H(11)='The following options can be selected:'
+      H(12)=' '
+      H(13)='a) If the file exists than you can browse the database '
+      H(14)='   and if you have permission to update the file you'
+      H(15)='   can edit the entities in the database. This option'
+      H(16)='   works for all materials database file formats:'
+      H(17)='   - binary materials db (found in older models)'
+      H(18)='   - ascii version of binary materials db'
+      H(19)='   - extended ascii materials database'
       H(20)=' '
-      H(21)='d) copy default database: a project copy of the default'
-      H(22)='  database will be made and you will be offered a '
-      H(23)='  chance to rename it.'
-      H(24)=' '
-      H(25)='e) export material db (a binary file which is'
-      H(26)='   platform dependant to an ascii file) '
-      H(27)=' '
-      H(28)='f) import legacy ascii material db file and convert it'
-      H(29)='   to a binary file. '
+      H(21)='b) select another file: you will asked for a file'
+      H(22)='   name and if it is found you can browse or edit it.'
+      H(23)=' '
+      H(24)='c) make a new database: a new database will be created '
+      H(25)='   based on the file name you supply.'
+      H(26)=' '
+      H(27)='d) copy default database: a project copy of the default'
+      H(28)='  database will be made and you will be offered a '
+      H(29)='  chance to rename it.'
       H(30)=' '
-      H(31)='g) import ascii material db file into common blocks,view'
-      H(32)='   it and write out to ascii file (BETA facility). '
+      H(31)='e) export a binary material db (which is platform'
+      H(32)='   dependant to an ascii file) '
+      H(33)=' '
+      H(34)='f) import legacy ascii material db file and convert it'
+      H(35)='   to a binary file (and the ascii file can be used '
+      H(36)='   directly so only do this if you want to work with'
+      H(37)='   an older version of ESP-r. '
+      H(38)=' '
+      H(39)='g) import ascii material db file into common blocks,view'
+      H(40)='   it and write out to ascii file (BETA facility). '
+      H(41)=' '
+      H(42)='Gradually models should be converted from using the '
+      H(43)='binary file to the ascii file format and then to the '
+      H(44)='extended ascii format. '
       CALL ERPFREE(IFMAT,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
@@ -867,7 +937,7 @@ C Get length of path to where esp-r databases were installed.
      &    'a browse/edit (NOT APPLICABLE)','b select another file',
      &    'c make a new database','d copy the default database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,44)
           copydef=.true.
       elseif(LFMAT(1:linst).eq.linstd(1:linst))then
 
@@ -878,7 +948,7 @@ C If corportate database then offer the following choices:
      &    'a browse or edit this file','b select another file',
      &    'c make a new database','d make project copy of database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,44)
           copydef=.false.
       else
 
@@ -889,31 +959,72 @@ C If db exists locally offer the following choices:
      &    'a browse or edit this file','b select another file',
      &    'c make a new database','d copy the default database',
      &    'e binary >> ascii export','f ascii >> binary import',
-     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,32)
+     &    'g ascii >> common (BETA)',' ',' ',' ',' ',' ',isw,idno,44)
           copydef=.true.
       endif
 
 C Act on the users choice. If no choice return to main menu.
-      if(isw.eq.0)then
+C This is also a jump back point if the user has supplied a
+C new file name so it can be processed.
+ 149  if(isw.eq.0)then
         return
       elseif(isw.eq.1)then
         if(XST)then
           IER=0
           call EFOPRAN(IFMAT,LTMP,40,0,IER)
-          if(ier.ne.0)then
-            call usrmsg(' The materials database was not found or ',
-     &                  ' was corrupt','W')
-            goto 138
+ 140      if(ier.ne.0)then
+
+C It might be an ascii version of the file.
+            CALL ERPFREE(IFMAT,ISTAT)
+
+C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
+C re-read as a legacy materials file.
+            call rascimat(iuout,IFMAT,LTMP,IER)
+            if(ier.eq.-2)then
+              ier=0
+              call rlegacymat(iuout,IFMAT,LTMP,ier)
+              if(ier.ne.0)then
+                call usrmsg('The materials database was not found or',
+     &                      'was corrupt','W')
+                goto 138
+              else
+                call edisp(iuout,' Filled material data arrays...')
+              endif
+            elseif(ier.eq.0)then
+              call edisp(iuout,' Filled material data arrays...')
+            endif
+          else
+
+C Check to see that the file has the correct information. If read
+C fails use error jump to start testing alternatives. If read is ok
+C then proceed with matver still set to zero.
+            IREC=601
+            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &        (ICLN(I),I=1,30)
+            if(NCLASS.LE.0) goto 1000
+            matver = 0.0   ! reset version number ( in case of file change)
+            goto 139  ! scan was ok so proceed with subsequent binary access.
+
+ 1000       ier=-1    ! error reading record or no classes try other options
+            goto 140
           endif
-          MATDBOK=.TRUE.
+  139     MATDBOK=.TRUE.
           moddb=.true.
           modcon=.true.
           LFMAT=LTMP
           call tstamp('>','PRJ: enter materials db')
-          CALL ELISTC(iw,chgdb,'M',IER)
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+
+C Offer display of material common blocks.
+            CALL ELISTMAT(iw,chgdb,'M',IER)
+          else
+            CALL ELISTC(iw,chgdb,'M',IER)
+          endif
           if(ier.eq.1)then
 
-C The materials db was empty...so.
+C The materials db was empty...so it might be an ascii version
+C of the file.
             goto 138
           elseif(ier.eq.2)then
 
@@ -923,27 +1034,37 @@ C The materials db did not scan. Could be wrong machine type.
      &        ' restored from archival ASCII version.','W')
             goto 138
           endif
-          if(chgdb)then
+
+C Having returned from editing/browsing the materials offer to
+C make a backup copy if the initial file was binary.
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            continue
+          else
+            if(chgdb)then
 
 C If the materials db was edited write a backup ASCII version.
-            H(1)='The materials db is a binary file. If this gets'
-            H(2)='corrupted it is good to have a backup to restore'
-            H(3)='from. Ant ASCII version is being written.'
-            DFILE='./newmat.db1.a'
-            clkok=.false.
-            LASCI=' '
-            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            CALL EASKSCNCL(LASCI,' Materials database (ASCII backup)?',
-     &        ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
-     &       IER,3)
-            if(clkok)then
-              continue
-            else
-              IAF=IFIL+1
-              CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+              H(1)='The binary materials db file could get corrupted.'
+              H(2)='It is good to have a backup to restore from and'
+              H(3)='also to give the option to have an ascii verson'
+              H(4)='for the model.'
+              DFILE='./newmat.db1.a'
+              clkok=.false.
+              LASCI=' '
+              write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              CALL EASKSCNCL(LASCI,
+     &          'Materials database (ASCII backup)?',
+     &          ' ','cancel',clkok,72,DFILE,'materials db (ascii)',
+     &          IER,4)
+              if(clkok)then
+                continue
+              else
+                IAF=IFIL+1
+                CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+              endif
             endif
+            modcon=chgdb
           endif
-          modcon=chgdb
         else
           call usrmsg('Sorry there is no file to browse/edit.',
      &                'Please use one of the other options. ','W')
@@ -962,56 +1083,11 @@ C If the materials db was edited write a backup ASCII version.
           goto 144
         endif
         CALL ERPFREE(IFMAT,ISTAT)
+
         call FINDFIL(LFMAT,XST)
         if(XST)then
-
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-          write(outs,'(2a)') 'Accessing materials db ',
-     &      LFMAT(1:lnblnk(LFMAT))
-          call edisp(iuout,outs)
-          IER=0
-          call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-          if(ier.ne.0)then
-            call usrmsg(' The materials database was not found or ',
-     &                  ' was corrupt','W')
-            goto 138
-          endif
-          call tstamp('>','PRJ: enter materials db')
-          CALL ELISTC(iw,chgdb,'M',IER)
-          if(ier.eq.1)then
-
-C The materials db was empty...so.
-            goto 138
-          elseif(ier.eq.2)then
-
-C The materials db did not scan. Could be wrong machine type.
-            call usrmsg(
-     &        ' The materials database probably needs to be',
-     &        ' restored from archival ASCII version.','W')
-            goto 138
-          endif
-          if(chgdb)then
-
-C If the materials db was edited write a backup ASCII version.
-            H(1)='The materials db is a binary file. If this gets'
-            H(2)='corrupted it is good to have a backup to restore'
-            H(3)='from. Ant ASCII version is being written.'
-            DFILE='./newmat.db1.a'
-            clkok=.false.
-            LASCI=' '
-            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            CALL EASKSCNCL(LASCI,' Materials database (ASCII backup)?',
-     &        ' ','cancel',clkok,72,DFILE,'materials database (ascii)',
-     &        IER,3)
-            if(clkok)then
-              continue
-            else
-              IAF=IFIL+1
-              CALL MKAPRC(IUOUT,LASCI,IAF,IER)
-            endif
-          endif
-          modcon=chgdb
+          isw = 1      ! reset isw so correct if statment will be used.
+          goto 149     ! jump back and process this file name.
         else
           write(outs,'(2a)') LFMAT(1:lnblnk(LFMAT)),
      &      ' does not appear to exist.'
@@ -1276,7 +1352,12 @@ C ascii version of this new project materials db.
             return
           else
             IAF=IFIL+1
-            CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              CALL mkascimat(IUOUT,IAF,LASCI,IER)
+            else
+              CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+            endif
           endif
         else
           goto 146
@@ -1312,7 +1393,12 @@ C Confirm suggested name and then write out asci file.
         if(clkok)then
           return
         else
-          CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            CALL mkascimat(IUOUT,IAF,LASCI,IER)
+          else
+            CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+          endif
         endif
       elseif(isw.eq.6)then
 

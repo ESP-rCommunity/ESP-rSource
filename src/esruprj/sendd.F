@@ -41,6 +41,30 @@ C SDDEF001 - Material properties distribution definition.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+      logical closemat
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       CHARACTER NAM*72,TITL*72
       CHARACTER LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER H*72, ITEM(8)*16, LELM(MMLC*ME)*36
@@ -55,11 +79,27 @@ C This returns the number of unique elements and there db ref.
       call UPELM(NPRIM,IELM,IER)
 
 C Now find the names of the materials.
+      call eclose(matver,1.1,0.01,closemat)
       DO 20 II=1,NPRIM
         IDB=IELM(II)
         IER=0
-        CALL ERPCDB(IFMAT,IDB,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &                                                    DRV,TITL,NAM)
+        if(closemat)then
+          legmat=IELM(II)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IDB,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
+     &      DRV,TITL,NAM)
+        endif
 
 C Check for errors - add to the total error counter if error has occured.
         if (IERR.ne.0) then
@@ -200,6 +240,30 @@ C SDDEF002 - Composite constructions dietribution definition.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       CHARACTER NAM*72,TITL*72
       CHARACTER H*72, LELM(MMLC*ME)*36
       CHARACTER DESC*48, MATNAM*12
@@ -221,10 +285,26 @@ C Check for errors - add to the total error counter if error has occured.
       if (IRT.eq.1) then
 
 C Pick a material in that MLC.
+        call eclose(matver,1.1,0.01,closemat)
         II=0
         do 10 IL=1,LAYERS(ISEL)
-          CALL ERPCDB(IFMAT,IPR(ISEL,IL),iuout,IERR,DBCON,DBDEN,
-     &                                        DBSHT,E,A,DRV,TITL,NAM)
+          if(closemat)then
+            legmat=IPR(ISEL,IL)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          else
+            CALL ERPCDB(IFMAT,IPR(ISEL,IL),iuout,IERR,DBCON,DBDEN,
+     &        DBSHT,E,A,DRV,TITL,NAM)
+          endif
 
 C Check for errors - add to the total error counter if error has occured.
           if (IERR.ne.0) then

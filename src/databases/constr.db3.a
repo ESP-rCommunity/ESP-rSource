@@ -1,32 +1,36 @@
 # materials db defined in material.db1.a
    17    #  number of classifications
-# class|no elements|description
-    1    7   Brick
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    1    8   Brick
     1   Paviour brick
         0.960, 2000.000,  840.000,  0.930,  0.700,     12.000
     2   Breeze block
         0.440, 1500.000,  650.000,  0.900,  0.650,     15.000
-    3   Inner leaf brk
+    3   Inner leaf brick
         0.620, 1800.000,  840.000,  0.930,  0.700,     29.000
-    4   Outer leaf brk
+    4   Outer leaf brick
         0.960, 2000.000,  650.000,  0.900,  0.930,     25.000
-    5   Vermic insul brk
+    5   Vermiculite insulating brick
         0.270,  700.000,  840.000,  0.900,  0.650,     12.000
     6   Lt brown brick
         0.960, 2000.000,  650.000,  0.900,  0.700,     25.000
     7   Brick (milton keyns)
         0.840, 1700.000,  800.000,  0.900,  0.700,     25.000
-# class|no elements|description
-    2   16   Concrete
-   21   Light mix conc
+    8   Vermiculite refractory brick (www.matweb.com search)
+        0.120,   375.000,   940.000,  0.900,  0.650,     12.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    2   17   Concrete
+   21   Light mix concrete
         0.380, 1200.000,  653.000,  0.900,  0.650,      6.000
-   22   Aerated conc block
+   22   Aerated concrete block
         0.240,  750.000, 1000.000,  0.900,  0.650,     10.000
    23   Aerated concrete
         0.160,  500.000,  840.000,  0.900,  0.650,     13.000
-   24   Refrac insul conc
+   24   Refractory insulating concrete
         0.250,   10.000,  837.000,  0.900,  0.650,     12.000
-   25   Vermic aggr conc
+   25   Vermiculite aggregrate concrete
         0.170,  450.000,  837.000,  0.900,  0.650,     12.000
    26   No fines concrete
         0.960, 1800.000,  840.000,  0.900,  0.650,     18.000
@@ -34,11 +38,11 @@
         0.250, 1040.000,  960.000,  0.900,  0.650,      8.000
    28   Block inner (3% mc)
         0.510, 1400.000, 1000.000,  0.900,  0.650,     10.000
-   29   Foamed inner blk(3%mc)
+   29   Foamed inner block (3%mc)
         0.160,  600.000, 1000.000,  0.900,  0.650,      6.000
-   30   Foamed outer blk(5%mc)
+   30   Foamed outer block (5%mc)
         0.170,  600.000, 1000.000,  0.900,  0.650,      8.000
-   31   Glass reinf conc
+   31   Glass reinforced concrete
         0.900, 1950.000,  840.000,  0.900,  0.650,     18.000
    32   Heavy mix concrete
         1.400, 2100.000,  653.000,  0.900,  0.650,     19.000
@@ -50,8 +54,11 @@
         0.510, 1400.000, 1000.000,  0.900,  0.250,     10.000
    36   concrete block (milton keynes)
         1.060, 1950.000, 1000.000,  0.900,  0.400,     18.000
-# class|no elements|description
-    3    8   Metal
+   37   Aerated concrete autoclaved  .8 g/cc (www.matweb.com search)
+        0.230,   800.000,  1000.000,  0.900,  0.650,     13.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    3    9   Metal
    41   Copper
       200.000, 8900.000,  418.000,  0.720,  0.650,  19200.000
    42   Steel
@@ -68,13 +75,16 @@
       210.000, 2700.000,  880.000,  0.820,  0.320,  19200.000
    48   Thermobrite
       210.000, 2700.000,  880.000,  0.050,  0.050,  19200.000
-# class|no elements|description
+   49   Lead as per CIBSE data
+       35.000, 11340.000,   130.000,  0.120,  0.200,  19200.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     4   17   Wood
    61   Block (wood)
         0.160,  800.000, 2093.000,  0.900,  0.650,     11.000
-   62   Hardboard(medium)
+   62   Hardboard (medium)
         0.080,  600.000, 2000.000,  0.910,  0.700,    110.000
-   63   Hardboard(standard)
+   63   Hardboard (standard)
         0.130,  900.000, 2000.000,  0.910,  0.700,    140.000
    64   Fir (20% mc)
         0.140,  419.000, 2720.000,  0.900,  0.650,     12.000
@@ -104,8 +114,9 @@
         0.120,  540.000, 1210.000,  0.900,  0.900,    576.000
    77   HardBoard Siding
         0.787, 1900.000, 1170.000,  0.900,  0.900,    576.000
-# class|no elements|description
-    5    7   Stone
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    5    8   Stone
    81   Sandstone
         1.830, 2200.000,  712.000,  0.900,  0.600,     29.000
    82   Red granite
@@ -120,7 +131,10 @@
         0.360, 1840.000,  840.000,  0.900,  0.600,      2.000
    87   Chippings
         0.960, 1800.000, 1000.000,  0.900,  0.600,      2.000
-# class|no elements|description
+   88   Basalt (www.matweb.com search)
+        0.800,  2700.000,   720.000,  0.900,  0.600,   1960.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     6    9   Plaster
   101   Dense plaster
         0.500, 1300.000, 1000.000,  0.910,  0.500,     11.000
@@ -140,11 +154,12 @@
         0.190,  950.000,  840.000,  0.910,  0.220,     11.000
   109   Beige ptd Gypboard
         0.190,  950.000,  840.000,  0.910,  0.260,     11.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
     7    8   Screeds and renders
-  121   Ltwt conc screed
+  121   Lightweight concrete screed
         0.410, 1200.000,  840.000,  0.900,  0.800,     30.000
-  122   Cast conc screed
+  122   Cast concrete screed
         1.280, 2100.000, 1007.000,  0.900,  0.650,     44.000
   123   Granolithic screed
         0.870, 2085.000,  837.000,  0.900,  0.650,     35.000
@@ -158,8 +173,9 @@
         0.790, 1329.000, 1000.000,  0.910,  0.500,     19.000
   128   Aged Rendering
         0.790, 1329.000, 1000.000,  0.910,  0.740,     19.000
-# class|no elements|description
-    8   13   Tiles
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    8   14   Tiles
   141   Clay tile
         0.850, 1900.000,  837.000,  0.900,  0.600,     52.000
   142   Concrete tile
@@ -186,8 +202,11 @@
         0.850, 1050.000,  837.000,  0.900,  0.800,   1000.000
   153   floor tiles (milton keynes)
         0.600,  500.000,  750.000,  0.900,  0.650,     52.000
-# class|no elements|description
-    9    8   Asphalt and bitumen
+  154   PVC tile as per CSTC Belgium 1980
+        0.190,  1200.000,  1470.000,  0.900,  0.600,   1000.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+    9   13   Asphalt and bitumen
   161   Bitumen felt
         0.500, 1700.000, 1000.000,  0.900,  0.900,   1000.000
   162   Roofing felt
@@ -204,7 +223,18 @@
         1.200, 2300.000, 1700.000,  0.300,  0.300,   1900.000
   168   Asphalt shingles
         1.290, 1100.000, 1260.000,  0.950,  0.950,   1900.000
-# class|no elements|description
+  169   laminated paper (ASHRAE Handbook 1985)
+        0.072,   480.000,  1380.000,  0.900,  0.900,     15.000
+  170   Polyvinylchloride pipe estimated from CIBSE data
+        0.160,  1380.000,  1000.000,  0.900,  0.800,  19200.000
+  171   HDPE (high density polyethylene pipe (www.matweb.com)
+        0.290,   918.000,  2200.000,  0.900,  0.800,  19200.000
+  172   ABS (Acrylonitrile Butadiene Styrene) pipe (www.matweb.com)
+        0.250,  1020.000,  1400.000,  0.900,  0.800,  19200.000
+  173   wool felt underlay (UK assumptions)
+        0.040,   160.000,  1360.000,  0.900,  0.900,     15.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    10    4   Asbestos
   181   Asbestos cement
         0.360, 1500.000, 1000.000,  0.900,  0.600,    300.000
@@ -214,7 +244,8 @@
         0.160, 2500.000, 1050.000,  0.900,  0.960,    300.000
   184   Asbestos insulation
         0.160,  577.000,  840.000,  0.900,  0.600,      3.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    11   19   Insulation materials (1)
   201   Fibreboard
         0.060,  300.000, 1000.000,  0.900,  0.500,     13.000
@@ -224,7 +255,7 @@
         0.030,   30.000, 1764.000,  0.900,  0.500,      5.000
   204   Thermalite
         0.190,  753.000,  837.000,  0.900,  0.700,     10.000
-  205   Polyurethane foam bd
+  205   Polyurethane foam board
         0.030,   30.000,  837.000,  0.900,  0.500,     90.000
   206   Siporex
         0.120,  550.000, 1004.000,  0.900,  0.400,     60.000
@@ -238,7 +269,7 @@
         0.180,  700.000, 1004.000,  0.900,  0.600,     10.000
   211   Glasswool
         0.040,  250.000,  840.000,  0.900,  0.300,      4.000
-  212   Roof insulation bd
+  212   Roof insulation board
         0.190,  960.000,  950.000,  0.900,  0.550,     15.000
   213   Felt sheathing
         0.190,  960.000,  950.000,  0.900,  0.900,     15.000
@@ -252,17 +283,18 @@
         0.040,  105.000, 1800.000,  0.900,  0.600,     15.000
   218   Straw thatch
         0.070,  240.000,  180.000,  0.900,  0.500,      3.000
-  219   Thermalite turbo blk
+  219   Thermalite turbo block
         0.110,  480.000, 1050.000,  0.900,  0.650,     10.000
-# class|no elements|description
-   12   10   Carpet
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+   12   12   Carpet
   221   Wilton
         0.060,  186.000, 1360.000,  0.900,  0.600,     10.000
-  222   Sheeps wool (sim)
+  222   Simulated sheeps wool
         0.060,  198.000, 1360.000,  0.900,  0.600,     10.000
   223   Wool felt underlay
         0.040,  160.000, 1360.000,  0.900,  0.650,     10.000
-  224   Cellular rub underlay
+  224   Cellular rubber underlay
         0.100,  400.000, 1360.000,  0.900,  0.650,   1000.000
   225   Synthetic carpet
         0.060,  160.000, 2500.000,  0.900,  0.650,     10.000
@@ -276,7 +308,12 @@
         0.060,  160.000, 2500.000,  0.900,  0.900,     10.000
   230   LtGrey cord synth
         0.060,  160.000, 2500.000,  0.900,  0.780,     10.000
-# class|no elements|description
+  231   wool felt underlay (UK assumptions)
+        0.040,   160.000,  1360.000,  0.900,  0.600,     10.000
+  232   linoleum as per CSTC Belgium 1980
+        0.190,  1200.000,  1470.000,  0.900,  0.600,     10.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    13    6   Glass
   241   Glass block
         0.700, 3500.000,  837.000,  0.830,  0.050,  19200.000
@@ -290,8 +327,9 @@
        20.000,   10.000,   10.000,  0.990,  0.010,  19200.000
   246   6mm CF Low_e
         1.050, 2500.000,  750.000,  0.050,  0.060,  19200.000
-# class|no elements|description
-   14    4   Earth
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+   14    7   Earth
   261   Infusorial (9% mc)
         0.090,  480.000,  180.000,  0.900,  0.850,      5.000
   262   Gravel based
@@ -300,8 +338,15 @@
         1.280, 1460.000,  879.000,  0.900,  0.850,      5.000
   264   earth (milton keynes)
         1.750, 1900.000, 1700.000,  0.900,  0.850,      5.000
-# class|no elements|description
-   15    7   Insulation materials (2)
+  265   sand as per Indian Standards Institution
+        1.740,  2240.000,   840.000,  0.900,  0.850,      5.000
+  266   sand kiln dried CIBSE
+        1.740,  2240.000,   920.000,  0.900,  0.850,      5.000
+  267   alluvial clay with 40% sand as per Indian Standards Institution
+        1.210,  1960.000,   840.000,  0.900,  0.850,      5.000
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
+   15    8   Insulation materials (2)
   281   Glass Fibre Quilt
         0.040,   12.000,  840.000,  0.900,  0.650,     30.000
   282   cavity wall insul
@@ -316,13 +361,16 @@
         0.034,  132.730, 1200.000,  0.050,  0.050,     30.000
   287   KarnsJoistR19
         0.140,  185.460, 1200.000,  0.200,  0.200,     30.000
-# class|no elements|description
+  288   Loose Vermiculite for high temperature use (www.matweb.com search)
+        0.069,    60.100,  1030.000,  0.900,  0.650,     30.000
+# class|no materials|description
    16    2   Board
   301   Gypsum board
         0.160,  800.000, 1090.000,  0.900,  0.900,     10.000
   302   Particle board underlayment
         0.110,  640.000, 1210.000,  0.900,  0.900,     10.000
-# class|no elements|description
+# class|no materials|description
+# for each item index|description| conduc. density. specific ht, emis. abs. diffusion res.
    17    1   Sheathing
   321   regular density sheathing
         0.055,  290.000, 1300.000,  0.900,  0.900,     10.000

@@ -126,7 +126,7 @@ C ECO specific commons
      &                MainPart(MMLC,MNbM),LayerNam(MMLC,ME),
      &                LayerTyp(MMLC,ME)
 
-      COMMON/DesMLC/MatName(MMAT),MatDesc(MMAT),MatCat(MMAT),
+      COMMON/DesMLC/MatNameco(MMAT),MatDesc(MMAT),MatCat(MMAT),
      &              CompoNam(MMLC), LayerDes(MMLC,ME)
 
       COMMON/SPECMASS/SMPLayer(MMLC,ME),SMSLayer(MMLC,ME),IWhich,
@@ -141,13 +141,37 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Name of current application
       common/APPNAME/cAppName
-      
       character cAppName*12
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
       DIMENSION ITEM(19) 
+      DIMENSION ICLN(30)
 
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
@@ -173,7 +197,7 @@ C      CHARACTER tab*1
       CHARACTER*12 ComAsPt,CoTrPt,MaintPt,AsProjPt
       CHARACTER*1 ComAsPa,MaintTyp,LayerCat,MainPart,AsProjPa,LayerTyp
 
-      CHARACTER*12 CompoNam,LayerNam,MatName
+      CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
 
@@ -192,6 +216,7 @@ C      tab = CHAR(9)
       IFS=1
       ITFS=1
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
       itrc=2
       ILoss = 0
       IRep= 1
@@ -888,16 +913,67 @@ C Display Material list and allow selection of materials.
           goto 10
         ENDIF
         IF (.NOT.MATDBOK) THEN
-          call usrmsg('Materials database not yet loaded,',
-     &                      'unable to display list.','W')
-          goto 10
-        else
 
 C Open Materials database and allow user to select material.
           IER=0
           CALL ERPFREE(IFMAT,ISTAT)
           
-          call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+C If materials database not opened, do it now.
+          IER=0
+          CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
+          IF(ier.ne.0)THEN
+            write(outs,'(3a)') ' No materials database ',
+     &        LFMAT(1:lnblnk(LFMAT)),' found.'
+            call edisp(iuout,outs)
+            MATDBOK=.FALSE.
+          else
+
+C Also check to see if the file has correct info. 
+            IREC=601
+            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &        (ICLN(I),I=1,30)
+            if(NCLASS.LE.0)then
+              goto 1000   ! no classifications so try alternatives
+            else
+              MATDBOK=.TRUE.
+              matver = 0.0
+              goto 139  !  a binary file found so carry on.
+            endif
+ 1000       CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+            call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+            if(ier.eq.-2)then
+              ier=0
+              call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+              if(ier.ne.0)then
+                call usrmsg('No readable materials database was',
+     &                      'found or file was corrupt','W')
+                MATDBOK=.FALSE.
+                goto 10
+              else
+                call eclose(matver,1.1,0.001,closemat)
+                if(closemat)then
+                  call edisp(iuout,' Filled material data arrays...')
+                  MATDBOK=.TRUE.
+                else
+                  call usrmsg(
+     &              'No readable material database was found. ',
+     &              'check other warnings for advise.','W')
+                  MATDBOK=.FALSE.
+                  goto 10
+                endif
+              endif
+            elseif(ier.eq.0)then
+              call eclose(matver,1.1,0.001,closemat)
+              if(closemat)then
+                call edisp(iuout,' Filled material data arrays...')
+                MATDBOK=.TRUE.
+              endif
+            endif
+          endif
+
+C Find version of materials database.
+ 139      call eclose(matver,1.1,0.01,closemat)
+
           dok=.true.
           h(1)='If you happen to know the material db index you '
           h(2)='can say no. Otherwise, say yes and then browse '
@@ -906,7 +982,7 @@ C Open Materials database and allow user to select material.
      &               ' do you want to browse through the db?',OK,dok,3)
           IF(OK)then
 
-C If primitive database not opened, do it now.
+C If material database not opened, do it now.
             iwhich=0
             CALL ELISTCMOD(iwhich,chdb,'-',IER)
             if(iwhich.eq.0)then
@@ -921,7 +997,7 @@ C If primitive database not opened, do it now.
               endif
             ENDIF
           ELSE
-            H(1)='Each item in the primitive construction db has a'
+            H(1)='Each item in the materials db has a'
             H(2)='reference number. '
             H(3)='Air is reference 0.'
             CALL EASKI(IWHICH,' ',' Primitive db reference no: ',
@@ -929,16 +1005,30 @@ C If primitive database not opened, do it now.
           ENDIF
         endif
 
-        CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &                                                   DRV,TITL,NAM)
-        
+        if(closemat)then
+          legmat=IWHICH   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
+     &      DRV,TITL,NAM)
+        endif
         call edisp(iuout,' ')
         write(outs,'(a,a)')'Selected category: ',
      &                      MatCat(IMatDbID(IWHICH))
         call edisp(iuout,outs)
         IF (IcalType.ne.3) THEN
           write(outs,'(a,a)')'Selected material: ',
-     &                      MatName(IMatDbID(IWHICH))
+     &                      MatNameco(IMatDbID(IWHICH))
           call edisp(iuout,outs)
         endif
         call edisp(iuout,' ')
@@ -949,7 +1039,7 @@ C If primitive database not opened, do it now.
      & '            |    W/(m C)   |  kg/m^3 |  J/(kg C)  |   [-]   |   
      &   [-]   |         [-]       ')
         call edisp(iuout,' ')
-        write (outs,99) MatName(IMatDbID(IWHICH))(1:12),DBCON,DBDEN,
+        write (outs,99) MatNameco(IMatDbID(IWHICH))(1:12),DBCON,DBDEN,
      &                 DBSHT,E,A,DRV
    99   format(1x, A12, 3x, f7.1, 6x, f7.1, 6x, f5.1, 6x, f5.2, 7x,
      &          f5.2,9x, f7.1)
@@ -966,9 +1056,9 @@ C ask for mass of material
         CALL USRMSG(' ',' ','-')
 
 C Assign labels for main menu
-        TxtMat = MatName(IMatDbID(IWHICH))
+        TxtMat = MatNameco(IMatDbID(IWHICH))
         TxtCompo = 'UNKNOWN'
-        WRITE(TxtLCA,'(a,a)')' of ',MatName(IMatDbID(IWHICH))
+        WRITE(TxtLCA,'(a,a)')' of ',MatNameco(IMatDbID(IWHICH))
         GOTO 10
 
 C << potentially remember up to 3 materials for reporting on, need

@@ -138,8 +138,13 @@ C Dispersed demands notes and file name.
 
 C Name of current application
       common/APPNAME/cAppName
-      
       character cAppName*12
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
@@ -193,6 +198,7 @@ C Initialize variables and recover command line arguments.
       issave=2
       isavgh=0
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

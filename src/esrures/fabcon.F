@@ -382,6 +382,30 @@ C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       character outs*124,H*72,NAM*72,TITL*72
       logical ok,dok
 
@@ -392,6 +416,9 @@ C Request surface for output.
 
 C Get element thicknesses for this construction.
       CALL MOTHKE(IZ,ISUR)
+
+C Find version of materials database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C Convert to node-related thicknesses.
       NN=2*NE(ISUR)+1
@@ -405,14 +432,29 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for ..........')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
-     &         DBSHT,E,A,DRVAL,TITL,NAM)
+        if(closemat)then
+          legmat=IPRZ(ISUR,I)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRVAL=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+     &      DBSHT,E,A,DRVAL,TITL,NAM)
+        endif
         H(1)='Diffusion resistance factors are found in the'
-        H(2)='primitive construction database.'
+        H(2)='materials database.'
         write(outs,'(A,I3,2x,A20)')' Element ',I,NAM(1:20)
         V=DRVAL
-        CALL EASKR(V,outs,' Factor ? ',
-     &         0.,'F',0.,'-',1.,'diffusion factor',IER,2)
+        CALL EASKR(V,outs,' Vapour res (MNs g^-1m^-1)? ',
+     &    0.,'F',0.,'-',1.,'diffusion factor',IER,2)
         VDIF(I)=V
    20 CONTINUE
 

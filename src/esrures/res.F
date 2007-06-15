@@ -131,6 +131,13 @@ C Name of current application
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
 
@@ -164,6 +171,7 @@ C     NSIGFIG=3
       IFTIME=0
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
+      matver=0.0   ! initial assumption of binary materials database
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

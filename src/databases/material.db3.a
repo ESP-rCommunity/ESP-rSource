@@ -2,7 +2,7 @@
 *date,Thu May 31 10:28:21 2007
 # materials database defined in constr.db3.a
 *doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3. Information in ASCII file is recorded as found. Additional infomation and documentation uses standard assumptions which should be updated as required.
-17  # number of classifications
+18  # number of classifications
 #  
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
@@ -366,4 +366,8 @@ Category (17) Sheathing is similar to the wood category. It also includes a test
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.00008,0.00001761,0.00000005,1.232,-0.0043,0.00000,0.00000,1008.000,0.00000
+*class,18, 1,GAPS
+Category (18) holds the implied air material with a legacy index of zero.
+*item,mat_000,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
 *end
