@@ -47,7 +47,10 @@ c
       Integer iMech
       Character *72 LMech
       Common /mechvdef/ iMech, LMech
-      Save
+      
+      save outs,OUTSTR, iUnit, ISTAT, iErr, ND, k, iVal, i
+      save val
+      
 c ---
 c All mechanical ventilation system input data initialized prior to data entry.
 c

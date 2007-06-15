@@ -3520,8 +3520,9 @@ c actuation is on a mass flow component.
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue
       return
+      
 
-
+      
 
 C Error messages.
  1001 write(outstr,'(A,I3,A)') ' Sensor node: 1st item (',

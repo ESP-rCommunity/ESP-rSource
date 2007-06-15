@@ -99,6 +99,12 @@ C Material data arrays.
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       integer fstgrp,fstsur,lstsur,strtgr
@@ -161,6 +167,7 @@ C     temp(i)           : Temperature for surface i. [C]
 C Initialize global common data.
       call ezero
       call curmodule('vwf ')
+      cAppName = 'vwf'
       IUIN=5
       IUOUT=6
       LIMTTY=24
@@ -299,15 +306,7 @@ C Debug
         write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
      &    mdispl,nifgrey,ncset,ngset,nzonec
       ENDIF
-      call edisp(iuout,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r View Factors: Version 2.14a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
       call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.

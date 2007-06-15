@@ -136,12 +136,15 @@ C Dispersed demands notes and file name.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
+C Name of current application
+      common/APPNAME/cAppName
+      character cAppName*12
+
       real matver
       integer matcats,matcatitems,matdbitems
       character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
@@ -176,6 +179,7 @@ C Dispersed demands notes and file name.
 C Initialize variables and recover command line arguments.
       call ezero
       call curmodule('prj ')
+      cAppName = 'prj'
       ITRC=0
       IUOUT=6
       IUIN=5
@@ -360,13 +364,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' Welcome to the ESP-r System, Version 11.3')
-      call edisp(IUOUT,' ')
-      call edisp(IUOUT,' (ESP-r Project Manager Version 5.9 of')
-      call edisp(IUOUT,' April 2007, Copyright 2001-7 Energy ')
-      call edisp(IUOUT,' Systems Research Unit, University of ')
-      call edisp(IUOUT,' Strathclyde, Glasgow, Scotland.)')
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings
 C if defined.

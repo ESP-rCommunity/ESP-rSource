@@ -73,8 +73,11 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
 
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
+
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \

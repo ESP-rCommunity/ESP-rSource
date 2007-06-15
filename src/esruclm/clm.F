@@ -79,6 +79,11 @@ C Climate list common.
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       dimension ITEM(22)
       character CLMLOC*30
       character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
@@ -96,6 +101,7 @@ C Climate list common.
 C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
+      cAppName = 'clm'
       tab = CHAR(9)
       ITRC=1
       IUOUT=6
@@ -244,10 +250,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
       call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Climate Analysis: Version 6.22b of April 2007.',
-     &  ' Copyright 2001-7 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'

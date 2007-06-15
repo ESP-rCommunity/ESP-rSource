@@ -94,7 +94,12 @@ c     Implicit None
       Real T, HLR, DeltaT, ZoneFraction
       Character Msg*128
       Logical ExitNOW
-      Save
+      
+      save J, iFun, i, iCycle
+      save T, HLR, DeltaT, ZoneFraction
+      save Msg
+      save ExitNOW
+      
       Data iCycle / 9990 /
       If ( iCycle .lt. 1 ) Then
          Write (Msg,'(a,6f8.2)') 'MECH_VENT_CONTROL - ZF',
@@ -261,7 +266,16 @@ C.....DECLARATIONS for H3Kreporting object
       INTEGER LNBLNK
 C.....H3Kreports.(HVAC_ELEC_DEC).end........................
 c ---
-      Save
+      Save MonVar, PreHtr, Type2, m, i, x, TENDEG, U4, U5
+c ---
+      Save sDuctHG, eDuctHG
+      Save EffHT, EffLT, dEffdT, FPc1, FPc2, PHrefT
+      Save FanPwr, PrePwr, eHRVmax, eHRV
+      Save Tpre, T7, Ts, Te, T2, Tx, T3, Tex
+      Save OpTime, Tlow, Thigh
+      Save Msg
+      Save H3K_rep_NAME
+      
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
 c
@@ -487,7 +501,7 @@ c ---
 c ---
       Real Tlow, Thigh
       Real sFP, FanPwr, x
-      Save
+      Save Tlow,Thigh,sFP,FanPwr,x
 c
 c --- Initialization
 c
@@ -557,7 +571,10 @@ c
       Integer i, j, Duct
       Real HLcoef(3,4)
 c ---
-      Save
+      
+      Save Fleak, Diam, L, HTC, AvVel, CnstDD,  j, Duct
+      Save HLcoef
+      
 c ---
 c  Flexible                           * V    const    * R    Cl
       Data (HLcoef(1,j), j = 1, 4) / 0.095,  1.000,  0.950,  3. /

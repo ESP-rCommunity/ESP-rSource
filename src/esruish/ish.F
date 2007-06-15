@@ -121,6 +121,10 @@ C Significant figure reporting limit (NSIGFIG).
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+C Name of current application
+      common/APPNAME/cAppName
+      character cAppName*12
+
 C Material data arrays.
       real matver
       integer matcats,matcatitems,matdbitems
@@ -151,6 +155,7 @@ C Material data arrays.
 C Initialize global common data.
       call ezero
       call curmodule('ish ')
+      cAppName = 'ish'
       IUOUT=6
       IUIN=5
       LIMTTY=24
@@ -282,16 +287,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Shading & Insolation: Version 1.5a of January 2006.',
-     &  ' Copyright 2001-6 '
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Energy Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
+
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)

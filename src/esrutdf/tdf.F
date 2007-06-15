@@ -86,6 +86,12 @@ C Path to problem
 
 C Logical flags for file openings.
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL      OPTDF,OPIMP,OPEXP,OK,dok
       logical FOUND,XST,unixok,silent
 
@@ -102,6 +108,7 @@ C Assume defaults: trace off (ITRC=0), date format is DOY,
 C time format is 10h00.
       call ezero
       call curmodule('tdf ')
+      cAppName = 'tdf'
       IUOUT=6
       IUIN=5
       ICOUT=0

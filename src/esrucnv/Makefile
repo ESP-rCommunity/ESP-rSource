@@ -45,8 +45,11 @@ startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
+
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \

@@ -51,6 +51,11 @@ C Path to problem and command line file (if any).
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       CHARACTER INTER*144,INF*144
       character path*72,upath*72,esprc*72,outs*124,outs248*248
       character dfdblbl*20,defdbfl*72,fs*1
@@ -59,6 +64,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initial assumptions.
       call ezero
       call curmodule('b2e ')
+      cAppName = 'b2e'
       ITRC=1
       IUOUT=6
       IUIN=5
@@ -155,15 +161,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
       call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r BEMS Link: Version 1.3a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.
