@@ -548,18 +548,6 @@ C........Empirical Hydrogen PEMFC model.
      &              fSkin_Losses,
      &              fAux_Power_use  )
 
-      elseif ( iModel_Type .eq. iStirling_CHP_DYN ) then
-C........Empirical Dynamic Stirling model
-         call Eval_Stirling_Corr (
-     &                iComponent,
-     &                fFuel_flow,
-     &                fTemp_Room,
-     &                fCW_mass_flow,
-     &                fCW_temperature_in,
-     &                fSkin_Losses,
-     &                fQ_avail,
-     &                fPower_Output,
-     &                fHeat_output )
 
       else
 
@@ -609,6 +597,7 @@ C----------------------------------------------------------------------
      &              iSystem_Status,
      &              fOP_time,
      &              iTarget_Mode,
+     &              iCooldown_mode,
      &              iOperating_mode_F,
      &              fTS_mode_fractions,
      &              bTS_modes,
@@ -639,6 +628,9 @@ C----------------------------------------------------------------------
       real fOP_time                 ! Time spent in current operating mode (s)
       integer iTarget_Mode            ! Flag indicating desired operating
                                     !    mode
+
+      integer iCooldown_mode        ! Flag indicating if unit will complete an
+                                    ! optional or mandatory cool-down period.
 
       real fTS_mode_fractions( iOP_Mode_Count )
                                     ! Fraction of timestep spent in
@@ -774,21 +766,30 @@ C----------------------------------------------------------------------
 C           Switch operating points depending on system status
 C----------------------------------------------------------------------
             if ( iOperating_Mode_F .eq. iOP_inoperative .AND.
-     &           iTarget_mode    .eq. iOP_normal_operation ) then
+     &           ( iTarget_mode    .eq. iOP_normal_operation .OR.
+     &             iTarget_mode    .eq. iOP_warmup ) ) then
 
 C..............Switch to start-up mode
                iOperating_Mode_F = iOP_startup
                fOP_time  = 0.0
 
+            elseif ( iTarget_mode .eq. iOP_normal_operation .AND.
+     &               iOperating_mode_F .eq. iOP_warmup ) then
+C..............Switch to normal operation
+               iOperating_mode_F = iOP_normal_operation
+               fOP_time = 0.0
+               
             elseif ( iTarget_mode    .eq. iOP_inoperative  .AND.
-     &               iOperating_Mode_F .eq. iOP_normal_operation  ) then
+     &             ( iOperating_Mode_F .eq. iOP_normal_operation .OR.
+     &               iOPerating_Mode_F .eq. iOP_warmup ) ) then
 
 C..............Initiate shutdown
                iOperating_Mode_F = iOP_shutdown
                fOP_time = 0.0
-
+ 
             elseif ( iOperating_Mode_F .eq. iOP_startup .AND.
-     &               iTarget_mode    .eq. iOP_normal_operation ) then
+     &               ( iTarget_mode    .eq. iOP_normal_operation .OR.
+     &                 iTarget_mode    .eq. iOP_warmup ) ) then
 C----------------------------------------------------------------------
 C              System is in start-up. Will engine complete start-up
 C              period before completion of timestep?
@@ -816,11 +817,11 @@ C----------------------------------------------------------------------
      &                fTS_fraction_remain ) ) then
 C----------------------------------------------------------------------
 C                 Start-up will be completed on this time step.
-C                 - Switch mode to 'normal operation', and update
+C                 - Switch mode to target mode, and update
 C                   'fTS_fracion_complete' variable to reflect the
 C                   amount of time spent in start-up.
 C----------------------------------------------------------------------
-                  iOperating_Mode_F = iOP_normal_operation
+                  iOperating_Mode_F = iTarget_Mode
                   fOP_time = 0.0
                   fTS_mode_fractions (iOP_startup) = fTS_fraction_reqd
 
@@ -854,21 +855,36 @@ C..............Switch unit into shutdown.
 
             elseif ( iOperating_Mode_F .eq. iOP_shutdown ) then
 C----------------------------------------------------------------------
-C              System is in shutdown Will engine complete start-up
+C              System is in shutdown. Will engine complete shutdown
 C              period before completion of timestep?
 C
-C              Fraction of      (shutdown time) - (completed time)
-C              TS required   =  ----------------------------------
-C              for shutdown              TS duration
+C----------------------------------------------------------------------
+               
+               if ( iCooldown_mode .eq. iCM_mandatory  .or.
+     &              iTarget_Mode   .eq. iOP_inoperative     ) then
+C----------------------------------------------------------------------
+C                 Fraction of      (shutdown time) - (completed time)
+C                 TS required   =  ----------------------------------
+C                 for shutdown              TS duration
 C
 C
-C              NOTE: Shutdown MUST be completed before startup
-C                    can be initiated and operation can resume.
+C                 NOTE: Shutdown MUST be completed before startup
+C                       can be initiated and operation can resume.
 C
 C----------------------------------------------------------------------
-               fTS_fraction_reqd = (
-     &            fPeriod_duration(iComponent,iOP_shutdown)
-     &              - fOP_time ) / fTS_duration
+                  fTS_fraction_reqd = (
+     &               fPeriod_duration(iComponent,iOP_shutdown)
+     &                 - fOP_time ) / fTS_duration
+
+               else
+
+C----------------------------------------------------------------------
+C                 Cool down is optional --- unit can switch directly
+C                 into startup
+C----------------------------------------------------------------------
+                  fTS_fraction_reqd = 0.0
+
+               endif
 
 C----------------------------------------------------------------------
 C              Is time required for start-up greater than time-step
