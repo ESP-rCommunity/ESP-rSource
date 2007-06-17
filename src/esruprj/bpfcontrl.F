@@ -3344,6 +3344,7 @@ C Edit flow control function II.
       SUBROUTINE EFCNTRL(II,IV,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -3353,8 +3354,9 @@ C Edit flow control function II.
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
-      CHARACTER*84 VERT(20)
+      CHARACTER*84 VERT(36)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1,NDNAM*12
       character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
@@ -3370,6 +3372,15 @@ C Control day types.
       J=IV
       JJ=J
 
+C Initialise menu size variables based on windows size.
+C IVERT is the menu position, MVERT the current
+C number of menu lines.
+      MHEAD=5
+      MCTL=4
+      ILEN=NFCDP(II,JJ)
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
 C Initial menu entry setup.
    92 IER=0
       IVERT=-3
@@ -3380,41 +3391,48 @@ C Initial menu entry setup.
      &' per| start|sensed  |actuated | control law     | data'
       WRITE(vert(5),'(a)')
      &' no.| time |property|property |                 |     '
-      LL=NFCDP(II,JJ)
+      ILEN=NFCDP(II,JJ)
 
 C Generate menu entry for each period in day type.
-      m=5
-      DO 91 KP=1,LL
-        KK=KP
-        m=m+1
-        call stfctl(2,II,JJ,KK)
-        CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRLAW(2,II,JJ,KK,TMP,LTMP)
-        NITEMS=INT(cm(1))
-        WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
-        outsb=' '
-        outsc=' '
-        if(NITEMS.gt.0)then
-          if(NITEMS.LE.9)then
-            write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
-          else
-            write(outsb,'(9F9.1)')(cm(L),L=2,10)
+      m=MHEAD
+      DO 91 KP=1,ILEN
+        IF(KP.GE.IST.AND.(KP.LE.(IST+MIFULL)))THEN
+          KK=KP
+          m=m+1
+          CALL EMKEY(KP,KEY,IER)
+          call stfctl(2,II,JJ,KK)
+          CALL EVCNTRL(2,II,JJ,KK,'T',SSTR)
+          CALL EVCNTRLAW(2,II,JJ,KK,TMP,LTMP)
+          NITEMS=INT(cm(1))
+          WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
+          outsb=' '
+          outsc=' '
+          if(NITEMS.gt.0)then
+            if(NITEMS.LE.9)then
+              write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
+            else
+              write(outsb,'(9F9.1)')(cm(L),L=2,10)
+            endif
+            call SDELIM(outsb,outsc,'S',IW)
           endif
-          call SDELIM(outsb,outsc,'S',IW)
+          write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
+     &      outsa(1:47),outsc(1:34)
         endif
-        CALL EMKEY(M-5,KEY,IER)
-        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
-     &    outsa(1:47),outsc(1:34)
   91  continue
-      m=m+1
-      WRITE(vert(m),'(a)') ' ________________________________________'
-      m=m+1
-      WRITE(vert(m),'(a)') '* add/ delete a period '
-      m=m+1
-      WRITE(vert(m),'(a)') '? help '
-      m=m+1
-      WRITE(vert(m),'(a)') '- exit  '
-      mvert=m
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)='  _______________________________ '
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' --')
+      ENDIF
+      WRITE(vert(m+2),'(a)') '* add/ delete a period '
+      WRITE(vert(m+3),'(a)') '? help '
+      WRITE(vert(m+4),'(a)') '- exit  '
 
 C Help text for this menu.
       h(1) ='A number of control periods can be defined for each'
@@ -3446,12 +3464,20 @@ C Add or delete a period.
           call addctldp(2,II,JJ,'D',iier)
         endif
         goto 92
-      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
+      ELSEIF(IVERT.EQ.(MVERT-3))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
 C stuff into working common array 'cm' for editing.  At end
 C of if:elseif:else recover.
-        KK=IVERT-5
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        KK=IFOC
         call stfctl(2,II,JJ,KK)
 
         NITEMS=INT(cm(1))
