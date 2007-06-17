@@ -189,6 +189,8 @@ C rlegacymat: Fills common matdatarray and matnamearray from
 C legacy ASCII material database LASCI opened on unit IFA. 
       subroutine rlegacymat(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
 
       real matver
       integer matcats,matcatitems,matdbitems
@@ -222,9 +224,11 @@ C legacy ASCII material database LASCI opened on unit IFA.
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
 
-C Open the ASCII file for reading.
+C Open the ASCII file for reading. Reset ier state prior to efopseq.
+      ier=0
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
@@ -233,11 +237,6 @@ C Fill the hash table with not included marker (-1)
       do 42 ih=0,600
         mathash(ih)=-1
   42  continue
-
-C Need subroutine to clear the material arrays.
-C << >>
-
-      matver = 1.1   ! set initial version of database.
 
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
@@ -251,6 +250,7 @@ C Proceed.
       IF(IER.NE.0)RETURN
       K=0
       CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb mat classes',IER)
+      IF(IER.NE.0.or.matcats.le.0)RETURN  ! if no categories return
 
       matdbitems = 0   ! reset the total number of items.
       DO 10 I=1,matcats
@@ -259,8 +259,10 @@ C Proceed.
         K=0
         CALL EGETWI(OUTSTR,K,IC,0,MGCL,'F','class',IER)
         CALL EGETWI(OUTSTR,K,NE,0,19,'-','no items',IER)
+        IF(IER.NE.0.or.NE.le.0)RETURN  ! if no items return
         matcatitems(I)=NE
         CALL EGETRM(OUTSTR,K,NDESC,'-','description',IER)
+        IF(IER.NE.0)RETURN
         write(matcatname(I),'(a)') NDESC(1:32)
 
 C Create initial classification documentation
@@ -395,6 +397,8 @@ C the standard call to ERPCDB would have returned.
         matvisinrfl(matdbitems)=0.0
         matrender(matdbitems)=0.0
       endif
+
+      matver = 1.1   ! set version of database.
 
 C Debug.
 C      write(6,*) 'matdbitems ',matdbitems
@@ -565,6 +569,7 @@ C rascimat: Fills common matdatarray and matnamearray from
 C current ASCII material database LASCI opened on unit IFA. 
       subroutine rascimat(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
+#include "espriou.h"
 
       real matver
       integer matcats,matcatitems,matdbitems
@@ -602,8 +607,8 @@ C current ASCII material database LASCI opened on unit IFA.
 C Open the ASCII file for reading.
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
-      matver = 1.1   ! set initial version of database.
       matdbitems = 0   ! reset the total number of items.
 
 C Proceed with header.
@@ -617,6 +622,7 @@ C Fill the hash table with not included marker (-1)
         do 42 ih=0,600
           mathash(ih)=-1
   42    continue
+        matver = 1.1   ! set initial version of database.
       else
 
 C Did not find the correct header so this is probably a legacy file.

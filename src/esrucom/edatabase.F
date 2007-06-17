@@ -72,24 +72,71 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72
+      CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      DIMENSION ICLN(30)
 
 C Keep track of how many times materials db read fails.
       matmiss=0
+      closemat=.false.  ! assume binary materils until proven otherwise
 
-C If materials database not opened, do it now.
+C If materials database not opened it should have been opened
+C prior to this call and matdbok would be false if it
+C had been previously opened and failed.
       IF(.NOT.MATDBOK)THEN
         IER=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        if(ier.ne.0)return
-        CALL USRMSG(' opened materials db',' ','-')
-        MATDBOK=.TRUE.
+        IF(ier.ne.0)THEN
+          write(outs,'(3a)') ' No materials db ',
+     &      LFMAT(1:lnblnk(LFMAT)),' found!'
+          call edisp(iuout,outs)
+          MATDBOK=.FALSE.
+          return
+        else
+
+C Also check to see if the file has correct info in 
+          IREC=601
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &     (ICLN(I),I=1,30)
+          if(NCLASS.LE.0)then
+            goto 1000   ! no classifications so try alternatives
+          else
+            MATDBOK=.TRUE.
+            matver = 0.0
+            goto 139  !  a binary file found so carry on.
+          endif
+ 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          if(ier.eq.-2)then
+            ier=0
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ier.ne.0)then
+              call usrmsg('No readable materials database was found so',
+     &                    'constructions database not reported.','W')
+              MATDBOK=.FALSE.
+              IER=1
+              return
+            else
+              call eclose(matver,1.1,0.001,closemat)
+              if(closemat)then
+                call edisp(iuout,' Filled material data arrays...')
+                MATDBOK=.TRUE.
+              else
+                call usrmsg(
+     &            'No readable material database was found. ',
+     &            'so constructions database not reported.','W')
+                MATDBOK=.FALSE.
+                IER=1
+                return
+              endif
+            endif
+          endif
+        endif
       ENDIF
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+ 139  call eclose(matver,1.1,0.01,closemat)
 
 C Free unit and check if composite file exists.
       IER=0

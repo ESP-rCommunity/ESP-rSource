@@ -7,7 +7,7 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ish.o arrow.o c2fdum.o common3dv.o comput.o cread3dv.o ctlexp.o \
+OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o comput.o cread3dv.o ctlexp.o \
 	  dossupport.o e3dviews.o edatabase.o egeometry.o eroper.o esru_misc.o \
 	  files.o graph.o inscom.o miscel.o plelev.o scsys.o shdcon.o silist.o \
 	  sort.o startup.o synop.o tfiles.o trnsf.o trnsfi.o winshd.o wshad.o
@@ -18,6 +18,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -69,6 +72,6 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
+	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
 	e3dviews.F edatabase.F egeometry.F esru_misc.F \
 	eroper.F plelev.F scsys.F sort.F startup.F 

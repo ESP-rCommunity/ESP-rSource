@@ -11,7 +11,7 @@ PROG2 = espvwf$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = espvwf.o arrow.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
+OBJECTS = espvwf.o arrow.o ascii_mat.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
 	  cread3dv.o ctread.o dossupport.o e3dviews.o edatabase.o edmrt.o egeometry.o \
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
 	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
@@ -24,6 +24,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -102,7 +105,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
+	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
 	edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
 	eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
 	plelev.F pltcfg.F scsys.F sort.F startup.F tdfile.F
