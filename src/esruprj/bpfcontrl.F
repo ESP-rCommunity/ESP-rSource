@@ -3409,9 +3409,9 @@ C Generate menu entry for each period in day type.
           outsc=' '
           if(NITEMS.gt.0)then
             if(NITEMS.LE.9)then
-              write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
+              write(outsb,'(9F9.2)')(cm(L),L=2,NITEMS+1)
             else
-              write(outsb,'(9F9.1)')(cm(L),L=2,10)
+              write(outsb,'(9F9.2)')(cm(L),L=2,10)
             endif
             call SDELIM(outsb,outsc,'S',IW)
           endif
