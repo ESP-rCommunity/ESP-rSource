@@ -661,8 +661,31 @@ C Optical and geometric properties.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      LOGICAL MODGEO,MODCON,told
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
+      LOGICAL MODGEO,MODCON,told,closemat
 
       DIMENSION ISD(19)
       CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
@@ -849,11 +872,27 @@ C gaps in preparation of scan.
         MODCON=.TRUE.
         NAIRG(ISUR)=0
         NE(ISUR)=LAYERS(IC)
+        call eclose(matver,1.1,0.01,closemat)
 
 C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
-          CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+          if(closemat)then
+            legmat=IPR(IC,IL)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          else
+            CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
+          endif
           IF(IER.EQ.1)RETURN
           CON(ISUR,IL)=DBCON
           DEN(ISUR,IL)=DBDEN
@@ -890,7 +929,9 @@ C assign an appropriate U value to each air gap encountered.
         MODGEO=.TRUE.
       ELSEIF(INODA.EQ.6)THEN
 
-C Emissivity.
+C Emissivity. 
+C << todo take advantage of the out/in data within the material arrays. >>
+
         H(1)='The infrared emissivity is normally 0.1 < x < 0.9'
         CALL EASKR(EMISI(ISUR),' ','Inside emissivity  ?',
      &      0.01,'W',0.99,'W',0.8,'inside emissivity',IER,1)
@@ -900,6 +941,8 @@ C Emissivity.
       ELSEIF(INODA.EQ.7)THEN
 
 C Absorptivity.
+C << todo take advantage of the out/in data within the material arrays. >>
+
         H(1)='The short wave absorptivity is normally 0.1 < x < 0.9'
         CALL EASKR(ABSI(ISUR),' ',' Inside absorptivity ? ',
      &      0.01,'W',0.99,'W',0.8,'inside absorptivity',IER,1)
@@ -992,7 +1035,32 @@ C zone construction file with minimum intervention by the user.
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
+      logical closemat
 
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
@@ -1061,6 +1129,7 @@ C Remember this change by saving the file.....
 
 C Reset number of layers, if at end of loop it is still 0 then
 C the material was not found and must be asked for.
+        call eclose(matver,1.1,0.01,closemat)
         NE(IS)=0
         DO 20 IC=1,NMLC
           IF(DESC(IC)(1:12).EQ.SMLCN(IS))THEN
@@ -1069,9 +1138,24 @@ C the material was not found and must be asked for.
 
 C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
-              CALL ERPCDB(IFMAT,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
-              IF(IER.EQ.1)RETURN
+              if(closemat)then
+                legmat=IPR(IC,IL)   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
+              else
+                CALL ERPCDB(IFMAT,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
+     &             DBSHT,E,A,DRV,TITL,NAM)
+                IF(IER.EQ.1)RETURN
+              endif
               CON(IS,IL)=DBCON
               DEN(IS,IL)=DBDEN
               SHT(IS,IL)=DBSHT
@@ -1926,10 +2010,30 @@ C Loop through referenced mlc and derives the longest timeconstant.
 c ITCNST  - number of start-up days
       COMMON/PREC7/ITCNST
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       character NAM*72,TITL*72,outs*124
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character MLCN*12,DESC*48,SSPARENT*12
-      logical found
+      logical found,closemat
 
 C Loop mlc db, if some surface references it, read properties for
 C each layer and keep track of time constant.
@@ -1950,11 +2054,25 @@ c homogeneous layer.
           endif
   42    continue
   43    if(found)then
+          call eclose(matver,1.1,0.01,closemat)
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            CALL ERPCDB(IFMAT,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
+            if(closemat)then
+              legmat=IPR(IC,IL)   ! which legacy index
+              if(legmat.ge.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+              endif
+            else
+              CALL ERPCDB(IFMAT,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
+            endif
 
 C Get properties for outer layer.
             if(il.eq.1)then

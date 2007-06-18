@@ -108,6 +108,14 @@ C Name of current application
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,OTHEROK,XST
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
@@ -202,6 +210,7 @@ C General image option flags.
       ITGRD=1
       GRDIS=0.0
       ITPPSW=0
+      matver=0.0   ! initial assumption of binary materials database
 
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,

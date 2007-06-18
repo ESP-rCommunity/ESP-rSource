@@ -61,7 +61,7 @@ C Read (silently) in the zone geometry data.
 C If there is a mlc db scan it for properties of the surface.
       CALL GZPDBE(ICOMP,IER)
       IF(IER.NE.0)THEN
-        call edisp(iuout,' Could not find all primitives')
+        call edisp(iuout,' Could not find all materials')
         RETURN
       ENDIF
 
@@ -119,7 +119,7 @@ C Give 100mm clearance on both sides for boundary plotting.
       END
 
 C ******************** GZPDBE
-C GZPDBE: Get primitive db ref for zone layers from mlc.
+C GZPDBE: Get material db ref for zone layers from mlc.
 C Assumes that geometry file has been read and surface
 C attributes are known. 
 
@@ -134,7 +134,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
 
-C IPRZ is primitive db ref for each layer.
+C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -142,20 +142,92 @@ C IPRZ is primitive db ref for each layer.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+      DIMENSION ICLN(30)
+
       CHARACTER outs*124,DESC*48,NAM*72,TITL*72
       CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
 
-C Open the primitive construction db if not already done.
+C Open the material db if not already done.
       IF(.NOT.MATDBOK)THEN
         IER=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        if(ier.ne.0)return
-        MATDBOK=.TRUE.
+        IF(ier.ne.0)THEN
+          write(outs,'(3a)') ' No materials database ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
+          call edisp(iuout,outs)
+          MATDBOK=.FALSE.
+        else
+
+C Also check to see if the file has correct info. 
+          IREC=601
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &      (ICLN(I),I=1,30)
+          if(NCLASS.LE.0)then
+            goto 1000   ! no classifications so try alternatives
+          else
+            MATDBOK=.TRUE.
+            matver = 0.0
+            goto 139  !  a binary file found so carry on.
+          endif
+ 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          if(ier.eq.-2)then
+            ier=0
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ier.ne.0)then
+              call usrmsg('No readable materials database was found',
+     &                  'or file was corrupt','W')
+              MATDBOK=.FALSE.
+              return
+            else
+              call eclose(matver,1.1,0.001,closemat)
+              if(closemat)then
+                call edisp(iuout,' Filled material data arrays...')
+                MATDBOK=.TRUE.
+              else
+                call usrmsg(
+     &            'No readable material database was found. ',
+     &            'check other warnings for advise.','W')
+                MATDBOK=.FALSE.
+                return
+              endif
+            endif
+          elseif(ier.eq.0)then
+            call eclose(matver,1.1,0.001,closemat)
+            if(closemat)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            endif
+          endif
+        endif
       ENDIF
 
 C If the common block MLC has not yet been filled the read in the
 C conposite construction database.
-      IF(.NOT.MLDBOK)THEN
+ 139  IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(0,iuout,IER)
         IF(IER.NE.0)THEN
           call edisp(iuout,' Unable to gather information from mlc db.')
@@ -181,16 +253,33 @@ C the element was not found.
           IF(DESC(IC)(1:12).EQ.SMLCN(ISUR))THEN
             ICKNE=LAYERS(IC)
 
-C Gather information about each layer. Read in the primitive db info.
+C Gather information about each layer. Read in the material db info.
+C But we do not do anything with the material properties, why are
+C we reading the raw data?
             DO 23 IL=1,LAYERS(IC)
-              CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+              if(closemat)then
+                legmat=IPR(IC,IL)   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
+              else
+                CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
+     &             DBSHT,E,A,DRV,TITL,NAM)
+              endif
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
           ENDIF
    20   CONTINUE
         if(ICKNE.eq.0)then
-          write(outs,'(A,A,A,A,A)') ' The construction ',SMLCN(ISUR),
+          write(outs,'(5A)') ' The construction ',SMLCN(ISUR),
      &       ' of ',SNAME(ICOMP,ISUR),' was not found in the mlc db...'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
@@ -490,7 +579,7 @@ C MOFDRW displays the construction temperature profiles.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-C IPRZ is primitive db ref for each layer.
+C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)

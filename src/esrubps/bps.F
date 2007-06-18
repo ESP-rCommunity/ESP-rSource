@@ -253,6 +253,13 @@ C Significant figure reporting limit (NSIGFIG).
       
 C Timeout information
       common/TIMEOUT/sTimeout,iTimeoutFlag
+
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
       
 C Name of current application
       common/APPNAME/cAppName
@@ -370,6 +377,7 @@ C Some initial values, which may be changed later:
       iwmoff=1
       ihelpm=0
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
       cAppName = 'bps'
 

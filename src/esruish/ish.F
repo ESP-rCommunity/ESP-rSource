@@ -58,6 +58,7 @@ C wshad.f  - WSHAD:  Performs ASHRAE window shading.
 
       program ish
 #include "building.h"
+#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 
@@ -122,8 +123,14 @@ C Significant figure reporting limit (NSIGFIG).
 
 C Name of current application
       common/APPNAME/cAppName
-      
       character cAppName*12
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       DIMENSION MTHNAM(12),ITEMS(20),ISADD(12),ISHD(12)
       LOGICAL MODIFY,MODLEN,MODBND,XST
@@ -154,6 +161,7 @@ C Initialize global common data.
       LIMTTY=24
       LIMIT =24
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Notes on various file units within shd: IUNIT is the transitional
 C shading file, IFILSI is the shading insolation db, IUF is for

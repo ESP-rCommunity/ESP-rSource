@@ -423,7 +423,7 @@ C Read number of plant component connections
         CALL STRIPC(iuc,OUTSTR,0,ND,1,'possible conn',IER)
         IF(IER.NE.0)RETURN
         K=0
-        CALL EGETWI(OUTSTR,K,NPCON,0,99,'F','plant con',IER)
+        CALL EGETWI(OUTSTR,K,NPCON,0,MPCON,'F','plant con',IER)
         IF(NPCON.EQ.0) GOTO 48
 
 C Reporting.
@@ -495,7 +495,7 @@ C Now check connectivity information where possible
          irec=npcdat(ipc1(ipcon),2)
          read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
          if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.nnodes) goto 914
-         if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.5) goto 913
+         if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
          if(ipc2(ipcon).lt.1.or.ipc2(ipcon).gt.npcomp) goto 913
          irec=npcdat(ipc2(ipcon),2)
          read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
@@ -549,11 +549,9 @@ C Reporting.
             ENDIF
             READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
      &           NNODES
-            if(indcp(icont).eq.1) then
-               if(cntdat(icont,1).lt.1.0.or.cntdat(icont,1).gt.
+            if(cntdat(icont,1).lt.0.0.or.cntdat(icont,1).gt.
      &            float(npcomp).or.cntdat(icont,2).lt.0.0.or.
      &            cntdat(icont,2).gt.float(nnodes)) goto 916
-            endif
           ENDIF
 
 C Reporting.

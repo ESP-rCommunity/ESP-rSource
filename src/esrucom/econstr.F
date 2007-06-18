@@ -463,6 +463,30 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
       CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
@@ -522,9 +546,25 @@ C Get the air gap contribution to U value for reporting.
 
 C For each layer recover the name of material. For non-airgap layers
 C add resistance for layer (using data from constructions file)
+          call eclose(matver,1.1,0.01,closemat)
           DO 15, IL=1,NELT
-            CALL ERPCDB(IFMAT,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
-     &        DBSHT,E,A,DRV,TITL,NAM)
+            if(closemat)then
+              legmat=IPR(imatch(i),IL)   ! which legacy index
+              if(legmat.ge.0)then
+                matarrayindex=mathash(legmat)  ! find matching array index
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
+            else
+              CALL ERPCDB(IFMAT,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
+     &          DBSHT,E,A,DRV,TITL,NAM)
+            endif
             IF(IPR(imatch(i),IL).EQ.0)THEN
 
 C Find matching air gap layer and resistance.
