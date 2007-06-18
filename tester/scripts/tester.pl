@@ -1370,8 +1370,12 @@ sub create_report(){
 
 
   # Prepare summary
-  
-  push @output, " ";
+  if ( $gAll_tests_pass ){
+    push @output, " Overall result: Pass.";
+  }else{
+    push @output, " Overall result: Fail.";
+  }
+  push @output, " "
   push @output, " Summary of test results:";
   push @output, "   - '-' indicates test case passes";
   push @output, "   - 'X' indicates test case fails";
