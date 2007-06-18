@@ -92,6 +92,7 @@ C had been previously opened and failed.
      &      LFMAT(1:lnblnk(LFMAT)),' found!'
           call edisp(iuout,outs)
           MATDBOK=.FALSE.
+          ier=2    ! set error state so calling code will look for ascii version.
           return
         else
 

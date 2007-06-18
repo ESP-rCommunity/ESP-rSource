@@ -708,80 +708,146 @@ C Read multilayer db information into common.
 
 C There were lots of undefined materials so likely the materials
 C database is for the wrong machine type. Guess the name of
-C the ascii version and if it exists, offer to convert it.
+C the ascii version and if it exists, offer to convert it or use it.
+
           h(1)='It is likely that the materials db associated'
           h(2)='with this model is for a different computer '
           h(3)='type. ESP-r will try to find an ASCII version '
-          h(4)='of this file and convert it if you agree. '
+          h(4)='of this file and either read it into the model'
+          h(5)='or convert it to a binary material database file'
+          h(6)='if you agree. '
+          h(7)=' '
+          h(8)='NOTE: ascii materials databases are the preferred'
+          h(9)='format so use them if they are available. '
           IAF=IFIL+1
           LASCI=' '
           write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-          CALL EFOPSEQ(IAF,LASCI,1,IER)
+
+C Label 155 is a jump back point for the case of users supplying a name.
+  155     CALL EFOPSEQ(IAF,LASCI,1,IER)
           if(ier.eq.0)then
-            CALL ERPFREE(IAF,ISTAT)
-            call edisp(iuout,
-     &        'Attempting to convert an ASCII materials db into a')
-            call edisp(iuout,
-     &        'binary materials db that matches the constructions db.')
-            CALL MKBPRC(IUOUT,IAF,LASCI,IER)
-            if(ier.eq.0)then
-              call usrmsg(
-     &          'An ASCII materials file was found and has been',
-     &          'converted re-scanning constructions...',
-     &          'P')
-              CALL ERMLDB(0,IUOUT,IER)
-              if(ier.eq.0)then
-                MLDBOK=.TRUE.
+
+C If the ascii version exists there is no need to convert it
+C ask use whether to scan it into the materials arrays or convert
+C to a binary file.
+            CALL EASKABC(
+     &        'An ascii version of materials database was found.',
+     &        'Options (see help):','use info in file',
+     &        'convert into a binary file','continue',IW,9)
+            if(iw.eq.1)then
+              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              if(ier.eq.-2)then
+                ier=0
+                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                if(ier.ne.0)then
+                  call usrmsg('No readable materials database was ',
+     &                        'found or the file was corrupt','W')
+                  MATDBOK=.FALSE.
+                else
+                  call eclose(matver,1.1,0.001,close)
+                  if(close)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the constructions database.
+                    call usrmsg(
+     &                'An ASCII materials file was found and used.',
+     &                'Re-scanning constructions...','P')
+                    MATDBOK=.TRUE.
+                    LFMAT=LASCI
+                    CALL ERPFREE(IFMUL,ISTAT)
+                    call FINDFIL(LFMUL,XST)
+                    if(XST)then
+                      CALL ERMLDB(0,IUOUT,IER)
+                      if(ier.eq.0)then
+                        MLDBOK=.TRUE.
+                        call usrmsg(
+     &                  'An ASCII materials file was found and used.',
+     &                  'Re-scanning constructions...done.','-')
+                      else
+                        MLDBOK=.FALSE.
+                        call usrmsg(
+     &                  'An ASCII materials file was found and used.',
+     &                  'Re-scanning constructions...failed.','W')
+                      endif
+                    endif
+                  else
+                    call usrmsg(
+     &                'No readable material database was found. ',
+     &                'check other warnings for advise.','W')
+                    MATDBOK=.FALSE.
+                  endif
+                endif
+              elseif(ier.eq.0)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the constructions database.
                 call usrmsg(
-     &            'An ASCII materials file was found and has been',
-     &            'converted re-scanning constructions...done.',
-     &            '-')
-              else
-                MLDBOK=.FALSE.
-                call usrmsg(
-     &            'An ASCII materials file was found and has been',
-     &            'converted re-scanning constructions...failed.',
-     &            'W')
+     &            'An ASCII materials file was found and used.',
+     &            'Re-scanning constructions...','P')
+                MATDBOK=.TRUE.
+                LFMAT=LASCI
+                CALL ERPFREE(IFMUL,ISTAT)
+                call FINDFIL(LFMUL,XST)
+                if(XST)then
+                  CALL ERMLDB(0,IUOUT,IER)
+                  if(ier.eq.0)then
+                    MLDBOK=.TRUE.
+                    call usrmsg(
+     &                'An ASCII materials file was found and used.',
+     &                'Re-scanning constructions...done.','-')
+                  else
+                    MLDBOK=.FALSE.
+                    call usrmsg(
+     &                'An ASCII materials file was found and used.',
+     &                'Re-scanning constructions...failed.','W')
+                  endif
+                endif
               endif
-            else
-              call usrmsg(
-     &        'An materials file was not found or was not readable and',
-     &        'you should correct this before using constructions.',
-     &           'W')
-              MLDBOK=.FALSE.
+            elseif(iw.eq.2)then
+              CALL ERPFREE(IAF,ISTAT)
+              call edisp(iuout,
+     &          'Attempting to convert an ASCII materials db into a')
+              call edisp(iuout,
+     &          'binary materials db matching the constructions db.')
+              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              if(ier.eq.0)then
+                call usrmsg(
+     &            'An ASCII materials file was found and converted.',
+     &            'Re-scanning constructions...','P')
+                CALL ERMLDB(0,IUOUT,IER)
+                if(ier.eq.0)then
+                  MLDBOK=.TRUE.
+                  call usrmsg(
+     &              'An ASCII materials file was found and converted.',
+     &              'Re-scanning constructions...done.','-')
+                else
+                  MLDBOK=.FALSE.
+                  call usrmsg(
+     &              'An ASCII materials file was found and converted.',
+     &              'Re-scanning constructions...failed.','W')
+                endif
+              else
+                call usrmsg(
+     &          'An materials file was not found or was not readable.',
+     &          'You should correct this before using constructions.',
+     &             'W')
+                MLDBOK=.FALSE.
+              endif
             endif
           else
 
 C Ask user for ascii materials database to convert.
-          H(1)='The materials database holds the thermo-physical'
-          H(2)='properties of a range of materials such as'
-          H(3)='brick, concrete, insulation, etc. An asci version'
-          H(4)='of this database is ofen used when transporting models'
-          H(5)='between operating systems. '
+            H(1)='The materials database holds the thermo-physical'
+            H(2)='properties of a range of materials such as'
+            H(3)='brick, concrete, insulation, etc. An asci version'
+            H(4)='of this database is ofen used when transporting'
+            H(5)='models between operating systems. '
             IAF=IFIL+1
             DFILE=' '
             CALL EASKS(LASCI,' Materials database (ASCII)?',
      &        ' ',72,DFILE,'materials db (ascii)',
      &        IER,5)
-            CALL MKBPRC(IUOUT,IAF,LASCI,IER)
-            if(ier.eq.0)then
-              call usrmsg(
-     &          'An ASCII materials file was found and has been',
-     &          'converted attempting re-scan the constructions',
-     &          'W')
-              CALL ERMLDB(0,IUOUT,IER)
-              if(ier.eq.0)then
-                MLDBOK=.TRUE.
-              else
-                MLDBOK=.FALSE.
-              endif
-            else
-              call usrmsg(
-     &        'An materials file was not found or was not readable and',
-     &        'you should correct this before using constructions.',
-     &          'W')
-              MLDBOK=.FALSE.
-            endif
+            goto 155
           endif
         else
 
