@@ -550,6 +550,7 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 C      COMMON/C20/NZSUR(MCOM),NZTV(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Zone casual gain control data.
       COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -603,6 +604,7 @@ C Illuminance database.
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
+      character zname*12,zdesc*64
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -618,8 +620,8 @@ C Trace output ?
       IF(ITC.LE.0.OR.NSINC.LT.ITC)IFT=0
       IF(ITRACE(12).EQ.0.OR.NSINC.GT.ITCF.OR.IZNTRC(ICOMP).NE.1)IFT=0
       IF(IFT.EQ.1)THEN
-        write(outs,9998)ICNT,ICOMP
- 9998   format(' Subroutine INTLUM     Trace output',I4,5X,'Zone',I3)
+        write(outs,9998)ICNT,ICOMP,zname(icomp)
+ 9998   format(' Subroutine INTLUM  Trace output',I4,' Zone',I3,1x,a)
         call edisp(itu,outs)
         ICNT=ICNT+1
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -1060,10 +1062,10 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
-              write(doit,'(a,a,a,i3,a,a,a)')'e2r -file ',
+              write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-              write(6,'(a,a,a,i3,a,a,a)')'e2r -file ',
+              write(6,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
               call edisp(icout,'Lighting simulation has now commenced.')
@@ -1083,8 +1085,8 @@ C Open transfer file.
               CALL FPOPEN(IUNIT,ISTAT,1,1,LTMPFLA)
               if(ISTAT.lt.0)then
                 IER=1
-                write(outs,7)ICOMP,N
-    7           format(' Zone',I2,'light zone',I1,' time var illum err')
+                write(outs,7) zname(icomp),N
+    7           format(' Zone ',A,'light zone',I1,' time var illum err')
                 call edisp(iuout,outs)
                 CALL EPWAIT
                 CALL EPAGEND
@@ -1094,8 +1096,8 @@ C Open transfer file.
 C Loop through till 'OUTCMD' string found.
  777          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'trn file line',IER)
               if (IER.ne.0) then
-                write(outs,17)ICOMP,N
-   17           format(' Zone',I2,'light zone',I1,'trns file read err')
+                write(outs,17) zname(icomp),N
+   17           format(' Zone ',A,'light zone',I1,'trns file read err')
                 call edisp(iuout,outs)
                 CALL EPWAIT
                 CALL EPAGEND
@@ -1184,8 +1186,8 @@ C Keep track of total windows in zone with nt. Exclude skylights.
               call eclose(PELV(ICOMP,J),0.00,0.70,close)
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
-                  WRITE(ITU,843)ICOMP,J
-  843             format('Zone ',I2,'TMC surf ',I2,' not 4 vertexes!')
+                  WRITE(ITU,843) zname(icomp),J
+  843             format('Zone ',A,'TMC surf ',I2,' not 4 vertices!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
@@ -1215,8 +1217,8 @@ C and high WIDTH, HIGH:
                   ENDIF
                 ELSE
                   if(IDFST(ICOMP,N).ne.2)then
-                    WRITE(ITU,842)ICOMP,J
-  842             format('Zone ',I2,'TMC',I2,' may not be rectangular!')
+                    WRITE(ITU,842) zname(icomp),J
+  842             format('Zone ',A,'TMC',I2,' may not be rectangular!')
                   endif
                 ENDIF 
 
@@ -1235,8 +1237,8 @@ C includes the maintinence factor.
                       write(outs,103)I,J,
      &                      DFDAT(ICOMP,N,J,I)*100.,diftzn,
      &                      subT,SETPT(ICOMP,N)
-  103                 format(I5,' internal ',I5,F9.2,'      ',F8.1,
-     &                     F7.1,F6.0)
+  103                 format(I5,' via internal ',I5,F9.2,'      ',
+     &                     F8.1,F7.1,F6.0)
                       call edisp(itu,outs)
                     endif
 
@@ -1339,8 +1341,8 @@ C glazing and get current visible transmission of glazing.
                 ENDIF
               ELSE
                 if(IDFST(ICOMP,N).ne.2)then
-                  WRITE(ITU,844)ICOMP,J
-  844         format('Zone',I2,'TMC',I2,'is not vertical-no dir illum!')
+                  WRITE(ITU,844) zname(icomp),J
+  844         format('Zone ',A,'TMC',I2,'is not vertical-no dir illum!')
                 endif
                 suncon=0.
                 CALL DWINVT(ICOMP,J,V,RATIO)
@@ -1864,15 +1866,16 @@ C Trace output ?
       IF(ITRACE(12).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 999
 
-C Trace solar incident on interior transparent surfaces
+C Trace solar incident on interior transparent surfaces if DIFT
+C is non-zero.
       NC=NCONST(ICOMP)
       DO 52 I=1,NC
-        IF(ITMCFL(ICOMP,I).GT.0)THEN        
+        IF(ITMCFL(ICOMP,I).GT.0.and.DIFT(ICOMP,I).gt.0.0)THEN        
           write(outs,'(a,i3,a,f5.1)') 'equiv source illum on surface ',
      &      I,'=',DIFT(ICOMP,I)
           call edisp(itu,outs)
           write(outs,911)I,ICOMP,IBOFOT(ICOMP,I)
- 911      format('the TMC surface ',I3,'on zone',I3,'has IBOFOT=',I1)  
+ 911      format('the TMC surface ',I3,' on zone',I3,' has IBOFOT=',I1)  
           call edisp(itu,outs)
           write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
      &      V,'**'
