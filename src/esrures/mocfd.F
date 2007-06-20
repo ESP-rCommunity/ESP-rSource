@@ -69,6 +69,7 @@ C name with the full path.
         CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
      &    'CFDresfl name',IER,4)
       endif
+      if(ier.eq.-3) return  ! cancel deteted return.
 
       if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
         LCMDFL=ltmpc

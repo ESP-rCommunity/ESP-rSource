@@ -56,6 +56,11 @@ C Where default db list is kept.
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
@@ -67,6 +72,7 @@ C Defaults.
 C Initialize global common data.
       call ezero
       call curmodule('mld ')
+      cAppName = 'mld'
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -157,16 +163,7 @@ C messages to stderr in case of rule script program control.
       ICOUT=IUOUT
       IF(MMOD.EQ.-6) ICOUT=0
 
-      CALL EDISP(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Mould Analysis: Version 1.4a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      CALL EDISP(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Initialise the ststistical results
       imstat=0

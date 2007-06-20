@@ -99,7 +99,7 @@ C end indices for each zone.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character phrase*124,WORD*24,msg*72,ltmp*72
+      character phrase*124,WORD*48,msg*72,ltmp*72
       character zname*12,zdesc*64,zn*12,CTYPE*3,BLKNAME*8,BLKMAT*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -155,6 +155,7 @@ C plan case(NW), initial base Z (z1) initial top (z2).
       Z2=2.4
       Y1=0.0
       X1=0.0
+      other=0.1
 
 C NB is the number of obstruction blocks. NBL is number of
 C historical points for prior blocks (NBL = NB*3 because each
@@ -286,7 +287,7 @@ C up and down (by 50 pixel increments).
         ITEMS(3+m+n)='e  north: not defined'
       endif
       if(xbmscale)then
-        write(ITEMS(4+m+n),'(a,F6.3,a)') 'f  scaling: ',factor,
+        write(ITEMS(4+m+n),'(a,F7.3,a)') 'f  scaling: ',factor,
      &    ' pixels/metre'
       else
         ITEMS(4+m+n)='f  scaling: not defined'
@@ -304,6 +305,8 @@ C up and down (by 50 pixel increments).
           ITEMS(5+m+n)='g  gridding: @ 0.25m'
         elseif(iwmg.eq.6)then
           ITEMS(5+m+n)='g  gridding: @ 0.1m'
+        elseif(iwmg.eq.7)then
+          write(ITEMS(5+m+n),'(a,f5.3)') 'g  gridding: @ ',other
         else
           ITEMS(5+m+n)='g  gridding: defined'
         endif
@@ -749,18 +752,19 @@ C and pixel height are also read.
             if(phrase(1:8).eq.'#define ')then
               K=8
               CALL EGETW(phrase,K,WORD,'W','bitmap name',IFLAG)
-              CALL EGETWI(phrase,K,ibmwidth,1,1000,'W','bitmap w',IER)
+              CALL EGETWI(phrase,K,ibmwidth,1,1200,'W','bitmap w',IER)
               read(iin,'(a)',iostat=ios,err=99) phrase
               if(phrase(1:8).eq.'#define ')then
                 K=8
                 CALL EGETW(phrase,K,WORD,'W','bitmap name',IFLAG)
-                CALL EGETWI(phrase,K,ibmhight,1,1000,'W','bitmap h',
+                CALL EGETWI(phrase,K,ibmhight,1,1200,'W','bitmap h',
      &            IER)
               endif
 
 C Debug.
-C              write(6,*) 'The bitmap file is ',ibmwidth,' by ',
-C     &          ibmhight,' pixels.'
+              write(outs,*) 'The bitmap file is ',ibmwidth,' by ',
+     &          ibmhight,' pixels.'
+              call edisp(iuout,outs)
               CALL ERPFREE(iin,ISTAT)
 
 C If we reached this point then clear the display and deal with whether
@@ -824,7 +828,8 @@ C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
         call edisp(iuout,' b) define north (optional)')
         call edisp(iuout,' c) define scale')
         call edisp(iuout,' d) toggle on grid (optional)')
-        call edisp(iuout,' e) set the input mode')
+        call edisp(iuout,' e) toggle on grid-snap (optional)')
+        call edisp(iuout,' f) set the input mode')
         goto 142
       elseif(INO.EQ.2.and.m.eq.1)then
 
@@ -853,7 +858,7 @@ C Refresh current bitmap and overlayed information.
      &      ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &      xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,
      &      iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,
-     &      ipxwhis,ipywhis,iphisznst,iphisznfn,completed)
+     &      ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
           goto 199
         endif
       elseif((INO.EQ.2.and.m.eq.0.and.n.eq.1).or.
@@ -866,7 +871,7 @@ C Refresh current bitmap and overlayed information.
      &    ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &    iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &    ipywhis,iphisznst,iphisznfn,completed)
+     &    ipywhis,iphisznst,iphisznfn,completed,other)
       elseif(INO.EQ.2+m+n)then
 
 C Origin within the bitmap.
@@ -1025,7 +1030,7 @@ C Gridding options. Check if user wants a grid.
           h(1)='A grey grid will overlay the bitmap from corner to '
           h(2)='corner. '
           CALL EASKATOG('Gridding options:',' ',
-     &      'none','2.0m','1.0m','0.5m','0.25m','0.1m',' ',IWMG,2)
+     &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',IWMG,2)
           if(iwmg.eq.1)then
             GRSPC(1)=0.0
             GRSPC(2)=0.0
@@ -1056,6 +1061,16 @@ C Gridding options. Check if user wants a grid.
             GRSPC(2)=0.1
             GRSPC(3)=0.1
             xbmgrid=.true.
+          elseif(iwmg.eq.7)then
+            ZDI=0.1
+            H(1)='Enter a value between 0.1 and 1.0.'
+            CALL EASKR(ZDI,' ',' Distance between grid points?',
+     &      0.100,'W',1.0,'W',1.0,'grid point distance',IER,1)
+            GRSPC(1)=ZDI
+            GRSPC(2)=ZDI
+            GRSPC(3)=ZDI
+            other=ZDI
+            xbmgrid=.true.
           endif
           completed=.true.
           inpm=inpmode
@@ -1063,7 +1078,7 @@ C Gridding options. Check if user wants a grid.
      &      ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &      xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &      iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &      ipywhis,iphisznst,iphisznfn,completed)
+     &      ipywhis,iphisznst,iphisznfn,completed,other)
         endif
         goto 142
       elseif(INO.EQ.6+m+n)then
@@ -1368,7 +1383,7 @@ C Refresh current bitmap and overlayed information.
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &            ipxw,ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,
-     &            iphisznfn,completed)
+     &            iphisznfn,completed,other)
               endif
               goto 148
             endif
@@ -1387,7 +1402,7 @@ C refresh current bitmap and overlayed information.
      &          xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &          ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &          ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &          completed)
+     &          completed,other)
               goto 146
             endif
           endif
@@ -1616,7 +1631,7 @@ C Refresh the bitmap.
      &         ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &         xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &         iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &         ipywhis,iphisznst,iphisznfn,completed)
+     &         ipywhis,iphisznst,iphisznfn,completed,other)
 
 C Reset to enter the clicking.
               call edisp(iuout,'BEGIN RE-ENTERING POINTS NOW...')
@@ -1745,7 +1760,7 @@ C Refresh current bitmap and overlayed information.
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &            ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &            completed)
+     &            completed,other)
               endif
             endif
             goto 246
@@ -1763,7 +1778,7 @@ C If user typed `d` or `D` then delete the previous coordinate.
      &          xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &          ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,
      &          ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,iphisznfn,
-     &          completed)
+     &          completed,other)
               goto 246
             endif
           endif
@@ -1906,7 +1921,7 @@ C Refresh the bitmap.
      &         ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &         xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &         iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &         ipywhis,iphisznst,iphisznfn,completed)
+     &         ipywhis,iphisznst,iphisznfn,completed,other)
 
 C Reset to enter the clicking.
               call edisp(iuout,'BEGIN RE-ENTERING POINTS NOW...')
@@ -2042,7 +2057,7 @@ C Refresh current bitmap to recognise zone just saved.
      &    ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &    iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
-     &    ipywhis,iphisznst,iphisznfn,completed)
+     &    ipywhis,iphisznst,iphisznfn,completed,other)
           endif
 
 C Reset the temporary string variables used to name and describe zone.
@@ -2122,7 +2137,7 @@ C Refresh current bitmap and overlayed information.
      &            xbmgrid,xbmscale,iwmg,factor,viewlim,invert,nw,
      &            ixtn1,ixtn2,iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,
      &            ipxw,ipyw,nipwhis,ipxwhis,ipywhis,iphisznst,
-     &            iphisznfn,completed)
+     &            iphisznfn,completed,other)
               endif
               goto 348
             endif
@@ -2354,7 +2369,7 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &        ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &        xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,
      &        iytn1,iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,
-     &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed)
+     &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
             goto 346
           endif
           NB=NB+1
@@ -2448,15 +2463,19 @@ C Error.
 
 C ********* dogrid
 C Draw the grid using current parameters (notes on parameters found
-C at top of code file).
+C at top of code file). Other is the distance between grid points if
+C the user edited the value (iwmg=7).
       subroutine dogrid(iwmg,factor,ixo,iyo,ixbul,iybul,ixblr,iyblr,
-     &  viewlim)
+     &  viewlim,other)
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       dimension viewlim(6)
-      logical greyok
+      logical greyok,closelabel
       character temp6*6
+      real other   ! the other grid distance defined by user
+      real xp,yp   ! current position in X and Y
+      real xpl,ypl ! most recent metre interval.
 
       if(iwmg.eq.1)then
          return
@@ -2473,7 +2492,19 @@ C to 36% grey when drawing dots.
         do 342 i=int(viewlim(1)),int(viewlim(2))
           ily=iyblr
           iuy=iybul
-          xp=float(i)
+          if(iwmg.eq.7)then
+
+C If user defined interval only set on the first pass.
+            if(i.eq.int(viewlim(1)))then
+              xp=float(i)
+              xpl=float(i)
+            else
+              xpl=float(i)
+            endif
+          else
+            xp=float(i)
+            xpl=float(i)
+          endif
           ix=ixo+int(xp*factor)
 
 C Remember position of first and last line for use in horizontal lines.
@@ -2511,6 +2542,29 @@ C                call eswline(ix,ily,ix,iuy)
                   call textatxy(ix-12,iyblr+15,temp6,'i',nifgrey-4)
                 endif
                 if(ix.gt.ixaxr)ixaxr=ix
+              endif
+            elseif(iwmg.eq.7)then
+
+C Check if we are at a metre mark and if so write label.
+              call eclose(xp,xpl,0.001,closelabel)
+              if(closelabel)then
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ix,ily,ix,iuy,3)
+                if(i.gt.-10.and.i.lt.99)then
+                  write(temp6,'(i2)') i
+                  call textatxy(ix-8,iyblr+15,temp6,'i',nifgrey-4)
+                else
+                  write(temp6,'(i3)') i
+                  call textatxy(ix-12,iyblr+15,temp6,'i',nifgrey-4)
+                endif
+              endif
+  444         xp=xp+other
+              ix=ixo+int(xp*factor)
+              if(ix.gt.ixbul.and.ix.lt.ixblr)then
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ix,ily,ix,iuy,3)
+                if(ix.gt.ixaxr)ixaxr=ix
+                if(xp.lt.float(i+1)) goto 444  ! can any more be drawn within this metre?
               endif
             endif
           endif
@@ -2555,7 +2609,19 @@ C Now loop through vertical axis.
         do 343 i=int(viewlim(3)),int(viewlim(4))
           ilx=ixaxl
           irx=ixaxr
-          yp=float(i)
+          if(iwmg.eq.7)then
+
+C If user defined interval only set on the first pass.
+            if(i.eq.int(viewlim(3)))then
+              yp=float(i)
+              ypl=float(i)
+            else
+              ypl=float(i)
+            endif
+          else
+            yp=float(i)
+            ypl=float(i)
+          endif
           iy=iyo-int(yp*factor)
 C Debug...
 C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
@@ -2576,6 +2642,21 @@ C                call eswline(ilx,iy,irx,iy)
                 call edline(ilx,iy,irx,iy,2)
                 write(temp6,'(i3)') i
                 call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
+              endif
+            elseif(iwmg.eq.7)then
+              call eclose(yp,ypl,0.001,closelabel)
+              if(closelabel)then
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ilx,iy,irx,iy,3)
+                write(temp6,'(i3)') i
+                call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
+              endif
+  445         yp=yp+other
+              iy=iyo-int(yp*factor)
+              if(iy.gt.iybul.and.iy.lt.iyblr)then
+                if(greyok)call winscl('i',nifgrey-3)
+                call edline(ilx,iy,irx,iy,3)
+                if(yp.lt.float(i+1)) goto 445  ! can any more be drawn within this metre?
               endif
             endif
           endif
@@ -2692,11 +2773,12 @@ C If in floor plan extrusion mode.
 C ****** Refresh current bitmap and current overlayed information.
 C Parameter definitions noted at top of source code.
 C inpm is the input mode << >>.
+C Other is the grid distance if user supplied (iwmg=7).
       subroutine refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,
      &  inpm,ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &  xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,iytn2,
      &  ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,ipywhis,
-     &  iphisznst,iphisznfn,completed)
+     &  iphisznst,iphisznfn,completed,other)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2762,7 +2844,7 @@ C assessed again.
           viewlim(4)=real(anint(viewlim(3) + bituheight))
         endif
         call dogrid(iwmg,factor,ixo,iyo,ixbul,iybul,ixblr,iyblr,
-     &    viewlim)
+     &    viewlim,other)
       endif
 
 C If there are vertices then draw them. Note: check if within the

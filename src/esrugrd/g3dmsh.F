@@ -553,9 +553,18 @@ C *********************************************************************
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      CHARACTER MSG*72,FLTYP*25
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
+
+      CHARACTER MSG*72,FLTYP*25,outs*124
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
@@ -604,16 +613,63 @@ C Create a binary file for saving the nodes initial temperatures.
       CALL EFOPRAN(ITAQ,L3DTAQ(IZ),2,4,IER)
       IF(IER.NE.0)RETURN
 
-C If primitive database not opened, do it now.
+C If materials database not opened, do it now.
       IF(.NOT.MATDBOK)THEN
         IER=0
         CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(IER.NE.0)RETURN
-        MATDBOK=.TRUE.
+        IF(ier.ne.0)THEN
+          write(outs,'(3a)') ' No materials database ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found.'
+          call edisp(iuout,outs)
+          MATDBOK=.FALSE.
+        else
+
+C Also check to see if the file has correct info. 
+          IREC=601
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &      (ICLN(I),I=1,30)
+          if(NCLASS.LE.0)then
+            goto 1000   ! no classifications so try alternatives
+          else
+            MATDBOK=.TRUE.
+            matver = 0.0
+            goto 139  !  a binary file found so carry on.
+          endif
+ 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          if(ier.eq.-2)then
+            ier=0
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ier.ne.0)then
+              call usrmsg('No readable materials database was found',
+     &                  'or file was corrupt','W')
+              MATDBOK=.FALSE.
+              return
+            else
+              call eclose(matver,1.1,0.001,close)
+              if(close)then
+                call edisp(iuout,' Filled material data arrays...')
+                MATDBOK=.TRUE.
+              else
+                call usrmsg(
+     &            'No readable material database was found. ',
+     &            'check other warnings for advise.','W')
+                MATDBOK=.FALSE.
+                return
+              endif
+            endif
+          elseif(ier.eq.0)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            endif
+          endif
+        endif
       ENDIF
 
 C Define the degree of boundary nodes modelling.
-      H(1)=' two degrees are supported in this version; '
+ 139   H(1)=' two degrees are supported in this version; '
       H(2)=' 1. all boundary nodes will have convective,'
       H(3)='    and radiative boundary conditions.'
       H(4)=' 2. all boundary nodes will have convective'

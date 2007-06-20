@@ -1,8 +1,8 @@
 *Operations 1.0
-*date Wed Jul 28 12:30:14 2004  # latest file modification 
+*date Mon May 28 16:28:45 2007  # latest file modification 
 # operations of office defined in: 
 # ../zones/office.opr
-Heat source  # description
+Heat source of 250W constant in the office.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      1   # no Weekday flow periods

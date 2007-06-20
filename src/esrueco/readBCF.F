@@ -16,17 +16,17 @@ C
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EIAhigh/NbComp,NbMat,IMatID(MMLC,ME),ImatDbID(0:MMAT-1),
      &               LCIATag
-      COMMON/DesMLC/MatName(MMAT),MatDesc(MMAT),MatCat(MMAT),
+      COMMON/DesMLC/MatNameco(MMAT),MatDesc(MMAT),MatCat(MMAT),
      &              CompoNam(MMLC), LayerDes(MMLC,ME)
 
       CHARACTER*12 XMat
       CHARACTER*72 outs
       CHARACTER*72 LayerDes, MatDesc, MatCat
-      CHARACTER*12 MatName, CompoNam
+      CHARACTER*12 MatNameco, CompoNam
  
       MatIndex = 0
       DO 10 IC=1,NbMat
-        IF (MatName(IC) .EQ. XMat) THEN
+        IF (MatNameco(IC) .EQ. XMat) THEN
           MatIndex = IC
           GOTO 363
         ENDIF
@@ -389,7 +389,7 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
       COMMON/EIAhigh/NbComp,NbMat,IMatID(MMLC,ME),ImatDbID(0:MMAT-1),
      &               LCIATag
 
-      COMMON/DesMLC/MatName(MMAT),MatDesc(MMAT),MatCat(MMAT),
+      COMMON/DesMLC/MatNameco(MMAT),MatDesc(MMAT),MatCat(MMAT),
      &              CompoNam(MMLC), LayerDes(MMLC,ME)
 
       COMMON/AbsoCoef/SysAbsCo(MMLC,MNbAbs),PubAbsCo(MaxPub,MNbAbs),
@@ -409,7 +409,7 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
       CHARACTER*12 ComAsPt,CoTrPt,MaintPt,AsProjPt
       CHARACTER*1 ComAsPa,MaintTyp,LayerCat,MainPart,AsProjPa,LayerTyp
       CHARACTER*72 LayerDes, MatDesc, MatCat
-      CHARACTER*12 MatName, CompoNam
+      CHARACTER*12 MatNameco, CompoNam
       CHARACTER*12 LayerNam
       CHARACTER*1 LayerThm(MMLC,MMAT)
 C Temporary values
@@ -531,7 +531,7 @@ C Initialise the construction maintenance + Assembly on building related data
 C Initialise the material related data and hygrothermal properties
 
         DO 17 J=1,MMAT
-          MatName(J)='UNKNOWN'
+          MatNameco(J)='UNKNOWN'
           MatDesc(J)='UNKNOWN'
           MatCat(J)='UNKNOWN'
 C          RLayeDen(J)=0.0
@@ -539,7 +539,6 @@ C          RLayeDen(J)=0.0
           RMatLife(J)=0.0
           FabPt(J)='none'
           AssLoss(J)=0.0
-          MatName(J)='UNKNOWN'
           DO 177 M=1,2
             SpecData(J,M)=0.0
 177       CONTINUE
@@ -709,7 +708,7 @@ C      ENDIF
         CALL EGETP(OUTSTR,K,MatCat(IRdMat),'W',
      &                                'material category',IER)
         IF (IER .GE. 1) goto 666 
-        CALL EGETW(OUTSTR,K,MatName(IRdMat),'W','material name',
+        CALL EGETW(OUTSTR,K,MatNameco(IRdMat),'W','material name',
      &                                             IER)
         IF (IER .GE. 1) goto 666 
         CALL EGETP(OUTSTR,K,MatDesc(IRdMat),'W',
@@ -724,7 +723,8 @@ C Test if end of material information and jump to constructions code.
         goto 2
       elseif (WORD(1:8).eq.'*Thermal') then
         IF ((IER .GE. 1) .OR. (ND .NE. 12)) THEN
-C          CALL ErrArg(0,IRdMat,MatName(IRdMat),1,ND-1,WORD(1:8),OutStr)
+C          CALL ErrArg(0,IRdMat,MatNameco(IRdMat),1,ND-1,WORD(1:8),
+C    &       OutStr)
           GOTO 666         
         ENDIF
 C Thermophysical data. <<Jon >> real variable names
@@ -777,7 +777,7 @@ C Material Fabrication tag
         IF (IER.GE.1) goto 666 
         IF (FabPt(IRdMat)(1:4).NE.'none') THEN 
           IF ((IER .GE. 1) .OR. (ND.NE.7)) THEN
-C          CALL ErrArg(1,IRdMat,MatName(IRdMat),MIMP+7,ND,WORD(1:12),
+C          CALL ErrArg(1,IRdMat,MatNameco(IRdMat),MIMP+7,ND,WORD(1:12),
 C     &                OutStr)
            GOTO 666         
           ENDIF
@@ -862,7 +862,7 @@ C Recycling stage
         IF (IER.GE.1) goto 666 
         IF (RecyPt(IRdMat)(1:4).NE.'none') THEN
           IF ((IER .GE. 1) .OR. (ND.NE.4+MIMP)) THEN
-C           CALL ErrArg(1,IRdMat,MatName(IRdMat),4+MIMP,ND,WORD(1:14),
+C           CALL ErrArg(1,IRdMat,MatNameco(IRdMat),4+MIMP,ND,WORD(1:14),
 C     &                OutStr)
             GOTO 666         
           ENDIF
@@ -923,7 +923,7 @@ C Incineration process.
         IF (IER.GE.1) goto 666 
         IF (BurnPt(IRdMat)(1:4).NE.'none') THEN
           IF ((IER .GE. 1) .OR. (ND .NE. 4+MIMP)) THEN
-C          CALL ErrArg(1,IRdMat,MatName(IRdMat),4+MIMP,ND,WORD(1:11),
+C          CALL ErrArg(1,IRdMat,MatNameco(IRdMat),4+MIMP,ND,WORD(1:11),
 C     &                 OutStr)
           GOTO 666         
           ENDIF
@@ -985,7 +985,7 @@ C Dump process
         IF (DumpPt(IRdMat)(1:4).NE.'none') THEN 
           IF ((IER .GE. 1) .OR. (ND.NE.4+MIMP)) THEN
 C Check consistancy
-C          CALL ErrArg(1,IRdMat,MatName(IRdMat),MIMP+2,ND,WORD(1:11),
+C          CALL ErrArg(1,IRdMat,MatNameco(IRdMat),MIMP+2,ND,WORD(1:11),
 C     &                OutStr)
             GOTO 666         
           ENDIF
@@ -1006,7 +1006,7 @@ C     &                OutStr)
 C Check consitency for disposal rate
        TotRate = RecyRate(IRdMat)+BurnRate(IRdMat)+DumpRate(IRdMat)
        IF (NINT(TotRate) .NE. 1) THEN 
-         WRITE(outs,'(a,a)')'For material : ', MatName(IRdMat)
+         WRITE(outs,'(a,a)')'For material : ', MatNameco(IRdMat)
          CALL edisp(iuout,outs)
          CALL EDISP(iuout,' The sum of dispoal rates is not = 1 !')
          WRITE(outs,'(a,F6.2)')' Recycling rate    = ', RecyRate(IRdMat)

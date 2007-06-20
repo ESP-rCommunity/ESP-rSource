@@ -110,9 +110,9 @@ C editing of log file, images, hypertext link and results summary.
       h(6)=' '
       h(7)='If you selected this option in error click on continue.'
       LCFTMP='  '
-      CALL EASKSCMD(LCFTMP,
+      CALL EASKSCNCL(LCFTMP,
      &  ' System configuration name? (root name for model) ',
-     &  ' ','continue',clkok,24,'new_model','system root name',IER,7)
+     &  ' ','cancel',clkok,24,'new_model','system root name',IER,7)
       call usrmsg(' ',' ','-')
       if(clkok)then
         return         ! User clicked on continue button.

@@ -253,7 +253,18 @@ C Significant figure reporting limit (NSIGFIG).
       
 C Timeout information
       common/TIMEOUT/sTimeout,iTimeoutFlag
+
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
       
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
       character sTimeout*72
       integer iTimeoutFlag      
 
@@ -366,6 +377,9 @@ C Some initial values, which may be changed later:
       iwmoff=1
       ihelpm=0
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
+
+      cAppName = 'bps'
 
 C Set parameters for DLL run.
 C all console write is rerouted to the log file
@@ -525,19 +539,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       CALL EDISP(IUOUT,' ')
 
-C If dll write version, otherwise do standard banner.
-      if(dll)then
-        CALL EDISP(IUOUT, cBpsVersion)
-      else
-        write(outs,'(2a)')
-     &    ' ESP-r Simulator: Version 10.8 of April 2007.',
-     &    ' Copyright 2001-7 Energy'
-        call edisp(IUOUT,outs)
-        write(outs,'(2a)')
-     &   ' Systems Research Unit, University of',
-     &   ' Strathclyde, Glasgow, Scotland.'
-        call edisp(IUOUT,outs)
-      endif
+C Write version.
+      CALL ESPrVersion("summary")
       CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

@@ -30,7 +30,7 @@ C  PLOTTrev : Plot the reverberation time curve
 
 
 C ********** opendb (copy of code from eddb.F)
-C Open materials constructions, multi-layer constructions and
+C Open materials, constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
 #include "esprdbfile.h"
@@ -38,7 +38,15 @@ C optical properties databases.
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
 
       character SOPT*12,outs*124,GDESCR*36
 
@@ -50,17 +58,55 @@ C this to 24 words wide.
       CALL ERPFREE(IFMAT,ISTAT)
       call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
-        write(outs,'(a,a,a)') ' No construction, materials db ',
+        write(outs,'(a,a,a)') ' No materials database ',
      &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
         MATDBOK=.FALSE.
       else
-        CALL usrmsg(' Opened construction materials db.',' ','p')
-        MATDBOK=.TRUE.
+
+C Also check to see if the file has correct info in 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
+            MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable material database was found. ',
+     &          'check other warnings for advise.','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            call edisp(iuout,' Filled material data arrays...')
+            MATDBOK=.TRUE.
+          endif
+        endif
       endif
         
 C Read multilayer db information into common.
-      CALL ERPFREE(IFMUL,ISTAT)
+ 139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)

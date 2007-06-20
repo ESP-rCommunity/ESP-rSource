@@ -1714,7 +1714,7 @@ C exposed walls and floors, pitched roofs, flat roofs
              if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
 
 C Recover the ISO 6946 U values as in prjqa.F.
-               call etmldbu(0,itu,IFMAT,ii,UVH,UVU,UVD,UVI)
+               call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
              else
                continue
              endif
@@ -2505,7 +2505,7 @@ C << geometry file and if so do not use CONINF.
      &       '(database data matching surface construction attribute) ',
      &            ok,dok,2)
                 if(ok)then
-                  call ETMLDB(1,iuout,IFMAT,ii,imerr)        
+                  call ETMLDB(1,iuout,ii,imerr)        
                 endif
               endif
   5         continue

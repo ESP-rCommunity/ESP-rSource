@@ -1606,9 +1606,10 @@ C     Hydrogen Storage
             CALL H2_storage_post_process (iComponent_Index)
 
 C     Stirling Engine
-         elseif ( iComponent_type .eq. 102 ) then
+         elseif ( iComponent_type .eq. 102 .or.
+     &            iComponent_type .eq. 103       ) then
 
-            CALL Stirling_H3Kreports_module (
+            CALL A42_CHP_H3Kreports_module (
      &                      iComponent_index,
      &                      iReport )
 

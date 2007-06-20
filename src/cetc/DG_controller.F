@@ -244,7 +244,7 @@ C-------------------------------------------------------------------------------
       integer iEngine_deactivated   ! Named constant indicating that a
                                     !   high-level controller has requested
                                     !   the engine be deactivated
-      integer iFuel_flow_controlled ! Named constant indicating the model's
+      integer iDimensionless_control ! Named constant indicating the model's
                                     !   fuel flow has been specified
                                     !   by external controller
       integer iPower_out_controlled ! Named constant indicating the model's
@@ -253,7 +253,7 @@ C-------------------------------------------------------------------------------
       integer iHeat_out_controlled  ! Named constant indicating model's
                                     !   thermal output is controlled
       parameter ( iEngine_deactivated   = 0,
-     &            iFuel_flow_controlled = 1,
+     &            iDimensionless_control = 1,
      &            iPower_out_controlled = 2,
      &            iHeat_out_controlled  = 3 )
      
@@ -796,7 +796,7 @@ C (see above call for notes on parameters)
                DG_control_signal = thermal_control_signal
 
 C..............Set flag for Stirling engine control interface.
-               iStirling_Control_mode = iFuel_flow_controlled
+               iStirling_Control_mode = iDimensionless_control
             
             endif
          elseif ( PRI_algorithm .eq. ALG_thermal_P ) then 
@@ -876,7 +876,7 @@ C................Set flag for Stirling engine control interface.
                   DG_Control_signal = thermal_control_signal
                            
 C.................Set flag for Stirling engine control interface.            
-                  iStirling_Control_mode = iFuel_flow_controlled
+                  iStirling_Control_mode = iDimensionless_control
                   
                endif
             endif
@@ -958,7 +958,7 @@ C..............Pass electric load directly on to engine.
                CDATA(FC_index,2) = W_elec_demand  ! electric demand ()
             
             elseif (iStirling_Control_mode
-     &             .eq. iFuel_flow_controlled ) then 
+     &             .eq. iDimensionless_control ) then
 
 C..............Pass dimensionless output to engine               
                CDATA(FC_index,2) = DG_control_signal  ! dimensionless signal

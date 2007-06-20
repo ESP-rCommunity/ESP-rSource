@@ -195,6 +195,12 @@ C List database.
           itu = ixunit
           write(xfile,'(a)') 'optical_listing.txt'  ! initial file name
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','opt db text',IER)
+
+C If user canceled the listing the reset unit to iuout and loop back.
+          if(ier.eq.-3)then
+            itu = iuout
+            goto 3
+          endif
           write(outs248,'(2a)') 'In the optical database: ',
      &      LOPTDB(1:lnblnk(LOPTDB))
           call edisp248(itu,outs248,120)

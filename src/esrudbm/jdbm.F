@@ -85,6 +85,12 @@ C Significant figure reporting limit (NSIGFIG).
 C Backup of documentation (for editing) bkdoc is the text, 
 C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL OK,dok,statusok
       LOGICAL moddb,unixok,browse,status
@@ -106,6 +112,7 @@ C bkdoctyp = "dd","cd","id" for db doc, cat doc and item doc.
 
       call ezero
       call curmodule('dbm ')
+      cAppName = 'dbm'
       IUOUT=6
       IUIN=5
       IFIL=11
@@ -205,11 +212,7 @@ C        call charsusingfnt(ifs,icw,nlines)
       IF(MODEL.NE.-6)ICOUT=IUOUT
 
 C Display copywrite based on current text display width.
-      write(outs248,'(3a)')
-     &  'ESP-r - database manager: Version 2.2a of January 2006. ',
-     &  'Copyright 2001-6 Energy Systems Research Unit, University ',
-     &  'of Strathclyde, Glasgow Scotland.'
-      call edisp248(IUOUT,outs248,icw)
+      !CALL ESPrVersion("summary")
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get user's custom settings.

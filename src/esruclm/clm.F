@@ -37,6 +37,8 @@ C climatic data sets compatible with ESP-r.
       COMMON/ER/IER
       COMMON/INPER/INIT
       COMMON/OUTPCH/ICOUT
+      COMMON/CLMDT1/CLMLOC
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -77,7 +79,13 @@ C Climate list common.
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
       dimension ITEM(22)
+      character CLMLOC*30
       character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
@@ -93,6 +101,7 @@ C Climate list common.
 C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
+      cAppName = 'clm'
       tab = CHAR(9)
       ITRC=1
       IUOUT=6
@@ -241,10 +250,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
       call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Climate Analysis: Version 6.22b of April 2007.',
-     &  ' Copyright 2001-7 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'
@@ -718,8 +724,18 @@ C Check whether it is an esp-r climate file or an EPW file.
         h(1)='One option is to import and EPW format file (joint esp-r'
         h(2)='and Energy Plus climate file format) or a text version'
         h(3)='of the esp-r climate file. '
-        CALL EASKABC(' Climate import options:',' ',
-     &   'EPW climate file','ASCII esp-r file','continue',IICT,3)
+        h(4)=' '
+        h(5)='Korean Met Office files are of two types XXXH.dat files'
+        h(6)='hold hourly data, potentially for a number of years in '
+        h(7)='a file delimited by | marks. XXXD.dat files hold earth'
+        h(8)='temperature data at 1m 3m 5m for each day of multiple '
+        h(9)='years.'
+        h(10)=' '
+        h(11)='This facility reads dry bulb ... '
+        h(12)=' '
+        CALL EASKABCD(' Climate import options:',' ',
+     &   'EPW climate file','ASCII esp-r file','Korean MET',
+     &   'continue',IICT,12)
         if(IICT.eq.1)then
           NTSPH=1
           LASCI=' '
@@ -753,6 +769,10 @@ C name with the full path.
             CALL EASKF(LLASCI,' Climate EPW file?',
      &        ' ',96,DCLIM,'EPWclimate file name',IER,3)
           endif
+
+C If user canceled loop show menu again.
+          if(ier.eq.-3) goto 3
+
           IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 291
 
 C Cast back to 72 char name and do the conversion.
@@ -810,14 +830,16 @@ C name with the full path.
             CALL EASKF(LLASCI,' Climate ASCII file?',
      &        ' ',96,DCLIM,'ASCII climate file name',IER,3)
           endif
+
+C If user canceled loop show menu again.
+          if(ier.eq.-3) goto 3
+
           IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 292
 
 C Cast back to 72 char name and do the conversion.
           llt=MIN0(lnblnk(llasci),72)
           write(LASCI,'(a)') LLASCI(1:llt)
 
-C          CALL EASKS(LASCI,' ASCII climate file? ',
-C     &      ' ',72,' ','ASCII climate file',IER,1)
           dok=.true.
           h(1)='When scanning an ASCII version of the ESP-r '
           h(2)='climate file you can also take any site data '
@@ -835,6 +857,74 @@ C     &      ' ',72,' ','ASCII climate file',IER,1)
           call tstamp('>','CLM: import climate data')
           CALL EDISP(IUOUT,'Modified climate file saved')
           CALL EDISP(IUOUT,' ')
+        elseif(IICT.eq.3)then
+
+C Import climate data from Korean Met Office XXXH.dat ASCII file
+C asking user which year to transfer.
+          NTSPH=1
+          H(1)='The year is required to find the day of the week '
+          H(2)='for a given julian day. Korean Met off files can'
+          H(3)='have several years. '
+          CALL EASKI(IYEAR,' ',' Which year to import? ',
+     &             1900,'W',2020,'W',2000,'year',IER,3)
+          CLMLOC=' '
+          H(1)='Site name (30 char) for descriptive purposes. '
+          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
+     &      30,'North_Pole','climate site. ',IER,1)
+
+          H(1)='The climate latitude does not necessarily have to '
+          H(2)='match the site latitude.  However, the difference '
+          H(3)='should not be great or simulation results may be '
+          H(4)='open to question.'
+          CALL EASKR(CLAT,' ',' Climate latitude ? ',
+     &             -89.9,'W',89.9,'W',30.0,'climate latitude',IER,4)
+
+          CALL EASKR(CLONG,' ',' Longitude diference ?',
+     &             -14.9,'W',14.9,'W',0.0,'climate long',IER,4)
+
+          LASCI=' '
+          LLASCI=' '
+          IUNIT=IFIL+1
+          h(1)='This ASCII Korean file is the source to be read in. '
+          h(2)='You can browse for the source location and then '
+          h(3)='add in a name or type in the whole name. Typically'
+          h(4)='you are looking for a file name XXXH.dat where '
+          h(5)='XXX is a three digit number. '
+
+C Call EASKF depending on the current file name length.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  293     llt=lnblnk(LLASCI)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+     &          ' ',96,DCLIM,'Korean climate file name',IER,5)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+     &          ' ',124,DCLIM,'Korean climate file name',IER,5)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+     &          ' ',144,DCLIM,'Korean climate file name',IER,5)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+     &        ' ',144,DCLIM,'Korean climate file name',IER,5)
+          else
+            CALL EASKF(LLASCI,' Korean XXXH.dat file?',
+     &        ' ',96,DCLIM,'Korean climate file name',IER,5)
+          endif
+
+C If user canceled loop show menu again.
+          if(ier.eq.-3) goto 3
+
+          IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 293
+
+C Cast back to 72 char name and do the conversion.
+          llt=MIN0(lnblnk(llasci),72)
+          write(LASCI,'(a)') LLASCI(1:llt)
+          call MKOREANCLM(ITRU,LASCI,IUNIT,IER)
         endif
       ELSEIF(INO.EQ.15)THEN
 
@@ -1117,7 +1207,7 @@ C Clear common blocks for a new climate file.
       IT2=24
       IDS=1
       IDF=365
-      IYEAR=1997
+      IYEAR=2000
       CLAT=50.
       CLONG=0.
 

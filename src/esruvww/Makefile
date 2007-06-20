@@ -15,8 +15,11 @@ wwlib.c:
 	rm -f wwlib.c
 	ln -s $(LIBdir)/wwlib.c .
 
+strip:
+	@if [ -f $(PROGRAM) ]; then strip $(PROGRAM); fi
+
 install:
-	strip $(PROGRAM);cp $(PROGRAM) $(ESPbin)
+	@if [ -f $(PROGRAM) ]; then cp $(PROGRAM) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROGRAM) $(OBJECTS) wwlib.c

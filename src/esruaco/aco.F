@@ -118,6 +118,18 @@ C ACO specific commons
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12
+
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
 
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
@@ -139,6 +151,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('aco ')
+      cAppName = 'aco'
       ITRC=1
       IUIN = 5
       IUOUT = 6
@@ -150,6 +163,7 @@ C Initial assumptions (summary reporting).
       ITFS=1
       itrc=0
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Configuration file on IFIL+5.
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL +15.
@@ -321,16 +335,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      call edisp(iuout,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Acoustics: Version 2.3a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

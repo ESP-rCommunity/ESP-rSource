@@ -286,7 +286,7 @@ C Presents a list of electrical nodes to the user and returns the selected node 
       SUBROUTINE ELNODMLS(NPK,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -425,7 +425,7 @@ C Presents a list of hybrid components to the user and returns the selected
 C component number.
       SUBROUTINE ELHYBMLS(NPK,IPK)
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -568,7 +568,7 @@ C Presents a list of hybrid components to the user and returns the selected
 C component number.
       SUBROUTINE ELPOWMLS(NPK,IPK)
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -708,7 +708,7 @@ C Presents a list of connecting components to the user and returns the selected
 C component number.
       SUBROUTINE ELCNCMLS(NPK,IPK)
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -850,7 +850,7 @@ C connection number.
       SUBROUTINE ELCONMLS(NPK,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)

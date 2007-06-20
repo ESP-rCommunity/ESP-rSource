@@ -582,6 +582,30 @@ C TMC data
       common/radabs/NABS
       common/expath/runpath
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat
+
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
@@ -609,6 +633,9 @@ C TMC data
       nobs=0
       ISTAT=0
       IER=0
+
+C Find version of materials database.
+      call eclose(matver,1.1,0.01,closemat)
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
@@ -799,10 +826,28 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &         DBSHT,E,AE,DRV,TITL,NAM)
-        CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
-     &         DBSHT,E,AI,DRV,TITL,NAM)
+        if(closemat)then
+          legmat=IPR(IM,1)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            E=matdbine(matarrayindex)
+            AE=matdbina(matarrayindex)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
+     &      DBSHT,E,AE,DRV,TITL,NAM)
+        endif
+        if(closemat)then
+          legmat=IPR(IM,LAYERS(IM))   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            E=matdbine(matarrayindex)
+            AI=matdbina(matarrayindex)
+          endif
+        else
+          CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
+     &      DBSHT,E,AI,DRV,TITL,NAM)
+        endif
 
 C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible

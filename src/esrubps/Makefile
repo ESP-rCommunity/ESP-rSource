@@ -6,6 +6,7 @@ DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
+PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
@@ -23,7 +24,7 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o bctlf.o \
 	  blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -48,14 +49,13 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o bcfunc.o bctlf.o \
 	  water_tanks.o h3k_utils.o SetDllParms.o AIMS.o TAC.o\
 	  WaterProperties.o DG_controller.o elec_net_utilities.o window_control.o  \
 	  PEM_FC_pt1.o PEM_FC_pt2.o powoc_calc.o h3k_report_data.o radiant_floor.o DHW_module.o \
-	  h3k_plant_postprocess.o h2_matrix_library.o h2_components.o Stirling_CHP.o \
+	  h3k_plant_postprocess.o h2_matrix_library.o h2_components.o Annex42_combustion_CHP.o \
 	  chemical_properties.o h2_comps.o compressed_cylinder.o Hydrogen_PEMFC.o  \
 	  Hydrogen_MH_store.o enet_state_variable_manipulate.o Hydrogen_demand_controller.o \
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o
-
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -112,6 +112,9 @@ adjb.F:
 adjp.F:
 	rm -f adjp.F
 	ln -s $(PLTdir)/adjp.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
@@ -568,9 +571,9 @@ h2_matrix_library.F:
 h2_components.F:
 	rm -f h2_components.F
 	ln -s $(CETCdir)/h2_components.F .
-Stirling_CHP.F:
-	rm -f Stirling_CHP.F
-	ln -s $(PLTdir)/Stirling_CHP.F .
+Annex42_combustion_CHP.F:
+	rm -f Annex42_combustion_CHP.F
+	ln -s $(PLTdir)/Annex42_combustion_CHP.F .
 chemical_properties.F:
 	rm -f chemical_properties.F
 	ln -s $(CETCdir)/chemical_properties.F
@@ -646,14 +649,18 @@ ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
 
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
+
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
+
 
 clean:
 	rm -f core $(PROG) $(BPS_OBJECTS) $(XML_COBJECTS)    \
 	$(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)  \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
-	ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
+	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
@@ -675,7 +682,7 @@ clean:
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
-	spmisc.F startup.F Stirling_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
+	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \

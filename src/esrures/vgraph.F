@@ -188,6 +188,13 @@ C Compute maximum and minimum values for this pick.
       IF(INO.EQ.40)goto 15
       IF(INO.EQ.41)then
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'G','Var vs Var',IER)
+
+C If user request cancel then redisplay menu after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          goto 51
+        endif
+
       endif
       IF(INO.EQ.42)goto 16
       goto 5

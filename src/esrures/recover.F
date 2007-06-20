@@ -116,6 +116,12 @@ C Output file not specified - use pif file name but changed to *.dat
           write(xfile,'(a)') outfile(1:lnblnk(outfile))
         endif
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
+
+C If user request cancel then return after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          return
+        endif
       endif
 
 C Allow output period and filters to be changed on subsequent groups.
@@ -359,6 +365,12 @@ C Output file not specified - use pif file name but changed to *.dat
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
         endif
+
+C If user request cancel then return after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          return
+        endif
       endif
 
 C Heading string.
@@ -449,6 +461,12 @@ C Close output redirect (if saving seperately).
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'X','Tabular',IER)
         else
           call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Text',IER)
+        endif
+
+C If user request cancel then return after resetting ixopen to zero.
+        if(ier.eq.-3)then
+          ixopen=0
+          return
         endif
       endif
 

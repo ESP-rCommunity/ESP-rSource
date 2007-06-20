@@ -1,8 +1,8 @@
 *Operations 1.0
-*date Wed Jul 28 12:29:51 2004  # latest file modification 
+*date Mon May 28 16:27:44 2007  # latest file modification 
 # operations of reception defined in: 
 # ../zones/reception.opr
-MAIN OFF five people on weekdays, sm pwr on all days  # description
+MAIN OFF five people on weekdays, sm pwr on all days
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000   100.000
      1   # no Weekday flow periods

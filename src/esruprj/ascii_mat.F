@@ -121,30 +121,64 @@ C matgapcnd(4)  gap conduction at -10C 0C 10C 20C
 C matvisco(4) gap viscosity at -10C 0C 10C 20C
 C matgapden(4)  gap density at -10C 0C 10C 20C
 C matprandtl(2) prandtl number and extra field for T correct
+C matgapsht(2) gap specific heat and T correct.
 C UK EPBD method uses the 1st array index for the value and
 C the 2nd array index for T derivitive.
-C      real matgapcnd,matvisco,matgapden,matprandtl
+C      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
 C      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-C     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+C     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
-C   if return is negative then there is no pointer.
+C   if return is negative then there is no pointer. Index includes
+C   zero to accommodate the implied air material.
 C    integer mathash
-C    common/mathasharray/mathash(600)
+C    common/mathasharray/mathash(0:600)
 
 C << Idea: have something like parsemlcdesc that goes and looks
 C << for a material that matches either the legacy index or
 C << the short material name.
-
-C << What about AIR?
-C << could have an array index zero for categories?
 
 C << What further information differences are there with
 C << EnergyPlus and DOE-2?
 
 C << What further information differences are there with
 C << WIS and Window 5.1
+
+C Categories for materials implied by UK national calculation method.
+C   Air Layer
+C   Asbestos Cement
+C   Asphalt
+C   Brick
+C   Building Paper
+C   Concrete dense
+C   Concrete lightweight
+C   Concrete medium density
+C   Cement Mortar
+C   Felt
+C   Floor finish
+C   Glazing not coated not tinted
+C   Glazing not coated tinted
+C   Glazing low-e coated not tinted
+C   Glazing low-e coated tinted
+C   Insulation (batts)
+C   Insulation (board)
+C   Insulation (fill)
+C   Insulation (quilt)
+C   Insulation (miscellaneous)
+C   Metal
+C   Particle Board
+C   Plaster
+C   Plasterboard
+C   Render
+C   Roof Gravel
+C   Rubber Tile
+C   Soil
+C   Stone
+C   Tiles / slate
+C   Wood
+C   Other
+C   
 
 C rlegacymat: scan legacy ASCII file and fill common blocks.
 C mkascimat:  creates ascii material file (version 1.1) based on
@@ -178,12 +212,12 @@ C legacy ASCII material database LASCI opened on unit IFA.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden,matprandtl
+      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
@@ -196,7 +230,7 @@ C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
 C Fill the hash table with not included marker (-1)
-      do 42 ih=1,600
+      do 42 ih=0,600
         mathash(ih)=-1
   42  continue
 
@@ -245,10 +279,10 @@ C matdbitems counter and creating a new name.
           matlegindex(matdbitems)=NCODE
           matcatindex(matdbitems)=I
 
-C << If later the order of the array changes then it will probably
-C << be necessary to rebuild the mathash array.
+C If later the order of the array changes then it will probably
+C be necessary to rebuild the mathash array. << ?? >>
 
-          if(NCODE.gt.0.and.NCODE.le.600)then
+          if(NCODE.ge.0.and.NCODE.le.600)then
             mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
           endif
           write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
@@ -276,10 +310,6 @@ C << be necessary to rebuild the mathash array.
 
 C Default thickness does not exist in legacy file so set a place
 C holder based on typcial classes (for databases with 15-17 classes)
-
-C << Have a look at logic when the user has requested a material db
-C << from scratch...
-
           if(matcats.ge.15.and.matcats.le.17)then
             matopaq(matdbitems)='-'
             if(I.eq.1.or.I.eq.2)then
@@ -330,6 +360,42 @@ C Assume that this category is glass. ?? WIS data
   20    CONTINUE
   10  CONTINUE
 
+C If there has been no air material read in then add in one more
+C category for air and fill it with the default information that
+C the standard call to ERPCDB would have returned.
+      if(mathash(0).eq.-1)then
+        matcats=matcats+1
+        matcatitems(matcats)=1
+        write(matcatname(matcats),'(a)') 'GAPS'
+        write(matcatdoc(matcats),'(a,i2,a)')
+     &    'Category (',matcats,') holds the implied air material '
+        matdbitems=matdbitems+1   ! increment counter
+        matlegindex(matdbitems)=0
+        matcatindex(matdbitems)=matcats
+        mathash(0)=matdbitems  ! set up pointer from legacy index to array
+        write(matname(matdbitems),'(a)') 'mat_000'
+        write(matdoc(matdbitems),'(a)') 
+     &    'Air layer with default properties'
+        matdbcon(matdbitems)=0.0
+        matdbden(matdbitems)=0.0
+        matdbsht(matdbitems)=0.0
+        matdboute(matdbitems)=0.99
+        matdbine(matdbitems)=0.99
+        matdbouta(matdbitems)=0.99
+        matdbina(matdbitems)=0.99
+        matdbdrv(matdbitems)=1.0
+        matdbthick(matdbitems)=25.0
+        matopaq(matdbitems)='-'
+        matirtran(matdbitems)=0.0
+        matsoldrtrn(matdbitems)=0.0
+        matsoldrotrfl(matdbitems)=0.0
+        matsoldrinrfl(matdbitems)=0.0
+        matvistran(matdbitems)=0.0
+        matvisotrfl(matdbitems)=0.0
+        matvisinrfl(matdbitems)=0.0
+        matrender(matdbitems)=0.0
+      endif
+
 C Debug.
 C      write(6,*) 'matdbitems ',matdbitems
 C      write(6,*) 'matcatitems ',matcatitems
@@ -371,12 +437,12 @@ C Notes on variables at top of file.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden,matprandtl
+      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
       character tab*1,outs*248,outsd*248
       character LASCI*72
       integer matcount,matcatcount  ! used to increment arrays
@@ -431,13 +497,13 @@ C common block arrays so that future reads are more efficient.
           if(matcatindex(J).eq.I)then
             matcatcount=matcatcount+1 ! increment items in category counter
             if(matcatcount.gt.matcatitems(I))then
-              call usrmsg('Number of items linked with a category does',
+              call usrmsg('Number of items linked with a category ',
      &                    'exceeds expected count.','W')
             endif
             matcount=matcount+1   ! increment counter
             if(matcount.gt.matdbitems)then
               call usrmsg('Number of materials scanned exceeds',
-     &                    'exceeds expected count.','W')
+     &                    'expected count for database.','W')
             endif
             lnna=lnblnk(matname(J))
             lndo=lnblnk(matdoc(J))
@@ -463,16 +529,18 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,8f10.5)')
+              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
+     &          f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
      &          matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
      &          matvisco(J,2),matgapden(J,1),matgapden(J,2),
-     &          matprandtl(J,1),matprandtl(J,2)
+     &          matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
+     &          matgapsht(J,2)
             elseif(matopaq(J)(1:1).eq.'h')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f13.3,
-     &          4f9.3,4f6.3,2f10.5)')
+              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f8.5,
+     &          4f11.8,4f9.6,f9.6,f9.3)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
@@ -480,7 +548,7 @@ C common block arrays so that future reads are more efficient.
      &          matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
      &          matvisco(J,3),matvisco(J,4),matgapden(J,1),
      &          matgapden(J,2),matgapden(J,3),matgapden(J,4),
-     &          matprandtl(J,1),matprandtl(J,2)
+     &          matprandtl(J,1),matgapsht(J,1)
             endif
             call SDELIM(outs,outsd,'C',IW)
             write(IFA,'(a)') outsd(1:lnblnk(outsd))
@@ -520,16 +588,16 @@ C current ASCII material database LASCI opened on unit IFA.
      &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
      &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
 
-      real matgapcnd,matvisco,matgapden,matprandtl
+      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
       common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,4)
+     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2)
 
       integer mathash
-      common/mathasharray/mathash(600)
+      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(16)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72,WORD*24
-      character WORD32*32,WORD248*248
+      character WORD32*32,WORD248*248,LOUTSTR*248
 
 C Open the ASCII file for reading.
       CALL EFOPSEQ(IFA,LASCI,1,IER)
@@ -546,7 +614,7 @@ C Proceed with header.
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
 C Fill the hash table with not included marker (-1)
-        do 42 ih=1,600
+        do 42 ih=0,600
           mathash(ih)=-1
   42    continue
       else
@@ -584,19 +652,19 @@ C class index IC is used for subsequent items.
         CALL EGETRM(OUTSTR,K,NDESC,'-','description',IER)
         write(matcatname(IC),'(a)') NDESC(1:lnblnk(NDESC))
 
-        CALL STRIPC(IFA,OUTSTR,0,ND,1,'class documentation',IER)
+        CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'class documentation',IER)
         IF(IER.NE.0)RETURN
         K=0
-        CALL EGETRM(OUTSTR,K,WORD248,'W','categ doc',IER)
+        CALL EGETRM(LOUTSTR,K,WORD248,'W','categ doc',IER)
         write(matcatdoc(IC),'(a)') WORD248(1:lnblnk(WORD248))
         goto 41
       elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
         matdbitems=matdbitems+1   ! increment counter
-        CALL EGETW(OUTSTR,K,WORD32,'-','item name',IER)
+        CALL EGETP(OUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
         CALL EGETWI(OUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE
-        if(NCODE.gt.0.and.NCODE.le.600)then
+        if(NCODE.ge.0.and.NCODE.le.600)then
           mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
         endif
         CALL EGETWI(OUTSTR,K,matcatindex(matdbitems),1,MGCL,'F',
@@ -604,19 +672,19 @@ C class index IC is used for subsequent items.
         CALL EGETRM(OUTSTR,K,WORD248,'-','item doc',IER)
         write(matdoc(matdbitems),'(a)') WORD248(1:lnblnk(WORD248))
 
-        CALL STRIPC(IFA,OUTSTR,99,ND,1,'the raw data line',IER)
+        CALL LSTRIPC(IFA,LOUTSTR,99,ND,1,'the raw data line',IER)
         IF(IER.NE.0)RETURN
         K=0
-        CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db con',IER)
-        CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db den',IER)
-        CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db sht',IER)
-        CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db out emis',IER)
-        CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db in emis',IER)
-        CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db out absorb',IER)
-        CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db in absorb',IER)
-        CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db difusn',IER)
-        CALL EGETWR(OUTSTR,K,VAL(9),0.,0.,'-','db def thick',IER)
-        CALL EGETW(OUTSTR,K,WORD32,'-','tag for opaque transp',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db con',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db den',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db sht',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db out emis',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db in emis',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db out absorb',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db in absorb',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db difusn',IER)
+        CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db def thick',IER)
+        CALL EGETW(LOUTSTR,K,WORD32,'-','tag for opaque transp',IER)
         matdbcon(matdbitems)=VAL(1)
         matdbden(matdbitems)=VAL(2)
         matdbsht(matdbitems)=VAL(3)
@@ -635,14 +703,14 @@ C class index IC is used for subsequent items.
 C Read single layer optics if there are more than 
           matopaq(matdbitems)='t'
           if(ND.gt.10)then
-            CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db ir tran',IER)
-            CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db sol dir tr',IER)
-            CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db sol refl',IER)
-            CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db sol refl',IER)
-            CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db vis tran',IER)
-            CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db vis refl',IER)
-            CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db vis refl',IER)
-            CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db vis render',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db ir tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db sol dir tr',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db sol refl',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db sol refl',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db vis tran',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db vis refl',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db vis refl',IER)
+            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db vis render',IER)
             matirtran(matdbitems)=VAL(1)
             matsoldrtrn(matdbitems)=VAL(2)
             matsoldrotrfl(matdbitems)=VAL(3)
@@ -654,14 +722,16 @@ C Read single layer optics if there are more than
           endif
         elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
           matopaq(matdbitems)='g'
-          CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
-          CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',IER)
-          CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db gas visc',IER)
-          CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db visc T deriv',IER)
-          CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db gas density',IER)
-          CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db dens T deriv',IER)
-          CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db prandtl',IER)
-          CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db prandtl T der',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db gas visc',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db visc T deriv',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db gas density',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db dens T deriv',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db prandtl',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db prandtl der',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db spec ht',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','db spec ht der',IER)
           matgapcnd(matdbitems,1)=VAL(1)
           matgapcnd(matdbitems,2)=VAL(2)
           matvisco(matdbitems,1)=VAL(3)
@@ -670,24 +740,24 @@ C Read single layer optics if there are more than
           matgapden(matdbitems,2)=VAL(6)
           matprandtl(matdbitems,1)=VAL(7)
           matprandtl(matdbitems,2)=VAL(8)
+          matgapsht(matdbitems,1)=VAL(9)
+          matgapsht(matdbitems,2)=VAL(10)
         elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
           matopaq(matdbitems)='h'
-          CALL EGETWR(OUTSTR,K,VAL(1),0.,0.,'-','db gas cond -10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(2),0.,0.,'-','db gas cond 0',IER)
-          CALL EGETWR(OUTSTR,K,VAL(3),0.,0.,'-','db gas cond 10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(4),0.,0.,'-','db gas cond 20',IER)
-          CALL EGETWR(OUTSTR,K,VAL(5),0.,0.,'-','db gas visc -10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(6),0.,0.,'-','db gas visc 0',IER)
-          CALL EGETWR(OUTSTR,K,VAL(7),0.,0.,'-','db gas visc 10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(8),0.,0.,'-','db gas visc 20',IER)
-          CALL EGETWR(OUTSTR,K,VAL(9),0.,0.,'-','db gas dens -10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(10),0.,0.,'-','db gas dens 0',IER)
-          CALL EGETWR(OUTSTR,K,VAL(11),0.,0.,'-','db gas dens 10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(12),0.,0.,'-','db gas dens 20',IER)
-          CALL EGETWR(OUTSTR,K,VAL(13),0.,0.,'-','db prandtl -10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(14),0.,0.,'-','db prandtl 0',IER)
-          CALL EGETWR(OUTSTR,K,VAL(15),0.,0.,'-','db prandtl 10',IER)
-          CALL EGETWR(OUTSTR,K,VAL(16),0.,0.,'-','db prandtl 20',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','gas cond -10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','gas cond 0',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','gas cond 10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','gas cond 20',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','gas visc -10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','gas visc 0',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','gas visc 10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','gas visc 20',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','gas dens -10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','gas dens 0',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','gas dens 10',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','gas dens 20',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','db prandtl',IER)
+          CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-','db gas sp ht',IER)
           matgapcnd(matdbitems,1)=VAL(1)
           matgapcnd(matdbitems,2)=VAL(2)
           matgapcnd(matdbitems,3)=VAL(3)
@@ -701,9 +771,7 @@ C Read single layer optics if there are more than
           matgapden(matdbitems,3)=VAL(11)
           matgapden(matdbitems,4)=VAL(12)
           matprandtl(matdbitems,1)=VAL(13)
-          matprandtl(matdbitems,2)=VAL(14)
-          matprandtl(matdbitems,3)=VAL(15)
-          matprandtl(matdbitems,4)=VAL(16)
+          matgapsht(matdbitems,1)=VAL(14)
         endif
 
         goto 41
@@ -727,3 +795,33 @@ C << did not find the correct header.... >>
       RETURN
     
       END
+
+C ************* getnextascislot 
+C getnextascislot: Finds the next empty slot in the 0-600 list
+C of legacy material indices.
+C Where: ip is point to start looking from
+C        inext is slot found.
+      subroutine getnextascislot(ip,inext)
+
+C mathash is a pointer to the array index in matdatarray for a
+C   given legacy index e.g array_index = mathash(legacy_index)
+C   if return is negative then there is no pointer. The array
+C   starts at zero to account for the implied air magerial.
+      integer mathash
+      common/mathasharray/mathash(0:600)
+      integer ip,inext,ilook
+
+C Set inext to 601 in case nothing found. If mathash array item
+C is negative then it has not yet been used. Calling code should
+C be sure to instanciate mathash with the material array index.
+      inext=601
+      if(ip.gt.1.and.ip.le.599)then
+        do 42 ilook=ip,600
+          if(mathash(ilook).lt.0)then
+            inext=ilook
+            return
+          endif
+  42    continue
+      endif
+      return
+      end

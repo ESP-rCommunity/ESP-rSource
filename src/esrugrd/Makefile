@@ -115,8 +115,11 @@ trnsf.F:
 	rm -f trnsf.F
 	ln -s $(ISHdir)/trnsf.F .
 
+strip:
+	@if [ -f $(PROG) ]; then strip $(PROG); fi
+
 install:
-	strip $(PROG);cp $(PROG) $(ESPbin)
+	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \

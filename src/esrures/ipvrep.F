@@ -213,8 +213,14 @@ C parameter sets known then check for seasonal ipv report file name.
           write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
         endif
         call ipvexp(xfile,ixopen,ixunit,'o','T','IPV intermediate',IER)
-        usermode=.false.
-        goto 49
+
+C If there was a cancel request return, otherwise go on to label 49.
+        if(ier.eq.-3)then
+          return
+        else
+          usermode=.false.
+          goto 49
+        endif
       elseif(paction(1:7).eq.'ipv_trn'.or.
      &       paction(1:7).eq.'ipv_spr')then
 
@@ -224,32 +230,48 @@ C In this case the data will be appended to an earlier file.
           write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
         endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV reopened',IER)
-        usermode=.false.
-        goto 49
+        if(ier.eq.-3)then
+          return
+        else
+          usermode=.false.
+          goto 49
+        endif
       elseif(paction(1:7).eq.'ipv_sum')then
         iseas = 3
         if(nsset.ge.1)then
           write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
         endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
-        usermode=.false.
-        goto 49
+        if(ier.eq.-3)then
+          return
+        else
+          usermode=.false.
+          goto 49
+        endif
       elseif(paction(1:7).eq.'ipv_aut')then
         iseas = 4
         if(nsset.ge.1)then
           write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
         endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
-        usermode=.false.
-        goto 49
+        if(ier.eq.-3)then
+          return
+        else
+          usermode=.false.
+          goto 49
+        endif
       elseif(paction(1:8).eq.'ipv_win2')then
         iseas = 5
         if(nsset.ge.1)then
           write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
         endif
         call ipvexp(xfile,ixopen,ixunit,'a','T','IPV sum',IER)
-        usermode=.false.
-        goto 49
+        if(ier.eq.-3)then
+          return
+        else
+          usermode=.false.
+          goto 49
+        endif
       elseif(paction(1:10).eq.'ipv_annual')then
         delim = 'C'
         call mkannrep(iier)
@@ -2007,6 +2029,12 @@ C Recover the distribution of resultant temperature in each bin for each season.
 C Append the summary to the intermediate report to create finished report.
       write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
       call ipvexp(xfile,ixopen,ixunit,'a','T','IPV summay',IER)
+
+C If there was a cancel request return, otherwise write the report.
+      if(ier.eq.-3)then
+        delim = '-'
+        return
+      endif
       itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
@@ -3548,6 +3576,12 @@ C Each call is a toggle.
           else
             CALL EASKF(xfile,' Export file name? ',
      &        ' ',96,'export.txt','binary events db',IER,2)
+          endif
+
+C If user request cancel then return after resetting ixopen to zero.
+          if(ier.eq.-3)then
+            ixopen=0
+            return
           endif
         endif
         write(outs248,'(3A)')' opened ',xfile(1:lnblnk(xfile)),

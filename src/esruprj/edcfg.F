@@ -1339,7 +1339,7 @@ C Ask for transform distance then which zones and then apply.
           H(2)='by a given amount in each axis.'
           hold = ' 0.0  0.0  0.0'
           clkok=.false.
-  43      CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ','cancel',
+  43      CALL EASKSCNCL(HOLD,'Transform (X Y Z metres):',' ','cancel',
      &      clkok,32,' 0. 0. 0.','transforms XYZ',IER,2)
           if(clkok) goto 3
           K=0
@@ -3074,6 +3074,9 @@ C Offer creation of moisture transport data file or dereference.
      &    zname(IC)(1:lnblnk(zname(IC))),' ?'
         clkok=.false.
         if(.NOT.MSTRZN(IC))then
+
+C << what does the ignore option really mean here? >>
+
           CALL EASKSCMD(SFIL,outs,' ','ignore',clkok,72,DSFIL,
      &      'moisture file',IER,2)
           if(clkok) goto 3
@@ -3361,6 +3364,10 @@ C logic which determines if we actually are browsing.
           CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
      &      'config file name',IER,17)
         endif
+
+C Cancel request, return and ensure that the calling code deals with
+C the -3 ier passed back.
+        if(ier.eq.-3) return
 
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '

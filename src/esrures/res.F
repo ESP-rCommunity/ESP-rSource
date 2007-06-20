@@ -124,7 +124,20 @@ C Significant figure reporting limit (NSIGFIG).
       COMMON/pres/iunitp
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there,OK
 
@@ -142,6 +155,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('res ')
+      cAppName = 'res'
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -157,6 +171,7 @@ C     NSIGFIG=3
       IFTIME=0
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
+      matver=0.0   ! initial assumption of binary materials database
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -299,10 +314,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
-      write(outs,'(2a)')
-     & ' ESP-r Results Analysis Tool: Version 7.5 of April 2007.',
-     & ' Copyright 2001-7 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'
@@ -395,7 +407,10 @@ C Assume multilayer input from IFIL+9.
 
 C Initialise results library.
       CALL MORFIL(iftype)
-      if(iftype.eq.-1) then
+      if(iftype.eq.-2)then
+        iftype=0
+        goto 4    ! user canceled the file browse jump to menu.
+      elseif(iftype.eq.-1) then
 
 C Get the name of the configuration file name 
 C Read the plant configuration file.
@@ -543,6 +558,10 @@ C Test for illegal menu pick.
         IDEFLT=1
         call tstamp('>','RES: open new results database')
         CALL MORFIL(itype)
+        if(iftype.eq.-2)then
+          iftype=0
+          goto 4    ! user canceled the file browse jump to menu.
+        endif
         CALL MORESS
 
         CALL MOGCFG

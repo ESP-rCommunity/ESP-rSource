@@ -513,6 +513,30 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
       COMMON/UA31/MATNAM(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+      logical closemat
+
+      integer legmat  ! local variable for legacy index.
+      integer matarrayindex ! the indes within matdatarray
+
       character LUALF*72,LCNG*15,LLOC*15,outs*124
       character ZNAME*12, zdesc*64
       character NAM*72,TITL*72,MATNAM*12,ITEM(6)*20
@@ -529,6 +553,7 @@ C List distributions.
         call edisp (iuout,'  ')
         write(outs,'(a,i4)')'Number of distributions defined:',NICNG
         call edisp (iuout,outs)
+        call eclose(matver,1.1,0.01,closemat)
         do 10 I=1,NICNG
           if (IELM.eq.0.or.IELM.eq.I) then
             call edisp (iuout,'  ')
@@ -536,8 +561,23 @@ C List distributions.
             call edisp (iuout,outs)
             if (IDTYP(I).eq.1) then
               IDB=IDMAT(I,1)
-              CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &                                                    DRV,TITL,NAM)
+              if(closemat)then
+                legmat=IDB   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
+              else
+                CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
+     &            DRV,TITL,NAM)
+              endif
               write(outs,'(2a)')' Material: ',NAM
               call edisp (iuout,outs)
               if (IDMAT(I,2).eq.1) then
@@ -560,8 +600,23 @@ C List distributions.
                 call edisp (iuout,'Undefined')
               else
                 IDB=IDMAT(I,1)
-                CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &                                                    DRV,TITL,NAM)
+                if(closemat)then
+                  legmat=IDB   ! which legacy index
+                  if(legmat.ge.0)then
+                    matarrayindex=mathash(legmat)  ! find matching array index
+                    DBCON=matdbcon(matarrayindex)
+                    DBDEN=matdbden(matarrayindex)
+                    DBSHT=matdbsht(matarrayindex)
+                    E=matdbine(matarrayindex)
+                    A=matdbina(matarrayindex)
+                    DRV=matdbdrv(matarrayindex)
+                    write(TITL,'(a)') 'placeholder'
+                    write(NAM,'(a)') matname(matarrayindex)(1:32)
+                  endif
+                else
+                  CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
+     &              DRV,TITL,NAM)
+                endif
                 write(outs,'(2a)')' Thickness of material: ',NAM
                 call edisp (iuout,outs)
               endif

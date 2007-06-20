@@ -73,7 +73,20 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
 
@@ -87,6 +100,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('grd ')
+      cAppName = 'grd'
       ITRC=0
       IUOUT=6
       IUIN=5
@@ -98,6 +112,7 @@ C Initialize global common data.
       IMFS=1
       LIMTTY=20
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
       path='./'
       IDRW1=0
       call parsfz(MODL,iappw,iappx,iappy,inf,inz)
@@ -209,17 +224,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL EDISP(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Construction Gridding: Version 2.6a of January 2006.',
-     &  ' Copyright '
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' 2001-6 Energy Systems Research Unit, University of',
-     & ' Strathclyde,'
-      call edisp(IUOUT,outs)
-      CALL EDISP(IUOUT,' Glasgow Scotland. ')
-      CALL EDISP(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -485,10 +490,18 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
       LOGICAL GRDOK
+      DIMENSION ICLN(30)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
-      CHARACTER VERTX*2
+      CHARACTER VERTX*2,outs*124
 
       GRDOK=.true.
       IUNIT=IFIL+1
@@ -520,12 +533,59 @@ C If primitive database not opened, do it now.
       IF(.NOT.MATDBOK)THEN
         IER=0
         CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(IER.NE.0)RETURN
-        MATDBOK=.TRUE.
+        IF(ier.ne.0)THEN
+          write(outs,'(3a)') ' No materials database ',
+     &      LFMAT(1:lnblnk(LFMAT)),' found.'
+          call edisp(iuout,outs)
+          MATDBOK=.FALSE.
+        else
+
+C Also check to see if the file has correct info. 
+          IREC=601
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &      (ICLN(I),I=1,30)
+          if(NCLASS.LE.0)then
+            goto 1000   ! no classifications so try alternatives
+          else
+            MATDBOK=.TRUE.
+            matver = 0.0
+            goto 139  !  a binary file found so carry on.
+          endif
+ 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          if(ier.eq.-2)then
+            ier=0
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ier.ne.0)then
+              call usrmsg('No readable materials database was found',
+     &                  'or file was corrupt','W')
+              MATDBOK=.FALSE.
+              return
+            else
+              call eclose(matver,1.1,0.001,close)
+              if(close)then
+                call edisp(iuout,' Filled material data arrays...')
+                MATDBOK=.TRUE.
+              else
+                call usrmsg(
+     &            'No readable material database was found. ',
+     &            'check other warnings for advise.','W')
+                MATDBOK=.FALSE.
+                return
+              endif
+            endif
+          elseif(ier.eq.0)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            endif
+          endif
+        endif
       ENDIF
 
 C Initialise ground coefficients.
-      NDXG=1
+ 139  NDXG=1
       DXG(1)=50.
       NDYG=1
       DYG(1)=50.

@@ -101,7 +101,21 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,OTHEROK,XST
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
@@ -121,6 +135,7 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('cfg ')
+      cAppName = 'cfg'
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -195,6 +210,7 @@ C General image option flags.
       ITGRD=1
       GRDIS=0.0
       ITPPSW=0
+      matver=0.0   ! initial assumption of binary materials database
 
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,
@@ -278,16 +294,7 @@ C Debug
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      call edisp(IUOUT,' ')
-      write(outs,'(2a)')
-     &  ' ESP-r Topology tool: Version 1.13a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings.
       call edisp(IUOUT,' ')

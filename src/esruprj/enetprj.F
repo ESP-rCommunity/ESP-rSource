@@ -462,7 +462,7 @@ C of which is selected
       SUBROUTINE ELNODLST(MODE,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -661,7 +661,7 @@ C of which is selected
       SUBROUTINE ELHYBLST(MODE,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -849,7 +849,7 @@ C of which is selected
       SUBROUTINE ELPOWLST(MODE,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -1039,7 +1039,7 @@ C of which is selected
       SUBROUTINE ELCNCLST(MODE,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -1230,7 +1230,7 @@ C of which is selected
       SUBROUTINE ELCONLST(MODE,IPK)
 
 #include "epara.h"
-# include "power.h"
+#include "power.h"
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -1419,7 +1419,7 @@ C 'CPY' - copy a node in the current list.
 
       SUBROUTINE EDENOD(MODE,INOD)
 
-# include "power.h"
+#include "power.h"
 #include "plant.h"
 #include "building.h"
 
@@ -3855,8 +3855,8 @@ C voltage values on either side of the node are the same.
 
       SUBROUTINE ENETBASEV
 
-# include "power.h"
-# include "building.h"
+#include "power.h"
+#include "building.h"
 
 C Commons
       COMMON/POPHELP/H(60)

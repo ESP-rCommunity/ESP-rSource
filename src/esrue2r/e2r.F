@@ -101,6 +101,18 @@ C Project journal on/off, unit number, cmd, file name.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+      
+C Name of current application
+      common/APPNAME/cAppName
+      
+      character cAppName*12      
+
+C Materials data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
@@ -130,10 +142,12 @@ C Significant figure reporting limit (NSIGFIG).
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
+      cAppName = 'e2r'
       IUIN = 5
       IUOUT = 6
       IFIL = 10
       NSIGFIG=3
+      matver=0.0   ! initial assumption of binary materials database
 
 C Assume configuration file is from IFIL+8, any leakage description
 C is fom IFIL+9 and ASCII viewing and geometry file reading on IFILE+1. 
@@ -360,10 +374,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      write(outs,'(2a)')
-     &  ' ESP-r - Radiance: Version 3.16a of January 2006.',
-     &  ' Copyright 2001-6 Energy'
-      call edisp(IUOUT,outs)
+      CALL ESPrVersion("summary")
+      
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow Scotland.'
@@ -861,33 +873,82 @@ C lfile contains path as well as file name.
 
 C **** copy of opendb from esruprj/eddb.F ******
 C *************** opendb ***************
-C Open the common databases - primitive constructions, multilayer constructions,
+C Open the common databases - materials, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
       character SOPT*12,outs*124,GDESCR*36
+
       IER=0
 
-C Open currently named primitive construction db.  Note that
+C Open currently named materials database.  Note that
 C by a minor rewrite of ICLN in rec 601 we can get by with changing
 C this to 24 words wide.
       CALL ERPFREE(IFMAT,ISTAT)
       call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
-        write(outs,'(a,a,a)') ' No primitive constructions db ',
+        write(outs,'(a,a,a)') ' No materials database ',
      &     LFMAT(1:lnblnk(LFMAT)),' found.'
         call edisp(iuout,outs)
         MATDBOK=.FALSE.
       else
-C        CALL edisp(iuout,' opened primitive materials db.')
-        MATDBOK=.TRUE.
+
+C Also check to see if the file has correct info. 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was found',
+     &                  'or file was corrupt','W')
+            MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable material database was found. ',
+     &          'check other warnings for advise.','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            call edisp(iuout,' Filled material data arrays...')
+            MATDBOK=.TRUE.
+          endif
+        endif
       endif
         
 C Read multilayer db information into common.
-      CALL ERPFREE(IFMUL,ISTAT)
+ 139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,ITRU,IER)
