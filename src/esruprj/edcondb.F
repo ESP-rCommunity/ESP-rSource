@@ -1954,10 +1954,10 @@ C If user canceled the listing the reset unit to iuout and loop back.
             call etmldb(2,itu,IM,imerr)   ! verbose description
           endif
    45   continue
+        call edisp(itu, ' U value assumes for horizontal heat flow:
+     &  external wall with Rso = 0.04m**2deg.C/W')
         call edisp(itu,
-     &  ' U value assumes: external wall with Rso = 0.055m**2deg.C/W')
-        call edisp(itu,
-     &  '                  and Rsi = 0.123m**2deg.C/W')
+     &  '                  and Rsi = 0.13m**2deg.C/W')
         if(irpt.eq.2)then
 
 C Call ctlexp a 2nd time to close the file.
