@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Basic 3 zone model with global on-off control.
-defined in bld_basic_gb1.cfg generated on Wed Jun 20 10:22:56 2007. Notes
-associated with the model are in bld_basic_gb1.log
+This is a synopsis of the model Basic 3 zone model with preheating. defined in
+bld_basic_prht.cfg generated on Wed Jun 20 10:37:24 2007. Notes associated
+with the model are in bld_basic_prht.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -41,67 +41,27 @@ The model includes ideal controls as follows:
 Control description:
 simple building
  
-Zones control includes  2 functions.
-convective heating
+Zones control includes  1 functions.
+morning pre-heating
  
- The sensor for function  1 senses dry bulb temperature in reception.
- The actuator for function  1 is the air point in reception.
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  4 periods.
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
+   1  0.00 db temp   > flux      fixed inject/extrac 1000.0 0.0 18.0 100.0
+fixed injection/extraction: heating injection 1000.0W cooling extraction 0.0W. Heating
+setpoint 18.0C cooling setpoint 100.0C.
+   2  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
 100.00C. (missing 7th item)
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   4 18.00 db temp   > flux      free floating
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
- 
- The sensor for function  2 senses dry bulb temperature in office.
- The actuator for function  2 is the air point in office.
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  4 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   4 18.00 db temp   > flux      free floating
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
+   3 18.00 db temp   > flux      free floating
  
  Zone to contol loop linkages:
  zone ( 1) reception    << control  1
- zone ( 2) office       << control  2
+ zone ( 2) office       << control  1
  zone ( 3) roof_space   << control  0
- 
- Global control includes  1 loops.
-global on-off
- 
- The sensor for function  1 sensors are not used in global controls
- The actuator for function  1 is actuation not used in global controls
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 undefined law         undefined law       1.0 2.0
  
  ____________________________________________________________
  
