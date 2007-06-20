@@ -2640,10 +2640,19 @@ C Set test logic to false.
 
 C We have done both passes, report differences and exit.
           call edisp(iuout,' ')
+          call edisp(iuout,'Summary of performance and differences ')
+          call edisp(iuout,' ')
+          call edisp(iuout,'Demand is reported in kWh/m2/a and kWh/a')
+          call edisp(iuout,'Capacity is reported in kW/m2/a and kW/a')
+          call edisp(iuout,
+     &      'Differences reported between the base case model and the')
+          call edisp(iuout,
+     &      'variant: positive = savings, negative = not as good as.')
+          call edisp(iuout,' ')
           call edisp(iuout,'For the base case model:')
           if(delim.eq.'-')then
             call edisp(iuout,
-     &            '       Demand              Capacity')
+     &            '        Demand              Capacity')
             call edisp(iuout,
      &            '        m2     building     m2     building')
           elseif(delim.eq.'T')then
