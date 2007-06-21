@@ -190,9 +190,9 @@ C CEN mode sets values for specific conditions.
           CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen floor',IER)
           if(OUTSTR(1:6).eq.'*floor')then
             K=6
-            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
             CENLOC(icomp,i,3)=V1
             CENLOC(icomp,i,4)=V2
             CENLOC(icomp,i,5)=V3
@@ -202,9 +202,9 @@ C CEN mode sets values for specific conditions.
           CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen ceiling',IER)
           if(OUTSTR(1:8).eq.'*ceiling')then
             K=8
-            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
             CENLOC(icomp,i,6)=V1
             CENLOC(icomp,i,7)=V2
             CENLOC(icomp,i,8)=V3
@@ -214,9 +214,9 @@ C CEN mode sets values for specific conditions.
           CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen slope',IER)
           if(OUTSTR(1:6).eq.'*slope')then
             K=6
-            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
             CENLOC(icomp,i,9)=V1
             CENLOC(icomp,i,10)=V2
             CENLOC(icomp,i,11)=V3
@@ -226,9 +226,9 @@ C CEN mode sets values for specific conditions.
           CALL STRIPC(IUNIT,OUTSTR,99,num,1,'htc cen wall',IER)
           if(OUTSTR(1:5).eq.'*wall')then
             K=5
-            CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen inside',IER)
-            CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen ptn',IER)
-            CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+            CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen inside',IER)
+            CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen ptn',IER)
+            CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
             CENLOC(icomp,i,12)=V1
             CENLOC(icomp,i,13)=V2
             CENLOC(icomp,i,14)=V3
