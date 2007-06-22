@@ -1769,7 +1769,6 @@ if [ "$install_training" = "yes" ]; then
      echo " "
      cd ${SRCdir}
      ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
-     ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
      echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
@@ -2237,7 +2236,6 @@ echo "  "
 echo "Removing binary materials db from exemplars ..."
 cd ${SRCdir}/
 rm -f training/cellular_pv/dbs/cellular_pv.materials
-rm -f training/house/svph/dbs/linford.materialdb
 rm -f training/constr/tp_sub/dbs/tp_sub.material
 rm -f training/plant/wch/dbs/db_prc
 rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
