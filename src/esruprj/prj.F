@@ -146,7 +146,7 @@ C Name of current application
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit,foundutl
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
@@ -281,6 +281,7 @@ C be atrributed.
       browse=.false.
       Vldtng=.false.
       changedit=.false.
+      MODSIT=.false.  ! assume model context has not changed.
 
 C If your compiler does not support floating-point arithmetic
 C according to ANSI/IEEE Std 754-1985 comment out the following code.
@@ -1223,8 +1224,17 @@ C Toggle trace level.
         INO=-4
         GOTO 3
       ELSEIF(INO.EQ.MITEM-2)THEN
-        call usrmsg('Preferences functions (under construction)',' ',
-     &    'P')
+
+C Allow user to change preferences for dates, time, wireframe view
+C and reporting/trace level.
+        MODSIT=.false.
+        call setup(MODSIT,ITRC,IER)
+        if(MODSIT)then
+          call usrmsg('Saving new default view...',' ','-')
+          CALL EMKCFG('-',IER)
+          call usrmsg('Saving new default view...done.',' ','-')
+          MODSIT=.false.
+        endif
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
@@ -3657,7 +3667,7 @@ C project that can be later modified.
 
       dimension items(7),items2(33)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H,LCFGF
-      CHARACTER ITEMS*36,ITEMS2*36,APP*4
+      CHARACTER ITEMS*32,ITEMS2*36,APP*4
       CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
 
@@ -3703,22 +3713,33 @@ C Help message for version manager menu
       H(33)= ' '
       H(34)= 'A three character postfix is given by the user and this'
       H(35)= 'is appended to names of copied files'
+      H(36)= ' '
+      H(37)= ' '
+      H(38)= '*****SBEM Notional Model*****'
+      H(39)= ' ESP-r creates the SBEM notional model in compliance with'
+      H(40)= ' CIBSE TM33 ??? This creates a model with the postfix'
+      H(41)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
+      H(42)= ' '
+      H(43)= ' Details of how the notonal building relates to the '
+      H(44)= ' original building and plant model is defined in relevant'
+      H(45)= ' SBEM documentation'
+      H(46)= ' '
 
 C Ask for changes to be made
  200  INO=-3
-      ITEMS(1) = 'a make a project variant'
-      ITEMS(2) = 'b make nominal (under development)'
-      ITEMS(3) = 'c other (under development)'
-      ITEMS(4) = 'd other (under development)'
-      ITEMS(5) = ' --------------------------'
-      ITEMS(6) = '? help'
-      ITEMS(7) = '- exit'
+      ITEMS(1) = 'a make a project variant     '
+      ITEMS(2) = 'b make UK NCM notional model '
+      ITEMS(3) = 'c other (under development)  '
+      ITEMS(4) = 'd other (under development)  '
+      ITEMS(5) = ' --------------------------  '
+      ITEMS(6) = '? help                       '
+      ITEMS(7) = '- exit                       '
       MITEM=7
       CALL EMENU('Version manager',ITEMS,MITEM,INO)
       IF(INO.EQ.1)THEN
         APP='_xyz'
         CALL EASKS(APP,' Up to 4 letters to append to project name?',
-     &     '(see help) ',4,'project','root name modifier',IER,35)
+     &     '(see help) ',4,'project','root name modifier',IER,46)
         K=0
         CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
         APP=NBSTR
@@ -3728,7 +3749,7 @@ C Ask for changes to be made
 
 C Change string holding cfg description
         CALL EASKS(LSNAM,' Project description for this variant?',
-     &     '(see help) ',72,'project','description modifier',IER,35)
+     &     '(see help) ',72,'project','description modifier',IER,46)
         CALL EDISP(IUOUT,'New project description will be')
         CALL EDISP(IUOUT,LSNAM)
 
@@ -3946,8 +3967,24 @@ C mould and microtoxins
         ENDIF
         IF(LRCR.EQ.2)RETURN
         GOTO 201
+      ELSEIF(INO.EQ.2)THEN
+
+C Create SBEM notional building based on currently loaded model
+        H(1)=' This option should be used with care since it is'
+        H(2)=' still under development and could mess up your model.'
+        H(3)=' Consequently it is password protected. '
+        H(4)=' '
+        H(5)=' The password is available from ESRU  '
+        H(6)='    Email: esru@strath.ac.uk  '
+        H(7)='    Tele: +44 141 548 3986  '
+        H(8)='    Fax:  +44 141 552 8513  '
+        call easki(IPASS,' ',' Password (see help)? ',
+     &    0,'-',0,'-',0,'password',IER,8)
+        if (IPASS.eq.101) then
+          CALL EMKSBM
+        endif
       ELSEIF(INO.EQ.6)THEN
-        CALL PHELPD('version intro',35,'-',0,0,IER)
+        CALL PHELPD('version intro',46,'-',0,0,IER)
         GOTO 200
       ELSEIF(INO.EQ.7)THEN
         RETURN
