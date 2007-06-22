@@ -1,5 +1,5 @@
 *connections  for house_win
-*Date Thu Jun 21 09:52:06 2007
+*Date Thu Jun 21 09:52:32 2007
      89   # number of connections
    1   1   3   7   6  #    1 s_buf in kitliv >|< s_liv in buf_1
    1   2   3   3   4  #    2 s_hall in kitliv >|< s_liv in hall
