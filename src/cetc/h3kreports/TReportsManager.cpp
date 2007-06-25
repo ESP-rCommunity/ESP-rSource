@@ -8,14 +8,17 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <cstdio>
 
 #include "sys/stat.h"
 
 #include "TReportsManager.h"
 #include "TXMLAdapter.h"
 
+#define DISKDB "h3kreports_DB.tmp"
 
 #define DEBUG 0
+#define DEBUG_1 1
 
 #define SUMMARY 0
 #define LOG     1
@@ -246,8 +249,16 @@ extern "C"
       TReportsManager::Instance()->UpdateConfigFile();
     
     }
+    /**
+     *  Clean up extra files
+     */
+    void rep_cleanup_files__(){
+      
+      TReportsManager::Instance()->Cleanup();
+      
+    }
     
-  
+
 /**
 * This is a faster function to add a report for a value in ESP-r.
   There is no need  for LNBLNK to be used on any of the character arguments
@@ -420,6 +431,9 @@ void add_to_xml_reporting__(float* value,
                               sDescriptionLength);
     }
 
+    void rep_cleanup_files_(){
+      rep_cleanup_files__();
+    }
 }
 
 // Prototypes
@@ -493,8 +507,16 @@ TReportsManager::TReportsManager(  )
   m_currentTime.month = 0;
   
   ParseConfigFile("input.xml"); //default input file
+  
+ 
   SetFlags();                   //set config flags & defaults
+  
+  // Optionally, open up results storage on disk
+  
+  if ( bSaveToDisk ) Open_db_file();
+    
 }
+
 
 
 /**
@@ -1124,10 +1146,13 @@ void TReportsManager::UpdateConfigFile(){
 
 void TReportsManager::ParseConfigFile( const std::string& filePath  )
 {
+  
+  
   TXMLAdapter inputXML(filePath);
   
   m_inputFilePath = filePath;
 
+  
   
   if(inputXML.RootNode() == NULL)
   {
@@ -1143,13 +1168,14 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Nodes to appear in out.xml
   m_nodes = inputXML.GetNodeValues("log_variable", inputXML.RootNode());
 
+  
   // Nodes to appear in out.csv
   m_step_nodes = inputXML.GetNodeValues("step_variable", inputXML.RootNode());
 
   // Nodes to appear in out.summary
   m_summary_nodes = inputXML.GetNodeValues("summary_variable", inputXML.RootNode());
 
-    // Sytlesheet list for multiple transforms.
+  // Sytlesheet list for multiple transforms.
   m_stylesheet_list = inputXML.GetNodeValues("style_sheet", inputXML.RootNode());
 
   // Should style sheet be linked?
@@ -1182,6 +1208,9 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
 
   // Dictionary output
   m_params["output_dictionary"] = inputXML.GetFirstNodeValue("output_dictionary", inputXML.RootNode());
+  
+  // Save to disk
+  m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
   
   return;
 }
@@ -1222,7 +1251,11 @@ void TReportsManager::SetFlags(){
     }
   }
   
-  if ( ! m_stylesheet_list.empty() ) bStyleSheetGood = true;
+  if ( ! m_stylesheet_list.empty() ) {
+    bStyleSheetGood = true;
+  }else{
+    bStyleSheetGood = false;
+  }
 
 
   if ( m_params["hierarchy"].empty() ) {
@@ -1285,6 +1318,13 @@ void TReportsManager::SetFlags(){
   }else if (m_params["time_step_averaging"] == "true" ){
       bTS_averaging = true;
   }
+  
+  // Optionally store data on disk
+  if ( m_params["save_to_disk"] == "false" ){
+      bSaveToDisk = false;
+  }else if (m_params["save_to_disk"] == "true" ){
+      bSaveToDisk = true;
+  }  
   
   return;
 }
@@ -1501,4 +1541,39 @@ bool TReportsManager::SearchAllVars(const std::vector<std::string>& txtlist1,
     return true;
   }
   return false;
+}
+
+/**
+ * Delete temporary file
+ */
+void TReportsManager::Cleanup(){
+  if (bSaveToDisk){  
+    if (DEBUG_1) cout <<">>>>>>>>> CLEANUP\n";
+    Close_db_file(); 
+  }
+  return;
+}
+
+/**
+ * Open a database file for storing data on disk.
+ */
+void TReportsManager::Open_db_file(){
+  struct stat file_stat;
+  
+  if (DEBUG_1) cout << ">>>>>>>>>>>OPENING FILE!!!\n";
+  // Delete file, if it exists.
+  if ( stat ( DISKDB, &file_stat ) != 0 ){
+    remove(DISKDB);
+  }
+  
+  diskDB.open ( DISKDB, ios::binary);
+  return;
+}
+/**
+ * Close database file and delete from disk.
+ */
+void TReportsManager::Close_db_file(){
+  diskDB.close();
+  remove(DISKDB);
+  return;
 }

@@ -60,7 +60,10 @@ public:
     void Set(const double& val, const bool& bTS_averaging, const int& timestep);
     void SetMeta(const std::string& sMetaName, const std::string& sMetaValue);
 
+    // Push current values onto vector
     void Update(  );
+    
+    
     void UpdateHourly(  );
     void UpdateDaily(  );
     void UpdateMonthly(  );
@@ -91,7 +94,7 @@ public:
     void OutputXML(TXMLAdapter *doc,const TXMLNode& parentNode, std::map<std::string, std::string>& params);
     std::string OutputTXT( const std::string& prefex, std::map<std::string, std::string>& params );
 
-
+   
  protected:
 
     std::vector<double> m_steps;

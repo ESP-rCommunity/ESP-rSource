@@ -169,6 +169,17 @@ class TReportsManager
    */
      void UpdateConfigFile();
      
+  /**
+   * Clean-up files
+   */ 
+     void Cleanup();
+     
+     
+  /**
+   * File object for IO
+   */    
+   ofstream diskDB;
+     
   /** Private methods: */
  private:
   /**
@@ -242,7 +253,7 @@ class TReportsManager
   /**
    * Flags for results post-processing options
    */
-
+  bool bSaveToDisk;
   bool bReports_Enabled;
    
   bool bReportStartup; 
@@ -254,6 +265,13 @@ class TReportsManager
   bool bStyleSheetGood;
   bool bLinkStyleSheet;
   bool bTransformXMLRequested;
+  
+  
+  void Open_db_file();
+  void Close_db_file();
+  void Write_to_db_file();
+  void Read_from_db_file();
+  
   
  private:
   /**

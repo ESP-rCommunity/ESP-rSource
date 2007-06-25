@@ -1627,7 +1627,8 @@ C Any changes to this code should be made within
 C the H3Kreports demarcaration comments
 
       CALL REP_XML_SUMMARY
-
+      CALL REP_CLEANUP_FILES
+      
 C........H3Kreports.(SUMMARY).end........................
 
 

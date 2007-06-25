@@ -98,7 +98,9 @@ TVariableData::TVariableData()
 }
 
 
-
+/*
+  Take passed value, and apply time-step averaging if necessary.
+*/
 void TVariableData::Set(const double& val,
                         const bool& bTS_averaging,
                         const int& timestep)
@@ -166,22 +168,28 @@ void TVariableData::Update(  )
 {
   if(bNewValueSentThisTimestep == true)
     {
-      // update for timestep averaging
+      // update old for timestep averaging
       m_oldValue = m_newValue;
 
+      // push value on to vector. 
       m_steps.push_back(m_currentValue);
+      
+      // Add current value to running hourly/daily/monthly/annual bins
       m_hourly.back().AddValue(m_currentValue);
       m_daily.back().AddValue(m_currentValue);
       m_monthly.back().AddValue(m_currentValue);
       m_annual.AddValue(m_currentValue);
+       
     }
   else
     {
 
       // set old value to zero for timestep averaging
       m_oldValue = 0.0;
-
+      
+      // push empty value on to vector.
       m_steps.push_back(0);
+    
     }
 
   m_hourly.back().Increment();
@@ -657,3 +665,4 @@ std::string TVariableData::OutputTXT( const std::string& prefex, map<std::string
 
   return Result;
 }
+
