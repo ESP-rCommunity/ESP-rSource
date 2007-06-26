@@ -57,11 +57,15 @@ public:
   TVariableData();
 
   ///Sets the current value of the variable. This method gets called often, so it should be fast.
-    void Set(const double& val, const bool& bTS_averaging, const int& timestep);
+    void Set(const double& val, 
+             const bool& bTS_averaging, 
+             const bool& bSaveToDisk,
+             const int& timestep);
+             
     void SetMeta(const std::string& sMetaName, const std::string& sMetaValue);
 
     // Push current values onto vector
-    void Update(  );
+    void Update( const bool& bSaveToDisk, const long& TimeRow );
     
     
     void UpdateHourly(  );
@@ -71,7 +75,9 @@ public:
     void UpdateUserDefined(  );
 
     // Recover value i from time step data
-    double RetrieveValue ( unsigned int i );
+    double RetrieveValue ( unsigned int i, 
+                           const unsigned int& first_step,
+                           const bool& bSaveToDisk );
 
     // Query search status
     bool QuerySearchStatus(int& i);
@@ -96,7 +102,9 @@ public:
 
    
  protected:
-
+    
+    int set_vector_index;
+    
     std::vector<double> m_steps;
     std::vector<TBinnedData> m_hourly;
     std::vector<TBinnedData> m_daily;
@@ -112,12 +120,13 @@ public:
     double m_newValue;
     bool bFirstCall;
     bool bTS_averaging;
-
+    bool bNotSet; 
 
     // Status of serches
     bool bSummarySearchStatus;
     bool bLogSearchStatus;
     bool bStepSearchStatus;
+    
 
     // Results of serches
     bool bSummarySearchResult;

@@ -18,7 +18,7 @@
 #define DISKDB "h3kreports_DB.tmp"
 
 #define DEBUG 0
-#define DEBUG_1 1
+#define DEBUG_1 0
 
 #define SUMMARY 0
 #define LOG     1
@@ -257,7 +257,6 @@ extern "C"
       TReportsManager::Instance()->Cleanup();
       
     }
-    
 
 /**
 * This is a faster function to add a report for a value in ESP-r.
@@ -294,20 +293,11 @@ void add_to_xml_reporting__(float* value,
    std::string metaName =std::string(sMetaName, sMetaNameLength);
    std::string metaValue =std::string(sMetaValue, sMetaValueLength);
 
-   /* Temporary code to permit comparison of new xml output with old
-      output */
-
-   /* if ( trim(metaValue) == "(W)" ) {
-      TReportsManager::Instance()->SetMeta (varName, "WattsToGJ", "");
-   } */
-
    // Note: SetMeta does not need to be called with every report. Improvements
    // possible!
    
    TReportsManager::Instance()->SetMeta(varName, metaName, metaValue);
    TReportsManager::Instance()->Report(varName, *value);
-
-
 
   }
 
@@ -437,6 +427,7 @@ void add_to_xml_reporting__(float* value,
 }
 
 // Prototypes
+int Increment_vector_count();
 
 bool testForMatch( const std::vector<std::string>& txtlist, const std::string& search_text);
 
@@ -505,7 +496,9 @@ TReportsManager::TReportsManager(  )
   m_currentTime.hour = 0;
   m_currentTime.day = 0;
   m_currentTime.month = 0;
-  
+  m_vector_count = 0;
+  bFirstWrite = true;
+
   ParseConfigFile("input.xml"); //default input file
   
  
@@ -541,6 +534,8 @@ bool TReportsManager::Update(long step, float hour, long day, int iStartup)
 
   if(firstCallToUpdate) //init on first call
     {
+      m_first_step = step; 
+    
       m_step_count = 0;
       if(DEBUG) cout << "First call" << endl;
       
@@ -571,7 +566,8 @@ bool TReportsManager::Update(long step, float hour, long day, int iStartup)
                          m_summary_nodes,
                          pos->first,
                          pos->second))
-          pos->second.UpdateHourly();
+          
+          // pos->second.UpdateHourly();
 
       m_currentTime.hour = (int)hour;
 
@@ -628,11 +624,11 @@ bool TReportsManager::Update(long step, float hour, long day, int iStartup)
 
           for(pos  = m_variableDataList.begin();
               pos != m_variableDataList.end(); ++pos)
-            if((m_nodes.size() == 0) || SearchAllVars(m_nodes,
-                                                      m_step_nodes,
-                                                      m_summary_nodes,
-                                                      pos->first,
-                                                      pos->second))
+            if( SearchAllVars(m_nodes,
+                              m_step_nodes,
+                              m_summary_nodes,
+                              pos->first,
+                              pos->second))
               pos->second.UpdateUserDefined();
         }
     }
@@ -647,13 +643,15 @@ bool TReportsManager::Update(long step, float hour, long day, int iStartup)
     {
       for(pos  = m_variableDataList.begin();
           pos != m_variableDataList.end(); ++pos)
-        if((m_nodes.size() == 0) || SearchAllVars(m_nodes,
-                                                  m_step_nodes,
-                                                  m_summary_nodes,
-                                                  pos->first,
-                                                  pos->second))
-          pos->second.Update();
+        if( SearchAllVars(m_nodes,
+                          m_step_nodes,
+                          m_summary_nodes,
+                          pos->first,
+                          pos->second))
+          pos->second.Update(bSaveToDisk, step);
+      
       m_currentTime.step = step;
+    
     }
 
   m_step_count++;
@@ -673,9 +671,19 @@ void TReportsManager::Report( const std::string& sPassedName, const double& sPas
 {
      if ( ! bReports_Enabled ) return;
         
-     m_variableDataList[sPassedName].Set(sPassedValue,bTS_averaging, m_step_count);
-
-
+     // Only set variable if it matches requested log/summary/step data.
+     if ( SearchAllVars( m_nodes,
+                         m_step_nodes,
+                         m_summary_nodes,
+                         sPassedName,
+                         m_variableDataList[sPassedName]) ) {   
+        
+        m_variableDataList[sPassedName].Set(sPassedValue,
+                                            bTS_averaging, 
+                                            bSaveToDisk,
+                                            m_step_count);
+        
+     }
 }
 
 /**
@@ -686,7 +694,6 @@ void TReportsManager::SetMeta(const std::string& sName, const std::string& sMeta
 {
 
   if ( ! bReports_Enabled ) return;
-  
   m_variableDataList[sName].SetMeta(sMetaName, sMetaValue);
   
 
@@ -718,9 +725,9 @@ bool TReportsManager::OutputSummary( const std::string& outFilePath )
 
   if ( ! bReports_Enabled ) return false;
 
-  if(m_inputFilePath == "") //by default, we dump evverything
+  if(m_inputFilePath == "") //by default, we dump everything
     {
-      Log();
+      //Log();
     }
 
   return true;
@@ -730,18 +737,18 @@ bool TReportsManager::OutputSummary( const std::string& outFilePath )
 
 
 
-void TReportsManager::Log(  )
-{
-
-  if ( ! bReports_Enabled ) return;
-
-  VariableDataMap::iterator pos;
-  for( pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos)
-    {
-      cout << "Outputing data for: " << trim(pos->first) << endl;
-      pos->second.Log();
-    }
-}
+// void TReportsManager::Log(  )
+// {
+// 
+//   if ( ! bReports_Enabled ) return;
+// 
+//   VariableDataMap::iterator pos;
+//   for( pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos)
+//     {
+//       cout << "Outputing data for: " << trim(pos->first) << endl;
+//       pos->second.Log();
+//     }
+// }
 
 void TReportsManager::OutputXMLSummary()
 {
@@ -1032,8 +1039,9 @@ bool TReportsManager::OutputCSVData( const std::string& outFilePath )
                      STEP) ){
 
         // time-step data has been requested. Stream out.
-
-        csvFile << pos->second.RetrieveValue(curr_step);
+        csvFile << pos->second.RetrieveValue(curr_step,
+                                             m_first_step,
+                                             bSaveToDisk);
         csvFile << ", ";
 
       }
@@ -1325,7 +1333,6 @@ void TReportsManager::SetFlags(){
   }else if (m_params["save_to_disk"] == "true" ){
       bSaveToDisk = true;
   }  
-  
   return;
 }
 
@@ -1544,11 +1551,37 @@ bool TReportsManager::SearchAllVars(const std::vector<std::string>& txtlist1,
 }
 
 /**
+ * -----------------------------------------------------------------
+ * 
+ * The following routines will optionally save time-step data into 
+ * a scratch file, instead of pushing it onto the heap.  The file is
+ * formatted as a list-of-lists; for each variable reported by
+ * h3kreports, the file contains all time-row data. Data for subsequent
+ * variables are appended at the end of the file. 
+ * For instance, a file containing N time row data from two variables 
+ * would look like this:
+ *
+ * VARIABLE:  ___________ V 1______________   ____________ V 2 ___________
+ *           /                             \ /                            \
+ * TIME ROW: | __Ts1__  __Ts2__     __TsN__ | __Ts1__  __Ts2__     __TsN__ |
+ *           |/       \/       \   /       \|/       \/       \   /       \|
+ * FILE DATA:|---8B---|---8B---|...|---8B---|---8B---|---8B---|...|---8B---|....
+ *
+ * There are no delimiters in the file; each piece of data is stored
+ * as a double (~8 Bytes on most systems)
+ *
+ * The facility does not need to know the total number of variables that
+ * will be reported---it merely appends new variables on to the end of 
+ * the current file. But it must know the total number of timesteps
+ * expected in a simulaton, which prevents its use with variable 
+ * timestep.
+ */
+ 
+/**
  * Delete temporary file
  */
 void TReportsManager::Cleanup(){
   if (bSaveToDisk){  
-    if (DEBUG_1) cout <<">>>>>>>>> CLEANUP\n";
     Close_db_file(); 
   }
   return;
@@ -1559,21 +1592,141 @@ void TReportsManager::Cleanup(){
  */
 void TReportsManager::Open_db_file(){
   struct stat file_stat;
-  
-  if (DEBUG_1) cout << ">>>>>>>>>>>OPENING FILE!!!\n";
+  ofstream TempStream;
   // Delete file, if it exists.
-  if ( stat ( DISKDB, &file_stat ) != 0 ){
+  if ( stat ( DISKDB, &file_stat ) == 0 ){
     remove(DISKDB);
   }
   
-  diskDB.open ( DISKDB, ios::binary);
+  // For resons unknown, fstream cannot open a file for 
+  // read/write if it does not already exist. Therefore, 
+  // create an empty file. 
+  TempStream.clear();
+  TempStream.open(DISKDB, ios::binary);
+  TempStream.close();
+  
+  diskDB.open ( DISKDB , ios::in | ios::out | ios::binary );
+  
+  if ( ! diskDB.is_open() ) {
+    cout << "\n\n XML OUTPUT ERROR: could not open file " << DISKDB << " for writing.\n";
+    cout << " Error flag: "<< diskDB.rdstate() <<"\n";
+    exit(1);
+  }
   return;
 }
 /**
  * Close database file and delete from disk.
  */
 void TReportsManager::Close_db_file(){
+  if ( DEBUG ) cout << "Closing DB file\n";
   diskDB.close();
   remove(DISKDB);
   return;
 }
+
+/**
+ * Read data from disk
+ */ 
+double Read_from_db_file(int var_index, long step) {
+    return TReportsManager::Instance()->Read_from_db_file(var_index, step);
+}
+
+double TReportsManager::Read_from_db_file( int var_index, long step){
+   
+  streampos start_byte; 
+  double val; 
+  
+/* Compute the location of the current time row data, for the 
+     specified variable.
+  
+     start-byte   = [  ( {Index of current vector} - 1 ) * { total number of timesteps }
+                    
+                       + ( {current timestep} - { first step } ) ] *  { bytes-per-redcord }
+                       
+  */
+  
+  start_byte = (   ( var_index - 1 ) * m_ts_count 
+                        + ( step - m_first_step ) )  * m_datasize;
+    
+  if ( DEBUG) cout << "TS:"<<step<<" Reading "<< m_datasize << " bytes for var "
+                    <<var_index 
+                    << " Starting at byte " << start_byte;
+  
+  diskDB.seekg ( start_byte ); 
+  diskDB.read ( (char*)&val, m_datasize );
+  if ( ! diskDB ){
+    if (DEBUG) cout << " ( ERROR! Read "<< diskDB.gcount() << "bytes, Val is " << val << ")\n";
+  }else{
+    if (DEBUG) cout << " ( Read "<< diskDB.gcount() << "bytes, Val is " << val << ")\n";
+  }                  
+  
+  return val;
+  
+}
+
+/**
+ * Write data to disk
+ */
+
+bool Write_to_db_file(int var_index, double val, long step){
+  return TReportsManager::Instance()->Write_to_db_file(var_index,val,step);
+}
+
+bool TReportsManager::Write_to_db_file(int var_index, double val, long step){
+        
+  streampos start_byte;     
+  double val2;
+  if ( bFirstWrite ) {
+  
+    // Determine size of double, in bites.
+    m_datasize = sizeof(double);
+  
+    // Collect number of timesteps
+    m_ts_count = int( strtod(m_params["number_of_timesteps"].c_str(), NULL) ); 
+    
+    bFirstWrite = false;
+  }
+  
+  /* Compute the location of the current time row data, for the 
+     specified variable.
+  
+     start-byte   = [  ( {Index of current vector} - 1 ) * { total number of timesteps }
+                    
+                       + ( {current timestep} - {first times step} ) ] *  { bytes-per-redcord }
+                       
+  */
+  start_byte = (   ( var_index - 1 ) * m_ts_count 
+                        + ( step - m_first_step ) ) * m_datasize;
+  
+  if (DEBUG) cout << "TS:"<<step<<" Writing "<< m_datasize << " bytes for var "
+                    <<var_index << "(" << val <<")"
+                    << " Starting at byte " << start_byte ;
+                    
+  // Now write data:
+  diskDB.seekp( start_byte );
+  
+  if (DEBUG){
+    diskDB.write( (char*)&val, m_datasize );
+    diskDB.seekg( start_byte );
+    diskDB.read( (char*)&val2, m_datasize );
+    cout << " ( Val is " << val2 << ")\n";
+  } 
+  diskDB.seekp( start_byte );
+  return diskDB.write( (char*)&val, m_datasize );
+
+}
+
+/**
+ * Increment vector count.
+ */
+int Increment_set_vector_count(){
+  return TReportsManager::Instance()->Increment_set_vector_count();
+}
+
+int TReportsManager::Increment_set_vector_count(){
+  m_vector_count++;
+  return m_vector_count;
+}
+
+
+

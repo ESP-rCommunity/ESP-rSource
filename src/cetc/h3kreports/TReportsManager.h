@@ -174,11 +174,16 @@ class TReportsManager
    */ 
      void Cleanup();
      
-     
   /**
-   * File object for IO
-   */    
-   ofstream diskDB;
+   * Increment vector count, and return new value.
+   */
+  int Increment_set_vector_count();
+  
+  /**
+   * Read and write data from/to storage data base.
+   */  
+  bool Write_to_db_file(int var_index, double val, long step);
+  double Read_from_db_file(int var_index, long step);
      
   /** Private methods: */
  private:
@@ -222,7 +227,13 @@ class TReportsManager
 		      const std::vector<std::string>& txtlist3, 
 		      const std::string& search_text,
 		      TVariableData& Variable);
+		
 
+  /**
+   * This is a pointer to it's sole instance. 
+   */    
+  static TReportsManager* ptr_Instance;	
+ 
  protected:
   /**
    * This is the container that will store all the requested variables. This container
@@ -254,6 +265,7 @@ class TReportsManager
    * Flags for results post-processing options
    */
   bool bSaveToDisk;
+  bool bFirstWrite;
   bool bReports_Enabled;
    
   bool bReportStartup; 
@@ -266,18 +278,20 @@ class TReportsManager
   bool bLinkStyleSheet;
   bool bTransformXMLRequested;
   
+  long m_datasize;
+  long m_ts_count;
+  long m_first_step;
   
   void Open_db_file();
   void Close_db_file();
-  void Write_to_db_file();
-  void Read_from_db_file();
+    
+  int m_vector_count;
   
-  
- private:
-  /**
-   * This is a pointer to it's sole instance. 
+   /**
+   * File object for I/O
    */    
-  static TReportsManager* ptr_Instance;	
+   fstream diskDB;
+
 };
 
 
