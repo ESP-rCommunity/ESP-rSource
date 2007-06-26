@@ -19,11 +19,181 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C This file includes:
+C  sbmedit define high level data associated with UK SBEM methodology.
 C  EMKSBeM creates a model variant based on the SBEM methodology. 
 C  SURREL checks each surface I in a zone and relates it to
 C    another surface J in that zone as parent.
 C  ENLARGE performs geometric enlargement (contraction) of a surface.
 
+C ********************* sbmedit
+Csbmedit define high level data associated with UK SBEM methodology.
+      subroutine sbmedit
+#include "building.h"
+
+      common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+
+C Common block for UK calculation method.
+      integer isbem  ! a value of 1 signals that isbem data exists
+      integer ibtyp  ! this matches the index value in NCM guide table 4
+      integer ibusertyp ! this matches the list of buildings in isbem.
+      real rooffr  ! roof glazing fraction required
+      real wallfr  ! wall glazing fraction required
+      COMMON/SBEM/isbem,ibtyp,ibusertyp,rooffr,wallfr
+
+      character userbtypename*42  ! the selected building type from 29 list
+      COMMON/SBEMTXT/userbtypename
+
+      integer usertypearray(32)  ! index matching ID in database
+      character userlist*42      ! character strings for building types
+      dimension userlist(29)
+      integer usertobc5(29)    ! array of pointers from NCM guide table 4
+      dimension IVALSS(29)       ! array to get epicks answer from
+      character outs*124,outs248*248,h*72
+
+      userlist(1) ='OFFICE                                    '
+      usertobc5(1)= 2
+      userlist(2) ='PEIMARY SCHOOL                            '
+      usertobc5(2)= 2
+      userlist(3) ='SECONDARY SCHOOL                          '
+      usertobc5(3)= 2
+      userlist(4) ='FURTHER EDUCATION UNIVERSITIES            '
+      usertobc5(4)= 2
+      userlist(5) ='PRIMARY HEALTH CARE BUILDINGS             '
+      usertobc5(5)= 2
+      userlist(6) ='NURSING RESIDENTIAL HOMES AND HOSTELS     ' 
+      usertobc5(6)= 1
+      userlist(7) ='HOSPITAL                                  '
+      usertobc5(7)= 2
+      userlist(8) ='HOTEL                                     '
+      usertobc5(8)= 1
+      userlist(9) ='RESTAURANT/PUBLIC HOUSE                   '
+      usertobc5(9)= 2
+      userlist(10)='SPORTS CENTRE/LEISURE CENTRE              '
+      usertobc5(10)= 2
+      userlist(11)='SPORTS GROUND ARENA                       '
+      usertobc5(11)= 2
+      userlist(12)='RETAIL                                    '
+      usertobc5(12)= 2
+      userlist(13)='WAREHOUSE AND STORAGE                     '
+      usertobc5(13)= 3
+      userlist(14)='THEATRES/CINEMAS/MUSIC HALLS AND AUDITORIA'
+      usertobc5(14)= 2
+      userlist(15)='SOCIAL CLUBS                              '
+      usertobc5(15)= 2
+      userlist(16)='COMMUNITY/DAY CENTRE                      '
+      usertobc5(16)= 2
+      userlist(17)='LIBRARIES/MUSEUMS/GALLERIES               '
+      usertobc5(17)= 2
+      userlist(18)='PRISONS                                   '
+      usertobc5(18)= 2
+      userlist(19)='EMERGENCY SERVICES                        '
+      usertobc5(19)= 2
+      userlist(20)='CROWN AND COUNTY COURTS                   '
+      usertobc5(20)= 2
+      userlist(21)='AIRPORT TERMINALS                         '
+      usertobc5(21)= 2
+      userlist(22)='BUS STATION/TRAIN STATION/SEAPORT TERMINAL'
+      usertobc5(22)= 2
+      userlist(23)='WORKSHOPS/MAINTENANCE DEPOT               '
+      usertobc5(23)= 3
+      userlist(24)='TELEPHONE EXCHANGES                       '
+      usertobc5(24)= 2
+      userlist(25)='INDUSTRIAL PROCESS BUILDING               '
+      usertobc5(25)= 3
+      userlist(26)='LAUNDRETTE                                '
+      usertobc5(26)= 2
+      userlist(27)='DWELLING                                  '
+      usertobc5(27)= 1
+      userlist(28)='RETAIL WAREHOUSES                         '
+      usertobc5(28)= 2
+      userlist(29)='MISCELLANEOUS 24HR ACTIVITIES             '
+      usertobc5(29)= 2
+      
+      if(ibusertyp.eq.0)then
+        write(outs,'(2a)') 'The current building use is undefined ',
+     &    'and the NCM guide table 4 is also undefined.'
+        call edisp(iuout,outs)
+      else
+        write(outs,'(2a)') 'The current building use is ',
+     &    userlist(ibusertyp)
+        call edisp(iuout,outs)
+        if(ibtyp.eq.1)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is a residenatial ',
+     &      'building with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        elseif(ibtyp.eq.2)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is an office, shop or ',
+     &      'place of assembly with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        elseif(ibtyp.eq.3)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is an industrial or ',
+     &      'storage building with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        endif
+        call edisp248(iuout,outs248,80)
+      endif
+      h(1)='For the UK National Calculation Method you are required'
+      h(2)='to select one of these building types. '
+      h(3)=' '
+      h(4)='Depending on the type of building the notional model will'
+      h(5)='have different assumptions about glazing areas. The '
+      h(6)='building type will also help in the selection of room '
+      h(7)='use patterns. '
+      IX=1
+      CALL EPICKS(IX,IVALSS,' ','Building type:',
+     &  42,29,userlist,'building types',IER,7)
+      if(IVALSS(1).gt.0)then
+        ibusertyp=IVALSS(1)
+        write(userbtypename,'(a)') userlist(ibusertyp)
+        ibtyp = usertobc5(ibusertyp)
+
+C Establish glazing fractions based on type of building
+        IF(IBTYP.EQ.1)THEN
+          ROOFFR=0.2
+          WALLFR=0.3
+        ELSEIF(IBTYP.EQ.2)THEN
+          ROOFFR=0.2
+          WALLFR=0.4
+        ELSEIF(IBTYP.EQ.3)THEN
+          ROOFFR=0.2
+          WALLFR=0.15
+        ENDIF
+      endif
+      
+C After setting up echo back what was selected.
+      if(ibusertyp.eq.0)then
+        write(outs,'(2a)') 'The current building use is undefined ',
+     &    'and the NCM guide table 4 is also undefined.'
+        call edisp(iuout,outs)
+      else
+        write(outs,'(2a)') 'The current building use is ',
+     &    userlist(ibusertyp)
+        call edisp(iuout,outs)
+        if(ibtyp.eq.1)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is a residenatial ',
+     &      'building with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        elseif(ibtyp.eq.2)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is an office, shop or ',
+     &      'place of assembly with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        elseif(ibtyp.eq.3)then
+          write(outs248,'(2a,f6.2,a,f6.2,a)')
+     &      'The NCM guide table 4 reference is an industrial or ',
+     &      'storage building with roof glazing fraction ',ROOFFR,
+     &      ' and a wall glazing fraction ',WALLFR,'.'
+        endif
+        call edisp248(iuout,outs248,80)
+      endif
+
+      return
+      end
 
 C ********************* EMKSBeM
 C EMKSBeM creates a model variant based on the SBEM methodology. Details 

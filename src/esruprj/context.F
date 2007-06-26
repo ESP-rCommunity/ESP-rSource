@@ -143,7 +143,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,' ',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g                                '
+      ITEMS(8) =                'g calendar (holidays)            '                             '
       ITEMS(9) =                'h                                '
       ITEMS(10)=                'i                                '
       ITEMS(11)=                '  ___________________________    '
@@ -163,9 +163,9 @@ C Begin with high level menu.
       ITEMS(21)=                'q Short timestep (temporal) data '
       ITEMS(22)=                '  ___________________________    '
       WRITE(ITEMS(23),'(a,i3,a)')'r images ... (',noimg,')'
-      ITEMS(24)=                ' _____________________________ '
-      ITEMS(25)=                ' s calendar (work in progress) '
-      ITEMS(26)=                ' _____________________________ '
+      ITEMS(24)=                ' _____________________________   '
+      ITEMS(25)=                's UK NCM specifications         '
+      ITEMS(26)=                ' _____________________________   '
       ITEMS(27)=                '? help                           '
       ITEMS(28)=                '- exit this menu                 '
       nitms=28
@@ -574,7 +574,15 @@ C and then list the months of the year.
         endif
       ELSEIF(INO.EQ.8)THEN
 
-C << available slot >>
+C Calendar functions. If number of daytypes is zero then
+C initialise. Then enter interactive facility to allow user
+C to define holidays.
+        if(nbdaytype.eq.0)then
+          act = 'i'
+          call calenmanage(act,ier)
+        endif
+        act = '-'
+        call calenmanage(act,ier)
       ELSEIF(INO.EQ.9)THEN
 
 C << available slot >>
@@ -754,14 +762,8 @@ C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
       ELSEIF(INO.eq.25)then
 
-C Calendar functions. If number of daytypes is zero then
-C initialise. Then enter interactive facility.
-        if(nbdaytype.eq.0)then
-          act = 'i'
-          call calenmanage(act,ier)
-        endif
-        act = '-'
-        call calenmanage(act,ier)
+C Enter the definitions for UK NCM related data.
+        call sbmedit
       ELSE
         GOTO 3
       ENDIF
