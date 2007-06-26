@@ -4,7 +4,7 @@ C Strathclyde, Glasgow, Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -20,9 +20,9 @@ C Boston, MA 02111-1307 USA.
 
 C The file esru_cut_lib.f is a collection of text and bid-mapped terminal
 C control Fortran Functions and Subroutines:
-C  EASKI:   Ask user for an integer with prompt, error messages & range 
+C  EASKI:   Ask user for an integer with prompt, error messages & range
 C           checking as passed parameters.
-C  EASKR:   Ask user for a real number with prompt, error messages & range 
+C  EASKR:   Ask user for a real number with prompt, error messages & range
 C           checking as passed parameters.
 C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
@@ -36,7 +36,7 @@ C prevblnk: Given a string, return position of blank just before ipos.
 C  icutstr: Given a string, cuts icut characters from position ipos.
 C  EPICKS:  Allows several selections to be made from an array of strings.
 C  MENUATOL Single item menu pick with items passed via parameters.
-C  ASKOK:   Generic yes/no/default facility returning OK as a logical parameter. 
+C  ASKOK:   Generic yes/no/default facility returning OK as a logical parameter.
 C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
 C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
@@ -219,10 +219,10 @@ C by the user.
 C Examples:
 C Ask user for zone number.
 C        ICOMP=1
-C        H(1)='The zone number is required only for reporting '//
-C     &           'purposes.'
-C        CALL EASKI(ICOMP,' ',' What is the zone number? ',
-C     &             1,'F',MCOM,'W',1,'zone number',IER,1)
+C        H(1)='The zone number is required only for reporting'
+C        H(2)='purposes.'
+C        CALL EASKI(ICOMP,' ','Zone number?',
+C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
       SUBROUTINE EASKI(IVAL,PROMP1,PROMP2,MINV,MINACT,
      &                 MAXV,MAXACT,IDEFLT,ERMSG,IER,NHELP)
@@ -458,7 +458,7 @@ C If RVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.RVAL.LT.RMIN)RVAL=DEFLT
       if(MAXACT.EQ.'F'.and.RVAL.GT.RMAX)RVAL=DEFLT
 
-C Check that value is not trivially close to zero (ie not instanciated
+C Check that value is not trivially close to zero (ie not instantiated
 C on the fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.00
@@ -685,7 +685,7 @@ C If RVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.RVAL.LT.RMIN)RVAL=DEFLT
       if(MAXACT.EQ.'F'.and.RVAL.GT.RMAX)RVAL=DEFLT
 
-C Check that value is not trivially close to zero (ie not instanciated
+C Check that value is not trivially close to zero (ie not instantiated
 C on the fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.00
@@ -2399,8 +2399,8 @@ C Number of actual items displayed.
       if(ISTRW.lt.17)VERT(nopt+1)=  '  ______________'
       if(idindex.ne.0)then
         CALL EMKEY(idindex,KEY,IER)
-        write(VERT(nopt+2),'(a,a)') '* Deflt is item ',KEY
-        if(ISTRW.lt.17)write(VERT(nopt+2),'(a,a)') '* Deflt is ',KEY
+        write(VERT(nopt+2),'(a,a)') '* default is item ',KEY
+        if(ISTRW.lt.17)write(VERT(nopt+2),'(a,a)') '* default is ',KEY
       else
         VERT(nopt+2)='                        '
       endif
@@ -8731,7 +8731,7 @@ C width of the control menu.
         CALL EMENU(head,ITEMS,MVERT,IVERT)
       elseif(act.eq.'B')then
         call findrtb(iappr,iappt,iappb)
-        head='  Wireframe control'
+        head='Image Control'
         if(menuchw.lt.10)then
           call vwmenu (head,ITEMS,MVERT,iappr-160,
      &      iappb-50,32,irpx,irpy,IVERT)

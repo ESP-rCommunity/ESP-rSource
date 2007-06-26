@@ -67,65 +67,68 @@ C Check if Unix-based or DOS based.
       call isunix(unixok)
 
    33 INO1=-4
-      ITEMS1(1) ='a to VIEWER (hidden line)  '
-      ITEMS1(2) ='b to DXF (CAD export file) '
-      ITEMS1(3) ='c to ZIP (CAD modeller)    '
+      ITEMS1(1) ='a to VIEWER  '
+      ITEMS1(2) ='b to DXF     '
+      ITEMS1(3) ='c to XZIP    '
       ITEMS1(4) ='d to RADIANCE              '
       ITEMS1(5) ='e to xfig (vector ploting) '
-      ITEMS1(6) ='f to THF (THINGS file)     '
+      ITEMS1(6) ='f to MicroGDS (THINGS file)'
       ITEMS1(7) ='g to TSBI3                 '
       ITEMS1(8) ='h to EnergyPlus            '
-      ITEMS1(9) ='i to VRML 2.0              '
+      ITEMS1(9) ='i to VRML #2.0             '
       ITEMS1(10) ='? help'
       ITEMS1(11) ='- exit this menu'
 
 C Help text for this menu.
-      H(1)= 'The EXPORT facility allows you to take the current'
-      H(2)= 'model definition and export information in a format'
-      H(3)= 'as required by the target applications.'
-      H(4)= ' '
-      H(5)= 'Currently supported targets include:'
-      H(6)= ' VIEWER (a hidden line perspective program)'
-      H(7)= ' DXF files'
-      H(8)= ' ZIP files'
-      H(9)= ' RADIANCE (a lighting simulation package)'
-      H(10)=' TSBI3 (a Danish simulation package)'
-      H(11)=' '
-      H(12)=' VRML (Version 2.0 with a matching html file which'
-      H(13)='   holds surface attributes'
-      H(14)=' '
-      h(15)='It is possible to export the wireframe image of the'
-      h(16)='model to a vector file for use in the xfig application.'
+      H(1)='This facility allows you to export the current model'
+      H(2)='in a format as required by one of the following'
+      H(3)='3rd party applications.'
+      H(4)=' '
+      H(5)='VIEWER, a hidden line perspective program from ABACUS;'
+      H(6)='DXF file;'
+      H(7)='XZIP, a CAD program from IES;'
+      H(8)='RADIANCE, a lighting simulation program from LBL;'
+      H(9)='XFIG, a vector plotting program;'
+      H(10)='MicroGDS, a CAD program;'
+      H(11)='TSBI3, a building thermal simulation program the Danish'
+      H(12)='       Building Research Institute;'
+      H(13)='EnergyPlus, a building thermal simulation program from'
+      H(14)='       North America'
+      H(15)='VRML Version 2.0, with a matching html file containing'
+      H(16)='     surface attributes.'
  
-      CALL EMENU('Exports',ITEMS1,11,INO1)
+      CALL EMENU('Export Model',ITEMS1,16,INO1)
 
 C Prepare filter command lines with path.
 
-C << the code that creates the initial LFIL is not yet updated to work with DOS paths with spaces. >>
+C << the code that creates the initial LFIL is not yet updated to work
+C    with DOS paths with spaces. >>
+      IF(INO1.NE.10)THEN
       iw=0
-      if(path.ne.'./'.and.path.ne.' ')then
-        write(outs,'(A,A)') ' The current path is: ',path
-        call edisp(iuout,outs)
-        CALL EASKAB(' You are in a remote foldere.  Place the',
-     &   ' export file(s):','using current path','in local folder',
+       if(path.ne.'./'.and.path.ne.' ')then
+         write(outs,'(A,A)') 'The current path is: ',path
+         call edisp(iuout,outs)
+         CALL EASKAB('The model is in a remote folder.',
+     &   'Place exported file(s) in:','current path','local folder',
      &   IW,0)
-      endif
-      if(iw.eq.1)then
-        write(LFIL,'(a)') path(1:lnblnk(path))
-      else
-        LFIL='./'
-      endif
+       endif
+       if(iw.eq.1)then
+         write(LFIL,'(a)') path(1:lnblnk(path))
+       else
+         LFIL='./'
+       endif
+      ENDIF
+
       IF(INO1.EQ.1)THEN
 
 C Construct a 'VIEWER' format file.  First get file name.
         call tstamp('>','PRJ: export to viewer')
         doit = ' '
-        H(1)='A VIEWER format file may be used with the'
-        H(2)='hidden line perspective program VIEWER.'
+        H(1)='Input the name of the VIEWER input file.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vew'
-        CALL EASKS(LFIL,' File name for image data ? ',
-     &    ' ',72,' ','VIEWER input file',IER,2)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','VIEWER file name?',
+     &              72,' ','VIEWER input file',IER,1)
+C        call edisp(iuout,'Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -152,17 +155,18 @@ C and change any / to \.
         write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
      &    ' has been created.'
         call edisp(iuout,outs)
+
       ELSEIF(INO1.EQ.2)THEN
 
 C DXF creation.  Process similar to ecnv filter for VIEWER.
         call tstamp('>','PRJ: export to DXF')
         doit = ' '
-        H(1)='A DXF file may be passed to some CAD packages,'
-        H(2)='the current target is AutoCAD V12.'
+        H(1)='A DXF file may be passed to some CAD packages'
+        H(2)='such as AutoCAD V12.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.DXF'
-        CALL EASKS(LFIL,' DXF file name ? ',
-     &    ' ',72,' ','dxf export file',IER,2)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','DXF file name?',
+     &            72,' ','dxf export file',IER,2)
+C        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -191,14 +195,15 @@ C and change any / to \.
         call edisp(iuout,outs)
       ELSEIF(INO1.EQ.3)THEN
 
-C XZIP creation.  Process similar to ecnv filter for VIEWER.
+C XZIP creation. Process similar to ecnv filter for VIEWER.
         call tstamp('>','PRJ: export to xzip')
         doit = ' '
-        H(1)='A ZIP file may be passed to the XZIP CAD package.'
+        H(1)='A ZIP file may be passed to the XZIP CAD package'
+        H(2)='from IES.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_zip'
-        CALL EASKS(LFIL,' XZIP file name ? ',
-     &    ' ',72,' ','zip export file',IER,1)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','ZIP file name?',
+     &            72,' ','zip export file',IER,2)
+C        call edisp(iuout,' Performing model conversion.')
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
         if(unixok)then
@@ -228,14 +233,15 @@ C and change any / to \.
         call edisp(iuout,outs)
       ELSEIF(INO1.EQ.4)THEN
 
-C RADIANCE creation.  Starts e2r with configuration file.
-        H(1)='If your model includes zone or ground geometry'
-        H(2)='of solar obstructions you can visualise them via'
-        H(3)='the ESP-r Radiance desktop.'
-        H(4)='It is assumed that your computer has Radiance setup'
-        H(5)='and the Radiance modules are in your PATH. '
+C RADIANCE creation. Starts e2r with current configuration file.
+        H(1)='If your model includes zone, ground and/or solar'
+        H(2)='obstructions geometry you can visualise them using'
+        H(3)='the RADIANCE program. It is assumed that your computer'
+        H(4)='has the RADIANCE modules installed and their location'
+        H(5)='defined in your PATH environment variable. The actual'
+        H(6)='model convertion is achieved using ESP-r`s e2r module.'
         dok=.true.
-        CALL ASKOK(' ',' Run the RADIANCE desktop? ',OK,dok,5)
+        CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,6)
         if(OK)then
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
@@ -263,18 +269,15 @@ C RADIANCE creation.  Starts e2r with configuration file.
       ELSEIF(INO1.EQ.5)THEN
 
 C Toggle output redirection to xfig.
-        h(1)='It is possible to redirect the wireframe image of the'
-        h(2)='model to a vetor file for use in the xfig application. '
-        h(3)='Before exporting adjust the model view and then '
-        h(4)='resize graphic window slightly to force redraw.'
-        h(5)=' '
-        h(6)='Use this facility if you have xfig on your machine. '
+        h(1)='It is possible to write a wireframe image of the model'
+        h(2)='to a vetor file for use with the xfig application.'
+        h(3)='Before exporting adjust the model view and resize'
+        h(4)='the graphics window to force a redraw.'
         dok=.true.
-        call askok('Is the wireframe composition ok?',
-     &    '(last chance to ajust it before export to xfig)',oke,dok,6)
+        call askok(' ','Is wireframe composition ok?',oke,dok,4)
         if(.NOT.oke)then
-          call usrmsg('Returning to menu. Adjust wireframe image',
-     &      'and then re-select this option.','W')
+          call usrmsg('Adjust wireframe image and',
+     &      'then re-select this option.','W')
           goto 33
         endif
 
@@ -328,14 +331,13 @@ C << has been created
 C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
         call tstamp('>','PRJ: export to THINGS')
         doit = ' '
-        H(1)='A THF (THINGS) format file may be used with the'
-        H(2)='CAD package MicroGDS.'
-        h(3)='Note that obstructions are treated as clusters of '
-        h(4)='surfaces. '
+        H(1)='A THINGS file is used with the CAD package MicroGDS.'
+        H(2)='Note that obstructions are treated as clusters of'
+        h(3)='surfaces.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.THF'
-        CALL EASKS(LFIL,' File name for THF CAD data ? ',
-     &    ' ',72,' ','THF file',IER,4)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','MicroGDS THINGS file name?'
+     &                ,72,' ','THF file',IER,3)
+C        call edisp(iuout,'Performing model conversion.')
 
 C Why is the addpath not used?
         if(unixok)then
@@ -363,17 +365,17 @@ C Why is the addpath not used?
         call edisp(iuout,outs)
       ELSEIF(INO1.EQ.7)THEN
 
-C Export to TSBI3 (Danish simulation tool) file.
+C Export to TSBI3 file.
         call tstamp('>','PRJ: export to TSBI3')
         doit = ' '
-        H(1)='A TSBI3 format file may be used with the simulation'
-        H(2)='package TSBI3 .'
-        h(3)='Note that zone schedules are not fully translated.'
-        h(4)=' '
+        H(1)='This file is used with the TSBI3 program from the Danish'
+        H(2)='Building Research Institute. Note that zone schedules'
+        H(3)='are not fully translated and will need to be manually'
+        H(3)='augmented.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.TSBI3'
-        CALL EASKS(LFIL,' File name for TSBI3 file ? ',
-     &    ' ',72,' ','TSBI3 file',IER,4)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','TSBI3 input file name?',
+     &                 72,' ','TSBI3 file',IER,4)
+C        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -397,35 +399,30 @@ C and change any / to \.
         call usrmsg('Starting TSBI3 conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-     &    ' has been created.'
-        call edisp(iuout,outs)
+C        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
+C     &    ' has been created.'
+C        call edisp(iuout,outs)
       ELSEIF(INO1.EQ.8)THEN
 
 C Export to EnergyPlus IDF file (work in progress)
         call tstamp('>','PRJ: export to energyplus')
         doit = ' '
-        H(1)='A EnergyPlus IDF (input data file) can be created from'
-        H(2)=' '
-        H(3)=' '
+        H(1)='This file is input to the EnergyPlus system.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.idf'
-        CALL EASKS(LFIL,' EnergyPlus IDF file name ? ',
-     &    ' ',72,' ','EnergyPlus export file',IER,1)
+        CALL EASKS(LFIL,' ','EnergyPlus input file name?',
+     &        72,' ','EnergyPlus export file',IER,1)
 
         ever=1.2
-        h(1)='EnergyPlus IDF files have several versions'
-        h(2)='Version 1.4 is the current. 1.2 1.3 are options.'
-        h(3)='Version 2.0 is for testing purposes only. '
-        h(4)=' '
-        h(5)='The cancel option will skip the creation of the '
-        h(6)='EnergyPlus descriptive file.'
+        h(1)='EnergyPlus input files have several versions.'
+        h(2)='Version 1.4 is the current; 1.2 & 1.3 are options.'
+        h(3)='Version 2.0 is for testing purposes only.'
         evert=ever
-        CALL EASKR(evert,' IDF file version ',
-     &  '(see help) ',1.2,'F',2.0,'F',1.4,'file version',IERI,6)
+        CALL EASKR(evert,' ','Input file version?',
+     &      1.2,'F',2.0,'F',1.4,'file version',IERI,3)
         if(ieri.eq.-3)then
           continue
         else
-          call edisp(iuout,' Performing model conversion.')
+C          call edisp(iuout,' Performing model conversion.')
           itrcc=2
           ioout=2
           ever=evert
@@ -440,13 +437,12 @@ C Export to VRML (2.0) file.
         call tstamp('>','PRJ: export to VRML')
         doit = ' '
         H(1)='A VRML format file may be used with a number of'
-        H(2)='3rd party packages and web browser plug-ins'
-        h(3)='to visually explore a model.'
-        h(4)=' '
+        H(2)='3rd party packages and web browser plug-ins to'
+        h(3)='visually explore a model.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vrml'
-        CALL EASKS(LFIL,' File name for VRML file ? ',
-     &    ' ',72,' ','vrml file',IER,4)
-        call edisp(iuout,' Performing model conversion.')
+        CALL EASKS(LFIL,' ','VRML file name?',
+     &             72,' ','vrml file',IER,3)
+C        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -467,15 +463,17 @@ C and change any / to \.
      &      longtfile(1:lnblnk(longtfile)),
      &      ' -of vrml -out ',LFIL(1:lnblnk(LFIL))
         endif
-        call usrmsg('Starting VRML conversion via',doit,'-')
+C        call usrmsg('Starting VRML conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-     &    ' has been created.'
-        call edisp(iuout,outs)
-        call edisp(iuout,'Use a VRML viewer to explore it.')
+C        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
+C     &    ' has been created.'
+C        call edisp(iuout,outs)
+C        call edisp(iuout,'Use a VRML viewer to explore it.')
+
       ELSEIF(INO1.EQ.10)THEN
        CALL PHELPD('export menu',16,'-',0,0,IER)
+
       ELSEIF(INO1.EQ.11)THEN
         RETURN
       else
@@ -631,7 +629,7 @@ C << might do a cd to the current configuration location? before running zip >>
  28   dok=.true.
       h(1)='Assuming that the 3rd party tool generated a file and you'
       h(2)='know the location of that files it should be ok to proceed.'
-      CALL ASKOK(' ',' Read the transfer file?',OK,dok,2)
+      CALL ASKOK(' ','Import the CAD transfer file?',OK,dok,2)
       IF(OK)then
         H(1)='A DXF format file may be converted if it has been'
         H(2)='created using layer and entity constraints.'
@@ -649,9 +647,9 @@ C is a ZIP or DXF file.
         IF(ISTAT.LT.0)THEN
           write(outs,'(a,a)')'Could not find: ',LFIL(1:lnblnk(LFIL))
           dok=.false.
-          h(1)='Ouch, ESP-r did not find the file in the location you'
-          h(2)='specified. Double check before trying again. '
-          call askok(outs,'(check location) Try again?',OK,dok,2)
+          h(1)='Coud not find the file in the location you'
+          h(2)='specified. Double check and perhaps try again.'
+          call askok(outs,'Try again?',OK,dok,2)
           if(OK)then
             goto 28
           else
@@ -830,23 +828,24 @@ C Present the display.
  141  continue
 
 C Help text for this menu.
-      h(1)='These exemplar sets are available for browsing.'
-      h(2)='Each set comprises a number of designs which'
-      h(3)='relate to different possible uses of ESP-r.'
+      h(1)='These exemplar model sets are available for browsing.'
+      h(2)='Each set comprises a family of models relating to'
+      h(3)='different possible uses of ESP-r.'
       h(4)=' '
-      h(5)='Exemplar designs are used for training purposes'
-      h(6)='or as a record of interesting designs which'
-      h(7)='might serve as the starting point in some'
-      h(8)='future project.'
-      h(9)=' '
-      h(10)='Note to Administrators: the `exemplars` file must'
-      h(11)='be kept up-to-date by appending new designs using'
-      h(12)='the key words explained in the exemplar file.'
+      h(5)='Exemplar models may be used for training purposes or'
+      h(6)='as a record of interesting past projects that might'
+      h(7)='serve as the starting point in some future project.'
+      h(8)=' '
+      h(9)='Note to ESP-r Administrators: the `exemplars` file'
+      h(10)='located in directory ~esp-r/training should be kept'
+      h(11)='up-to-date by appending new models using the key'
+      h(12)='word syntax as explained in the exemplars file.'
 
       if(MMOD.EQ.8)then
-        CALL VWMENU('Exemplar Sets',gitem,NCOG,0,0,IW,irpx,irpy,ICOG)
+        CALL VWMENU('Exemplar Categories',gitem,NCOG,0,0,IW,irpx,
+     &               irpy,ICOG)
       else
-        CALL EMENU('Exemplar Sets',gitem,NCOG,ICOG)
+        CALL EMENU('Exemplar Categories',gitem,NCOG,ICOG)
       endif
       IF(ICOG.EQ.NCOG)THEN
         CALL ERPFREE(iexfil,ISTAT)
@@ -1008,8 +1007,8 @@ C Open the related configuration file (if it exists), find its log file.
               goto 242
             endif
           else
-             call usrmsg('The selected exemplar is currently',
-     &            'off-line.  See your administrator for access.','W')
+             call usrmsg('This exemplar is currently off-line.',
+     &            'See your ESP-r administrator for access.','W')
           endif
         endif
       ELSEIF(ICO.GE.1.AND.ICO.LT.(NCO-3))THEN
@@ -1045,10 +1044,10 @@ C Present information on an exemplar.
               goto 92
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
-              call edisp(iuout,' Configuration is: ')
+              call edisp(iuout,' Model is:')
               call edisp(iuout,exemplar)
 
-C If running on a windows machine get the last token within the string exemplar
+C If running on a Windows machine get the last token within the string exemplar,
 C which is the name of the configuration file. Work backwards from the end
 C of the string till a file separator of either DOS or Unix type is reached.
               call isunix(unixok)
@@ -1061,11 +1060,11 @@ C of the string till a file separator of either DOS or Unix type is reached.
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  call edisp(iuout,'The model configuration file is...')
+                  call edisp(iuout,'The model is...')
                   call edisp(iuout,thecfgis)
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
-                  call edisp(iuout,'The model configuration file is...')
+                  call edisp(iuout,'The model is...')
                   call edisp(iuout,thecfgis)
                 else
                   if(ipos.eq.1)then
@@ -1111,22 +1110,12 @@ C For older format file, normally ignore *aide line.
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
               H(1)='When browsing a model you are prevented from'
-              H(2)='altering it although you can use it to run'
-              H(3)='simulations.  If you want to modify the model'
-              H(4)='then you must firstly copy it to your own'
-              H(5)='folder by selecting the `own it` option.'
-              H(6)=' '
-              H(7)='If you change your mind you can select a different'
-              H(8)='rxemplar model or select continue to do nothing.'
-              H(9)=' '
-              H(10)='Note: ESP-r running native on Windows sometimes'
-              H(11)='fails to copy an exemplar model to the users  '
-              H(12)='home folder if the path has spaces in it. In'
-              H(13)='this case you should use the operating system'
-              H(14)='commands (e.g. zip or xcopy) to copy the model'
-              H(15)='folders to a location where you can work on them.'
-              CALL EASKABCD(exdescr,'(see help) ','browse',
-     &          '`own` it','select another exemplar','continue',IW,15)
+              H(2)='altering its data although you can use it to run'
+              H(3)='simulations. If you want to modify the model'
+              H(4)='then you must firstly copy it to your own folder'
+              H(5)='by selecting the `own it` option.'
+              CALL EASKABCD(exdescr,'Actions:','browse',
+     &          '`own` it','select another','cancel',IW,5)
               if(IW.eq.1)then
                 call tstamp('>','PRJ: browse exemplar')
                 useraction='browse  '
@@ -1237,7 +1226,7 @@ C up the exemplar name.
      &                fs,modelroot(1:lnmr),fs,'cfg',fs,
      &                thecfgis(1:lnblnk(thecfgis))
                   endif
-                  call edisp(iuout,'Your model (that you own) is now:')
+                  call edisp(iuout,'The model (that you own) is now:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
@@ -1462,7 +1451,7 @@ C Set folder separator (fs) to \ or / as required.
      &    LFIL(1:lnblnk(LFIL))
         INQUIRE (FILE=LTMPFL(1:lnblnk(LTMPFL)),EXIST=XST)
         if(XST)then
-          call edisp(iuout,'Removing existing name file. ')
+          call edisp(iuout,'Removing existing name file.')
           call FPOPEN(IUNIT,ISTAT,1,1,LTMPFL)
           call EFDELET(IUNIT,ISTAT)
         endif

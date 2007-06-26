@@ -211,7 +211,7 @@ C Fill in a default zone name and description if blank.
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
         write(zdesc(ICOMP),'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
