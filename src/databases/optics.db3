@@ -1,4 +1,15 @@
 Optical properties db, 2.0
+# data is comma or space separated.
+# the *item line of each item: identifier (12 char) followed by a description
+# the *dat line holds:
+# a) the number of optical states, b) number of layers
+# c) number of angles for data, d) tag for symetrical
+# e) hemisphiric transmission f) ??
+# the *ang line give the angles from normal
+# the *vis lines are visable trans at each angle
+# the *trn lines are the solar trans at each angle
+# the *abs lines are the refractive index followed by abs at each angle. 
+# 
 *date,Tue Aug  8 13:28:55 2000
 *item SC_8985_04nb ,Clear glass 89/85 4mm with no blind
 *dat   1  1  5  1 0.761 0.000 # alts, lay, ang, sym, hemis

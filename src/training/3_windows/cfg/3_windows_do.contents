@@ -1,11 +1,11 @@
 Synopsis
  
 This is a synopsis of the model Three offices with different window
-representations. defined in 3_windows.cfg generated on Wed Jun 20 11:03:01
+representations. defined in 3_windows_do.cfg generated on Wed Jun 20 11:07:43
 2007. Notes associated with the model are in 3_windows.log
  
 The model is located at latitude   55.00 with a longitude difference of   0.00
-from the local time meridian. The year used in simulations is 1967 and
+from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
@@ -27,9 +27,6 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  small pr:  612.00   2.06   7.57
  hot water: 190.00   0.30   0.20
  
-An Integrated Performance View has been defined:
-And the IPV file was incomplete or missing.
- 
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
@@ -50,7 +47,7 @@ using zone controls only
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
  The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Weekday control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
 basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
@@ -64,7 +61,7 @@ capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling set
 basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
 capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
 26.00C.
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Saturday control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
 basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
@@ -78,7 +75,7 @@ capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling set
 basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
 capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
 26.00C.
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+ Sunday control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
 basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
@@ -89,6 +86,72 @@ capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling set
  zone ( 1) manager      << control  1
  zone ( 2) manager_t_b  << control  1
  zone ( 3) manager_bi   << control  1
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+   8 nodes,  10 components,  10 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 manager      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.500
+   2 manager_t_b  air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.500
+   3 manager_bi   air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
+   4 adjacent     air   internal & unknown    0.0500 manager      (-)     0.000  vol   10.000
+   5 g_ext        air   boundary & wind ind   1.9500   0.0000     coef    6.000  azim 180.000
+   6 low_glz_ext  air   boundary & wind ind   1.1500   0.0000     coef    5.000  azim 180.000
+   7 hi_glz_ext   air   boundary & wind ind   2.7500   0.0000     coef    5.000  azim 180.000
+   8 bi_glz       air   boundary & wind ind   1.9500   0.0000     coef    5.000  azim 180.000
+ 
+ Component    Type C+ L+ Description
+ 
+ win_1.68      110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  1.680
+ 
+ win_low.84    110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.840
+ 
+ hi_win.84     110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.840
+ 
+ bi_win        130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  0.880 height 1.880 ref ht  0.600 discharge factor 0.600
+ 
+ door_cra      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ door_crb      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ door_crc      120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  0.800
+ 
+ win_cb        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+ win_cc        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+ win_ca[1]     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 g_ext         0.000   manager      -0.500   win_ca[1]       1.950   1.000
+    2 low_glz_ext   0.000   manager_t_b  -0.500   win_cb          1.150   1.000
+    3 bi_glz        0.000   manager_bi   -0.500   win_cc          1.950   1.000
+    4 g_ext         0.000   manager       0.450   win_1.68        1.950   1.950
+    5 low_glz_ext   0.000   manager_t_b  -0.350   win_low.84      1.150   1.150
+    6 hi_glz_ext    0.000   manager_t_b   1.250   hi_win.84       2.750   2.750
+    7 bi_glz        0.000   manager_bi    0.450   bi_win          1.950   1.950
+    8 adjacent      0.000   manager      -1.450   door_cra        0.050   0.050
+    9 adjacent      0.000   manager_t_b  -1.450   door_crb        0.050   0.050
+   10 adjacent      0.000   manager_bi   -1.450   door_crc        0.050   0.050
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+manager      -> manager
+manager_t_b  -> manager_t_b
+manager_bi   -> manager_bi
+ 
  
  ____________________________________________________________
  
@@ -127,15 +190,8 @@ ID Zone         Volume|          Surface
  All surfaces will receive diffuse insolation.
  
  
- 
- Control: no control of air flow
- 
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: manager
  
 Notes:
 one person typical office pattern with gain ramping up between 7h & 9h

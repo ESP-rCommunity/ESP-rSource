@@ -365,6 +365,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
+C Generate the version report.
       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings
@@ -1303,6 +1304,7 @@ C dd is character array for selecting simulation parameter sets.
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
       logical browse,concat,hri,defok,unixok
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob
+      logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
 
@@ -1329,7 +1331,7 @@ C constructions are known.
         continue
       else
         call checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,oprfok,
-     &    prob)
+     &    prob,tmcok,shdok)
         if(.NOT.mlcok)then
           call edisp(iuout,'* Surface construction attributes not ok.')
         endif
@@ -2878,9 +2880,11 @@ C  bndrysxc looks for surface connection attribute different from cnn list.
 C  confok looks for missing construction files.
 C  geofok looks for missing geometry files.
 C  oprfok looks for missing/old/unsorted operations files. 
-C  prob looks for contiguity cross-references
+C  prob looks for contiguity cross-references.
+C  tmcok looks for matching transparent partitions.
+C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
-     &                      oprfok,prob)
+     &                      oprfok,prob,tmcok,shdok)
 #include "building.h"
 
 C Get logical name of terminal type, expand model name
@@ -2898,17 +2902,29 @@ C to include the path and create a string to drive the modules.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON),SSPARENT(MCON)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
+     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       character H*72,CXSTR*78
       character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       character SSPARENT*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64,zn*12
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
 
       logical XST,asked,dok,sorted,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
+      logical tmcok,shdok
+      integer icple,iscple  ! coupled zone and surface for tmc check.
+      integer itmc1,itmc2   ! non-zero if surface a tmc
 
       asked=.false.
 
@@ -2967,6 +2983,7 @@ C constructions are known.
       endif
       lh=0
       bndrysxc=.true.
+      tmcok=.true.
       do 42 i=1,ncon
         CALL ZSID(IC1(I),IE1(I),ZSDES,ZSDESC,ZSDESS)
         CALL CONXINFO(1,i,CXSTR)
@@ -3043,6 +3060,28 @@ C constructions are known.
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
           endif
         endif
+
+C Do same check as in solar.F
+        if(ICT(i).eq.3)then
+          ICPLE=IC2(i)
+          ISCPLE=IE2(i)
+          ITMC1=ITMCFL(IC1(i),IE1(i))
+          ITMC2=ITMCFL(ICPLE,ISCPLE)
+          if(ITMC1.NE.0)then
+            if(ITMC2.EQ.0)then
+              tmcok=.false.
+              if(lh.lt.58)then
+                lh=lh+1
+                write(h(lh),'(2a)') 'Opaque/Transp mismatch in ',ZSDES
+                lh=lh+1
+                write(h(lh),'(2a)') 'connection is... ',CXSTR(1:50)
+                lh=lh+1
+                write(h(lh),'(2a)') 'for surface attribute...',SSMLCN(i)
+              endif
+            endif
+          endif
+        endif
+
         if(ICT(i).eq.4.and.SSOTHER(i)(1:5).ne.'GROUN')then
           bndrysxc=.false.
           if(lh.lt.58)then
@@ -3246,8 +3285,8 @@ C Do cursory check to see if the file is sorted.
       lh=0
       confok=.true.
       do 45 i=1,ncomp
+        write(zn,'(a)') zname(i)
         if(LTHRM(i)(1:7).eq.'UNKNOWN'.or.LTHRM(i)(1:2).eq.'  ')then
-          write(zn,'(a)') zname(i)
           confok=.false.
           if(lh.lt.60)then
             lh=lh+1
@@ -3263,6 +3302,28 @@ C Do cursory check to see if the file is sorted.
               write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &        ' constructions not found.'
             endif
+          else
+
+C Zone construction file exists so attempt to scan it.
+            CALL EGOMIN(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+            CALL ECONST(LTHRM(I),IFIL+1,I,0,IUOUT,IER)
+            if(ier.ne.0)then
+              if(lh.lt.60)then
+                lh=lh+1
+                write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &          ' constructions did not read cleanly.'
+              endif
+            endif
+            if(ITW(I).eq.1)then
+              CALL ERTWIN(0,IUOUT,IFIL+1,LTWIN(I),I,IER)
+              if(ier.ne.0)then
+                if(lh.lt.60)then
+                  lh=lh+1
+                  write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &            ' tmc file did not read cleanly.'
+                endif
+              endif
+            endif
           endif
         endif
  45   continue
@@ -3272,7 +3333,94 @@ C Do cursory check to see if the file is sorted.
      &   'model will not allow thermal simulation.','W')
         CALL PHELPD('constructions checks',lh,'-',0,0,IER)
       endif
+      lh=0
+      shdok=.true.
+      IUO=IFIL+1
+      do 52 i=1,ncomp
+        if(isi(i).eq.1)then
+          write(zn,'(a)') zname(i)
+          LS=LSHAD(I)
+          if(LS(1:7).eq.'UNKNOWN'.or.LS(1:2).eq.'  ')then
+            shdok=.false.
+            if(lh.lt.60)then
+              lh=lh+1
+              write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &        ' shading undefined.'
+            endif
+          else
+            XST=.false.
+            call FINDFIL(LS,XST)
+            if(.NOT.XST)then
+              if(lh.lt.60)then
+                lh=lh+1
+                write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &        ' shading not found.'
+              endif
+            else
+
+C Attempt to read the shading file as done in esrubld/util.F subroutine
+C mzshin.
+              maxrec=24
+              if(nzsur(i).gt.24) maxrec=nzsur(i)
+              CALL ERPFREE(IFIL+1,ISTAT)
+              call EFOPRAN(IFIL+1,LS,maxrec,1,IER)
+              IF(ier.ne.0)goto 1000
+
+C Check file has been written to. If a problem the try again
+C at maxrec=24 for older files. Remember maxrec for use in solar.F.
+              IREC=2
+              READ(IFIL+1,REC=IREC,IOSTAT=ISTAT,ERR=1001)INEXT,NS
+              if(INEXT.LE.3.OR.NS.NE.nzsur(i))then
+                CALL ERPFREE(IFIL+1,ISTAT)
+                maxrec=24
+                call EFOPRAN(IFIL+1,LS,maxrec,1,IER)
+                IF(ier.ne.0)goto 1000
+                IREC=2
+                READ(IFIL+1,REC=IREC,IOSTAT=ISTAT,ERR=1001)INEXT,NS
+                if(INEXT.LE.3.OR.NS.NE.nzsur(i))then
+                  CALL ERPFREE(IFIL+1,ISTAT)
+                  maxrec=MS
+                  call EFOPRAN(IFIL+1,LS,maxrec,1,IER)
+                  IF(ier.ne.0)goto 1000
+                  IREC=2
+                  READ(IFIL+1,REC=IREC,IOSTAT=ISTAT,ERR=1001)INEXT,NS
+                  if(INEXT.LE.3.OR.NS.NE.nzsur(i))goto 1003
+                endif
+              endif
+            endif
+          endif
+        endif
+        goto 52
+
+ 1000   continue
+ 1001   IER=1
+        if(lh.lt.59)then
+          lh=lh+1
+          write(h(lh),'(2A)') zname(I),' shading file error in...'
+          lh=lh+1
+          write(h(lh),'(A)') LS(1:lnblnk(LS))
+        endif
+        shdok=.false.
+        goto 52
+
+ 1003   if(lh.lt.59)then
+          lh=lh+1
+          write(h(lh),'(a,i2,a,i2,a,i2)') 'Model nsur=',NSUR,' db ns=',
+     &      ns,' inext=',INEXT
+          lh=lh+1
+          write(h(lh),'(A)') 'Mismatch between model and shading file.'
+        endif
+        shdok=.false.
+ 52   continue
+      if(.NOT.shdok)then
+        call usrmsg(
+     &    'Some zones have missing or corrupt shading files. The',
+     &    'model not yet complete vis-a-vis thermal simulation.','W')
+        CALL PHELPD('shading checks',lh,'-',0,0,IER)
+      endif
+
       return
+
       end
 
 C ********** imgdisp

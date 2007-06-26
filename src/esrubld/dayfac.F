@@ -54,10 +54,11 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION XPL(MV),YPL(MV),ZPL(MV),DF(MGT)
-      CHARACTER*10 WINFO
-      CHARACTER*25 CSTR
+      CHARACTER WINFO*10,CSTR*25 
+      character zname*12,zdesc*64
       logical close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei
 
@@ -69,8 +70,8 @@ c Trace output ? Use same slot as zone casual gains.
       ITFLG=0
       IF(ITC.EQ.1.OR.(ITRACE(12).EQ.1.AND.IZNTRC(ICOMP).EQ.1))ITFLG=1
       IF(ITFLG.EQ.1)THEN
-        WRITE(ITU,9996)ICNT,ICOMP
- 9996   FORMAT(' Subroutine DAYFAC   Trace output',I4,5X,'Zone',I3 /)
+        WRITE(ITU,9996)ICNT,ICOMP,zname(icomp)
+ 9996   FORMAT(' Subroutine DAYFAC  Trace output',I4,' Zone',I3,1x,A /)
         ICNT=ICNT+1
         WRITE(ITU,9989)(NCGTC(ICOMP,I),I=1,3)
  9989   FORMAT(' Casual gain type to control during Weekdays  = ',I3,/,
@@ -98,27 +99,27 @@ C Exterior sensor, don't bother to calculate daylight factors, set to 1.0.
         IF(ISS.EQ.0)ISS=1
         call eclose(CGY(ICOMP,N,1),0.00,0.5,close)
         IF(close)THEN
-          IF(ITFLG.EQ.1)WRITE(ITU,896)ICOMP,N,ISS
-  896     FORMAT(' Zone ',I2,' Light zone',I1,/,
+          IF(ITFLG.EQ.1)WRITE(ITU,896) zname(icomp),N,ISS
+  896     FORMAT(' Zone ',A,' Light zone',I1,/,
      &  ' Exterior horiz sensor @ surface ',I2)
         ELSE
-          IF(ITFLG.EQ.1)WRITE(ITU,897)ICOMP,N,ISS
-  897     FORMAT(' Zone ',I2,' Light zone',I1,/,
+          IF(ITFLG.EQ.1)WRITE(ITU,897) zname(icomp),N,ISS
+  897     FORMAT(' Zone ',A,' Light zone',I1,/,
      &  ' Exterior vert sensor @ surface ',I2)
         ENDIF
 
 C User specified DF, no preprocessing required.
       ELSEIF(IDFST(ICOMP,N).EQ.2)THEN
         IF(ITFLG.EQ.1)THEN
-            WRITE(ITU,881)ICOMP,NLITZ(ICOMP),NUDWIN(ICOMP)
-  881       FORMAT(/,'Zone ',I2,' User defined daylighting for ',I1,
+            WRITE(ITU,881) zname(icomp),NLITZ(ICOMP),NUDWIN(ICOMP)
+  881       FORMAT(/,'Zone ',A,' User defined daylighting for ',I1,
      &       ' lighting zones and ',/,I2,' user defined glazing',
      &       ' data sets [df and window no.]')
           ENDIF
       ELSE
 C Trace heading.
-        IF(ITFLG.EQ.1)WRITE(ITU,899)ICOMP,N
-  899   FORMAT('Zone ',I2,' light zone',I1,/,
+        IF(ITFLG.EQ.1)WRITE(ITU,899) zname(icomp),N
+  899   FORMAT('Zone ',A,' light zone',I1,/,
      &   '   Sensor          |  Window  |SkyAdj|IntRfl|Daylt |Azim. |',
      &   'Azim. |Elev  |Elev ',/,
      &   'No|@X   |@Y   |@Z  |Descr @Sur|Compon|Compon|Fact% |Left  |',
@@ -133,14 +134,14 @@ C Trace heading.
           DO 20 J=1,NSUR
             DF(J)=0.
 
-C Continue only if this surface is vertical, is TMC, has 4 vertexes
+C Continue only if this surface is vertical, is TMC, has 4 vertices
 C and is connected to either the exterior or another real zone.  Keep track
 C of total windows in zone with nt. Exclude skylights.
             call eclose(PELV(ICOMP,J),0.00,0.5,close)
             IF(close.AND.(ITMCFL(ICOMP,J).GT.0))THEN
               IF (NVER(J).NE.4)THEN
-                WRITE(ITU,811)ICOMP,J
-  811           format('Zone ',I2,' TMC surf ',I2,' not 4 vertexes!')
+                WRITE(ITU,811) zname(icomp),J
+  811           format('Zone ',A,' TMC surf ',I2,' not 4 vertexes!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
@@ -178,8 +179,8 @@ C and high WIDTH, HIGH:
                   WRITE(ITU,812)ICOMP,J
                 ENDIF
               ELSE
-                WRITE(ITU,812)ICOMP,J
-  812           format('Zone ',I2,'TMC',I2,' may not be rectangular!')
+                WRITE(ITU,812) zname(icomp),J
+  812           format('Zone ',A,'TMC',I2,' may not be rectangular!')
               ENDIF 
 
               XX1=XPL(1)
