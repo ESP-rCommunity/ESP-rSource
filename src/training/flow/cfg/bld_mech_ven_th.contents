@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Basic 3 zone model with mechanical network
-flow. defined in bld_mech_ven.cfg generated on Thu Jun 21 10:59:44 2007. Notes
-associated with the model are in bld_basic.log
+flow (mixing box). defined in bld_mech_ven_th.cfg generated on Thu Jun 21
+10:58:36 2007. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -45,7 +45,7 @@ Databases associated with the model:
  
  ____________________________________________________________
  
-Ideal control is defined in: ../ctl/bld_mech_ven.ctl as follows:
+The model includes ideal controls as follows:
 Control description:
 proj cntrl
  
@@ -93,8 +93,8 @@ The model includes an air flow network.
    5 east         air   boundary & wind ind   1.3500   0.0000     coef   18.000  azim  90.000
    6 west         air   boundary & wind ind   1.3750   0.0000     coef   19.000  azim 270.000
    7 vent         air   boundary & wind ind   3.0000   0.0000     coef   23.000  azim   0.000
-   8 fan_out      air   internal & unknown    2.0000   20.000     (-)     0.000  vol    0.000
-   9 mix          air   internal & unknown    2.0000   20.000     (-)     0.000  vol    0.000
+   8 fan_out      air   internal & unknown    0.0000   0.0000     (-)     0.000  vol  144.000
+   9 mix          air   internal & unknown    2.0000   0.0000     (-)     0.000  vol   49.501
  
  Component    Type C+ L+ Description
  
@@ -139,9 +139,9 @@ The model includes an air flow network.
     8 roof_space   -0.600   west          1.100   roof_vent       3.150   2.475
     9 reception     0.000   south         0.000   open_wndw       1.500   1.350
    10 reception     0.000   east          0.000   open_wndw       1.500   1.350
-   11 reception     0.000   fan_out       0.000   fan             1.500   2.000
-   12 fan_out       0.000   west          0.000   damp_1          2.000   1.375
-   13 fan_out       0.000   mix           0.000   damp_2          2.000   2.000
+   11 reception     0.000   fan_out       0.000   fan             1.500   0.000
+   12 fan_out       0.000   west          0.000   damp_1          0.000   1.375
+   13 fan_out       0.000   mix           0.000   damp_2          0.000   2.000
    14 west          0.000   mix           0.000   damp_3          1.375   2.000
    15 mix           0.000   reception     0.000   fan             2.000   1.500
 thermal zone to air flow node mapping:
@@ -149,6 +149,7 @@ thermal zone -> air flow node
 reception    -> reception
 office       -> office
 roof_space   -> roof_space
+mixing       -> mix
  
  
  ____________________________________________________________
@@ -158,7 +159,8 @@ ID Zone         Volume|          Surface
  1 reception     144.0  14   182.0    10.0    48.0  reception describes a...
  2 office         48.0   8    77.5     2.5    16.0  office describes a...
  3 roof_space     49.5   7   180.3     0.0    81.0  roof_space describes a...
-   all           242.   29    440.     12.    145.
+ 4 mixing          0.0   6     0.1     0.0     0.0  mixing describes a...
+   all           242.   35    440.     12.    145.
  
  
  Zone reception ( 1) is composed of 14 surfaces and 34 vertices.
@@ -297,13 +299,41 @@ Sun  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
- Project floor area is 145.00m2, wall area is 93.750m2, window area is 12.500m2.
- Sloped roof area is 82.798m2, flat roof area is 0.00m2, skylight area is 0.00m2.
- There is 189.05m2 of outside surface area, 89.250m2 of which is vertical.
+ Zone mixing ( 4) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.001m^3 of space, with a total surface
+ area of 0.060m^2 & approx floor area of 0.010m^2
+ mixing describes a...
  
- Outside walls are 64.655 % of floor area & avg U of 0.149 & UA of 13.950
- Sloped roof is 57.102 % of floor area & avg U of 1.799 & UA of 148.97
- Glazing is 8.6207 % of floor & 14.006 % facade with avg U of 2.811 & UA of 35.133
+ A summary of the surfaces in mixing( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  0.010   180.   0. Surf-1       OPAQ VERT extern_wall  ||< external
+  2  0.010    90.   0. Surf-2       OPAQ VERT extern_wall  ||< external
+  3  0.010   360.   0. Surf-3       OPAQ VERT extern_wall  ||< external
+  4  0.010   270.   0. Surf-4       OPAQ VERT extern_wall  ||< external
+  5  0.010     0.  90. Surf-5       OPAQ CEIL extern_wall  ||< external
+  6  0.010     0. -90. Surf-6       OPAQ FLOR extern_wall  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: mix
+ 
+Notes:
+nothing happens in the mixing space. Same pattern for weekdays,
+saturdays and sundays. 800-1250W small power weekdays, 800W weekends..
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 145.01m2, wall area is 93.800m2, window area is 12.500m2.
+ Sloped roof area is 82.798m2, flat roof area is 0.0100000m2, skylight area is 0.00m2.
+ There is 189.11m2 of outside surface area, 89.290m2 of which is vertical.
+ 
+ Outside walls are 64.685 % of floor area & avg U of 0.149 & UA of 13.950
+ Sloped roof is 57.098 % of floor area & avg U of 1.799 & UA of 148.97
+ Glazing is 8.6201 % of floor & 13.999 % facade with avg U of 2.811 & UA of 35.133
  
  ____________________________________________________________
  Multi-layer constructions used:

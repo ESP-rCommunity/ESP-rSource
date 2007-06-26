@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Office model for network flow studies -
-network vents controlled defined in office_vent_ctl.cfg generated on Thu Jun
-21 09:15:24 2007. Notes associated with the model are in office_vent.log
+This is a synopsis of the model Office model for network flow studies defined
+in office_vent.cfg generated on Thu Jun 21 09:30:31 2007. Notes associated
+with the model are in office_vent.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1997 and
@@ -27,7 +27,7 @@ Control description:
 office environmental controls - base case heat 20 cool 24
  
 Zones control includes  1 functions.
-using zone controls and flow controls
+using zone controls only
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
@@ -75,147 +75,6 @@ capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling set
  zone ( 5) ceil_void    << control  0
  zone ( 6) mixing_box   << control  0
  
- Flow control includes  6 loops.
-range based control on facade vents off < 19 & > 23.9 C
- 
- The sensor for function  1 senses node (1) manager
- The actuator for function  1 is flow connection:  11 south_man - manager via fac_vent_1
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  2 senses node (2) general
- The actuator for function  2 is flow connection:  12 south_gen - general via fac_vent_3
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  3 senses node (2) general
- The actuator for function  3 is flow connection:  13 east_gener - general via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  4 senses node (4) reception
- The actuator for function  4 is flow connection:  14 east_recep - reception via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  5 senses node (3) conference
- The actuator for function  5 is flow connection:  15 east - conference via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  6 senses node (3) conference
- The actuator for function  6 is flow connection:  16 north - conference via fac_vent_3
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- ____________________________________________________________
- 
-The model includes an air flow network.
- 
- Flow network description.
- 
-  13 nodes,  11 components,  16 connections;     wind reduction =  1.000
-   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
-   1 manager      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
-   2 general      air   internal & unknown    1.5000   20.000     (-)     0.000  vol  175.500
-   3 conference   air   internal & unknown    1.5000   20.000     (-)     0.000  vol  141.750
-   4 reception    air   internal & unknown    1.5000   20.000     (-)     0.000  vol  182.250
-   5 ceil_void    air   internal & unknown    3.2500   20.000     (-)     0.000  vol   90.002
-   6 mixing_box   air   internal & unknown    3.2500   20.000     (-)     0.000  vol    9.000
-   7 north        air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim   0.000
-   8 east         air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim  90.000
-   9 east_recep   air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim  90.000
-  10 east_gener   air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim  90.000
-  11 south_gen    air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim 180.000
-  12 south_man    air   boundary & wind ind   0.7000   0.0000     coef    1.000  azim 180.000
-  13 west_mix     air   boundary & wind ind   3.2500   0.0000     coef    1.000  azim 270.000
- 
- Component    Type C+ L+ Description
- 
- crack_1       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0050 crack length (m)  2.000
- 
- crack_2       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0050 crack length (m)  4.000
- 
- crack_3       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0050 crack length (m)  6.000
- 
- door_man      130  5  0 Specific air flow door              m = rho.f(W,H,dP)
- Fluid  1.0 width  0.500 height 2.100 ref ht  1.300 discharge factor 0.600
- 
- door_g-r      130  5  0 Specific air flow door              m = rho.f(W,H,dP)
- Fluid  1.0 width  3.000 height 2.100 ref ht  1.200 discharge factor 0.600
- 
- door_r-c      130  5  0 Specific air flow door              m = rho.f(W,H,dP)
- Fluid  1.0 width  2.000 height 2.100 ref ht  1.200 discharge factor 0.600
- 
- fac_vent_1    110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.100
- 
- fac_vent_2    110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.200
- 
- fac_vent_3    110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.300
- 
- mix_crack     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0050 crack length (m)  1.000
- 
- supply_grl    210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
-   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
-  1.0    0.300    0.090    5.000    0.000    0.006
- 
-    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
-    1 manager       0.000   general       0.000   door_man        1.500   1.500
-    2 general       0.000   reception     0.000   door_g-r        1.500   1.500
-    3 conference    0.000   reception     0.000   door_r-c        1.500   1.500
-    4 south_man     0.400   manager      -0.400   crack_1         1.100   1.100
-    5 south_gen     0.400   general      -0.400   crack_3         1.100   1.100
-    6 east_gener    0.400   general      -0.400   crack_2         1.100   1.100
-    7 east_recep    0.400   reception    -0.400   crack_2         1.100   1.100
-    8 east          0.400   conference   -0.400   crack_2         1.100   1.100
-    9 north         0.400   conference   -0.400   crack_3         1.100   1.100
-   10 west_mix      0.000   mixing_box    0.000   mix_crack       3.250   3.250
-   11 south_man     0.400   manager      -0.400   fac_vent_1      1.100   1.100
-   12 south_gen     0.400   general      -0.400   fac_vent_3      1.100   1.100
-   13 east_gener    0.400   general      -0.400   fac_vent_2      1.100   1.100
-   14 east_recep    0.400   reception    -0.400   fac_vent_2      1.100   1.100
-   15 east          0.400   conference   -0.400   fac_vent_2      1.100   1.100
-   16 north         0.400   conference   -0.400   fac_vent_3      1.100   1.100
-thermal zone to air flow node mapping:
-thermal zone -> air flow node
-manager      -> manager
-general      -> general
-conference   -> conference
-reception    -> reception
-ceil_void    -> node not defined
-mixing_box   -> mixing_box
- 
- 
  ____________________________________________________________
  
 ID Zone         Volume|          Surface
@@ -258,12 +117,18 @@ ID Zone         Volume|          Surface
  
  
  Shading patterns have not yet been calculated.
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: manager
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
-one person typical office pattern ramping up from 7-9am weekdays and
-saturdays. No lights or small power included.
+one person typical office pattern
  Number of Weekday Sat Sun casual gains=  7  7  0
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -334,12 +199,18 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  
  Shading patterns have not yet been calculated.
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: general
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.33  0.0161    0.00  0.0000   0     0.00
  
 Notes:
-5 people std occup ramping up from 7-9am half occupants on saturday,
-8Wm2 lights 10Wm2 small power weekdays and Saturdays, nothing Sunday
+5 people std occup, 8Wm2 lights 10Wm2 small power
  Number of Weekday Sat Sun casual gains= 13 13  0
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -418,12 +289,18 @@ Sat 13 EquiptWm2 18 - 24      0.0      0.0       0.50       0.50
  
  
  Shading patterns have not yet been calculated.
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: conference
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.33  0.0130    0.00  0.0000   0     0.00
  
 Notes:
-morning and afternoon meetings 8 people on weekdays, nothing on
-weekends
+morning and afternoon meetings 8 people
  Number of Weekday Sat Sun casual gains=  9  0  0
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -475,12 +352,18 @@ Wkd  9 EquiptW    0 - 24    100.0      0.0       0.50       0.50
  
  
  Shading patterns have not yet been calculated.
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: reception
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.33  0.0167    0.00  0.0000   0     0.00
  
 Notes:
-2 people most hours, 8Wm2 lights  5Wm2 small power weekdays, no gains
-on weekends, 0.33 ach infil all days all hours.
+2 people most hours, 8Wm2 lights  5Wm2 small power
  Number of Weekday Sat Sun casual gains=  9  0  0
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -532,7 +415,7 @@ Sat  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
 Sun  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
  
 Notes:
-the ceiling void has 0.33 ach infil and no casual gains.
+nil_operations
  Number of Weekday Sat Sun casual gains=  0  0  0
  
  ____________________________________________________________
@@ -555,11 +438,13 @@ the ceiling void has 0.33 ach infil and no casual gains.
  
  
  All surfaces will receive diffuse insolation.
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: mixing_box
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  0  0  0
  
 Notes:
-nothing happens in the mixing box
+nil_operations
  Number of Weekday Sat Sun casual gains=  0  0  0
  
  ____________________________________________________________

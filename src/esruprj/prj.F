@@ -147,7 +147,7 @@ C Name of current application
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit,foundutl
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
@@ -282,6 +282,7 @@ C be atrributed.
       browse=.false.
       Vldtng=.false.
       changedit=.false.
+      MODSIT=.false.  ! assume model context has not changed.
 
 C If your compiler does not support floating-point arithmetic
 C according to ANSI/IEEE Std 754-1985 comment out the following code.
@@ -1217,8 +1218,17 @@ C Toggle trace level.
         INO=-4
         GOTO 3
       ELSEIF(INO.EQ.MITEM-2)THEN
-        call usrmsg('Preferences functions under construction.',' ',
-     &    'P')
+
+C Allow user to change preferences for dates, time, wireframe view
+C and reporting/trace level.
+        MODSIT=.false.
+        call setup(MODSIT,ITRC,IER)
+        if(MODSIT)then
+          call usrmsg('Saving new default view...',' ','-')
+          CALL EMKCFG('-',IER)
+          call usrmsg('Saving new default view...done.',' ','-')
+          MODSIT=.false.
+        endif
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via askabout: 0 requests display.
@@ -2632,10 +2642,19 @@ C Set test logic to false.
 
 C We have done both passes, report differences and exit.
           call edisp(iuout,' ')
-          call edisp(iuout,'* For the base case model:')
+          call edisp(iuout,'Summary of performance and differences ')
+          call edisp(iuout,' ')
+          call edisp(iuout,'Demand is reported in kWh/m2/a and kWh/a')
+          call edisp(iuout,'Capacity is reported in kW/m2/a and kW/a')
+          call edisp(iuout,
+     &      'Differences reported between the base case model and the')
+          call edisp(iuout,
+     &      'variant: positive = savings, negative = not as good as.')
+          call edisp(iuout,' ')
+          call edisp(iuout,'For the base case model:')
           if(delim.eq.'-')then
             call edisp(iuout,
-     &            '       Demand              Capacity')
+     &            '        Demand              Capacity')
             call edisp(iuout,
      &            '        m2     building     m2     building')
           elseif(delim.eq.'T')then
@@ -3638,7 +3657,7 @@ C of the same project that can later be modified.
 
       dimension items(7),items2(33)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H,LCFGF
-      CHARACTER ITEMS*36,ITEMS2*36,APP*4
+      CHARACTER ITEMS*32,ITEMS2*36,APP*4
       CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
 
@@ -3674,16 +3693,27 @@ C Help message for version manager menu
       H(23)= ' '
       H(24)= 'A three character postfix is requested from the'
       H(25)= 'user and this is appended to the names of new files.'
+      H(36)= ' '
+      H(37)= ' '
+      H(38)= '*****SBEM Notional Model*****'
+      H(39)= ' ESP-r creates the SBEM notional model in compliance with'
+      H(40)= ' CIBSE TM33 ??? This creates a model with the postfix'
+      H(41)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
+      H(42)= ' '
+      H(43)= ' Details of how the notonal building relates to the '
+      H(44)= ' original building and plant model is defined in relevant'
+      H(45)= ' SBEM documentation'
+      H(46)= ' '
 
 C Ask for changes to be made
  200  INO=-3
-      ITEMS(1) = 'a make a project variant'
-      ITEMS(2) = 'b make nominal (under development)'
-      ITEMS(3) = 'c other 1 (under development)'
-      ITEMS(4) = 'd other 2 (under development)'
-      ITEMS(5) = ' --------------------------'
-      ITEMS(6) = '? help'
-      ITEMS(7) = '- exit'
+      ITEMS(1) = 'a make a project variant     '
+      ITEMS(2) = 'b make UK NCM notional model '
+      ITEMS(3) = 'c other 1 (under development)  '
+      ITEMS(4) = 'd other 2 (under development)  '
+      ITEMS(5) = ' --------------------------  '
+      ITEMS(6) = '? help                       '
+      ITEMS(7) = '- exit                       '
       MITEM=7
       CALL EMENU('Variants Manager',ITEMS,MITEM,INO)
       IF(INO.EQ.1)THEN
@@ -3918,6 +3948,22 @@ C mould and mycotoxins
         ENDIF
         IF(LRCR.EQ.2)RETURN
         GOTO 201
+      ELSEIF(INO.EQ.2)THEN
+
+C Create SBEM notional building based on currently loaded model
+        H(1)=' This option should be used with care since it is'
+        H(2)=' still under development and could mess up your model.'
+        H(3)=' Consequently it is password protected. '
+        H(4)=' '
+        H(5)=' The password is available from ESRU  '
+        H(6)='    Email: esru@strath.ac.uk  '
+        H(7)='    Tele: +44 141 548 3986  '
+        H(8)='    Fax:  +44 141 552 8513  '
+        call easki(IPASS,' ',' Password (see help)? ',
+     &    0,'-',0,'-',0,'password',IER,8)
+        if (IPASS.eq.101) then
+          CALL EMKSBM
+        endif
       ELSEIF(INO.EQ.6)THEN
         CALL PHELPD('version intro',25,'-',0,0,IER)
         GOTO 200
