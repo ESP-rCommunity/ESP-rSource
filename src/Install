@@ -1291,35 +1291,47 @@ echo " Installing ESP-r system.  This may take some time."
  # Digest version information in Version text file
  release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
 
+
  # Try to collect svn information
- #svn_info_command="cat /home/aferguso/svn_info.txt"
- #svn_status_command="cat /home/aferguso/svn_status.txt"
- 
  svn_info_command="svn info"
  svn_status_command="svn status"
  
+ # For debugging...
+ # svn_info_command="cat ~/svn_info.txt"
+ # svn_status_command="cat ~svn_status.txt"
+  
  svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
  svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
  notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
 
+ # Attempt to collect URL from svn info
+ URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+   
+ # Ensure that the URL is from ESP-r central. Code built from
+ # other repositories is to be designated 'unversioned'
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn2.cvsdude.com/espr/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
+
  if [ "$svnnotfound" != "" ]    || 
     [ "$notworkingcopy" != "" ] ||
-    [ "$svnrevision"    =  "" ];   then
+    [ "$svnrevision"    =  "" ] ;   then
    versioned_repository="no";
  else
-   versioned_repository="yes"
+   if [ "$URLcvsdude" != "" ] || [ "$URLesprcentral"  != "" ]; then
+     versioned_repository="yes"
+   else
+     versioned_repository="no" 
+   fi
  fi
  
  # If svn is available and repository is under versioning,
  # get misc svn information
  if [ "$versioned_repository" = "yes" ]; then
    revision_number=`$svn_info_command 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
-   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-      
+
    # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
-   branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
-   branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
-   
+   branch_name=`echo $URL | sed "s/^.*\/esp-r\///g"`
+      
    # Strip leading 'branches', if any
    branch_name=`echo $branch_name | sed "s/branches\///g"`
    # Strip trailing 'src'
