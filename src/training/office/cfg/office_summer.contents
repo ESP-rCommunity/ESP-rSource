@@ -1,22 +1,20 @@
 Synopsis
  
 This is a synopsis of the model office building, summer operation defined in
-office_sum.cfg generated on Mon Sep  4 17:16:32 2006. Notes associated with
+office_sum.cfg generated on Wed Jun 20 11:23:38 2007. Notes associated with
 the model are in office.log
- 
  
 The model is located at latitude   59.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
- 
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
 The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67.
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db2
+ materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : /usr/esru/esp-r/databases/multicon.db2
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1
@@ -30,12 +28,10 @@ control facade windows to closed 0h00-8h00 and 18h00-24h00. During day
 open if zone is > 21C.  Doors between entry and corridor to units are
 open during office hours on weekdays only.
  
- 
  Flow control includes 23 loops.
 mass_flow control is applied to each connection that has either ctdoor or
 ctwina to match the facade or inner door control logic. Made by setting up one
 of each type of control and the copy and re-assucng the sensor/actuator point.
- 
  
  The sensor for function  1 senses node (7) unit_a
  The actuator for function  1 is flow connection:  41 unit_a - north via ctwina
@@ -43,8 +39,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  2 senses node (5) ent_g
  The actuator for function  2 is flow connection:  56 ent_g - west via ctdoor
@@ -52,14 +51,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function  3 senses node (7) unit_a
  The actuator for function  3 is flow connection:  42 unit_a - east via ctwina
@@ -67,8 +71,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  4 senses node (7) unit_a
  The actuator for function  4 is flow connection:  43 unit_a - west via ctwina
@@ -76,8 +83,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  5 senses node (8) unit_b
  The actuator for function  5 is flow connection:  44 unit_b - east via ctwina
@@ -85,8 +95,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  6 senses node (9) unt_cd
  The actuator for function  6 is flow connection:  45 unt_cd - east via ctwina
@@ -94,8 +107,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  7 senses node (10) unit_e
  The actuator for function  7 is flow connection:  46 unit_e - south via ctwina
@@ -103,8 +119,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  8 senses node (10) unit_e
  The actuator for function  8 is flow connection:  47 unit_e - east via ctwina
@@ -112,8 +131,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function  9 senses node (10) unit_e
  The actuator for function  9 is flow connection:  48 unit_e - west via ctwina
@@ -121,8 +143,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 10 senses node (11) unit_f
  The actuator for function 10 is flow connection:  49 unit_f - north via ctwina
@@ -130,8 +155,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 11 senses node (11) unit_f
  The actuator for function 11 is flow connection:  50 unit_f - east via ctwina
@@ -139,8 +167,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 12 senses node (12) unit_g
  The actuator for function 12 is flow connection:  51 unit_g - east via ctwina
@@ -148,8 +179,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 13 senses node (13) unt_hi
  The actuator for function 13 is flow connection:  52 unt_hi - east via ctwina
@@ -157,8 +191,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 14 senses node (14) unit_j
  The actuator for function 14 is flow connection:  53 unit_j - south via ctwina
@@ -166,8 +203,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 15 senses node (14) unit_j
  The actuator for function 15 is flow connection:  54 unit_j - east via ctwina
@@ -175,8 +215,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 16 senses node (14) unit_j
  The actuator for function 16 is flow connection:  55 unit_j - west via ctwina
@@ -184,8 +227,11 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            21.0 1.0 1.0
+on/off setpoint 21.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  
  The sensor for function 17 senses node (14) unit_j
  The actuator for function 17 is flow connection:  57 unit_j - ent_g via ctdoor
@@ -193,14 +239,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 18 senses node (11) unit_f
  The actuator for function 18 is flow connection:  58 unit_f - ent_g via ctdoor
@@ -208,14 +259,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 19 senses node (13) unt_hi
  The actuator for function 19 is flow connection:  59 unt_hi - ent_g via ctdoor
@@ -223,14 +279,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 20 senses node (7) unit_a
  The actuator for function 20 is flow connection:  60 unit_a - corid1 via ctdoor
@@ -238,14 +299,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 21 senses node (10) unit_e
  The actuator for function 21 is flow connection:  61 unit_e - corid1 via ctdoor
@@ -253,14 +319,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 22 senses node (12) unit_g
  The actuator for function 22 is flow connection:  62 unit_g - ent_g via ctdoor
@@ -268,14 +339,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  
  The sensor for function 23 senses node (8) unit_b
  The actuator for function 23 is flow connection:  63 unit_b - corid1 via ctdoor
@@ -283,14 +359,19 @@ of each type of control and the copy and re-assucng the sensor/actuator point.
  Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
    2  7.99 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
    3 18.00 dry bulb > flow       on / off            100.0 1.0 1.0
+on/off setpoint 100.00 direct action ON fraction 1.000.
  Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            100.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -1182,9 +1263,9 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium
-    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt
- Int    47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 Wt cotd aluminium
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 wt cotd alum : White coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  Total area of insul_mtl_p is    749.52
  
@@ -1192,7 +1273,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial)
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  Total area of door is     46.56
  
@@ -1200,7 +1281,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 Block white ptd inner (3% mc)
+    1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 block white ptd : block white painted inner
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
  Total area of mass_part is    408.50
  
@@ -1208,9 +1289,9 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
@@ -1227,10 +1308,10 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
+ Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
     2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt
- Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
+    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  Total area of roof is   1536.80
  
@@ -1238,12 +1319,12 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete
+ Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
+    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel : Gravel based
+    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
+    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  Total area of grnd_floor is   1368.00
  
@@ -1251,10 +1332,10 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete
- Int    83   24.0     2.000  2500.   880. 0.90 0.46    38.  0.01 White marble
+ Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
+    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel : Gravel based
+    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+ Int    83   24.0     2.000  2500.   880. 0.90 0.46    38.  0.01 white marble : White marble
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.294  1.346  1.230 (partition)  1.159
  Total area of entry_floor is     82.87
  
@@ -1262,7 +1343,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
+    1  104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
  Total area of susp_ceil is   5612.48
  
@@ -1270,11 +1351,11 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
-    2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
+ Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+    2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete
- Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+    4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_floor is   1355.37
  
@@ -1282,11 +1363,11 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
-    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_flr_re is   1355.37
  
@@ -1294,10 +1375,10 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 Block inner (3% mc)
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  Total area of gyp_blk_ptn is   1402.60

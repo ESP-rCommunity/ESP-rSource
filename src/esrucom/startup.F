@@ -2115,7 +2115,7 @@ C declare variables describing version and build information
       character cBase*8              ! Base version
       character cURL*256             ! Repository URL
       character cSource*32           ! Repository version
-      character cBranch*32           ! Branch name 
+      character cBranch*48           ! Branch name 
       character cRevision*32         ! Revision number 
       character cState*32            ! Flag indicating repository state.
       character cCC*32               ! Flags for compilers

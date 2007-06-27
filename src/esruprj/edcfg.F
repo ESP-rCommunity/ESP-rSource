@@ -137,7 +137,7 @@ C Controls.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,H*72,ITEMS*33,t24*24,ETEXT*82
+      character LCFGF*72,H*72,ITEMS*38,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -173,72 +173,72 @@ C are active.
       ictl=0
       ictl=ncf+ncl+ncc+ngf
       IER=0
-      WRITE(ITEMS(1),'(A,A20)') '  cfg: ',LCFGF(1:22)
-      IF(INDCFG.EQ.0)THEN
-        ITEMS(2)= 'a domains >> registration only '
+      WRITE(ITEMS(1),'(A,A20)') ' cfg file: ',LCFGF(1:22)
+      IF(INDCFG.EQ.0)THEN 
+        ITEMS(2)= 'a modelling domains >> registration'
       ELSEIF(INDCFG.EQ.1)THEN
-        ITEMS(2)= 'a domains >> building only     '
+        ITEMS(2)= 'a modelling domains >> building only'
       ELSEIF(INDCFG.EQ.2)THEN
-        ITEMS(2)= 'a domains >> plant only        '
+        ITEMS(2)= 'a modelling domains >> plant only'
       ELSEIF(INDCFG.EQ.3)THEN
-        ITEMS(2)= 'l  domains >> building & plant '
+        ITEMS(2)= 'l modelling domains >> building/plant'
       ENDIF
       ITEMS(3)   ='b model context                '
       ITEMS(4)   =' _____________________________ '
-      WRITE(ITEMS(5),'(A,I2,A)')' Zones______(',NCOMP,' included)_____'
-      ITEMS(6)   ='c   composition                ' 
-      WRITE(ITEMS(7),'(A,I2,A)')' Networks___(',nets,' included)_____'
+      WRITE(ITEMS(5),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
+      ITEMS(6)   ='c composition                ' 
+      WRITE(ITEMS(7),'(A,I2,A)')' ... Networks......(',nets,' defined)'
       if(indcfg.ge.2)then
-        ITEMS(8)='d   plant & systems (defined)  '
+        ITEMS(8)='d plant & systems (defined)  '
       else
-        ITEMS(8)='d   plant & systems            '
+        ITEMS(8)='d plant & systems            '
       endif
       if(iairn.eq.1)then
-        ITEMS(9)='e   vent/hydronic (text)       '
+        ITEMS(9)='e network flow (menu)       '
       elseif(iairn.eq.2)then
-        ITEMS(9)='e   vent/hydronic (graphic)    '
+        ITEMS(9)='e network flow (graphic)    '
       else
-        ITEMS(9)='e   vent/hydronic              '
+        ITEMS(9)='e network flow              '
       endif
       if(ientxist.gt.0)then
-        ITEMS(10)='f   electrical (defined)       '
+        ITEMS(10)='f electrical (defined)      '
       else
-        ITEMS(10)='f   electrical                 '
+        ITEMS(10)='f electrical                '
       endif
       if(nocntm.gt.0)then
-        ITEMS(11)='g   contaminants (defined)     '
+        ITEMS(11)='g contaminant (defined)     '
       else
-        ITEMS(11)='g   contaminants               '
+        ITEMS(11)='g contaminant               '
       endif
-      WRITE(ITEMS(12),'(A,I2,A)')' Controls___(',ictl,' included)_____'
+      WRITE(ITEMS(12),'(A,I2,A)')' ... Controls.....(',ictl,' defined)'
       if(ncf.eq.0)then
-        WRITE(ITEMS(13),'(A)')     'j   zones                       '
+        WRITE(ITEMS(13),'(A)')     'j zones                       '
       else
-        WRITE(ITEMS(13),'(A,I2,A)')'j   zones (',ncf,' loops)       '
+        WRITE(ITEMS(13),'(A,I2,A)')'j zones (',ncf,' loops)       '
       endif
       if(ncl.eq.0)then
-        WRITE(ITEMS(14),'(A)')     'k   plant & systems '
+        WRITE(ITEMS(14),'(A)')     'k plant & systems '
       else
-        WRITE(ITEMS(14),'(A,I2,A)')'k   plant & systems (',ncl,' loops)'
+        WRITE(ITEMS(14),'(A,I2,A)')'k plant & systems (',ncl,' loops)'
       endif
       if(ncc.eq.0)then
-        WRITE(ITEMS(15),'(A)')     'l   vent/hydronic                '
+        WRITE(ITEMS(15),'(A)')     'l network flow                '
       else
-        WRITE(ITEMS(15),'(A,I2,A)')'l   vent/hydronic (',ncc,' loops)'
+        WRITE(ITEMS(15),'(A,I2,A)')'l network flow (',ncc,' loops)'
       endif
       if(ngf.eq.0)then
-        WRITE(ITEMS(16),'(A)')     'm   global system '
+        WRITE(ITEMS(16),'(A)')     'm global system '
       else
-        WRITE(ITEMS(16),'(A,I2,A)')'m   global system (',ngf,' loops)'
+        WRITE(ITEMS(16),'(A,I2,A)')'m global system (',ngf,' loops)'
       endif
       WRITE(ITEMS(17),'(A)')       ' _____________________________   '
       ITEMS(18)  ='n define uncertainties         '
       ITEMS(19)  =' _____________________________ '
-      ITEMS(20)  =' Actions ...                   '
-      ITEMS(21)  ='o  visualisation               '
-      ITEMS(22)  ='p  simulation                  '
-      ITEMS(23)  ='q  results analysis            '
-      ITEMS(24)  ='r  reporting                   '
+      ITEMS(20)  =' ... Actions.....              '
+      ITEMS(21)  ='o visualisation                '
+      ITEMS(22)  ='p simulation                   '
+      ITEMS(23)  ='q results analysis             '
+      ITEMS(24)  ='r results reporting            '
       ITEMS(25)  =' _____________________________ '
       ITEMS(26)  ='! save model                   '
       ITEMS(27)  ='? help                         '
@@ -246,35 +246,27 @@ C are active.
       nitems=28
 
 C Help text for this menu.
-      H(1)='A model is defined within the system configuration'
-      H(2)='file which comprises several sections defining the'
-      H(3)='simulation type (zone(s) only, zones + plant, all +'
-      H(4)='explicit flow, etc.), the site, the layout, operation'
-      H(5)='and construction of zones and sytems, and the control.'
-      H(6)='Essentially, the system configuration file references'
-      H(7)='other files where the actual defining data is held.'
-      H(8)=' '
-      H(9)='The structure of this menu reflects the entities of a'
-      H(10)='system configuration file; these entities may be used'
-      H(11)='jointly and severally to define a model for'
-      H(12)='simulation.  For example, it is possible to initially'
-      H(13)='define a one zone model and to then add further'
-      H(14)='zones or a plant system at some later time.  It is'
-      H(15)='also possible to increase the resolution of'
-      H(16)='a model by, for example, increasing the number of'
-      H(17)='nodes within a wall or associating a CFD domain'
-      H(18)='with a zone.'
-      H(19)=' '
-      H(20)='Specifying a non-existent system configuration file'
-      H(21)='will cause one to be created based on default'
-      H(22)='information.'
+      H(1)='A model, as defined within the system configuration file,'
+      H(2)='comprises several entities such as simulation domain'
+      H(3)='definition, site location, geometry, construction, usage'
+      H(4)='and control. The system configuration file references'
+      H(5)='other files where the actual defining data is held.'
+      H(6)=' '
+      H(7)='The structure of this menu reflects the entities of a'
+      H(8)='system configuration file. The options may be used to'
+      H(9)='define a problem for simulation.  For example, it is'
+      H(10)='possible to initially define a single building zone and'
+      H(11)='then add further zones, plant and control later. It is'
+      H(12)='also possible to increase the resolution of a model by,'
+      H(13)='adding in a CFD domain to represent zone air movement'
+      H(14)='or plant component working fluid flow.'
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
       if(indcfg.eq.2)then
-        CALL EMENU('  Project Management',ITEMS,nitems,INO)
+        CALL EMENU('Browse/Edit/Simulate',ITEMS,nitems,INO)
       elseif(indcfg.eq.0)then
-        CALL EMENU('  Project Management',ITEMS,nitems,INO)
+        CALL EMENU('Browse/Edit/Simulate',ITEMS,nitems,INO)
       else
         if(CFGOK.AND.MODIFY)then
           MODBND=.TRUE.
@@ -303,7 +295,7 @@ C Re-draw the configuration buttons.
             CALL viewtext(ETEXT,1,1,1)
           endif
         endif
-        CALL EMENU('Model Definition',ITEMS,nitems,INO)
+        CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
       endif
       IF(INO.EQ.nitems)THEN
 
@@ -313,7 +305,7 @@ C Exit back to calling menu and clear dialogue box.
       ELSEIF(INO.EQ.nitems-1)THEN
 
 C Help text for the menu.
-        CALL PHELPD('configuration images',22,'-',0,0,IER)
+        CALL PHELPD('configuration images',14,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitems-2)THEN
 
@@ -325,18 +317,18 @@ C Save current common block information to file.
         endif
 
 C If configuration file format is version 3 then check to see if there
-C are any utility files. If found then ask is the user wants to save
+C are any utility files. If found then ask if the user wants to save
 C in older format.
-        H(1)='The current model description will be placed'
-        H(2)='into this file.'
+        H(1)='The current model description will be written to'
+        H(2)='this file.'
         DFILE=' '
         ltmp=LCFGF
-   89   CALL EASKS(ltmp,' Updated model configuration file?',
-     &    ' ',72,DFILE,'updated configuration file',IER,2)
+   89   CALL EASKS(ltmp,' ','Update system configuration file?',
+     &             72,DFILE,'update configuration file',IER,2)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCFGF=ltmp
         else
-          call usrmsg('Please re-enter the file name. ',' ','W')
+          call usrmsg('Please re-enter the file name.',' ','W')
           goto 89
         endif
         if(icfgv.eq.3)then
@@ -346,8 +338,8 @@ C in older format.
   45      CONTINUE
           if(foundutl)then
             CALL EASKAB(
-     &      ' Configuration file loaded includes legacy utility file',
-     &      ' names. Options:','Save in current format','continue',
+     &      'The loaded onfiguration file includes legacy utility',
+     &      'file names. Options:','Save in current format','continue',
      &      IW,3)
             if(IW.EQ.1)then
               icfgv=3
@@ -366,12 +358,11 @@ C Get root name and ensure that configuration file ends in .cfg.
                 write(cfgroot,'(a)') LCFGF(1:lcfgr)
                 write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
               endif
-              h(1)='This `root` word will be used to help create'
-              h(2)='system level file names (control, connections).'
-              h(3)='It is derived from the configuration file name.'
+              h(1)='This `root` name will be used in the creation'
+              h(2)='of model file names (control, connections etc).'
               t24=cfgroot
-              CALL EASKS(t24,' Root name for the project?',
-     &         '(single word <24 char)',24,'project','root name',IER,3)
+              CALL EASKS(t24,' ','Project root name (<24 chars)',
+     &                   24,'project','root name',IER,2)
               if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
             elseif(IW.eq.2)then
               goto 3
@@ -381,12 +372,12 @@ C Get root name and ensure that configuration file ends in .cfg.
 C Also check about connections file.
           if(ncon.gt.1)then
   289       H(1)='The surface topology of the model is held'
-            H(2)='in a connections file.'
+            H(2)='in the surface connections file.'
             write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
             if(LCNN(1:1).eq.' ')LCNN=DCNN
             ltmp=LCNN
-            CALL EASKS(ltmp,' Surface connections file name?',' ',
-     &        72,DCNN,'system connx file name',IER,2)
+            CALL EASKS(ltmp,' ','Surface connections file name?',
+     &        72,DCNN,'surface connx file name',IER,2)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
               LCNN=ltmp
             else
@@ -403,8 +394,8 @@ C Also check about connections file.
           DOK=.true.
           h(1)='Check to see that the disk is not full and that you'
           h(2)='have permission to write to the folder.'
-          CALL ASKOK(' ',
-     &      ' Problem creating new file! Try again?',OK,DOK,2)
+          CALL ASKOK('Problem creating new file!',
+     &      'Try again?',OK,DOK,2)
           IF(OK)GOTO 89
         ENDIF
         goto 3
@@ -414,36 +405,37 @@ C Also check about connections file.
 
 C Domains associated with the model.
         h(1)='The domains included in a model are automatically'
-        h(2)='updated as you add information to the model. You'
-        h(3)='can change this manually - but be WARNED, if you'
-        h(4)='change from building only to plant only no zone data'
-        h(5)='will be retained in the model.'
-        h(6)=' '
-        h(7)='Registration level holds site information, images'
-        h(8)='documentation prior to the creation of zones and '
-        h(9)='sytems. '
-        if(indcfg.eq.0)outs='Currently registration only (see help)'
-        if(indcfg.eq.1)outs='Currently building only (see help)'
-        if(indcfg.eq.2)outs='Currently plant only (see help)'
-        if(indcfg.eq.3)outs='Currently building and plant (see help)'
+        h(2)='updated in the system configuration file as you add'
+        h(3)='new information. While you can change the defined domain'
+        h(4)='at any time, BE WARNED - if you change from a building'
+        h(5)='only domain to a plant only domain, all zone data will'
+        h(6)='be lost from your model.'
+        h(7)=' '
+        h(8)='The `registration level` domain holds only site'
+        h(9)='information and images (i.e. no building/plant details).'
+        if(indcfg.eq.0)outs='Currently registration only'
+        if(indcfg.eq.1)outs='Currently building only'
+        if(indcfg.eq.2)outs='Currently plant only'
+        if(indcfg.eq.3)outs='Currently building and plant'
         idindcfg=INDCFG+1
         isindcfg=0
         call MENUATOL(outs,'Domain options:',
-     &    'a registration (no zones or system)',
-     &    'b building (with optional networks & CFD)',
-     &    'c plant only','d building & systems & all options',
+     &    'a registration (site details only)',
+     &    'b building (+ optional networks & CFD)',
+     &    'c plant only',
+     &    'd building & plant (+ all options)',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isindcfg,idindcfg,9)
         if(isindcfg.eq.0)then
           continue
         elseif(isindcfg-1.ne.indcfg)then
           dok=.false.
-          h(1)='Normally the simulation domains included in a model'
-          h(2)='will be updated automatically as new information is'
-          h(3)='added. Changing these manually can revise your model'
-          h(4)='considerably: for example if you have zones and plant'
-          h(5)='defined and you change to plant only, all references'
-          h(6)='to zone geometry will be removed. The files will still'
-          h(7)='exist, but you will have to re-establish the referencs.'
+          h(1)='Normally the domains included in a model are updated'
+          h(2)='automatically as new information is added. Changing'
+          h(3)='the domain can have a significant impact: for example,'
+          h(4)='if the domain is `building and plant` and you change'
+          h(5)='it to `plant only`, all references to the building'
+          h(6)='zones will be removed. The zone files will still exist'
+          h(7)='but would need to be reattached to the model.'
           call askok('Are you sure you want to change the domains',
      &      'in the model? (you might lose information)',ok,dok,7)
           if(ok)then
@@ -468,7 +460,7 @@ C Model context.
         IF(CFGOK)THEN
           CALL EDSITE(ITRC,IER)
         ELSE
-          CALL USRMSG(' ',' Please define your model first!','W')
+          CALL USRMSG('Please define your model first!',' ','W')
         ENDIF
         goto 3
       elseif(INO.EQ.6)THEN
@@ -480,19 +472,19 @@ C Go to zones definintion menu.
 C Plant network description, ask for plant network file and then
 C display it before starting up editing facilities.
         IF(.NOT.CFGOK)THEN
-          CALL USRMSG(' ',' Please define your model first!','W')
+          CALL USRMSG('Please define your model first!',' ','W')
           GOTO 3
         ELSE
           if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
             dok=.false.
-            h(1)='A plant network contains descriptions of detailed'
-            h(2)='system components (e.g. boilers) which support'
-            h(3)='higher resolution performance assessments. Unless'
-            h(4)='you have access to component data DO NOT use this'
-            h(5)='facility. '
+            h(1)='A plant network file holds the definition of a'
+            h(2)='system, the purpose of which is usually to supply'
+            h(3)='the building with heat, coolth and/or power. Unless'
+            h(4)='you have access to a suitable components database,'
+            h(5)='DO NOT use this facility.'
             CALL ASKOK(
-     &      'Currently there is no plant network associated with the',
-     &      'model. Create/ select one? (see help)',OK,DOK,5)
+     &      'Currently there is no plant network associated with',
+     &      'the model. Create/select one?',OK,DOK,5)
             if(.NOT.ok)goto 3
             if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
               WRITE(LPNF,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.pln'
@@ -502,23 +494,24 @@ C display it before starting up editing facilities.
             endif
             clkok=.false.
             ltmp=LPNF
-            H(1)='The plant network description file defines plant'
-            H(2)='components and topology. '
-            CALL EASKS(ltmp,' Plant network definition file?',' ',72,
+            H(1)='The plant network file defines plant components'
+            H(2)='and their connection topology.'
+            CALL EASKS(ltmp,' ','Plant network definition file?',72,
      &        DPNF,'plant network file',IER,2)
             goto 46
           endif
-          H(1)='The plant network description file defines plant'
-          H(2)='components and topology. If you supply an existing'
-          H(3)='file it will be used, otherwise a new file will'
-          H(4)='be created.'
-          H(5)='The dereference option clears the name of the plant '
-          H(6)='file but does not alter plant description. '
-          H(7)='You can re-establish this domain by including '
-          H(8)='the file name. '
+          H(1)='The plant network file defines plant components and'
+          H(2)='topology. If you supply an existing file it will be'
+          H(3)='used, otherwise a new file will be created.'
+          H(4)=' '
+          H(5)='The dereference option removes the name of the plant'
+          H(6)='network file from the system configuration file but'
+          H(7)='does not delete it. The plant domain can later be'
+          H(8)='re-established by rintrosucting the configuration'
+          H(9)='file reference.'
           ltmp=LPNF
  301      CALL EASKSCMD(ltmp,' Plant network definition file?',' ',
-     &      'dereference',clkok,72,DPNF,'plant network file',IER,8)
+     &      'dereference',clkok,72,DPNF,'plant network file',IER,9)
           call usrmsg(' ',' ','- ')
 
 C If user wishes to deselect the current file name to
@@ -548,7 +541,7 @@ C plant network or edit the existing network.
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LPNF=ltmp
           else
-            call usrmsg('Please re-enter the file name. ',' ','W')
+            call usrmsg(' ','Re-enter file name.','W')
             goto 301
           endif
 
@@ -556,17 +549,17 @@ C plant network or edit the existing network.
           call FINDFIL(LPNF,XST)
           if(.not.xst) then
             dok=.false.
-            h(1)='Did not find the file, indicate ok if you want '
-            h(2)='this to be a new plant network. '
-            CALL ASKOK(' This is a NEW plant network file.',
-     &        ' Proceed with plant network description?',OK,dok,2)
+            h(1)='File not found, select `OK` if you want this file'
+            h(2)='to hold the definition of a new plant network.'
+            CALL ASKOK('This is a new plant network file.',
+     &        'Proceed with network description?',OK,dok,2)
             ipedit=0
           else
             dok=.true.
-            h(1)='An existing file was found, if you want to use it'
-            h(2)='or modify it indicate ok. '
-            CALL ASKOK(' Found existing plant network file. ',
-     &        ' Proceed with plant network description?',OK,dok,2)
+            h(1)='Found an existing file, select `OK` if you want to'
+            h(2)='use or modify it.'
+            CALL ASKOK('Found existing plant network file.',
+     &        'Use or modify it?',OK,dok,2)
             ipedit=1
           endif
           if(OK)then
@@ -605,46 +598,32 @@ C If an error has been encountered then reset the configuration type.
 C Flow description.
         H(1)='It is possible to schedule air flowing from the'
         H(2)='outside (infiltration) and from specified zones or'
-        H(3)='plant components (ventilation).  This is sometimes'
+        H(3)='plant components (ventilation). This is sometimes'
         H(4)='appropriate at an early design stage and for flow'
         H(5)='problems of limited complexity.'
         H(6)=' '
-        H(7)='The flow network approach is based on the use of'
-        H(8)='flow components, representing doors, cracks, ducts,'
-        H(9)='fans, etc, to explicitly represent the distributed'
-        H(10)='leakage for numerical solution.  This approach '
-        H(11)='requires significantly more information.'
-        H(12)=' '
-        H(13)='A related facility, as described elsewhere, allows'
-        H(14)='a CFD domain to be linked to this flow network so'
-        H(15)='that intra-zone flows can be evaluated as a function'
-        H(16)='of the flows throughout the overall model.'
-        H(17)=' '
-        H(18)='Flow networks can be represented as a text-based  '
-        H(19)='network or a network of icons (otherwise known as a'
-        H(20)='graphic network). Both are made up of lists of'
-        H(21)='nodes, components and connections. The latter is '
-        H(22)='manipulated by an application called `net` and the'
-        H(23)='text-based version is edited within the project '
-        H(24)='manager. '
-        H(25)=' '
-        H(26)='Note that a text-based network is a sub-set of the'
-        H(27)='information within a graphic network file, so a text-'
-        H(28)='based file can be derived from a graphic flow network'
-        H(29)='but the reverse is not possible.'
+        H(7)='The flow network approach employs flow components'
+        H(8)='(doors, cracks, ducts, fans etc.) to explicitly'
+        H(9)='represent the distributed flow paths. This approach'
+        H(10)='requires significantly more defining information.'
+        H(11)='(A related facility, described elsewhere, allows'
+        H(12)='a CFD domain to be linked to this flow network so'
+        H(13)='that intra-zone flows can be evaluated under the'
+        H(14)='influence of the above flow network.)'
+        H(14)=' '
+        H(14)='Flow networks may be defined by selecting components'
+        H(14)='from a menu or by graphical manipulation.'
         if(iairn.eq.1)then
-          call edisp(iuout,'Ventilation/hydronic network (text).')
+          call edisp(iuout,'Flow network (menu).')
         elseif(iairn.eq.2)then
-          call edisp(iuout,'Ventilation/hydronic network (graphic).')
+          call edisp(iuout,'Flow network (graphic).')
         else
           call edisp(iuout,'No network defined.')
         endif
 
-C << version with external agent >>
-C        CALL EASKABCD(' Define air movement',
-C     &    ' via:','schedules','network','network agent','continue',IW,16)
-        CALL EASKABCD(' Define air movement',' via:',
-     &    'schedules','network','graphic network','continue',IW,29)
+        CALL EASKABCD(' ','Define air flow via:',
+     &       'schedule','flow network (menu)','flow network (graphic)',
+     &       'cancel',IW,14)
         IF(IW.EQ.1)THEN
 
 C Operation file creation and editing. Set IVER to zero to signal
@@ -689,13 +668,14 @@ C unix and non-unix machine types).
           endif
           LFIL=LAPROB
 
-C Graphic network. Create a summery file of zone domain information
+C Graphic network. Create a summary file of zone domain information
 C for `net` to use. Begin by reading current pressure database. Write
-C to the unit number 42.
+C to unit number 42.
           call tstamp('>','PRJ: export to graphic agent')
           CALL ERPRCDB(LAPRES,0,3,IER)
           if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,'Error opening pressure coef. database.')
+            CALL EDISP(IUOUT,'Error opening pressure coefficients db!.')
+            call edisp(iuout,' ')
             goto 3
           endif 
           lenlfil=lnblnk(LFIL)
@@ -754,11 +734,9 @@ C lowest and highest point and cog of surface.
           CALL ERPFREE(42,ios)
           DFILE='network_flow.gnf'
           h(1)='This is the network graphics file generated by the'
-          h(2)='net tool. If it contains information about a flow'
-          h(3)='network it can be used as a replacement for a non-'
-          h(4)='graphic flow network description.'
-          CALL EASKS(LFIL,' Network graphics file? ',' ',72,
-     &      DFILE,'network file open',IER,4)
+          h(2)='`net` tool.'
+          CALL EASKS(LFIL,' ','Network graphics file?',72,
+     &      DFILE,'network file open',IER,2)
 
 C Check if this file exists. If it does not fill a few of the
 C graphic network commons and write out a minimal file for
@@ -837,30 +815,31 @@ C Link nodes and zones.
           DO 33 IZ=1,NCOMP
             if(ICAAS(IZ).gt.0)then
               write(outs,'(3A)')zname(IZ)(1:lnblnk(zname(IZ))),
-     &          ' is currently linked to: ',NDNAM(ICAAS(IZ))
-              h(1)='You can have nodes which are not linked to a'
-              h(2)='thermal zone, but if you do link nodes and zones'
-              h(3)='then their temperature will match the zone. '
-              CALL EASKABC(outs,' ','accept',
-     &          'select another','free link',iacc,3)
+     &          'is currently linked to:',NDNAM(ICAAS(IZ))
+              h(1)='You may have nodes that are not linked to a zone'
+              h(2)='but where network nodes and zones are linked, the'
+              h(3)='temperature of the former will be matched to the'
+              h(4)='latter. '
+              CALL EASKABC(outs,' ','ok',
+     &          'select another','free link',iacc,4)
               if(iacc.eq.1)then
                 goto 33
               elseif(iacc.eq.2)then
                 IC=0
-                call ASKRNOD(' available nodes','-',IC,IER)
+                call ASKRNOD('available nodes','-',IC,IER)
                 ICAAS(IZ)=IC
               else
                 ICAAS(IZ)=0
               endif
             else
               write(outs,'(A,A)') zname(IZ)(1:lnblnk(zname(IZ))),
-     &          ' has no mass flow node. '
-              CALL EASKAB(outs,' ','accept','select a node',iacc,3)
+     &          'has no mass flow node.'
+              CALL EASKAB(outs,' ','ok','select a node',iacc,3)
               if(iacc.eq.1)then
                 ICAAS(IZ)=0
               elseif(iacc.eq.2)then
                 IC=0
-                call ASKRNOD(' available nodes','-',IC,IER)
+                call ASKRNOD('available nodes','-',IC,IER)
                 ICAAS(IZ)=IC
               endif
             endif
@@ -873,18 +852,19 @@ C Clear zmfn1 & zmfn2 so that updated data will be written in cfg file.
 C Save the configuration file so that connections and graphic mass flow
 C network are know.
           dok=.true.
-          h(1)='You have been working on an independant description of '
-          h(2)='a flow network. To use it in a simulation you need to '
-          h(3)='associate it with zones in the current model. '
-          CALL ASKOK(' Save graphic flow network links to zones',
-     &      ' in the configuration file? ',OK,dok,3)
+          h(1)='You have been working on an independant description of'
+          h(2)='a flow network. To use it in a simulation you need to'
+          h(3)='associate it with zones in the current model.'
+          CALL ASKOK('Save graphic flow network links to zones',
+     &      'in the configuration file?',OK,dok,3)
           IF(OK)then
             IAIRN=2
             LAPROB=NWKFLNAM
-            call edisp(iuout,' ')
-          call edisp(iuout,' Updating configuration flow links...')
+            call edisp(iuout,'Updating configuration flow links...')
             CALL EMKCFG('-',IER)
-          call edisp(iuout,' Updating configuration flow links...done.')
+            call edisp(iuout,
+     &                  'Updating configuration flow links...done.')
+            call edisp(iuout,' ')
           endif
 
 C << version with external agent >>
@@ -937,16 +917,11 @@ C Optical << future position >>.
       ELSEIF(INO.EQ.18)THEN
 
 C Call uncertainty definition controller.
-        H(1)=' This option should be used with care '
-        H(2)=' since it is still under development. '
-        H(3)=' Consequently it is password protected. '
-        H(4)=' '
-        H(5)=' The password is available from ESRU  '
-        H(6)='    Email: esru@strath.ac.uk  '
-        H(7)='    Tele: +44 141 548 3986  '
-        H(8)='    Fax:  +44 141 552 8513  '
-        call easki(IPASS,' ',' Password ? ',
-     &                            0,'-',0,'-',0,'password',IER,8)
+        H(1)='This option is password protected because it is'
+        H(2)='under development and so must be used with care.'
+        H(4)='The password is available from ESRU on request.'
+        call easki(IPASS,' ','Password?',
+     &                            0,'-',0,'-',0,'password',IER,4)
         if (IPASS.eq.101) then
           call tstamp('>','PRJ: enter uncertainty control')
           call UNCERTA(LUALF)
@@ -956,10 +931,10 @@ C Call uncertainty definition controller.
 C Select visualisation option.
         IF(CFGOK)THEN
           H(1)='In addition to the in-built perspective view you can'
-          H(2)='request a hidden line view of the model or send '
-          H(3)='it to be rendered within a visual simulator. '
-          CALL EASKABC('Visualisation options:',' ','Wireframe',
-     &      'Colour rendered','continue',IW,3)
+          H(2)='request a hidden line view of the model or send'
+          H(3)='it to be rendered by Radiance.'
+          CALL EASKABC(' ','Visualisation options:','hidden line',
+     &      'colour rendered','cancel',IW,3)
           if(IW.eq.1)then
             call visualz('V',ier)
           elseif(IW.eq.2)then
@@ -968,7 +943,7 @@ C Select visualisation option.
             goto 3
           endif
         ELSE
-          CALL USRMSG(' ',' Please define your model first!','W')
+          CALL USRMSG(' ','Please define your model first!','W')
         ENDIF
         goto 3
       ELSEIF(INO.EQ.22)THEN
@@ -1036,7 +1011,7 @@ C Set folder separator (fs) to \ or / as required.
                   endif
                 endif
 C Debug.
-                write(6,*) 'remote so reset tfile to ',longtfile
+C                write(6,*) 'remote so reset tfile to ',longtfile
               endif
               havefile=.true.
             else
@@ -1044,8 +1019,9 @@ C Debug.
               havefile=.false.
             endif
             call edisp(iuout,
-     &        'Take a note of the results file used...')
+     &            'Take a note of the results file used.')
             call edisp248(iuout,longtfile,100)
+            call edisp(iuout,' ')
           else
             if(sblres(isset)(1:2).ne.'  '.and.
      &         sblres(isset)(1:4).ne.'UNKN')then
@@ -1067,7 +1043,7 @@ C Debug.
                   endif
                 endif
 C Debug.
-                write(6,*) 'remote so reset tfile to ',longtfile
+C                write(6,*) 'remote so reset tfile to ',longtfile
               endif
               havefile=.true.
             else
@@ -1075,8 +1051,9 @@ C Debug.
               havefile=.false.
             endif
             call edisp(iuout,
-     &        'Take a note of the results file used...')
+     &        'Take a note of the results file used.')
             call edisp248(iuout,longtfile,100)
+            call edisp(iuout,' ')
           endif
         else
 
@@ -1087,8 +1064,9 @@ C file name that the user might have given.
           else
             tfile='libb'
           endif
-          call edisp(iuout,'Take a note of the results file used...')
+          call edisp(iuout,'Take a note of the results file used.')
           call edisp248(iuout,longtfile,100)
+          call edisp(iuout,' ')
         endif
         call tstamp('>','PRJ: beginning res')
         doit = ' '
@@ -1125,7 +1103,7 @@ C an offset from prj start position.
           endif
           call edisp(iuout,doit)
         endif
-        call usrmsg('starting assessment recovery via',doit,'-')
+        call usrmsg('Starting assessment recovery via',doit,'-')
         call runit(doit,tmode)
 
       ELSEIF(INO.EQ.24)THEN
@@ -1225,7 +1203,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LCFGF*72,H*72,ITEMS*33,SFIL*72
+      character LCFGF*72,H*72,ITEMS*32,SFIL*72
       character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SSPARENT*12
       CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
       CHARACTER jsmlcn*12,jsvfc*4,jsotf*4,jsother*15,jsname*12
@@ -1252,30 +1230,31 @@ C Begin with high level menu.
       IUF=IFIL+2
     3 INO=-3
       IER=0
-      WRITE(ITEMS(1),'(A,I3,A)') ' Zones ...    (',NCOMP,' included)'
-      ITEMS(2)   ='a  geometry & attribution        '
-      ITEMS(3)   ='b  constructions                 '
-      ITEMS(4)   ='c  operation                     '
-      ITEMS(5)   =' _____________________________   '
-      WRITE(ITEMS(6),'(A,I4,A)') ' Topology ... (',NCON,' connections)'
-      ITEMS(7)   ='d  connections & anchors         '
-      ITEMS(8)   =' _____________________________   '
-      ITEMS(9)   =' Options ...                     ' 
-      ITEMS(10)  ='f  shading & insolation          '   
-      ITEMS(11)  ='g  convection calculations       ' 
-      ITEMS(12)  ='h  view factors & radiant sensors'
-      ITEMS(13)  ='i  casual gains control          '
-      ITEMS(14)  ='j  computational fluid dynamics  '
-      ITEMS(15)  ='k  adaptive gridding & moisture  '
-      ITEMS(16)  =' _____________________________   '    
-      ITEMS(17)  =' Special components ...          '
-      ITEMS(18)  ='m  building-integrated renewables'
-      ITEMS(19)  ='n  active materials              '
-      ITEMS(20)  ='o  advanced optics               '
-      ITEMS(21)  =' _____________________________   '
-      ITEMS(22)  ='* global tasks                   '
-      ITEMS(23)  ='? help                           '
-      ITEMS(24)  ='- exit this menu                 '
+      WRITE(ITEMS(1),'(A,I3,A)') ' .... Zones ....(',NCOMP,' defined)'
+      ITEMS(2)   ='a geometry & attribution        '
+      ITEMS(3)   ='b construction materials        '
+      ITEMS(4)   ='c operational details           '
+      ITEMS(5)   =' _____________________________  '
+      WRITE(ITEMS(6),'(A,I4,A)') ' .... Topology ....(',NCON,
+     &               ' connects)'
+      ITEMS(7)   ='d connections & anchors         '
+      ITEMS(8)   =' _____________________________  '
+      ITEMS(9)   =' .... Options ....              ' 
+      ITEMS(10)  ='f shading & insolation          '   
+      ITEMS(11)  ='g convection coefficients       ' 
+      ITEMS(12)  ='h view factors & radiant sensors'
+      ITEMS(13)  ='i casual gain control           '
+      ITEMS(14)  ='j computational fluid dynamics  '
+      ITEMS(15)  ='k adaptive gridding & moisture  '
+      ITEMS(16)  =' _____________________________  '    
+      ITEMS(17)  =' .... Special components ....   '
+      ITEMS(18)  ='m integrated renewables'
+      ITEMS(19)  ='n active materials              '
+      ITEMS(20)  ='o advanced optics               '
+      ITEMS(21)  =' _____________________________  '
+      ITEMS(22)  ='* global tasks                  '
+      ITEMS(23)  ='? help                          '
+      ITEMS(24)  ='- exit this menu                '
       nitems=24
 
 C If user has defined model and perhaps resized the display then
@@ -1307,50 +1286,48 @@ C (Re)Set all surfaces to standard line width.
       endif
 
 C Help text for this menu.
-      H(1)='This menu provides facilities to define zone-level'
-      H(2)='data including geometry & surface attributes,'
-      H(3)='constructions, schedules, shading & insolation,'
-      H(4)='convection calculations, view factor, etc.  It also'
-      H(5)='supports the definition of contiguity and surface'
-      H(6)='boundary conditions'
+      H(1)='This menu provides facilities to create, browse'
+      H(2)='and edit zone-level data such as geometry and'
+      H(3)='construction, schedules and miscellaneous technical'
+      H(4)='data relating to CFD, casual gain control etc.'
 
-      CALL EMENU('Zones Definition',ITEMS,nitems,INO)
+      CALL EMENU('Zones Composition',ITEMS,nitems,INO)
       IF(INO.EQ.nitems)THEN
 
 C Exit back to calling menu and clear dialogue box.
         CALL USRMSG(' ',' ','-')
         RETURN
       elseif(INO.EQ.nitems-1)THEN
-        CALL PHELPD('zones definition',6,'-',0,0,IER)
+        CALL PHELPD('zones definition',4,'-',0,0,IER)
       elseif(INO.EQ.nitems-2)THEN
 
-C Global tasks such as transforms, rotations, attributions.
-        h(1)='You can apply transforms and rotations to one or more'
-        h(2)='zones in the model. Global attribution allows for '
-        h(3)='surfaces matching some criteria (i.e. vertical &'
-        h(4)='opaque) to be given a particular attribute.'
-        call EASKATOG(' Global tasks (ie. to several zones):',' ',
+C Global actions such as transforms, rotations, attributions.
+        h(1)='Transforms and rotations may be applied to one or more'
+        h(2)='zones in the model. Global attribution allows all'
+        h(3)='surfaces matching some criteria (e.g. vertical and'
+        h(4)='opaque) to be assigned a particular attribute.'
+        call EASKATOG(' Global action?',' ',
      &    'transform','rotate','attribute','search & replace',
      &    'cancel',' ',' ',IRT,4)
         if(IRT.eq.1)then
 
 C Ask for transform distance then which zones and then apply.
-          H(1)='Transform shifts each zone & its solar obstructions'
-          H(2)='by a given amount in each axis.'
+          H(1)='A transform shifts each zone & its solar obstructions'
+          H(2)='by a given amount along each axis.'
           hold = ' 0.0  0.0  0.0'
           clkok=.false.
-  43      CALL EASKSCNCL(HOLD,'Transform (X Y Z metres):',' ','cancel',
-     &      clkok,32,' 0. 0. 0.','transforms XYZ',IER,2)
+  43      CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ','cancel',
+     &                  clkok,32,' 0. 0. 0.','transforms XYZ',IER,2)
           if(clkok) goto 3
           K=0
           CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
           CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
           CALL EGETWR(HOLD,K,VALZ,-99.,99.,'W','Z tr',IER)
           if(ier.ne.0)goto 43
-          H(1)=' Pick one, several or all zones for inclusion'
+          H(1)=' Pick one, several or all zones for inclusion.'
           INPIC=NCOMP
-          CALL EPICKS(INPIC,IVALS,' ',' Which zones to transform: ',
-     &      12,NCOMP,zname,' zone list',IER,1)
+          CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
+     &                12,NCOMP,zname,'zone list',IER,1)
           IF(INPIC.EQ.0)GOTO 3
           DO 83 IZ=1,INPIC
             IF(IVALS(IZ).GT.0)THEN
@@ -1380,8 +1357,8 @@ C Transform any MRT sensors associated with this zone.
                 if (NCUB.gt.0) then
                   write(outs,'(2a)') zn(1:lnblnk(zn)),' as well?'
                   dok=.true.
-                  h(1)='You rotated the zone, you probably also want'
-                  h(2)='to rotate the sensors so match.'
+                  h(1)='You have rotated the zone and probably also'
+                  h(2)='want to rotate the sensors to match.'
                   call askok('Transform MRT sensors of',outs,OK,dok,2)
                   if (OK) then
                     do 73 ij=1,NCUB
@@ -1395,14 +1372,15 @@ C Transform any MRT sensors associated with this zone.
                 endif
               endif
 
-C If there is an obstructions file, loop through each and transform origin.
+C If there is an obstructions file, loop through each and
+C transform origin.
               IF(IOBS(IICOMP).EQ.1)THEN
                 dok=.true.
                 write(outs,'(4a)') 'Transforms obstructions of ',
      &            zn(1:lnblnk(zn)),' in ',
      &            ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
-                h(1)='You rotated the zone(s) so you probably also '
-                h(2)='will want to rotate the associated obstructions.'
+                h(1)='You rotated the zone(s) and so will probably'
+                h(2)='also want to rotate associated obstructions.'
                 call askok(outs,' ?',OK,dok,2)
                 if(OK)then
                   CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
@@ -1427,30 +1405,31 @@ C If there is an obstructions file, loop through each and transform origin.
 C Rotation degree and choices.
           H(1)='The rotation is applied to all selected zones about'
           H(2)='a common point or the site origin. Positive is  '
-          H(3)='anticlockwise. '
+          H(3)='anticlockwise.'
           VAL=0.
-          CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
-     &      -359.0,'W',359.0,'W',0.0,'rotation',IER,3)
+          CALL EASKR(VAL,' ','Rotation (degrees, +ve anticlockwise)?',
+     &                 -359.0,'W',359.0,'W',0.0,'rotation',IER,3)
           if(VAL.LT.-.01.OR.VAL.GT..01)then
-            CALL EASKABC(' Rotation choices :',' ',
+            CALL EASKABC(' ','Rotation choice?',
      &        'site origin','user specified X & Y','cancel ?',IRTP,3)
             if(IRTP.eq.1)then
               x1=0.
               y1=0.
             elseif(IRTP.EQ.2)THEN
-              H(1)='Point is in the site coordinate system.'
+              H(1)='The point is relative to the site'
+              H(2)='Tcoordinate system.'
               x1=0.
-              CALL EASKR(x1,' ',' X point (metres) ? ',
-     &          0.0,'-',0.0,'-',0.0,'x point',IER,1)
+              CALL EASKR(x1,' ','X point (m)?',
+     &          0.0,'-',0.0,'-',0.0,'x point',IER,2)
               y1=0.
-              CALL EASKR(y1,' ',' Y point (metres) ? ',
+              CALL EASKR(y1,' ','Y point (m)?',
      &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
             elseif(IRTP.EQ.3)THEN
               goto 3
             endif
-            H(1)=' Pick one, several or all zones to rotate.'
+            H(1)='Pick one, several or all zones to rotate.'
             INPIC=NCOMP
-            CALL EPICKS(INPIC,IVALS,' ',' Which zones to rotate: ',
+            CALL EPICKS(INPIC,IVALS,' ','Zones to rotate?',
      &        12,NCOMP,zname,' zone list',IER,1)
             IF(INPIC.EQ.0)GOTO 3
             call tstamp('>','PRJ: zone rotation')
@@ -1506,7 +1485,7 @@ C Rotate any MRT sensors associated with this zone.
 C Rotate any obstructions associated with this zone.
                 IF(IOBS(IICOMP).EQ.1)THEN
                   dok=.true.
-                  h(1)='You rotated the zone and you probably will'
+                  h(1)='You rotated the zone and so will probably'
                   h(2)='want to rotate the solar obstructions which'
                   h(3)='are associated with it as well. '
                   write(outs,'(4a)') 'Rotate obstructions of ',
@@ -1700,12 +1679,12 @@ C Read the geometry to fill in the data below.
           endif
           LGEOM(NCOMP)=DFILE
 
-          H(1)='The zone description allows further information about'
-          H(2)='the zone form and composition to be recorded.  '
+          H(1)='The zone description allows information about'
+          H(2)='zone form and composition to be recorded.'
           write(zd,'(a,a)') 
-     &      zname(NCOMP)(1:lnblnk(zname(NCOMP))),' describes a...'
-  40      CALL EASKS(zd,' What does it represent ',
-     &      ' ( <64 char) ?',64,'no description entered','zone descr',
+     &      zname(NCOMP)(1:lnblnk(zname(NCOMP))),' describes a '
+  40      CALL EASKS(zd,'What does it represent?',
+     &      ' (<64 char)',64,'no description entered','zone descr',
      &      IER,2)
           IF(zd.eq.' '.or.ier.ne.0)goto 40
           zdesc(NCOMP)=zd
@@ -1723,8 +1702,8 @@ C file and then recover the zone commons.
             h(6)=' b) do not copy the obstructions. Optionally you'
             h(7)='    can reference the original obstructions (via'
             h(8)='    the project files menu).'
-            CALL ASKOK('Also copy obstructions of source zone?',
-     &        '(see help)',OKOB,dok,8)
+            CALL ASKOK(' ','Also copy obstructions of source zone?',
+     &        OKOB,dok,8)
             if(OKOB)then
               CALL ESCZONE(NCOMP)
               call FINDFIL(ZOBS(IC),XST)
@@ -1784,21 +1763,21 @@ C Zone rotations and transforms.
           h(3)='point of rotation is the first vertex of the zone.'
           CALL ASKOK(' ',' Rotate the copied zone',OKZR,dok,3)
           if(OKZR)then
-            H(1)='The rotation is applied around vertex 1 and '
-            H(2)='positive is anticlockwise. '
+            H(1)='The rotation is applied around vertex 1,'
+            H(2)='positive is anticlockwise.'
             VAL=0.
-            CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
+            CALL EASKR(VAL,' ',' Rotation (deg., +ve anticlockwise)?',
      &        -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
             if(VAL.LT.-.01.OR.VAL.GT..01)then
 
 C Rotation choices.
-             H(1)='The traditional rotation is about vertex 1 of the'
-             H(2)='zone with a positive angle being anticlockwise. '
-             H(3)='You may wish to rotate a zone about the site '
-             H(4)='origin X=0., Y=0. or at a user specified point. '
-              CALL EASKABCD(' Rotation choices :',' ',
-     &         'Vert 1 of zone','Site origin',
-     &         'User specified X & Y','continue ?',IRT,4)
+             H(1)='The default rotation is about vertex 1 of the'
+             H(2)='zone with a positive angle denoting anticlockwise.'
+             H(3)='You may change this to rotate the zone about the'
+             H(4)='site origin or a specified point.'
+              CALL EASKABCD(' ','Rotation choices:',
+     &         'vertex 1 of zone','site origin',
+     &         'specified X & Y','cancel',IRT,4)
               call usrmsg(' ',' ','-')
               if(IRT.eq.1)then
                 x1=X(1)
@@ -1915,22 +1894,20 @@ C Ask if user wants to copy or point to other zone files.
 C Construction and zone TMC file.
           call FINDFIL(LTHRM(IC),XST)
           if(XST)then
-            h(1)='You can have the new zone constructions based '
+            h(1)='You can have the new zone constructions based'
             h(2)='on the source zone (by copying the file)'
             h(3)='or by pointing to the file (exercise care)'
-            h(4)='or browse available files or continue without '
-            h(5)='defining constructions at this time. '
-            CALL EASKATOG(
-     &        'Source zone has a constructions file (see help)',
-     &        ' ','copy source file','point to source file',
-     &        'browse','continue',' ',' ',' ',irop,5)
+            h(4)='or browse available files or continue without'
+            h(5)='defining constructions at this time.'
+            CALL EASKATOG(' ','Source zone has a constructions file:',
+     &        'copy source file','use source file',
+     &        'browse','cancel',' ',' ',' ',irop,5)
           else
-            h(1)='You can have the new zone constructions by '
-            h(2)='browing available files or continue without '
-            h(3)='defining constructions at this time. '
-            CALL EASKATOG(
-     &        'Source zone has no constructions file (see help)',
-     &        ' ','-','-','browse','continue',' ',' ',' ',irop,3)
+            h(1)='You can have the new zone constructions by'
+            h(2)='browing available files or continue without'
+            h(3)='defining constructions at this time.'
+            CALL EASKATOG(' ','Source zone has no constructions file:',
+     &        '-','-','browse','cancel',' ',' ',' ',irop,3)
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
 
@@ -1960,7 +1937,7 @@ C Also update lodlabel commons before writing out.
             H(2)='data for the zone surfaces.'
             CALL EASKS(CFILE,' New construction file name:',
      &        ' ',72,'new.con','construction file',IER,2)
-            IF(CFILE(1:2).NE.'  ')THEN
+            IF(CFILE.NE.'  ')THEN
               QUIET=.false.
               write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
               CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
@@ -1972,8 +1949,8 @@ C Update itmcfl for the new zone.
    61           continue
                 H(1)='A zone tmc file contains optical data for the'
                 H(2)='data zone surfaces.'
-                CALL EASKS(DFILE,' New zone tmc file name:',
-     &            ' ',72,'new.tmc','tmc file',IER,2)
+                CALL EASKS(DFILE,' ','New zone tmc file name:',
+     &                         72,'new.tmc','tmc file',IER,2)
                 if(DFILE(1:2).NE.'  ')then
                   write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
                   ITW(NCOMP)=1
@@ -1997,7 +1974,6 @@ C Point to source zones file.
 C Find out if there are construction files in the model ../zones folder.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','con',sfile,snpfile,nfile,
      &          iier)
             if(nfile.gt.0)then
@@ -2019,7 +1995,6 @@ C Find out if there are tmc files in the model ../zones folder.
             if(ITW(IC).eq.1)then
               sfile=' '
               snpfile=' '
-              call edisp(iuout,' ')
               call browsefilelist('?','zon','tmc',sfile,snpfile,nfile,
      &          iier)
               if(nfile.gt.0)then
@@ -2051,16 +2026,16 @@ C point to it, otherwise offer option to browse for an existing file.
             h(4)='or browse available files or continue without '
             h(5)='defining operations at this time. '
             CALL EASKATOG(
-     &        'Source zone has an operations file (see help)',
-     &        ' ','copy of source file','point to source file',
-     &        'browse','continue',' ',' ',' ',irop,5)
+     &        'Source zone has an operations file.',
+     &        'Options:','copy file','point to file',
+     &        'browse file','cancel',' ',' ',' ',irop,5)
           else
-            h(1)='You can have the new zone operations by '
-            h(2)='browing available files or continue without '
-            h(3)='defining operations at this time. '
+            h(1)='You can have the new zone operations by'
+            h(2)='browing available files or continue without'
+            h(3)='defining operations at this time.'
             CALL EASKATOG(
-     &        'Source zone has no operations file (see help)',
-     &        ' ','-','-','browse','continue',' ',' ',' ',irop,3)
+     &        'Source zone has no operations file.',
+     &        'Options:','-','-','browse','cancel',' ',' ',' ',irop,3)
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -2076,10 +2051,10 @@ C Read in source operations and write out to file for new zone.
 C Also update lodlabel commons before writing out.
             CALL ERPFREE(IUF,ISTAT)
             CALL EROPER(0,iuout,IUF,IC,IER)
-   91       H(1)='A zone operation file contains schedules of air '
+   91       H(1)='A zone operation file contains schedules of air'
             H(2)='flow and casual gains.'
-            CALL EASKS(DFILE,' New operations file name:',
-     &        ' ',72,'new.opr','operations file',IER,2)
+            CALL EASKS(DFILE,' New zone operations file name:',
+     &         ' ',72,'new.opr','operations file',IER,2)
             IF(DFILE.NE.' ')THEN
               LPROJ(NCOMP)=DFILE
               lodlabel(ncomp,1)=lodlabel(ic,1)
@@ -2097,7 +2072,6 @@ C Also update lodlabel commons before writing out.
 C Find out if there are operation files in the model ../zones folder.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','opr',sfile,snpfile,nfile,
      &        iier)
             if(nfile.gt.0)then
@@ -2119,15 +2093,15 @@ C                write(6,*) DFILE
 
 C See if the source zone has a viewfactor file.
           if(IVF(ic).eq.1)then
-            h(1)='The new zone viewfactors can be based initially'
-            h(2)='on the source zone (by copying the file) or you'
-            h(3)='can point to the source zone file (use care because'
+            h(1)='The new zone view factors file can be based on the'
+            h(2)='source zone (by copying the file) or you can'
+            h(3)='point to the source zone file (use care because'
             h(4)='the two zones may change shape) or browse available '
             h(5)='files or continue. '
             CALL EASKATOG(
-     &        'Source zone has a viewfactor file (see help)',
-     &        ' ','copy source file','point to source file',
-     &        'browse','continue',' ',' ',' ',irop,5)
+     &        'Source zone has a view factor file.',
+     &        'Options:','copy file','point to file',
+     &        'browse file','cancel',' ',' ',' ',irop,5)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
      &          '.vwf'
@@ -2138,10 +2112,10 @@ C See if the source zone has a viewfactor file.
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
               CALL ERMRT(0,itru,IUF,LVIEW(IC),IC,IER)
-   92         H(1)='A zone viewfactor file contains calculations of'
-              H(2)='how much each surfaces can see other surfaces.'
-              CALL EASKS(DFILE,' New viewfactor file name: ',
-     &          ' ',72,'new.vwf','viewfactor file',IER,2)
+   92         H(1)='A zone view factor file contains calculations of'
+              H(2)='how much each surface can see other surfaces.'
+              CALL EASKS(DFILE,' ','New view factor file name?',
+     &             72,'new.vwf','viewfactor file',IER,2)
               IF(DFILE.NE.' ')THEN
                 LVIEW(NCOMP)=DFILE
                 IVF(NCOMP)=1
@@ -2160,7 +2134,6 @@ C See if the source zone has a viewfactor file.
 C Find out if there are viewfactor files in the model ../zones folder.
               sfile=' '
               snpfile=' '
-              call edisp(iuout,' ')
               call browsefilelist('?','zon','vwf',sfile,snpfile,nfile,
      &          iier)
               if(nfile.gt.0)then
@@ -2187,12 +2160,12 @@ C See if the source zone has a casual gain control file.
           if(ICGC(ic).eq.1)then
             h(1)='The new zone casual gain control can be based on'
             h(2)='the source zone (by copying the file) or you'
-            h(3)='can point to the source zone file or browse  '
-            h(4)='available files or continue.'
+            h(3)='can point to the source zone file or browse'
+            h(4)='available files.'
             CALL EASKATOG(
-     &        'Source zone has a casual gain control file (see help)',
-     &        ' ','copy source file','point to source file',
-     &        'browse','continue',' ',' ',' ',irop,5)
+     &        'Source zone has a CG ctl file.',
+     &        'Options:','copy file','point to file',
+     &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
      &          '.cgc'
@@ -2205,8 +2178,8 @@ C See if the source zone has a casual gain control file.
               call ercgcf(0,iuout,LCGCIN(IC),IC,ier)
    93         H(1)='A zone casual gain control file contains logic'
               H(2)='for light switching in a zone.'
-              CALL EASKS(DFILE,' New casual gain control file name:',
-     &          ' ',72,'new.vwf','casual gain control file',IER,2)
+              CALL EASKS(DFILE,' ','Zone CG file name?',
+     &           72,'new.vwf','casual gain control file',IER,2)
               IF(DFILE.NE.' ')THEN
                 LCGCIN(NCOMP)=DFILE
                 ICGC(NCOMP)=1
@@ -2223,7 +2196,6 @@ C See if the source zone has a casual gain control file.
 C Find out if there are casual gain control files in the model ../zones folder.
               sfile=' '
               snpfile=' '
-              call edisp(iuout,' ')
               call browsefilelist('?','zon','cgc',sfile,snpfile,nfile,
      &          iier)
               if(nfile.gt.0)then
@@ -2252,10 +2224,9 @@ C See if the source zone has a convection regime file.
             h(2)='the source zone (by copying the file) or you'
             h(3)='can point to the source zone file or browse  '
             h(4)='available files or continue.'
-            CALL EASKATOG(
-     &        'Source zone has a convection regime file (see help)',
-     &        ' ','copy source file','point to source file',
-     &        'browse','continue',' ',' ',' ',irop,4)
+            CALL EASKATOG('Source zone has a CC file.',
+     &        'Options:','copy file','point file',
+     &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
      &          '.htc'
@@ -2266,10 +2237,11 @@ C See if the source zone has a convection regime file.
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
               call ehtcff(LHCCO(IC),IUF,ITRU,IER)
-   94         H(1)='A zone convection regime file contains data'
-              H(2)='for imposing convections regimes in a zone.'
-              CALL EASKS(DFILE,' New convection regime file name:',
-     &          ' ',72,'new.vwf','convection regime file',IER,2)
+   94         H(1)='A zone convection coefficients file contains data'
+              H(2)='used to impose surface convection regimes within'
+              H(3)='a zone.'
+              CALL EASKS(DFILE,' ','Zone CC file name?',
+     &            72,'new.vwf','convection regime file',IER,3)
               IF(DFILE.NE.' ')THEN
                 LHCCO(NCOMP)=DFILE
                 IHC(NCOMP)=1
@@ -2286,7 +2258,6 @@ C See if the source zone has a convection regime file.
 C Find out if there are casual gain control files in the model ../zones folder.
               sfile=' '
               snpfile=' '
-              call edisp(iuout,' ')
               call browsefilelist('?','zon','htc',sfile,snpfile,nfile,
      &          iier)
               if(nfile.gt.0)then
@@ -2333,8 +2304,8 @@ C Scan the geometry file and freshen derived geometric common blocks.
             h(1)='A problem was found while reading the geometry and'
             h(2)='you have the option to try again. Do this if you '
             h(3)='think you migh have the wrong file. '
-            CALL ASKOK(' ',
-     &       ' Problem reading geometry, try again?',OK,dok,3)
+            CALL ASKOK('Problem reading geometry file!',
+     &            'Try again?',OK,dok,3)
             IF(OK)GOTO 248
           else
             call zgupdate(0,ic,ier)
@@ -2377,16 +2348,13 @@ C Re-write all zones without prompting the user for input - unless an
 C error occurs.
           QUIET=.FALSE.
           dok=.false.
-          h(1)='If you suspect that your zone thermophysical data'
-          h(2)='has been corrupted, is out of date or needs to be'
-          h(3)='refreshed this command will do them all. '
-          h(4)='But it only works for zones with existing zone '
-          h(5)='construction files (it needs to know the names of'
-          h(6)='to re-create). '
-          CALL ASKOK(
-     &'All construction & related files must exist to use this option.',
-     &'Continue with automatic update of construction files?',
-     &      QUIET,dok,6)
+          h(1)='If you suspect that your zone constructions file has'
+          h(2)='been corrupted or is out of date then this command'
+          h(3)='will refresh it. This requires that the model has'
+          h(4)='existing zone construction files because the process'
+          h(5)='of refreshing requires the file names.'
+          CALL ASKOK(' ','Update zone constructions files?',
+     &           QUIET,dok,5)
           if(.NOT.QUIET)goto 3
           call tstamp('>','PRJ: auto update zone construction')
           DO 2491, IZ=1,NCOMP
@@ -2407,8 +2375,8 @@ C Loop back and see if another zone is requested.
 C Operation file creation and editing.
  250    IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for operations focus ?',
-     &     'Zone operations','o','Zone index for operations.',ier)
+        call askzone(ic,izdef,' ','Zone Operations Selection',
+     &            'o','Zone index for operations.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)then
           MODIFY=.TRUE.
           GOTO 3
@@ -2417,10 +2385,9 @@ C Operation file creation and editing.
 
 C Global tasks.
           if(browse)then
-            call edisp(itru,' ')
             call edisp(itru,'You are currently in browse mode.')
-            call edisp(itru,'Changes to operations file will not')
-            call edisp(itru,'be saved!')
+            call edisp(itru,'Changes to zone operations file will')
+            call edisp(itru,'not be saved!')
             call edisp(itru,' ')
           endif
 
@@ -2431,19 +2398,15 @@ C << one idea would be to take an infiltration pattern from one zone
 C << and apply it to one or more other zones.
 C << one idea would be to take a casual gain pattern from one zone
 C << and apply it to another zone.
-          h(1)='You can upgrade older unsorted operations files if'
-          h(2)='they exist in the current model.'
+          h(1)='You can upgrade older unsorted zone operations files'
+          h(2)='if they exist in the current model.'
           h(3)=' '
           h(4)='You can also check current operations files to see'
-          h(5)='if the casual gains periods are still sorted.'
-          h(6)='Note this upgrade is an automated process which'
-          h(7)='should be checked for validity. '
-          h(8)=' '
-          h(9)=' '
+          h(5)='if the casual gains periods are sorted.'
           CALL EASKABC(
      &      'Zone operations options for multiple zones:',' ',
-     &      'update all older files','check ordering in files',
-     &      'continue',IW,9)
+     &      'update all old files','check period order',
+     &      'cancel',IW,5)
           if(IW.eq.1.or.IW.eq.2)then
             inpic=NCOMP
             if(inpic.gt.0)then
@@ -2532,58 +2495,47 @@ C Loop back and see if another zone is requested.
 C Shading/ insolation analysis.
  253    IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for shading focus ?',
-     &     'Zone shading','s','Zone index for shading.',ier)
+        call askzone(ic,izdef,' ','Zone Shading Selection',
+     &         's','Zone index for shading.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         if(IC.eq.99)then
 
 C Global tasks.
-          h(1)='Can evaluate detailed shading and/or insolation'
-          h(2)='patterns. Some actions you can take on multiple'
-          h(3)='zones.... '
-          h(4)=' '
-          h(5)='You can recalculate shading in all zones where '
-          h(6)='a shading file exists. '
-          h(7)=' '
-          h(8)='You can nominate zones which you want to include an'
-          h(9)='insolation analysis (i.e. track direct solar radiation'
-          h(10)='within zones). '
-          h(11)=' '
-          h(12)='You can nominate zones which you want to create solar'
-          h(13)='obstructions in so that shading and insolation can'
-          h(14)='be assessed.'
-          h(15)=' '
-          h(16)='You can nominate zones which you want to dereference'
-          h(17)='the insolation analysis'
-          H(18)=' '
-          H(19)='Reminder: '
-          H(20)='When you run shading analysis and review the synopsis'
-          H(21)='of shading and find surfaces which have patterns which'
-          H(22)='are not quite what you expect it might be because of'
-          H(23)='the order of the edges in the surfaces of the zone: '
-          H(24)=' '
-          H(25)=' a) you are getting sun when you do not expect it - '
-          H(26)='    double check that what looks like a west facing'
-          H(27)='    surface in the wire frame view is actually'
-          H(28)='    facing west.'
-          H(29)=' b) the zone details confirm that a surface is'
-          H(30)='    oriented correctly and the wire-frame view looks'
-          H(31)='    correct but shading predictions are strage - '
-          H(32)='    then check the ordering of the edges of the'
-          H(33)='    surface(s) that are problematic. Below is the'
-          H(34)='    standard advise for edge ordering....'
-          H(35)=' '
-          H(36)='NOTE: it is suggested that the first surface edge be'
-          H(37)='close to horizontal if at all possible.'
-          H(38)='The shading analysis application gets confused if the'
-          H(39)='first edge of a surface is vertical. Nothing in esp-r'
-          H(40)='warns you of this - so get into a consistent habit of'
-          H(41)='avoiding vertical first edges in surfaces! '
-          CALL EASKABCD(
-     &      'Shading/insolation options for multiple zones:',
-     &      '(see help)','recalculate shading',
-     &      'dereference shading files','add insolation calculations',
-     &      'continue',IW,41)
+          h(1)='You can establish detailed shading and/orinsolation'
+          h(2)='patterns in nominated zones as follows.'
+          h(3)=' '
+          h(4)='  Recalculate shading in all zones where a shading'
+          h(5)='  file exists.'
+          h(6)=' '
+          h(7)='  Nominate zones for which you want to include an'
+          h(8)='  insolation analysis (i.e. track the distribution of'
+          h(9)='  the directly transmitted solar component).'
+          h(10)=' '
+          h(11)='  Nominate zones for which you want to create solar'
+          h(12)='  obstructions so that shading and insolation can'
+          h(13)='  be calculated.'
+          h(14)=' '
+          h(15)='  Nominate zones for which you want to dereference'
+          h(16)='  the shading/insolation file.'
+          H(17)=' '
+          H(18)='If you review the result of a shading analysis'
+          H(19)='and find unexpected patterns, this may be because'
+          H(20)='of incorrectly ordered surface edges.'
+          H(21)=' '
+          H(22)='  a) Check that a surface that appears to face a'
+          H(23)='     particular directyion in the wireframe view'
+          H(24)='     actually does!'
+          H(25)=' '
+          H(26)='  b) Check the ordering of the edges of all'
+          H(27)='     problematic surfaces by adhering to the'
+          H(28)='     following advice.'
+          H(29)=' '
+          H(30)='It is suggested that the first surface edge be'
+          H(31)='close to horizontal if possible.'
+
+          CALL EASKABCD(' ','Options for multiple zones:',
+     &      'recalculate shading','dereference shading files',
+     &      'add insolation','cancel',IW,31)
           if(IW.eq.1)then
             call eddshd
           elseif(IW.eq.2)then
@@ -2640,7 +2592,6 @@ C Deal with one zone.
 
 C If browsing, do not save files but allow ish to be started.
         if(browse)then
-          call edisp(itru,' ')
           call edisp(itru,'You are currently in browse mode.')
           call edisp(itru,'The shading analysis module will start')
           call edisp(itru,'but DO NOT attempt to save results!')
@@ -2655,18 +2606,18 @@ C If browsing, do not save files but allow ish to be started.
      &        zname(IC)(1:lnblnk(zname(IC))),'.shd'
           endif
           DSFIL = 'new.shd'
-          H(1)='The shading/ insulation database holds time varying'
-          H(2)='external surface shading and internal surface'
+          H(1)='The zone shading/insulation database holds time'
+          H(2)='varying external surface shading and internal surface'
           H(3)='insolation.'
-          CALL EASKS(SFIL,' New zone shading/insulation file?',
-     &      ' ',72,DSFIL,'shd/ins db',IER,3)
+          CALL EASKS(SFIL,' ','Zone shading/insulation file?',
+     &         72,DSFIL,'shd/ins db',IER,3)
           if(SFIL(1:2).ne.'  ')then
             LSHAD(IC)=SFIL
             ISI(IC)=1
-            call usrmsg(' updating model for shading file...',' ','-')
+C            call usrmsg(' updating model for shading file...',' ','-')
             CALL EMKCFG('-',IER)
-            call usrmsg(' updating model for shading file...done.',
-     &        ' ','-')
+C            call usrmsg(' updating model for shading file...done.',
+C     &        ' ','-')
           endif
         else
 
@@ -2679,12 +2630,11 @@ C Confirm existing shading file name and offer option to dereference.
           endif
           SFIL = LSHAD(IC)
           clkok=.false.
-          H(1)='The shading/ insulation database holds time varying'
-          H(2)='external surface shading and internal surface'
-          H(3)='insolation. If you want to ignore the existing'
-          H(4)='shading file click on dereference. '
-          CALL EASKSCMD(SFIL,'Zone shading/insulation file?',
-     &      ' ','dereference',clkok,72,DSFIL,'shd/ins db',IER,4)
+          H(1)='The zone shading/insulation database holds time'
+          H(2)='varying external surface shading and internal surface'
+          H(3)='insolation. You may dereference an existing file.'
+          CALL EASKSCMD(SFIL,' ','Zone shading/insulation file?',
+     &        'dereference',clkok,72,DSFIL,'shd/ins db',IER,3)
           if(clkok)then
 
 C Reset common blocks, save configuration and see if another zone is requested.
@@ -2702,12 +2652,12 @@ C Reset common blocks, save configuration and see if another zone is requested.
             if(SFIL(1:2).ne.'  ')then
               LSHAD(IC)=SFIL
               ISI(IC)=1
-              call usrmsg(' updating model to include shading file...',
-     &        ' ','-')
+C              call usrmsg(' updating model to include shading file...',
+C     &        ' ','-')
               CALL EMKCFG('-',IER)
-              call usrmsg(
-     &          ' updating model to include shading file...done.',
-     &          ' ','-')
+C              call usrmsg(
+C     &          ' updating model to include shading file...done.',
+C     &          ' ','-')
             endif
          endif
         endif
@@ -2736,7 +2686,7 @@ C and change any / to \.
             call cmdfiledos(longtfile,longtfiledos,ier)
 
 C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
+            write(outs,'(2a)') 'Corrected file ',
      &        longtfiledos(1:lnblnk(longtfiledos))
             call edisp(iuout,outs)
             longtfile=' '
@@ -2769,16 +2719,15 @@ C call to hcfmk has the option to dereference it.
 
 C If browsing, do not save files but allow ish to be started.
         if(browse)then
-          call edisp(itru,' ')
-          call edisp(itru,'You are currently in browse mode. You can')
-          call edisp(itru,'look at the heat transfer regimes')
+          call edisp(itru,'You are currently in browse mode. You')
+          call edisp(itru,'can examine the heat transfer regimes')
           call edisp(itru,'but DO NOT attempt to change them!')
           call edisp(itru,' ')
         endif
  260    IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for convective focus ?',
-     &     'Zone convective methods','h','Zone index for hc.',ier)
+        call askzone(ic,izdef,' ','Zone Convection Selection',
+     &           'h','Zone index for hc.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         IUO=IFIL+1
         call tstamp('>','PRJ: enter hc file')
@@ -2795,46 +2744,34 @@ C reading in the geometry file followed by view factor editing
 C facilities. Call to edmrt might result in dereferenceing of
 C the file.         
         if(browse)then
-          call edisp(itru,' ')
-          call edisp(itru,'You are currently in browse mode. You can')
-          call edisp(itru,'look at the surface viewfactor data')
+          call edisp(itru,'You are currently in browse mode. You')
+          call edisp(itru,'can look at the surface viewfactor data')
           call edisp(itru,'but DO NOT attempt to recalculate them!')
           call edisp(itru,' ')
         endif
  251    IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for viewfactor focus ?',
-     &     'Zone viewfactors','v','Zone index for viewfact.',ier)
+        call askzone(ic,izdef,' ','Zone View Factors Selection',
+     &         'v','Zone index for viewfact.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         if(IC.eq.99)then
 
 C Global tasks.
-          h(1)='Can evaluate surface-to-surface viewfactors as either'
-          h(2)='area weighted or via ray tracing. Some actions you '
-          h(3)='can take on multiple zones.... '
+          h(1)='Inter-surface view factors may be determined as simple'
+          h(2)='area weightings or exactly using ray tracing. Area '
+          h(3)='weighting is the default treament.'
           h(4)=' '
-          h(5)='Area weighted viewfactors are, essentailly the default'
-          h(6)='treament and take almost no time to calculate. '
-          h(7)=' '
-          h(8)='Ray-traced viewfactors have a computational cost but '
-          h(9)='may be useful in some models. '
-          h(10)=' '
-          h(11)='You can nominate zones which you want to include'
-          h(12)='either type of viewfactor. After selection these will'
-          h(13)='be instanciated within the relevant zones. '
-          h(14)=' '
-          h(15)='You can nominate zones which you want to dereference'
-          h(16)='the viewfactor analysis'
-          CALL EASKABCD(
-     &      'Viewfactor options for multiple zones:',
-     &      ' ','do area weighted','do ray trace calculations',
-     &      'dereference viewfactors','continue',IW,16)
+          h(5)='You can nominate the zones to which you want to apply'
+          h(6)='either calculation type or, alternatively, you may'
+          h(7)='dereference an exiting zone view factor file.analysis'
+          CALL EASKABCD(' ','View factor options:',
+     &        'area weighted','ray traced',
+     &        'dereference file','cancel',IW,7)
           IUO=IFIL+1
           if(iw.eq.1.or.iw.eq.2)then
             inpic=0
             call askmultizone(inpic,ivals,
-     &        ' Select zones for viewfactors?',
-     &        'Zone viewfactor selection','v',ier)
+     &        'Select zones','Select zones','v',ier)
             if(inpic.gt.0)then
               DO 164 IC=1,inpic
                 ICOMP=ivals(IC)
@@ -2853,18 +2790,18 @@ C Global tasks.
                   call EDMRT(ITRC,ITRU,IUF,ICOMP,silent,'v',IER)
                 endif
  164          continue
-              call usrmsg(
-     &        ' updating model to add viewfactor files...',
-     &        ' ','-')
+C              call usrmsg(
+C     &        ' updating model to add viewfactor files...',
+C     &        ' ','-')
               CALL EMKCFG('-',IER)
-              call usrmsg(
-     &        ' updating model to add viewfactor files...done.',
-     &        ' ','-')
+C              call usrmsg(
+C     &        ' updating model to add viewfactor files...done.',
+C     &        ' ','-')
             endif
           elseif(iw.eq.3)then
             inpic=0
             call askmultizone(inpic,ivals,
-     &        ' Select zones for viewfactors to dereference?',
+     &        'Select zones for viewfactors to dereference?',
      &        'Zone viewfactor dereference','v',ier)
             if(inpic.gt.0)then
               DO 163 IC=1,inpic
@@ -2872,13 +2809,13 @@ C Global tasks.
                 LVIEW(icomp)=' '
                 IVF(ICOMP)=0
  163          continue
-              call usrmsg(
-     &        ' updating model to ignore viewfactor file...',
-     &        ' ','-')
+C              call usrmsg(
+C     &        ' updating model to ignore viewfactor file...',
+C     &        ' ','-')
               CALL EMKCFG('-',IER)
-              call usrmsg(
-     &        ' updating model to ignore viewfactor file...done.',
-     &        ' ','-')
+C              call usrmsg(
+C     &        ' updating model to ignore viewfactor file...done.',
+C     &        ' ','-')
             endif
           elseif(iw.eq.4)then
             continue
@@ -2900,7 +2837,6 @@ C Loop back and see if another zone is requested.
 
 C Casual gain control.
         if(browse)then
-          call edisp(itru,' ')
           call edisp(itru,'You are currently in browse mode. You can')
           call edisp(itru,'look at the zone casual gain controls')
           call edisp(itru,'but DO NOT attempt to modify them!')
@@ -2908,8 +2844,8 @@ C Casual gain control.
         endif
  252    IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for casual gain control ?',
-     &     'Zone casual gain ctl','g','Zone index for cgc.',ier)
+        call askzone(ic,izdef,' ','Zone CG Ctl Selection',
+     &        'g','Zone index for cgc.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         IUF=IFIL+1
         if(ICGC(IC).eq.1)then
@@ -2920,31 +2856,21 @@ C If browsing do not bother to confirm file name, present menu.
             call EDCASCTL(ITRC,IC,IER)
             goto 252
           endif
-          H(1)='This menu allows to dereference or edit zone casual'
-          H(2)='control file. This facility supports control of'
-          H(3)='zone casual gains based on the internal or external'
-          H(4)='photocell illuminance. Different levels of calculation'
-          H(5)='of photocell illuminance and control algorithms are'
-          H(6)='supported.'
-          H(7)=' '
-          H(8)='If you want to ignore casual gain controls in this'
-          H(8)='zone choose dereference '
-          CALL EASKABC(' Casual gain control options:',' ','edit',
-     &      'dereference','continue',irpt,6)
+          H(1)='This menu allows the dereferencing or editing of a'
+          H(2)='zone casual gain control file.'
+          CALL EASKABC(' ','Casual gain control options:','edit',
+     &      'dereference','cancel',irpt,2)
           if(irpt.eq.1)then
             IUF=IFIL+1
             call EDCASCTL(ITRC,IC,IER)
-            if(ier.eq.0)then
-              call edisp(iuout,' Casual gain control definitions ok.')
-            endif
           elseif(irpt.eq.2)then
             ICGC(IC)=0
             LCGCIN(IC)='UNKNOWN'
-            call usrmsg(
-     &        ' Dereferencing casual gain control file...',' ','-')
+C            call usrmsg(
+C     &        ' Dereferencing casual gain control file...',' ','-')
             CALL EMKCFG('-',IER)
-            call usrmsg(
-     &        ' Dereferencing casual gain control file...done.',' ','-')
+C            call usrmsg(
+C     &        ' Dereferencing casual gain control file...done.',' ','-')
           else
             goto 3
           endif
@@ -2954,28 +2880,23 @@ C If browsing do not bother to confirm file name, present menu.
      &        'In browse mode so nothing to do.','P')
             goto 252
           endif
-          H(1)='This menu allows to create/edit zone casual control'
-          H(2)='file. The casual gain control file allows to control'
+          H(1)='This menu allows a zone casual control file to be'
+          H(2)='created/editted. The data within this file controls'
           H(3)='zone casual gains based on the internal or external'
-          H(4)='photocell illuminance. Different levels of calculation'
-          H(5)='of photocell illuminance and control algorithms are'
-          H(6)='supported.'
-          CALL EASKABC(' Casual gain control options:',' ',
-     &      'create','dereference','continue',irpt,6)
+          H(4)='illuminance. Different control algorithms are offered.'
+          CALL EASKABC(' ','Casual gain ctl options:',
+     &      'create','dereference','cancel',irpt,4)
           if(irpt.eq.1)then
             IUF=IFIL+1
             call EDCASCTL(ITRC,IC,IER)
-            if(ier.eq.0)then
-              call edisp(iuout,' Casual gain control definitions ok.')
-            endif
           elseif(irpt.eq.2)then
             ICGC(IC)=0
             LCGCIN(IC)='UNKNOWN'
-            call usrmsg(
-     &        ' Dereferencing casual gain control file...',' ','-')
+C            call usrmsg(
+C     &        ' Dereferencing casual gain control file...',' ','-')
             CALL EMKCFG('-',IER)
-            call usrmsg(
-     &        ' Dereferencing casual gain control file...done.',' ','-')
+C            call usrmsg(
+C     &        ' Dereferencing casual gain control file...done.',' ','-')
           endif
         endif
 
@@ -2985,27 +2906,16 @@ C Loop back and see if another zone is requested.
       elseif(INO.EQ.14)THEN
 
 C CFD.
-        H(1)= 'This facility will assist you to compose a file'
-        H(2)= 'characterizing the geometry and calculation parameters'
-        H(3)= 'of a CFD domain.'
-        H(4)= ' '
-        H(5)= 'You should refer to Section 5.9 - Zone CFD Domain File'
-        H(6)= 'in: Data Model Summary ESP-r Version 9 Series,'
-        H(7)= 'ESRU Report TR96/2, which forms part of the ESP-r'
-        H(8)= 'distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
-        H(9)= ' '
-        H(10)='Note that CFD domains are currently restricted to'
-        H(11)='cuboidal zones.'
-        H(12)=' '
-        H(13)='If you wish to dereference the CFD domain, do nothing'
-        H(14)='in the editing facity and when exiting do not include'
-        H(15)='it in the model. '
-        CALL PHELPD('CFD domain + parameters',15,'-',0,0,IER)
+        H(1)='This facility allows you to compose a file defining'
+        H(2)='the zone parameters required for a CFD simulation.'
+        H(3)='You may reference and dereference the CFD domain'
+        H(4)='within the current model at any time.'
+        CALL PHELPD('CFD domain + parameters',4,'-',0,0,IER)
 
         IC=-1
         izdef=0
-        call askzone(ic,izdef,' Select zone for CFD focus:',
-     &     'Zone CDF domain','d','Zone index for cfd.',ier)
+        call askzone(ic,izdef,' ','Zone CFD Selection',
+     &         'd','Zone index for cfd.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         CALL EGOMIN(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
 
@@ -3043,7 +2953,7 @@ C If browsing do not offer inclusion option.
 
 C Adaptive gridding module.
         IC=-1
-        CALL EASKGEOF('Select a zone for adaptive gridding:',CFGOK,IC,
+        CALL EASKGEOF('Select zone for adaptive gridding:',CFGOK,IC,
      &    '-',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         write(ZN,'(A)') zname(IC)
@@ -3052,7 +2962,6 @@ C Adaptive gridding module.
 
 C If browsing do not save files but allow grd to be started.
         if(browse)then
-          call edisp(itru,' ')
           call edisp(itru,'You are currently in browse mode.')
           call edisp(itru,'The adaptive gridding module will start')
           call edisp(itru,'but DO NOT attempt to save results!')
@@ -3069,14 +2978,13 @@ C Offer creation of moisture transport data file or dereference.
         endif
         DSFIL = SFIL
         H(1)='The moisture file holds moisture transport data'
-        H(2)='for nodes. << more text to be added here >>'
-        write(outs,'(3a)')' Moisture transport file for ',
-     &    zname(IC)(1:lnblnk(zname(IC))),' ?'
+        H(2)='for nodes.'
+        write(outs,'(3a)')'Moisture transport file for ',
+     &    zname(IC)(1:lnblnk(zname(IC))),'?'
         clkok=.false.
         if(.NOT.MSTRZN(IC))then
 
-C << what does the ignore option really mean here? >>
-
+C << What does ignore mean here? >>
           CALL EASKSCMD(SFIL,outs,' ','ignore',clkok,72,DSFIL,
      &      'moisture file',IER,2)
           if(clkok) goto 3
@@ -3313,22 +3221,21 @@ C Also scan utility files if they exist.
   289 if(confirm)then 
         IER=0
         H(1)='The system configuration file holds the definition'
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required. If the name given'
-        H(4)='matches an existing file then that model will be'
-        H(5)='loaded by the Project Manager and made available for'
-        H(6)='browsing/ editing.  If the file does not exist then a'
-        H(7)='new one will be created and loaded with a set of'
-        H(8)='defaults which can subsequently be modified. The'
-        H(9)='current default model is'
+        H(2)='of the building/plant to be simulated, including'
+        H(3)='references to the various files comprising a model.'
+        H(4)='If the name given matches an existing file then that'
+        H(5)='model is loaded by the Project Manager and becomes'
+        H(6)='available for browsing and editing (if you are the'
+        H(7)='owner. If the file does not exist then a new one is'
+        H(8)='created and loaded with a set ofdefaults that can'
+        H(9)='subsequently be modified. The default model is'
         H(10)=' '
         write(H(11),'(1x,60a)') DFCFG(1:60)
         H(12)=' '
-        H(13)='which is available for browsing.  Note that before'
-        H(14)='this model can be edited, it must be copied to'
-        H(15)='your user area to give you write permission. Lists '
-        H(16)='of other on-line example models are also available'
-        H(17)='through the `exemplars` option of the Main Menu.'
+        H(13)='Note that before this model can be edited, it must'
+        H(14)='be copied to your user area to give you write'
+        H(15)='permission. Other example models are available'
+        H(16)='via the `exemplars` option.'
         if(LCMDFL(1:4).eq.'UNKN'.or.LCMDFL(1:4).eq.'unkn')then
           LTMP=' '
         else
@@ -3344,29 +3251,29 @@ C name of the file.
 
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,17)
+            CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
+     &      'config file name',IER,16)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
-     &      'config file name',IER,17)
+            CALL EASKF(LTMP,' ','System configuration file?',124,DFCFG,
+     &      'config file name',IER,16)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
-     &      'config file name',IER,17)
+            CALL EASKF(LTMP,' ','System configuration file?',144,DFCFG,
+     &      'config file name',IER,16)
           endif
         elseif(iglib.eq.2)then
 
-C Note for GTK, LTMP will be returned with the absolute path to the folder
-C even if prj started up in the cfg folder. There is subsequent
+C Note for GTK, LTMP will be returned with the absolute path to the
+C folder even if prj started up in the cfg folder. There is subsequent
 C logic which determines if we actually are browsing.
-          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
-     &      'config file name',IER,17)
+          CALL EASKF(LTMP,' ',' System configuration file?',144,DFCFG,
+     &      'config file name',IER,167)
         else
-          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,17)
+          CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
+     &      'config file name',IER,16)
         endif
 
-C Cancel request, return and ensure that the calling code deals with
-C the -3 ier passed back.
+C Cancel request, return and ensure that the calling
+C routine deals with the -3 ier passed back.
         if(ier.eq.-3) return
 
         IF(LTMP(1:2).EQ.'  ')GOTO 289
@@ -3393,10 +3300,10 @@ C If requested, find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
 
 C Debug (and the following tests are primarily for Linux/OSX/Unix).
-        write(t144,*) ' after fdroot path is ',path(1:lnblnk(path))
-        call edisp(iuout,t144)
-        write(t144,*) ' model configuration is ',lcfgf(1:lnblnk(lcfgf))
-        call edisp(iuout,t144)
+C        write(t144,*) ' after fdroot path is ',path(1:lnblnk(path))
+C        call edisp(iuout,t144)
+C        write(t144,*) ' model configuration is ',lcfgf(1:lnblnk(lcfgf))
+C        call edisp(iuout,t144)
         if(path(1:2).eq.'./')then
 
 C A ./ indicates that fdroot found no file separators. Must be in cfg folder.
@@ -3425,11 +3332,10 @@ C If iaccedss is non-zero then we do not have permission to write there
 C and so we treat that model as if browsing.
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
-            call edisp(iuout,
-     &'Folder permission prevents modificaton (only browse allowed).')
+            call edisp(iuout,'Folder permission prevents modificaton!')
           else
             browse=.false.
-            call edisp(iuout,'User can modify this model.')
+C            call edisp(iuout,'User can modify this model.')
           endif
 
           iglib = igraphiclib()  ! find out if GTK.
@@ -3443,16 +3349,16 @@ C we can recognise that we started in a cfg folder.
             lnpath=lnblnk(path)
 
 C Debug.
-            write(t144,*) ' GTK path is ',path(1:lnblnk(path))
-            call edisp(iuout,t144)
-            write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
-            call edisp(iuout,t144)
+C            write(t144,*) ' GTK path is ',path(1:lnblnk(path))
+C            call edisp(iuout,t144)
+C            write(t144,*) ' GTK odir is ',odir(1:lnblnk(odir))
+C            call edisp(iuout,t144)
             if(path(1:lnpath).eq.odir(1:lnpath))then
               browse=.false.
-              call edisp(iuout,'User can modify this model.')
+C              call edisp(iuout,'User can modify this model.')
             elseif(path(1:lnpath-1).eq.odir(1:lnpath-1))then
               browse=.false.
-              call edisp(iuout,'User can modify this model.')
+C              call edisp(iuout,'User can modify this model.')
             else
 
 C We could get false browse=.true. in terms of the logic.
@@ -3469,7 +3375,8 @@ C If the user already selected an exemplar just force browse=true
 C otherwise check the folder access permissions.
         if(itisanexemplar)then
           browse=.true.
-          call edisp(iuout,'Exemplar models are for browsing.')
+          call edisp(iuout,'Exemplar models may not be edited.')
+          call edisp(iuout,' ')
         else
 
 C Called without request to check paths. See if the folder can be
@@ -3482,11 +3389,10 @@ C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
           if(iaccess.eq.1)then
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
-            call edisp(iuout,
-     &'Folder permission prevents modificaton (only browse allowed).')
+            call edisp(iuout,'Folder permission prevents modificaton.')
           else
             browse=.false.
-            call edisp(iuout,'User can modify this model.')
+C            call edisp(iuout,'User can modify this model.')
           endif
         endif
       endif
@@ -3587,7 +3493,7 @@ C Try to use information gathered from file scan.
      &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
-              write(6,*) 'sfile is ',sfile
+C              write(6,*) 'sfile is ',sfile
               call fdroot(sfile,path,LCFGF)
               CALL ERPFREE(IFCFG,ISTAT)
               call FINDFIL(LCFGF,XST)
@@ -3722,8 +3628,8 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
       endif
  444  IF(XST)THEN
         if(itrc.gt.0)then
-          CALL EASKABC(' When reading in the model description,',
-     &      ' do it:','silently','with synopsis','report composition',
+          CALL EASKABC('When reading the model description,',
+     &      'do it:','silently','with synopsis','full report',
      &      IW,0)
           itrc=IW-1
         endif
@@ -3732,14 +3638,14 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='There was an unspecified problem, review any warnings'
-          h(2)='to see if the problem is one you can fix. Also double'
-          h(3)='check that the file was of the correct type. '
+          h(2)='to see if the problem is one you can fix. Also check'
+          h(3)='that the file was of the correct type.'
           h(4)=' '
-          h(5)='If you say no then it may be possible to work with'
+          h(5)='If you say `no` then it may be possible to work with'
           h(6)='the model, but it may be incomplete or inconsistent'
-          h(7)='and should be treated as at=risk. '
-          CALL ASKOK(' While reading the model configuration file',
-     &               ' a problem was detected! Try again?',OK,dok,7)
+          h(7)='and should be treated as at risk.'
+          CALL ASKOK('While reading the model configuration file',
+     &               'a problem was detected! Try again?',OK,dok,7)
           if(OK)then
             confirm=.true.
             goto 289
@@ -3793,14 +3699,14 @@ C Scan control file (silently) if one exists.
             dok=.true.
             h(1)='There was a problem while scanning the control'
             h(2)='file. Review any messages to see if you can correct'
-            h(3)='the problem. Also check to see that the file is '
+            h(3)='the problem. Also check to see that the file is'
             h(4)='of the correct type. '
             h(5)=' '
-            h(6)='If you say no the model description may be incomplete'
-            h(7)='so be careful. Consider dereferencing the control '
-            h(8)='file. '
-            CALL ASKOK(' While reading the control a',
-     &        ' problem was detected!  Try again?',OK,dok,8)
+            h(6)='If you say `no`, the model description may be'
+            h(7)='incomplete so be careful. Consider dereferencing'
+            h(8)='the control file and recreating it from scratch.'
+            CALL ASKOK('While reading the control file a',
+     &        'problem was detected! Try again?',OK,dok,8)
             if(OK)then
               confirm=.true.
               goto 289
@@ -3818,13 +3724,10 @@ C Set flag so that bounds are checked.
    77   CONTINUE
         IF(IER.NE.0)THEN
           dok=.true.
-          h(1)='If this point has been reached there may have '
-          h(2)='been a problem with displaying project images. '
-          h(3)='or with another portion of the model. Sorry to '
-          h(4)='be vague... Specific errors should have been '
-          h(5)='seen earlier in the sequence of events. '
-          CALL ASKOK('There was a residual error reported as the',
-     &      'model was read!  Try again?',OK,dok,5)
+          h(1)='There is an unspecified error with this model. Please'
+          h(2)='review earlier error messages.'
+          CALL ASKOK('There was an error reported as the',
+     &      'model was read! Try again?',OK,dok,2)
           if(OK)then
             confirm=.true.
             goto 289
@@ -3839,12 +3742,13 @@ C Scan the model topology and report on any problems encountered.
             write(outs,*) IPROB,' inconsistencies found!'
             call edisp(iuout,outs)
             call usrmsg(
-     &      'The model topology (what surface is connectect to what',
-     &      'boundary condition) is dangerously inconsistent...','W')
+     &         'Model topology (surface connections) is inconsistent.',
+     &         ' ','W')
           else
             call usrmsg(
-     &      'Topology list inconsistent. Either clear current',
-     &      'topology and/or use topology tool to resolve this.','W')
+     &      'Model opology (surface connections) is inconsistent.',
+     &      'Clear current topology and use topology tool to resolve.',
+     &      'W')
           endif
         endif
 
@@ -3852,15 +3756,15 @@ C Scan the model topology and report on any problems encountered.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSE
-        h(1)='If the name supplied cannot be found you can: '
-        h(2)=' a) re-edit the name,'
-        h(3)=' b) create a new configuration file using the name,'
-        h(4)=' c) delay deciding via cancel.'
+        h(1)='If the name supplied is not found you can: '
+        h(2)='  a) edit the name,'
+        h(3)='  b) create a new configuration file using that name,'
+        h(4)='  c) delay the decision by selecting `cancel`.'
         h(5)=' '
-        h(6)='If the name of the model looks correct and includes what'
-        h(7)='you believe to the the correct path consider using the '
-        h(8)='respecify option and then using the file browser to '
-        h(9)='locate the model (if you are running the GTK version). '
+        h(6)='If you are running the GTK version of Project Manager,'
+        h(7)='and the name of the model appears correct (including'
+        h(8)='the correct directory path), then select the respecify'
+        h(9)='option and use the file browser to locate the model.'
         WRITE(OUTSTR,'(A,2X,A)')' Could not find',LCFGF
         CALL EASKABC(OUTSTR,' Options: (see help)',
      &    'respecify','new configuration file','cancel',IW,9)
@@ -3930,10 +3834,11 @@ C Construct a 'VIEWER' format file.  First get file name.
         dvfil='std.vew'
         write(LFIL,'(a,a4)')LCFGF(1:lnblnk(LCFGF)),'.vew'
         doit = ' '
-        H(1)='The hidden line perspective program requires an'
-        H(2)='input file (which is created from the current model.'
-        CALL EASKS(LFIL,' File name for image data ? ',
-     &    ' ',72,dvfil,'VIEWER input file',IER,2)
+        H(1)='The hidden line perspective program requires an input'
+        H(2)='file, which may be automatically created from the'
+        H(3)='current model.'
+        CALL EASKS(LFIL,' ','File name for image data?',
+     &             72,dvfil,'perspective input file',IER,3)
         call addpath(LCFGF,longtfile,concat)
         write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
@@ -3944,7 +3849,7 @@ C Construct a 'VIEWER' format file.  First get file name.
         dok=.true.
         h(1)='If the export of vector information was accomplished'
         h(2)='without error you should be able to start up the module'
-        h(3)='that displays hidden line views. '
+        h(3)='that displays hidden line views.'
         CALL ASKOK(' ',' Display hidden line views?',OK,dok,3)
         IF(OK)then
 
@@ -3977,12 +3882,12 @@ C files is ./ then update this to ../rad and create a folder.
             write(lradcf,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
           else
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-              H(1)='Creating a new folder for radiance model: ../rad'
-              H(2)='The curren model includes a radiance model in the '
-              H(3)='configuration folder. If you want to use this'
-              H(4)='old radiance model, you should move the files to'
-              H(5)='../rad and update the scenes and rif files.'
-              H(6)='The current scenes file is:'
+              H(1)='Creating a folder for Radiance model: `../rad`.'
+              H(2)='The current model includes a Radiance model in the'
+              H(3)='`cfg` folder. If you want to use this old model,'
+              H(4)='you should move the files to `../rad` and update'
+              H(5)='the `scenes` and `rif` files. The current scenes'
+              H(6)='file is:'
               write(H(7),'(a)') lradcf(1:lnblnk(lradcf))
               CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
             endif
@@ -3994,9 +3899,9 @@ C files is ./ then update this to ../rad and create a folder.
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
           endif
- 319      H(1)='A Radiance scene file specifies the composition'
-          H(2)='of the model for Radiance as well as the purpose'
-          H(3)='of various scenes (inside view/daylight factors).'
+ 319      H(1)='A Radiance scene file specifies the composition of the'
+          H(2)='model for Radiance as well as the purpose of various'
+          H(3)='scenes (general viewing, daylight appraisal etc.).'
           ltmp=lradcf
           dradcf='scene.rcf'
           CALL EASKS(ltmp,' Radiance scene file for this model?',
@@ -4065,7 +3970,7 @@ C Problem with rcf file therefore dereference it.
             CALL EMKCFG('-',IER)
           else
 
-C << place to associate images (when logic worked out to do that) >>
+C << Place to associate images (when logic ready.) >>
           endif
         endif
       endif

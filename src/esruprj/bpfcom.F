@@ -1355,10 +1355,10 @@ C editing of current array values. If act='i' initialise and
 C edit.
       subroutine initperi(nper,iper,iperf,act)
       common/pophelp/h(60)
-      character act*1,cstr*72,h*72
+      character act*1,cstr*80,h*72
       dimension iper(30),iperf(30)
 
-      if(nper.lt.24)incr=1
+      if(nper.le.24)incr=1
       if(nper.lt.12)incr=2
       if(nper.lt.8)incr=3
       if(nper.lt.4)incr=6
@@ -1385,7 +1385,7 @@ C Make up an editing string for the start of each period.
       h(1)='If you edit in actual start times the subsequent '
       h(2)='editing tasks will be easier. '
       CALL EASKS(CSTR,' Start hour of each period',
-     &  ' ',72,' 0  4   6   8','profile starts',IER,2)
+     &  ' ',80,' 0  4   6   8','profile starts',IER,2)
 
 C Extract the start timings and then sort out the finishes.
       K=0
@@ -1414,11 +1414,12 @@ C editing of current array values. If act='i' initialise and
 C edit.
       subroutine initperr(nper,rper,rperf,act)
       common/pophelp/h(60)
-      character act*1,cstr*72,h*72
+      character act*1,cstr*248,h*72
       dimension rper(30),rperf(30)
       real incr
 
-      if(nper.lt.24)incr=1.
+      incr=1.0   ! initial guess of increment in case nper > 24
+      if(nper.le.24)incr=1.
       if(nper.lt.12)incr=2.
       if(nper.lt.8)incr=3.
       if(nper.lt.4)incr=6.
@@ -1443,8 +1444,9 @@ C Make up an editing string for the start of each period.
         K=K1+1
    60 CONTINUE
       h(1)='If you edit in actual start times the subsequent '
-      h(2)='editing tasks will be easier. '
-      CALL EASKS(CSTR,' Start time of each period',
+      h(2)='editing tasks will be easier. Currently the facility'
+      h(3)='does not support more than 24 periods. '
+      CALL EASKS248(CSTR,' Start time of each period',
      &  ' ',72,' 0.0  4.0  6.0  8.0 ','time starts',IER,2)
 
 C Extract the start timings and then sort out the finishes.

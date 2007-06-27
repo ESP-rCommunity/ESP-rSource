@@ -1,6 +1,6 @@
 simple building
 * Building
-match zone temperatures (loop 2), control to 18C with 10kW h/c (loop 1)
+match zone temperatures (loop 2), control to 18C with 10kW h/c (loop 1) The temperature matching control sets the roof temperature to equal the outside ambient temperature.
    2  # No. of functions
 * Control function
 # senses the temperature of the current zone.
@@ -27,8 +27,8 @@ match zone temperatures (loop 2), control to 18C with 10kW h/c (loop 1)
     1 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
-    0   11   0.000  # ctl type, law (match temp - ideal), start @
-     10.  # No. of data items
-  10000.000 0.000 10000.000 0.000 1.000 1.000 -3.000 0.000 0.000 0.000
+    0   11   0.000  # ctl type, law (senses ambient dry bulb temperature.), start @
+     12.  # No. of data items
+  10000.000 0.000 10000.000 0.000 1.000 1.000 -3.000 0.000 0.000 0.000 1.000 0.000
 # Function:Zone links
  1,1,2

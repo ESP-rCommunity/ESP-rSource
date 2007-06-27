@@ -3051,9 +3051,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     } else if (strncmp(topic, "tutorial", 8) == 0) {
 
 /* Before executing tutorial pop up a warning message */
-      strcpy(help_list[0],"Starting browse (which may take some time)");
-      strcpy(help_list[1],"Please wait for hypertext to display...   ");
-      help_width = 42; help_lines = 2; impx = 0; impy = 0;	/* width, nb of lines & position */
+      strcpy(help_list[0],"Starting Web browser.");
+      help_width = 21; help_lines = 1; impx = 0; impy = 0;	/* width, no. of lines & position */
       egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
       system(captut_exe);	/* graphic mode tutorial or command from .esprc */
     } else if (strncmp(topic, "-", 1) == 0) {
@@ -3847,7 +3846,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
   box_to_pix(win,ghelpbx,under,u_width,u_height);   /* save rect under ghelpbx to under */
 
   dismissbx.b_left = ghelpbx.b_left + 10;
-  dismissbx.b_right = dismissbx.b_left + (18 * f_width);
+  dismissbx.b_right = dismissbx.b_left + (8 * f_width);
   dismissbx.b_bottom= helpbx.b_bottom + f_height + 5;
   dismissbx.b_top = helpbx.b_bottom + 3;
   if( pflg == 1) {
@@ -3863,8 +3862,8 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
     exb = nextbx.b_left+8;        /* points for next arrow */
   }
   if( showmoreflg == 1) {
-    showmorebx.b_left = ghelpbx.b_right - ( 16 * f_width);
-    showmorebx.b_right = showmorebx.b_left + (14 * f_width);
+    showmorebx.b_left = ghelpbx.b_right - ( 7 * f_width);
+    showmorebx.b_right = showmorebx.b_left + (5 * f_width);
     showmorebx.b_bottom= dismissbx.b_bottom; showmorebx.b_top = dismissbx.b_top;
   }
 
@@ -3874,10 +3873,10 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
 
   xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
   if (use_font != small_fnt) winfnt_(&small_fnt);
-  XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
+  XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"dismiss",7);  /* print text */
   if( showmoreflg == 1) {
     xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-    XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"show me more",12);  /* print text */
+    XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"more",4);  /* print text */
   }
   winfnt_(&use_font);
 
@@ -3925,10 +3924,10 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
           xbox(helpbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           if (use_font != small_fnt) winfnt_(&small_fnt);
-          XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
+          XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"dismiss",7);  /* print text */
           if( showmoreflg == 1) {
             xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-            XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"show me more",12);  /* print text */
+            XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"more",4);  /* print text */
           }
           winfnt_(&use_font);
           if(ilen <= 20) {
@@ -3971,10 +3970,10 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
           xbox(helpbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           xbox(dismissbx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
           if (use_font != small_fnt) winfnt_(&small_fnt);
-          XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"click to dismiss",16);  /* print text */
+          XDrawString(theDisp,win,theGC,dismissbx.b_left+4,dismissbx.b_bottom-2,"dismiss",7);  /* print text */
           if( showmoreflg == 1) {
             xbox(showmorebx,fg,white,BMCLEAR|BMEDGES);	/* draw help display box  */
-            XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"show me more",12);  /* print text */
+            XDrawString(theDisp,win,theGC,showmorebx.b_left+4,showmorebx.b_bottom-2,"show more",9);  /* print text */
           }
           winfnt_(&use_font);
           if(ilen <= 20) {
@@ -5434,7 +5433,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    bottom = disp.b_top; left = capture_left;
    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
    bottom = fbb.b_bottom; left = captext_left;
-   doitbox(capture,"capture text",12,13,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
  }
 
 /* include azimuth button to left of capture button */
@@ -8051,7 +8050,7 @@ point*/
 /* capture text button */
         saved_font = current_font;
         bottom = fbb.b_bottom; left = captext_left;
-        doitbox(capture,"capture text",12,13,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
+        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
         but_rlse = 1;
       } else if (azi_avail >=1 && xboxinside(aziplus,x,y)) {
 
@@ -8484,7 +8483,7 @@ void updcapt_(avail)
     bottom = disp.b_top; left = capture_left;
     doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
     bottom = fbb.b_bottom; left = captext_left;
-    doitbox(capture,"capture text",12,13,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
     capture_avail = *avail;         /* tell the world it is available */
   } else {
     capture_avail = *avail;         /* tell the world it is available */

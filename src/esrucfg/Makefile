@@ -9,7 +9,7 @@ PROG = cfg$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = cfg.o arrow.o bsimsel.o c2fdum.o cfg3dv.o common3dv.o cread3dv.o ctread.o e3dviews.o \
+OBJECTS = cfg.o arrow.o ascii_mat.o bsimsel.o c2fdum.o cfg3dv.o common3dv.o cread3dv.o ctread.o e3dviews.o \
 	  edatabase.o edonecon.o egeometry.o emfnetw.o emkcfg.o enetmisc.o \
 	  enetrewr.o eroper.o esru_misc.o esystem.o item.o mfcdat.o nwkrewr.o \
           plelev.o pltcfg.o sort.o startup.o tdfile.o 
@@ -20,6 +20,9 @@ $(PROG): $(OBJECTS)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(PRJdir)/ascii_mat.F .
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
@@ -98,6 +101,6 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F bsimsel.F c2fdum.F common3dv.F cread3dv.F ctread.F e3dviews.F edatabase.F egeometry.F emkcfg.F \
+	arrow.F ascii_mat.F bsimsel.F c2fdum.F common3dv.F cread3dv.F ctread.F e3dviews.F edatabase.F egeometry.F emkcfg.F \
 	emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
         plelev.F pltcfg.F sort.F startup.F tdfile.F 

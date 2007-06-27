@@ -332,7 +332,8 @@ C the previous period unless the next period is at this time.
 C *********** PROGRF
 C 'PROGRF' outputs a graphical display of the current event profile.
       subroutine progrf(IFB,idbh,ic,iit)
-      parameter (MGIT=500)
+#include "esprdbfile.h"
+C providing paramaters MGDB,MGCL,MGIT
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

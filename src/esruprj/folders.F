@@ -103,32 +103,30 @@ C editing of log file, images, hypertext link and results summary.
       IER=0
 
   289 H(1)='The system configuration file holds the definition'
-      H(2)='of the zone(s) and/ or plant and/ or control to be'
+      H(2)='of the building, plant and control systems to be'
       H(3)='simulated, including references to associated files.'
-      h(4)='The `root` name you supply will be used in a series of'
-      h(5)='system level files. '
-      h(6)=' '
-      h(7)='If you selected this option in error click on continue.'
+      h(4)='The name you supply will be used as the root name'
+      h(5)='for the various files corresponding to the model'
+      h(6)='you will later establish'
       LCFTMP='  '
-      CALL EASKSCNCL(LCFTMP,
-     &  ' System configuration name? (root name for model) ',
-     &  ' ','cancel',clkok,24,'new_model','system root name',IER,7)
+      CALL EASKSCMD(LCFTMP,' ','System configuration file name?',
+     &     'cancel',clkok,24,'new_model','system root name',IER,6)
       call usrmsg(' ',' ','-')
       if(clkok)then
-        return         ! User clicked on continue button.
+        return         ! User selected cancel.
       else
 
 C Trap for blank root name.
         IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
 
-C User did not cancel so instanciate data for new model.
+C User did not cancel so instantiate data for new model.
         call clrprb
         icfgv=3
         INDCFG=0
-        XLAT=50.0
-        SLAT=50.0
-        XLON=0.0
-        SLON=0.0
+        XLAT=55.9
+        SLAT=55.9
+        XLON=-4.1
+        SLON=-4.1
         IXPOS=1
         GREF=0.2
         NCOMP=0
@@ -138,9 +136,8 @@ C User did not cancel so instanciate data for new model.
         nbdaytype=0
         call st2file(LCFTMP,LCMDFL)
       endif
-C      CALL EASKS(LCFTMP,
-C     &  ' System configuration name? (root name for model) ',
-C     &  ' ',24,'new_model','system root name',IER,5)
+C      CALL EASKS(LCFTMP,' ','System configuration file name?',
+C     &                24,'new_model','system root name',IER,5)
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -164,13 +161,14 @@ C Check existance of this file (should not overwrite an existing file).
       call FINDFIL(LCFGF,XST)
       if(XST)then
         dok=.true.
-        h(1)='If you overwrite the existing configuration file you'
-        h(2)='will `loose-the-past` unless you have backed up your'
-        h(3)='model.  '
-        h(4)='If you want to create a new model variant say no and '
-        h(5)='provide an different file name. '
+        h(1)='If you overwrite the existing configuration file its'
+        h(2)='contents will be lost unless you have backed up your'
+        h(3)='model.'
+        h(4)=' '
+        h(5)='If you want to create a new model variant say no and'
+        h(6)='enter a different file name.'
         call askok('There is an existing configuration with',
-     &  'this name. Do you want to overwrite it? ',OK,dok,5)
+     &  'this name. Do you want to overwrite it? ',OK,dok,6)
         if(.not.OK)goto 289
       endif
 
@@ -178,32 +176,30 @@ C Ask where to put it.
 C Get the current folder and display options to the user.
       odir=' '
       call usrdir(odir)
-      H(1)='Esp-r holds the model in a standard set of folders '
-      H(2)='and descriptive files. '
-      H(3)=' '
-      H(4)='Based on information you have supplied: '
-      H(5)=' '
-      write(H(6),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      H(1)='ESP-r organises a model within a standard set of folders.'
+      H(2)=' '
+      H(3)='Based on information you have supplied,'
+      H(4)=' '
+      write(H(5),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  ' (project folder)'
-      write(H(7),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(6),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/cfg (system files)'
-      write(H(8),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(7),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/ctl (control files)'
-      write(H(9),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(8),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/zones (zone files)'
-      write(H(10),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(9),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/nets (networks)'
-      write(H(11),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(10),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/doc (reports and notes)'
-      write(H(12),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(11),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/temp (odds+ends)'
-      write(H(13),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+      write(H(12),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/dbs (project databases)'
-      H(14)=' '
-      H(15)='will be created. '
+      H(13)=' '
+      H(14)='will be created.'
       dok=.true.
-      CALL ASKOK('Proceed with setting up your model?',
-     &  '(see help for details of folders)',ok,dok,15)
+      CALL ASKOK(' ','Create model folders?',ok,dok,14)
       if(ok)then
         write(zonepth,'(3a)')'..',fs,'zones'
         write(netpth,'(3a)')'..',fs,'nets'
@@ -211,51 +207,51 @@ C Get the current folder and display options to the user.
         write(imgpth,'(3a)')'..',fs,'images'
         write(radpth,'(3a)')'..',fs,'rad'
         write(docpth,'(3a)')'..',fs,'doc'
-        write(tmppth,'(3a)')'..',fs,'temp'
+        write(tmppth,'(3a)')'..',fs,'tmp'
         write(dbspth,'(3a)')'..',fs,'dbs'
         write(odir,'(a)')cfgroot(1:lnblnk(cfgroot))
         write(doit,'(2a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot))
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'cfg'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'ctl'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
      &      'zones'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
      &      'nets'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
      &      'images'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'doc'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
-     &      'temp'
-        call usrmsg('creating folder:',doit,'-')
+     &      'tmp'
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'rad'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'dbs'
-        call usrmsg('creating folder:',doit,'-')
+        call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         call usrmsg('  ','  ','-')
@@ -265,42 +261,43 @@ C Re-establish pwd and then project folders.
         call usrdir(odir)
         write(path,'(6a)')odir(1:lnblnk(odir)),fs,
      &      cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
-        call edisp(iuout,'The configuration will be in: ')
+        call edisp(iuout,
+     &        'System configuration file is located in folder:')
         call edisp(iuout,path)
-        write(path,'(4a)')cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
-        call edisp(iuout,'(resetting path to: ')
+        write(path,'(5a)') 'Resetting path to: ',
+     &                  cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
         call edisp(iuout,path)
+        call edisp(iuout,' ')
       else
         return
       endif
 
 C General description of the model.
-  52  H(1)='The model has an associated 72 character descriptor'
+  52  H(1)='A model has an associated descriptor (<72 characters,'
       H(2)='which is used later as an identifier, e.g. Low energy'
-      H(3)='school with optimum start/ stop control heating system.'
+      H(3)='building with optimum start/stop plant control.'
       LSNAM='  '
       ltmp=LSNAM
-      CALL EASKS(ltmp,
-     &  ' Please supply a brief description of the model:',
-     &  ' ',72,'base case run','model description',IER,3)
+      CALL EASKS(ltmp,' ','Model description?',
+     &           72,'Base case model','model description',IER,3)
       if(ltmp(1:2).ne.'  '.or.lnblnk(ltmp).gt.3)then
         LSNAM=ltmp
       else
-        call usrmsg('Sorry, a blank is not a description.',
-     &    'Documenting your work is a good habit ;-)','W')
+        call usrmsg('Sorry, a blank line is not acceptable.',
+     &    'Enter a meaningful description (<7 characters)','W')
         goto 52
       endif
 
 C Documentation.
-  53  H(1)='The project log file contains descriptive text about'
-      H(2)='the project.  Keep it up to date via a text editor.'
+  53  H(1)='The project log file holds a description of the project'
+      H(2)='and the analysis intentions. It is located in the `cgf`'
+      H(3)='directory. Keep it up to date via a text editor.'
       if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
         write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
       endif
       ltmp=LPRJLG
-      CALL EASKS(ltmp,
-     &  'A project log file (notes/documentation) for this project,',
-     &  'Its name? ',72,'project.notes','log file',IER,2)
+      CALL EASKS(ltmp,' ','Project log file?',
+     &           72,'project.log','log file',IER,3)
       if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
         LPRJLG=ltmp
       else
@@ -319,10 +316,10 @@ C information.
         IF(IER.ne.0)THEN
           dok=.true.
           h(1)='The log file exists, but could not be scanned.'
-          h(2)='Check that it does not contain non-printable '
-          h(3)='characters or is a blank file. '
-          CALL ASKOK(' Problem detected while trying to open',
-     &                ' log file. Try again?',OK,dok,3)
+          h(2)='Check that it is not an empty file or contains'
+          h(3)='non-printable characters. '
+          CALL ASKOK('Problem detected with log file!',
+     &                'Try again?',OK,dok,3)
           IF(OK)GOTO 53
         ENDIF
       else
@@ -334,28 +331,30 @@ C information.
         write(iunit,'(a,a)')'By: ',uname(1:lnblnk(uname))
         call dstamp(dstmp)
         write(iunit,'(a,a)')'Date: ',dstmp
-        write(iunit,'(a)')'For: '
+        write(iunit,'(a)')'Client: '
         write(iunit,'(a)')'Project reference: '
+        write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
         write(iunit,'(a)')'_____________________________'
-        write(iunit,'(a)')' '
-        write(iunit,'(a)')' '
         CALL ERPFREE(IUNIT,ISTAT)
       endif
 
-C Allow user to edit the job notes file. Append to path if
+C Allow user to edit the log file. Append to path if
 C necessary.  If vi then spawn a new window to do the editing.
 
-C << this would be a good place to offer an internal editing popup
+C << This would be a good place to offer an internal editing popup
 C << which uses GTK facilities.
       dok=.false.
-      h(1)='Assuming you have an editor associated with esp-r '
-      h(2)='you can edit the log file. '
-      h(3)=' '
-      h(4)='The log file can be used for different purposes. One'
-      h(5)='use is to record the sequence of tasks. Another use '
-      h(6)='is to provide documentation on the model. '
-      CALL ASKOK(' ',' Edit the log file?',OK,dok,6)
+      h(1)='The log file is used to document your model and record the'
+      h(2)='purpose and outcomes of commissioned simulations. Update'
+      h(3)='it using a text editor as your modelling project evolves.'
+      h(4)='The file is located in the `cfg`directory of your model'
+      h(5)='folder.'
+      h(6)=' '
+      h(7)='Assuming you have an editor associated with ESP-r (defined'
+      h(3)='via your .esprc file), you can edit the log file now.'
+
+      CALL ASKOK(' ','Edit log file?',OK,dok,5)
       IF(OK)then
 
 C Check if Unix-based or DOS based.
@@ -380,23 +379,14 @@ C and change any / to \.
 
 C Ask about images and a results summary.
       dok=.false.
-      h(1)='A model can include references to images and the'
-      h(2)='images can be associated with some aspect of simulation'
-      h(3)='such as geometry, networks or performance. '
-      h(4)=' '
-      h(5)='Images associated with a model are usually held in the '
-      h(6)='`images` folder. '
-      h(7)=' '
-      h(8)='If you have images please either place them in the'
-      h(9)='`images` folder of the model (a good idea because they'
-      h(10)='then become part of the model) or provide an absolute'
-      h(11)='path to the image file.'
-      h(12)=' '
-      h(13)='You can either tell ESP-r about them now or add them'
-      h(14)='to the model later on via the ~model context->images~'
-      h(15)='menu item.'
-      CALL ASKOK('There may be images which are related to this ',
-     &  'project. Associate images now ?',OKI,dok,15)
+      h(1)='A model can usefully include references to images'
+      h(2)='depicting different model aspects such as geometry,'
+      h(3)='flow networks, simulation results and the like.'
+      h(4)='Such images are usually located in the `images` folder.'
+      h(5)=' '
+      h(6)='You can either identify such images now or add them'
+      h(7)='later via the `model context->images` menu item.'
+      CALL ASKOK(' ','Associate images now?',OKI,dok,7)
       if(OKI)then
 
 C Provide a listing of the current contents of the ../images folder.
@@ -422,7 +412,7 @@ C Provide a listing of the current contents of the ../images folder.
         endif
         if(noimg.lt.10)then
           dok=.false.
-          h(1)='If you have more images say ok. '
+          h(1)='If you have more images select ok.'
           CALL ASKOK(' ',' Another image?',OK,dok,1)
           if(OK)then
             write(limg,'(a)')imgpth(1:lnblnk(imgpth))
@@ -435,31 +425,30 @@ C Provide a listing of the current contents of the ../images folder.
       if(act.eq.'i')then
 
 C Ask for site position.
-        H(1)='Site latitude is degrees, north +ve, e.g. 55.9 for'
-        H(2)='Glasgow.'
-        CALL EASKR(SLAT,' ',' Site latitude?',
+        H(1)='Site latitude in degrees, where North is +ve, e.g. 55.9'
+        H(2)='for Glasgow.'
+        CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
         IF(IER.EQ.0)XLAT=SLAT
 
-        H(1)='Site longitude difference is degrees from some local'
-        H(2)='reference meridian, east +ve, e.g. -4.1 for Glasgow'
-        H(3)='relative to the Greenwich meridian.'
-        CALL EASKR(SLON,' ',' Longitude difference from reference?',
-     &       -15.0,'W',15.0,'W',0.0,'site londitude',IER,3)
+        H(1)='Site longitude difference is the difference in degrees'
+        H(2)='from the local reference meridian, East is +ve, e.g.'
+        H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
+        CALL EASKR(SLON,' ','Longitude difference?',
+     &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
         IF(IER.EQ.0)XLON=SLON
 
 C Ask for year, initialise and then print out the calendar if the
 C user does not cancel the operation.
-        H(1)='The project controls and scheduling uses a year'
-        H(2)='index. You can use the one specified with the climate'
-        H(3)='file or give the current year.'
+        H(1)='The assessment year is required for event scheduling.'
+        H(2)='You can either use the value offered or provide an'
+        H(3)='alternative.'
         H(4)=' '
-        H(5)='A camcel request allows you to proceed without changing'
-        H(6)='the schedules year (it does not yet cancel the creation'
-        H(7)='of a new model.'
+        H(5)='The cancel option will accept the year associated with'
+        H(6)='the climate file used in a simultion.'
         iyeart=iyear
-        CALL EASKI(IYEART,' ',' Year for schedules and assessments?',
-     &       1900,'W',2010,'W',2000,'year',IERI,7)
+        CALL EASKI(IYEART,' ','Assessment year?',
+     &       1900,'W',3000,'W',2007,'assessment year',IERI,6)
         if(ieri.eq.-3) then
           call calenmanage('i',ier)
         else
@@ -467,17 +456,18 @@ C user does not cancel the operation.
           call calenmanage('i',ier)
           loop=8
           loopst=1
-          call calenprint(iuout,'t',iyear,loopst,loop,ier)
-          call edisp(iuout,' ')
-          call calenprint(iuout,'g',iyear,loopst,loop,ier)
-          call edisp(iuout,' ')
+C          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+C          call edisp(iuout,' ')
+C          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+C          call edisp(iuout,' ')
         endif
 
-        H(1)='Other site related information such as ground '
-        H(2)='reflection and wind exposure can be found in the '
-        H(3)='`model context` selection. Please CONFIRM that '
-        H(4)='the site information is correct for your model. '
-        CALL PHELPD('new site',4,'-',0,0,IER)
+        H(1)='Other site information, such as ground reflectivity and'
+        H(2)='wind exposure, have been automatically set to default'
+        H(3)='values and these may be changed via the `model context`'
+        H(4)='menu option accessed via the `browse/edit/simulate`'
+        H(5)='option of the present menu.'
+        CALL PHELPD('new site',5,'-',0,0,IER)
 
 C Create a system configuration file based on the registration
 C information.
@@ -562,6 +552,7 @@ C works. If path begins with /usr/esru then no need to prepend odir.
         write(outs,'(2a)') 'configuration files in ',
      &    subpath(1:lnblnk(subpath))
         call edisp(iuout,outs)
+        call edisp(iuout,' ')
       else
         continue
       endif
@@ -574,23 +565,23 @@ C works. If path begins with /usr/esru then no need to prepend odir.
 
   42  continue
       INO=-4
-      WRITE(ITEMS(1),'(2A)') '  name : ',LCFGF(1:24)
-      WRITE(ITEMS(2),'(2A)') '  path : ',path(1:23)
-      WRITE(ITEMS(3),'(A)')  '  ___relative paths to_______ '
-      WRITE(ITEMS(4),'(2A)') 'b  zones   : ',zonepth(1:20)
-      WRITE(ITEMS(5),'(2A)') 'c  control : ',ctlpth(1:20)
-      WRITE(ITEMS(6),'(2A)') 'd  network : ',netpth(1:20)
-      WRITE(ITEMS(7),'(2A)') 'e  images  : ',imgpth(1:20)
-      WRITE(ITEMS(8),'(2A)') 'f  document: ',docpth(1:20)
-      WRITE(ITEMS(9),'(2A)') 'g  temp    : ',tmppth(1:20)
-      WRITE(ITEMS(10),'(2A)')'h  radiance: ',radpth(1:20)
-      WRITE(ITEMS(11),'(2A)')'i  local db: ',dbspth(1:20)
+      WRITE(ITEMS(1),'(2A)') '  name: ',LCFGF(1:24)
+      WRITE(ITEMS(2),'(2A)') '  path: ',path(1:23)
+      WRITE(ITEMS(3),'(A)')  '  .... Relative paths to .... '
+      WRITE(ITEMS(4),'(2A)') 'b zones   : ',zonepth(1:20)
+      WRITE(ITEMS(5),'(2A)') 'c control : ',ctlpth(1:20)
+      WRITE(ITEMS(6),'(2A)') 'd network : ',netpth(1:20)
+      WRITE(ITEMS(7),'(2A)') 'e images  : ',imgpth(1:20)
+      WRITE(ITEMS(8),'(2A)') 'f document: ',docpth(1:20)
+      WRITE(ITEMS(9),'(2A)') 'g temp.   : ',tmppth(1:20)
+      WRITE(ITEMS(10),'(2A)')'h radiance: ',radpth(1:20)
+      WRITE(ITEMS(11),'(2A)')'i local db: ',dbspth(1:20)
       ITEMS(12)  =           ' _____________________________ '
-      ITEMS(13)  =           'j  zone files                  '
+      ITEMS(13)  =           'j zone files                  '
       ITEMS(14)  =           ' _____________________________ '
-      WRITE(ITEMS(15),'(A)') 'k look at an ASCII file        '
-      WRITE(ITEMS(16),'(A)') 'l edit an ASCII file           '
-      WRITE(ITEMS(17),'(A)') 'm strip model file annotations '
+      WRITE(ITEMS(15),'(A)') 'k list ASCII file              '
+      WRITE(ITEMS(16),'(A)') 'l edit ASCII file              '
+      WRITE(ITEMS(17),'(A)') 'm strip file annotations       '
       ITEMS(18)  =           '? help                         '
       ITEMS(19)  =           '- exit this menu               '
       nitems=19
@@ -599,36 +590,37 @@ C Help text for this menu.
       H(1)='This menu allows you to edit the information related'
       H(2)='to a project`s folders and files.'
       H(3)=' '
-      H(4)='The path options allow new files to be positioned in '
-      H(5)='standard folders.  The paths are relative to the '
-      H(6)='system configuration file. '
+      H(4)='The path options allow new files to be positioned in'
+      H(5)='standard folders. The paths are relative to the'
+      H(6)='location of the system configuration file.'
       H(7)=' '
-      H(8)='One option lists a specified ASCII file - sometimes'
+      H(8)='The option to examine a specified ASCII file is'
       H(9)='useful if you have need to directly view the contents'
       H(10)='of a problem describing entity such as the system'
-      H(11)='configuration file or a zone geometry file.  There'
+      H(11)='configuration file or a zone geometry file. There'
       H(12)='is also an option to strip comments from files where'
       H(13)='that will make them compatible with older versions'
-      H(14)='of the Project Manager.  '
+      H(14)='of the Project Manager.'
       H(15)=' '
-      H(16)='Editing an ASCII file - such as the job notes'
+      H(16)='Editing an ASCII file - such as the project log'
       H(17)='file - requires a text editor which is currently'
-      H(18)='defined to be:'
-      write(H(19),'(3a)')'      ',teditor(1:lnblnk(teditor)),'.'
-      H(20)='This can be re-defined in your .esprc file.'
+      write(H(18),'(3a)')'defined to be `',teditor(1:lnblnk(teditor)),
+     &                   '`.'
+      H(19)='This can be re-defined in your .esprc file.'
 
-      CALL EMENU('Project folders',ITEMS,nitems,INO)
+      CALL EMENU('Folders and Files',ITEMS,nitems,INO)
       IF(INO.EQ.nitems)THEN
         if(browse)then
           continue
         else
           if(changedit)then
             dok=.true.
-            h(1)='ESP-r thinks that recent changes have been made'
-            h(2)='with are in memory, but which might be lost if '
-            h(3)='they are not saved to file. '
-            h(4)='If in doubt, agree to saving the file. '
-            CALL ASKOK(' ','Update configuration file?',OK,dok,4)
+            h(1)='ESP-r thinks that recent model changes have been' 
+            h(2)='made. Because these changes are held only in'
+            h(3)='computer memory they will be lost if not saved to'
+            h(4)='file. Agree to updating the file.'
+            CALL ASKOK(' ','Update system configuration file?',
+     &                 OK,dok,4)
             if(OK)CALL EMKCFG('-',IER)
             if(ier.eq.0)CFGOK=.TRUE.
             changedit=.false.
@@ -636,23 +628,23 @@ C Help text for this menu.
         endif
         return
       elseif(ino.eq.nitems-1)then
-        CALL PHELPD('folders and files',20,'-',0,0,IER)
+        CALL PHELPD('folders and files',19,'-',0,0,IER)
       elseif(ino.eq.4)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to zones folder.'
+          H(2)='For example `../zones`.'
           t24=zonepth
-          CALL EASKS(t24,'Relative path (from cfg) to zones?',
-     &      ' ',24,'../zones','relative zones path',IER,1)
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to zones folder?',
+     &       24,'../zones','relative zones path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             zonepth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','zon','geo',sfile,snpfile,nli,iier)
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','zon','opr',sfile,snpfile,nli,iier)
             sfile=' '
             snpfile=' '
@@ -665,134 +657,129 @@ C            write(6,*) 'iier is ',iier,nli
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','zon','geo',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.5)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to controls folder.'
+          H(2)='For example `../ctl`.'
           t24=ctlpth
-          CALL EASKS(t24,'Relative path (from cfg) to controls?',
-     &      ' ',24,'../ctl','relative controls path',IER,1)
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to controls folder?',
+     &       24,'../ctl','relative controls path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             ctlpth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','ctl','fil',sfile,snpfile,nil,iier)
           endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','ctl','fil',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.6)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to networks folder.'
+          H(2)='For example `../nets`.'
           t24=netpth
-          CALL EASKS(t24,'Relative path (from cfg) to networks?',
-     &      ' ',24,'../nets','relative networks path',IER,1)
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to networks folder?',
+     &       24,'../nets','relative networks path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             netpth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','net','afn',sfile,snpfile,nli,iier)
-            call edisp(iuout,' ')
             call browsefilelist('p','net','gnf',sfile,snpfile,nli,iier)
             endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','net','afn',sfile,snpfile,nli,iier)
-          call edisp(iuout,' ')
           call browsefilelist('p','net','gnf',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.7)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to images folder.'
+          H(2)='For example `../images`.'
           t24=imgpth
-          CALL EASKS(t24,'Relative path (from cfg) to images?',
-     &      ' ',24,'../images','relative img path',IER,1)
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to images folder?',
+     &       24,'../images','relative img path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             imgpth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','img','fil',sfile,snpfile,nli,iier)
           endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','img','fil',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.8)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to documents folder.'
+          H(2)='For example `../docs`.'
           t24=docpth
-          CALL EASKS(t24,'Relative path (from cfg) to documents?',
-     &      ' ',24,'../doc','relative doc path',IER,1)
+          CALL EASKS(t24,'Relative path from cfg',
+     &       'folder to documents folder?',24,'../doc',
+     &        'relative doc path',IER,1)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             docpth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','doc','fil',sfile,snpfile,nli,iier)
           endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','doc','fil',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.9)then
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to temporary folder.'
+          H(2)='For example `../tmp`.'
           H(2)='Holds transient information.'
           t24=tmppth
-          CALL EASKS(t24,'Relative path (from cfg) to temp folder?',
-     &      ' ',24,'../doc','relative temp path',IER,2)
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to temporary folder?',24,'../doc',
+     &      'relative temp path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             tmppth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
           endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.10)then
         if(.NOT.browse)then
-          H(1)='Give relative path from cfg to radiance folder.'
-          h(2)='(where sky, materials, surfaces held) '
+          H(1)='Give relative path from cfg to Radiance folder.'
+          H(2)='For example `../rad`.'
           t24=radpth
-          CALL EASKS(t24,
-     &      'Relative path (from cfg) to radiance descriptive files?',
-     &      ' ',24,'../rad','relative radiance path',IER,2)
+          CALL EASKS(t24,'Relative path from cfg folder',
+     &      'folder to Radiance folder?',24,'../rad',
+     &      'relative radiance path',IER,2)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             radpth=t24
             changedit=.true.
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('p','rad','fil',sfile,snpfile,nli,iier)
           endif
         else
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
           call browsefilelist('p','rad','fil',sfile,snpfile,nli,iier)
         endif
       elseif(ino.eq.11)then
@@ -824,16 +811,16 @@ C Loop back and see if another zone is requested.
 C List out an ASCII file.
         H(1)='The specified ASCII file will be read and displayed'
         H(2)='in the text window page by page.'
-    6   CALL EASKS(LFIL,' ASCII file name?',
-     &    ' ',72,' ','ASCII file',IER,2)
+    6   CALL EASKS(LFIL,' ','ASCII file name?',
+     &            72,' ','ASCII file',IER,2)
 
         IUNIT=IFIL+1
         CALL LISTAS(IUNIT,LFIL,IER)
         IF(IER.LT.0)THEN
           dok=.false.
-          h(1)='Chance to correct error in file name or location. '
+          h(1)='Chance to correct error in file name or location.'
           CALL ASKOK(' Problem detected while trying to open',
-     &                ' ASCII file.  Try again?',OK,dok,1)
+     &                ' ASCII file. Try again?',OK,dok,1)
           IF(OK)GOTO 6
         ENDIF
       elseif(ino.eq.16)then
@@ -842,8 +829,8 @@ C Allow user to edit a file. Append to path if necessary.
 C If vi then spawn a new window to do the editing in.
         H(1)='An ASCII format file can be edited using the current'
         H(2)='defined text editor.'
-        CALL EASKS(LFIL,' ASCII file to edit ? ',
-     &    ' ',72,' ','ASCII file',IER,2)
+        CALL EASKS(LFIL,' ','ASCII file to edit?',
+     &              72,' ','ASCII file',IER,2)
         call isunix(unixok)
         if(unixok)then
           call addpath(LFIL,longtfile,concat)
@@ -866,8 +853,8 @@ C and change any / to \.
 C Ask for commented file name and open it, IER=-301 if not found.
         H(1)='An annotated file may be stripped of all comments'
         H(2)='so that it is compatible with older applications.'
-    8   CALL EASKS(LFIL,' Commented file name?',
-     &    ' ',72,' ','commented file name',IER,2)
+    8   CALL EASKS(LFIL,' ','Commented file name?',
+     &               72,' ','commented file name',IER,2)
 
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,LFIL,1,IER)
@@ -876,8 +863,8 @@ C Ask for commented file name and open it, IER=-301 if not found.
 C Ask for name of file to put uncommented text into.
         H(1)='An annotated file may be stripped of all comments'
         H(2)='so that it is compatible with older applications.'
-    9   CALL EASKS(SFILE,' Uncommented file name?',
-     &    ' ',72,' ','Uncommented file name',IER,2)
+    9   CALL EASKS(SFILE,' ','Uncommented file name?',
+     &            72,' ','Uncommented file name',IER,2)
 
 c Place output into IFIL+2, first close that unit, open any exiting
 C file with this name, delete it and create a new file.
@@ -891,8 +878,9 @@ C Loop until end of file encountered and display stripped text.
         IF(IER.EQ.1)GOTO 42
         WRITE(ISUNIT,'(a)')OUTSTR(1:LNBLNK(OUTSTR))
         CALL edisp(iuout,OUTSTR)
+        CALL edisp(iuout,' ')
         goto 73
-   72   CALL USRMSG(' ',' reached end of source file ','-')
+   72   CALL USRMSG(' ','Reached end of source file.','-')
         CALL ERPFREE(ISUNIT,ISTAT)
       else
         goto 42
@@ -920,22 +908,24 @@ C ifocus (char*4) image focus '****' 'FZON' 'FNET' 'FCTL' 'FDFS' or 'FPER'
 
 C Display current information.
       ier=0
-      call edisp(iuout,'The current image is:')
-      call edisp(iuout,'Format  Focus File')
-      write(outs,'(6a)') ' ',iformat,' ',ifocus,' ',limg(1:lnblnk(limg))
-      call edisp(iuout,outs)
+C      call edisp(iuout,'The current image is:')
+C      call edisp(iuout,'Format  Focus File')
+C      write(outs,'(6a)') ' ',iformat,' ',ifocus,' ',
+C     &  limg(1:lnblnk(limg))
+C      call edisp(iuout,outs)
 
- 242  H(1)='Images will be displayed when the project is '
-      H(2)='loaded.  The default image type is GIF. '
-      CALL EASKS(limg,' Name of image file? ',
-     &  ' ',72,'first.gif','image file',IER,2)
+ 242  H(1)='Images will be displayed when the project is loaded.'
+      H(2)='The default image type is GIF.'
+      CALL EASKS(limg,' ','Name of image file?',
+     &          72,'first.gif','image file',IER,2)
       if(limg(1:2).eq.'  '.or.limg(1:4).eq.'UNKN')goto 242
       XST=.false.
       call findfil(limg,XST)
       if(.NOT.XST)then
         dok=.false.
-        h(1)='Chance to change file name or location. '
-        CALL ASKOK('Could not locate this image.','Try again?',OK,dok,1)
+        h(1)='Chance to change file name or location.'
+        CALL ASKOK('Could not locate image file.','Try again?',
+     &             OK,dok,1)
         if(OK)then
           goto 242
         else
@@ -944,10 +934,10 @@ C Display current information.
         endif
       endif
 
-      H(1)='Select one of these standard image types. Such types '
-      H(2)='should have a related display application specified '
-      H(3)='in the .esprc file ie. *image_display  TIF     xv.'
-      call EASKATOG(' Format of image:',' ',
+      H(1)='Select one of these standard image types. Each type'
+      H(2)='must have a related display application specified'
+      H(3)='in your .esprc file, e.g. *image_display GIF xv.'
+      call EASKATOG(' ','Image format?',
      &  'GIF','TIFF','XBM','XWD','other',' ',' ',IRT,3)
       if(IRT.eq.1)then
         write(iformat,'(a4)') 'GIF '
@@ -962,18 +952,19 @@ C Display current information.
         H(2)='format tags can be linked to display applications '
         H(3)='in the .esprc file. ie. XWD xwud -in '
         t5='**** '
-        CALL EASKS(t5,' Character code (see help) for image type?',
-     &    ' ',5,'****','usr image type',IER,3)
+        CALL EASKS(t5,' ','Image type character code?',
+     &               5,'****','image char code',IER,3)
         if(t5(1:1).eq.' ')goto 145
         iformat=t5(1:4)
       endif
 
-      h(1)='If an image is general it will be displayed when the '
-      h(2)='model is loaded, otherwise it will be displayed only'
-      h(3)='in a particular context - say with plant facilities. '
-      call EASKATOG(' Focus of image:',' ',
-     &  'general','site/zone/gridding','networks','control',
-     &  'CFD','performance','other',IRF,3)
+      h(1)='If an image is tagged `general` then it will be'
+      h(2)='displayed when the model is loaded, otherwise it'
+      h(3)='will only be displayed when requested via a graphic'
+      h(3)='display button.'
+      call EASKATOG(' ','Image focus?',
+     &  'general','building','networks','control',
+     &  'CFD','performance','other',IRF,4)
       if(IRF.eq.1)then
         write(ifocus,'(a4)') '****'
       elseif(IRF.eq.2)then
@@ -987,11 +978,11 @@ C Display current information.
       elseif(IRF.eq.6)then
         write(ifocus,'(a4)') 'FPER'
       else
- 144    H(1)='Image files can have a 4 character focus. Special'
-        H(2)='focus tags are: FGRD (3D gridding), F??? (). '
+ 144    H(1)='Image files have a 4 character focus tag, e.g.'
+        H(2)='FZON for zones, FNET for networks etc.'
         t5='**** '
-        CALL EASKS(t5,' Character code (see help) for image focus?',
-     &    ' ',5,'**** ','usr image focus',IER,2)
+        CALL EASKS(t5,' ','Image type character code?',
+     &    5,'**** ','usr image focus',IER,2)
         if(t5(1:1).eq.' ')goto 144
         ifocus=t5(1:4)
       endif
@@ -1177,7 +1168,7 @@ C IWC is for optional files, IW is the overall width.
       ITEMS(23)='- exit this menu                   '
       MITEM=23
 
-C Help text for thie menu.
+C Help text for this menu.
       H(1)='The files defining the composition of a zone are'
       H(2)='listed in this menu. In the case of a blank entry,'
       H(3)='the file is optional and is not currently defined.'
@@ -1263,11 +1254,11 @@ C Edit zone name - read and then write the geometry file.
           goto 3
         endif
         CALL EGOMIN(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
-        H(1)='The zone description is used as an identifier during'
-        H(2)='results analysis.  Names should be unique.'
+        H(1)='The zone name is used as an identifier during'
+        H(2)='results analysis. Names should be unique.'
         T15=zname(IZ)
         D15='new_zone'
-        CALL EASKS(T15,' ',' Zone name?',12,D15,'zone name',IER,2)
+        CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
           CALL EMKGEO(IUF,LGEOM(IZ),IZ,iuout,3,IER)
@@ -1314,14 +1305,12 @@ C Edit zone name - read and then write the geometry file.
         elseif(IW.EQ.2)then
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
-          call browsefilelist('?','zon','con',sfile,snpfile,nfile,
-     &      iier)
+          call browsefilelist('?','zon','con',sfile,snpfile,nfile,iier)
           if(nfile.gt.0)then
             sfile=' '
             snpfile=' '
             call browsefilelist('b','zon','con',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(snpfile(1:2).ne.'  ')then
               write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &          snpfile(1:lnblnk(snpfile))
@@ -1361,14 +1350,12 @@ C Edit zone name - read and then write the geometry file.
         elseif(IW.EQ.2)then
           sfile=' '
           snpfile=' '
-          call edisp(iuout,' ')
-          call browsefilelist('?','zon','opr',sfile,snpfile,nfile,
-     &      iier)
+          call browsefilelist('?','zon','opr',sfile,snpfile,nfile,iier)
           if(nfile.gt.0)then
             sfile=' '
             snpfile=' '
             call browsefilelist('b','zon','opr',sfile,snpfile,nfile,
-     &        iier)
+     &                           iier)
             if(snpfile(1:2).ne.'  ')then
               write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &          snpfile(1:lnblnk(snpfile))
@@ -1403,14 +1390,13 @@ C Edit zone name - read and then write the geometry file.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
-     &          iier)
+     &                          iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1438,14 +1424,13 @@ C There is no zone obstructions file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
-     &          iier)
+     &                          iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1488,14 +1473,13 @@ C There is no zone obstructions file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','tmc',sfile,snpfile,nfile,
-     &        iier)
+     &                           iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','tmc',sfile,snpfile,nfile,
-     &          iier)
+     &                           iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1523,14 +1507,13 @@ C There is no zone optic file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','tmc',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','tmc',sfile,snpfile,nfile,
-     &          iier)
+     &                           iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1573,14 +1556,13 @@ C There is no zone optic file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','vwf',sfile,snpfile,nfile,
-     &        iier)
+     &                           iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','vwf',sfile,snpfile,nfile,
-     &          iier)
+     &                            iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1608,14 +1590,13 @@ C There is no zone viewfactor file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','vwf',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','vwf',sfile,snpfile,nfile,
-     &          iier)
+     &                           iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1659,14 +1640,13 @@ C There is no zone viewfactor file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','cgc',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','cgc',sfile,snpfile,nfile,
-     &          iier)
+     &                          iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1694,14 +1674,13 @@ C There is no zone casual gain control file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','cgc',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','cgc',sfile,snpfile,nfile,
-     &          iier)
+     &                          iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1747,14 +1726,13 @@ C There is no zone casual gain control file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','shd',sfile,snpfile,nfile,
-     &        iier)
+     &                         iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','shd',sfile,snpfile,nfile,
-     &          iier)
+     &                           iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1782,14 +1760,13 @@ C There is no zone shading file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','shd',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','shd',sfile,snpfile,nfile,
-     &          iier)
+     &                           iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1840,14 +1817,13 @@ C There is no zone shading file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','htc',sfile,snpfile,nfile,
-     &        iier)
+     &                           iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','htc',sfile,snpfile,nfile,
-     &          iier)
+     &                             iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -1867,7 +1843,7 @@ C There is no zone shading file so offer restricted choice.
           endif
         else
 
-C There is no zone viewfactor file so offer restricted choice.
+C There is no zone view factor file so offer restricted choice.
           CALL EASKABC(' For zone convection regime file',' :',
      &      'edit name','browse','continue',IW,3)
           if(IW.EQ.1)then
@@ -1875,14 +1851,13 @@ C There is no zone viewfactor file so offer restricted choice.
           elseif(IW.EQ.2)then
             sfile=' '
             snpfile=' '
-            call edisp(iuout,' ')
             call browsefilelist('?','zon','htc',sfile,snpfile,nfile,
-     &        iier)
+     &                          iier)
             if(nfile.gt.0)then
               sfile=' '
               snpfile=' '
               call browsefilelist('b','zon','htc',sfile,snpfile,nfile,
-     &          iier)
+     &                          iier)
               if(snpfile(1:2).ne.'  ')then
                 write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
@@ -2000,17 +1975,19 @@ C There is no zone viewfactor file so offer restricted choice.
 
         WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.3dt'
         D = 'new.3dt'
-        H(1)='The 3D nodes temperatures file defines ...'
-        H(2)='<< more text to be added here >>'
+        H(1)='The 3D nodes temperatures file defines the'
+        H(2)='location of additional construction nodes'
+        H(3)='corresponding to the finer discretisation'
+        H(4)='of a multi-layered construction.'
         CALL EASKS(L,' 3D node temperatures file?',
-     &      ' ',72,D,'3D temperatures file',IER,2)
+     &      ' ',72,D,'3D temperatures file',IER,4)
         if(L(1:2).ne.'  ')L3DTAQ(IZ)=L
         ZONE3D(IZ)=.true.
         modcfg=.TRUE.
       ELSEIF(INO.EQ.18)THEN
         if(browse)then
           call usrmsg('Cannot update model while in browse ',
-     &                'mode, you must `own` the model!','W')
+     &                'mode, you must first `own` the model!','W')
           goto 3
         endif
         H(1)='Moisture transport data is required for adaptive '

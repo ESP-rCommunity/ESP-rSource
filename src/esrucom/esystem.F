@@ -1867,7 +1867,7 @@ C Fill in a default zone name if blank or UNKNOWN.
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
         endif
 
 C Reporting.
@@ -1875,32 +1875,32 @@ C Reporting.
           WRITE(OUTS,'(a,i3,a,i3,2a)',IOSTAT=ISTAT,ERR=1) ' Zone',
      &        ICOMP,' index',NCCODE(ICOMP),'Named: ',zname(ICOMP)
           CALL EDISP(iuout,OUTS)
-          WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Operations   : ',
+          WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Operations: ',
      &        LPROJ(ICOMP)(1:LNBLNK(LPROJ(ICOMP)))
           CALL EDISP(iuout,OUTS)
-          WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Geometry     : ',
+          WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Geometry: ',
      &        LGEOM(ICOMP)(1:LNBLNK(LGEOM(ICOMP)))
           CALL EDISP(iuout,OUTS)
           WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Constructions: ',
      &        LTHRM(ICOMP)(1:LNBLNK(LTHRM(ICOMP)))
           CALL EDISP(iuout,OUTS)
           IF(IOBS(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions: ',
      &          ZOBS(ICOMP)(1:LNBLNK(ZOBS(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(ITW(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Transp constr : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Transp. constr: ',
      &          LTWIN(ICOMP)(1:LNBLNK(LTWIN(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(IVF(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Viewfactors: ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' View factors: ',
      &          LVIEW(ICOMP)(1:LNBLNK(LVIEW(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(ICGC(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Casual contrl : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Casual contrl: ',
      &          LCGCIN(ICOMP)(1:LNBLNK(LCGCIN(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
@@ -1910,25 +1910,25 @@ C Reporting.
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(IHC(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Convect htc : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Convect. coeff: ',
      &          LHCCO(ICOMP)(1:LNBLNK(LHCCO(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
 
 C Include SHOCC zone file name in the report.
           IF(bZoneSHOCCed(ICOMP))THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' SHOCC inputs : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' SHOCC inputs: ',
      &          SHOCCshzFile(ICOMP)(1:LNBLNK(SHOCCshzFile(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
 
           IF(iBSIMP(ICOMP).EQ.1)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' BASESIMP inputs : ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' BASESIMP inputs: ',
      &          LBSIMP(ICOMP)(1:LNBLNK(LBSIMP(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(IFCFD(ICOMP).GT.0)THEN
-            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Cfd domain: ',
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' CFD domain: ',
      &          LCFD(ICOMP)(1:LNBLNK(LCFD(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
@@ -1983,10 +1983,10 @@ C Read in the building connectivity information.
           CALL EGETWI(OUTSTR,K,NCON,3,MCON,'W','no connex',IER)
           IF(IER.NE.0) GOTO 1
         else
-          CALL USRMSG(' connections file not found ',LCNN,'W')
+          CALL USRMSG('Connections file not found!',LCNN,'W')
           if(dll)then
             dllsubr='ersys'
-            dllmesg='The connections file does not exist.'
+            dllmesg='Connections file does not exist!'
             ier=2
             return
           else
@@ -2036,23 +2036,23 @@ C If ground connection IC2=0 then IE2 will be the profile.
         IF(ICT(ICON).EQ.4)THEN
           IF(IC2(ICON).EQ.0.AND.IE2(ICON).GT.NGRDP)THEN
             CALL USRMSG(
-     &       'Ground connection referenced an unknown monthly profile!',
+     &      'Ground connection referenced an unknown monthly profile!',
      &        OUTSTR,'W')
           ENDIF
           IF(IC2(ICON).EQ.-3.AND..NOT.GRND3D)CALL USRMSG(
-     &    ' 3D ground model not available but referenced in',OUTSTR,'W')
+     &    '3D ground model not available but referenced in',OUTSTR,'W')
         ENDIF
 
 C Range checking.
         IF(ICT(ICON).EQ.0)THEN
           IF(IC2(ICON).NE.0.OR.IE2(ICON).NE.0) CALL USRMSG(
-     &      ' Ext conn (4th & 5th items) should be 0 in',OUTSTR,'W')
+     &      'Ext conn (4th & 5th items) should be 0 in',OUTSTR,'W')
         ENDIF
         IF(ICT(ICON).EQ.3)THEN
           IF(IC2(ICON).LT.1.OR.IC2(ICON).GT.MCOM)CALL USRMSG(
-     &      ' Int conn other zone (4th item) unknown in',OUTSTR,'W')
+     &      'Int conn other zone (4th item) unknown in',OUTSTR,'W')
           IF(IE2(ICON).LT.1.OR.IE2(ICON).GT.MS)CALL USRMSG(
-     &      ' Int conn other surf (5th item) unknown in',OUTSTR,'W')
+     &      'Int conn other surf (5th item) unknown in',OUTSTR,'W')
         ENDIF
    21 CONTINUE
 

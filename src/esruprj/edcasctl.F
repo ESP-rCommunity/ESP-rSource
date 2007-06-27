@@ -417,7 +417,8 @@ C Write data.
      &    ' Updating model for casual gain control...done.',' ','-')
       ELSEIF(INO.EQ.NITEMS-3)THEN
 
-C List data.
+C List data. This is similar to code in ercgcf.
+C <<  Perhaps this could be joined together? >>
         call edisp(iuout,' ')
         write(outs,'(A,I2)') ' Zone ',ICOMP
         call edisp(iuout,outs)
@@ -475,11 +476,15 @@ C List data.
           call edisp(iuout,'  ')
           if(IDFST(ICOMP,NLZ).eq.1.or.IDFST(ICOMP,NLZ).eq.2.or.
      &      IDFST(ICOMP,NLZ).eq.4)then
-           call edisp(iuout,' Sensor|  X  |  Y  |  Z  | DX | DY | DZ |')
-           call edisp(iuout,' no.   |     |     |     |    |    |    |')
+           call edisp(iuout,
+     &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |')
+           call edisp(iuout,
+     &       ' no.   |      |      |      |     |     |     |')
           elseif(IDFST(ICOMP,NLZ).eq.5)then
-      call edisp(iuout,' Sensor|  X  |  Y  |  Z  | DX | DY | DZ | DC| ')
-      call edisp(iuout,' no.   |     |     |     |    |    |    |   | ')
+           call edisp(iuout,
+     &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC| ')
+           call edisp(iuout,
+     &       ' no.   |      |      |      |     |     |     |    | ')
           elseif(IDFST(ICOMP,NLZ).eq.3)then
             call edisp(iuout,' Sensor | Sensor |')
             call edisp(iuout,' posit. | type   |')
@@ -491,13 +496,13 @@ C List data.
               write(outs,9914)J,CGX(ICOMP,NLZ,J),CGY(ICOMP,NLZ,J),
      &        CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
      &        UH(ICOMP,NLZ,J)
- 9914         format(i7,3F6.1,3F5.1)
+ 9914         format(i7,3F7.2,3F6.2)
               call edisp(iuout,outs)
             elseif(IDFST(ICOMP,NLZ).eq.5)then
               write(outs,9915)J,CGX(ICOMP,NLZ,J),CGY(ICOMP,NLZ,J),
      &        CGH(ICOMP,NLZ,J),UX(ICOMP,NLZ,J),UY(ICOMP,NLZ,J),
      &        UH(ICOMP,NLZ,J),IDCFID(ICOMP,NLZ,J)
- 9915         format(i7,3F6.1,3F5.1,I4)
+ 9915         format(i7,3F7.2,3F6.2,I4)
               call edisp(iuout,outs)
             elseif(IDFST(ICOMP,NLZ).eq.3)then
               write(outs,9916)CGX(ICOMP,NLZ,1),CGY(ICOMP,NLZ,1)
@@ -527,10 +532,19 @@ C List data.
  9985     CONTINUE
 
           call edisp(iuout,' ')
-          call edisp(iuout,' Start| Finish| Control| ')
-          call edisp(iuout,'  Hour|   Hour|    Type| ')
-          write(outs,'(2I7,I8)')ICGCS(ICOMP),ICGCF(ICOMP),
-     &      ICGCFL(ICOMP,NLZ)
+          call edisp(iuout,' Start| Finish| Control     | ')
+          call edisp(iuout,'  Hour|   Hour|    Type     | ')
+          info='unknown control'
+          if(ICGCFL(ICOMP,NLZ).eq.-1) info='Always On'
+          if(ICGCFL(ICOMP,NLZ).eq.0)  info='Always Off'
+          if(ICGCFL(ICOMP,NLZ).eq.1)  info='On-Off'
+          if(ICGCFL(ICOMP,NLZ).eq.2)  info='Step 100:50:0'
+          if(ICGCFL(ICOMP,NLZ).eq.3)  info='Dimming - ideal'
+          if(ICGCFL(ICOMP,NLZ).eq.4)  info='On-Off probability'
+          if(ICGCFL(ICOMP,NLZ).eq.31) info='Dimming-int. reset'
+          if(ICGCFL(ICOMP,NLZ).eq.32) info='Dimming-closd loop'
+
+          write(outs,'(2I7,1x,A)')ICGCS(ICOMP),ICGCF(ICOMP),info
           call edisp(iuout,outs)
 
           IF(ICGCFL(ICOMP,NLZ).EQ.31.OR.ICGCFL(ICOMP,NLZ).EQ.32)THEN
