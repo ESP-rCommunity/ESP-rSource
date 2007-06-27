@@ -1,0 +1,12 @@
+# transparent properties of main_second defined in ../zones/main_second.tmc
+  18   # surfaces
+# tmc index for each surface
+ 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 0 0 0
+   3  ccht-win     # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.624   0.602   0.544   0.385   0.186   0.890
+# For each layer absorption @ 5 angles
+   0.095   0.105   0.115   0.129   0.135
+   0.001   0.001   0.001   0.001   0.001
+   0.135   0.137   0.130   0.109   0.064
+   0  # blind/shutter control flag
