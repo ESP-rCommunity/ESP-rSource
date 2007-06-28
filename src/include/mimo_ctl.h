@@ -35,7 +35,7 @@ C.....MAX numbers of sensors, actuators, periods, day-types, loops...
       parameter ( mMIMOList = 24 ) 
       
       integer mMIMOLoc
-      parameter ( mMIMOLoc = 4 )
+      parameter ( mMIMOLoc = 3 )
       
       integer mMIMOLoop
       parameter ( mMIMOLoop = 48 )
@@ -53,13 +53,17 @@ C.....Version info
 C.....SENSOR parameters
       integer       iSenCount                       ! # of sensors 
       character*24  cSenName(mMIMOList)             ! Sensor names
-      integer       iSenLoc(mMIMOList,mMIMOLoc)     ! Sensor locatation data
+      character*3   cSenDomain(mMIMOList)           ! Sensor domain
+      character*12  cSenObject(mMIMOList)           ! Sensor object
+      integer       iSenLoc(mMIMOList,mMIMOLoc)     ! Sensor locataion data
       character*12  cSenProp(mMIMOList)             ! Sensed peoperty
       
 C.....Actuator parameters
       integer       iActCount                       ! # of Actuators 
       character*24  cActName(mMIMOList)             ! Actuator names
-      integer       iActLoc(mMIMOList,mMIMOLoc)     ! Actuator locatation data
+      character*3   cActDomain(mMIMOList)           ! Actuator domain 
+      character*12  cActObject(mMIMOList)           ! Actuator object
+      integer       iActLoc(mMIMOList,mMIMOLoc)     ! Actuator locataion data
       character*24  cActVariable(mMIMOList)         ! Actuated variable 
       real          fActMAX(mMIMOList)              ! Actuator max 
       real          fActMIN(mMIMOList)              ! Actuator min

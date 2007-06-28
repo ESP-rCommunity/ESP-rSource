@@ -271,15 +271,17 @@ C-----------------------------------------------------------------------
 C       Parse sensors:
 C-----------------------------------------------------------------------
         elseif ( bSENSOR_block_open ) then 
-C..........EACH line contains 5 data items describing a sensor:
-C.......... NAME, w, x, y, sensed-property
-            if ( iWdCount == 5 ) then 
+C..........EACH line contains 7 data items describing a sensor:
+C.......... NAME, DOMAIN, OBJECT w, x, y, sensed-property
+            if ( iWdCount == 7 ) then 
               iSenCount = iSenCount + 1
               cSenName ( iSenCount ) = cLnWords(1)(1:24)
-C.............Location data: 1-4              
-              do ii = 1, 3
+              cSenDomain (iSenCount) = cLnWords(2)(1:3)
+              cSenObject (iSenCount) = cLnWords(3)(1:12)
+C.............Location data: 1-3              
+              do ii = 1, mMIMOLoc
                 iSenLoc  ( iSenCount, ii) =
-     &                       iCtoI ( cLnWords(ii+1), bError )
+     &                       iCtoI ( cLnWords(ii+3), bError )
                 if (bError) then 
                   bFatal_Error = .true.
                    write (cMsg,'(A,I2,A,I2,A)')
@@ -289,7 +291,7 @@ C.............Location data: 1-4
                 endif 
               enddo
 C.............Sensed property
-              cSenProp( iSenCount ) = cLnWords(5)(1:12)
+              cSenProp( iSenCount ) = cLnWords(7)(1:12)
               ! Test for sensed property keyword to go here...
             else 
 C..............Error trap here...            
@@ -297,7 +299,7 @@ C..............Error trap here...
                 write (cMsg,'(A,A,I2,A,I2,A)')
      &                 ' Incorrect number of data items',
      &                 ' provided to sensor #',iSenCount+1,
-     &                 ' (expected 5, found ', iWdCount,').'
+     &                 ' (expected 7, found ', iWdCount,').'
                 call edisp(iUout, cMsg)
 
             endif           
@@ -306,15 +308,17 @@ C       Parse actuators
 C-----------------------------------------------------------------------        
         elseif ( bACTUATOR_block_open ) then 
         
-C.........EACH line contains 7 data items describing an actuator:
-C.........NAME, w, x, y, Actuated propoerty, max val, min val
-          if ( iWdCount == 7 ) then 
+C.........EACH line contains 8 data items describing an actuator:
+C.........NAME, DOMAIN, OBJECT,  w, x, y, min val, max val
+          if ( iWdCount == 8 ) then 
             iActCount = iActCount + 1
             cActName ( iActCount ) = cLnWords(1)(1:24)
+            cActDomain ( iActCount ) = cLnWords(2)(1:3)
+            cActObject ( iActCount ) = cLnWords(3)(1:3)
 C...........Location data: 1-3
-            do ii = 1, 3
+            do ii = 1, mMIMOLoc
               iActLoc  ( iActCount, ii) =
-     &                     iCtoI ( cLnWords(ii+1), bError )
+     &                     iCtoI ( cLnWords(ii+3), bError )
               
               if (bError) then 
                 bFatal_Error = .true.
@@ -327,18 +331,9 @@ C...........Location data: 1-3
               
             enddo
             
-C...........Read actuated parameter:
-            cActVariable(iActCount) = cLnWords(5)(1:24)
             
 C...........MAX and min values for act throttling range 
-            fActMAX ( iActCount ) = fCtoR ( cLnWords(6), bError )
-            if (bError) then 
-              bFatal_Error = .true.
-               write (cMsg,'(A,A,I2,A)')
-     &                    ' Could not parse MAX value',
-     &                    'in actuator #',iActCount,'.'
-              call edisp(iUout, cMsg)
-            endif
+
             fActMIN ( iActCount ) = fCtoR ( cLnWords(7), bError )
             if (bError) then 
               bFatal_Error = .true.
@@ -347,13 +342,23 @@ C...........MAX and min values for act throttling range
      &                    'in actuator #',iActCount,'.'
               call edisp(iUout, cMsg)
             endif
+            
+            fActMAX ( iActCount ) = fCtoR ( cLnWords(8), bError )
+            if (bError) then 
+              bFatal_Error = .true.
+               write (cMsg,'(A,A,I2,A)')
+     &                    ' Could not parse MAX value',
+     &                    'in actuator #',iActCount,'.'
+              call edisp(iUout, cMsg)
+            endif            
+            
           else 
 C............Error trap here...            
               bFatal_Error = .true.
               write (cMsg,'(A,A,I2,A,I2,A)')
      &               ' Incorrect number of data items',
      &               ' provided to actuator #',iActCount+1,
-     &               ' (expected 7, found ', iWdCount,').'
+     &               ' (expected 8, found ', iWdCount,').'
               call edisp(iUout, cMsg)
           
           endif                   
@@ -809,7 +814,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     Loop through specified controls. If 
-C
+C-----------------------------------------------------------------------
       if ( cDomain(1:3) == 'bld' ) then
       
       elseif ( cDomain(1:3) == 'plt' ) then
