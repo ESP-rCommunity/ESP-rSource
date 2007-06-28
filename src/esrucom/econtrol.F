@@ -1542,7 +1542,7 @@ C MIMO control
       elseif ( iborp .eq. 6 ) then 
       
         call mimo_ctl_read(IUNIT,IER)
-      
+        if ( iER .ne. 0 ) goto 99
 
       endif 
 

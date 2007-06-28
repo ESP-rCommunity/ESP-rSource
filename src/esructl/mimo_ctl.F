@@ -80,6 +80,7 @@ C-----------------------------------------------------------------------
 C.....Warning messages
       character*124 cMsg          ! message to be displayed to buffer
       character*124 cContext      ! contextual message
+      character*32 cBuffer        ! misc buffer
 
 
 C-----------------------------------------------------------------------
@@ -88,6 +89,10 @@ C-----------------------------------------------------------------------
       integer iEGetArrW                ! Split string into words.
       integer iCtoI                    ! Turn a string into an integer
       real    fCtoR                    ! Turn a string into a float 
+      logical bParseDate               ! Parse an ISO date (DD-MM-YYYY)
+      logical bMatchNameToIndex        ! Search for strings in a list 
+C-----------------------------------------------------------------------  
+C-----------------------------------------------------------------------  
       
 C.....Initailize flags      
       bMIMO_block_open        = .true.
@@ -104,12 +109,16 @@ C.....Initailize flags
       bFatal_Error = .false. 
 
 C.....Initialize counters.
-      iSenCount = 0
+      iSenCount  = 0
+      iActCount  = 0
+      iDayCount  = 0
+      iPerCount  = 0
+      iLoopCount = 0
       
 C----------------------------------------------------------------------
 C     Contextual message
 C----------------------------------------------------------------------
-      write (cContext, '(A)') ' Parsing MIMO section of control file'
+      write (cContext, '(A)') ' Parsing MIMO section of control file...'
       call edisp ( iuout, ' ' )
       call edisp ( iuout, cContext)
       cContext = ' ' 
@@ -119,8 +128,7 @@ C     Loop through file
 C-----------------------------------------------------------------------      
       
       do while ( iFile_read_err == 0 .and. 
-     &           bMIMO_block_open    .and.
-     &           .not. bFatal_Error        )
+     &           bMIMO_block_open           )
       
 C.......Empty buffer
         cLnBuffer = ' '
@@ -134,30 +142,38 @@ C.......Get line & strip comments
 C.......Split words
         iWdCount = iEGetArrW ( cLnBuffer, cLnWords )
 
-!         print*, 'MIMO:(',iWdCount,')',cLnBuffer
-
        
 
 C-----------------------------------------------------------------------
 C       Parse block-open/block-close flags beginning with '*'
 C-----------------------------------------------------------------------
         if ( cLnWords(1)(1:1) == '*' ) then
+
+C.........VERSION NUMBER 
+          if ( cLnWords(2)(1:7) == 'VERSION' ) then
+            fMIMOVersion = fCtoR ( cLnWords(3), bError ) 
+            if ( bError ) then 
+              bFatal_Error = .true. 
+              write (cMsg,'(A,A,A)')
+     &             ' Could not parse version number (',
+     &             cLnWords(3)(1:lnblnk(cLnWords(3))),
+     &             ').'
+              call edisp(iUout, cMsg)
+            endif 
+          endif 
+
 C.........MIMO block          
           if ( cLnWords(2)(1:4) == 'MIMO' .and.
      &         cLnWords(3)(1:3) == 'END'         ) then
-
             bMIMO_block_open = .false. 
-            call mimo_debug ('MIMO block closed')
           endif 
         
 C.........SENSOR block
           if ( cLnWords(2)(1:7) == 'SENSORS' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bSENSOR_block_open = .false. 
-              call mimo_debug('SENSOR block closed')
             else 
               bSENSOR_block_open = .true. 
-              call mimo_debug('SENSOR block opened')
             endif 
           endif 
 
@@ -165,10 +181,8 @@ C.........ACTUATOR block
           if ( cLnWords(2)(1:9) == 'ACTUATORS' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bACTUATOR_block_open = .false. 
-              call mimo_debug('ACTUATOR block closed')
             else 
               bACTUATOR_block_open = .true. 
-              call mimo_debug('ACTUATOR block opened')
             endif 
           endif 
           
@@ -176,10 +190,8 @@ C.........PERIOD block
           if ( cLnWords(2)(1:7) == 'PERIODS' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bPERIOD_block_open = .false. 
-              call mimo_debug('PERIOD block closed')
             else 
               bPERIOD_block_open = .true.
-              call mimo_debug('PERIOD block opened') 
             endif 
           endif           
           
@@ -187,43 +199,34 @@ C.........DAYTYPES block
           if ( cLnWords(2)(1:9) == 'DAY-TYPES' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bDAYTYPE_block_open = .false. 
-              call mimo_debug('DAYTYPES block closed')
             else 
-              bDAYTYPE_block_open = .false. 
-              call mimo_debug('DAYTYPES block opened')
+              bDAYTYPE_block_open = .true. 
             endif 
           endif           
-
-C.........CONTROL LOOPS block
-          if ( cLnWords(2)(1:) == 'CONTROL-LOOPS' ) then
-            if ( cLnWords(3)(1:3) == 'END' ) then 
-              bCONTROLS_block_open = .false. 
-              call mimo_debug('CONTROLS block closed')
-            else 
-              bCONTROLS_block_open = .false. 
-              call mimo_debug('CONTROLS block opened')
-            endif 
-          endif   
           
 C.........LOOP block
-          if ( cLnWords(2)(1:) == 'LOOP' ) then
+          if ( cLnWords(2)(1:4) == 'LOOP' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bLOOP_block_open = .false. 
-              call mimo_debug('LOOP block closed')
             else 
-              bLOOP_block_open = .false. 
-              call mimo_debug('LOOP block opened')
+              bLOOP_block_open = .true. 
+C.............Increment loop counter
+              iLoopCount = iLoopCount + 1
+              
+C.............Initialize data counter for this loop. 
+              iLoopDataCount(iLoopCount) = 0
+              
             endif 
           endif   
                     
 C.........LOOP DATA block
-          if ( cLnWords(2)(1:) == 'LOOP-DATA' ) then
+          if ( cLnWords(2)(1:4) == 'DATA' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bLOOPDATA_block_open = .false. 
-              call mimo_debug('LOOP DATA block closed')
+              call mimo_debug('DATA block closed')
             else 
-              bLOOPDATA_block_open = .false. 
-              call mimo_debug('LOOP DATA block opened')
+              bLOOPDATA_block_open = .true. 
+              call mimo_debug('DATA block opened')
             endif 
           endif   
 
@@ -231,71 +234,486 @@ C-----------------------------------------------------------------------
 C       If line isn't a flag, parse data according to currently-open 
 C       block 
 C-----------------------------------------------------------------------
-C.......Parse sensors:
+
+C-----------------------------------------------------------------------
+C       Parse sensors:
+C-----------------------------------------------------------------------
         elseif ( bSENSOR_block_open ) then 
-C..........EACH line contains 6 data items describing a sensor:
-C.......... NAME, w, x, y, z, sensed-property
-            if ( iWdCount == 6 ) then 
+C..........EACH line contains 5 data items describing a sensor:
+C.......... NAME, w, x, y, sensed-property
+            if ( iWdCount == 5 ) then 
               iSenCount = iSenCount + 1
               cSenName ( iSenCount ) = cLnWords(1)(1:24)
 C.............Location data: 1-4              
-              do ii = 1, 4
+              do ii = 1, 3
                 iSenLoc  ( iSenCount, ii) =
      &                       iCtoI ( cLnWords(ii+1), bError )
                 if (bError) then 
                   bFatal_Error = .true.
                    write (cMsg,'(A,I2,A,I2,A)')
-     &                        ' Could not convert location data #',
+     &                        ' Could not parse location data #',
      &                        ii, ' in sensor #',iSenCount,'.'
-                   print*, ' >>> ', iSenLoc  ( iSenCount, ii)
+                   call edisp(iUout, cMsg)
                 endif 
               enddo
 C.............Sensed property
-              cSenName( iSenCount ) = cLnWords(6)(1:12)
+              cSenProp( iSenCount ) = cLnWords(5)(1:12)
               ! Test for sensed property keyword to go here...
             else 
 C..............Error trap here...            
                 bFatal_Error = .true.
-                 write (cMsg,'(A,A,I2,A,I2,A)')
+                write (cMsg,'(A,A,I2,A,I2,A)')
      &                 ' Incorrect number of data items',
      &                 ' provided to sensor #',iSenCount+1,
-     &                 ' (expected 6, found ', iWdCount,').'
+     &                 ' (expected 5, found ', iWdCount,').'
+                call edisp(iUout, cMsg)
 
             endif           
-        
+C-----------------------------------------------------------------------
+C       Parse actuators
+C-----------------------------------------------------------------------        
         elseif ( bACTUATOR_block_open ) then 
         
-C..........EACH line contains 7 data items describing a sensor:
-C.......... NAME, w, x, y, z, sensed-property
-            if ( iWdCount == 7 ) then 
-              iActCount = iActCount + 1
-              cActName ( iActCount ) = cLnWords(1)(1:24)
-C.............Location data: 1-4              
-              do ii = 1, 4
-                iActLoc  ( iActCount, ii) =
-     &                       iCtoI ( cLnWords(ii+1), bError )
-                if (bError) then 
-                  bFatal_Error = .true.
-                   write (cMsg,'(A,I2,A,I2,A)')
-     &                        ' Could not convert location data #',
-     &                        ii, ' in actuator #',iActCount,'.'
-                   print*, ' >>> ', iActLoc  ( iActCount, ii)
-                endif 
-              enddo
-C.............MAX and min values for act throttling range 
-
-            else 
-C..............Error trap here...            
+C.........EACH line contains 7 data items describing an actuator:
+C.........NAME, w, x, y, Actuated propoerty, max val, min val
+          if ( iWdCount == 7 ) then 
+            iActCount = iActCount + 1
+            cActName ( iActCount ) = cLnWords(1)(1:24)
+C...........Location data: 1-3
+            do ii = 1, 3
+              iActLoc  ( iActCount, ii) =
+     &                     iCtoI ( cLnWords(ii+1), bError )
+              
+              if (bError) then 
                 bFatal_Error = .true.
-                 write (cMsg,'(A,A,I2,A,I2,A)')
-     &                 ' Incorrect number of data items',
-     &                 ' provided to actuator #',iSenCount+1,
-     &                 ' (expected 7, found ', iWdCount,').'
+                 write (cMsg,'(A,I2,A,I2,A)')
+     &                      ' Could not parse location data #',
+     &                      ii, ' in actuator #',iActCount,'.'
+                 call edisp(iUout, cMsg)
+                
+              endif
+              
+            enddo
+            
+C...........Read actuated parameter:
+            cActVariable(iActCount) = cLnWords(5)(1:24)
+            
+C...........MAX and min values for act throttling range 
+            fActMAX ( iActCount ) = fCtoR ( cLnWords(6), bError )
+            if (bError) then 
+              bFatal_Error = .true.
+               write (cMsg,'(A,A,I2,A)')
+     &                    ' Could not parse MAX value',
+     &                    'in actuator #',iActCount,'.'
+              call edisp(iUout, cMsg)
+            endif
+            fActMIN ( iActCount ) = fCtoR ( cLnWords(7), bError )
+            if (bError) then 
+              bFatal_Error = .true.
+              write (cMsg,'(A,A,I2,A)')
+     &                    ' Could not parse MIN value',
+     &                    'in actuator #',iActCount,'.'
+              call edisp(iUout, cMsg)
+            endif
+          else 
+C............Error trap here...            
+              bFatal_Error = .true.
+              write (cMsg,'(A,A,I2,A,I2,A)')
+     &               ' Incorrect number of data items',
+     &               ' provided to actuator #',iActCount+1,
+     &               ' (expected 7, found ', iWdCount,').'
+              call edisp(iUout, cMsg)
+          
+          endif                   
+C-----------------------------------------------------------------------
+C       Parse Daytypes 
+C-----------------------------------------------------------------------
+        elseif ( bDAYTYPE_block_open ) then
+C.........Each line contains 3 data items describing a day-type:
+C.........   NAME Start-day (DD-MM-YYYY) End-day (DD-MM-YYYY)
+          if ( iWdCount == 3 ) then
+            iDayCount  = iDayCount + 1
+            cDayName(iDayCount)     = cLnWords(1)(1:24)
+C...........Use function bParseDate to turn ISO date into ESP-r-friendly            
+C...........data
+            bError = bParseDate ( cLnWords(2), 
+     &                            iDayStartDD(iDayCount), 
+     &                            iDayStartMM(iDayCount), 
+     &                            iDayStartYYYY(iDayCount), 
+     &                            iDayStartDOY(iDayCount)    )
+            
+            if ( bError ) then 
+              bFatal_Error = .true. 
+              write (cMsg,'(A,A,A,I2,A)')
+     &             ' Could not parse start date (',
+     &             cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &             ') provided with day-type #',iDayCount+1,'.'
+              call edisp(iUout, cMsg)            
+            endif 
+            
+C...........Use function bParseDate to turn ISO date into ESP-r-friendly            
+C...........data
+            bError = bParseDate ( cLnWords(3), 
+     &                            iDayEndDD(iDayCount), 
+     &                            iDayEndMM(iDayCount), 
+     &                            iDayEndYYYY(iDayCount), 
+     &                            iDayEndDOY(iDayCount)    )
+            
+            if ( bError ) then 
+              bFatal_Error = .true. 
+              write (cMsg,'(A,A,A,I2,A)')
+     &             ' Could not parse end date (',
+     &             cLnWords(3)(1:lnblnk(cLnWords(3))),
+     &             ') provided with day-type #', iDayCount+1,'.'
+              call edisp(iUout, cMsg)            
+            endif            
+            
+          else 
+            bFatal_Error = .true.
+             write (cMsg,'(A,A,I2,A,I2,A)')
+     &             ' Incorrect number of data items',
+     &             ' provided to day-type #',iDayCount+1,
+     &             ' (expected 3, found ', iWdCount,').'
+             call edisp(iUout, cMsg)
+          endif 
+        
+C-----------------------------------------------------------------------
+C       Parse periods 
+C-----------------------------------------------------------------------
+        elseif ( bPERIOD_block_open ) then 
+C.........Each line has 3 data items:
+C.........  NAME, start-hr, end-hr
+            if ( iWdCount == 3 ) then
+              iPerCount = iPerCount + 1 
+C.............Period name
+              cPerName(iPerCount)  = cLnWords(1)(1:24)
+C.............Period start hour 
+              iPerStarthr(iPerCount) = iCtoI ( cLnWords(2), bError )
+              if ( bError ) then 
+                bFatal_Error = .true. 
+                write (cMsg, '(A,A,A,I2,A)')
+     &             ' Could not parse start hour (',
+     &             cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &             ') in period #',iPerCount,'.'
+                call edisp(iUout, cMsg)
+              endif 
+C.............Period end hour 
+              iPerEndhr(iPerCount) = iCtoI ( cLnWords(3), bError )
+              if ( bError ) then 
+                bFatal_Error = .true. 
+                write (cMsg, '(A,A,A,I2,A)')
+     &             ' Could not parse end hour (',
+     &             cLnWords(3)(1:lnblnk(cLnWords(3))),
+     &             ') in period #',iPerCount,'.'
+                call edisp(iUout, cMsg)
+              endif 
+            else 
+C.............Wrong number of data items provided.
+              bFatal_Error = .true.
+              write (cMsg,'(A,A,I2,A,I2,A)')
+     &             ' Incorrect number of data items',
+     &             ' provided to period #',iPerCount+1,
+     &             ' (expected 3, found ', iWdCount,').'
+              call edisp(iUout, cMsg)
+            endif 
+        
+C-----------------------------------------------------------------------
+C      Process Loops:
+C 
+C        Unlike all other blocks, a loop may contain multiple lines, 
+C        in TOKEN VALUE VALUE VALUE format. 
+C
+C        Valid tokens: NAME; TYPE; PRIORITY; DAYTYPES; PERIODS;
+C                      SENSORS; ACTUATORS; 
+C
+C        A Loop block may also contain a data block, denoted with the 
+C        '* DATA' / '* DATA END' demarcations.  If a data block 
+C        is open, the bLOOPDATA_block_open flag will be set above.
+C
+C-----------------------------------------------------------------------
+      elseif ( bLOOP_block_open ) then 
+C.......Check if loopdata block is open
+        if ( bLOOPDATA_block_open ) then 
+C.........Loop through data items on line, and append to data array
+          do ii=1, iWdCount 
+            fLoopData(iLoopCount, iLoopDataCount(iLoopCount)+ii)
+     &             = fCtoR ( cLnWords ( ii ), bError )
+            
+            if (bError) then 
+              
+              bFatal_Error = .true. 
+              write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &          ' Could not convert data item #', 
+     &                 iLoopDataCount(iLoopCount)+ii,
+     &          '(',cLnWords ( ii )(1:lnblnk(cLnWords(ii))),
+     &          ') in control loop #', iLoopCount, '.'
+              call edisp(iUout, cMsg)
+            
+            endif 
+            
+          enddo  ! <- matches do ii=1, iWdCount 
+            
+C.........Add the data items on this line to iLoopDataCount        
+          iLoopDataCount(iLoopCount) = iLoopDataCount(iLoopCount) 
+     &                                        + iWdCount
+        
+        else
+        
+C.........Line describes token:value-list. 
+C.........Valid tokens begin with 'LOOP-'
+          
+          if     ( cLnWords(1)(1:4)  == 'NAME'      ) then
 
-            endif                   
-        
-        
-        endif ! <- matches if ( cLnWords(1)(1:1) == '*' ) then...
+C...........LOOP NAME: read single word
+            cLoopName(iLoopCount) = cLnWords(2)(1:24)
+         
+          elseif ( cLnWords(1)(1:3)  == 'LAW'      ) then
+          
+C...........LOOP LAW: read single word 
+            cLoopLaw(iLoopCount) = cLnWords(2)(1:24)
+            
+C...........Match word to defined keywords.
+            do ii = 1, iMIMOLawCount
+            
+              bError = .true.
+              if ( cLoopLaw(iLoopCount)
+     &                  (1:lnblnk(cLoopLaw(iLoopCount)))
+     &             == cControlLawNames(ii)
+     &                  (1:lnblnk(cControlLawNames(ii))) ) then
+                
+                iLoopLaw(iLoopCount) = ii
+                bError = .false. 
+              endif  
+            enddo
+            
+            if (bError) then 
+              
+              bFatal_Error = .true. 
+              write (cMsg, '(A,A,A,I2,A)')
+     &          ' Could not resolve control law (', 
+     &                 cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &          ') in control loop #', iLoopCount, '.'
+              call edisp(iUout, cMsg)
+
+            endif            
+            
+          elseif ( cLnWords(1)(1:8) == 'PRIORITY'  ) then
+          
+C...........LOOP PRIORITY: Read a single integer value
+            iLoopPriority(iLoopCount) = iCtoI ( cLnWords(2), bError )
+            
+            if (bError) then 
+              
+              bFatal_Error = .true. 
+              write (cMsg, '(A,A,A,I2,A)')
+     &          ' Could not convert loop priority (', 
+     &                 cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &          ') in control loop #', iLoopCount, '.'
+              call edisp(iUout, cMsg)
+
+            endif
+
+          elseif ( cLnWords(1)(1:8) == 'DAYTYPES'  ) then
+          
+C...........LOOP DAYTYPES: Read a list of daytypes
+            if ( iWdCount - 1 <= mMIMOList ) then
+                
+                do ii = 2, iWdCount
+                
+                  cLoopDayTypes(iLoopCount, ii-1) = cLnWords(ii)(1:24)
+                
+                enddo
+                
+                iLoopDayTypeCount ( iLoopCount ) = iWdCount - 1
+                
+C...............Attempt to match specified day-types to list
+                
+                write (cBuffer, '(A)' ) 'day-types'
+                if (.not. bMatchNameToIndex ( 
+     &                      cBuffer,
+     &                      iLoopCount,
+     &                      iLoopDayTypeCount,
+     &                      iDayCount,
+     &                      cLoopDayTypes,
+     &                      cDayName,
+     &                      iLoopDayTypes      ) ) then 
+
+                  bFatal_Error = .true. 
+                  write (cMsg, '(A,I2)')
+     &              ' Could not resolve daytypes for loop #', 
+     &                    iLoopCount
+                  call edisp(iUout, cMsg)
+                endif 
+                
+            else
+             
+              bFatal_Error = .true. 
+              write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &          ' Too many daytypes were specified for loop #', 
+     &                iLoopCount, ' (', mMIMOList, 
+     &          ' are permitted, but ',iWdCount - 1,
+     &          ' were provided).'
+     
+              call edisp(iUout, cMsg)
+              
+            endif ! <- matches if ( iWdCount - 1 <= mMIMOList ) then
+          
+          elseif ( cLnWords(1)(1:7) == 'PERIODS'   ) then
+          
+C...........LOOP PERIODS: Read a list of period names
+            if ( iWdCount - 1 <= mMIMOList ) then
+                
+                do ii = 2, iWdCount
+                
+                  cLoopPeriods(iLoopCount, ii-1) = cLnWords(ii)(1:24)
+                
+                enddo
+                
+                iLoopPeriodCount ( iLoopCount ) = iWdCount - 1
+                
+C...............Attempt to match periods to list
+                
+                write (cBuffer, '(A)' ) 'period'
+                if (.not. bMatchNameToIndex ( 
+     &                      cBuffer,
+     &                      iLoopCount,
+     &                      iLoopPeriodCount,
+     &                      iPerCount,
+     &                      cLoopPeriods,
+     &                      cPerName,
+     &                      iLoopPeriods      ) ) then 
+                
+                  bFatal_Error = .true. 
+                  write (cMsg, '(A,I2)')
+     &              ' Could not resolve periods for loop #', 
+     &                    iLoopCount
+                  call edisp(iUout, cMsg)
+                endif                 
+                
+            else
+             
+              bFatal_Error = .true. 
+              
+              write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &          ' Too many periods were specified for loop #', 
+     &                iLoopCount, ' (', mMIMOList, 
+     &          ' are permitted, but ',iWdCount - 1,
+     &          ' were provided).'
+     
+              call edisp(iUout, cMsg)
+            
+            endif ! <- matches if ( iWdCount - 1 <= mMIMOList ) then
+            
+
+          
+          elseif ( cLnWords(1)(1:7) == 'SENSORS'   ) then
+          
+          
+C...........LOOP SENSORS: Read a list of sensor names 
+            if ( iWdCount - 1 <= mMIMOList ) then
+                
+                do ii = 2, iWdCount
+                
+                  cLoopSensors(iLoopCount, ii-1) = cLnWords(ii)(1:24)
+                
+                enddo
+                
+                iLoopSensorCount ( iLoopCount ) = iWdCount - 1
+                
+C...............Attempt to match specified sensors to list
+                
+                write (cBuffer, '(A)' ) 'sensor'
+                if (.not. bMatchNameToIndex ( 
+     &                      cBuffer,
+     &                      iLoopCount,
+     &                      iLoopSensorCount,
+     &                      iSenCount,
+     &                      cLoopSensors,
+     &                      cSenName,
+     &                      iLoopSensors      ) ) then 
+                
+                  bFatal_Error = .true. 
+                  write (cMsg, '(A,I2)')
+     &              ' Could not resolve sensors for loop #', 
+     &                    iLoopCount
+                  call edisp(iUout, cMsg)
+                endif 
+                
+                
+            else
+             
+              bFatal_Error = .true. 
+              
+              write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &          ' Too many sensors were specified for loop #', 
+     &                iLoopCount, ' (', mMIMOList, 
+     &          ' are permitted, but ',iWdCount - 1,
+     &          ' were provided).'
+     
+              call edisp(iUout, cMsg)
+            
+            endif ! <- matches if ( iWdCount - 1 <= mMIMOList ) then
+          
+          
+          elseif ( cLnWords(1)(1:9) == 'ACTUATORS' ) then
+
+C...........LOOP ACTUATORS: Read a list of actuator names 
+            if ( iWdCount - 1 <= mMIMOList ) then
+                
+                do ii = 2, iWdCount
+                
+                  cLoopActuators(iLoopCount, ii-1) = cLnWords(ii)(1:24)
+                
+                enddo
+                
+                iLoopActuatorCount ( iLoopCount ) = iWdCount - 1
+                
+C...............Attempt to match specified actuators to list
+                
+                write (cBuffer, '(A)' ) 'actuator'
+                if (.not. bMatchNameToIndex ( 
+     &                      cBuffer,
+     &                      iLoopCount,
+     &                      iLoopActuatorCount,
+     &                      iActCount,
+     &                      cLoopActuators,
+     &                      cActName,
+     &                      iLoopActuators      ) ) then 
+                
+                  bFatal_Error = .true. 
+                  write (cMsg, '(A,I2)')
+     &              ' Could not resolve actuators for loop #', 
+     &                    iLoopCount
+                  call edisp(iUout, cMsg)
+                endif 
+                
+            else
+             
+              bFatal_Error = .true. 
+              
+              write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &          ' Too many actuators were specified for loop #', 
+     &                iLoopCount, ' (', mMIMOList, 
+     &          ' are permitted, but ',iWdCount - 1,
+     &          ' were provided).'
+   
+              call edisp(iUout, cMsg)
+
+            endif 
+            
+          else 
+          
+C.,,........Token name is invalid            
+            bFatal_Error = .true.
+            write (cMsg, '(A,A)')
+     &        ' Unknown LOOP token: ',cLnWords(1)(1:lnblnk(cLnWords(1)))
+            call edisp(iUout, cMsg)
+          
+          endif ! <- matches if ( cLnWords(1)(1:5) == 'LOOP-NAME' ) then
+          
+        endif ! <- matches if ( bLOOPDATA_block_open ) then
+
+      endif ! <- matches if ( cLnWords(1)(1:1) == '*' ) then...
 
          
             
@@ -305,8 +723,7 @@ C     Were fatal errors encountered?
 C-----------------------------------------------------------------------      
       if ( bFatal_Error ) then
 C........Yes. Warn user and delete temporary file.
-         call edisp(iUout, cMsg)
-         call edisp(iUout, ' MIMO controls not processed successfully')
+         call edisp(iUout, ' MIMO controls: Parsing error')
          
          iER = 1
       else
@@ -317,13 +734,57 @@ C........Yes. Warn user and delete temporary file.
          
       endif 
 
+      call edisp ( iuout, ' ' )
       
       
       return
       end 
       
+C--------------------- function fMIMOSensor ----------------------------
+C     Return the most recent sensed value for the sensor given by 
+C     iSensor_Index (input)
+C-----------------------------------------------------------------------      
+      real function fMIMOSensor ( iSensor )
+      implicit none 
+#include "mimo_ctl.h"
+#include "building.h"
+#include "plant.h"
+C-----------------------------------------------------------------------      
+C     Passed arguements 
+C-----------------------------------------------------------------------      
+      
+      integer iSensor              ! Index of current sensor
+C-----------------------------------------------------------------------      
+C     Local variables 
 C-----------------------------------------------------------------------
-C     Rudamentry debugging...
+      integer iPltComp
+      integer iPltNode
+      integer iPltVar 
+C-----------------------------------------------------------------------      
+C     Determine where sensor is located, and collect desired property.
+C     
+C       iSenLoc( , 1) >= 0 : Sensor is in specified zone, or in 
+C                            the current zone.
+C
+C-----------------------------------------------------------------------      
+      
+      if ( iSenLoc( iSensor , 1 ) >= 0 ) then
+      
+      
+      elseif ( iSenLoc ( iSensor, 1 ) == -1 ) then  
+C-----------------------------------------------------------------------
+C       Sensor location is in a plant component.
+C-----------------------------------------------------------------------      
+        
+        
+        
+      
+      endif  ! <- matches ' if ( iSenLoc( iSensor , 1 ) >= 0 ) then'
+
+      return
+      end
+C--------------------- subroutine mimo_debug ---------------------------
+C     Rudamentry debugging
 C-----------------------------------------------------------------------      
       subroutine mimo_debug(cDebug_msg)
       implicit none 
@@ -336,11 +797,14 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------      
-      character*72 cDebug_msg
+      character*124 cDebug_msg
       character*124 cBuffer
       logical bDebug
-      parameter ( bDebug = .true. )
-      cBuffer=' '
+      parameter ( bDebug = .false. )
+      integer i 
+      do i=1,124
+        cBuffer(i:i)=' '
+      enddo
       if (bDebug) then
         
          write(cBuffer, '(A,A)') '>>>>> MIMO: ', 
@@ -353,6 +817,192 @@ C----------------------------------------------------------------------
       
       return 
       end 
+C----------------------- function bParseDate ---------------------------      
+C     Read an ISO date (DD-MM or DD-MM-YYYY), and attempt to parse. 
+C
+C     input: cDate - Character string containing date
+C 
+C     output: bParseDate - True for error, false for OK. 
+C             iDD        - Day of month (1-29/30/31)
+C             iMM        - Month  (1-12)
+C             iYYYY      - YEAR 
+C             iDOY       - Day of year (1-365)
+C
+C-----------------------------------------------------------------------      
+      logical function bParseDate ( cDate, iDD, iMM, iYYYY, iDOY)
+      implicit none
+C     Passed arguements
+      character*248 cDate 
+      character*124 cMSG
+      integer iDD, iMM, iYYYY, iDOY 
+      
+C     Local vars:
+      integer iLen
+      logical bYrSpecd
+      logical bFormatErr
+      
+     
+C     References
+      integer lnblnk      
+      integer iCtoI        ! Convert a string into an integer.
+
+C     Initialize bFormatErr
+      bFormatErr = .false. 
+      
+      bYrSpecd = .false.
+      
+C----------------------------------------------------------------------- 
+C     Check that date conforms to expected format.      
+C----------------------------------------------------------------------- 
+      iLen = lnblnk (cDate) 
+C     Date must be 5  or 10 characters ling       
+      if ( iLen == 5 .or. iLen == 10 ) then 
+C       Has year been provided?
+        if ( iLEN == 10 ) bYrSpecd = .true.
+      else
+C       Date is wrong length!      
+        bFormatErr = .true. 
+      endif
+      
+C     Now check if date has requisite dashes      
+      if ( .not. bFormatErr ) then
+        if ( cDate(3:3) /= '-' )               bFormatErr = .true. 
+        if ( bYrSpecd .and. cDate(6:6) /= '-') bFormatErr = .true.
+      endif 
+C----------------------------------------------------------------------- 
+C     If format is ok, try to convert to date into numbers
+C----------------------------------------------------------------------- 
+      if ( .not. bFormatErr )  iDD   = iCtoI ( cDate(1:2),  bFormatErr )
+      if ( .not. bFormatErr )  iMM   = iCtoI ( cDate(4:5),  bFormatErr )
+      if ( bYrSpecd ) then 
+        if ( .not. bFormatErr )  
+     &            iYYYY = iCtoI ( cDate(7:10), bFormatErr )
+      else 
+        iYYYY = 0 
+      endif 
+      
+C----------------------------------------------------------------------- 
+C     If format is ok and data was read correctly, try to convert 
+C     day-month data into day-of-year. 
+C-----------------------------------------------------------------------       
+      if ( .not. bFormatErr ) then
+        call eday(iDD,iMM,iDOY)
+      endif
+      
+C     (We should put some range-checking here...)
+      
+C     Update function result
+      bParseDate = bFormatErr
+      
+      return 
+      end 
+      
+C-----------------------------------------------------------------------
+C     Return array iIndicies containing the index of each row in 
+C     array cSearchList that matches array cSourceList
+C-----------------------------------------------------------------------
+
+      logical function bMatchNameToIndex ( cNameType, 
+     &                                     iInstance,
+     &                                     iSourceLength,
+     &                                     iSearchLength,
+     &                                     cSourceList, 
+     &                                     cSearchList, 
+     &                                     iIndicies    )
+      implicit none 
+#include "mimo_ctl.h"            
+C----------------------------------------------------------------------
+C     ESP-r variables
+C----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen      
+      integer lnblnk
+      
+C-----------------------------------------------------------------------
+C     Passed arguements 
+C-----------------------------------------------------------------------
+      
+      character*32 cNameType    ! (input) description of the type 
+                                !         of text to be matched.
+      
+      integer iInstance         ! (input) current loop 
+      
+      integer iSourceLength     ! (input) Length of Source list 
+      
+      integer iSearchLength     ! (input) Length of Search list 
+      
+      character*24 cSourceList(mMIMOLoop,mMIMOList) 
+                                          ! (input) 
+                                          ! List of strings to be located
+                                          
+      character*24 cSearchList(mMIMOList)    
+                                          ! (input) 
+                                          ! List of strings to seach in
+                                             
+      integer iIndicies (mMIMOLoop, mMIMOList ) 
+                                          ! (output)
+                                          ! List of matching indicies
+                                             
+C-----------------------------------------------------------------------
+C     Local arguements
+C-----------------------------------------------------------------------
+      
+      integer ii,jj                ! counters
+      logical bMatchesOk           ! global match flag 
+      logical bMatched             ! list match flag
+      integer iL1                  ! Source string length
+      integer iL2                  ! Search string length 
+      character*124 cMsg           ! Output buffer.
+C-----------------------------------------------------------------------
+C     Search for matches
+C-----------------------------------------------------------------------
+      
+      bMatchesOk = .true.
+
+C.....For each item in source list...     
+      do ii = 1, iSourceLength 
+      
+       bMatched = .false. 
+      
+       iL1 = lnblnk( cSourceList(iInstance,ii) )
+        
+C.........Loop through search list, and check for match         
+        do jj = 1, iSearchLength
+        
+          iL2 = lnblnk( cSearchList(jj) )
+          if ( cSourceList(iInstance,ii)(1:iL1) 
+     &                ==  cSearchList(jj)(1:iL2) ) then
+            
+            bMatched = .true. 
+            
+            iIndicies ( iInstance, ii ) = jj
+            
+          endif 
+        enddo 
+
+C.......Was source string matched?
+        if ( .not. bMatched ) then
+        
+          write (cMsg, '(A,A,A,A,A,A,A)' )
+     &      '   - Could not match specified ', 
+     &      cNameType(1:lnblnk(cNameType)), ' "', 
+     &      cSourceList(iInstance,ii)(1:iL1),
+     &      '" in list of ',cNameType(1:lnblnk(cNameType)),'s.'
+     
+     
+          call edisp ( iuout, cMsg )
+
+          bMatchesOk = .false. 
+        endif 
+      
+      enddo 
+      
+      
+      bMatchNameToIndex = bMatchesOk
+      
+      return 
+      end 
+      
       
 C-----------------------------------------------------------------------
 C     Attempt to coax a string into an integer. 
