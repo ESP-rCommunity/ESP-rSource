@@ -67,10 +67,6 @@ C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
-C Initial view.
-      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-
 C Images.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       COMMON/GTFIL/GTGEOM
@@ -84,7 +80,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       integer iSlr_half_hr_flg
 
       logical MODSIT,browse,XST,modish,OK,DOK,concat,unixok
-      logical closea,closeb,closec,closed,defview,FOUND
+      logical FOUND
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
       character*10 wkday(7)
@@ -97,7 +93,7 @@ C ITEMS is menu for site/context items.
       character doit*248,tmode*8,cfgroot*24,LCFGF*72
       character longtfile*144,longtfiledos*144
       character imgfmt*4,imgfoc*4,limgfil*72
-      character hold32*32,act*1,GTNAME*15
+      character act*1,GTNAME*15
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
@@ -111,16 +107,6 @@ C Set initial states to false.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
-
-C Check default view point.
-      defview=.false.
-      CALL ECLOSE(EYEM(1),-100.0,1.0,closea)
-      CALL ECLOSE(EYEM(2),-100.0,1.0,closeb)
-      CALL ECLOSE(EYEM(3),100.0,1.0,closec)
-      CALL ECLOSE(ANG,40.0,1.0,closed)
-      if(closea.and.closeb.and.closec.and.closed)then
-        defview=.true.
-      endif
 
 C Initial string for site exposure.
       SALT(1)='urban (normal)         '
@@ -158,27 +144,9 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      IF(IFDAY.EQ.0)THEN
-        ITEMS(8) =              'g date format >> DOY 10          '
-      ELSEIF(IFDAY.EQ.1)THEN
-        ITEMS(8) =              'g date format >> 10 Jan          '
-      ELSEIF(IFDAY.EQ.2)THEN
-        ITEMS(8) =              'g date format >> Fri 10 Jan      '
-      ENDIF
-
-C Display of time of day.
-      IF(IFTIME.EQ.0)THEN
-        ITEMS(9) =              'h time format >> 10h30           '
-      ELSEIF(IFTIME.EQ.1)THEN
-        ITEMS(9) =              'h time format >> 10.50           '
-      ELSEIF(IFTIME.EQ.2)THEN
-        ITEMS(9) =              'h time format >> 0.4166 (of day) '
-      ENDIF
-      if(defview)then
-        WRITE(ITEMS(10),'(A)')   'i view: default                  '
-      else
-        WRITE(ITEMS(10),'(A)')   'i view: user defined             '
-      endif
+      ITEMS(8) =                'g calendar (holidays)            '                             '
+      ITEMS(9) =                'h                                '
+      ITEMS(10)=                'i                                '
       ITEMS(11)=                '  ___________________________    '
       if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
         ITEMS(12)=              'j ground topology                '
@@ -197,7 +165,7 @@ C Display of time of day.
       ITEMS(22)=                '  ___________________________    '
       WRITE(ITEMS(23),'(a,i3)') 'r define images: ',noimg
       ITEMS(24)=                ' _____________________________ '
-      ITEMS(25)=                ' s calendar (work in progress) '
+      ITEMS(25)=                's UK NCM specifications         '
       ITEMS(26)=                ' _____________________________ '
       ITEMS(27)=                '? help                           '
       ITEMS(28)=                '- exit this menu                 '
@@ -633,76 +601,21 @@ C and then list the months of the year.
         endif
       ELSEIF(INO.EQ.8)THEN
 
-C Allow user to toggle between 'Fri 10 Jan'/'10 Jan'/'DOY 124' format.
-        IFDAY=IFDAY+1
-        IF(IFDAY.GT.2)IFDAY=0
+C Calendar functions. If number of daytypes is zero then
+C initialise. Then enter interactive facility to allow user
+C to define holidays.
+        if(nbdaytype.eq.0)then
+          act = 'i'
+          call calenmanage(act,ier)
+        endif
+        act = '-'
+        call calenmanage(act,ier)
       ELSEIF(INO.EQ.9)THEN
 
-C Allow user to toggle between '10h00'/'10.00'/'0.41666' format. Only
-C allow decimal day representation if day format is DOY
-        IFTIME=IFTIME+1
-        IF(IFDAY.EQ.0.AND.IFTIME.GT.2)IFTIME=0
-        IF(IFDAY.GE.1.AND.IFTIME.GT.1)IFTIME=0
+C << available slot >>
       ELSEIF(INO.EQ.10)THEN
 
-C Wire frame view point.
-        if(browse)goto 3
-        h(1)='The initial model view point defaulted.'
-        h(2)='This may be changed here.'
-        CALL EASKABCD(' ','Initial view point?',
-     &      'default','current','edit','cancel',IW,2)
-        if(IW.EQ.1)then
-
-C Set eye point at standard place and viewed point at cog.
-          EYEMI(1)=-100.
-          EYEMI(2)=-100.
-          EYEMI(3)=100.
-          call bndobj(0,ier)
-          VIEWMI(1)=VIEWM(1)
-          VIEWMI(2)=VIEWM(2)
-          VIEWMI(3)=VIEWM(3)
-          ANGI=40.
-          initvt=0
-          MODSIT=.true.
-        elseif(IW.EQ.2)then
-          EYEMI(1)=EYEM(1)
-          EYEMI(2)=EYEM(2)
-          EYEMI(3)=EYEM(3)
-          VIEWMI(1)=VIEWM(1)
-          VIEWMI(2)=VIEWM(2)
-          VIEWMI(3)=VIEWM(3)
-          ANGI=ANG
-          initvt=1
-          MODSIT=.true.
-        elseif(IW.EQ.3)then
-          H(1)='The eye point (in metres) is defined using the'
-          H(2)='site co-ordinate system.'
- 143      WRITE(HOLD32,'(1x,3f8.2)')EYEM(1),EYEM(2),EYEM(3)
-          CALL EASKS(HOLD32,' ','Eye point (x y z)?',
-     &        32,' -100.0 -100.0 100.0 ','eye point coord',IER,2)
-          K=0
-          CALL EGETWR(HOLD32,K,EYEMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD32,K,EYEMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD32,K,EYEMI(3),0.,999.,'W','eye Zcord',IER)
-          if(ier.ne.0)goto 143
-          H(1)='The view point (in metres) is defined using the site'
-          H(2)='co-ordinate system. The default is the model centre.'
- 141      WRITE(HOLD32,'(1x,3f8.2)')VIEWM(1),VIEWM(2),VIEWM(3)
-          CALL EASKS(HOLD32,'',' View point (x y z)?',
-     &          32,' 2.0 2.0 1.0 ','viewpoint coord',IER,2)
-          K=0
-          CALL EGETWR(HOLD32,K,VIEWMI(1),-999.,999.,'W','Xcord',IER)
-          CALL EGETWR(HOLD32,K,VIEWMI(2),-999.,999.,'W','Ycord',IER)
-          CALL EGETWR(HOLD32,K,VIEWMI(3),0.,999.,'W','v Zcord',IER)
-          if(ier.ne.0)goto 141
-          H(1)='The angle of view in degrees: permitted range'
-          H(2)='is 1 through 89 degrees.'
-          ANGI=ANG
-          CALL EASKR(ANGI,' ','Angle of view?',
-     &             1.0,'W',89.0,'W',40.,'angle ofview',IER,2)
-          initvt=1
-          MODSIT=.true.
-        endif
+C << available slot >>
       ELSEIF(INO.EQ.12)THEN
 
 C Ground topology.
@@ -877,14 +790,8 @@ C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
       ELSEIF(INO.eq.25)then
 
-C Calendar functions. If number of daytypes is zero then
-C initialise. Then enter interactive facility.
-        if(nbdaytype.eq.0)then
-          act = 'i'
-          call calenmanage(act,ier)
-        endif
-        act = '-'
-        call calenmanage(act,ier)
+C Enter the definitions for UK NCM related data.
+c        call sbmedit
       ELSE
         GOTO 3
       ENDIF

@@ -2651,7 +2651,7 @@ C We have done both passes, report differences and exit.
           call edisp(iuout,
      &      'variant: positive = savings, negative = not as good as.')
           call edisp(iuout,' ')
-          call edisp(iuout,'For the base case model:')
+          call edisp(iuout,'* For the base case model:')
           if(delim.eq.'-')then
             call edisp(iuout,
      &            '        Demand              Capacity')
@@ -2697,7 +2697,7 @@ C We have done both passes, report differences and exit.
           call edisp(iuout,outs)
           if(delim.eq.'-')then
             call edisp(iuout,
-     &            '       Demand              Capacity')
+     &            '        Demand              Capacity')
             call edisp(iuout,
      &            '        m2     building     m2     building')
           elseif(delim.eq.'T')then
@@ -2899,7 +2899,7 @@ C  bndrysxc looks for surface connection attribute different from cnn list.
 C  confok looks for missing construction files.
 C  geofok looks for missing geometry files.
 C  oprfok looks for missing/old/unsorted operations files. 
-C  prob looks for contiguity cross-references.
+C  prob looks for contiguity cross-references
 C  tmcok looks for matching transparent partitions.
 C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
@@ -3439,7 +3439,6 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
       endif
 
       return
-
       end
 
 C ********** imgdisp
@@ -3657,7 +3656,7 @@ C of the same project that can later be modified.
 
       dimension items(7),items2(33)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H,LCFGF
-      CHARACTER ITEMS*32,ITEMS2*36,APP*4
+      CHARACTER ITEMS*36,ITEMS2*36,APP*4
       CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
 
@@ -3693,34 +3692,34 @@ C Help message for version manager menu
       H(23)= ' '
       H(24)= 'A three character postfix is requested from the'
       H(25)= 'user and this is appended to the names of new files.'
+      H(26)= ' '
+      H(27)= ' '
+      H(28)= '*****SBEM Notional Model*****'
+      H(29)= ' ESP-r creates the SBEM notional model in compliance with'
+      H(30)= ' CIBSE TM33 ??? This creates a model with the postfix'
+      H(31)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
+      H(32)= ' '
+      H(33)= ' Details of how the notonal building relates to the '
+      H(34)= ' original building and plant model is defined in relevant'
+      H(35)= ' SBEM documentation'
       H(36)= ' '
-      H(37)= ' '
-      H(38)= '*****SBEM Notional Model*****'
-      H(39)= ' ESP-r creates the SBEM notional model in compliance with'
-      H(40)= ' CIBSE TM33 ??? This creates a model with the postfix'
-      H(41)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
-      H(42)= ' '
-      H(43)= ' Details of how the notonal building relates to the '
-      H(44)= ' original building and plant model is defined in relevant'
-      H(45)= ' SBEM documentation'
-      H(46)= ' '
 
 C Ask for changes to be made
  200  INO=-3
-      ITEMS(1) = 'a make a project variant     '
+      ITEMS(1) = 'a make a project variant'
       ITEMS(2) = 'b make UK NCM notional model '
-      ITEMS(3) = 'c other 1 (under development)  '
-      ITEMS(4) = 'd other 2 (under development)  '
-      ITEMS(5) = ' --------------------------  '
-      ITEMS(6) = '? help                       '
-      ITEMS(7) = '- exit                       '
+      ITEMS(3) = 'c other 1 (under development)'
+      ITEMS(4) = 'd other 2 (under development)'
+      ITEMS(5) = ' --------------------------'
+      ITEMS(6) = '? help'
+      ITEMS(7) = '- exit'
       MITEM=7
       CALL EMENU('Variants Manager',ITEMS,MITEM,INO)
       IF(INO.EQ.1)THEN
         APP='_xyz'
         CALL EASKS(APP,' ',
      &     'Specify up to 4 characters to append to project name?',
-     &     4,'project','root name modifier',IER,25)
+     &     4,'project','root name modifier',IER,36)
         K=0
         CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
         APP=NBSTR
@@ -3965,7 +3964,7 @@ C Create SBEM notional building based on currently loaded model
           CALL EMKSBM
         endif
       ELSEIF(INO.EQ.6)THEN
-        CALL PHELPD('version intro',25,'-',0,0,IER)
+        CALL PHELPD('version intro',36,'-',0,0,IER)
         GOTO 200
       ELSEIF(INO.EQ.7)THEN
         RETURN
