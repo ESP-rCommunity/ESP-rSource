@@ -115,3 +115,8 @@ C.....CONTROLS
       
       data cControlLawNames / 'AIMS_Control' /
       
+      
+C.....Misc varaibles
+
+      character*124 cContext          ! Message buffers                                
+      character*124 cMsg              !

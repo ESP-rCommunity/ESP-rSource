@@ -834,7 +834,6 @@ C Trace output
       END IF
 C
 C Initialize and/or adjust the plant solution process iteration count
-
       ITERP=0
 
 C set flag for plant iteration - initialize to true

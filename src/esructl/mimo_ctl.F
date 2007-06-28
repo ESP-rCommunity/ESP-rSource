@@ -27,7 +27,41 @@ C Copyright: Natural Resources Canada, (2007)
 C
 C=======================================================
 
-C--------------- mimo_ctl_read -----------------------------------------
+C=======================================================
+C  Functions:
+C
+C    - mimo_ctl_read: Read MIMO portion of a .ctl file
+C
+C    - mimo_ctl_write: Write MIMO portion of a .ctl file
+C
+C    - fMIMOSensor: Return sensed value for given sensor
+C
+C    - fMIMOActuator: Apply specified control signal to 
+C          given actuator.
+C
+C    - MIMO_Invoke_Ctl: Invoke control loops 
+C
+C    - MIMO_Invoke_Plt_Ctl, 
+C      MIMO_Invoke_Bld_Ctl: 
+C          domain specific interfaces to MIMO_Invoke_Ctl
+C
+C    - bLawApplicable: Determine if control law is 
+C          applicable in current domain 
+C
+C    - mimo_debug: interface for rudimentary debugging
+C
+C    - bParseDate: Parse an ISO date string 
+C
+C    - bMatchNameToIndex: Rerurn indicies of matching rows 
+C          in two arrays 
+C
+C    - fCtoR: coax a string into a float 
+C
+C    - iCtoi: coax a string into an integer
+C
+C=======================================================
+
+C--------------- MIMO_ctl_read -----------------------------------------
 C
 C SYNOPSYS: 
 C
@@ -41,7 +75,7 @@ C OUTPUTS:
 C   - iER: Error flag. 
 C
 C-----------------------------------------------------------------------
-      subroutine mimo_ctl_read ( iUnit, iER )
+      subroutine MIMO_ctl_read ( iUnit, iER )
       implicit none
 #include "mimo_ctl.h"      
 C-----------------------------------------------------------------------
@@ -78,8 +112,6 @@ C-----------------------------------------------------------------------
       integer ii                       ! counter
 
 C.....Warning messages
-      character*124 cMsg          ! message to be displayed to buffer
-      character*124 cContext      ! contextual message
       character*32 cBuffer        ! misc buffer
 
 
@@ -708,7 +740,7 @@ C.,,........Token name is invalid
             write (cMsg, '(A,A)')
      &        ' Unknown LOOP token: ',cLnWords(1)(1:lnblnk(cLnWords(1)))
             call edisp(iUout, cMsg)
-          
+            call UsrMsg(cMsg,cMsg,'W') 
           endif ! <- matches if ( cLnWords(1)(1:5) == 'LOOP-NAME' ) then
           
         endif ! <- matches if ( bLOOPDATA_block_open ) then
@@ -740,6 +772,77 @@ C........Yes. Warn user and delete temporary file.
       return
       end 
       
+      
+C--------------------- procedure MIMO_Invoke_Ctl -----------------------
+C     Determine which control loops are relevant in the current context,
+C     and invoke them      
+C-----------------------------------------------------------------------
+      subroutine MIMO_Invoke_Ctl ( cDomain, iLoc_1, iLoc_2, iLoc_3 )
+      implicit none 
+#include "mimo_ctl.h"
+C-----------------------------------------------------------------------      
+C     Passed variables 
+C-----------------------------------------------------------------------            
+      
+      character*3 cDomain             ! String describing the current domain
+      integer iLoc_1, iLoc_2, iLoc_3  ! Integers specifying location within 
+                                      !    domain
+      
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      
+      integer ii                      ! Counter
+      character*248 cTemp             ! Temp buffer
+      
+C-----------------------------------------------------------------------
+C     Write contextual buffer. cTemp is used to guard against 
+C     potential buffer overflow. 
+C-----------------------------------------------------------------------
+      
+      write ( cTemp, '(A,I2,A,I2,A,I2,A,A,A)' ) 
+     &  ' Invoking MIMO control functions for location ', iLoc_1, ',',
+     &  iLoc_2,',', iLoc_3, ' in domain "', cDomain(1:3),'"'
+     
+      write ( cContext, '(A)' ) cTemp(1:124)
+      call mimo_debug ( cContext )
+
+C-----------------------------------------------------------------------
+C     Loop through specified controls. If 
+C
+      if ( cDomain(1:3) == 'bld' ) then
+      
+      elseif ( cDomain(1:3) == 'plt' ) then
+      
+      endif 
+
+      return 
+      end 
+      
+C--------------------- procedure MIMO_Invoke_Plt_Ctl -------------------
+C     This is a simple interface to MIMO_Invoke_Ctl.      
+C-----------------------------------------------------------------------
+      subroutine MIMO_Invoke_Plt_Ctl (  )
+      implicit none 
+C-----------------------------------------------------------------------      
+C     Local variables 
+C-----------------------------------------------------------------------            
+      
+      integer iLoc_1, iLoc_2, iLoc_3  ! Integers specifying location within 
+                                      !    domain (dummy variables )
+C.....Initialize dummy varaibles                                      
+      iLoc_1 = 0
+      iLoc_2 = 0 
+      iLoc_3 = 0 
+
+C.....Invoke plant control loops.
+      call MIMO_Invoke_Ctl ( 'plt', iLoc_1, iLoc_2, iLoc_3  )
+      
+      return
+      end 
+
+      
+      
 C--------------------- function fMIMOSensor ----------------------------
 C     Return the most recent sensed value for the sensor given by 
 C     iSensor_Index (input)
@@ -754,12 +857,24 @@ C     Passed arguements
 C-----------------------------------------------------------------------      
       
       integer iSensor              ! Index of current sensor
+      
+C----------------------------------------------------------------------
+C     ESP-r variables
+C----------------------------------------------------------------------
+      
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen      
+      integer lnblnk
+
 C-----------------------------------------------------------------------      
 C     Local variables 
 C-----------------------------------------------------------------------
-      integer iPltComp
-      integer iPltNode
-      integer iPltVar 
+      
+      integer iPltComp             ! Index of plant component
+      integer iPltCompVar          ! Component specific index: 
+                                   !     node/variable/connection index
+      logical bFatal_Error         ! Error flag
+      
 C-----------------------------------------------------------------------      
 C     Determine where sensor is located, and collect desired property.
 C     
@@ -768,6 +883,10 @@ C                            the current zone.
 C
 C-----------------------------------------------------------------------      
       
+      write (cContext , '(A,I2,A)') ' MIMO control sensor # ', 
+     &           iSensor, ':'
+      
+            
       if ( iSenLoc( iSensor , 1 ) >= 0 ) then
       
       
@@ -775,8 +894,28 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C       Sensor location is in a plant component.
 C-----------------------------------------------------------------------      
+        iPltComp    = iSenLoc ( iSensor, 2 )   ! Component index
+        iPltCompVar = iSenLoc ( iSensor, 3 )   ! Pointer to sensed location
         
-        
+C.......The actual sesnor location depends on the sensed property
+        if  ( cSenProp( iSensor )(1:4) == 'TEMP' ) then 
+           
+        elseif  ( cSenProp( iSensor )(1:4) == 'FLOW' )  then
+C...........          
+        elseif  ( cSenProp( iSensor )(1:7) ==  'ADD-OUT' ) then
+          
+        elseif ( cSenProp( iSensor )(1:7) ==  'CTL-VAR' ) then
+          
+        else
+          
+          bFatal_Error = .true. 
+          write ( cMsg, '(A,A,A)' ) ' Sensed property "',
+     &      cSenProp( iSensor )(1:lnblnk( cSenProp( iSensor ) ) ),
+     &      '" is invalid.'
+          call UsrMsg (cContext, cMsg, 'W')
+          call UsrMsg (cContext, cMsg, 'F')
+          
+        endif 
         
       
       endif  ! <- matches ' if ( iSenLoc( iSensor , 1 ) >= 0 ) then'
@@ -797,24 +936,21 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------      
-      character*124 cDebug_msg
+      character*(*) cDebug_msg
       character*124 cBuffer
       logical bDebug
-      parameter ( bDebug = .false. )
-      integer i 
-      do i=1,124
-        cBuffer(i:i)=' '
-      enddo
+      parameter ( bDebug = .true. )
+      integer iLen
+      iLen = max(1, min(116,lnblnk(cDebug_msg)))
       if (bDebug) then
         
-         write(cBuffer, '(A,A)') '>>>>> MIMO: ', 
-     &            cDebug_msg(1:lnblnk(cDebug_msg))
+         write(cBuffer, '(A,A)') ' MIMO: ', 
+     &            cDebug_msg(1:iLen)
      
        call edisp ( iuout, cBuffer )
        
       endif 
-      
-      
+
       return 
       end 
 C----------------------- function bParseDate ---------------------------      
@@ -952,7 +1088,6 @@ C-----------------------------------------------------------------------
       logical bMatched             ! list match flag
       integer iL1                  ! Source string length
       integer iL2                  ! Search string length 
-      character*124 cMsg           ! Output buffer.
 C-----------------------------------------------------------------------
 C     Search for matches
 C-----------------------------------------------------------------------
@@ -983,7 +1118,7 @@ C.........Loop through search list, and check for match
 C.......Was source string matched?
         if ( .not. bMatched ) then
         
-          write (cMsg, '(A,A,A,A,A,A,A)' )
+          write ( cMsg, '(A,A,A,A,A,A,A)' )
      &      '   - Could not match specified ', 
      &      cNameType(1:lnblnk(cNameType)), ' "', 
      &      cSourceList(iInstance,ii)(1:iL1),
@@ -993,6 +1128,7 @@ C.......Was source string matched?
           call edisp ( iuout, cMsg )
 
           bMatchesOk = .false. 
+          
         endif 
       
       enddo 
