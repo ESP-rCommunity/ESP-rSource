@@ -23,7 +23,7 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  pltcfg.o psychart.o psychro.o recover.o replsim.o resdef.o resutil.o \
 	  rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
-	  vgraph.o visgrd.o visual.o visvec.o 
+	  vgraph.o visgrd.o visual.o visvec.o mimo_ctl.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -146,6 +146,10 @@ visvec.F:
 	rm -f visvec.F
 	ln -s $(DFSdir)/visvec.F .
 
+mimo_ctl.F:
+	rm -f mimo_ctl.F
+	ln -s $(CTLdir)/mimo_ctl.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -159,4 +163,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	tdrecres.F visgrd.F visual.F visvec.F
+	tdrecres.F visgrd.F visual.F visvec.F mimo_ctl.F
