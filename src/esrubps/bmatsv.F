@@ -278,37 +278,6 @@ C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
 #endif
 
-C H3Kreporting object - save the frequency of
-C building timesteps. Note: simulations with
-C different timesteps for multiple domains are
-C not presently supported.
-C.....H3Kreports.(timesteps).start.................
-C.....Minutes per timetep (building domain)
-C.....-> set name
-      if ( bH3K_rep_enabled() )  then
-        WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
-        WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
-C.....-> update meta-data
-        call REP_SET_PARAMETER(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
-C.....Timestep averaging parameter
-C.....-> set name
-        WRITE(H3K_rep_NAME,'(A)')'default_time_step_averaging'
-
-C Set iadver = 1 to manually disable timestep averaging
-C (or include '<time_step_averaging>false</time_step_averaging>'
-C  in input.xml )
-        WRITE(H3K_rep_VALUE,'(I3)')  idaver
-C.....-> update meta-data
-        call REP_SET_PARAMETER(
-     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
-
-C.....H3Kreports.(timesteps).end.................
-C.....H3Kreports.Set Meta initialization flag
-        call H3K_init_set_meta(.true.)
-      endif ! <- matches 'if ( bH3K_rep_enabled() )...'
 C*h3koutput* Initialize data variables
       call H3KSTORE_ZERO_DATA
 
@@ -461,6 +430,51 @@ C End year: (this data is not used at present)
         iMY_end_yr_index = iMY_end_year - iMY_start_year
 
       endif
+
+C H3Kreporting object - save the frequency of
+C building timesteps. Note: simulations with
+C different timesteps for multiple domains are
+C not presently supported.
+C.....H3Kreports.(timesteps).start.................
+C.....Minutes per timetep (building domain)
+C.....-> set name
+      if ( bH3K_rep_enabled() )  then
+        WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
+        WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
+C.....-> update meta-data
+        call REP_SET_PARAMETER(
+     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
+     &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
+C.....Timestep averaging parameter
+C.....-> set name
+        WRITE(H3K_rep_NAME,'(A)')'default_time_step_averaging'
+
+C Set iadver = 1 to manually disable timestep averaging
+C (or include '<time_step_averaging>false</time_step_averaging>'
+C  in input.xml )
+        WRITE(H3K_rep_VALUE,'(I3)')  idaver
+
+C.....-> update meta-data
+        call REP_SET_PARAMETER(
+     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
+     &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
+
+C.....Number of timesteps
+C.....-> set name
+        WRITE(H3K_rep_NAME,'(A)')'number_of_timesteps'
+        WRITE(H3K_rep_VALUE,'(I9)') ((isf-iss+1))*NTSTEP*24
+
+C.....-> update meta-data
+        call REP_SET_PARAMETER(
+     &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
+     &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
+
+
+C.....H3Kreports.(timesteps).end.................
+C.....H3Kreports.Set Meta initialization flag
+        call H3K_init_set_meta(.true.)
+      endif ! <- matches 'if ( bH3K_rep_enabled() )...'
+
 
 C Check to see if flexible boundary condition file has been defined,
 C and process file if necessary.
@@ -1627,7 +1641,8 @@ C Any changes to this code should be made within
 C the H3Kreports demarcaration comments
 
       CALL REP_XML_SUMMARY
-
+      CALL REP_CLEANUP_FILES
+      
 C........H3Kreports.(SUMMARY).end........................
 
 

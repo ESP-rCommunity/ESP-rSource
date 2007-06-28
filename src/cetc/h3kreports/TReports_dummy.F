@@ -66,7 +66,12 @@ C Logical function indicating that H3KREPORTS is not available
       RETURN  
       END 
      
-
+      SUBROUTINE REP_CLEANUP_FILES()
+      
+        ! Do nothing
+        
+      RETURN  
+      END 
 
       SUBROUTINE REP_SET_PARAMETER(DUMMY1, DUMMY2)
       CHARACTER*128 DUMMY2, DUMMY1

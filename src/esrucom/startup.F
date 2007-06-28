@@ -2258,11 +2258,21 @@ C.......Write out non-versioned disclaimer.
         call edisp(iuout,cTemp_a)
         
         write (cTemp_a,'(A)') 
-     &  "models and reproducing simulation results in the future. You"
+     &  "models and reproducing simulation results in the future. "
         call edisp(iuout,cTemp_a)
         
         write (cTemp_a,'(A)') 
-     &  "can obtain a versioned copy of ESP-r here:"
+     &  "Development using unversioned copies of ESP-r is also prone to"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,'(A)') 
+     &  "error, and strongly discouraged."
+        call edisp(iuout,cTemp_a)
+        
+        call edisp(iuout," ")
+        
+        write (cTemp_a,'(A)') 
+     &  "You can obtain a versioned copy of ESP-r here:"
         call edisp(iuout,cTemp_a)
         
         call edisp(iuout," ")
