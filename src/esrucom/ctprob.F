@@ -333,21 +333,21 @@ C set contaminant file
 
 C Display a help message to user explaining they should have defined a
 C flow network prior to defining a contaminant model
-      H(1) = 'You have chosen a contaminant model. '
-      H(2) = 'A contaminant model is defined after an airflow '
-      H(3) = 'network has been setup so that contaminant information '
-      H(4) = 'may be linked to flow nodes.'
-      H(5) = ' '
-      H(6) = 'If you have not defined the flow network yet you are '
-      H(7) = 'advised to leave this section'
-      H(8) = 'If you have modified a flow network for which a '
-      H(9) = 'contaminant model had been defined previously the '
-      H(10)= 'contaminant model will have to be modified accordingly. '
+      H(1) = 'A contaminant model is usually defined after an air flow'
+      H(2) = 'network has been set up so that contaminant information'
+      H(3) = 'may be linked to flow nodes.'
+      H(4) = ' '
+      H(5) = 'If you have not yet defined a flow network you are'
+      H(6) = 'advised to leave this section and do so.'
+      H(7) = ' '
+      H(8) = 'If you have modified an existing flow network for which'
+      H(9) = 'a contaminant model had been defined then that'
+      H(10)= 'contaminant model will need to be modified accordingly.'
       IF(NOCNTM.LE.0) THEN
         CALL PHELPD('contamn model def',10,'-',0,0,IER)                  
         DOK=.false.
-        CALL ASKOK('Proceed with contaminant model definition?',
-     &    ' ',OK,DOK,10)
+        CALL ASKOK(' ',
+     &    'Proceed with contaminant model definition?',OK,DOK,10)
         IF(.NOT.OK) RETURN
       ENDIF
       H(1)='You have chosen a contaminant model. '

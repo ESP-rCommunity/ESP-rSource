@@ -185,7 +185,8 @@ C network.
       H(7)='If you have not defined the building and plant yet then'
       H(8)='you are advised to exit this section.               '
       dok=.false.
-      CALL ASKOK('Proceed with power network definition?',' ',OK,dok,8)
+      CALL ASKOK(' ','Proceed with electrical network definition?',
+     &              OK,dok,8)
       IF(.NOT.OK) RETURN
       IENTXIST=0
       BASEV=.FALSE.
@@ -428,8 +429,9 @@ C Display help menu.
           CALL EDISP(IUOUT,'Warning: base voltages not set!')
           OK=.FALSE.
           dok=.false.
-          h(1)='If you have information about base voltage proceed.'
-          CALL ASKOK('Proceed with base voltage calculation?',' ',
+          h(1)='If you have the required support information you'
+          h(1)='may proceed with the base voltage calculation.'
+          CALL ASKOK(' ','Proceed with base voltage calculation?',
      &      OK,dok,1)
           IF(OK) CALL ENETBASEV
           BASEV=.TRUE.

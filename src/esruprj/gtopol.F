@@ -1877,7 +1877,8 @@ C show attributes in list.
       LOGICAL SELECT
 
       IER=0
-      write(title,'(2a)') '  Surfaces in ',GTNAME(1:lnblnk(GTNAME))
+      write(title,'(2a)') 'Surface attributes in ',
+     &                    GTNAME(1:lnblnk(GTNAME))
 
 C Initialise surface menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1940,15 +1941,15 @@ C If MOD has been passed as a M then return -2 to indicate further processing
       ENDIF
       VERT(M+3)   ='? help              '
       VERTS(M+3)  ='? help              '
-      VERT(M+4)   ='- exit              '
-      VERTS(M+4)  ='- exit              '
+      VERT(M+4)   ='- exit this menu    '
+      VERTS(M+4)  ='- exit this menu    '
 
 C Display the menu.
       H(1)='A ground surface will be selected via its name'
-      H(2)='in the list (which can be edited elsewhere).'
+      H(2)='in the list. (This may be edited elsewhere.)'
       call usrmsg(PROMPT1,PROMPT2,'-')
       if(MOD.eq.'-')then
-        CALL EMENU('  Surfaces',VERT,MVERT,IVERT)
+        CALL EMENU('Surfaces',VERT,MVERT,IVERT)
       else
         CALL EMENU(title,VERTS,MVERT,IVERT)
       endif
@@ -2060,23 +2061,23 @@ C contents into the surface below.
 C Copy an existing surface, remember how many can be copied
 C from another zone.
         IF(NGT+1.GT.MGRT)THEN
-          CALL USRMSG(' No more surfaces are allowed. ',' ','W')
+          CALL USRMSG('No more surfaces are allowed.',' ','W')
           RETURN
         ENDIF
         call tstamp('>','PRJ: copy surface')
-        CALL EDISP(iuout,'Please specify a surface to copy...')
+        CALL EDISP(iuout,'Please specify a surface to copy.')
         IS=1
 
         CALL EPMENSV
         CALL EASKGSUR(IS,'-','Select surface to copy.',' ',IER)
         CALL EPMENRC
         if(is.eq.0)then
-          CALL usrmsg('No surface selected...',
+          CALL usrmsg('No surface selected.',
      &      'aborting surface copy.','P')
           return
         endif
 
-        write(outs,'(a,a)') ' Copying attributes of ',GSNAME(IS)
+        write(outs,'(a,a)') 'Copying attributes of ',GSNAME(IS)
         call usrmsg(outs,' ','-')
         NVER1=NGVER(IS)
         DO 142 IV=1,NVER1
@@ -2089,7 +2090,7 @@ C Generate a new surface name and default, then check to see if
 C if is a duplicate.
         write(SNAMED,'(a)') GSNAME(IS)(1:6)
         write(SNAME1,'(a)') GSNAME(IS)(1:6)
-          CALL EASKS(SNAME1,'Revised surface name','(please edit)',
+          CALL EASKS(SNAME1,'Revised surface name','Please edit.',
      &    6,SNAMED,'ground surface name',IER,2)
         SMLCN1=GMLCN(IS)
 
@@ -2099,26 +2100,26 @@ C Up the surface count.
         GSNAME(NGT)=SNAME1
         GMLCN(NGT)=SMLCN1
 
-        H(1)='Actions: '
-        H(2)=' Shift surface along (+=outwards) surface normal.'
-        H(3)=' Transform vertices by X,Y,Z metres.'
+        H(1)='Actions:'
+        H(2)=' Shift surface along (+ = outwards) surface normal.'
+        H(3)=' Transform vertices by X,Y,Z.'
         H(4)=' Rotate surface about one of its vertices.'
         H(5)=' Invert ordering (to swop front & back faces).'
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         if(.NOT.DOK)then
-          CALL EASKATOG(' Actions to take on the new surface :',' ',
-     &      'shift along normal','transform xyz','rotate','invert',
-     &      'combination','continue ?',' ',IRT,7)
+          CALL EASKATOG(' ','Surface action options:',
+     &      'shift along normal','transform X Y Z','rotate','invert',
+     &      'combination','cancel',' ',IRT,7)
         endif
         if(IRT.eq.1.or.IRT.eq.5)then
 
 C Shift along normal and copy transformed points back to X1,Y1,Z1 array.
-          H(1)='Distance along the normal (+=out) in metres.'
+          H(1)='Distance along the normal (+ = out).'
           if(.NOT.DOK)then
             vdis=0.0
-            CALL EASKR(vdis,' Distance along the normal (metres): ',
-     &        ' : ',-9.999,'F',9.999,'W',0.0,'d along normal',IER,1)
+            CALL EASKR(vdis,' ','Distance along normal?',
+     &        -9.999,'F',9.999,'W',0.0,'d along normal',IER,1)
           endif
           CALL TRANGSUR(ITRC,iuout,NVER1,X1,Y1,Z1,vdis,XT,YT,ZT,
      &      gsname(ngt))
@@ -2151,13 +2152,10 @@ C Transform all surface vertices.
 
 C Rotate around a point in the surface.
           H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
-          H(3)='vertex in the surface. '
-          H(4)=' '
-          H(5)='A cancel leaves the model unchanged. '
+          H(2)='the surface.'
           if(.NOT.DOK)then
-            CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
-     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,5)
+            CALL EASKI(IRV,' ','Rotate about which vertex?',
+     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,2)
             if(ieri.eq.-3)then
 
 C User asked to cancel so retract new information and return.
@@ -2168,11 +2166,10 @@ C User asked to cancel so retract new information and return.
               NGT=NGT-1
               return
             endif
-            H(1)='The rotation is applied around at and positive'
-            H(2)='is anticlockwise. '
+            H(1)='A positive rotation is anticlockwise.'
             ANG=0.
-            CALL EASKR(ANG,' ',' Rotation (deg + = anticlockwise) ? ',
-     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
+            CALL EASKR(ANG,' ','Rotation degrees?',
+     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,1)
           endif
           if(ANG.LT.-.01.OR.ANG.GT..01)then
             PI = 4.0 * ATAN(1.0)
@@ -2260,12 +2257,12 @@ C inserting the new vertex index.
                     if(NGVER(ivj)+1.le.8)then
                       dok=.true.
                       h(1)='The new vertex is within 3mm of an'
-                      h(2)='edge of another surface. Probably the'
-                      h(3)='vertex should also be included in that'
-                      h(4)='other surface (so the rules about'
-                      h(5)='matching edges is followed). '
-                      call askok('Insert this vertex?','(see help)',
-     &                  ok,dok,5)
+                      h(2)='edge of another surface. The vertex'
+                      h(3)='should probably also be included in'
+                      h(4)='the other surface in order that the'
+                      h(5)='rules about matching edges is followed). '
+                      call askok(' ','Insert this vertex?',
+     &                            ok,dok,5)
                     else
                       ok=.false.
                     endif
@@ -2294,14 +2291,14 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 
 C Reverse the ordering.
         if(IRT.eq.4.or.IRT.eq.5.or.IRT.eq.6)then
-          H(1)='You can swop the front:back faces of a surface. This'
-          H(2)='function helps if the surface faces the wrong way.'
-          write(outs,'(3a)') ' surface ',SNAME1(1:lnblnk(SNAME1)),' ?'
+          H(1)='You can swop the front/back faces of a surface, e.g.'
+          H(2)='is the surface is facing the wrong way.'
+          write(outs,'(3a)') ' surface ',SNAME1(1:lnblnk(SNAME1)),'?'
           if(.NOT.DOK)then
             if(IRT.eq.4)then
               IOK=1
             else
-              CALL EASKAB(' Reverse the edge ordering of',
+              CALL EASKAB('Reverse the edge ordering of',
      &                  outs,'yes','no',IOK,2)
             endif
           endif
@@ -2324,7 +2321,7 @@ C Reverse the ordering.
 
 C Create a new surface, set as many defaults as possible.
         IF(NGT+1.GT.MGRT)THEN
-          CALL USRMSG(' No more surfaces are allowed. ',' ','W')
+          CALL USRMSG('No more surfaces are allowed.',' ','W')
           RETURN
         ENDIF
         call tstamp('>','PRJ: add surface')
@@ -2334,23 +2331,21 @@ C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
 C the individual vertex numbers from the list.
    41   HOLD=' '
-        H(1)='The number of vertices must be less than 24. '
-        H(2)='A surface is composed of a list of vertices. Type'
-        H(3)='this list in order (anticlockwise viewed from the'
-        H(4)='outside).  Note: the last line of the polygon is'
-        H(5)='from the last vertex to the start vertex. '
+        H(1)='A surface is composed of an ordered list of vertices.'
+        H(2)='The order is anticlockwise when viewed from outside'
+        H(3)='the model. The total number of vertices defining a'
+        H(4)='surface must be less than 24. Note that the last line'
+        H(5)='of the surface is from the last to the first vertex. '
         h(6)=' '
-        h(7)='Or click mouse on existing vertices, ending with an '
-        h(8)='` e `. A match is assumed if within 5 pixels.'
-        h(9)='You will be given an oportunity to confirm the list. '
+        h(7)='You may mouse click on existing vertices, ending with'
+        h(8)='an `e`. A match is assumed if the location is within'
+        h(9)='5 pixels.'
         if(MMOD.ne.8)then
-          CALL EASKS(HOLD,
-     &     ' Give vertices (order anticlockwise viewed from outside)',
-     &     '  ',72,' ','associated vertices',IER,5)
+          CALL EASKS(HOLD,' ','Vertex list?',
+     &            72,' ','associated vertices',IER,5)
         else
-          CALL EASKSCMD(HOLD,
-     &     ' Give vertices (order anticlockwise viewed from outside)',
-     &     ' ','via mouse',clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
+          CALL EASKSCMD(HOLD,' ','Vertex list?','via mouse',
+     &             clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
           if(clkok)then
             ijvn=0
             call edisp(iuout,

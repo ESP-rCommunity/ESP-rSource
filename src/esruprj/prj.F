@@ -19,12 +19,13 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Project Manager: file prj.F comprising
-C   MAIN: it does what it says on the box.
+C   MAIN: does what it says on the box.
 C   simula: commissions technical assessments and analysis.
-C   checkmodel: check model prior to commissioning a simulation.
-C   imgdisp: displays images associated with start-up or at specific points
+C   checkmodel: checks model prior to commissioning a simulation.
+C   imgdisp: displays images associated with start-up or at
+C   specific points.
 C   CFGVER: supports the creation of model variants.
-C   VERMAN: copies various esp-r files and names them uniquely
+C   VERMAN: copies various ESP-r files and names them uniquely
 C          in order to build multiple variants of a base case model
 C   FNCNGR: changes the name of file ORIGNAM by appending APP
 
@@ -160,7 +161,7 @@ C Name of current application
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
       character LAPROB*72
-      character ITEMS(27)*33
+      character ITEMS(27)*34
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
@@ -217,7 +218,7 @@ C Set folder separator (fs) to \ or / as required.
       write(docpth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
-      IYEAR=2000
+      IYEAR=2007
       IBDOY=1
       IEDOY=365
       cfgroot=' '
@@ -293,7 +294,7 @@ C           only if: Sun-3 f77 with -f68881 or -ffpa option
 C                or: Sun-4 f77.
 C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
 C      ieeer=ieee_handler('set','common',SIGFPE_bps)
-C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set!'
 
 C Initialise output device, assume minimal trace and a standard
 C display.  If passed zero size and offsets use default, if size
@@ -340,7 +341,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMIT =16
       ENDIF
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Project Manager: enquiries to esru@strath.ac.uk')
+     &'ESP-r Project Manager: enquiries to esru@strath.ac.uk')
 
 C Open the text display box equal to LIMTTY if MMOD = 8.  Model
 C not yet know so pass 0 to the wireframe control routine (updwire).
@@ -410,7 +411,7 @@ C Write header of the journal file and then close.
         write(iuj,'(a,a)')'Date: ',dstmp
         close(iuj)
       endif
-      call tstamp('>','Started project manager')
+      call tstamp('>','Started Project Manager')
   902 continue
 
 C Scan the defaults file for default system configuration file.
@@ -531,9 +532,9 @@ C << for now assume that the file passed is not an exemplar >>
             goto 3  ! cancel detected, redisplay menu
           endif
 
-          call edisp(iuout,' Loading supplied model description.')
-          call tstamp('>','PRJ: loading supplied model')
-          call tstamp('>',LCFGF)
+C          call edisp(iuout,'* Loading supplied model description.')
+C          call tstamp('>','PRJ: loading supplied model')
+C          call tstamp('>',LCFGF)
         else
 
 C The model file might not exist.
@@ -547,9 +548,9 @@ C << for now assume that the file passed is not an exemplar >>
             goto 3  ! cancel detected, redisplay menu
           endif
 
-          call edisp(iuout,' Loading supplied model description.')
-          call tstamp('>','PRJ: loading supplied model')
-          call tstamp('>',LCFGF)
+C          call edisp(iuout,'* Loading supplied model description.')
+C          call tstamp('>','PRJ: loading supplied model')
+C          call tstamp('>',LCFGF)
         endif
       endif
 
@@ -568,7 +569,6 @@ C current number of zones if a model has been loaded.
           endif
           CFGOK=.TRUE.
           call siteinfo(iuout)
-          call edisp(iuout,' ')
 
 C Open core of databases if not already done so.
           if(MLDBOK.and.MATDBOK.and.OPTKOK)then
@@ -576,8 +576,8 @@ C Open core of databases if not already done so.
           else
             call opendb(ier)
             if(ier.ne.0)then
-              call usrmsg('Possible problems with one or more of the',
-     &          'construction and optical databases, please check.','W')
+              call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db. Please check.','W')
               ier = 0
             endif
           endif
@@ -649,8 +649,7 @@ C Pass information to C library code if running in graphic mode.
               CALL viewtext(ETEXT,1,1,1)
             endif
           else
-            call edisp(iuout,' ')
-            call edisp(iuout,'Changing focus to specified zone.')
+C            call edisp(iuout,'* Changing focus to specified zone.')
             itru=iuout
             CALL EGOMIN(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
             IF(IER.NE.0)goto 3
@@ -667,69 +666,69 @@ C If there is an obstructions file read it.
 
       ITRC=1
     3 INO=-4
-      ITEMS(1) =  'a introduction to ESP-r        '
-      ITEMS(2) =  'b database maintenance         '
-      ITEMS(3) =  'c validation                   '
-      ITEMS(4) =  ' Select_______________________ '
-      ITEMS(5) =  'd   open                       '
-      ITEMS(6) =  'e   new model                  '
+      ITEMS(1) =  'a introduction to ESP-r'
+      ITEMS(2) =  'b database maintenance'
+      ITEMS(3) =  'c validation testing'
+      ITEMS(4) =  ' .... Model selection ........'
+      ITEMS(5) =  'd open existing'
+      ITEMS(6) =  'e create new'
       if(CFGOK)then
         if(browse)then
-          ITEMS(7) =  ' Current__(browse only)_______ '
-          ITEMS(13)=  'm   browse/simulate            '
+          ITEMS(7) =  ' .... Current model (browse) ....'
+          ITEMS(13)=  'm browse/simulate'
         else
-          ITEMS(7) =  ' Current______________________ '
-          ITEMS(13)=  'm   browse/edit/simulate       '
+          ITEMS(7) =  ' .... Current model ..........'
+          ITEMS(13)=  'm browse/edit/simulate'
         endif
-        WRITE(ITEMS(8),'(2A)') '    cfg  : ',LCFGF(1:22)
-        WRITE(ITEMS(9),'(2A)') '    path : ',path(1:22)
-        WRITE(ITEMS(10),'(2A)')'g   root : ',cfgroot(1:22)
-        WRITE(ITEMS(11),'(2A)')'h   title: ',LSNAM(1:22)
-        WRITE(ITEMS(12),'(A)') 'j   version:       '
-        ITEMS(14)=  '                              '
+        WRITE(ITEMS(8),'(2A)') '  cfg  : ',LCFGF(1:22)
+        WRITE(ITEMS(9),'(2A)') '  path : ',path(1:22)
+        WRITE(ITEMS(10),'(2A)')'g root : ',cfgroot(1:22)
+        WRITE(ITEMS(11),'(2A)')'h title: ',LSNAM(1:22)
+        WRITE(ITEMS(12),'(A)') 'j variants'
+        ITEMS(14)=  '                            '
       else
-        ITEMS(7) =  ' Current__(no model yet)______'
-        WRITE(ITEMS(8),'(A)')  '    cfg  :         '
-        WRITE(ITEMS(9),'(A)')  '    path :         '
-        WRITE(ITEMS(10),'(A)') '    root :         '
-        WRITE(ITEMS(11),'(A)') '    title:         '
-        WRITE(ITEMS(12),'(A)') '    version:       '
+        ITEMS(7) =    ' .... Current model (none) ....'
+        WRITE(ITEMS(8),'(A)')  '  cfg  :         '
+        WRITE(ITEMS(9),'(A)')  '  path :         '
+        WRITE(ITEMS(10),'(A)') '  root :         '
+        WRITE(ITEMS(11),'(A)') '  title:         '
+        WRITE(ITEMS(12),'(A)') '  variants       '
         ITEMS(13)=  '                              '
         ITEMS(14)=  '                              '
       endif
-      ITEMS(15)   = ' Import & export______________'
-      ITEMS(16)   = 'n   import from 3rd party     '
+      ITEMS(15)   = ' .... Import & export ........'
+      ITEMS(16)   = 'n import CAD file                 '
       if(CFGOK)then
-        ITEMS(17) = 'o   export current model      '
-        ITEMS(18) = 'p   archive current model     '
+        ITEMS(17) = 'o export current model            '
+        ITEMS(18) = 'p archive current model           '
       else
-        ITEMS(17) = '    export                    '
-        ITEMS(18) = '    archive                   '
+        ITEMS(17) = '  export                          '
+        ITEMS(18) = '  archive                         '
       endif
-      ITEMS(19)   = ' Folders & files______________'
+      ITEMS(19)   = ' .... Model location ........'
       if(CFGOK)then
-        ITEMS(20) = 't   project folders & files   '
+        ITEMS(20) = 't folders & files         '
       else
-        ITEMS(20) = '    project folders & files   '
+        ITEMS(20) = '  folders & files         '
       endif
-      ITEMS(21)  =  ' _____________________________'
+      ITEMS(21)  =  ' .... Miscellaneous ........'
       if(CFGOK)then
-        ITEMS(22) = 'r save model                  '
-        ITEMS(23) = 's save model as               '
+        ITEMS(22) = 'r save model                      '
+        ITEMS(23) = 's save model as                   '
       else
-        ITEMS(22) = '  save model                  '
-        ITEMS(23) = '  save model as               '
+        ITEMS(22) = '  save model                      '
+        ITEMS(23) = '  save model as                   '
       endif
       IF(ITRC.EQ.0)THEN
-        ITEMS(24) = 'v feedback >> silent          '
+        ITEMS(24) = 'v feedback >> silent              '
       ELSEIF(ITRC.EQ.1)THEN
-        ITEMS(24) = 'v feedback >> summary         '
+        ITEMS(24) = 'v feedback >> summary             '
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS(24) = 'v feedback >> detailed        '
+        ITEMS(24) = 'v feedback >> detailed            '
       ENDIF
-      ITEMS(25) =   '* preferences                 '
-      ITEMS(26) =   '? help                        '
-      ITEMS(27) =   '- exit Project Manager        '
+      ITEMS(25) =   '* preferences                     '
+      ITEMS(26) =   '? help                            '
+      ITEMS(27) =   '- exit Project Manager            '
       MITEM=27
 
 C If user has defined model and perhaps resized the display then
@@ -769,21 +768,18 @@ C Re-draw the configuration buttons.
         endif
       endif
 
-C Use askabout to instanciate the initial help messages (2nd parameter is one).
+C Use askabout to instantiate the initial help messages (2nd parameter is one).
       call askabout('prj ',1)
 
 C Present opening menu.
-      CALL EMENU('Project manager',ITEMS,MITEM,INO)
+      CALL EMENU('Model Management',ITEMS,MITEM,INO)
       IF(INO.EQ.MITEM)THEN
         if(changedit)then
           h(1)='If you exit without saving, recent changes could be'
-          h(2)='lost. If you select cancel then you will be returned'
-          h(3)='to the interface.'
-          h(4)=' '
-          h(5)='If you selected this option in error click continue. '
+          h(2)='lost. If you selected this option in error select' 
+          h(3)='cancel.'
           CALL EASKABC('There are unsaved changes in the model.',
-     &      'options:','exit w/o saving','save & exit',
-     &      'continue using project manager',IW,5)
+     &      'Options:','exit (no save)','save & exit','cancel',IW,3)
           if(iw.eq.3)then
             goto 3
           elseif(iw.eq.2)then
@@ -796,12 +792,12 @@ C Present opening menu.
             continue
           endif
         else
-          call usrmsg(' Closing Project Manager...',' ','P')
+          call usrmsg('Closing Project Manager.',' ','P')
           ok=.true.
         endif
         IF(.NOT.OK)GOTO 3
         if(journio.eq.1)then
-          call tstamp('>','Finish project manager')
+          call tstamp('>','Finish Project Manager')
           close(iuj)
           write(cjfile,'(5a)')upath(1:lnblnk(upath)),fs,'.',
      &      uname(1:lnblnk(uname)),'cur_j'
@@ -824,24 +820,23 @@ C If there is a temporary optical file remove it.
       ELSEIF(INO.EQ.1)THEN
 
 C Introduction.
-        H(1)='Welcome to the Project Manager, a tool to help you'
-        H(2)='specify, appraise and evolve your designs.'
-        H(3)=' '
-        H(4)='If you are new to the system, you might like to start'
-        H(5)='by selecting the tutorial button and reading'
-        H(6)='through the WWW tutorials provided.  There is also a '
-        H(7)='paper manual.  The World-Wide Web address is'
-        H(8)=' '
-        H(9)='     http://www.esru.strath.ac.uk'
+        H(1)='Welcome to the ESP-r Project Manager, a tool to'
+        H(2)='help you specify, appraise and evolve your energy'
+        H(3)='system designs.'
+        H(4)=' '
+        H(5)='If you are new to ESP-r, you might like to start'
+        H(6)='by selecting the tutorial button and browsing the'
+        H(7)='information available at www.esru.strath.ac.uk. There'
+        H(8)='is also a paper manual included with the source code'
+        H(9)='distribution.'
         H(10)=' '
-        H(11)=' '
-        H(12)='Please contact ESRU at the email address shown above'
-        H(13)='should you require further information or wish to'
-        H(14)='suggest tool enhancements.'
-        H(15)=' '
-        H(16)='To list the invocation options supported by this tool'
-        H(17)='enter `esp-r -help` at the command line prompt.'
-        CALL PHELPD('Introduction',17,'gen_esp_intr',0,0,IER)
+        H(11)='Please contact ESRU at the email address shown in the'
+        H(12)='header should you require further information or wish'
+        H(13)='to suggest tool enhancements.'
+        H(14)=' '
+        H(15)='To list the invocation options supported by this tool'
+        H(16)='enter `esp-r -help` at the command line prompt.'
+        CALL PHELPD('Introduction',16,'gen_esp_intr',0,0,IER)
         call tstamp('>','PRJ: intro help')
       ELSEIF(INO.EQ.2)THEN
 
@@ -852,17 +847,18 @@ C Manage databases.
       ELSEIF(INO.EQ.3)THEN
 
 C Manage validation. Does not need to have an existing model
-C loaded << double check that this is true >>
+C loaded << Check that this is true. >>
         call MValid
       ELSEIF(INO.EQ.5)THEN
 
 C Open an exemplar or existing model.
-        h(1)='A list of example (exemplar) models is available or'
-        h(2)='you can specify another existing model.'
-        h(3)=' '
-        h(4)='If you selected this option in error click cancel. '
-        CALL EASKABC(' Model opening options:','  ',
-     &    'open an exemplar','open another model','cancel',IW,4)
+        h(1)='The ESP-r system includes a number of example models'
+        h(2)='that demonstrate different modelling capabilities.'
+        h(3)='Alternatively, you can select another existing model,'
+        h(4)='perhaps one you created earlier or have received from'
+        h(5)='a colleague.'
+        CALL EASKABC(' ','Model selection options:',
+     &    'exemplar','other','cancel',IW,5)
         if(iw.eq.3)then
           continue
         elseif(iw.eq.1)then
@@ -908,13 +904,13 @@ C Copy the exemplar configuration file (with full path) to LCMDFL.
                 call fdroot(ltcmdfl,path,LCFGF)
 
 C Debug...
-                write(outs248,'(2a)') 'LCMDFL is ',LCMDFL
-                call edisp248(iuout,outs248,110)
-                write(outs248,'(2a)') 'model path is ',path
-                call edisp248(iuout,outs248,110)
-                write(outs248,'(2a)') 'model cfg is ',LCFGF
-                call edisp248(iuout,outs248,110)
-                call edisp(iuout,' ')
+C                write(outs248,'(2a)') '* LCMDFL is ',LCMDFL
+C                call edisp248(iuout,outs248,110)
+C                write(outs248,'(2a)') 'Model path is ',path
+C                call edisp248(iuout,outs248,110)
+C                write(outs248,'(2a)') 'Model cfg is ',LCFGF
+C                call edisp248(iuout,outs248,110)
+C                call edisp(iuout,' ')
 
 C If the path of the model indicates it is one of the standard
 C exemplars then flag browse and itisanexemplar to true.
@@ -930,8 +926,8 @@ C if the model path is to the distribution training folder believe it.
                   itisanexemplar=.true.
                 else
 
-C A non match may happen in Native windows so fall back ont useracton
-C if there is no match in the paths.
+C A non match may happen in Native windows so fall back to user
+C action if there is no match in the paths.
                   if(useraction(1:8).eq.'browse  ')then
                     browse=.true.
                     itisanexemplar=.true.
@@ -940,8 +936,8 @@ C if there is no match in the paths.
                     itisanexemplar=.false.
                   endif
                 endif
-                write(outs,*) ' browse status is ',browse
-                call edisp(iuout,outs)
+C                write(outs,*) '* Browse status is ',browse
+C                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
@@ -962,8 +958,8 @@ C used and there is no need to check the path.
               endif
             endif
           else
-            call edisp(iuout,' No `exemplars` list available')
-            call edisp(iuout,' returning to main menu.')
+            call edisp(iuout,'No exemplars list available!')
+            call edisp(iuout,' ')
             goto 3
           endif
         elseif(iw.eq.2)then
@@ -984,9 +980,9 @@ C 'UNKNOWN' then ask for actual name to create or read.
 C Something was passed in via the command line so offer choice.
             H(1)='The model configuration file holds the definition'
             H(2)='of the model to be simulated, including the names'
-            H(3)='of the composing files.  Such a file has been'
-            H(4)='passed to the Project Manager as a command line'
-            H(5)='argument.'
+            H(3)='of the composing files.  A configuration file'
+            H(4)='has been passed to the Project Manager as a command'
+            H(5)='line argument.'
             H(6)=' '
             H(7)='If you selected this option in error click cancel. '
             write(outs,'(a,a)') ' The command line included: ',
@@ -1027,8 +1023,6 @@ C Find the path and local file name.
               INO=-2
               GOTO 3
             endif
-C Debug.
-C            write(6,*) ' browse status is ',browse
           endif
 
 C For any loaded model, if user is not browsing check to see if
@@ -1048,12 +1042,12 @@ C Start new project, begin with registration.
 
 C Root name of the model.
         if(CFGOK)then
-          h(1)='This `root` word will be used to help create'
-          h(2)='system level file names (control, connections).'
-          h(3)='It is derived from the configuration file name.'
+          h(1)='This `root name` will be used to create the'
+          h(2)='ESP-r model folder structure that holds key'
+          h(3)='files such as the system configuration file.'
           t24=cfgroot
-          CALL EASKS(t24,' Root name for the project?',
-     &     '(single word <24 char)',24,'project','root name',IER,3)
+          CALL EASKS(t24,' ','Project root name (<24 chars)?',
+     &                24,'project','root name',IER,3)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
           changedit=.true.
         endif
@@ -1061,15 +1055,15 @@ C Root name of the model.
 
 C Title of the model.
         if(CFGOK)then
- 246      H(1)='The model has an associated 72 character descriptor'
-          H(2)='which should be informative, e.g.:'
+ 246      H(1)='Each model has an associated descriptor (<72 chars),'
+          H(2)='which should be suitably informative, e.g.:'
           H(3)=' '
-          H(4)='  `PV-facade office, daylight controlled, base case`'
+          H(4)=' `PV-facade office, daylight controlled, base case.`'
           ltmp=LSNAM
-          CALL EASKS(ltmp,' Model description?',
-     &      ' ',72,'base case simulation','model description',IER,4)
+          CALL EASKS(ltmp,' ','Model description?',
+     &         72,'base case simulation','model description',IER,4)
           if(ltmp(1:2).eq.'  '.or.ltmp(1:4).eq.'UNKN')then
-            call usrmsg('A blank description is not allowed.',' ','W')
+            call usrmsg('Blank description not allowed!',' ','W')
             goto 246
           else
             LSNAM=ltmp
@@ -1098,7 +1092,7 @@ C Export, if something other than registration or plant only.
           call tstamp('>','PRJ: enter export controller')
           call exportcad(itrc,IER)
         else
-          CALL USRMSG(' ','Insufficient data to export.','W')
+          CALL USRMSG(' ','Insufficient data to export!','W')
         endif
       ELSEIF(INO.EQ.18)THEN
 
@@ -1114,14 +1108,14 @@ C Project folders and files.
 C Save model (22 without asking for file name & 23 asking for file name).
         if(browse)then
           call usrmsg('Cannot update the model while in browse',
-     &                'mode: you must own the model!','W')
+     &                'mode: you must `own` the model!','W')
           goto 3
         endif
 
         if(INO.EQ.23)then
 
 C Ask for file name.
-          H(1)='The current model description will be placed'
+          H(1)='The current model description will be copied'
           H(2)='into this file.'
           DFILE=' '
           ltmp=LCFGF
@@ -1130,15 +1124,15 @@ C Ask for file name.
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LCFGF=ltmp
           else
-            call usrmsg('Please re-enter the file name. ',' ','W')
+            call usrmsg('Re-enter file name.',' ','W')
             goto 89
           endif
 
 C Also give user option to alter the root name.
-          h(1)='This `root` word will be used to help create'
+          h(1)='This `root name` will be used to help create'
           h(2)='system level file names (control, connections).'
           h(3)='If you have altered the name of the configuration'
-          h(4)='fine you might want to modify the root name as'
+          h(4)='file you may want to modify the root name as'
           h(5)='well.'
           t24=cfgroot
           CALL EASKS(t24,' Root name for the project? (see help',
@@ -1176,7 +1170,7 @@ C Get root name and ensure that configuration file ends in .cfg.
                 write(cfgroot,'(a)') LCFGF(1:lcfgr)
                 write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
               endif
-              h(1)='This `root` word will be used to help create'
+              h(1)='This `root name` will be used to create'
               h(2)='system level file names (control, connections).'
               h(3)='It is derived from the configuration file name.'
               t24=cfgroot
@@ -1201,19 +1195,19 @@ C Also check about connections file.
               if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
                 LCNN=ltmp
               else
-                call usrmsg('Please re-enter the file name. ',' ','W')
+                call usrmsg('Re-enter file name.',' ','W')
                 goto 289
               endif
             endif
           endif
         endif
 
-        call tstamp('>','PRJ: update configuration')
-        call tstamp('>',LCFGF)
+C        call tstamp('>','PRJ: update configuration')
+C       call tstamp('>',LCFGF)
         CALL EMKCFG('-',IER)
         IF(IER.EQ.1)THEN
-          call usrmsg('Problem creating new file. Check disk space and',
-     &                'or file permissions ','W')
+          call usrmsg('Problem creating new file. Check disk space',
+     &                'and/or file permissions.','W')
         ENDIF
         goto 3
       ELSEIF(INO.EQ.MITEM-3)THEN
@@ -1237,7 +1231,7 @@ C and reporting/trace level.
         endif
       ELSEIF(INO.EQ.MITEM-1)THEN
 
-C Help via the askabout facility in esru_ask.F The zero requests display
+C Help via askabout: 0 requests display.
         call askabout('prj ',0)
       ELSE
         INO=-4
@@ -1246,11 +1240,14 @@ C Help via the askabout facility in esru_ask.F The zero requests display
       INO=-2
       GOTO 3
 
- 901  call edisp(iuout,'Error opening journal file, continuing.')
+ 901  call edisp(iuout,'Error opening Journal.')
+      call edisp(iuout,' ')
       goto 902
- 900  call edisp(iuout,'Error opening cur journal file, continuing.')
+ 900  call edisp(iuout,'Error opening current Journal ... continuing.')
+      call edisp(iuout,' ')
       goto 902
- 899  call edisp(iuout,'Error closing cur journal file.')
+ 899  call edisp(iuout,'Error closing current Journal ... continuing.')
+      call edisp(iuout,' ')
       goto 902
 
       END
@@ -1345,20 +1342,20 @@ C constructions are known.
       else
         call checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,oprfok,
      &    prob,tmcok,shdok)
-        if(mlcok)then
-          call edisp(iuout,'Surface construction attributes ok.')
+        if(.NOT.mlcok)then
+          call edisp(iuout,'* Surface construction attributes not ok.')
         endif
-        if(bndryok)then
-          call edisp(iuout,'Surface connection attributes ok.')
+        if(.NOT.bndryok)then
+          call edisp(iuout,'* Surface connection attributes not ok.')
         endif
-        if(bndrysxc)then
-          call edisp(iuout,'Surface topology (first check) ok.')
+        if(.NOT.bndrysxc)then
+          call edisp(iuout,'* Surface topology (1st check) not ok.')
+       endif
+        if(prob)then
+          call edisp(iuout,'* Surface topology (2nd check) not ok.')
         endif
-        if(.NOT.prob)then
-          call edisp(iuout,'Surface topology (second check) ok.')
-        endif
-        if(geofok.AND.confok.AND.oprfok)then
-          call edisp(iuout,'Mandatory zone files exist.')
+        if(.NOT.(geofok.AND.confok.AND.oprfok))then
+          call edisp(iuout,'* Mandatory zone files do not exist!')
         endif
       endif
 
@@ -1373,22 +1370,22 @@ C constructions are known.
         write(ITEMS(1),'(a,i2,a,i2,a)') 'a simulation presets (',isset,
      &    ' of',nsset,')'
         write(ITEMS(2),'(a,a8)')  'b  set name: ',spfdescr(isset)
-        write(ITEMS(3),'(a,i4)')  'c  startup days:',isstup
+        write(ITEMS(3),'(a,i4)')  'c  start-up days:',isstup
         if(isbnstep.le.1)then
-          write(ITEMS(4),'(a,i3)')'d  zone ts/hr:',isbnstep
+          write(ITEMS(4),'(a,i3)')'d  zone timestep/h:',isbnstep
         else
           if(isavgh.eq.0)then
-            write(ITEMS(4),'(a,i3,a)')  'd  zone ts/hr:',isbnstep,
+            write(ITEMS(4),'(a,i3,a)')  'd  zone timestep/h:',isbnstep,
      &        ' each ts saved'
           else
-            write(ITEMS(4),'(a,i3,a)')  'd  zone ts/hr:',isbnstep,
+            write(ITEMS(4),'(a,i3,a)')  'd  zone timestep/h:',isbnstep,
      &        ' saved 1 ts/hr'
           endif
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(5),'(a,i3)')'e  plant ts (per bldg ts):',ispnstep
+          write(ITEMS(5),'(a,i3)')'e  plant timestep/(bldg ts):',ispnstep
         else
-          write(ITEMS(5),'(a)')   'e  plant timesteps/hr: N/A'
+          write(ITEMS(5),'(a)')   'e  plant timestep/(bldg ts): N/A'
         endif
         write(ITEMS(6),'(a,i3)') 'f  result save level:',issave
 
@@ -1422,36 +1419,36 @@ C Display the simulation period.
           write(ITEMS(11),'(a)')  '   : N/A'
         endif
         if(MSTROK)then
-          write(ITEMS(12),'(a,a15)')'l  moist results: ',
+          write(ITEMS(12),'(a,a15)')'l  moist. results: ',
      &      smstres(isset)(1:15)
         else
           write(ITEMS(12),'(a)')  '   moisture results: N/A'
         endif
         if(ientxist.gt.0)then
-          write(ITEMS(13),'(a,a15)')'m  elect results: ',
+          write(ITEMS(13),'(a,a15)')'m  elect. results: ',
      &      selres(isset)(1:15)
         else
           write(ITEMS(13),'(a)')  '   electrical results: N/A'
         endif
         if(lnblnk(lipvdatf).eq.0)then
-          write(ITEMS(14),'(a)')  '   ipv report   : N/A'
+          write(ITEMS(14),'(a)')  '   IPV report   : N/A'
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          write(ITEMS(14),'(a)')  '   ipv report   : N/A'
+          write(ITEMS(14),'(a)')  '   IPV report   : N/A'
         else
-          write(ITEMS(14),'(a,a15)')'n  ipv report: ',sipvres(1:15)
+          write(ITEMS(14),'(a,a15)')'n  IPV report: ',sipvres(1:15)
         endif    
         ITEMS(15)='o save or dereference parameters '
         ITEMS(16)='  ______________________________ '
         M=16
       endif
       if(INDCFG.eq.2)then
-        ITEMS(M+1) ='p system only simulation         '
+        ITEMS(M+1) ='p plant only simulation         '
       else
         ITEMS(M+1) ='p integrated simulation          '
       endif
-      ITEMS(M+2) ='r   fluid flow (stand-alone)     '
-      ITEMS(M+3) ='s   visual impact                '
-      ITEMS(M+4) ='t   integrated performance view  '
+      ITEMS(M+2) ='r  fluid flow only              '
+      ITEMS(M+3) ='s  visual impact                '
+      ITEMS(M+4) ='t  integrated performance view  '
       ITEMS(M+5) ='  ______________________________ '
       ITEMS(M+6) ='? help                           '
       ITEMS(M+7) ='- exit this menu                 '
@@ -1468,20 +1465,20 @@ C At each pass update for recent parameter changes.
 C Help text for this menu.
       H(1)='Normally an integrated simulation is invoked by which'
       H(2)='the heat, fluid, electrical power and light flows within'
-      H(3)='combined building/ plant models may be evaluated.'
+      H(3)='combined building/plant models may be evaluated.'
       H(4)=' '
       H(5)='The other options are useful when only one of the above'
       H(6)='technical sub-systems is to be appraised, e.g. a CFD only'
-      H(7)='analysis with fixed buoyancy.  Note however that such a'
-      H(8)='simulation can still be commissioned via the'
+      H(7)='analysis with fixed boundary temperatures. Note however'
+      H(8)='that such a simulation can still be commissioned via the'
       H(9)='`Integrated` option.'
       H(10)=' '
       H(11)='You can define simulation options such as the assessment'
       H(12)='period prior to commissioning simulations. Several sets'
       H(13)='can be defined (e.g. standard seasonal assessments). '
-      H(14)='A default set is always available. '
+      H(14)='A default set is always available.'
 
-      CALL EMENU('Simulation controller',ITEMS,MITEM,INO)
+      CALL EMENU('Simulation Controller',ITEMS,MITEM,INO)
       if(INO.EQ.MITEM)then
         if(modparms)then
           CALL EMKCFG('-',IER)
@@ -1497,14 +1494,13 @@ C List help text for the simulations menu.
 C << Add logic to determine whether bps/mfs/dfs should be run. >> 
 C Invoke simulator.
         if(nsset.gt.0)then
-          h(1)='Interactive mode uses simulation parameters as defaults'
-          h(2)='which can be overwritten. The silent running mode '
-          h(3)='uses the parameters to run in automatic mode. '
-          h(4)=' '
-          h(5)='If you selected this option in error click cancel.'
-          CALL EASKABC('Simulation interaction options: (see help)',' ',
-     &      'run interactively','silent running mode','cancel',
-     &      isauto,5)
+          h(1)='Interactive mode uses simulation parameters as'
+          h(2)='defaults, which can be overwritten. The silent'
+          h(3)='running mode uses the parameters to run in automatic'
+          h(4)='mode.'
+          CALL EASKABC(' ','Simulation interaction options:',
+     &      'run interactively','run silently','cancel',
+     &      isauto,4)
           if(isauto.eq.1)then
             aut=' interactive'
           elseif(isauto.eq.2)then
@@ -1512,7 +1508,7 @@ C Invoke simulator.
           else
             goto 3
           endif
-          call tstamp('>','PRJ: beginning simulation with param set')
+          call tstamp('>','PRJ: beginning simulation with param set.')
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
@@ -1526,7 +1522,7 @@ C and change any / to \.
             call cmdfiledos(longtfile,longtfiledos,ier)
 
 C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
+            write(outs,'(2a)') '* Corrected file ',
      &        longtfiledos(1:lnblnk(longtfiledos))
             call edisp248(iuout,outs,100)
             longtfile=' '
@@ -1552,7 +1548,7 @@ C an offset from prj start position.
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        brw,' -p ',spfdescr(isset),aut,' &'
           endif
-          call usrmsg('Begining simulation via',doit,'-')
+C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         else
@@ -1570,7 +1566,7 @@ C and change any / to \.
             call cmdfiledos(longtfile,longtfiledos,ier)
 
 C Debug the patched file name.
-            write(outs,'(2a)') 'corrected file ',
+            write(outs,'(2a)') '* Corrected file ',
      &        longtfiledos(1:lnblnk(longtfiledos))
             call edisp(iuout,outs)
             longtfile=' '
@@ -1595,7 +1591,7 @@ C an offset from prj start position.
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        brw,' &'
           endif
-          call usrmsg('Begining simulation via',doit,'-')
+C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif
@@ -1604,19 +1600,18 @@ C an offset from prj start position.
         H(2)='fluid flow within a network of connected flow'
         H(3)='components representing the building and/or plant'
         H(4)='system in whole or part.  The second option permits'
-        H(5)='a steady state or transient, n-dimensional flow'
+        H(5)='an n-dimensional steady state or transient flow'
         H(6)='analysis of a single zone by the technique of'
         H(7)='computational fluid dynamics.'
         H(8)=' '
         H(9)='In both cases, because the temperature distribution'
-        H(10)='throughout the whole building/ plant model is'
-        H(11)='not computed, buoyancy effects are time invariant.'
-        H(12)='For models where this assumption is inappropriate'
-        H(13)='the `Integrated` simulation option should be used.'
-        H(14)=' '
-        H(15)='If you selected this option in error click cancel.'
+        H(10)='throughout the whole building/plant model is'
+        H(11)='not computed, buoyancy effects and boundary conditions'
+        H(12)='are time invariant. For models where this assumption'
+        H(13)='is inappropriate, the `Integrated` simulation option'
+        H(14)='should be used.'
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
-     &      'Computational Fluid Dynamics','cancel',IW,15)
+     &      'Computational Fluid Dynamics','cancel',IW,146)
         IF(IW.EQ.1)THEN
 
 C Execute mfs.
@@ -1633,7 +1628,7 @@ C an offset from prj start position.
           else
             write(doit,'(3a)') 'mfs -mode ',tmode,' -s 0 0 0 &'
           endif
-          call usrmsg('beginning flow only assessment via',doit,'-')
+C          call usrmsg('Beginning flow only assessment via',doit,'-')
           call runit(doit,tmode)
         ELSEIF(IW.EQ.2)THEN
 
@@ -1651,7 +1646,7 @@ C an offset from prj start position.
           else
             write(doit,'(3a)') 'dfs -mode ',tmode,' -s 0 0 0 &'
           endif
-          call usrmsg('beginning CFD only assessment via',doit,'-')
+C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
       elseif(INO.EQ.MITEM-4)then
@@ -1682,7 +1677,7 @@ C and change any / to \.
           write(doit,'(5a)') 'e2r -mode ',tmode,
      &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
         endif
-        call usrmsg('beginning visual assessment via',doit,'-')
+C        call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
       elseif(INO.EQ.MITEM-3)then
 
@@ -1745,7 +1740,7 @@ C Setup one parameter set or several sets to match IPV description.
             issave=4
             isavgh=0
           else
-            call edisp(iuout,'Scanning for startup days')
+C            call edisp(iuout,'* Scanning for start-up days.')
             call scntcnst(TDM,istd,TCM,ISTC)
             nsset=1
             isset=1
@@ -1756,9 +1751,9 @@ C Setup one parameter set or several sets to match IPV description.
             isavgh=0
           endif
           if(ID.eq.1)then
-            h(1)='Typical names are win spr sum. '
+            h(1)='Typical names are `win`, `spr` & `sum`.'
             de='default'
-            CALL EASKS(de,'Name for set ?',' ',8,'win','set name',IER,1)
+            CALL EASKS(de,'Name for set?',' ',8,'win','set name',IER,1)
             write(spfdescr(isset),'(a8)')de(1:8)
             lde=lnblnk(spfdescr(isset))
             spfdescr(2)='-'
@@ -1896,36 +1891,36 @@ C << description first >>
         elseif(IRT.ge.1.and.IRT.le.nsset)then
           isset=IRT
         endif
-        call edisp(iuout,'Rechecking startup days')
+C        call edisp(iuout,'* Rechecking startup days.')
         call scntcnst(TDM,istd,TCM,ISTC)
       elseif(MITEM.eq.23.and.INO.EQ.2)then
 
-C If there is an IPV descripton and this isset is one,
+C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
         if(nipvassmt.eq.nsset)then
-          call usrmsg('Sorry, and IPV is being used and the set',
-     &                'names are pre-defined','W')
+          call usrmsg('IPV set name is pre-defined,','.','W')
         else
-          h(1)='Typical names are win spr sum. '
+          h(1)='Typical names are `win`, `spr` and `sum`.'
           de=spfdescr(isset)
-          CALL EASKS(de,' Name for set ?',' ',8,spfdescr(isset),
+          CALL EASKS(de,' ','Name for set?',8,spfdescr(isset),
      &                  'set name',IER,1)
           write(spfdescr(isset),'(a8)')de(1:8)
           modparms=.true.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.3)then
         if(INDCFG.eq.2)then
-          call edisp(iuout,'Startup days not applicable to plant.')
+          call edisp(iuout,'* Start-up days not applicable to plant.')
         else
-          call edisp(iuout,'Rechecking startup days')
+C          call edisp(iuout,'* Rechecking start-up days.')
           call scntcnst(TDM,istd,TCM,ISTC)
-          H(1)='Presimulation days to allow model to reach equlabrium.'
-          H(2)='The default is the suggested value for this model.'
-          H(3)=' '
-          H(4)='A cencel leaves the model unchanged. '
+          H(1)='The pre-simulation start-up period is required to'
+          H(2)='the effects of initialisation assumptions from the'
+          H(3)='simulation results. The suggested value, which is'
+          H(4)='computed automatically, may be overridden.'
           isstupt=isstup
-          CALL EASKI(isstupt,'Presimulation period (days): ',' ',
-     &       0,'F',100,'W',ITCNST,'presimulation days',IERI,4)
+          CALL EASKI(isstupt,' ',
+     &       'Pre-simulation start-up period (days)?',
+     &       0,'F',100,'W',ITCNST,'presimulation days',IERI,2)
           if(ieri.eq.-3)then
             continue
           else
@@ -1936,21 +1931,20 @@ C do not allow this set name to be changed.
       elseif(MITEM.eq.23.and.INO.EQ.4)then
 
 C The simulation timestep. Edit local variable and if not canceling
-C instanciate it and also ask about results integration if more than
+C instantiate it and also ask about results integration if more than
 C one timestep in the hour.
         if(itdflg.ne.0)then
-          write(outs,'(2a,i3,a)') 'The model includes a temporal file',
-     &      ' with ',ntsph,' per hour frequency. Please use the same.'
+          write(outs,'(2a,i3,a)') '* The model includes a temporal',
+     &     'file with ',ntsph,' per hour frequency. Use this value.'
           call edisp(iuout,outs)
         endif
-        H(1)='Zone-side timesteps range from 1 to 60 per hour.'
-        H(2)='Note: if the model includes temporal data then you must'
-        H(3)='use the same zone-side teimstep as in the temporal file.'
-        H(4)=' '
-        H(5)='A cancel leaves the model unchanged. '
+        H(1)='Building-side timesteps range from 1 to 60 per hour.'
+        H(2)='If the model includes temporal definitions data then'
+        H(3)='the building-side time step must be matched to the'
+        H(4)='value used for the temporal definitions.'
         isbnstept=isbnstep
-        CALL EASKI(isbnstept,'Zone-side timesteps per hour: ',' ',
-     &       1,'F',60,'W',2,'zone steps per hour',IERI,5)
+        CALL EASKI(isbnstept,' ','Zone-side time steps per hour?',
+     &       1,'F',60,'W',2,'zone steps per hour',IERI,4)
         if(ieri.eq.-3)then
           continue
         else
@@ -1962,17 +1956,18 @@ C There is temporal data so must save at each timestep.
               write(6,*) 'temporal data found so save each timestep'
               isavgh=0
             else
-              H(1)='Bps calculates the value of each state variable'
-              H(2)='at each computational time step. The default '
-              H(3)='action is to transfer each value at each '
-              H(4)='computational time step to the results file(s).'
-              H(5)='This option allows to average results over one'
-              H(6)='hour before transfer to the results database(s),'
-              H(7)='thus decreasing the size of results database(s).'
+              H(1)='The ESP-r Simulator calculates the value of each'
+              H(2)='state variable at each computational time step.'
+              H(3)='The default action is to transfer each value at'
+              H(4)='each computational time step to the results'
+              H(5)='file(s). This option allows to average results'
+              H(6)='over one hour before transfer to the results'
+              H(7)='database(s), thus decreasing the size of results'
+              H(8)='database(s).'
               defok=.false.
               hri=.false.
-              call askok(' Hourly results integration: ',' ',hri,
-     &          defok,7)
+              call askok(' Hourly results integration:',' ',hri,
+     &          defok,8)
               if(hri)then
                 isavgh=1
               else
@@ -1986,12 +1981,12 @@ C There is temporal data so must save at each timestep.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          H(1)='Plant-side timesteps range from 1 to 60 per hour.'
-          H(2)=' '
-          H(3)='A cancel leaves the model unchanged. '
+          H(1)='Plant-side time step is an integer subdivision'
+          H(2)='of the active building side time steps per hour.'
           ispnstept=ispnstep
-          CALL EASKI(ispnstept,'Plant-side timesteps per zone step:',
-     &      ' ',1,'F',100,'W',10,'plt steps per hour',IERI,3)
+          CALL EASKI(ispnstept,' ',
+     &      'Plant-side time steps per zone step?',
+     &      1,'F',100,'W',10,'plt steps per hour',IERI,2)
           if(ieri.eq.-3)then
             continue
           else
@@ -2000,16 +1995,14 @@ C There is temporal data so must save at each timestep.
           endif
         endif
       elseif(MITEM.eq.23.and.INO.EQ.6)then
-        H(1)='Save >> 0 summary table '
-        H(2)='Save >> 1 zone temps & plant injection '
-        H(3)='Save >> 2 (1+) surface temps '
-        H(4)='Save >> 3 (2+) node temps '
-        H(5)='Save >> 4 (2+) zone and surface energy balances '
-        H(6)=' '
-        H(7)='A cancel leaves the model save level unchanged.'
+        H(1)='Level 0 - summary table'
+        H(2)='Level 1 - zone temperatures and plant demand'
+        H(3)='Level 2 - as 1 + zone surface temperatures'
+        H(4)='Level 3 - as 2 + zone construction node temperatures'
+        H(5)='Level 4 - as 3 + zone and surface energy balances'
         issavet=issave
-        CALL EASKI(issavet,'Save level for predictions (0-4)?: ',
-     &      '(see help)',0,'F',4,'F',4,'save level',IERI,7)
+        CALL EASKI(issavet,' ','Results save level (0-4)?',
+     &      0,'F',4,'F',4,'save level',IERI,5)
         if(ieri.eq.-3)then
           continue
         else
@@ -2024,27 +2017,30 @@ C There is temporal data so must save at each timestep.
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
       elseif(MITEM.eq.23.and.INO.EQ.8)then
-        h(1)='This library holds all the zone-side performance indices.'
+        h(1)='This library holds the predictions associated'
+        h(2)='with a building simulation.'
         t72=sblres(isset)
-        CALL EASKS(t72,'Zone-side results library?',' ',72,
-     &    'zones.res','bld library',IER,1)
+        CALL EASKS(t72,' ','Building results library?',72,
+     &    'zones.res','bld library',IER,2)
         sblres(isset)=t72
         modparms=.true.
       elseif(MITEM.eq.23.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
-          h(1)='This library holds the network flow predictions.'
+          h(1)='This library holds the predictions associated'
+          h(2)='with a network flow simulation.'
           t72=sflres(isset)
-          CALL EASKS(t72,'Network flow results library?',' ',72,
-     &    'network.mfr','flow results library',IER,1)
+          CALL EASKS(t72,' ','Network flow results library?',72,
+     &    'network.mfr','flow results library',IER,2)
           sflres(isset)=t72
           modparms=.true.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          h(1)='This library holds the plant system predictions.'
+          h(1)='This library holds the predictions associated'
+          h(2)='with a plant simulation.'
           t72=splres(isset)
-          CALL EASKS(t72,'Plant results library?',' ',72,
-     &    'plant.res','plant results library',IER,1)
+          CALL EASKS(t72,' ','Plant results library?',72,
+     &    'plant.res','plant results library',IER,2)
           splres(isset)=t72
           modparms=.true.
         endif
@@ -2054,19 +2050,21 @@ C There is temporal data so must save at each timestep.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.12)then
         if(MSTROK)then
-          h(1)='This library holds the moisture predictions.'
+          h(1)='This library holds the predictions associated'
+          h(2)='with a moisture simulation.'
           t72=smstres(isset)
-          CALL EASKS(t72,'Moisture results library?',' ',72,
-     &    'moist.res','moisture results library',IER,1)
+          CALL EASKS(t72,' ','Moisture results library?',72,
+     &    'moist.res','moisture results library',IER,2)
           smstres(isset)=t72
           modparms=.true.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.13)then
         if(ientxist.gt.0)then
-          h(1)='This library holds the electrical predictions.'
+          h(1)='This library holds the predictions associated'
+          h(2)='with an electrical simulation.'
           t72=selres(isset)
-          CALL EASKS(t72,'Electrical results library?',' ',72,
-     &    'elect.res','electrical results library',IER,1)
+          CALL EASKS(t72,' ','Electrical results library?',72,
+     &    'elect.res','electrical results library',IER,2)
           selres(isset)=t72
           modparms=.true.
         endif
@@ -2074,19 +2072,20 @@ C There is temporal data so must save at each timestep.
         if(lnblnk(lipvdatf).eq.0)then
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
         else
-          h(1)='This is the name of the (intermediate) IPV report.'
+          h(1)='This is the name of the file to be used to transfer'
+          h(2)='simulation results to the IPV generation tool.'
           t72=sipvres
-          CALL EASKS(t72,'IPV (intermediate) report?',' ',72,
+          CALL EASKS(t72,' ','IPV transfer file name?',72,
      &    'IPV.rep','IPV report file',IER,1)
           sipvres=t72
           modparms=.true.
         endif
       elseif(MITEM.eq.23.and.INO.EQ.15)then
         h(1)='You can save changes to simulation parameter sets or'
-        h(2)='dereference the current sets (for example to import new'
-        h(3)='IPV assessment periods. '
-        CALL EASKABC('Options: ',' ',
-     &    'save current sets','clear sets','continue',IDO,3)
+        h(2)='dereference the current sets (e.g. to import new '
+        h(3)='IPV assessment periods).'
+        CALL EASKABC(' ','Options:',
+     &    'save current sets','clear sets','cancel',IDO,3)
         if(IDO.eq.3)then
           goto 3
         elseif(IDO.eq.1.or.IDO.eq.2)then
@@ -2100,7 +2099,8 @@ C There is temporal data so must save at each timestep.
             CALL EMKCFG('-',IER)
             modparms=.false.
           else
-            call usrmsg('Sets are current, nothing to update.',' ','-')
+C            call usrmsg('Sets are current, nothing to update.',
+C     &                  ' ','-')
           endif
           goto 3
         endif
@@ -2218,10 +2218,10 @@ C Clear values.
       anu_cl_cap_bld(1)=0.; anu_cl_cap_bld(2)=0.; anu_cl_cap_bld(3)=0. 
  
 C IPV for the actual number of simulations required.
-      H(1)='An Integrated Performance View is a collection of '
-      H(2)='performance indicators which have been formally defined'
-      H(3)='(see Context menu).  Please see your system '
-      H(4)='administrator for details of its implementation. '
+      H(1)='An Integrated Performance View (IPV) is a collection'
+      H(2)='of standard performance indicators that have been'
+      H(3)='pre-defined. Some of the underlying assumptions may'
+      H(4)='be changed via the Model Context menu option.'
       if(lnblnk(lipvdatf).eq.0)then
         CALL PHELPD('IPV message',4,'-',0,0,IER)
         return
@@ -2261,30 +2261,26 @@ C IPV for the actual number of simulations required.
       h(17)='includes both nominal and whole building values '
       h(18)='for the following performance metrics: '
       h(19)=' '
-      h(20)=' *for each variant it reports heating demand kWh/m2/a'
-      h(21)='  and for the whole model (kWh/a), heating capacity kW/m2'
+      h(20)=' *for each variant it reports heating demand kWh/m^2/a'
+      h(21)='  and for the whole model (kWh/a), heating capacity kW/m^2'
       h(22)='  and for the whole model (kW/a diversified).'
       h(23)=' *for each variant it reports heating therms (converted'
       h(24)='  as kWh * 0.0341296)'
       h(25)=' *for each variant it reports cooling demand kWh/m2/a'
-      h(26)='  and for the whole model (kWh/a), cooling capacity kW/m2'
+      h(26)='  and for the whole model (kWh/a), cooling capacity kW/m^2'
       h(27)='  and for the whole model (kW/a)'
       h(28)=' *difference in heating, therms and cooling by area and'
       h(29)='  for the whole building.'
-      h(30)=' '
-      h(31)='If you selected this in error click cancel.'
-      CALL EASKABCD('IPV options: (see help)',' ',
+      CALL EASKABCD(' ','IPV options:',
      &  'run required simulations','extract reports',
-     &  'compare reports','cancel',irs,31)
+     &  'compare reports','cancel',irs,29)
       if(irs.eq.1)then
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
-        h(3)='parameters to run in automatic mode. '
-        h(4)=' '
-        h(5)='If you selected this option in error click cancel.'
-        CALL EASKABC('Simulation interaction options: (see help)',
-     &    ' ','run interactively','silent running mode',
-     &    'cancel',isauto,5)
+        h(3)='parameters to run in automatic mode.'
+        CALL EASKABC(' ','Simulation options:',
+     &    'run interactively','run silently',
+     &    'cancel',isauto,3)
         call tstamp('>','PRJ: beginning IPV simulations.')
         doit = ' '
         call tchild(ICPMOD)
@@ -2344,23 +2340,21 @@ C an offset from prj start position.
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        brw,assmttag(ij),aut
           endif
-          call usrmsg('beginning assessment via',doit,'-')
+C          call usrmsg('Beginning assessment via',doit,'-')
           if(isauto.eq.2)then
             call runit(doit,'-')
           else
             call runit(doit,tmode)
           endif
-          call edisp(iuout,'IPV run complete.')
+C          call edisp(iuout,'* IPV run complete.')
   667   continue
       elseif(irs.eq.2)then
         h(1)='Interactive mode uses simulation parameters as '
         h(2)='defaults. The silent running mode uses the'
         h(3)='parameters to run in automatic mode. '
-        h(4)=' '
-        h(5)='If you selected this option in error click cancel.'
-        CALL EASKABC('IPV extraction options: (see help)',' ',
-     &    'run interactively','silent running mode','cancel',
-     &    isauto,5)
+        CALL EASKABC(' ','IPV extraction options:',
+     &    'run interactively','run silently','cancel',
+     &    isauto,3)
         call tstamp('>','PRJ: beginning IPV recovery.')
         doit = ' '
         call tchild(ICPMOD)
@@ -2373,9 +2367,9 @@ C an offset from prj start position.
         elseif(isauto.eq.3)then
           return
         endif
-        h(1)='IPV recovery assumes that the relevant results '
-        h(2)='libraries for each simulation are available. '
-        h(3)='The all option does each in sequence. '
+        h(1)='IPV recovery assumes that the relevant results'
+        h(2)='libraries for each simulation are available.'
+        h(3)='The `all` option does each in sequence.'
         call easkabcd('IPV recovery options:',' ','intermediate',
      &    'scan intermediate ->annual','all','cancel',IRT,3)
         if(IRT.eq.4) goto 39  ! redisplay menu.
@@ -2433,8 +2427,8 @@ C Debug.
 C              write(6,*) 'reset tfile to ',tfile
             endif
 
-            h(1)='IPV recovery assumes that the relevant results '
-            h(2)='libraries for each simulation are available. '
+            h(1)='IPV recovery assumes that the relevant results'
+            h(2)='libraries for each simulation are available.'
             h(3)='The all option does each in sequence. '
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
@@ -2444,13 +2438,13 @@ C              write(6,*) 'reset tfile to ',tfile
               write(doit,'(6a)') 'res -mode ',tmode,
      &           ' -file ',tfile(1:lnblnk(tfile)),runtag(ij),aut
             endif
-            call usrmsg('beginning performance recovery via',doit,'-')
+C            call usrmsg('Beginning performance recovery via',doit,'-')
             if(isauto.eq.2)then
               call runit(doit,'-')
             else
               call runit(doit,tmode)
             endif
-            write(outs,'(3a)') 'IPV extract ',
+            write(outs,'(3a)') '* IPV extract ',
      &        runtag(ij)(7:lnblnk(runtag(ij))),' is complete.'
             call edisp(iuout,outs)
  668      continue
@@ -2481,13 +2475,13 @@ C              write(6,*) 'itr3 reset tfile to ',tfile
               write(doit,'(6a)') 'res -mode ',tmode,' -file ',
      &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
             endif
-            call usrmsg('beginning performance recovery via',doit,'-')
+C            call usrmsg('Beginning performance recovery via',doit,'-')
             if(isauto.eq.2)then
               call runit(doit,'-')
             else
               call runit(doit,tmode)
             endif
-            call edisp(iuout,'IPV report complete.')
+C            call edisp(iuout,'* IPV report complete.')
           endif
         elseif(IRT.eq.2)then
           tfile=sblres(nipvassmt)
@@ -2516,7 +2510,7 @@ C            write(6,*) ' irt2 reset tfile to ',tfile
             write(doit,'(6a)') 'res -mode ',tmode,' -file ',
      &        tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
           endif
-          call usrmsg('beginning performance recovery via',doit,'-')
+C          call usrmsg('Beginning performance recovery via',doit,'-')
           if(isauto.eq.2)then
             call runit(doit,'-')
           else
@@ -2528,18 +2522,16 @@ C            write(6,*) ' irt2 reset tfile to ',tfile
 C Compare two IPV reports.  First ask for separator.
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
-        H(8) ='And if you decide not to do the comparison that is'
-        H(9) ='ok as well.'
-        CALL EASKATOG('Delimeter to use between columns of data:',' ',
-     &    'normal spaces','single space','tab','comma','tagged',
-     &    'cancel comparison',' ',IWM,9)
+        H(1) ='Tabular data can be sent to file with various'
+        H(2) ='delimiters:'
+        H(3) ='  - spaces (use spaces to lineup columns);'
+        H(4) ='  - single space between columns;'
+        H(5) ='  - comma separator (e.g. for excel);'
+        H(6) ='  - tab separator (e.g. for excel);'
+        H(7) ='  - tagged (marked up data).'
+        CALL EASKATOG('Column delimeter:',' ',
+     &    'spaces','single space','tab','comma','tagged',
+     &    'cancel',' ',IWM,7)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -2577,7 +2569,7 @@ C Toggle delimeter.
      &      ' ',96,'xxx.rep','IPV base report',IER,2)
         endif
 
-C If user request jump back and re-display the menu.
+C At user's request re-display the menu.
         if(ier.eq.-3)then
           goto 39  ! redisplay menu.
         endif
@@ -2589,10 +2581,10 @@ C If user request jump back and re-display the menu.
           OPEN (ibasefile,FILE=basefile(1:lnf),ACCESS='SEQUENTIAL',
      &      STATUS='OLD',IOSTAT=ISTAT)
           if(istat.eq.0)then
-            call edisp(iuout,'base model is')
+            call edisp(iuout,'* Base model is')
             call edisp(iuout,basefile)
           else
-            call edisp(iuout,'problem with base case file...')
+            call edisp(iuout,'* Problem with base case file!')
             goto 41
           endif
         endif
@@ -2621,7 +2613,7 @@ C Ask the name of the design variant file.
      &      ' ',96,'xxx.rep','IPV variant report',IER,2)
         endif
 
-C If user request jump back and re-display the menu.
+C At user's request re-display the menu.
         if(ier.eq.-3)then
           goto 39  ! redisplay menu.
         endif
@@ -2633,10 +2625,10 @@ C If user request jump back and re-display the menu.
           OPEN (ivarfile,FILE=variantfile(1:lnf),ACCESS='SEQUENTIAL',
      &      STATUS='OLD',IOSTAT=ISTAT)
           if(istat.eq.0)then
-            call edisp(iuout,'variant model is')
+            call edisp(iuout,'* Variant model is')
             call edisp(iuout,variantfile)
           else
-            call edisp(iuout,'problem with variant file...')
+            call edisp(iuout,'* Problem with variant file!')
             goto 40
           endif
         endif
@@ -2659,7 +2651,7 @@ C We have done both passes, report differences and exit.
           call edisp(iuout,
      &      'variant: positive = savings, negative = not as good as.')
           call edisp(iuout,' ')
-          call edisp(iuout,'For the base case model:')
+          call edisp(iuout,'* For the base case model:')
           if(delim.eq.'-')then
             call edisp(iuout,
      &            '        Demand              Capacity')
@@ -2687,7 +2679,7 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
           call eddisp(iuout,outs)
-          call edisp(iuout,'For the variant model:')
+          call edisp(iuout,'* For the variant model:')
           write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
      &      anu_ht_bld(2),anu_ht_cap_m2(2),anu_ht_cap_bld(2)
@@ -2699,14 +2691,13 @@ C We have done both passes, report differences and exit.
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
-          call edisp(iuout,' ')
           write(outs,'(4a)')'Diff between ',
      &      basefile(1:lnblnk(basefile)),
      &      ' & ',variantfile(1:lnblnk(variantfile))
           call edisp(iuout,outs)
           if(delim.eq.'-')then
             call edisp(iuout,
-     &            '       Demand              Capacity')
+     &            '        Demand              Capacity')
             call edisp(iuout,
      &            '        m2     building     m2     building')
           elseif(delim.eq.'T')then
@@ -2743,8 +2734,8 @@ C We have done both passes, report differences and exit.
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
           call eddisp(iuout,outs)
 
-C If comma separated delimeter then also write out a single line
-C summary (Patch for IEA_Annex 46).
+C Patch for IEA_Annex 46: if comma separated delimeter then also
+C write out a single line summary.
           if(delim.eq.'C')then
             call edisp(iuout,
      & 'Location,building heating kWh/a,heating therms,cooling kWh/a')
@@ -2754,8 +2745,8 @@ C summary (Patch for IEA_Annex 46).
             call eddisp(iuout,outs)
           endif
 
-          CALL EASKAB('comparison options:',' ','back to menu',
-     &      'do another report',IW,1)
+          CALL EASKAB('Comparison options:',' ','return to menu',
+     &      'another report',IW,1)
           if(iw.eq.1)then
             return
           else
@@ -2785,11 +2776,11 @@ C We have the performance aggregate
               if(word2(1:11).eq.'performance')then
                 atreports=.true.
                 im2=.true.
-C                call edisp(iuout,' found performance m^2')
+C                call edisp(iuout,'* Found performance m^2.')
               elseif(word2(1:20).eq.'building_performance')then
                 atreports=.true.
                 im2=.false.
-C                call edisp(iuout,' found performance building')
+C                call edisp(iuout,'* Found performance building.')
               else
                 atreports=.false.
                 goto 143
@@ -2828,11 +2819,11 @@ C We have capacity aggregate
               if(word2(1:8).eq.'capacity')then
                 atreports=.true.
                 im2=.true.
-C                call edisp(iuout,' found capacity')
+C                call edisp(iuout,'* Found capacity.')
               elseif(word2(1:17).eq.'building_capacity')then
                 atreports=.true.
                 im2=.false.
-C                call edisp(iuout,' found building capacity')
+C                call edisp(iuout,'* Found building capacity.')
               else
                 atreports=.false.
                 goto 143
@@ -2847,10 +2838,10 @@ C Found the correct report, skip title, format, fields lines
                 CALL EGETW(OUTSTR,K,WORD3,'W','unit',IFLAG)
                 if(word3(1:5).eq.'W/m^2')then
                   im2=.true.
-C                  call edisp(iuout,' confirm m^2 capacity')
+C                  call edisp(iuout,'* Confirm m^2 capacity.')
                 elseif(word3(1:2).eq.'kW')then
                   im2=.false.
-C                  call edisp(iuout,' confirm building capacity')
+C                  call edisp(iuout,'* Confirm building capacity.')
                 endif
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*format',IER)
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*fields',IER)
@@ -2892,9 +2883,9 @@ C Not one we are intrested in at the moment.
       endif 
 
 C error state.
-  1   call edisp(iuout,'reached end of file looking for report')
+  1   call edisp(iuout,'* Reached end of file looking for report!')
       goto 39
-  2   call edisp(iuout,'reached end of file looking for summary')
+  2   call edisp(iuout,'* Reached end of file looking for summary!')
       goto 39
    
       end
@@ -2908,7 +2899,7 @@ C  bndrysxc looks for surface connection attribute different from cnn list.
 C  confok looks for missing construction files.
 C  geofok looks for missing geometry files.
 C  oprfok looks for missing/old/unsorted operations files. 
-C  prob looks for contiguity cross-references.
+C  prob looks for contiguity cross-references
 C  tmcok looks for matching transparent partitions.
 C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
@@ -3228,9 +3219,9 @@ C Check to see if this connection only pointed to once in the whole list.
         endif
   290 continue
       if(prob)then
-        call tstamp('>','PRJ: found topology inconsistent')
-        call usrmsg('Topology found to be inconsistent and this should',
-     &  'be resolved before running a simulation.','W')
+C        call tstamp('>','PRJ: found topology inconsistent')
+        call usrmsg('Topology found to be inconsistent. This',
+     &  'should be resolved before running a simulation.','W')
         CALL PHELPD('boundary checks',lh,'-',0,0,IER)
       endif
 
@@ -3260,8 +3251,8 @@ C Now look for unknown files.
  46   continue
       if(.NOT.geofok)then
         call usrmsg(
-     &    'Some zones do not reference any geometry (file). The',
-     &    'model not yet complete vis-a-vis thermal simulation.','W')
+     &    'Some zones do not reference a geometry file. The',
+     &    'model will not allow thermal simulation.','W')
         CALL PHELPD('geometry checks',lh,'-',0,0,IER)
       endif
       lh=0
@@ -3306,8 +3297,8 @@ C Do cursory check to see if the file is sorted.
   43  continue
       if(.NOT.oprfok)then
         call usrmsg(
-     &  'Some zones lack operations or have older/unsorted files.',
-     &  'The model not yet complete vis-a-vis thermal simulation.','W')
+     &  'Some zones lack operation details or have outdated files.',
+     &  'The model will not support thermal simulation.','W')
         CALL PHELPD('operations checks',lh,'-',0,0,IER)
       endif
       lh=0
@@ -3357,8 +3348,8 @@ C Zone construction file exists so attempt to scan it.
  45   continue
       if(.NOT.confok)then
         call usrmsg(
-     &    'Some zones do not reference any construction (file). The',
-     &    'model not yet complete vis-a-vis thermal simulation.','W')
+     &   'Some zones do not reference a construction file. The',
+     &   'model will not allow thermal simulation.','W')
         CALL PHELPD('constructions checks',lh,'-',0,0,IER)
       endif
       lh=0
@@ -3448,7 +3439,6 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
       endif
 
       return
-
       end
 
 C ********** imgdisp
@@ -3463,11 +3453,11 @@ C external tool.
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
-C so-called esprc file. To add additional image types and/or 3rd
+C .esprc file. To add additional image types and/or 3rd
 C party display applications edit the ESP-r Install script which
-C creates the esprc file.
+C creates the .esprc file.
 C   imgtyp is the number of different image formats supported
-C   fmttag (4 char) is a tag for each image formt (e.g. GIF XBMP)
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF, XBMP)
 C   fmtexe (20 char) is the application name used to display
 C          images of type fmttag.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
@@ -3503,10 +3493,9 @@ C and can be displayed with a known utility. Iforce, if set to 1,
 C forces display.
       if(noimg.eq.0)return
       if(imgtyp.eq.0)then
-        call edisp(iuout,' ')
-        call edisp(iuout,'No image display application available.')
-        call edisp(iuout,'Consult tutorial tool for instructions on')
-        call edisp(iuout,'how to set up your .esprc file.')
+        call edisp(iuout,'* No image display application available.')
+        call edisp(iuout,'Ask your administrator to define one via')
+        call edisp(iuout,'your .esprc file.')
         return
       endif
 
@@ -3557,8 +3546,8 @@ C quotes are not required.
             dolist=' '
             if(fmtexe(imgv)(1:2).eq.'  ')then
               call usrmsg(
-     &    'The image display tool has not be defined. See your',
-     &    'administrator about updating the esprc definition.','W')
+     &    'The image display tool has not be defined. Ask your',
+     &    'administrator to update the .esprc file definition.','W')
             else
               write(dolist,'(a,2x,a,a)')
      &          fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
@@ -3633,8 +3622,8 @@ C and change any / to \.
      &            ' relates to model performance.'
               endif
 
-C Provide some feedback, set the title of the popup and then call C function
-C in lib/esp_draw.c
+C Provide some feedback, set the title of the popup and then call C
+C function in lib/esp_draw.c
               call edisp(iuout,topic)
               write(head,'(2a)') 'Image: ',longtfile(1:ixl)
               act='-'
@@ -3652,8 +3641,8 @@ C in lib/esp_draw.c
 C ********************* CFGVER 
 C CFGVER supports the creation of model variants.
 C It copies a project and gives it a new name   
-C Thereby facilitating creatiion of multiple versions of the same
-C project that can be later modified.
+C thereby facilitating creatiion of multiple versions
+C of the same project that can later be modified.
 
       SUBROUTINE CFGVER
 #include "building.h"
@@ -3667,102 +3656,93 @@ C project that can be later modified.
 
       dimension items(7),items2(33)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H,LCFGF
-      CHARACTER ITEMS*32,ITEMS2*36,APP*4
+      CHARACTER ITEMS*36,ITEMS2*36,APP*4
       CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
 
       IF(BROWSE)THEN
         CALL EDISP(IUOUT,
-     &  ' Version manager does not work in browse mode! ')
+     &      '* Variant Manager does not operate in browse mode!')
         RETURN
       ENDIF
 
 C Help message for version manager menu
       H(1) = 'This menu supports the creation of design variants.'
-      H(2) = 'It assumes that one version of a working model exists '
-      H(3) = '(usually the base case or the most fundamental model'
-      H(4) = 'from which all other permutations can be derived).'
-      H(5) = ' '
-      H(6) = 'Design variants can be created in the following ways'
-      H(7) = ' '
-      H(8) = 'Project Variant: asks specific questions about the '
-      H(9) = ' changes the user wishes to make in the model and then'
-      H(10)= ' it either makes the changes and saves them to new'
-      H(11)= ' files or makes copies of relevant model files in '
-      H(12) = ' preparation for further actions by the user. Thus'
-      H(13)= ' the original model is preserved. '
-      H(14)= ' '
-      H(15)= ' For example - a variant with a different climate file'
-      H(16)= ' might imply a change of latitude and longitude as'
-      H(17)= ' well as ground temperatures and require recalculation'
-      H(18)= ' of shading. The facility manages the process and a new'
-      H(19)= ' configuration file is generated.'
+      H(2) = 'The assumption is that a working model exists from'
+      H(3) = 'which other permutations can be derived.'
+      H(4) = ' '
+      H(5) = 'Variants may be created in the following ways.'
+      H(6) = ' '
+      H(7) = 'Project Variant: asks specific questions about the '
+      H(8) = 'changes the user wishes to make to the model. The'
+      H(9) = 'changes once implemented are saved to new model'
+      H(10)= 'files, i.e. the original model is preserved.'
+      H(11)= ' '
+      H(12)= 'For example, a variant corresponding to a different'
+      H(13)= 'location will require a different climate file,'
+      H(14)= 'modified ground temperatures and recalculated shading'
+      H(15)= 'factors.'
+      H(16)= ' '
+      H(17)= 'As another example, a variant with alternative'
+      H(18)= 'constructions may requires new geometry, construction'
+      H(19)= 'and optical property files.'
       H(20)= ' '
-      H(21)= ' For example - a variant with different constructions'
-      H(22)= ' requires new geometry, construction and zone optical'
-      H(23)= ' files. The facility makes new copies of these files'
-      H(24)= ' so that any subsequent changes made by the user are'
-      H(25)= ' saved to the new files rather than the original model'
-      H(26)= ' files.'
+      H(21)= 'Several changes may be applied within a single'
+      H(22)= 'variant.'
+      H(23)= ' '
+      H(24)= 'A three character postfix is requested from the'
+      H(25)= 'user and this is appended to the names of new files.'
+      H(26)= ' '
       H(27)= ' '
-      H(28)= ' You will be presented with a list of topics to select'
-      H(29)= ' from. You can apply several changes within one variant'
-      H(30)= ' model if you wish.'
-      H(31)= ' '
-      H(32)= 'The other place holders are currently not implemented'
-      H(33)= ' '
-      H(34)= 'A three character postfix is given by the user and this'
-      H(35)= 'is appended to names of copied files'
+      H(28)= '*****SBEM Notional Model*****'
+      H(29)= ' ESP-r creates the SBEM notional model in compliance with'
+      H(30)= ' CIBSE TM33 ??? This creates a model with the postfix'
+      H(31)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
+      H(32)= ' '
+      H(33)= ' Details of how the notonal building relates to the '
+      H(34)= ' original building and plant model is defined in relevant'
+      H(35)= ' SBEM documentation'
       H(36)= ' '
-      H(37)= ' '
-      H(38)= '*****SBEM Notional Model*****'
-      H(39)= ' ESP-r creates the SBEM notional model in compliance with'
-      H(40)= ' CIBSE TM33 ??? This creates a model with the postfix'
-      H(41)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
-      H(42)= ' '
-      H(43)= ' Details of how the notonal building relates to the '
-      H(44)= ' original building and plant model is defined in relevant'
-      H(45)= ' SBEM documentation'
-      H(46)= ' '
 
 C Ask for changes to be made
  200  INO=-3
-      ITEMS(1) = 'a make a project variant     '
+      ITEMS(1) = 'a make a project variant'
       ITEMS(2) = 'b make UK NCM notional model '
-      ITEMS(3) = 'c other (under development)  '
-      ITEMS(4) = 'd other (under development)  '
-      ITEMS(5) = ' --------------------------  '
-      ITEMS(6) = '? help                       '
-      ITEMS(7) = '- exit                       '
+      ITEMS(3) = 'c other 1 (under development)'
+      ITEMS(4) = 'd other 2 (under development)'
+      ITEMS(5) = ' --------------------------'
+      ITEMS(6) = '? help'
+      ITEMS(7) = '- exit'
       MITEM=7
-      CALL EMENU('Version manager',ITEMS,MITEM,INO)
+      CALL EMENU('Variants Manager',ITEMS,MITEM,INO)
       IF(INO.EQ.1)THEN
         APP='_xyz'
-        CALL EASKS(APP,' Up to 4 letters to append to project name?',
-     &     '(see help) ',4,'project','root name modifier',IER,46)
+        CALL EASKS(APP,' ',
+     &     'Specify up to 4 characters to append to project name?',
+     &     4,'project','root name modifier',IER,36)
         K=0
         CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
         APP=NBSTR
-        WRITE(OUTS,'(3A)')'New project name will be ',
-     &        CFGROOT(1:LNBLNK(CFGROOT)),APP
+        WRITE(OUTS,'(4A)')'* New project name will be `',
+     &        CFGROOT(1:LNBLNK(CFGROOT)),APP,'`.'
         CALL EDISP(IUOUT,OUTS)
 
 C Change string holding cfg description
-        CALL EASKS(LSNAM,' Project description for this variant?',
-     &     '(see help) ',72,'project','description modifier',IER,46)
-        CALL EDISP(IUOUT,'New project description will be')
-        CALL EDISP(IUOUT,LSNAM)
+        CALL EASKS(LSNAM,' ','Description for this variant?',
+     &     72,'project','description modifier',IER,35)
+C        CALL EDISP(IUOUT,'* New project description will be ')
+C        CALL EDISP(IUOUT,LSNAM)
 
 C Set up menu for different variants
         LRCR=0
  201    KNO=-3
-        ITEMS2(1) = ' Site and location:'
+        ITEMS2(1) = ' ___ Site and location ___'
         ITEMS2(2) = 'a global tasks and site exposure'
         ITEMS2(3) = 'b site exposure & ground reflectance'
-        ITEMS2(4) = 'c climate,latitude and longitude'
+        ITEMS2(4) = 'c climate, latitude and longitude'
         ITEMS2(5) = 'd pressure distribution'
         ITEMS2(6) = 'e ground temperature profiles'
-        ITEMS2(7) = ' Form and fabric:'
+        ITEMS2(7) = ' ___ Form and fabric ___'
         ITEMS2(8) = 'f geometry and attribution'
         ITEMS2(9) = 'g shading and insolation'
         ITEMS2(10)= 'h view factors and radiant sensors'
@@ -3775,27 +3755,27 @@ C Set up menu for different variants
         ITEMS2(17)= 'o adaptive gridding and moisture'
         ITEMS2(18)= 'p building integrated renewables'
         ITEMS2(19)= 'q integrated performance view'
-        ITEMS2(20)= ' networks:'
-        ITEMS2(21)= 'r fluid flow network'
-        ITEMS2(22)= 's electrical network'
-        ITEMS2(23)= 't plant components / plant network'
-        ITEMS2(24)= 'u contaminants network'
-        ITEMS2(25)= ' usage:'
+        ITEMS2(20)= '___ Networks ___'
+        ITEMS2(21)= 'r fluid flow'
+        ITEMS2(22)= 's electrical'
+        ITEMS2(23)= 't plant'
+        ITEMS2(24)= 'u contaminants'
+        ITEMS2(25)= '___ Usage ___'
         ITEMS2(26)= 'v zone operations'
         ITEMS2(27)= 'w controls'
         ITEMS2(28)= 'x casual gains control'
         ITEMS2(29)= 'y event profiles'
-        ITEMS2(30)= 'z mould and microtoxins'
+        ITEMS2(30)= 'z mould and mycotoxins'
         ITEMS2(31)=' --------------------------------'
         ITEMS2(32)='? help'
-        ITEMS2(33)='- exit'
+        ITEMS2(33)='- exit this menu'
         MITEMS2=33
 
 C Help.
-        h(1) ='Change options: '
-        h(2) =' global tasks - work in progress use with caution.'
+        h(1) ='Change options:'
+        h(2) =' global tasks - work in progress - use with caution.'
         h(3) =' '
-        h(4) =' site exposure & ground reflectivity - modifies these '
+        h(4) =' site exposure & ground reflectivity - modifies these'
         h(5) ='   values within revised configuration file.'
         h(6) =' '
         h(7) =' geometry & attribution - copies zone files so that'
@@ -3850,7 +3830,7 @@ C Help.
         h(56)=' schedules - copy current zone operations to hold'
         h(57)='   subseuent user changes.'
         h(58)=' '
-        CALL EMENU('Changes to this model',ITEMS2,MITEMS2,KNO)
+        CALL EMENU('Model Variants',ITEMS2,MITEMS2,KNO)
 
         IF(KNO.EQ.2)THEN
 
@@ -3957,7 +3937,7 @@ C event profiles
           CALL VERMAN(APP,25,LRCR)
         ELSEIF(KNO.EQ.30)THEN
 
-C mould and microtoxins
+C mould and mycotoxins
           CALL VERMAN(APP,26,LRCR)
         ELSEIF(KNO.EQ.32)THEN
           CALL PHELPD('version tasks',58,'-',0,0,IER)
@@ -3984,7 +3964,7 @@ C Create SBEM notional building based on currently loaded model
           CALL EMKSBM
         endif
       ELSEIF(INO.EQ.6)THEN
-        CALL PHELPD('version intro',46,'-',0,0,IER)
+        CALL PHELPD('version intro',36,'-',0,0,IER)
         GOTO 200
       ELSEIF(INO.EQ.7)THEN
         RETURN
@@ -3995,7 +3975,7 @@ C Create SBEM notional building based on currently loaded model
       END
 
 C ********************* VERMAN 
-C VERMAN copies various esp-r files and names them uniquely
+C VERMAN copies various ESP-r files and names them uniquely
 C in order to build multiple variants of a base case model
 C The root name is modified with the three character string APE appended
 C to it and the configuration file is always written out.
@@ -4032,7 +4012,7 @@ C ILM = 22 means zone operations
 C ILM = 23 means controls
 C ILM = 24 means casual gains control
 C ILM = 25 means event profiles
-C ILM = 26 means mould and microtoxins (currently not implemented)
+C ILM = 26 means mould and mycotoxins (currently not implemented)
 
 C << Check existence of all files if non-existant create filenames with 
 C << message to user that such a file does not exist
@@ -4150,7 +4130,7 @@ C so that subsequent changes are applied to the new file.
      &            LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
      &            NNAME(1:LNBLNK(NNAME))
               endif
-              CALL USRMSG('copying shading file via:',doit,'-')
+C              CALL USRMSG('Copying shading file via:',doit,'-')
               CALL RUNIT(doit,'-')
               LSHAD(ICOMP)=NNAME
             endif
@@ -4169,7 +4149,7 @@ C so that subsequent changes are applied to the new file.
      &            LVIEW(ICOMP)(1:LNBLNK(LVIEW(ICOMP))),' ',
      &            NNAME(1:LNBLNK(NNAME))
               endif
-              CALL USRMSG('copying viewfactor file via:',doit,'-')
+C              CALL USRMSG('Copying view factor file via:',doit,'-')
               CALL RUNIT(doit,'-')
               LVIEW(ICOMP)=NNAME
 
@@ -4191,7 +4171,7 @@ C so that subsequent changes are applied to the new file.
      &            LHCCO(ICOMP)(1:LNBLNK(LHCCO(ICOMP))),' ',
      &            NNAME(1:LNBLNK(NNAME))
               endif
-              CALL USRMSG('copying hc regime file via:',doit,'-')
+C              CALL USRMSG('Copying hc regime file via:',doit,'-')
               CALL RUNIT(doit,'-')
               LHCCO(ICOMP)=NNAME
             endif
@@ -4210,7 +4190,8 @@ C so that subsequent changes are applied to the new file.
      &            LCGCIN(ICOMP)(1:LNBLNK(LCGCIN(ICOMP))),' ',
      &            NNAME(1:LNBLNK(NNAME))
               endif
-              CALL USRMSG('copying casual gain ctl file via:',doit,'-')
+C              CALL USRMSG('Copying casual gain ctl file via:',
+C     &                    doit,'-')
               CALL RUNIT(doit,'-')
               LCGCIN(ICOMP)=NNAME
             endif
@@ -4229,7 +4210,7 @@ C so that subsequent changes are applied to the new file.
      &            ZOBS(ICOMP)(1:LNBLNK(ZOBS(ICOMP))),' ',
      &            NNAME(1:LNBLNK(NNAME))
               endif
-              CALL USRMSG('copying obstruction file via:',doit,'-')
+C              CALL USRMSG('Copying obstruction file via:',doit,'-')
               CALL RUNIT(doit,'-')
               ZOBS(ICOMP)=NNAME
             endif
@@ -4237,7 +4218,7 @@ C so that subsequent changes are applied to the new file.
           docnn=.true.
           msg1='updating model for geometry changes...'
           call edisp(iuout,
-     &      'New geometry files available for subsequent changes.')
+     &      '* New geometry files available for subsequent changes.')
         endif
         ishdq=-1
         ivfwq=-1
@@ -4247,14 +4228,14 @@ C so that subsequent changes are applied to the new file.
   43    continue
         if(ishdq.eq.1)then
           call usrmsg(
-     &      'shading files found which will be dependant on future',
-     &      'geometry changes. Shading files copied.','W')
+     &      'Shading files found that will be dependant on future',
+     &      'geometry changes: files copied.','W')
           ishd=1
         endif
         if(ivfwq.eq.1)then
           call usrmsg(
-     &      'viewfactor files found which will be dependant on future',
-     &      'geometry changes. Viewfactor files copied.','W')
+     &      'View factor files found that will be dependant on',
+     &      'future geometry changes: files copied.','W')
         endif
       ELSEIF(M.EQ.3)THEN
 
@@ -4289,7 +4270,8 @@ C Selection strings for site exposure.
           CALL EASKR(BLDR,' ',' Surroundings view factor?',
      &         0.0,'W',0.99,'W',0.33,'surroundings view factor',IER,1)
           IF(ABS(SKYR+GRDR+BLDR-1.).GT..001)THEN
-            CALL USRMSG(' Total view factor > 1.0 ',' ','W')
+            CALL USRMSG(' Error: view factor summation > 1.0',
+     &                  ' ','W')
             GOTO 290
           ENDIF
         ENDIF
@@ -4298,7 +4280,7 @@ C Selection strings for site exposure.
      &       0.0,'W',0.99,'W',0.2,'ground reflectance',IER,1)
         MODSIT=.true.
         msg1='updating model for site exposure changes...'
-        call edisp(iuout,'New configuration will hold new site data.')
+C        call edisp(iuout,'* New cfg file will hold new site data.')
       ELSEIF(M.EQ.4)THEN
 
 C Shading and insolation choices. First find out if any of the
@@ -4401,9 +4383,9 @@ C First create initial name, then mangle it and write block.
           endif
           if(iw.ne.3)then
             call edisp(iuout,
-     &        'Shading files being copied. If site details have')
+     &        '* Shading files being copied. If site details')
             call edisp(iuout,
-     &        'changed shading/insolation will be recalculated.')
+     &        'change shading/insolation will be recalculated.')
           endif
         elseif(ishd.eq.1)then
 
@@ -4448,7 +4430,7 @@ C There is shading and/or insulation check if user wants to dereference.
                 ICOMP=ivals(IC)
                 ISI(ICOMP)=0
  153          continue
-              call edisp(iuout,'Shading files being dereferenced.')
+C              call edisp(iuout,'* Shading files dereferenced.')
               msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.2)then
@@ -4461,7 +4443,7 @@ C There is shading and/or insulation check if user wants to dereference.
                 ICOMP=ivals(IC)
                 IOBS(ICOMP)=0
  154          continue
-              call edisp(iuout,'Obstruction files being dereferenced.')
+C              call edisp(iuout,'* Obstruction files dereferenced.')
               msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.3)then
@@ -4476,8 +4458,8 @@ C There is shading and/or insulation check if user wants to dereference.
                 ISI(ICOMP)=0
  155          continue
             endif
-            call edisp(iuout,
-     &        'Shading & obstruction files being dereferenced.')
+C            call edisp(iuout,
+C     &        '* Shading & obstruction files dereferenced.')
             msg1='updating model for shading changes...'
           elseif(iw.eq.4)then
 
@@ -4545,10 +4527,10 @@ C procedure can overwrite. Mark to update shading files.
                 ishad=1
                 ishd=1
  156          continue
-              call edisp(iuout,
-     &          'Obstruction files being created/copied.')
-              call edisp(iuout,
-     &          'Placeholder shading files being created.')
+C              call edisp(iuout,
+C     &          '* Obstruction files being created/copied.')
+C              call edisp(iuout,
+C     &          '* Shading files being created.')
               msg1='updating model for obstruction changes...'
             endif
           elseif(iw.eq.5)then
@@ -4564,12 +4546,12 @@ C View factors and radiant sensors
      &    'Zone viewfactor variant','v',ier)
         if(inpic.gt.0)then
           nbvalsv=0
-          h(1)='Area weighted calculations are the default treatment.'
-          h(2)='Ray tracing is more accurate and time consuming.'
-          h(3)=' '
-          h(4)='If you selected this option in error click cancel. '
-          CALL EASKABC('Viewfactor options:',' ',
-     &      'area weighted (quick)','ray traced','cancel',IW,4)
+          h(1)='Area weighted is a simplified techniques that is'
+          h(2)='appropriate where geometry has been approximated.'
+          h(3)='Otherwise choose ray traced, which is accurate'
+          h(4)='(but time consuming).'
+          CALL EASKABC('View factor options:',' ',
+     &      'area weighted','ray traced','cancel',IW,4)
 
 C Updating viewfactors can require configuration file to be updated
 C before calling mrt.
@@ -4614,28 +4596,24 @@ C configuration file has been updated.
             endif
             msg1='updating model for viewfactor changes...'
             call edisp(iuout,
-     &    'View factor files being copied so that subsequent changes')
-            call edisp(iuout,'in geomergy will be captured safely.')
+     &          '* View factor files being copied to allow updates')
+            call edisp(iuout,'should geometry subsequent change.')
           endif
         endif
       ELSEIF(M.EQ.6)THEN
 
-C climate, latitiude and longitude. First check if the model includes
-C any shading files.
+C Climate, latitiude and longitude. First check if the model
+C includes shading files.
         ishd=-1
         do 42 iz=1,ncomp
           if(ISI(iz).eq.1)ishd=1
   42    continue
 
-        call edisp(IUOUT,'  ')
         CALL EDDBCLM(moddb,ape,ishad)
 
         IF(NGRDP.NE.0)THEN
-          call edisp(IUOUT,'  ')
           call edisp(IUOUT,
-     &     'User defined ground temperatures need to be updated')
-          call edisp(IUOUT,
-     &     'so supply monthly temperatures for the new site...')
+     &     '* User defined ground temperatures need to be updated.')
           CALL EDDGTP(modsit) 
         ENDIF
 
@@ -4643,10 +4621,9 @@ C If there is an IPV file also update it.
         call FINDFIL(lipvdatf,XST)
         call isunix(unixok)
         IF(XST)THEN
-          call edisp(IUOUT,'  ')
           call edisp(IUOUT,
-     &     'The current IPV file should be updated to match climate.')
-          call edisp(IUOUT,'Please at lest update the IPV titles...')
+     &     '* IPV file has been updated to match climate.')
+          call edisp(IUOUT,'Please update the IPV titles.')
           CALL RIPVDAT(IFIL+1,LIPVDATF,IER)
           EXT='.ipv'
           CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
@@ -4658,7 +4635,7 @@ C If there is an IPV file also update it.
      &        LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
      &        NNAME(1:LNBLNK(NNAME))
           endif
-          CALL USRMSG('copying IPV file via:',doit,'-')
+C          CALL USRMSG('Copying IPV file via:',doit,'-')
           CALL RUNIT(doit,'-')
           LIPVDATF=NNAME
           CALL EASKS(ipvtitl,' Enter project title for this variant?',
@@ -4672,23 +4649,17 @@ C If there is an IPV file also update it.
         msg1='updating model for climate changes...'
       ELSEIF(M.EQ.7)THEN
 
-C pressure distributions
-        H(1) = 'Pressure coefficients are used for calculating pressure'
-        H(2) = 'distributions around a building. These are defined at '
-        H(3) = 'two levels '
-        H(4) = 'Building parameters include overall dimensions, roof'
-        H(5) = 'detail, plan area etc. Invoking this facility will'
-        H(6) = 'allow these values to be changed.'
-        H(7) = 'Database involves detailed pressure coefficients that '
-        H(8) = 'are used in pressure prediction when using an air'
-        H(9) = 'flow network description. Invoking this facility '
-        H(10)= 'copies the database, renames it and optionally allows'
-        H(11)= 'you to edit it.'
-        H(12)=' '
-        H(13)='If you selected this option in error click cancel. '
+C Pressure distribution
+        H(1) = 'Pressure coefficients are used to calculate pressure'
+        H(2) = 'distribution. These are defined at two levels.'
+        H(3) = 'Building parameters include overall dimensions, roof'
+        H(4) = 'detail, plan area etc. Invoking this facility will'
+        H(5) = 'allow these values to be changed.'
+        H(6) = 'The database option defines pressure coefficients that'
+        H(7) = 'are used where an air flow network exists.'
         msg1='updating model for pressure db changes...'
-        CALL EASKABC('Change to be made to ... (see help) ',
-     &  ' ','building parameters','database','cancel',IW,13)
+        CALL EASKABC('Change to be made to:',
+     &  ' ','building parameters','database','cancel',IW,7)
         IF(IW.EQ.3)THEN
           RETURN
         ELSEIF(IW.EQ.2)THEN
@@ -4731,7 +4702,7 @@ C and tmc file variants for each zone selected.
             call FINDFIL(LTHRM(ICOMP),XST)
             IF(.NOT.XST)THEN
               CALL EDISP(IUOUT,
-     &          'Construction file does not exist...skipping.')
+     &          '* Construction file does not exist...skipping.')
               goto 147
             ENDIF
 
@@ -4747,7 +4718,7 @@ C Check if geometry file has already been updated.
               LGEOM(ICOMP)=NNAME
               CALL EMKGEO(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               WRITE(MSG1,'(2A)')
-     &        'New geometry file written out for zone ',ZNAME(ICOMP)
+     &        '* New geometry file written out for zone ',ZNAME(ICOMP)
               CALL EDISP(IUOUT,MSG1)
             endif
             ITRU=6
@@ -4757,7 +4728,8 @@ C Check if geometry file has already been updated.
             LTHRM(ICOMP)=NNAME
             CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,ITRU,QUIET,IER)
             WRITE(MSG1,'(2A)')
-     &      'New constructions file written out for zone ',ZNAME(ICOMP)
+     &              '* New constructions file written out for zone ',
+     &              ZNAME(ICOMP)
             CALL EDISP(IUOUT,MSG1)
             call FINDFIL(LTWIN(ICOMP),XST)
             IF(.NOT.XST)GOTO 147
@@ -4775,7 +4747,7 @@ C Check if geometry file has already been updated.
           docnn=.true.
           msg1='updating model for construction changes...'       
           call edisp(iuout,
-     &      'subsequent changes will be written in the new files')
+     &      '* Subsequent changes will be written to the new files.')
         endif
       ELSEIF(M.EQ.10)THEN
 
@@ -4798,11 +4770,11 @@ C << probably should be limited to project databases >>
      &       NNAME(1:LNBLNK(NNAME))
         endif
         LFMUL=NNAME
-        CALL USRMSG('copying database via:',doit,'-')
+C        CALL USRMSG('Copying database via:',doit,'-')
         CALL RUNIT(DOIT,'-')
         msg1='updating model for materials changes...'        
         call edisp(iuout,
-     &    'A copy of the materials database is being made.')
+     &    '* A copy of the Materials db is being made.')
       ELSEIF(M.EQ.11)THEN
 
 C CFD domain
@@ -4835,7 +4807,7 @@ C ground temperature profiles
         CALL EDDGTP(modsit) 
         msg1='updating model for ground temperature changes...'
         call edisp(iuout,
-     &    'Configuration file will hold revised greound temperatures')
+     &    '* Configuration file holds revised greound temperatures.')
       ELSEIF(M.EQ.13)THEN
 
 C variant convection calculations
@@ -4857,7 +4829,7 @@ C Get list of zones
  188      CONTINUE
           msg1='updating model for convective regime changes...'
           call edisp(iuout,
-     &      'Subsequent changes will be applied to the new files.')
+     &      '* Subsequent changes will be applied to the new files.')
         endif
       ELSEIF(M.EQ.14)THEN
 
@@ -4894,7 +4866,7 @@ C variant integrated performance view
      &        LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
      &        NNAME(1:LNBLNK(NNAME))
           endif
-          CALL USRMSG('copying file via:',doit,'-')
+C          CALL USRMSG('Copying file via:',doit,'-')
           CALL RUNIT(doit,'-')
           LIPVDATF=NNAME
           CALL EASKS(ipvtitl,' Enter project title for this variant?',
@@ -4905,7 +4877,7 @@ C variant integrated performance view
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-')
         ELSE
-          CALL EDISP(IUOUT,'ipv file does not exist creating one')        
+          CALL EDISP(IUOUT,'* IPV file does not exist, creating one!')        
           WRITE(LIPVDATF,'(2A)')cfgroot(1:lnblnk(cfgroot)),'.ipv'
           CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
           LIPVDATF=NNAME
@@ -4921,7 +4893,7 @@ C variant integrated performance view
         CALL MKIPVDAT(IFIL+1,LIPVDATF)
         msg1='updating model for IPV changes...'
         call edisp(iuout,
-     &    'IPV file being copied and edited text included.')
+     &    '* IPV file being copied and edited text included.')
       ELSEIF(M.EQ.18)THEN
          
 C variant fluid flow network
@@ -4943,7 +4915,7 @@ C into commons and then written out again
           LAPROB=NNAME
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          CALL USRMSG('copying flow network via:',doit,'-')
+C          CALL USRMSG('Copying flow network via:',doit,'-')
           call runit(doit,tmode)
           CALL EFOPSEQ(IUM,LAPROB,1,IER)
 
@@ -4958,13 +4930,13 @@ C then an older file so rewind the file and call emfread.
 
 C Found a graphic network file, advise user and exit.
             call usrmsg(
-     &      'This file is a graphic network file rather than a flow',
-     &      'network file.','W')
+     &      'This file is a graphic network file rather than a',
+     &      'flow network file!','W')
           endif
           CALL MFWRIT(IUM)
         ENDIF
         msg1='updating model for air flow network changes...'
-        call edisp(iuout,'Mass flow file being copied. ')
+        call edisp(iuout,'* Mass flow file being copied.')
       ELSEIF(M.EQ.19)THEN
 
 C electrical network
@@ -4985,7 +4957,7 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         EXT='.ctm'
         CALL CTREAD(iier)
         if(iier.ne.0)then
-          outs='There was a problem scanning contaminants file.'
+          outs='* Problem scanning contaminants file.'
           call edisp(iuout,outs)
         endif
         CALL FNCNGR(CNTMFIL,APE,EXT,NNAME)
@@ -4993,7 +4965,7 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         IUNIT=72
         CALL CTWRIT(iunit)
         msg1='updating model for contaminants network changes...'
-        call edisp(iuout,'Contaminants network being copied.')
+        call edisp(iuout,'* Contaminants network being copied.')
       ELSEIF(M.EQ.22)THEN
 
 C Versioning of zone operations. First ask which zones that
@@ -5014,20 +4986,20 @@ C alternative file name.
             IF(ICOMP.EQ.0)GOTO 148
             call FINDFIL(LPROJ(ICOMP),XST)
             IF(.NOT.XST)THEN
-              CALL EDISP(IUOUT,'Operations file does not exist')
+              CALL EDISP(IUOUT,'* Operations file does not exist!')
               RETURN
             ENDIF
             CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
             CALL FNCNGR(LPROJ(ICOMP),APE,EXT,NNAME)
             LPROJ(ICOMP)=NNAME
             CALL PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,ICOMP)
-            WRITE(MSG1,'(2A)')'New operations file written out for ',
+            WRITE(MSG1,'(2A)')'* New operations file written out for ',
      &      ZNAME(ICOMP)
             CALL EDISP(IUOUT,MSG1)
  148      CONTINUE
           msg1='updating model for zone operation changes...'
           call edisp(iuout,
-     &      'Subsequent changes will be applied to the new files.')
+     &      '* Subsequent changes will be applied to the new files.')
         endif
       ELSEIF(M.EQ.23)THEN
 
@@ -5039,43 +5011,43 @@ C common block data.
         IUNIT=12
         call FINDFIL(LCTLF,XST)
         IF(.NOT.XST)THEN
-          CALL EDISP(IUOUT,'Control file does not exist')
+          CALL EDISP(IUOUT,'* Control file does not exist!')
           RETURN
         ENDIF
         CALL FNCNGR(LCTLF,APE,EXT,NNAME)
         LCTLF=NNAME
         CALL CTLWRT(IUNIT,IER)
-        msg1='updating model for zone controls changes...'
-        call edisp(iuout,'Control file being copied.')
+        msg1='Updating model for zone controls changes...'
+        call edisp(iuout,'* Control file being copied.')
       ELSEIF(M.EQ.24)THEN
 
 C casual gains control
         h(1)='casual gains currently not supported' 
         CALL PHELPD('Not supported',1,'func not supported',0,0,IER)
-        msg1='updating model for zone casual gain control changes...'
+        msg1='Updating model for zone casual gain control changes...'
       ELSEIF(M.EQ.25)THEN
 
 C event profiles
         h(1)='event profiles currently not supported' 
         CALL PHELPD('Not supported',1,'func not supported',0,0,IER)
-        msg1='updating model for event profile changes...'
+        msg1='Updating model for event profile changes...'
       ELSEIF(M.EQ.26)THEN
 
-C mould and microtoxins
-        h(1)='moulds and microtoxins currently not supported' 
+C mould and mycotoxins
+        h(1)='Moulds and mycotoxins not currently supported.' 
         CALL PHELPD('Not supported',1,'func not supported',0,0,IER)
-        msg1='updating model for mould and microtoxins changes...'
+        msg1='Updating model for mould and mycotoxins changes...'
       ENDIF
 
 C Reached this point after user has selected a topic whether or
 C not any zones were selected.
-      h(1)='You may wish to make a number of changes to the model'
-      h(2)='variant. If so, select another option.'
+      h(1)='You may wish to make a number of changes to the'
+      h(2)='model variant. If so, select another option.'
       h(3)=' '
       h(4)='Remember all the affected files will have the variant'
       h(5)='extension characters in their file name.'
       dok=.false.
-      CALL ASKOK('  ',' Make more changes (see help)?',OK,DOK,5)
+      CALL ASKOK(' ','Make more changes?',OK,DOK,5)
       IF(OK)THEN
         LRCR=1
         RETURN
@@ -5122,8 +5094,8 @@ C If a variant connections file also required set this up.
         call usrmsg(msg1,' ','-')
         CALL EMKCFG('-',IER)
         call usrmsg(msg1,'done.','P')
-        WRITE (OUTS,'(2A)')'Writing new configuration file ',LCFGF
-        CALL EDISP(IUOUT,OUTS)
+C        WRITE (OUTS,'(2A)')'* Writing new configuration file ',LCFGF
+C        CALL EDISP(IUOUT,OUTS)
       ENDIF
 
 C If shading needs updating do this now.

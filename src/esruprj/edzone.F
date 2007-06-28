@@ -71,15 +71,15 @@ C an extrusion. IER=0 OK.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       LOGICAL OK,dok,browse,OKC,XST,unixok
 
-C << todo - consider how a more robust cancel facility can
+C << Consider how a more robust cancel facility can
 C << be established. Possibly one that deletes the new zone
-C << from the model or that finds ways to uninstanciate the
+C << from the model or that finds ways to uninstantiate the
 C << common block data that was set prior to the cancel instruction.
 
 C If browsing then user cannot create a new zone.
       if(browse)then
-        call usrmsg('Cannot update model while in browse ',
-     &    'mode with a new zone, you must `own` the model! ','W')
+        call usrmsg('Cannot update model while in browse',
+     &    'mode, you must `own` the model!','W')
         return
       endif
 
@@ -101,11 +101,11 @@ C Creation of a new zone, first ask its name, trapping out
 C illegal characters.
       call tstamp('>','PRJ: new zone')
       ZN=' '
- 42   H(1)='The name of the zone is used both for descriptive'
-      H(2)='and bookkeeping purposes.  Each name should be'
-      H(3)='unique and should not contain blanks. '
-      CALL EASKS(ZN,' What do you want to call this new zone ',
-     &  ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
+ 42   H(1)='The zone description is used for descriptive and'
+      H(2)='book-keeping purposes. It should be unique, be less'
+      H(3)='than 12 characters and contain no spaces.'
+      CALL EASKS(ZN,'New zone description?','(<12 chars, no spaces)',
+     &           12,'New zone','zone name',IER,3)
       IF(ZN.eq.' '.or.ier.ne.0)goto 42
       call st2name(ZN,zname(ICOMP))
 
@@ -130,19 +130,19 @@ C << Unix vs NT needs to be updated >>
       LPROJ(ICOMP)=OFILE
 
       H(1)='The zone description allows further information about'
-      H(2)='the zone form and composition to be recorded.  '
+      H(2)='zone form and composition to be recorded.'
       write(zd,'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
- 43   CALL EASKS(zd,' What does it represent ',
-     &  ' ( <64 char) ?',64,'no description entered','zone descr',IER,2)
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
+ 43   CALL EASKS(zd,'What does it represent?','(<64 characters)',
+     &            64,'no description entered','zone descr',IER,2)
       IF(zd.eq.' '.or.ier.ne.0)goto 43
       zdesc(ICOMP)=zd
 
 C Allow user choices of beginning as a simple shape (with image feedback). 
       IER=0
-      H(1)='You have the option to describe the thermal zone as an'
+      H(1)='You have the option to describe zone geometry as an'
       H(2)='extruded rectangle, a floor plan extrusion or a general'
-      H(3)='polyhedra.  Keeping the geometry as simple as possible'
+      H(3)='polyhedra. Keeping the geometry as simple as possible'
       H(4)='will simplify the constructional attribution and result'
       H(5)='interpretation tasks.'
       H(6)=' '
@@ -150,65 +150,62 @@ C Allow user choices of beginning as a simple shape (with image feedback).
       H(8)=' Zone geometry can be defined by taking points from a'
       H(9)=' scanned image of a site plan or floor plan.         '
       H(10)='                  '
-      H(11)=' To do this you need to scan the relevant source and '
-      H(12)=' then convert it to an XBM (X11 monochrome bitmap) file'
+      H(11)=' To do this you need to scan the relevant source and'
+      H(12)=' then convert it to an XBM (X11 monochrome bitmap) file,'
       H(13)=' which should be placed in the project `cfg` folder.'
       H(14)=' '
       h(15)=' Please ensure that the bitmap is large enough to'
       h(16)=' allow for accurate positioning of the mouse. The bitmap'
-      h(17)=' can be larger than the graphic display area, and if it'
-      H(18)=' then you can pan left and right and up and down within'
-      H(19)=' it.'
-      H(20)='                  '
-      H(21)=' The source image should have indications on it of an'
-      H(22)=' origin (typically X=0.0 Y=0.0), the direction north,'
-      H(23)=' a line of known length (to get scaling from).'
-      CALL EASKABCD('Begin enclosure description with :',' ',
-     &    'extruded rectangle','floor plan extrusion','polyhedra',
-     &    'click on bitmap',IW2,23)
+      h(17)=' can be larger than the graphic display area, and where'
+      H(18)=' it is you can pan left/right and up/down.'
+      H(19)='                  '
+      H(20)=' The source image should have indications on it of an'
+      H(21)=' origin (typically X=0.0 Y=0.0), the North direction'
+      H(22)=' and a line of known length (to get scaling from).'
+      CALL EASKABCD(' ','Base zone geometry on:',
+     &    'rectangular plan','polygon plan','general 3D',
+     &    'bitmap',IW2,22)
  144  IF(IW2.eq.1)THEN
         XO=0.
         YO=0.
         ZO=0.
-        DX=3.0
-        DY=4.0
+        DX=5.0
+        DY=3.0
         DZ=2.7
-        H(1)='The specification of a box requires an origin on the'
-        H(2)='site as well as width, depth and height. Assuming '
-        H(3)='there is no rotation the width of the box is its '
-        H(4)='distance along the X axis, the depth is along the '
-        H(5)='Y axis, and the height is along the Z axis.  The '
-        H(6)='box may then be rotated with the angle being measured'
-        H(7)='anticlockwise from the X axis.  '
-        H(8)=' '
-        H(9)='The origin of the box is in site coords (metres).'
+        H(1)='The specification of a rectangular extrusion requires'
+        H(2)='the specification of an origin (relative to the site'
+        H(3)='coordinate system, and a length, depthand height.'
+        H(4)='Assuming there is no rotation, the length dimension'
+        H(5)='is along the X axis, the depth dimension is along the'
+        H(6)='Y axis and the height dimension is along the Z axis.'
+        H(7)='The rectangle may then be rotated by an angle measured'
+        H(8)='from the X axis, anticlockwise positive.'
         HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')XO,YO,ZO
-        CALL EASKS(HOLD,' Origin  X  Y  Z (in metres): ',
-     &     '  ',32,' 0. 0. 0. ','origin coord',IER,9)
+        CALL EASKS(HOLD,' ','Origin X,Y,Z?',
+     &           32,' 0. 0. 0. ','origin coord',IER,8)
         K=0
         CALL EGETWR(HOLD,K,XO,-999.9,999.9,'W','X origin',IER)
         CALL EGETWR(HOLD,K,YO,-999.9,999.9,'W','Y origin',IER)
         CALL EGETWR(HOLD,K,ZO,-9.9,999.9,'W','Z origin',IER)
 
- 242    H(1)='The width (with no rotation) is along the X axis.'
-        H(2)='The depth (with no rotation) is along the Y axis.'
-        H(3)='The height is along the Z axis (metres).'
-        H(4)='Dimensions should be positive.'
+ 242    H(1)='The length (with no rotation) is along the X axis.'
+        H(2)='The width (with no rotation) is along the Y axis.'
+        H(3)='The height is along the Z axis.'
         HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')DX,DY,DZ
-        CALL EASKS(HOLD,' Prism width, depth, height (in metres): ',
-     &    '  ',32,' 2.5 3.5 2.7 ','box suze',IER,4)
+        CALL EASKS(HOLD,' ','Rectangle length, width and height?',
+     &             32,' 2.5 3.5 2.7 ','rectangle size',IER,3)
         K=0
         CALL EGETWR(HOLD,K,DX,0.001,99.9,'W','box width',IER)
         CALL EGETWR(HOLD,K,DY,0.001,99.9,'W','box depth',IER)
         CALL EGETWR(HOLD,K,DZ,0.001,99.9,'W','box height',IER)
         if(DX.lt.0.001.or.DY.lt.0.001)goto 242
 
-        H(1)='Orientation is anticlockwise degrees between the '
-        H(2)='length side of the obstruction and the X axis.'
+        H(1)='Orientation is the angle between the length (DX) side'
+        H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
         ANG=0.
-        CALL EASKR(ANG,' ',' Box orientation? ',
+        CALL EASKR(ANG,' ','Rectangle orientation?',
      &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
 
 C Convert box into a gen description.
@@ -222,55 +219,52 @@ C User begins with an extruded shape.
         Z1=0.
         Z2=2.4
         NW=4
-        H(1)='The base (floor) elevation is in metres.'
-        CALL EASKR(Z1,' ',' Elevation of the base ? ',
-     &       0.000,'W',99.9,'W',0.0,'elevation of base',IER,1)
-        H(1)='The top surface height is along the Z axis (metres).'
-        H(2)='Note: this is not the base-top distance!'
-        CALL EASKR(Z2,' ',' Elevation of the top ? ',
-     &       0.000,'W',99.9,'W',2.7,'elevation of top',IER,2)
-        H(1)='The number of walls does not include the base '
-        H(2)='and the top.'
-        H(3)=' '
-        H(4)='A cancel instruction lets you start the zone '
-        H(5)='creation process again. '
-        CALL EASKI(NW,' ',' Number of walls? ',
-     &           3,'F',MS-2,'F',4,'no of walls',IERI,5)
+        H(1)='The base surface (probably floor) height relative to'
+        H(1)='the site coordinate system.'
+        CALL EASKR(Z1,' ','Z value of the base surface?',
+     &       0.000,'W',99.9,'W',0.0,'elevation of base',IER,2)
+        H(1)='The top surface (probably ceiling) height relative to'
+        H(2)='the site coordinate system. Note that this is not'
+        H(3)='necessarily the same as the base-top distance!'
+        CALL EASKR(Z2,' ','Z value of the top surface?',
+     &       0.000,'W',99.9,'W',2.7,'elevation of top',IER,3)
+        H(1)='The number of walls excluding the base and'
+        H(2)='the top.'
+        CALL EASKI(NW,' ','Number of walls?',
+     &           3,'F',MS-2,'F',4,'no of walls',IERI,2)
         if(ieri.eq.-3) goto 42
-        call edisp(iuout,'Input the coordinates around the base ')
-        call edisp(iuout,'polygon ANTI-clockwise looking from the')
-        call edisp(iuout,'top, preferably beginning from the lower ')
-        call edisp(iuout,'left corner of the enclosure. ')
+C        call edisp(iuout,'Input the coordinates around the base ')
+C        call edisp(iuout,'polygon ANTI-clockwise looking from the')
+C        call edisp(iuout,'top, preferably beginning from the lower ')
+C        call edisp(iuout,'left corner of the enclosure. ')
 
         DO 45 IW=1,NW
           WRITE(OUTSTR,'(A,I2,A)')' For base vertex',IW,'  X & Y:'
           HOLD=' '
           WRITE(HOLD,'(1x,2f8.3)')XX(IW),YY(IW)
-          H(1)='The coordiantes should be in metres and should be'
-          H(2)='given anti-clockwise looking from the top.'
-          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',IER,1)
+          H(1)='The coordinates should be entered in anti-clockwise'
+          H(2)='order when viewed from the top.'
+          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',IER,2)
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
    45   CONTINUE
         dok=.true.
-        h(1)='If you have any doubt as to whether you put in the'
-        h(2)='correct points you can save time by respecifying them'
-        h(3)='now. Usually this takes less time than trying to '
-        h(4)='correct problems later. '
-        CALL ASKOK('Accept base vertices?','(see help)',OK,dok,4)
+        h(1)='If you have any doubt as to whether you entered the'
+        h(2)='correct vertex coordinates you can save time by'
+        h(3)='respecifying them now. Usually this takes less time'
+        h(4)='than trying to correct problems later.'
+        CALL ASKOK(' ','Accept base vertices?',OK,dok,4)
         if(.NOT.ok)then
           IW2=2
           goto 144
         endif
 
         H(1)='Rotation is the angle between the site y-axis and'
-        H(2)='north for the enclosure (anticlockwise is a'
-        H(3)='positive rotation). NOTE THIS IS DIFFERENT FROM'
-        H(4)='THE ORIENTATION associated with simple BOXES.'
+        H(2)='north, anticlockwise positive.'
         AR=0.
-        CALL EASKR(AR,' ',' Extrusion rotation? ',
-     &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,4)
+        CALL EASKR(AR,' ','Rotation angle?',
+     &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,2)
 
 C Convert into a gen body and rotate if required.
         CALL EREGC(NW,Z1,Z2,XX,YY)
@@ -313,30 +307,30 @@ C Update the connection list.
       if(IW2.eq.3)then
 
 C User will begin with a minimal GEN body.
-        H(1)='A general polyhedra enclosure is appropriate for complex'
-        H(2)='shapes. You define a set of vertices and then link them'
-        H(3)='together to form surfaces (linked anti-clockwise from'
-        H(4)='the lower-left when viewing the outside of surface). '
-        H(5)=' '
-        H(6)='Supply an origin point (metres) and a 2m x 2m'
-        H(7)='initial (floor) surface will be placed there. From'
-        H(8)='this initial surface, modify the existing vertices'
-        H(9)='and/ or add vertices to create the zone enclosure.'
-        H(10)=' '
-        H(11)='Please ignore initial warning messages (these will stop'
-        H(12)='after you have defined a few surfaces. The initial '
-        H(13)='surface may be deleted when no longer needed.'
-        CALL PHELPD('gen start popup',13,'-',0,0,IER)
+        H(1)='A general polyhedra is appropriate for complex'
+        H(2)='shapes. A set of vertices is defined and then'
+        H(3)='linked together to form surfaces that bound the'
+        H(4)='zone. Vertices are linked anti-clockwise when'
+        H(5)='viewed from outside the zone. It is convention'
+        H(6)='to start at the lower left vertex.'
+        H(7)=' '
+        H(8)='After you supply the zone origin, a 2m x 2m'
+        H(9)='initial (floor) surface will be placed there.'
+        H(10)='These vertices may then be modified and new'
+        H(11)='ones added/linked to create the enclosed zone.'
+        H(12)='Initial warning messages may be ignored. These'
+        H(13)='will cease after you have defined a bounded zone.'
+        H(14)='The initial surface may be deleted if no longer'
+        H(15)='needed.'
+        CALL PHELPD('gen start popup',15,'-',0,0,IER)
         NTV=4
         NSUR=1
         AR=0.0
-        H(1)='The origin of the zone is the X,Y,Z of the first'
-        H(2)='surface (from which the rest of the zone will be'
-        H(3)='built).'
+        H(1)='The zone origin is located at the first surface.'
         HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')X(1),Y(1),Z(1)
-        CALL EASKS(HOLD,' Origin  X  Y  Z (in metres): ',
-     &     '  ',32,' 0. 0. 0. ','origin coord',IER,3)
+        CALL EASKS(HOLD,' ','Origin X Y Z?',
+     &      32,' 0. 0. 0. ','origin coord',IER,1)
         K=0
         CALL EGETWR(HOLD,K,X0,0.,0.,'-','X origin',IER)
         CALL EGETWR(HOLD,K,Y0,0.,0.,'-','Y origin',IER)
@@ -415,7 +409,7 @@ C High level info for all cases except clickonbitmap.
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
         write(zdesc(ICOMP),'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
       endif
       CTYPE='GEN'
       NDP(ICOMP)=3
@@ -424,7 +418,7 @@ C High level info for all cases except clickonbitmap.
       IDPN(ICOMP,3)=0
  
 C Save this to file before passing into the geometry editing facility.
-      call edisp(iuout,' updating zone description...')
+C      call edisp(iuout,'Updating zone description...')
       CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       IF(IER.EQ.1)THEN
         dok=.true.
@@ -432,8 +426,8 @@ C Save this to file before passing into the geometry editing facility.
         h(2)='encountered. Check that you have permission to write'
         h(3)='this type of file and that you have sufficient disk'
         h(4)='space.'
-        CALL ASKOK(' ','Problem creating geometry file...try again?',
-     &    OK,dok,4)
+        CALL ASKOK('Problem creating geometry file.','Try again?',
+     &               OK,dok,4)
         IF(OK)GOTO 42
       ENDIF
 
@@ -505,21 +499,28 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      H(1)='You may read in an existing ESP-r format geometry file'
-      H(2)='or convert a cflow3/IES zip file into one or more zones'
-      H(3)='or use the inbuilt facilities to create a zone from '
-      H(4)='dimensional data (starting with a prisim, extrusion or '
-      H(5)='set of vertices). '
-      H(6)=' '
-      H(7)='Importing CAD descriptions must currently be done for'
-      H(8)='a whole model. '
-      CALL EASKABCD(' New zone choices:',' ','loading existing esp-r',
-     &  'load existing zip','create via dimension input','cancel',
-     &  INZOPT,8)
+      H(1)='You may read in an existing ESP-r zone geometry file,'
+      H(2)='convert a cflow3/IES zip file into one or more zones'
+      H(3)='(i.e whole model conversion)or create a zone by inputing'
+      H(4)='data related to primitive shapes.'
+      CALL EASKABCD(' ','New zone options:','input dimensions',
+     &  'load existing (ESP-r)','load existing (CAD)','cancel',
+     &  INZOPT,48)
 
+C Input dimensions.
  293  if(INZOPT.eq.1)then
 
-C Find out if there are geometry files in the model ../zones folder.
+C Provide scratch description and the
+C default assumptions for other zone files.
+        CALL SCRZONE(IC,IER)
+        CALL EDZONE(ITRC,IC,IER)
+        ZBFLG(IC)=0
+        return
+
+C Load existing ESP-r.
+      elseif(INZOPT.eq.2)then
+
+C Find out if there are geometry files in the ../zones folder.
         sfile=' '
         snpfile=' '
         call edisp(iuout,' ')
@@ -772,9 +773,11 @@ C Find out if there are construction files in the model ../zones folder.
 
 C << still to do are asking for any other optional files for this zone.>>
         return
-      elseif(INZOPT.eq.2)then
 
-C Find out if there are zip files in the model ../zones folder.
+C Load existing CAD.
+      elseif(INZOPT.eq.3)then
+
+C Find out if there are CAD (zip) files in ../zones folder.
         sfile=' '
         snpfile=' '
         call edisp(iuout,' ')
@@ -796,18 +799,18 @@ C Find out if there are zip files in the model ../zones folder.
         endif
 
 C Existing zip geom file.
-        h(1)='If there was not existing geometry file found in the'
-        h(2)='../zones folder then you must supply a file name. '
-        h(3)='It should be relative to the cfg folder. '
+        h(1)='If there is no existing geometry file found in the'
+        h(2)='../zones folder then you must supply a file name'
+        h(3)='including a path relative to the cfg folder.'
         DFILE=' '
-        WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
+        WRITE(OUTSTR,'(a,i2,a)')'For zone ',IC,
      &    ' the geometry is to be scanned from:'
- 396    CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'zip file',IER,3)
+ 396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,3)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
           dok=.true.
-          CALL ASKOK(' ','Zip file not found, try again?',OK,
+          CALL ASKOK('Zip file not found!','Try again?',OK,
      &      dok,3)
           IF(OK)GOTO 396
         ENDIF
@@ -818,19 +821,12 @@ C Scan zip file and update control and connections.
           dok=.true.
           h(1)='While scanning the geometry file a problem was'
           h(2)='encountered. Check that the file is of the correct'
-          h(3)='type and that it has not been corrupted. '
-          CALL ASKOK(OUTSTR,
-     &      'Problem scanning zip file...try again?',OK,dok,3)
+          h(3)='type and that it has not been corrupted.'
+          CALL ASKOK('Problem scanning CAD file!',
+     &                    'Try again?',OK,dok,3)
           IF(OK)GOTO 396
         ENDIF
-      elseif(INZOPT.eq.3)then
 
-C Provide scratch description and the
-C default assumptions for other zone files.
-        CALL SCRZONE(IC,IER)
-        CALL EDZONE(ITRC,IC,IER)
-        ZBFLG(IC)=0
-        return
       elseif(INZOPT.EQ.4)then
         return
       endif
@@ -969,7 +965,7 @@ C should be scanned and converted into flow common blocks.
             CALL EMFREAD(IUM,ITRC,IER)
             CALL ERPFREE(IUM,ISTAT)
           elseif((ND.eq.1.or.ND.eq.2).and.
-     &            OUTSTR(1:18).EQ.'*Graphical_network')then
+     &            OUTSTR(1:18).EQ.'* Graphical_network')then
 
 C Found a graphic network file, scan it and then convert it
 C into network flow common blocks.
@@ -980,7 +976,7 @@ C into network flow common blocks.
 C          CALL EMFREAD(IUM,ITRC,IER)
 C          CALL ERPFREE(IUM,ISTAT)
           if(ier.ne.0)then
-            CALL USRMSG(' ','problem in ventilation network','F')
+            CALL USRMSG(' ','Problem in flow network!','F')
             OKM=.false.
           else
 
@@ -1437,7 +1433,7 @@ C Write out control file to update control/zone list.
       if(OKC)then
         H(1)='             - W A R N I N G - '
         H(2)='Links to the deleted zone by zone and/or ventilation'
-        H(3)='control loops have been adjusted and are being saved...'
+        H(3)='control loops have been adjusted and are being saved.'
         CALL PHELPD('control update popup',3,'-',0,0,IER)
         ICTLF=IFIL+1
         CALL CTLWRT(ICTLF,IER)

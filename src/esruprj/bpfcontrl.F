@@ -124,7 +124,7 @@ C Attempt to read in the control file. If no current name then suggest
 C one. If an existing name also provide option to deference it.
  44   if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
         if(browse)then
-          call usrmsg('There is no control associated with this model',
+          call usrmsg('No control associated with this model,',
      &                'returning with no change.','W')
           return
         endif
@@ -140,11 +140,10 @@ C Present current/default name and a browse option. If browse selected
 C then set iclkok variable and jump to browse functions.
         LASCI=LCTLF
         H(1)='The system control file holds the definition of the'
-        H(2)='building/ plant control systems. The file is optional.'
-        H(3)='The browse option presents a list of files in the '
+        H(2)='building/plant control systems. The file is optional.'
+        H(3)='The browse option presents a list of files in the'
         H(4)='project `ctl` folder.'
-        H(5)='The ignore option returns without changing the model.'
-        CALL EASKS2CMD(LASCI,' Control file? (browse see help)',' ',
+        CALL EASKS2CMD(LASCI,' ','Control file?',
      &    'ignore','browse',iclkok,72,' ','Control file',IER,4)
         if(iclkok.eq.1)then
           return
@@ -156,36 +155,36 @@ C then set iclkok variable and jump to browse functions.
           CALL ERPFREE(ICTLF,ISTAT)
           call FINDFIL(LCTLF,XST)
           if(XST)then
-            call edisp(iuout,'Reading existing control file...')
+C            call edisp(iuout,'Reading existing control file.')
             CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
             goto 54
           else
-            call usrmsg('Control file was not found. You are browsing',
+            call usrmsg('Control file not found. You are browsing',
      &        'so returning without change to the model.','W')
             return
           endif
         endif
         H(1)='The system control file holds the definition of the'
         H(2)='building/ plant control systems. The file is optional.'
-        H(3)='The dereference option clears the name of the control '
-        H(4)='file but does not alter information within the control'
-        H(5)='description. You can re-establish control by including '
-        H(6)='the control file name in a later session. '
+        H(3)='The dereference option dereferences the  control file'
+        H(4)='from your model but does not delete it. Your may'
+        H(5)='re-establish this control by re-referencing the control'
+        H(6)='file in a later session.'
         CALL EASKS2CMD(LASCI,' Control file? (see help)',
      &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,6)
       endif
-      call usrmsg(' ',' ','- ')
+      call usrmsg(' ',' ','-')
 
-C If user wishes to deselect the current control reset file name to
+C If user wishes to deselect current control reset file name to
 C blank and save the configuration file.
       if(iclkok.eq.1)then
         if(cfgok.and.(.NOT.browse))then
           LCTLF='  '
           CALL EMKCFG('-',IER)
-          call usrmsg(' ',' ','- ')
+          call usrmsg(' ',' ','-')
         else
-          call usrmsg('Cannot save control data while in browse ',
-     &                'mode, you must `own` the model!','W')
+          call usrmsg('Cannot save control data while in browse',
+     &                'mode, you must first `own` the model.','W')
           goto 92
         endif
         return
@@ -454,27 +453,29 @@ C If a long list, include page facility text.
 
 C Help text for this menu.
       H(1) ='In order to provide realistic controls for zones,'
-      H(2) ='plant systems and fluid flow networks, a configuration'
-      H(3) ='control file must be created.  If this does not exist'
-      H(4) ='then the simulation will be free floating.'
+      H(2) ='plant systems and flow networks, a configuration'
+      H(3) ='control file must be created. If this is not done'
+      H(4) ='then the simulation will free float.'
       H(5) =' '
       H(6) ='Toggle the control focus to switch between controlled'
-      H(7) ='entities and select a control definition to edit it.'
+      H(7) ='entities. Select a control definition to edit it.'
       H(8) =' '
-      H(9) ='The data required is as follows.'
-      H(10)='1. control system title, then for each sub-system'
+      H(9) ='The required data  are as follows.'
+      H(10)=' + control system title; then for each sub-system'
       H(11)='   (zones, plant, flow & global):'
-      H(12)='2. title & no. of control loops, then for each loop:'
-      H(13)='3. sensor & actuator location, number of day'
-      H(14)='   types, then for each day type:'
-      H(15)='4. start & finish dates of validity'
-      H(16)='   number of control periods, then for each:'
-      H(17)='5. controller type, control law, start time'
-      H(18)='   number of data items associated with'
-      H(19)='   control law and data values.'
-      H(20)=' '
-      H(21)='To edit a control loop (or one of its attributes) select'
-      H(22)='it. '
+      H(12)='     + title & number of control loops; then for'
+      H(13)='       each loop:'
+      H(14)='         + sensor & actuator location, number of'
+      H(15)='           day types; then for each day type:'
+      H(16)='             + start & finish dates of validity,'
+      H(17)='               number of control periods; then for'
+      H(18)='               each period:'
+      H(19)='                + controller type, control law,'
+      H(20)='                  start time, number of data items'
+      H(21)='                  associated with control law and'
+      H(22)='                  value of each data item.'
+      H(23)=' '
+      H(24)='To edit a control loop select it.'
 
 C Now display the menu.
       CALL EMENU('Controls',VERT,MVERT,IVERT)
@@ -487,42 +488,41 @@ C Toggle focus
       ELSEIF(IVERT.EQ.2)THEN
 
 C Edit project level description.
-        H(1)='The overall control system is described by a brief' 
-        H(2)='description (<64 characters) which will be included'
-        H(3)='in reports. '
+        H(1)='The overall control system described (<64 characters)' 
+        H(2)='is used in reports.'
         t248=ctldoc
-        CALL EASKS248(t248,' Overall project control description? ',
-     &    ' ',72,'base_case','overall control desc',IER,3)
+        CALL EASKS248(t248,' ','Control system description?',
+     &    72,'Base case control','overall control desc',IER,2)
         if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')ctldoc=t248
         IF(ctldoc(1:5).EQ.'NONE ')GOTO 92
       ELSEIF(IVERT.EQ.3)THEN
 
 C Edit building/plant/flow/global control description.
-        H(1)='Description (<248 char) of zone control system.'
+        H(1)='Description of control system (<248 characters).'
         if(icfoc.eq.0)then
           t248=znctldoc
-          CALL EASKS248(t248,' ',' Zone control description?',
-     &      72,'base_case','building control descr.',IER,1)
+          CALL EASKS248(t248,' ','Zone control description?',
+     &      72,'Zone control','building control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')znctldoc=t248
         elseif(icfoc.eq.1)then
           t248=plctldoc
-          CALL EASKS248(t248,' ',' Plant control description?',
-     &      72,'base_case','plant control descr.',IER,1)
+          CALL EASKS248(t248,' ','Plant control description?',
+     &      72,'Plant control','plant control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')plctldoc=t248
         elseif(icfoc.eq.2)then
           t248=flctldoc
-          CALL EASKS248(t248,' ',' Flow control description?',
-     &      72,'base_case','flow control descr.',IER,1)
+          CALL EASKS248(t248,' ','Flow control description?',
+     &      72,'Flow control','flow control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')flctldoc=t248
         elseif(icfoc.eq.3)then
           t248=glctldoc
-          CALL EASKS248(t248,' ',' Global control description?',
-     &      72,'base_case','global control descr.',IER,1)
+          CALL EASKS248(t248,' ','Global control description?',
+     &      72,'Global control','global control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')glctldoc=t248
         elseif(icfoc.eq.4)then
           t248=elctldoc
-          CALL EASKS248(t248,' ',' Power control description?',
-     &      72,'base_case','power control descr.',IER,1)
+          CALL EASKS248(t248,' ','Electrical control description?',
+     &      72,'Electrical control','electrical control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')elctldoc=t248
         endif
       ELSEIF(IVERT.EQ.5)THEN
@@ -531,10 +531,10 @@ c Relate control functions to the appropriate zones
 c from the configuration file.
         if(icfoc.eq.0)then
           NZT=NCOMP
-          H(1)='This should match current system configuration file.'
-          H(2)='If you cancel the menu will be re-displayed. '
-          CALL EASKI(NZT,' ',' Number zones in the model?',
-     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,2)
+          H(1)=
+     &      'This should match the current system configuration file.'
+          CALL EASKI(NZT,' ','Number of zones in model?',
+     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,1)
           if(ieri.eq.-3) goto 92
           NZ=NZT
           IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
@@ -547,26 +547,25 @@ c Match single zone with single control function.
 c Relate control function to associated zone.
 c Remember zero implies no control.
   304     IF(NZ.EQ.1)then
-            H(1)='This is the index of the control. A 0 means no'
-            H(2)='control, 1 is first control function, etc.)'
-            H(3)='If you cancel the menu will be re-displayed.'
+            H(1)='This is the control index: 0 means no control,'
+            H(2)='1 is the first defined control function, 2 the'
+            H(3)='second and so on.'
             ica=ICASCF(1)
-            CALL EASKI(ICA,' Associated control for',
-     &        ' first zone?',0,'F',MCOM,'F',0,
-     &        'associated control',IERI,3)
+            CALL EASKI(ICA,'Associated control function',
+     &               'for zone 1?',0,'F',MCOM,'F',0,
+     &               'associated control',IERI,3)
             if(ieri.eq.-3) goto 92
             ICASCF(1)=ica
           else
             do 311 IJ=1,NZ
-              write(outs,'(A,A,A,I2,A)')' For ',zname(IJ),'(',IJ,')'
+              write(outs,'(3A,I2,A)')'for ',zname(IJ),'(',IJ,')?'
               ica=ICASCF(IJ)
-              H(1)='This is the index of the control. A 0 means no'
-              H(2)='control, 1 is first control function, etc.)'
-              H(3)='If you cancel only this instance of the control'
-              H(4)='will retain its previous value.'
-              CALL EASKI(ICA,outs,
-     &          ' Associated control?',0,'F',MCOM,'F',0,
-     &          'associated control',IER,4)
+              H(1)='This is the control index: 0 means no control,'
+              H(2)='1 is the first defined control function, 2 the'
+              H(3)='second and so on.'
+              CALL EASKI(ICA,'Associated control function',outs,
+     &                 0,'F',MCOM,'F',0,
+     &                 'associated control',IER,3)
               if(ieri.eq.-3)then
                 goto 311
               else
@@ -579,9 +578,9 @@ c Check for out-of-allowable range.
           IF(NZ.gt.0)then
            DO 300 I=1,NZ
             IF(ICASCF(I).LT.0.OR.ICASCF(I).GT.NCF)then
-             write(outs,'(A,I2,A)')' Zone ',I,
-     &         ' refers to a non-existent'
-             call usrmsg(outs,' control.  Please respecify.','W')
+             write(outs,'(3A,I2,A)')' Zone ',zname(IJ),'(',I,
+     &         ') refers to a non-existent'
+             call usrmsg(outs,'control function. Respecify.','W')
              goto 304
             endif
   300      CONTINUE
@@ -589,26 +588,22 @@ c Check for out-of-allowable range.
 
 C Flag that links made.
           LINKED=.TRUE.
-        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.icfoc.eq.4)then
+        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
+     &         icfoc.eq.4)then
           continue
         endif
 
       ELSEIF(IVERT.EQ.MVERT)THEN
 
-C local variable ireturn is non-zero to signal user wants to exit.
+C Local variable ireturn is non-zero to signal user wants to exit.
         IRETURN=0
         if(icfoc.eq.0)then
           if(.NOT.LINKED)then
             dok=.false.
-            h(1)='This messsage was presented because you probably'
-            h(2)='have not associated the control loops with zones'
-            h(3)='in the model during the current editing session. '
-            h(4)=' '
-            h(5)='Just to be certain, re-check these associations '
-            h(6)='to see that they are ok. '
-            CALL ASKOK(' The control functions have not yet been ',
-     &        ' linked to the thermal zones. Exit anyway?',
-     &        OK,dok,6)
+            h(1)='To impose control, the defined control loops must'
+            h(2)='be associated with the modelled zones.'
+            CALL ASKOK('Control functions have not yet been',
+     &        'associated with. Exit anyway?',OK,dok,2)
             IF(OK)then
               IRETURN=1
             else
@@ -617,21 +612,23 @@ C local variable ireturn is non-zero to signal user wants to exit.
           else
             IRETURN=1
           endif
-        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.icfoc.eq.4)then
+        elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
+     &         icfoc.eq.4)then
           IRETURN=1
         endif
 
-C If not browsing the model ask user if they want to save any changes to control file.
+C If not browsing the model ask user if they want to save any changes
+C to control file.
         if(cfgok.and.(.NOT.browse))then
           IRETURN=1
           DOK=.TRUE.
-          h(1)='You might have made changes to the model control file.'
-          h(2)='If you exit without saving the changes will be lost. '
-          CALL ASKOK(' Save changes to control file ?','  ',OK,dok,2)
+          h(1)='You may have made changes to the control file. If'
+          h(2)='you exit without saving these changes will be lost.'
+          CALL ASKOK(' ','Save changes to control file?',OK,dok,2)
           IF(OK)THEN
             ICTLF=IFIL+1
             CALL CTLWRT(ICTLF,IER)
-            call edisp(IUOUT,' Saving system configuration file.')
+C            call edisp(IUOUT,'Saving system configuration file.')
             CALL EMKCFG('-',IER)
           ENDIF
         endif
@@ -639,15 +636,13 @@ C If not browsing the model ask user if they want to save any changes to control
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Explanation
-
-C << compose a "tell me more" section. >>
-        CALL PHELPD('control help',22,'-',0,0,IER)
+        CALL PHELPD('control help',24,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Save the control file.
         LASCI=LCTLF
-        CALL EASKS(LASCI,' Control file?',' ',72,' ','Control file',
-     &    IER,22)
+        CALL EASKS(LASCI,'Control file?',' ',72,' ','Control file',
+     &            IER,22)
         IF(LASCI(1:2).NE.'  ')LCTLF=LASCI
 
 C Save current information into a descriptive file
@@ -655,21 +650,21 @@ C and save the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
           ICTLF=IFIL+1
           CALL CTLWRT(ICTLF,IER)
-          call edisp(IUOUT,' Saving system configuration file.')
+C          call edisp(IUOUT,'Saving system configuration file.')
           CALL EMKCFG('-',IER)
         else
-          call usrmsg('Cannot save control data while in browse ',
-     &                'mode, you must `own` the model!','W')
+          call usrmsg('Cannot save control data while in browse',
+     &                'mode. You must first `own` the model.','W')
           goto 92
         endif
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
-        CALL EASKABC('Options:',' ',
-     &    'list control loops','check control loops','continue',IRC,2)
+        CALL EASKABC(' ','Options:',
+     &    'list control loops','edit control loops','cancel',IRC,2)
         if(irc.eq.1)then
 
 C List control data.
           call edisp(itru,' ')
-          call edisp(itru,' Overall description: ')
+          call edisp(itru,' Overall description:')
           call edisp248(itru,ctldoc,72)
 
           if(icfoc.eq.0.and.NCF.gt.0)then
@@ -714,7 +709,7 @@ C List control data.
           endif
           if(icfoc.eq.4.and.NECL.gt.0)then
             call edisp(itru,' ')
-            WRITE(outs,'(a,I2,a)')' Power control includes ',
+            WRITE(outs,'(a,I2,a)')' Electrical control includes ',
      &        NECL,' loops.'
             call edisp(itru,outs)
             call edisp248(itru,elctldoc,72)
@@ -729,12 +724,11 @@ C List control data.
 
 C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
-        h(1)='This adds or deletes a control loop or addes or deletes'
-        h(2)='or copies a day type (unless wkd:sat:sun). '
-        h(3)='If you cancel when editing an index the requested action'
-        h(4)='will not be acted upon (but please check).  '
-        CALL EASKATOG('Options:',' ','delete loop','add loop',
-     &  'copy loop','delete/add/copy day type','continue',' ',' ',IW,2)
+        h(1)='Delete/add/copy a control loop or day type'
+        h(2)='(unless wkd:sat:sun control).'
+        CALL EASKATOG(' ','Options:','delete control loop',
+     &     'add control loop','copy control loop',
+     &     'del/add/copy day type','cancel',' ',' ',IW,2)
         if(IW.eq.1)then
           call ADDCNTL(icfoc,'D',IER)
         elseif(IW.eq.2)then
@@ -746,34 +740,34 @@ C Warn user to update any connections to plant loops.
 C Add or delete a control day type (unless Weekday/Sat/Sun).
 C Begin by selecting the loop to focus on.
           if(icfoc.eq.0)then
-            CALL EASKI(IFOC,'Index of zone control function to act on?',
-     &          ' ',0,'F',ncf,'F',0,'associated control',IERI,4)
+            CALL EASKI(IFOC,' ','Zone control function index?'
+     &          ,0,'F',ncf,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=nbcdt(IFOC)
           elseif(icfoc.eq.1)then
-            CALL EASKI(IFOC,'Index of plant control function ?',
-     &          ' ',0,'F',ncl,'F',0,'associated control',IERI,4)
+            CALL EASKI(IFOC,' ','Plant control function index?',
+     &          0,'F',ncl,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=npcdt(IFOC)
           elseif(icfoc.eq.2)then
-            CALL EASKI(IFOC,'Index of flow control function to act on?',
-     &          ' ',0,'F',ncc,'F',0,'associated control',IERI,4)
+            CALL EASKI(IFOC,' ','Flow control function index?',
+     &          0,'F',ncc,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=nfcdt(IFOC)
           elseif(icfoc.eq.3)then
-            CALL EASKI(IFOC,'Index of global control function ?',
-     &          ' ',0,'F',ngf,'F',0,'associated control',IERI,4)
+            CALL EASKI(IFOC,' ','Global control function index?',
+     &          0,'F',ngf,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=ngcdt(IFOC)
           elseif(icfoc.eq.4)then
-            CALL EASKI(IFOC,'Index of power control function ?',
-     &          ' ',0,'F',necl,'F',0,'associated control',IERI,4)
+            CALL EASKI(IFOC,' ','Electrical control function index?',
+     &          0,'F',necl,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=necdt(IFOC)
           endif
           if(nn.eq.0)then
-            call usrmsg(' For the special case of Weekday, Saturday',
-     &      ' Sunday - add/ delete day type is not applicable.','W')
+            call usrmsg('For the special case of Weekday/Sat/Sun',
+     &      'control add/delete day type is not applicable.','W')
             goto 92
           endif 
           call ADDCTLD(icfoc,IFOC,IER)
@@ -781,7 +775,7 @@ C Begin by selecting the loop to focus on.
           goto 92
         endif
         call edisp(iuout,
-     &' You may need to update links to zones, plant or flow networks.')
+     &'You may need to update links to zones, plant or flow networks.')
       ELSEIF(IVERT.EQ.(MVERT-5))THEN
 
 C If there are enough items, allow paging control via EKPAGE.
@@ -812,11 +806,11 @@ C List out the current details of the control loop.
 
 C Pull up a multi-choice dialog to see what should be edited.
         CALL EPMENSV
-        h(1)='Attributes of a control can be edited:'
+        h(1)='Control function attributes that may be edited:'
         h(2)=' a) sensor location'
         h(3)=' b) actuator location'
-        h(4)=' c) for each day type the period of validity and details'
-        h(5)='    of each period during the day.'
+        h(4)=' c) for each day type, the period of validity and'
+        h(5)='    details for distinct period during the day.'
         if(icfoc.eq.0)then
           call LSTCNTLD(itru,0,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Zone control function (',II,
@@ -840,7 +834,7 @@ C Pull up a multi-choice dialog to see what should be edited.
         endif
         idno=0
         isw=0
-        call MENUATOL(outs,'Editing options',
+        call MENUATOL(outs,'Editing Options',
      &   'a sensor details','b actuator details',
      &   'c period of validity','d period data',' ',' ',
      &   ' ',' ',' ',' ',' ',' ',isw,idno,5)
@@ -855,7 +849,7 @@ C Edit sensor location.
             isn2=IBSN(II,2)
             isn3=IBSN(II,3)
             isn4=IBSN(II,4)
-            call senloc('Select an option:','Zone sensor',icfoc,II,
+            call senloc('Options:','Zone sensor',icfoc,II,
      &        isn1,isn2,isn3,isn4,isense,nsupl,'zone sensor',IER)
             IBSN(II,1)=isn1
             IBSN(II,2)=isn2
@@ -865,7 +859,7 @@ C Edit sensor location.
             isn1=IPSN(II,1)
             isn2=IPSN(II,2)
             isn3=IPSN(II,3)
-            call senloc('Select an option:','Plant sensor',icfoc,II,
+            call senloc('Options:','Plant sensor',icfoc,II,
      &        isn1,isn2,isn3,isn4,isense,nsupl,'plant sensor',IER)
             IPSN(II,1)=isn1
             IPSN(II,2)=isn2
@@ -875,7 +869,7 @@ C Edit sensor location.
             isn2=IFSN(II,2)
             isn3=IFSN(II,3)
             isn4=IFSN(II,4)
-            call senloc('Select an option:','Flow sensor',icfoc,II,
+            call senloc('Options:','Flow sensor',icfoc,II,
      &        isn1,isn2,isn3,isn4,isense,nsupl,'flow sensor',IER)
             IFSN(II,1)=isn1
             IFSN(II,2)=isn2
@@ -891,7 +885,7 @@ C call the flow actuation interactions now.
             ian1=IFAN(II,1)
             ian2=IFAN(II,2)
             ian3=IFAN(II,3)
-            call actloc('Select an option:','Flow actuator',icfoc,II,
+            call actloc('Options:','Flow actuator',icfoc,II,
      &        0,ian1,ian2,ian3,'flow actuator',IER)
             IFAN(II,1)=ian1
             IFAN(II,2)=ian2
@@ -901,7 +895,7 @@ C call the flow actuation interactions now.
             ign2=IGSN(II,2)
             ign3=IGSN(II,3)
             ign4=IGSN(II,4)
-            call senloc('Select an option:','Global sensor',icfoc,II,
+            call senloc('Options:','Global sensor',icfoc,II,
      &        ign1,ign2,ign3,ign4,isense,nsupl,'global sensor',IER)
             IGSN(II,1)=ign1
             IGSN(II,2)=ign2
@@ -911,7 +905,7 @@ C call the flow actuation interactions now.
             ien1=IESN(II,1)
             ien2=IESN(II,2)
             ien3=IESN(II,3)
-            call senloc('Select an option:','Power sensor',icfoc,II,
+            call senloc('Options:','Electrical sensor',icfoc,II,
      &        ien1,ien2,ien3,ien4,isense,nsupl,'power sensor',IER)
             IESN(II,1)=ien1
             IESN(II,2)=ien2
@@ -919,8 +913,8 @@ C call the flow actuation interactions now.
           endif
           CALL EPMENRC
           if (ICFOC.ne.2) then
-            call usrmsg('After editing the sensor location it may also',
-     &        'be necessary to update actuator location.','W')
+            call usrmsg('After editing the sensor location it may',
+     &        'be necessary to update the actuator location.','W')
           endif
           goto 64
         elseif(ISW.eq.2)then
@@ -934,7 +928,7 @@ C substitutions will occur.
             ian1=IBAN(II,1)
             ian2=IBAN(II,2)
             ian3=IBAN(II,3)
-            call actloc('Select an option:','Zone actuator',icfoc,II,
+            call actloc('Options:','Zone actuator',icfoc,II,
      &        isn1,ian1,ian2,ian3,'zone actuator',IER)
             IBAN(II,1)=ian1
             IBAN(II,2)=ian2
@@ -943,7 +937,7 @@ C substitutions will occur.
             ian1=IPAN(II,1)
             ian2=IPAN(II,2)
             ian3=IPAN(II,3)
-            call actloc('Select an option:','Plant actuator',icfoc,II,
+            call actloc('Options:','Plant actuator',icfoc,II,
      &        0,ian1,ian2,ian3,'plant actuator',IER)
             IPAN(II,1)=ian1
             IPAN(II,2)=ian2
@@ -952,7 +946,7 @@ C substitutions will occur.
             ian1=IFAN(II,1)
             ian2=IFAN(II,2)
             ian3=IFAN(II,3)
-            call actloc('Select an option:','Flow actuator',icfoc,II,
+            call actloc('Options:','Flow actuator',icfoc,II,
      &        0,ian1,ian2,ian3,'flow actuator',IER)
             IFAN(II,1)=ian1
             IFAN(II,2)=ian2
@@ -961,7 +955,7 @@ C substitutions will occur.
             ign1=IGAN(II,1)
             ign2=IGAN(II,2)
             ign3=IGAN(II,3)
-            call actloc('Select an option:','Global actuator',icfoc,II,
+            call actloc('Options:','Global actuator',icfoc,II,
      &        0,ign1,ign2,ign3,'global actuator',IER)
             IGAN(II,1)=ign1
             IGAN(II,2)=ign2
@@ -970,7 +964,7 @@ C substitutions will occur.
             ien1=IEAN(II,1)
             ien2=IEAN(II,2)
             ien3=IEAN(II,3)
-            call actloc('Select an option:','Power actuator',icfoc,II,
+            call actloc('Options:','Power actuator',icfoc,II,
      &        0,ien1,ien2,ien3,'power actuator',IER)
             IEAN(II,1)=ien1
             IEAN(II,2)=ien2
@@ -1038,7 +1032,7 @@ C current day type data..
             CALL EGCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.4)then
             call LSTCNTLD(itru,4,II,idi,IER)
-            CALL edisp(iuout,'power editing not available')
+            CALL edisp(iuout,'Elecrical editing not available')
           endif
           CALL EPMENRC
           goto 64
@@ -1223,13 +1217,10 @@ C Generate menu entry for each period in day type.
 
 C Help text for this menu.
       h(1) ='A number of control periods can be defined for each'
-      h(2) ='control day type. Each period has a start time (i.e.'
-      h(3) ='they do not overlap), a sensed property, an actuated'
-      h(4) ='property, a control law and miscel. data which defines'
-      h(5) ='capacity, setpoints, etc.'
-      h(6) ='  '
-      h(7) ='Note: if no change required in an item then accept the'
-      h(8) ='current value.'
+      h(2) ='control day type. Each period has a start time (N.B'
+      h(3) ='periods may not overlap), a sensed property, an actuated'
+      h(4) ='property, a control law and miscellaneous data items'
+      h(5) ='defining available capacity, set-points etc.'
  
 C Now display the menu.
       CALL EMENU('Control periods',VERT,MVERT,IVERT)
@@ -1238,13 +1229,13 @@ C Now display the menu.
       elseif(IVERT.EQ.mvert-1)then
 
 C Explanation
-       CALL PHELPD('control period help',8,'-',0,0,IER)
+       CALL PHELPD('control period help',5,'-',0,0,IER)
       elseif(IVERT.EQ.mvert-2)then
 
 C Add or delete a period.
-        h(1)='Periods are added to the end of the list. '
-        CALL EASKABC('Options:',' ',
-     &    'add period','delete period','continue',iad,1)
+        h(1)='Periods are added to the end of the list.'
+        CALL EASKABC(' ','Options:',
+     &    'add period','delete period','cancel',iad,1)
         if(iad.eq.1)then
           call addctldp(0,II,JJ,'A',iier)
         elseif(iad.eq.2)then
@@ -1343,59 +1334,59 @@ C starting up the menu based control period definition.
         endif
 
         ictyp=0
-        SALT(1)= 'Basic controller for heating/cooling   '
-        SALT(2)= 'Free-float controller                  '
-        SALT(3)= 'Basic pre-heat or pre-cool controller  '
+        SALT(1)= 'Basic control for heating/cooling      '
+        SALT(2)= 'Free-float control                     '
+        SALT(3)= 'Basic pre-heat or pre-cool control     '
         SALT(4)= 'Fixed heat injection and extraction    '
         SALT(5)= 'PID control action for heating/cooling '
-        SALT(6)= ' Flux connection between zone & plant  '
+        SALT(6)= 'Flux connection between zone & plant   '
         SALT(7)= 'Multi-stage control with hysteresis    '
-        SALT(8)= 'Variable supply temp with constraints  '
-        SALT(9)= ' Heat pipe from `outside` to inside    '
+        SALT(8)= 'Variable supply temp. with constraints '
+        SALT(9)= 'Heat pipe                              '
         SALT(10)='Separate flux ON & OFF set points      '
-        SALT(11)=' Match sensed/recorded value (ideal)   '
-        SALT(12)=' Match sensed/recorded value (on/off)  '
-        SALT(13)='Time-proportioning separate (on/off)   '
-        SALT(14)='Floating `three-position` control      '
-        SALT(15)='Optimum start (with rewind) control    '
-        SALT(16)=' Optimum stop control                  '
-        SALT(17)=' Fuzzy Logic PI-PD control             '
-        SALT(18)=' Null controller.                      '
-        SALT(19)=' Multi-sensor heating/cooling          '
-        SALT(20)=' Evaporative source (surface)          '
-        SALT(21)='Slave Capacity Controller              '
-        SALT(22)='VAV cooling with CAV reheat (BETA)     '
+        SALT(11)='Match sensed & recorded values (ideal) '
+        SALT(12)='Match sensed & recorded values (on/off)'
+        SALT(13)='Time-proportioning (on/off)            '
+        SALT(14)='Floating three-position control        '
+        SALT(15)='Optimum start control (with rewind)    '
+        SALT(16)='Optimum stop control                   '
+        SALT(17)='Fuzzy Logic PI or PD control           '
+        SALT(18)='Null control.                          '
+        SALT(19)='Multi-sensor heating/cooling           '
+        SALT(20)='Evaporative source (surface)           '
+        SALT(21)='Slave capacity control                 '
+        SALT(22)='VAV cooling with CAV reheat            '
         if(iclaw.ne.0)then
-          write(outs,'(a,a)') ' Current control law: ',SALT(iclaw)
+          write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
           IX=1
         else
           IX=iclaw
         endif
-        H(1)='The zone basic controller is an ideal controller which'
-        H(2)='will inject or extract sufficient heat (subject to '
-        H(3)='the defined heating and cooling capacity) to meet a '
-        H(4)='heating and/or cooling setpoint.  '
+        H(1)='The basic zone controller is an ideal controller that'
+        H(2)='will inject or extract sufficient flux (subject to'
+        H(3)='the defined heating and cooling capacities) to ensure'
+        H(4)='the heating and/or cooling set point.'
         H(5)=' '
-        h(6)='A free float controller allows the zone temperature to'
-        h(7)='reach whatever temperature is consistent with the '
-        h(8)='heat gains and losses in the zone. No environmental '
+        h(6)='A free float controller allows the zone temperature'
+        h(7)='to reach whatever temperature is consistent with the '
+        h(8)='heat gains and losses in the zone. No environmental'
         h(9)='control is applied. '
         H(10)=' '
-        H(11)='The ideal fixed injection controller represents '
-        H(12)='systems which operate at a fixed rate if heating '
-        H(13)='or cooling is requested. '
+        H(11)='The ideal fixed injection controller represents'
+        H(12)='systems which operate with a fixed input when heating'
+        H(13)='and/or cooling is requested. '
         H(14)=' '
         H(15)='An ideal proportional controller with optional'
-        H(16)='integral (reset) action and/or derivative (rate)'
-        H(17)='action time or to represent full PID. '
+        H(16)='integral and/or derivative action time allowing'
+        H(17)='full PID control.'
         H(18)=' '
-        H(19)='A control which links a zone with a detailed system'
-        H(20)='network component.'
+        H(19)='A control which links a zone with a system network'
+        H(20)='component.'
         H(21)=' '
-        H(22)='A multi-stage controller with hysteresis has a '
-        H(23)='base heating and cooling capacity and, for each '
-        H(24)='three stages of increating capacity.'
+        H(22)='A multi-stage controller with hysteresis allows'
+        H(23)='the specification of heating and cooling capacities'
+        H(24)='for different stages.'
         H(25)=' '
         H(26)='Variable supply temperature with limit constraints '
         H(27)='is an idealised air based control that delivers air'
@@ -1417,37 +1408,34 @@ C starting up the menu based control period definition.
         H(43)='for heating and cooling as well as timestep rate of '
         H(44)='change for heating and cooling.'
         H(45)=' '
-        H(46)='The optimum start controller allows for three modes '
+        H(46)='The optimum start controller allows for three modes'
         H(47)='of operation (each with rewind): '
-        H(48)=' (1) Default start at 4AM '
-        H(49)=' (2) Start at user defined time '
-        H(50)=' (3) Birtles & John equation time estimate'
+        H(48)=' (1) default start at 4:00;'
+        H(49)=' (2) start at user defined time;'
+        H(50)=' (3) time estimate using Birtles & John equation.'
         H(51)=' '
-        H(52)='Proportional capacity slave controller. Typically a '
-        H(53)='slave control is used to represent an environmental '
-        H(54)='control with a thermostat in one zone and actions in '
-        H(55)='a number of zones. '
-        H(56)=' '
-        H(57)='Further details within each control law interface.'
-        H(58)=' '
-  63    CALL EPICKS(IX,IVALS,' ',' Control law: ',
-     &    40,22,SALT,'control law (indented=old or obscure)',IER,58)
+        H(52)='Proportional capacity slave controller. Typically a'
+        H(53)='slave control is used to represent an environmental'
+        H(54)='control with a thermostat in one zone and actions in'
+        H(55)='a number of zones.'
+  63    CALL EPICKS(IX,IVALS,' ','Control law:',
+     &    40,22,SALT,'control law (indented=old or obscure)',IER,55)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
 
-  62    H(1)='See ESP-r Data Model section 9 for details. '
-        CALL EASKR(tcps,' ',' Period start time ? ',
+  62    H(1)='See ESP-r Data Model Section 9 for details.'
+        CALL EASKR(tcps,' ','Period start time?',
      &    0.,'F',24.,'F',0.,'control start',IER,1)
         if(KK.GT.1)then
           IF(TBCPS(II,JJ,KK-1).GE.tcps)then
-            call usrmsg(' Periods out of order..',' ','W')
+            call usrmsg('Periods out of order.',' ','W')
             GOTO 62
           endif
         else
           CALL ECLOSE(tcps,0.0,0.001,close1)
           IF(.NOT.close1)then
-            call usrmsg(' ',' First control must begin @ 0','W')
+            call usrmsg(' ','First control must begin @ 0.','W')
             GOTO 62
           endif
         endif
@@ -1455,23 +1443,23 @@ C starting up the menu based control period definition.
 C If thermophysical property substitution then ask for misc. data.
         if(IBSN(II,1).eq.-99)then
           if(int(cm(2)).eq.0)then
-            outs=' Current property substitution is OFF'
+            outs=' Current property substitution is OFF.'
           elseif(int(cm(2)).eq.1)then
-            outs=' Current property substitution is ON'
+            outs=' Current property substitution is ON.'
           endif
           cm(1)=4.0
-          H(1)='See ESP-r Data Model section 9 for details. '
-          CALL EASKR(cm(2),outs,' Substitution: 0) off, 1)on ? ',
+          H(1)='See ESP-r Data Model Section 9 for details.'
+          CALL EASKR(cm(2),outs,' Substitution: 0) off, 1) on?',
      &      0.,'F',1.,'F',0.,'subst on/off',IER,1)
 
   28      WRITE(HOLD,'(3f8.0)')cm(3),cm(4),cm(5)
-          H(1)='These are the indices of the multilayer construction'
-          H(2)='for the 1st, 2nd and 3rd surfaces to which '
-          H(3)='susbsitutions are to be made. If less than 3 surfs'
-          H(4)='then assign `0` to latter.'
+          H(1)='These are the indices of the multi-layer'
+          H(2)='construction for the 1st, 2nd and 3rd surfaces'
+          H(3)='to which susbsitutions are to be made. If less'
+          H(4)='than 3 surfaces then assign `0` to the last.'
           if(IBAN(II,1).ne.0)then
-            CALL EASKS(HOLD,' MLC index for 1st, 2nd, 3rd surfaces ',
-     &        ' : ',40,'  0   0  0  ','index for subst',IER,3)
+            CALL EASKS(HOLD,' ','MLC index for 1st/2nd/3rd surfaces?',
+     &        40,'  0   0  0  ','index for subst',IER,3)
             K=0
             CALL EGETWR(HOLD,K,cm(3),1.,18.,'F','1st sur mlc',IER)
             CALL EGETWR(HOLD,K,cm(4),1.,18.,'F','2nd sur mlc',IER)
@@ -1487,10 +1475,11 @@ C If thermophysical property substitution then ask for misc. data.
         endif
 
 C Make assumptions about the additional data that will be required.
-        H(1)='See ESP-r Data Model section 9 for details. '
+        H(1)='See ESP-r Data Model Section 9 for details.'
         if(IBCLAW(II,JJ,KK).ge.1.and.IBCLAW(II,JJ,KK).lt.6)then
 
-C Basic control (1) or pre-heat/cool (3) is taken care of by a call to editctlperiod.
+C Basic control (1) or pre-heat/cool (3) is taken care of by a
+C call to editctlperiod.
 C Free-floating control (2) is taken care of by a call to editctlperiod.
 C Ideal fixed injection (4) is taken care of by a call to editctlperiod.
 C PID controller (5) is taken care of by a call to editctlperiod.
@@ -1515,7 +1504,7 @@ C PID controller (5) is taken care of by a call to editctlperiod.
 C Zone - plant connector.
           if(itrc.gt.0)then
             call edisp(iuout,' ')
-            call edisp(iuout,' Current zone - plant connector data is:')
+            call edisp(iuout,'Current zone-plant connector data is:')
             call edisp(iuout,
      &      ' Supply comp & node, Index, Max Heat W, Mac Cool W')
             write(outs,'(5F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
@@ -1526,25 +1515,24 @@ C Zone - plant connector.
             call edisp(iuout,' ')
           endif
 
-          H(1)=' The number of data items required is either '
-          H(2)=' 5 or 7 and depends on whether there is '
-          H(3)=' an extract component (e.g extract fan/duct) :' 
-          H(4)=' 5 items if no extract component; 7 if there is.'
-          H(5)='   - Refer ESP-r Data Model section 9 '
-          CALL EASKR(cm(1),' ',' No. of misc data items (see help) ?',
+          H(1)='The number of data items required is either'
+          H(2)='5 or 7 and depends on whether there is an'
+          H(3)='extract component (e.g fan). Refer to the' 
+          H(4)='ESP-r Data Model Section 9.'
+          CALL EASKR(cm(1),'Number of miscellaneous','data items?',
      &      5.,'F',7.,'F',7.,'no. of misc data items',IER,5)
 
-          H(1)=' This is the plant component which supplies'
-          H(2)=' the energy to the zone - e.g. a radiator in'
-          H(3)=' a heating system.'          
-          CALL EASKR(cm(2),' ',' Supply plant component (index) ? ',
+          H(1)='This is the plant component which supplies'
+          H(2)='the energy to the zone - e.g. a radiator in'
+          H(3)='a heating system.'          
+          CALL EASKR(cm(2),' ','Supply plant component index?',
      &      0.,'F',0.,'-',1.,' sply plt comp no',IER,3)
 
-          H(1)=' - Refer ESP-r Data Model section 9 '
-          CALL EASKR(cm(3),' ',' Plant node within supply component ? ',
+          H(1)='Refer to the ESP-r Data Model Section 9.'
+          CALL EASKR(cm(3),' ','Plant node within supply component?',
      &      0.,'F',0.,'-',1.,'plant node',IER,1)
-          CALL EASKR(cm(4),'  Coupling index',
-     &      ' 1.) mCp(0s-0a) calc, 2.) hrA(0s-0a) ? ',
+          CALL EASKR(cm(4),'Coupling index?',
+     &      ' (1. mCpdT or 2. hrAdT)',
      &      1.,'F',2.,'F',1.,'coupling index',IER,1)
 
 C Check if coupling index = 1. If so determine if the most recent
@@ -1554,64 +1542,65 @@ C using zone temperatures from the previous timestep :
 C (Q=m'Cp(Ts' + Ta'))
           call eclose(cm(4), 1.0, 0.01,close1)
           if ( close1 ) then
-            H(1)= ' bps uses a sequential solution method to '
-            H(2)= ' simulate the behavior of the buidling and '
-            H(3)= ' plant systems. The building domain is solved'
-            H(4)= ' first, followed by the plant domain. After '
-            H(5)= ' solution of both domains is complete, the '
-            H(6)= ' results are saved and the simulation moves'
-            H(7)= ' on to the next time step.'
+            H(1)= ' While the ESP-r simulator can use an iterative'
+            H(2)= ' method to solve the combined buidling and'
+            H(3)= ' plant systems, it is often acceptable to solve'
+            H(4)= ' the two domains sequentially. IN this case the'
+            H(5)= ' building domain is solved first. The results'
+            H(6)= ' are then saved and the simulation moves on to'
+            H(7)= ' the next time step.'
             H(8)= ' '
-            H(9)= ' Since the plant domain is solved after the '
-            H(10)=' building domain, the building domain solver '
+            H(9)= ' Since the plant domain is solved after the'
+            H(10)=' building domain, the building domain solver'
             H(11)=' must use the plant injection temperature from'
-            H(12)=' the previous timestep when calculating the '
-            H(13)=' amount of heat injected into the zone. Two '
-            H(14)=' methodologies for calculating the amount of '
-            H(15)=' heat injection/extraction:'
+            H(12)=' the previous time step when calculating the'
+            H(13)=' amount of heat injected into the zone. Two'
+            H(14)=' methods are offered for calculating the amount'
+            H(15)=' of heat injection/extraction:'
             H(16)=' '
-            H(17)=' 1) Sequential boundry conditions: bps can ' 
-            H(18)='    use the plant boundary conditions from '
-            H(19)='    the previous time step and zone boundary'
-            H(20)='    conditions from the present time step to'
-            H(21)='    solve the zone-side energy balance. This'
+            H(17)=' 1) Sequential boundry conditions: the Simulator' 
+            H(18)='    uses the plant boundary conditions from '
+            H(19)='    the previous time step but zone boundary'
+            H(20)='    conditions from the present time step (to'
+            H(21)='    solve the zone-side energy balance). This'
             H(22)='    approach can lead to inequality between'
             H(23)='    the heat flux injected into the zone and '
             H(24)='    the amount extracted from the plant, '
-            H(25)='    especially at larger time steps.'
-            H(26)=' 2) Concurrent boundary conditions: bps can '
-            H(27)='    can use the the zone and plant conditions'
+            H(25)='    especially at large time steps.'
+            H(26)=' 2) Concurrent boundary conditions: the'
+            H(27)='    Simulator uses the zone and plant conditions'
             H(28)='    from the pervious time step to calcuate '
             H(29)='    the heat injection that prevailed over '
-            H(30)='    the previous timestep, and inject this '
-            H(31)='    into the zone on the current timestep. '
+            H(30)='    the previous timestep, and injects this '
+            H(31)='    into the zone at the current time step. '
             H(32)='    This approach ensures that the heat flows'
             H(33)='    calculated in the building and plant '
             H(34)='    domains can be reconciled over the '
             H(35)='    sumulation period'
             H(36)=' '
+            H(37)=' Alternatively, turn on iteration.'
             
             CALL EASKAB(
-     &        'Zone heat injection calculatuion method?',
+     &        'Zone heat injection calculation method.',
      &        'Options:',
-     &        'Sequential boundary conditions',
-     &        'Concurrent boundary conditions',IW,36)
+     &        'sequential boundary conditions',
+     &        'concurrent boundary conditions',IW,37)
 
             if (IW .eq. 2) cm(4) = 5.0
 
           endif
-          CALL EASKR(cm(5),' ',' Max heating flux (W) ? ',
+          CALL EASKR(cm(5),' ','Maximum heating flux (W)?',
      &      0.,'F',0.,'-',1000.,'max heat flux',IER,1)
-          CALL EASKR(cm(6),' ',' Max cooling flux (W) ? ',
+          CALL EASKR(cm(6),' ','Maximum cooling flux (W)?',
      &      0.,'-',0.,'-',1000.,'max cool flux',IER,1)
 
           IF(int(cm(1)).EQ.7)THEN
            H(1)=' This is the plant component which is coupled to'
-           H(2)=' the zone in order to extract air from the zone.'
-           CALL EASKR(cm(7),' ',' Extract plant component ? ',
+           H(2)=' the zone in order to extract zone air.'
+           CALL EASKR(cm(7),' ','Extract plant component?',
      &      0.,'F',0.,'-',1.,' extract plant compt',IER,2)
 
-           CALL EASKR(cm(8),' ',' Extract comp`t node ? ',
+           CALL EASKR(cm(8),' ','Extract component node?',
      &      0.,'F',0.,'-',1.,' extract comp`t node ',IER,0)
           ENDIF
         elseif(IBCLAW(II,JJ,KK).eq.7.or.IBCLAW(II,JJ,KK).eq.8)then
@@ -2097,7 +2086,7 @@ C Logic Optimum Stop Controller.
           H(4)=' - Refer ESP-r Data Model section 9 '
           CALL EASKR(cm(9),' ',' Min time diff ? ',
      &      0.,'F',0.,'-',0.1,' Min time diff',IER,4)
-          CALL EASKR(cm(10),' ',' Initial Guess ? ',
+          CALL EASKR(cm(10),' ',' Initial guess ? ',
      &      0.,'F',24.,'F',0.1,' Initial Guess',IER,0)
         elseif(IBCLAW(II,JJ,KK).eq.17)then
 
@@ -2509,7 +2498,7 @@ C Extract from working array to bmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+ 3    CALL USRMSG(' ','Problem writing miscellaneous data.','W')
       return
       END
 
@@ -2781,13 +2770,13 @@ C DG controller
      &    0.,'F',24.,'F',0.,'plant control start',IER,1)
         if(KK.GT.1)then
           IF(TPCPS(II,JJ,KK-1).GE.tcps)then
-            call usrmsg(' Periods out of order..',' ','W')
+            call usrmsg('Periods out of order..',' ','W')
             GOTO 62
           endif
         else
           CALL ECLOSE(tcps,0.0,0.001,close1)
           IF(.NOT.close1)then
-            call usrmsg(' ',' First control must begin @ 0','W')
+            call usrmsg(' ','First control must begin @ 0.','W')
             GOTO 62
           endif
         endif
@@ -3294,7 +3283,7 @@ C Multi-sensor on-off controller.
 
 C Auxiliary sensor details,
           I4=INT(cm(4))  
-          H(1)=' - Refer ESP-r Data Model section 9 '
+          H(1)=' - Refer ESP-r Data Model Section 9 '
           H(2)='The items are essentially the same as required in a'
           H(3)=' control point sensor. '
           DO 93 L=1,I4
@@ -3335,7 +3324,7 @@ C Extract from working array to pmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+ 3    CALL USRMSG(' ','Problem writing miscellaneous data.','W')
       RETURN
       END
 
@@ -3507,7 +3496,7 @@ C function (ie. all periods are the same for flow).
         call edisp(iuout,'Note: to change this re-edit the flow sensor')
 
 C What is the equivalent for flow.....
-        H(1)='See ESP-r Data Model section 9 for details. '
+        H(1)='See ESP-r Data Model Section 9 for details. '
         H(2)='The range controler is for use with component types'
         H(3)='30 35 40 110 130 and should sense a node temperature '
         H(4)='or outside db temperature. It returns a ratio of the'
@@ -3529,18 +3518,18 @@ C What is the equivalent for flow.....
           IFCLAW(II,JJ,KK)=iclaw
         endif
 
-  62    H(1)='See ESP-r Data Model section 9 for details. '
+  62    H(1)='See ESP-r Data Model Section 9 for details. '
         CALL EASKR(tcps,' ',' Period start time ? ',
      &    0.,'F',24.,'F',0.,'control start',IER,1)
         if(KK.GT.1)then
           IF(TFCPS(II,JJ,KK-1).GE.tcps)then
-            call usrmsg(' Periods out of order..',' ','W')
+            call usrmsg('Periods out of order..',' ','W')
             GOTO 62
           endif
         else
           CALL ECLOSE(tcps,0.0,0.001,close1)
           IF(.NOT.close1)then
-            call usrmsg(' ',' First control must begin @ 0','W')
+            call usrmsg(' ','First control must begin @ 0','W')
             GOTO 62
           endif
         endif
@@ -3798,7 +3787,7 @@ C Extract from working array to fmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+ 3    CALL USRMSG(' ','Problem writing miscellaneous data.','W')
       return
       END
 
@@ -3897,7 +3886,7 @@ C Explanation
 
 
 C Add or delete a period.
-        h(1)='Periods are added to the end of the list. '
+        h(1)='Periods are added to the end of the list.'
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
@@ -3944,7 +3933,7 @@ C of if:elseif:else recover.
         call edisp(iuout,'Standard flux actuation enabled... ')
         ictyp=0
 
-        H(1)='See ESP-r Data Model section 9 for details. '
+        H(1)='See ESP-r Data Model Section 9 for details. '
         ino=iclaw
         ilno=ino
         idno=1
@@ -3961,24 +3950,24 @@ C of if:elseif:else recover.
           IGCLAW(II,JJ,KK)=iclaw
         endif
 
-  62    H(1)='See ESP-r Data Model section 9 for details. '
+  62    H(1)='See ESP-r Data Model Section 9 for details. '
         CALL EASKR(tcps,' ',' Period start time ? ',
      &    0.,'F',24.,'F',0.,'control start',IER,1)
         if(KK.GT.1)then
           IF(TGCPS(II,JJ,KK-1).GE.tcps)then
-            call usrmsg(' Periods out of order..',' ','W')
+            call usrmsg('Periods out of order..',' ','W')
             GOTO 62
           endif
         else
           CALL ECLOSE(tcps,0.0,0.001,close1)
           IF(.NOT.close1)then
-            call usrmsg(' ',' First control must begin @ 0','W')
+            call usrmsg(' ','First control must begin @ 0.','W')
             GOTO 62
           endif
         endif
         TGCPS(II,JJ,KK)=tcps
 
-        H(1)='See ESP-r Data Model section 9 for details. '
+        H(1)='See ESP-r Data Model Section 9 for details.'
         if(IGCLAW(II,JJ,KK).eq.1)then
            
 C Global on/off control.
@@ -3994,7 +3983,7 @@ C Global on/off control.
           cm(1)=2.0
 
   33      WRITE(HOLD,'(2f7.2)')cm(2),cm(3)
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1)='See ESP-r Data Model Section 9 for details. '
           CALL EASKS(HOLD,' Mode; Min ON [mode_1] or stpt [mode_2]',
      &      '  ',42,' 1. 1. ','global on-off ctlr',IER,1)
           K=0
@@ -4016,7 +4005,7 @@ C Global capacity management control.
           cm(1)=3.0
 
   35      WRITE(HOLD,'(3f7.2)')cm(2),cm(3),cm(4)
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1)='See ESP-r Data Model Section 9 for details. '
           CALL EASKS(HOLD,'Glb htg capy, Glb clg capy, No shed ',
      &      '  ',36,' 10000. 10000. 1.','global on-off ctlr',IER,1)
           K=0
@@ -4039,7 +4028,7 @@ C Global schedule on control.
           cm(1)=1.0
 
   37      WRITE(HOLD,'(1f7.2)')cm(2)
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1)='See ESP-r Data Model Section 9 for details. '
           CALL EASKS(HOLD,'No. of scheduled loops',
      &      '  ',22,' 2.','schedule on controller',IER,1)
           K=0
@@ -4058,7 +4047,7 @@ C Extract from working array to gmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
+ 3    CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
       RETURN
       END
 
@@ -4185,8 +4174,8 @@ C If a long list include page facility text and info on portion seen.
 
 C Help text for this menu.
       H(1)='Depending on the control domain a sensor can be located'
-      H(2)='at one of many locations and sense particular aspects of'
-      h(3)='the environment or model.'
+      H(2)='at one of many places to measure specified parameters of'
+      h(3)='the model.'
 
 C Display the menu.
       call usrmsg(PROMPT,PROMPT2,'-')
@@ -4195,7 +4184,7 @@ C Display the menu.
 
 C If no selection has been made before exit then display error message.
         IF(.NOT.SELECT)then
-          call usrmsg(errmsg,' you must select one... ','W')
+          call usrmsg(errmsg,'Please select a menu option!','W')
           IVERT=-2
           goto 92
         endif
@@ -4473,12 +4462,12 @@ C Note: isense will eventually be passed to IFCTYP(II,1,1)=isense
           idno=1
           write(outs,'(2a,i3,a)')'Select a property to sense ',
      &     '(currently:',IFCTYP(II,1,1),')'
-          call MENUATOL(outs,' Sensed Property:',
+          call MENUATOL(outs,' Sensed Property',
      &     'a dry bulb temperature at node','b enthalpy at node',
      &     'c additional plant output','d delta T between nodes',
      &     'e absolute delta T between nodes','f pressure at node',
-     &     'g delta pressure between nodes',
-     &     'h abs delta pressure between nodes',
+     &     'g delta P between nodes',
+     &     'h abs delta P between nodes',
      &     'i contaminant concentration at node',' ',' ',' ',
      &     ino,idno,22)
           if(ino.eq.0)then
@@ -4526,7 +4515,7 @@ C Depening on the users selection set isense and nsup.
           SALT(2)='senses 2nd ph mass flow at connection  ' 
           SALT(3)='senses abs mass flow rate at connection' 
           IX=1
-          H(1)='See ESP-r Data Model section 9 for details. '
+          H(1)='See ESP-r Data Model Section 9 for details.'
           CALL EPICKS(IX,IVALS,' ',' Controller type: ',
      &         40,3,SALT,'controller type',IER,1)
           if(ix.ne.0)then
@@ -4792,7 +4781,7 @@ C Display the menu.
 
 C If no selection has been made before exit then display error message.
         IF(.NOT.SELECT)then
-          call usrmsg(errmsg,' you must select one... ','W')
+          call usrmsg(errmsg,' Please select a menu option. ','W')
           IVERT=-2
           goto 92
         endif
@@ -5265,8 +5254,8 @@ C List help text for the vertex menu.
 C List control details.
         if(modval)then
           call usrmsg(
-     &      'Listing only shows data saved in file and some data has',
-     &      'changed but not saved to file so skipping listing.','W')
+     &      'Listing only shows data saved in file. While some data',
+     &      'has changed these have not been saved to file.','W')
         else
           call LSTCNTLD(iuout,icfoc,icloop,iday,IER)
         endif
@@ -5289,13 +5278,13 @@ C the previous period is before it otherwise warn user.
      &    0.,'F',24.,'F',0.,'control start',IER,nctlhelp)
         if(iper.GT.1)then
           IF(prevstart.GE.tcpst)then
-            call usrmsg(' Periods out of order..',' ','W')
+            call usrmsg('Periods out of order.',' ','W')
             GOTO 62
           endif
         else
           CALL ECLOSE(tcpst,0.0,0.001,close1)
           IF(.NOT.close1)then
-            call usrmsg(' ',' First control must begin @ 0','W')
+            call usrmsg(' ','First control must begin @ 0.','W')
             GOTO 62
           endif
         endif
@@ -5799,20 +5788,20 @@ C If no cooling capacity then set cooling set point to 100C.
 
 C Ensure that heating setpoint on if equal to or above heating setpoint off.
             if(cmlocal(4).ge.cmlocal(5)) call usrmsg(
-     &          'The heating ON setpoint must be lower than',
-     &          'the heating OFF setpoint.','W')
+     &          'The heating ON set-point must be lower than',
+     &          'the heating OFF set-point.','W')
             if(cmlocal(6).le.cmlocal(7)) call usrmsg(
-     &          'The cooling OFF setpoint must be lower than',
-     &          'the cooling ON setpoint.','W')
+     &          'The cooling OFF set-point must be lower than',
+     &          'the cooling ON set-point.','W')
           elseif(iclaw.eq.13)then
 
 C Ensure that heating setpoint on if equal to or above heating setpoint off.
             if(cmlocal(4).ge.cmlocal(5)) call usrmsg(
-     &        'The heating ON setpoint must be lower than',
-     &        'the heating OFF setpoint.','W')
+     &        'The heating ON set-point must be lower than',
+     &        'the heating OFF set-point.','W')
             if(cmlocal(6).le.cmlocal(7)) call usrmsg(
-     &        'The cooling OFF setpoint must be lower than',
-     &        'the cooling ON setpoint.','W')
+     &        'The cooling OFF set-point must be lower than',
+     &        'the cooling ON set-point.','W')
 
 C Ensure that ON + OFF cycle time is not greater than total cycle time.
             if(cmlocal(8).lt.(cmlocal(9)+cmlocal(10))) call usrmsg(
@@ -5826,7 +5815,7 @@ C Ensure that ON + OFF cycle time is not greater than total cycle time.
           elseif(iclaw.eq.15)then
             if(ifoc.eq.7)then
 
-C If the user has switched between startup modes adjust.
+C If the user has switched between start-up modes adjust.
               if(int(cmlocal(ifoc)).eq.1)then
                 cmlocal(1)=6.0
                 cmlocal(8)=4.0
@@ -5857,30 +5846,30 @@ C it points to the same zone as is used by the master controller.
             imasctlindex= int(cmlocal(2))
             if(imasctlindex.eq.0)then
               call usrmsg('You must select a master control loop!',
-     &          '(please do this before continuing)','W')
+     &          ' ','W')
             elseif(imasctlindex.gt.ncf)then
-              call usrmsg('You must select a existing master control',
-     &          'loop! (please do this before continuing)','W')
+              call usrmsg('You must select a existing master',
+     &          'control loop!','W')
             endif
             if(ibsn(icloop,1).gt.0.and.imasctlindex.gt.0)then
               if(ibsn(icloop,1).eq.ibsn(imasctlindex,1))then
                 continue
               else
                 call usrmsg(
-     &           'Slave sensor must sense the same zone as the master',
-     &           'control loop! (please do this before continuing)','W')
+     &           'Slave sensor must sense the same zone as the',
+     &           'master control loop!','W')
               endif
             else
               call usrmsg(
-     &          'Slave sensor must sense the same zone as the master',
-     &          'control loop! (please update sensor location)','W')
+     &          'Slave sensor must sense the same zone as the',
+     &          'master control loop!','W')
             endif
             if(iban(icloop,1).gt.0)then
               continue
             else
               call usrmsg(
      &          'Slave actuator must be in the slave zone!',
-     &          '(please update actuator location)','W')
+     &          ' ','W')
             endif
           elseif(iclaw.eq.22)then
             continue    ! no postprocessing (yet)
@@ -5935,62 +5924,54 @@ C   for control law one.
       if(icfoc.eq.0)then
         if(iclaw.eq.1.or.iclaw.eq.3)then
 
-C Setup the help text for the control period menu as well as the
+C Set up the help text for the control period menu as well as the
 C individual items to be edited (in one big block).
-          H(1)='The zone basic controller is an ideal controller which'
-          H(2)='will inject or extract sufficient heat (subject to '
-          H(3)='the defined heating and cooling capacity) to meet a '
-          H(4)='heating and/or cooling setpoint.  '
+          H(1)='A basic zone controller is an ideal controller that'
+          H(2)='will inject or extract heat (subject to the available'
+          H(3)='heating and cooling capacity) to maintain a given'
+          H(4)='set-point temperature.'
           H(5)=' '
-          H(6)='If there is a deadband then the temperature in the'
-          H(7)='will float if the current sensed condition is between'
-          H(8)='the setpoints.'
+          H(6)='If there is a deadband then the temperature will float'
+          H(7)='when the sensed condition is between lower and upper'
+          H(8)='set-points.'
           H(9)=' '
-          H(10)='Heat delivery may be less than the max. If minimium'
-          H(11)='heating > 0 then heating will continue at a re-'
-          H(12)='duced level even when the setpoint is reached'
-          H(13)='(e.g. to approximate uninsulated piping/ducts).'
-          H(14)=' '
-          H(15)='You can define a heating only scheme by setting'
-          H(16)='a hight (100C) cooling setpoint with zero cooling'
-          H(17)='capacity. '
+          H(10)='If the minimium heating (or cooling) capacity is > 0'
+          H(11)='then heating (or cooling) will persist even when'
+          H(12)=' none is called for.'
+          H(13)=' '
+          H(14)='A heating only (or cooling only) scheme may be'
+          H(15)='defined by setting a high cooling (or low heating)'
+          H(16)='temperature set-point or by defining a zero cooling'
+          H(17)='or heating) capacity.'
           H(18)=' '
-          H(19)='In addition to temperature control, you can also'
-          H(20)='specify relative humidity (RH) control: '
+          H(19)='In addition to temperature control, it is possible'
+          H(20)='to activate relative humidity (RH) control by:'
           H(21)=' '  
-          H(22)='(1) Injection or extraction of moisture (g/s) into the'
-          H(23)='    zone, allowing independent RH control.'
-          H(24)='    Humidification and dehumidification capacities are'
-          H(25)='    specified in g/s where 1 g/s of moisture equates'
-          H(26)='    to a latent gain/loss of (approx) +/-2.5kW. '
+          H(22)='(1) Injection or extraction of moisture (g/s) to the'
+          H(23)='    zone. Humidification and dehumidification'
+          H(24)='    capacities are specified in g/s where 1 g/s of'
+          H(25)='    moisture equates to a latent gain/loss of'
+          H(26)='    approximately +/-2.5kW.'
           H(27)=' '
-          H(26)='(2) Heating & cooling the zone to alter RH: CAUTION'
-          H(27)='    it will over-ride existing temperature control.' 
-          H(28)='    This could be used to check whether a system'
-          H(29)='    which is not capable of injecting or extracting'
-          H(30)='    moisture can limit RH swings.'
-          H(31)='    Note: the existing heating and cooling capacities'
-          H(32)='    are used.'
-          H(33)=' '
-          H(34)='Depending on the control method selected '
-          H(35)='dehumidification or heating will commence if the'
-          H(36)='RH rises above the upper relative humidity set'
-          H(37)='point. Humidification or cooling  commences if the'
-          H(38)='RH falls below the lower RH set point.'
-          H(39)=' '
-          H(40)='Some users have a preference for setting the capacity'
-          H(41)='close to what the zone actually will need rather than'
-          H(42)='a huge number. '
-          H(43)=' '
-          H(44)='This control can generally be used with timesteps '
-          H(45)='between 1 minute and 1 hour. With large capacities'
-          H(46)='consider 15 minutes as the longest timestep. A longer'
-          H(47)='timestep tends to obscure high frequency patterns but'
-          H(48)='has no affect on total energy use over time. '
-          H(49)=' '
-          H(50)='You are given the option to discard changes when you '
-          H(51)='exit the period. '
-          nctlhelp=51
+          H(28)='(2) Heating & cooling the zone. Note however that'
+          H(29)='    this approach will over-ride any temperature' 
+          H(30)='    control although the defined heating and cooling'
+          H(31)='    capacities will be used. This approach could be'
+          H(32)='    used to check whether a system which is not'
+          H(33)='    capable of moisture injection/extraction can'
+          H(34)='    still limit RH swings.'  
+          H(35)=' '
+          H(36)='Depending on the control method selected, heating or'
+          H(37)='dehumidification will commence if the RH rises above'
+          H(38)='the upper set-point. Likewise, humidification or'
+          H(39)='cooling commences if the RH falls below the lower RH'
+          H(40)='set-point.'
+          H(41)=' '
+          H(42)='With large thermal capacity system the simulation'
+          H(43)='time step should be constrained to a maximum of'
+          H(44)='15 minutes to give sufficient control regulation'
+          H(45)='decision points'
+          nctlhelp=45
           nmenulines=12    ! set to the last cm index used.
 
 C Basic control or pre-heat/cool (first array items are never
@@ -6091,14 +6072,11 @@ C Depending on the current number of miscel items also do humidity.
             endif
           endif
         elseif(iclaw.eq.2)then
-          h(1)='A free float controller allows the zone temperature to'
-          h(2)='reach whatever temperature is consistent with the '
-          h(3)='heat gains and losses in the zone. No environmental '
-          h(4)='control is applied. '
-          H(5)=' '
-          H(6)='You are given the option to discard changes when you '
-          H(7)='exit the period. '
-          nctlhelp=7
+          h(1)='A free float controller allows the zone temperature'
+          h(2)='to reach whatever value is consistent with the heat'
+          h(3)='gains and losses to the zone. No heating or cooling'
+          h(4)='is applied. '
+          nctlhelp=5
           nmenulines=1    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
@@ -6109,22 +6087,16 @@ C Depending on the current number of miscel items also do humidity.
           prompt2(2)=' '
           ndec(2)=-1; vmin(2)=0.0; vmax(2)=0.0; vdef(2)=0.0
         elseif(iclaw.eq.4)then
-          H(1)='The ideal fixed injection controller represents '
-          H(2)='systems which operate at a fixed rate if heating '
-          H(3)='or cooling is requested.  '
-          H(4)=' '
-          H(5)='Once heating or cooling is demanded the action '
-          H(6)='will continue at the fixed rate until the next '
-          H(7)='timestep (i.e. until the control logic is checked '
-          H(8)='again). This control should be used with a short'
-          H(9)='simulation timestep unless you want to find out '
-          H(10)='how a stickey-control will impact the building.'
-          H(11)=' '
-          H(12)='If you do not want cooling then set a high setpoint.'
-          H(13)=' '
-          H(14)='You are given the option to discard changes when you '
-          H(15)='exit the period. '
-          nctlhelp=15
+          H(1)='The ideal fixed injection controller injects a given'
+          H(2)='flux when heating or cooling is requested.'
+          H(3)=' '
+          H(4)='This control is best used with a short simulation time'
+          H(5)='step to avoid temperature oscillation.'
+          H(6)=' '
+          H(7)='Heating (or cooling) may be disabled by setting a'
+          H(8)='correspondingly low (or high) set point or by setting'
+          H(9)='the corresponding capacity to zero.'
+          nctlhelp=9
           nmenulines=5    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
@@ -6147,64 +6119,39 @@ C Depending on the current number of miscel items also do humidity.
           prompt2(5)='be called for '
           ndec(5)=3; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=24.0
         elseif(iclaw.eq.5)then
-          h(1)='This implements an ideal proportional controller with'
-          h(2)='optional integral (reset) action and/or derivative'
-          h(3)='(rate) action time or to represent full PID.'
+          h(1)='This implements an ideal proportional (P) controller'
+          h(2)='with optional integral (I) and/or derivative (D)'
+          h(3)='action.'
           h(4)=' '
-          h(5)='A proportional action produces an output in proportion'
-          h(6)='to the error sensed so there is usally an offset from'
-          h(7)='the desired setpoint. Simple to implement and stable'
-          h(8)='under most conditions. '
-          h(9)=' '
-          h(10)='A proportional with integral action (reset) is often '
-          h(11)='used to elimitate the offset error. This would avoid '
-          h(12)='thermostats being adjusted by the user an an attempt '
-          h(13)='to correct the offset error. '
+          h(5)='P action produces an output that is proportional to '
+          h(6)='the sensed deviation from the set point. This can.'
+          h(7)='result in an offset.'
+          h(8)=' '
+          h(9)='P+I action may be used to elimitate this offset.'
+          h(10)=' '
+          h(11)='P+D action is typically used where the heating or'
+          h(12)='cooling system has a fast response. This helps to'
+          h(13)='avoid overshoot.'
           h(14)=' '
-          h(15)='A proportional with derivitive action might be used'
-          h(16)='where the heating or cooling has a fast response'
-          h(17)='to an actuating signal. This helps avoid overshoot.'
-          h(18)=' '
-          h(19)='A PID combines these actions and (guess what) there '
-          h(20)='are lots of ways for it to go haywire. However with '
-          h(21)='correct tuning an near-ideal control of the sensed '
-          h(22)='variable should be achievable. '
-          h(23)=' '
-          h(24)='As with real PID controllers this controller needs'
-          h(25)='to be tuned to the zone and:'
-          h(26)='  * overshoots can be caused by excessive integral'
-          h(27)='    action.'
-          h(28)='  * continuous oscillations can be caused by excessive'
-          h(29)='    derivitive action'
-          h(30)=' '
-          h(31)='These controls are best used in the context of a short'
-          h(32)='simulation time step. Consider the response time of'
-          h(33)='the system. The building side can go as low as one  '
-          h(34)='minute. '
-          h(35)=' '
-          h(36)='A typical integral time might be 600s for a goal of'
-          h(37)='settling in 20 minutes. Increasing the time constant'
-          h(38)='will reduce the integral action effect. '
-          h(39)=' '
-          h(40)='A typical derivitive time might be 600s. Reduce this '
-          h(41)='to reduce the derivitive action effect. '
-          h(42)=' '
-          H(43)='The number of data items required is:'
-          H(44)='   P   -   9 items required,'
-          H(45)='   PI  -   10 items required,'
-          H(46)='   PD  -   10 items required,'
-          H(47)='   PID -   11 items required,'
-          h(48)=' '
-          H(49)='Heat delivery may be less than the max. If minimium'
-          H(50)='heating > 0 then heating will continue at a re- '
-          H(51)='duced level even when the setpoint is reached. '
-          h(52)=' '
-          H(53)='If you do not wish cooling use a high clg set point.'
-          H(54)='A 0 deg.C cooling setpoint does NOT turn it off. '
-          H(55)=' '
-          H(56)='You are given the option to discard changes when you '
-          H(57)='exit the period. '
-          nctlhelp=57
+          h(15)='PID action combines all the above. As with real PID'
+          h(16)='controllers, this controllerneeds to be tuned to the'
+          h(17)='zone:'
+          h(18)='  * overshoots can be caused by excessive integral'
+          h(19)='    action;'
+          h(20)='  * continuous oscillations can be caused by'
+          h(21)='    excessive derivitive action.'
+          h(22)=' '
+          h(23)='These controls are best used in association with'
+          h(24)='short simulation time steps.'
+          h(25)=' '
+          H(26)='If the minimium heating (or cooling) capacity is > 0'
+          H(27)='then heating (or cooling) will persist even when'
+          H(28)='none is called for.'
+          H(29)=' '
+          H(30)='Heating (or cooling) may be disabled by setting a'
+          H(31)='correspondingly low (or high) set point or by setting'
+          H(32)='the corresponding capacity to zero.'
+          nctlhelp=32
           menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
@@ -6303,23 +6250,15 @@ C Depending on the current number of miscel items also do humidity.
         elseif(iclaw.eq.7)then
 
 C A multi-stage controller with hysteresis.
-          h(1)='A multi-stage controller with hysteresis has a'
-          h(2)='base heating and cooling capacity and, for each'
-          h(3)='three stages of increating capacity (e.g. stage'
-          h(4)='two must have a greater capacity or at least the'
-          h(5)='same capacity as stage one).'
-          h(6)=' '
-          h(7)='Setpoints are defined in terms of a temperature '
-          h(8)='and a deadband (greater than or equal to zero C).'
-          h(9)=' '
-          h(10)='The logic switches to the least stage that will'
-          h(11)='maintained the desired temperature. It will'
-          h(12)='step up and down between stages looking for an'
-          h(13)='appropriate capacity. '
-          H(14)=' '
-          H(15)='You are given the option to discard changes when you '
-          H(16)='exit the period. '
-          nctlhelp=16
+          h(1)='A multi-stage controller (with hysteresis) has'
+          h(2)='increasing (or equal) heating and cooling capacities'
+          h(3)='defined for several stages. Stage set-points are'
+          h(4)='then defined.'
+          h(5)=' '
+          h(6)='The control logic switches to the least stage that'
+          h(7)='will maintain the desired temperature, stepping up'
+          h(8)='and down between stages as appropriate.'
+          nctlhelp=8
           nmenulines=13    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
@@ -6376,31 +6315,23 @@ C A multi-stage controller with hysteresis.
         elseif(iclaw.eq.8)then
 
 C Variable supply temperature with limit constraints.
-          h(1)='This control represents an idealised air based '
-          h(2)='environmental control system that delivers air '
-          h(3)='at a fixed flow rate (same for heating & cooling'
-          h(4)='operation). The heating supply temperature varies'
-          h(5)='up to a maximum setpoint and the cooling supply'
-          h(6)='temperature varies down to a minimum setpoint.'
-          h(7)=' '
-          h(8)='The room heating and cooling setpoints (typically'
-          h(9)='defined so there is a deadband) are met on the basis'
-          h(10)='of the heating and/or cooling implicit at the '
-          h(11)='defined flow rate and supply temperature (i.e.'
-          h(12)='the capacity and efficiency of the supply is not'
-          h(13)='defined). You have the option to specify that cooling'
-          h(14)='is not available. '
-          h(15)=' '
-          h(16)='This control law can be used to check whether an '
-          h(17)='air based system is able to meet demand patterns in '
-          h(18)='a room prior to specification of a detailed component'
-          h(19)='model.'
-          h(20)=' '
-          h(21)='The output performance data is ??'
-          h(22)=' '
-          H(23)='You are given the option to discard changes when you '
-          H(24)='exit the period. '
-          nctlhelp=24
+          h(1)='This control represents an idealised, air based'
+          h(2)='system that delivers air at a fixed flow rate (same'
+          h(3)='for heating & cooling). The heating supply temperature'
+          h(4)='varies up to a maximum set-point and the cooling'
+          h(5)='supply temperature varies down to a minimum set-point.'
+          h(6)=''
+          h(7)='The room heating and cooling set-points (typically'
+          h(8)='defined so that there is a deadband) are met on the'
+          h(9)='basis of the heating and/or cooling implicit at the'
+          h(10)='defined flow rate and supply temperature, i.e. the'
+          h(11)='capacity and efficiency of the supply is not defined.'
+          h(12)=' '
+          h(13)='This control can be used to check whether an air'
+          h(14)='based system is able to meet demand patterns in a'
+          h(15)='room prior to specification of a detailed component'
+          h(16)='model.'
+          nctlhelp=16
           nmenulines=7    ! set to the last cm index used.
           menu(1)=' '
           prompt1(1)=' '
@@ -6807,7 +6738,7 @@ C and cooling (initial part of the input is similar to control 10).
             prompt2(7)='and Birtles (value three) '
             ndec(7)=0; vmin(7)=0.0; vmax(7)=3.0; vdef(7)=1.0
             menu(8)='Initial guess for start (hr)'
-            prompt1(8)='Initial guess for start time (hours)'
+            prompt1(8)='Initial guess for start time (hr)'
             prompt2(8)=' '
             ndec(8)=3; vmin(8)=0.0; vmax(8)=24.0; vdef(8)=4.0
             menu(9)=' '

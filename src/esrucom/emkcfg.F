@@ -344,7 +344,7 @@ C put the connections.
       if(INDCFG.EQ.0)then
         if(NCOMP.eq.1.and.LGEOM(1)(1:4).ne.'dumm')then
           INDCFG=1
-          call edisp(iuout,'Upgrading from registration to zone...')
+C          call edisp(iuout,'Upgrading from registration to zone.')
           write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
   289     H(1)='The surface topology of the model is held in'
           H(2)='a connections file.'
@@ -359,20 +359,20 @@ C put the connections.
           endif
           if(LPNF(1:4).ne.'UNKN'.and.LPNF(1:2).ne.'  ')then
             INDCFG=3
-            call edisp(iuout,'Upgrading from zone to zone + plant...')
+C            call edisp(iuout,'Upgrading from zone to zone + plant.')
           endif
         elseif(ncomp.gt.1)then
           INDCFG=1
-          call edisp(iuout,'Upgrading from registration to zone...')
+C          call edisp(iuout,'Upgrading from registration to zone.')
           if(LPNF(1:4).ne.'UNKN'.and.LPNF(1:2).ne.'  ')then
             INDCFG=3
-            call edisp(iuout,'Upgrading from zone to zone + plant...')
+C            call edisp(iuout,'Upgrading from zone to zone + plant.')
           endif
         endif
       elseif(INDCFG.EQ.1)then
         if(LPNF(1:4).ne.'UNKN'.and.LPNF(1:2).ne.'  ')then
           INDCFG=3
-          call edisp(iuout,'Upgrading from zone to zone + plant...')
+C          call edisp(iuout,'Upgrading from zone to zone + plant.')
         endif
       endif
 
