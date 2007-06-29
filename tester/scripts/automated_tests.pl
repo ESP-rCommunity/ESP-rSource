@@ -425,32 +425,36 @@ stream_out("Done\n");
 
 my %src_dirs;
 
-while ( my ($key, $revision ) = each  %revisions ) {
+if ( $test_forcheck || $test_builds || $test_regression ){
 
-  # Label source directories "src_1, src_2", and save in hash
-  $src_dirs{$key} ="src_$key";
+  while ( my ($key, $revision ) = each  %revisions ) {
   
-  # Progress update 
-  stream_out("Checking out $revision from ESP-r central...");
-  
-  # Split revision from format branch@rev into 'branch' and 'rev'.
-  my ( $branch, $rev ) = split /\@/, $revision; 
-  
-  # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
-  for ($rev) {
-    SWITCH: {
-      if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
-      if ( /HEAD/ )     { $rev ="";       last SWITCH; }
-      if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
-      fatalerror{"Invalid revision $revision!\n"};
+    # Label source directories "src_1, src_2", and save in hash
+    $src_dirs{$key} ="src_$key";
+    
+    # Progress update 
+    stream_out("Checking out $revision from ESP-r central...");
+    
+    # Split revision from format branch@rev into 'branch' and 'rev'.
+    my ( $branch, $rev ) = split /\@/, $revision; 
+    
+    # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
+    for ($rev) {
+      SWITCH: {
+        if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
+        if ( /HEAD/ )     { $rev ="";       last SWITCH; }
+        if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
+        fatalerror{"Invalid revision $revision!\n"};
+      }
     }
+    
+    # Pull down source.
+    if ( ! -d $src_dirs{$key} ){
+      execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+    }
+    stream_out("Done\n");
   }
-  
-  # Pull down source.
-  if ( ! -d $src_dirs{$key} ){
-    execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
-  }
-  stream_out("Done\n");
+
 }
 
 #------------------------------------------------------------
@@ -778,23 +782,36 @@ if ( $test_regression ) {
 # Format output 
 #---------------------------------------
 
+
+if ( $forcheck_fail || $build_fail || $regression_fail ){ $global_fail = 1; }
+
+
+if ( ! $test_forcheck  ) { $forcheck_fail  = "Skipped"; }
+if ( ! $test_builds    ) { 
+                           $X11_fail        = "Skipped"; 
+                           $GTK_fail        = "Skipped"; 
+                           $noX_fail        = "Skipped"; 
+                                                         }
+if ( ! $test_regression ){ $regression_fail = "Skipped"; }
+
 my $output; 
 $output = "$res_header";
-
 $output .= "Test summary:\n";
 $output .= "  - Reference version: $revisions{\"reference\"}\n";
 $output .= "  - Test version:      $revisions{\"test\"}\n";
 $output .= "------------------------------------------------\n";
 $output .= "TEST                                    RESULT\n";
 $output .= "------------------------------------------------\n";
-$output .= "Static analyis (Forcheck)                 ".passfail($forcheck_fail)."\n";
-$output .= "Compilation: X11 build                    ".passfail($X11_fail)."\n";
-$output .= "             GTK build                    ".passfail($GTK_fail)."\n";
-$output .= "             X-less build                 ".passfail($noX_fail)."\n";
-$output .= "Regression test                           ".passfail($regression_fail)."\n";
+$output .= "Static analyis (Forcheck)               ".passfail($forcheck_fail)."\n";
+$output .= "Compilation: X11 build                  ".passfail($X11_fail)."\n";
+$output .= "             GTK build                  ".passfail($GTK_fail)."\n";
+$output .= "             X-less build               ".passfail($noX_fail)."\n";
+$output .= "Regression test                         ".passfail($regression_fail)."\n";
 $output .= "------------------------------------------------\n";
 
-$output .= "\n$results\n";
+if ( defined ($results) ){
+  $output .= "\n$results\n";
+}
 
 
   
@@ -808,10 +825,10 @@ if ( scalar(@addresses) > 0 ){
   
   my ($subject);
   
-  if ( $forcheck_fail || $build_fail || $regression_fail  ){
-    $subject = "ESP-r automated test: Fail"
+  if ( $global_fail  ){
+    $subject = "ESP-r automated test: Fail ";
   }else{
-    $subject = "ESP-r automated test: Pass"
+    $subject = "ESP-r automated test: Pass ";
   }
   
   foreach my $address (@addresses){
@@ -840,10 +857,12 @@ execute("rm -fr $TestFolder");
 sub passfail($){
   my ($result) =@_;
   my $string;
-  if ($result){ 
-    $string = "X"; 
+  if ($result =~ /1/ ){ 
+    $string = "   X"; 
+  }elsif ( $result =~ /0/ ){
+    $string = "   -"; 
   }else{
-    $string = "-"; 
+    $string = $result; 
   }
   return $string;
 }
