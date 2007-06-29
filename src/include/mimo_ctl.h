@@ -5,10 +5,10 @@ C-----------------------------------------------------------------------
       common/MIMO_ctl/bMIMOActive,fMIMOVersion
 
       common/MIMO_sensors/iSenCount, cSenName, iSenLoc, 
-     &                    cSenProp
+     &                    cSenProp, cSenDomain, cSenObject
       
       common/MIMO_actuators/iActCount, cActName, iActLoc, cActVariable,
-     &                      fActMIN, fActMAX   
+     &                      fActMIN, fActMAX, cActDomain, cActObject
      
       
       common/MIMO_daytypes/iDayCount, cDayName, 

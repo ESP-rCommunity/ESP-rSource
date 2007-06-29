@@ -25,6 +25,9 @@ C Date:      June 22, 2007
 C Author:    Alex Ferguson
 C Copyright: Natural Resources Canada, (2007)
 C
+C This file contains core functionality associted 
+C with the multiple-input/multiple-output controls.
+C
 C=======================================================
 
 C=======================================================
@@ -39,13 +42,15 @@ C
 C    - fMIMOActuator: Apply specified control signal to 
 C          given actuator.
 C
-C    - MIMO_Invoke_Ctl: Invoke control loops 
+C    - MIMO_Apply_Loops: Invoke control loops 
 C
-C    - MIMO_Invoke_Plt_Ctl, 
-C      MIMO_Invoke_Bld_Ctl: 
-C          domain specific interfaces to MIMO_Invoke_Ctl
+C    - MIMO_Apply_Plt_Loops, 
+C      MIMO_Apply_Bld_Loops: 
+C          domain specific interfaces to MIMO_Apply_Loops
 C
-C    - bLawApplicable: Determine if control law is 
+C    - MIMO_Invoke_Law: Invoke a specified control law.
+C
+C    - bMIMOLawApplicable: Determine if control law is 
 C          applicable in current domain 
 C
 C    - mimo_debug: interface for rudimentary debugging
@@ -150,10 +155,10 @@ C.....Initialize counters.
 C----------------------------------------------------------------------
 C     Contextual message
 C----------------------------------------------------------------------
-      write (cContext, '(A)') ' Parsing MIMO section of control file...'
-      call edisp ( iuout, ' ' )
-      call edisp ( iuout, cContext)
-      cContext = ' ' 
+      write (cContext, '(A)') ' MIMO Controls:'
+      write (cMsg, '(A)') ' Parsing MIMO section of control file...'
+      call UsrMsg ( cContext, cMsg, '-')
+      
 
 C-----------------------------------------------------------------------
 C     Loop through file 
@@ -314,7 +319,9 @@ C.........NAME, DOMAIN, OBJECT,  w, x, y, min val, max val
             iActCount = iActCount + 1
             cActName ( iActCount ) = cLnWords(1)(1:24)
             cActDomain ( iActCount ) = cLnWords(2)(1:3)
-            cActObject ( iActCount ) = cLnWords(3)(1:3)
+            cActObject ( iActCount ) = cLnWords(3)(1:12)
+            print*, ">>> ",iActCount,
+     &            cLnWords(2)(1:3), cActDomain(iActCount)
 C...........Location data: 1-3
             do ii = 1, mMIMOLoc
               iActLoc  ( iActCount, ii) =
@@ -778,11 +785,11 @@ C........Yes. Warn user and delete temporary file.
       end 
       
       
-C--------------------- procedure MIMO_Invoke_Ctl -----------------------
+C--------------------- procedure MIMO_Apply_Loops ----------------------
 C     Determine which control loops are relevant in the current context,
 C     and invoke them      
 C-----------------------------------------------------------------------
-      subroutine MIMO_Invoke_Ctl ( cDomain, iLoc_1, iLoc_2, iLoc_3 )
+      subroutine MIMO_Apply_Loops ( cDomain, iLoc_1, iLoc_2, iLoc_3 )
       implicit none 
 #include "mimo_ctl.h"
 C-----------------------------------------------------------------------      
@@ -797,8 +804,14 @@ C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
       
-      integer ii                      ! Counter
+      integer iLoop, iActuator        ! Counters
+      integer iAct_Index              ! Index of an actuator.
       character*248 cTemp             ! Temp buffer
+      
+C-----------------------------------------------------------------------
+C     References: 
+C-----------------------------------------------------------------------
+      logical bMIMOLawApplicable 
       
 C-----------------------------------------------------------------------
 C     Write contextual buffer. cTemp is used to guard against 
@@ -808,31 +821,81 @@ C-----------------------------------------------------------------------
       write ( cTemp, '(A,I2,A,I2,A,I2,A,A,A)' ) 
      &  ' Invoking MIMO control functions for location ', iLoc_1, ',',
      &  iLoc_2,',', iLoc_3, ' in domain "', cDomain(1:3),'"'
-     
+      
       write ( cContext, '(A)' ) cTemp(1:124)
-      call mimo_debug ( cContext )
+      
+!       call mimo_debug ( cContext )
 
 C-----------------------------------------------------------------------
-C     Loop through specified controls. If 
+C     Loop through control loops, and determine:
+C
+C       - if they contain a daytype and period matching the current 
+C         simulation time, and
+C
+C       - if they contain an actuator within the current domain.
+C
+C     If so, invoke control.
 C-----------------------------------------------------------------------
-      if ( cDomain(1:3) == 'bld' ) then
+
+C.....Loop through control loops,
+      do iLoop = 1, iLoopCount 
       
-      elseif ( cDomain(1:3) == 'plt' ) then
+C.......Check if loop applies to this period/day-type combination      
+        if ( bMIMOLawApplicable ( iLoop ) ) then
       
-      endif 
+C.........If so, loop through actuators      
+          do iActuator = 1, iLoopActuatorCount ( iLoop )
+          
+            iAct_Index = iLoopActuators(iLoop,iActuator)
+C...........Check if actuator is within specified domain         
+            if ( cActDomain( iAct_Index )(1:3) == cDomain(1:3) ) then
+            
+C.............If so, invoke loop's control law
+
+              call MIMO_invoke_law ( iLoopLaw ( iLoop ) )
+
+            endif 
+          
+          enddo 
+      
+        endif 
+
+      enddo 
 
       return 
       end 
       
-C--------------------- procedure MIMO_Invoke_Plt_Ctl -------------------
-C     This is a simple interface to MIMO_Invoke_Ctl.      
+C--------------------- function bMIMOLawApplicable ---------------------
+C     
 C-----------------------------------------------------------------------
-      subroutine MIMO_Invoke_Plt_Ctl (  )
+
+      logical function bMIMOLawApplicable ( iLoop ) 
+      implicit none 
+#include "mimo_ctl.h" 
+C-----------------------------------------------------------------------
+C     Passed arguements      
+C-----------------------------------------------------------------------
+      
+      integer iLoop 
+      
+C-----------------------------------------------------------------------
+C     This facility is presently unsupported.
+C-----------------------------------------------------------------------
+      bMIMOLawApplicable = .true.
+      
+      
+      return
+      end 
+
+C--------------------- procedure MIMO_Apply_Plt_Loops ------------------
+C     This is a simple interface to MIMO_Apply_Loops.      
+C-----------------------------------------------------------------------
+      subroutine MIMO_Apply_Plt_Loops (  )
       implicit none 
 C-----------------------------------------------------------------------      
 C     Local variables 
 C-----------------------------------------------------------------------            
-      
+
       integer iLoc_1, iLoc_2, iLoc_3  ! Integers specifying location within 
                                       !    domain (dummy variables )
 C.....Initialize dummy varaibles                                      
@@ -841,7 +904,7 @@ C.....Initialize dummy varaibles
       iLoc_3 = 0 
 
 C.....Invoke plant control loops.
-      call MIMO_Invoke_Ctl ( 'plt', iLoc_1, iLoc_2, iLoc_3  )
+      call MIMO_Apply_Loops ( 'plt', iLoc_1, iLoc_2, iLoc_3  )
       
       return
       end 
@@ -946,9 +1009,10 @@ C----------------------------------------------------------------------
       logical bDebug
       parameter ( bDebug = .true. )
       integer iLen
-      iLen = max(1, min(116,lnblnk(cDebug_msg)))
+      
       if (bDebug) then
-        
+      
+         iLen = max(1, min(116,lnblnk(cDebug_msg)))  
          write(cBuffer, '(A,A)') ' MIMO: ', 
      &            cDebug_msg(1:iLen)
      

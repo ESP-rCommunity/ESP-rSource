@@ -13,7 +13,8 @@ PROG = b2e$(EXE)
 
 OBJECTS = b2e.o c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o simcomis.o sort.o startup.o tdfile.o mimo_ctl.o \
+	nwkrewr.o pltcfg.o simcomis.o sort.o startup.o tdfile.o mimo_ctl.o  \
+	mimo_laws.o \
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -75,7 +76,11 @@ tdfile.F:
 	
 mimo_ctl.F:
 	rm -f mimo_ctl.F
-	ln -s $(CTLdir)/mimo_ctl.F .	
+	ln -s $(CTLdir)/mimo_ctl.F .
+
+mimo_laws.F:
+	rm -f mimo_laws.F
+	ln -s $(CTLdir)/mimo_laws.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -86,5 +91,5 @@ install:
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
-	eroper.F esystem.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F mimo_ctl.F \
+	eroper.F esystem.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F mimo_ctl.F mimo_laws.F \
 

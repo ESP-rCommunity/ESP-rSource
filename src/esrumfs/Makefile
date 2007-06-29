@@ -10,7 +10,7 @@ PROG = mfs$(EXE)
 OBJECTS = mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
 	  fctlc.o initalc.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
 	  mfinit.o mfmach.o mfmode.o mfplot.o mfrlst.o mfrset.o mftabl.o \
-	  mfutil.o psychro.o startup.o mimo_ctl.o
+	  mfutil.o psychro.o startup.o mimo_ctl.o mimo_laws.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -43,6 +43,14 @@ startup.F:
 mimo_ctl.F:
 	rm -f mimo_ctl.F
 	ln -s $(CTLdir)/mimo_ctl.F .
+	
+mimo_ctl.F:
+	rm -f mimo_ctl.F
+	ln -s $(CTLdir)/mimo_ctl.F .
+	
+mimo_laws.F:
+	rm -f mimo_laws.F
+	ln -s $(CTLdir)/mimo_laws.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -53,5 +61,5 @@ install:
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F initalc.F psychro.F \
-	startup.F mimo_ctl.F
+	startup.F mimo_ctl.F mimo_laws.F
 	

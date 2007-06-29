@@ -232,8 +232,9 @@ C Trace output
      &   ITRACE(40).NE.0) WRITE(ITU,*) ' Leaving subroutine CONTRL'
 
   999 CONTINUE 
+  
 C MIMO Control: 
-      call MIMO_Invoke_Plt_Ctl()
+      call MIMO_Apply_Plt_Loops( )
       
       RETURN
       END
