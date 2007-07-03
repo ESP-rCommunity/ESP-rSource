@@ -320,8 +320,6 @@ C.........NAME, DOMAIN, OBJECT,  w, x, y, min val, max val
             cActName ( iActCount ) = cLnWords(1)(1:24)
             cActDomain ( iActCount ) = cLnWords(2)(1:3)
             cActObject ( iActCount ) = cLnWords(3)(1:12)
-            print*, ">>> ",iActCount,
-     &            cLnWords(2)(1:3), cActDomain(iActCount)
 C...........Location data: 1-3
             do ii = 1, mMIMOLoc
               iActLoc  ( iActCount, ii) =
