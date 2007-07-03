@@ -53,8 +53,6 @@ C
 C    - bMIMOLawApplicable: Determine if control law is 
 C          applicable in current domain 
 C
-C    - mimo_debug: interface for rudimentary debugging
-C
 C    - bParseDate: Parse an ISO date string 
 C
 C    - bMatchNameToIndex: Rerurn indicies of matching rows 
@@ -252,6 +250,8 @@ C.............Increment loop counter
               
 C.............Initialize data counter for this loop. 
               iLoopDataCount(iLoopCount) = 0
+              iLoopSensorCount(iLoopCount) = 0
+              iLoopActuatorCount(iLoopCount) = 0
               
             endif 
           endif   
@@ -260,10 +260,8 @@ C.........LOOP DATA block
           if ( cLnWords(2)(1:4) == 'DATA' ) then
             if ( cLnWords(3)(1:3) == 'END' ) then 
               bLOOPDATA_block_open = .false. 
-              call mimo_debug('DATA block closed')
             else 
               bLOOPDATA_block_open = .true. 
-              call mimo_debug('DATA block opened')
             endif 
           endif   
 
@@ -648,100 +646,136 @@ C...............Attempt to match periods to list
             
 
           
-          elseif ( cLnWords(1)(1:7) == 'SENSORS'   ) then
-          
-          
-C...........LOOP SENSORS: Read a list of sensor names 
-            if ( iWdCount - 1 <= mMIMOList ) then
-                
-                do ii = 2, iWdCount
-                
-                  cLoopSensors(iLoopCount, ii-1) = cLnWords(ii)(1:24)
-                
-                enddo
-                
-                iLoopSensorCount ( iLoopCount ) = iWdCount - 1
-                
-C...............Attempt to match specified sensors to list
-                
-                write (cBuffer, '(A)' ) 'sensor'
-                if (.not. bMatchNameToIndex ( 
-     &                      cBuffer,
-     &                      iLoopCount,
-     &                      iLoopSensorCount,
-     &                      iSenCount,
-     &                      cLoopSensors,
-     &                      cSenName,
-     &                      iLoopSensors      ) ) then 
-                
-                  bFatal_Error = .true. 
-                  write (cMsg, '(A,I2)')
-     &              ' Could not resolve sensors for loop #', 
-     &                    iLoopCount
-                  call edisp(iUout, cMsg)
-                endif 
-                
-                
-            else
-             
-              bFatal_Error = .true. 
-              
-              write (cMsg, '(A,I2,A,I2,A,I2,A)')
-     &          ' Too many sensors were specified for loop #', 
-     &                iLoopCount, ' (', mMIMOList, 
-     &          ' are permitted, but ',iWdCount - 1,
-     &          ' were provided).'
-     
-              call edisp(iUout, cMsg)
+          elseif ( cLnWords(1)(1:6) == 'SENSOR'   ) then
+
+C...........Sensor definition must contain at least 2 words. 
+
+            if ( iWdCount >= 2 ) then
             
-            endif ! <- matches if ( iWdCount - 1 <= mMIMOList ) then
-          
-          
-          elseif ( cLnWords(1)(1:9) == 'ACTUATORS' ) then
-
-C...........LOOP ACTUATORS: Read a list of actuator names 
-            if ( iWdCount - 1 <= mMIMOList ) then
-                
-                do ii = 2, iWdCount
-                
-                  cLoopActuators(iLoopCount, ii-1) = cLnWords(ii)(1:24)
-                
-                enddo
-                
-                iLoopActuatorCount ( iLoopCount ) = iWdCount - 1
-                
-C...............Attempt to match specified actuators to list
-                
-                write (cBuffer, '(A)' ) 'actuator'
-                if (.not. bMatchNameToIndex ( 
-     &                      cBuffer,
-     &                      iLoopCount,
-     &                      iLoopActuatorCount,
-     &                      iActCount,
-     &                      cLoopActuators,
-     &                      cActName,
-     &                      iLoopActuators      ) ) then 
-                
-                  bFatal_Error = .true. 
-                  write (cMsg, '(A,I2)')
-     &              ' Could not resolve actuators for loop #', 
-     &                    iLoopCount
-                  call edisp(iUout, cMsg)
-                endif 
-                
-            else
-             
-              bFatal_Error = .true. 
+C.............Make sure we don't exceed number of defined sensors            
+              if ( iLoopSensorCount ( iLoopCount ) < mMIMOList ) then
               
-              write (cMsg, '(A,I2,A,I2,A,I2,A)')
-     &          ' Too many actuators were specified for loop #', 
-     &                iLoopCount, ' (', mMIMOList, 
-     &          ' are permitted, but ',iWdCount - 1,
-     &          ' were provided).'
-   
-              call edisp(iUout, cMsg)
+C...............LOOP SENSORS: Read sensor name and a list of data
+               
+                iLoopSensorCount ( iLoopCount ) = 
+     &                     iLoopSensorCount ( iLoopCount ) + 1
+               
+                  
+C...............First get sensor name                 
+                  cLoopSensors(iLoopCount,iLoopSensorCount (iLoopCount))
+     &                = cLnWords(2)(1:24)
+                  
+C.................Then get associated data                
+                  
+                  iLoopSensorDataCount ( iLoopCount,  
+     &                               iLoopSensorCount ( iLoopCount ) )
+     &               = iWdCount - 2 
+                  
+                  do ii = 3, iWdCount 
+                    
+                    fLoopSensorData ( iLoopCount, 
+     &                  iLoopSensorCount ( iLoopCount ), ii ) = 
+     &                             fCtoR ( cLnWords(ii),bError )
+                  
+                  
+                    if (bError) then 
+              
+                      bFatal_Error = .true. 
+                      write (cMsg, '(A,A,A,I2,A)')
+     &                  ' Could not convert sensor data item  (', 
+     &                         cLnWords(ii)(1:lnblnk(cLnWords(ii))),
+     &                  ') in control loop #', iLoopCount, '.'
+                      call edisp(iUout, cMsg)
 
-            endif 
+                    endif
+                  
+                  
+                  enddo 
+                  
+                
+           
+                  
+              else
+             
+                bFatal_Error = .true. 
+              
+                write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &            ' Too many sensors were specified for loop #', 
+     &                  iLoopCount, ' (', mMIMOList, 
+     &            ' are permitted, but ',iWdCount - 1,
+     &            ' were provided).'
+     
+                call edisp(iUout, cMsg)
+              
+              endif  ! <- matches ( iLoopSensorCount ( iLoopCount ) < mMIMOList ) then
+            
+            endif ! <- matches if ( iWdCount >= 2  ) then
+          
+          
+          elseif ( cLnWords(1)(1:8) == 'ACTUATOR' ) then
+
+C...........Actuator definition must contain at least 2 words. 
+
+            if ( iWdCount >= 2 ) then
+            
+C.............Make sure we don't exceed number of defined Actuators            
+              if ( iLoopActuatorCount ( iLoopCount ) < mMIMOList ) then
+              
+C...............LOOP ActuatorS: Read Actuator name and a list of data
+               
+                iLoopActuatorCount ( iLoopCount ) = 
+     &                     iLoopActuatorCount ( iLoopCount ) + 1
+               
+                  
+C...............First get Actuator name                 
+                cLoopActuators(iLoopCount,
+     &                      iLoopActuatorCount (iLoopCount))
+     &                = cLnWords(2)(1:24)
+                  
+C.................Then get associated data                
+                  
+                iLoopActuatorDataCount ( iLoopCount,  
+     &                               iLoopActuatorCount ( iLoopCount ) )
+     &               = iWdCount - 2 
+                  
+                do ii = 3, iWdCount 
+                    
+                  fLoopActuatorData ( iLoopCount, 
+     &                iLoopActuatorCount (iLoopCount), ii ) = 
+     &                             fCtoR ( cLnWords(ii),bError )
+                  
+                  
+                  if (bError) then 
+              
+                    bFatal_Error = .true. 
+                    write (cMsg, '(A,A,A,I2,A)')
+     &                  ' Could not convert actuator data item  (', 
+     &                         cLnWords(ii)(1:lnblnk(cLnWords(ii))),
+     &                  ') in control loop #', iLoopCount, '.'
+                    call edisp(iUout, cMsg)
+
+                  endif
+                  
+                  
+                enddo 
+ 
+              else
+             
+                bFatal_Error = .true. 
+              
+                write (cMsg, '(A,I2,A,I2,A,I2,A)')
+     &            ' Too many actuators were specified for loop #', 
+     &                  iLoopCount, ' (', mMIMOList, 
+     &            ' are permitted, but ',iWdCount - 1,
+     &            ' were provided).'
+     
+                call edisp(iUout, cMsg)
+              
+              endif  ! <- matches ( iLoopActuatorCount ( iLoopCount ) < mMIMOList ) then
+            
+            endif ! <- matches if ( iWdCount >= 2  ) then
+          
+          
             
           else 
           
@@ -760,6 +794,54 @@ C.,,........Token name is invalid
          
             
       enddo
+C-----------------------------------------------------------------------
+C     Loop through loops, and match specified sensors and actuators to 
+C     definitions
+C-----------------------------------------------------------------------      
+      do ii = 1, iLoopCount
+C.................Attempt to match specified sensors to list
+        
+        write (cBuffer, '(A)' ) 'sensor'
+        if (.not. bMatchNameToIndex ( 
+     &              cBuffer,
+     &              iLoopCount,
+     &              iLoopSensorCount,
+     &              iSenCount,
+     &              cLoopSensors,
+     &              cSenName,
+     &              iLoopSensors      ) ) then 
+     
+          bFatal_Error = .true. 
+          write (cMsg, '(A,I2)')
+     &      ' Could not resolve sensors for loop #', 
+     &            iLoopCount
+          call edisp(iUout, cMsg)
+        endif            
+     
+C.......Attempt to match specified Actuators to list
+        
+        write (cBuffer, '(A)' ) 'actuator'
+        if (.not. bMatchNameToIndex ( 
+     &              cBuffer,
+     &              iLoopCount,
+     &              iLoopActuatorCount,
+     &              iActCount,
+     &              cLoopActuators,
+     &              cActName,
+     &              iLoopActuators      ) ) then 
+        
+          bFatal_Error = .true. 
+          write (cMsg, '(A,I2)')
+     &      ' Could not resolve actuators for loop #', 
+     &            iLoopCount
+          call edisp(iUout, cMsg)
+        endif      
+      
+      enddo 
+        
+
+      
+      
 C-----------------------------------------------------------------------
 C     Were fatal errors encountered?
 C-----------------------------------------------------------------------      
@@ -802,14 +884,30 @@ C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
       
-      integer iLoop, iActuator        ! Counters
-      integer iAct_Index              ! Index of an actuator.
-      character*248 cTemp             ! Temp buffer
+      integer iLoop, iActuator, iSensor ! Counters
+      
+      character*248 cTemp               ! Temp buffer
+      
+      real fSensor_vals(mMIMOList)      ! Values of sensed variables
+      real fActuator_vals(mMIMOList)    ! Values of actuator inputs
+      
+      integer iSensorIndex              ! Index of a given sensor.
+      integer iActuatorIndex            ! Index of an actuator.
+      
+      logical bActuators_in_domain      ! Flag indicating if a loop's 
+                                        !  actuators reside in the 
+                                        !  specified domain
       
 C-----------------------------------------------------------------------
 C     References: 
 C-----------------------------------------------------------------------
-      logical bMIMOLawApplicable 
+      
+      logical bMIMOLawApplicable        ! logical function indicating 
+                                        ! if control law is applicable
+      
+      real fMIMOSensor                  ! real function returning 
+                                        !   the sensed value of a given
+                                        !   sensor 
       
 C-----------------------------------------------------------------------
 C     Write contextual buffer. cTemp is used to guard against 
@@ -822,7 +920,6 @@ C-----------------------------------------------------------------------
       
       write ( cContext, '(A)' ) cTemp(1:124)
       
-!       call mimo_debug ( cContext )
 
 C-----------------------------------------------------------------------
 C     Loop through control loops, and determine:
@@ -835,30 +932,58 @@ C
 C     If so, invoke control.
 C-----------------------------------------------------------------------
 
-C.....Loop through control loops,
+C.....Loop through control loops...
       do iLoop = 1, iLoopCount 
       
-C.......Check if loop applies to this period/day-type combination      
-        if ( bMIMOLawApplicable ( iLoop ) ) then
+        bActuators_in_domain = .false.   ! Initialize flag. 
       
-C.........If so, loop through actuators      
+C.......Loop through this loop's actuators, and check if actuator is within specified domain, and set 
+C.........flag to true if so.
+        do iActuator = 1, iLoopActuatorCount ( iLoop )
+        
+          iActuatorIndex = iLoopActuators(iLoop,iActuator)
+C.........Check if actuator is within specified domain, and set 
+C.........flag to true if so.
+          if ( cActDomain( iActuatorIndex )(1:3) == cDomain(1:3) ) then
+          
+            bActuators_in_domain = .true. 
+
+          endif 
+        
+        enddo 
+      
+C.......check if loop applies to this period/day-type combination, 
+C.......and if the cotnrol 
+        if ( bMIMOLawApplicable( iLoop ) 
+     &             .and. bActuators_in_domain ) then
+C.........If so, collect sensor info,
+          do iSensor = 1, iLoopSensorCount ( iLoop )
+        
+            iSensorIndex = iLoopSensors ( iLoop, iSensor ) 
+        
+            fSensor_vals ( iSensor ) = fMIMOSensor ( iSensorIndex )
+        
+          enddo             
+        
+C.........invoke loop's control law,
+
+          call MIMO_invoke_law ( iLoopLaw ( iLoop ), 
+     &                           fSensor_vals, 
+     &                           fActuator_vals         )
+     
+C.........And apply control signals to loop's actuators     
           do iActuator = 1, iLoopActuatorCount ( iLoop )
           
-            iAct_Index = iLoopActuators(iLoop,iActuator)
-C...........Check if actuator is within specified domain         
-            if ( cActDomain( iAct_Index )(1:3) == cDomain(1:3) ) then
+            iActuatorIndex = iLoopActuators ( iLoop, iActuator ) 
             
-C.............If so, invoke loop's control law
-
-              call MIMO_invoke_law ( iLoopLaw ( iLoop ) )
-
-            endif 
+            call MIMOActuator ( iActuatorIndex, 
+     &                          fActuator_vals( iActuator ) )
           
-          enddo 
+          enddo
       
-        endif 
+        endif  ! <- matches 'if ( bMIMOLawApplicable( iLoop ) && bActuators_in_domain ) then'
 
-      enddo 
+      enddo    ! <- matches ' iLoop = 1, iLoopCount '
 
       return 
       end 
@@ -918,6 +1043,7 @@ C-----------------------------------------------------------------------
 #include "mimo_ctl.h"
 #include "building.h"
 #include "plant.h"
+#include "CETC_definitions.h"
 C-----------------------------------------------------------------------      
 C     Passed arguements 
 C-----------------------------------------------------------------------      
@@ -932,94 +1058,199 @@ C----------------------------------------------------------------------
       integer iuout, iuin      ! channels for writing messages to screen      
       integer lnblnk
 
+C.....Plant present and future state variables
+      common/pcval/csvf,csvp
+      real csvf(mpnode,mpvar)   ! future time-row state variables
+      real csvp(mpnode,mpvar)   ! present time-row state variables
+      
+C.....Miscellaneous plant data       
+      common/c12ps/npcdat,ipofs1,ipofs2
+      integer npcdat(mpcom,9)      ! miscellaneous plant data
+      integer ipofs1(mcoefg)       ! not used in current context
+      integer ipofs2(mcoefg,mpvar) ! not used in current context    
+
+C.....Network & control data
+      common/c9/npcomp,nci,cdata
+      integer npcomp            ! number of plant components
+      integer nci(mpcom)        ! number of controls / component
+      real cdata(mpcom,mmiscd)  ! control data for each component        
+
 C-----------------------------------------------------------------------      
 C     Local variables 
 C-----------------------------------------------------------------------
       
       integer iPltComp             ! Index of plant component
-      integer iPltCompVar          ! Component specific index: 
-                                   !     node/variable/connection index
+      integer iPltNode             ! Index of node in plant component'
+      integer iPltCtl              ! Index of control loop in plt domain
       logical bFatal_Error         ! Error flag
       
 C-----------------------------------------------------------------------      
 C     Determine where sensor is located, and collect desired property.
-C     
+C
 C       iSenLoc( , 1) >= 0 : Sensor is in specified zone, or in 
 C                            the current zone.
 C
 C-----------------------------------------------------------------------      
       
-      write (cContext , '(A,I2,A)') ' MIMO control sensor # ', 
-     &           iSensor, ':'
+!       write (cContext , '(A,I2,A)') ' MIMO control sensor # ', 
+!      &           iSensor, ':'
       
             
-      if ( iSenLoc( iSensor , 1 ) >= 0 ) then
+      if ( cSenDomain(iSensor)(1:3) == 'bld'  ) then
       
       
-      elseif ( iSenLoc ( iSensor, 1 ) == -1 ) then  
+      elseif ( cSenDomain(iSensor)(1:3) == 'plt'  ) then  
+      
 C-----------------------------------------------------------------------
 C       Sensor location is in a plant component.
 C-----------------------------------------------------------------------      
-        iPltComp    = iSenLoc ( iSensor, 2 )   ! Component index
-        iPltCompVar = iSenLoc ( iSensor, 3 )   ! Pointer to sensed location
-        
-C.......The actual sesnor location depends on the sensed property
-        if  ( cSenProp( iSensor )(1:4) == 'TEMP' ) then 
-           
-        elseif  ( cSenProp( iSensor )(1:4) == 'FLOW' )  then
-C...........          
-        elseif  ( cSenProp( iSensor )(1:7) ==  'ADD-OUT' ) then
-          
-        elseif ( cSenProp( iSensor )(1:7) ==  'CTL-VAR' ) then
-          
-        else
-          
-          bFatal_Error = .true. 
-          write ( cMsg, '(A,A,A)' ) ' Sensed property "',
-     &      cSenProp( iSensor )(1:lnblnk( cSenProp( iSensor ) ) ),
-     &      '" is invalid.'
-          call UsrMsg (cContext, cMsg, 'W')
-          call UsrMsg (cContext, cMsg, 'F')
-          
-        endif 
-        
+        iPltComp    = iSenLoc ( iSensor, 1 )   ! Component index
       
-      endif  ! <- matches ' if ( iSenLoc( iSensor , 1 ) >= 0 ) then'
+        if ( cSenObject(iSensor)(1:9) == 'comp-node' ) then 
+        
+C-----------------------------------------------------------------------
+C         Sensor is attached to node in plant component.
+C-----------------------------------------------------------------------            
+          iPltNode  = NPcDat(iPltComp, 9 ) + iSenLoc( iSensor, 2 )    ! Node index 
+          
+          if ( cSenProp( iSensor )(1:4) == 'TEMP' ) then
+          
+C...........Return future state temperature of specified node
+            fMIMOSensor = csvf ( iPltNode, iPropTemp )
+          
+          elseif ( cSenProp (iSensor)(1:4) == 'ALL-FLOW' )  then
+          
+C...........Return sum of first, second and third phase flows. 
+          
+            fMIMOSensor =   csvf ( iPltNode, iProp1stFlow ) 
+     &                    + csvf ( iPltNode, iProp2ndFlow ) 
+     &                    + csvf ( iPltNode, iPropH2Flow  ) 
+     
+          elseif ( cSenProp (iSensor)(1:4) == '1ST-FLOW' )  then
+          
+C...........Return sum of first, second and third phase flows. 
+          
+            fMIMOSensor =   csvf ( iPltNode, iProp1stFlow ) 
 
+          elseif ( cSenProp (iSensor)(1:4) == '2ND-FLOW' )  then
+          
+C...........Return sum of first, second and third phase flows. 
+          
+            fMIMOSensor =   csvf ( iPltNode, iProp2NDFlow ) 
+            
+          elseif ( cSenProp (iSensor)(1:4) == 'H2-FLOW' )  then
+          
+C...........Return sum of first, second and third phase flows. 
+          
+            fMIMOSensor =   csvf ( iPltNode, iPropH2Flow )             
+          
+          endif 
+        
+        elseif ( cSenObject(iSensor)(1:4) == 'comp-ctl' ) then
+        
+C-----------------------------------------------------------------------
+C         Sensor is attached to plant component control loop.
+C----------------------------------------------------------------------- 
+          
+C.........Get plant component loop location.           
+          iPltCtl = iSenLoc ( iSensor, 2 ) 
+          
+C.........Return data control loop.           
+          fMIMOSensor = CData ( iPltComp, iPltCtl )
+        
+        endif
+
+      endif  ! <- matches ' if ( iSenLoc( iSensor , 1 ) >= 0 ) then'
+      
       return
       end
-C--------------------- subroutine mimo_debug ---------------------------
-C     Rudamentry debugging
-C-----------------------------------------------------------------------      
-      subroutine mimo_debug(cDebug_msg)
-      implicit none 
-C----------------------------------------------------------------------
+      
+      
+C----------------------- subroutine MIMOActuator -----------------------      
+C
+C     Take a control signal, and apply it to a given actuator. 
+C
+C     Inputs: iActuator - Index of sepcified actuator 
+C             fCtlValue - Control signal 
+C
+C     Outputs: None. 
+C-----------------------------------------------------------------------
+      subroutine MIMOActuator ( iActuator, fCtlValue ) 
+      implicit none
+#include "mimo_ctl.h"
+#include "plant.h"
+#include "building.h"
+C-----------------------------------------------------------------------
+C     Passed variables 
+C-----------------------------------------------------------------------
+      integer iActuator            ! Index of specified actuator
+      real fCtlValue               ! Signal to be imposed by actuator
+      
+C-----------------------------------------------------------------------
 C     ESP-r variables
-C----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iuout, iuin      ! channels for writing messages to screen      
-      integer lnblnk
-C----------------------------------------------------------------------
-C     Local variables
-C----------------------------------------------------------------------      
-      character*(*) cDebug_msg
-      character*124 cBuffer
-      logical bDebug
-      parameter ( bDebug = .true. )
-      integer iLen
-      
-      if (bDebug) then
-      
-         iLen = max(1, min(116,lnblnk(cDebug_msg)))  
-         write(cBuffer, '(A,A)') ' MIMO: ', 
-     &            cDebug_msg(1:iLen)
-     
-       call edisp ( iuout, cBuffer )
-       
-      endif 
+C-----------------------------------------------------------------------      
 
-      return 
+C.....Network & control data
+      common/c9/npcomp,nci,cdata
+      integer npcomp            ! number of plant components
+      integer nci(mpcom)        ! number of controls / component
+      real cdata(mpcom,mmiscd)  ! control data for each component     
+
+C-----------------------------------------------------------------------
+C     Local varibles 
+C-----------------------------------------------------------------------    
+      integer iPltComp, iPltCtl    ! Plant component and control indicies
+      real fCtlBounded             ! Truncated control signal 
+
+
+C-----------------------------------------------------------------------
+C     First, ensure the cotrol signal respects the actuator's 
+C     maximum and minimum values 
+C-----------------------------------------------------------------------
+  
+      fCtlBounded = fCtlValue
+      if ( fCtlBounded > fActMAX( iActuator ) ) 
+     &       fCtlBounded = fActMAX( iActuator )
+      if ( fCtlBounded < fActMIN( iActuator ) ) 
+     &       fCtlBounded = fActMIN( iActuator )
+     
+C-----------------------------------------------------------------------
+C     Now determine which domain the actuator lies in, and apply 
+C     control signal as appropriate. 
+C-----------------------------------------------------------------------
+      if ( cActDomain(iActuator)(1:3) == 'plt' ) then
+      
+C-----------------------------------------------------------------------
+C       Actuator lies within the plant domain 
+C-----------------------------------------------------------------------
+      
+        if ( cActObject(iActuator)(1:8) == 'comp-ctl' ) then
+        
+C-----------------------------------------------------------------------        
+C         Actuator is a plant component control 
+C-----------------------------------------------------------------------
+        
+          iPltComp = iActLoc ( iActuator, 1 )
+          iPltCtl  = iActLoc ( iActuator, 2 )
+          
+          CData ( iPltComp, iPltCtl ) = fCtlBounded 
+          
+        
+        else
+        
+        endif 
+      
+      
+      else 
+      
+      endif  
+     
+     
+      
+  
+      return
       end 
+
 C----------------------- function bParseDate ---------------------------      
 C     Read an ISO date (DD-MM or DD-MM-YYYY), and attempt to parse. 
 C

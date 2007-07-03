@@ -24,8 +24,10 @@ C-----------------------------------------------------------------------
      &                  iLoopPriority, 
      &                  iLoopDayTypeCount, cLoopDayTypes, iLoopDayTypes,
      &                  iLoopSensorCount, cLoopSensors, iLoopSensors,
+     &                      iLoopSensorDataCount, fLoopSensorData,
      &                  iLoopActuatorCount,cLoopActuators,
-     &                     iLoopActuators,
+     &                      iLoopActuators, fLoopActuatorData,
+     &                      iLoopActuatorDataCount,
      &                  iLoopDataCount, fLoopData
 
 
@@ -45,6 +47,12 @@ C.....MAX numbers of sensors, actuators, periods, day-types, loops...
       
       integer mMIMOControlLaws
       parameter ( mMIMOControlLaws = 1 )
+      
+      integer mMIMOSenData 
+      parameter ( mMIMOSenData = 8 )
+      
+      integer mMIMOActData 
+      parameter ( mMIMOActData = 8 )
       
 C.....Version info 
       real fMIMOVersion                             ! Version #      
@@ -104,10 +112,14 @@ C.....LOOPS
       integer iLoopSensorCount(mMIMOLoop)
       character*24 cLoopSensors(mMIMOLoop,mMIMOList)   ! Loop sensors (keyword)
       integer      iLoopSensors(mMIMOLoop,mMIMOList)   ! Loop sensors (index)
+      integer iLoopSensorDataCount(mMIMOLoop,mMIMOList)! # of sensor-specific data 
+      real fLoopSensorData(mMIMOLoop, mMIMOList, mMIMOSenData)    ! Sensor-specific set-points
       
       integer iLoopActuatorCount(mMIMOLoop)
       character*24 cLoopActuators(mMIMOLoop,mMIMOList) ! Loop Actuators (keyword)
       integer      iLoopActuators(mMIMOLoop,mMIMOList) ! Loop Actuators (index)
+      integer iLoopActuatorDataCount(mMIMOLoop,mMIMOList) ! # of actuator-specific data 
+      real fLoopActuatorData(mMIMOLoop,mMIMOList,mMIMOActData)  ! Actuator-specific set-points
       
       integer iLoopDataCount(mMIMOLoop)               ! # of data in loop
       real    fLoopData(mMIMOLoop,mMIMOData)          ! Data associated with loop
@@ -117,7 +129,7 @@ C.....CONTROLS
       integer iMIMOLawCount                     ! number of supported controls
       parameter ( iMIMOLawCount = 1 )
       
-      data cControlLawNames / 'AIMS_Control' /
+      data cControlLawNames / 'MIMO_OnOff' /
       
       
 C.....Misc varaibles
