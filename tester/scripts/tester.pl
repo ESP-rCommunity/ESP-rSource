@@ -377,8 +377,8 @@ $gSys_params{'time'} = "$Hour:$Min:$Sec";
 
 $gSys_params{'sys_type'} = `uname -m`;
 $gSys_params{'os_type'}  = `uname -s`.":".`uname -r`;
-$gSys_params{'username'} = $ENV{USER};
-$gSys_params{'hostname'} = $ENV{HOSTNAME};
+$gSys_params{'username'} = $ENV{'USER'};
+$gSys_params{'hostname'} = `uname -n`;
 
 #-------------------------------------------------------------------
 # Convert uname ouptut to a managable keyword.
@@ -1370,7 +1370,11 @@ sub create_report(){
 
 
   # Prepare summary
-  
+  if ( $gAll_tests_pass ){
+    push @output, " Overall result: Pass.";
+  }else{
+    push @output, " Overall result: Fail.";
+  }
   push @output, " ";
   push @output, " Summary of test results:";
   push @output, "   - '-' indicates test case passes";
@@ -3218,8 +3222,8 @@ sub resolve_path ($){
     $path =~ s/\/\//\//g;             # elimates double slashes
     $path =~ s/\/\.\//\//g;           # eliminates /./ characters
     while ( $path =~ /\.\./ ){
-      $path =~ s/\/[^\/]+\/..\//\//;  # resolves /path/to/../file paths
-      $path =~ s/^\/..\//\//;         # resolves /../ error 
+      $path =~ s/\/[^\/]+\/\.\.\//\//;  # resolves /path/to/../file paths
+      $path =~ s/^\/\.\.\//\//;         # resolves /../ error 
     }
   }
   return $path;

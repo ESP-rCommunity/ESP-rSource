@@ -2115,7 +2115,7 @@ C declare variables describing version and build information
       character cBase*8              ! Base version
       character cURL*256             ! Repository URL
       character cSource*32           ! Repository version
-      character cBranch*32           ! Branch name 
+      character cBranch*48           ! Branch name 
       character cRevision*32         ! Revision number 
       character cState*32            ! Flag indicating repository state.
       character cCC*32               ! Flags for compilers
@@ -2258,11 +2258,21 @@ C.......Write out non-versioned disclaimer.
         call edisp(iuout,cTemp_a)
         
         write (cTemp_a,'(A)') 
-     &  "models and reproducing simulation results in the future. You"
+     &  "models and reproducing simulation results in the future. "
         call edisp(iuout,cTemp_a)
         
         write (cTemp_a,'(A)') 
-     &  "can obtain a versioned copy of ESP-r here:"
+     &  "Development using unversioned copies of ESP-r is also prone to"
+        call edisp(iuout,cTemp_a)
+        
+        write (cTemp_a,'(A)') 
+     &  "error, and strongly discouraged."
+        call edisp(iuout,cTemp_a)
+        
+        call edisp(iuout," ")
+        
+        write (cTemp_a,'(A)') 
+     &  "You can obtain a versioned copy of ESP-r here:"
         call edisp(iuout,cTemp_a)
         
         call edisp(iuout," ")

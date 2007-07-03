@@ -663,21 +663,21 @@ C Now display the menu.
       IF(IVERT.EQ.1)THEN
         H(1)='The origin of the sensor is in site coords. '
         WRITE(MSG,'(a,I3)')'For sensor ',ICUB
-        CALL EASKR(XOC(ICUB),MSG,' Origin X coord? ',
+        CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.2)THEN
         H(1)='The origin of the sensor is in site coords. '
-        CALL EASKR(YOC(ICUB),MSG,' Origin Y coord? ',
+        CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
         H(1)='The origin of the sensor is in site coords. '
-        CALL EASKR(ZOC(ICUB),MSG,' Origin Z coord? ',
+        CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
      &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
         MODIFY=.TRUE.
         MODLEN=.TRUE.

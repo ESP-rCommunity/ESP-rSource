@@ -27,7 +27,7 @@ void TBinnedData::AddValue(double val)
 	if(m_lastValue > m_maxValue) m_maxValue = m_lastValue;
 	if(m_lastValue < m_minValue) m_minValue = m_lastValue;
 
-    m_activeAverage = m_sum / m_activeTimesteps;
+        m_activeAverage = m_sum / m_activeTimesteps;
 	
 	m_isInit = true;
 	

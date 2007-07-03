@@ -27,3 +27,6 @@ Additional Tests currently available:
     suite comprising 44 test cases, which were  developed
     to support validation of the IEA/ECBCS Annex 42
     fuel cell model.
+
+  - ASHRAE-140: Tests from ASHRAE's Standard 140 (not
+    yet incorporated).

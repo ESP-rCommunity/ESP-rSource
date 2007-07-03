@@ -1,0 +1,92 @@
+*connections  for house_win
+*Date Thu Jun 21 09:52:32 2007
+     89   # number of connections
+   1   1   3   7   6  #    1 s_buf in kitliv >|< s_liv in buf_1
+   1   2   3   3   4  #    2 s_hall in kitliv >|< s_liv in hall
+   1   3   1   0   0  #    3 s_adjhouse in kitliv >|< Identical environment
+   1   4   3   2   2  #    4 s_west in kitliv >|< s_liv in west_space
+   1   5   3  10   2  #    5 ceil in kitliv >|< liv in roof
+   1   6   4   1   0  #    6 floor in kitliv >|< ground profile 1
+   1   7   0   0   0  #    7 win1 in kitliv is External
+   1   8   3   7   8  #    8 win3 in kitliv >|< int_win in buf_1
+   1   9   0   0   0  #    9 win2 in kitliv is External
+   1  10   3   4   4  #   10 s_bath in kitliv >|< s_liv in bath
+   2   1   3   7   7  #   11 s_buf in west_space >|< s_west in buf_1
+   2   2   3   1   4  #   12 s_liv in west_space >|< s_west in kitliv
+   2   3   1   0   0  #   13 s_adjhouse in west_space >|< Identical environment
+   2   4   0   0   0  #   14 ext_west in west_space is External
+   2   5   3  10   7  #   15 ceil in west_space >|< west_sp in roof
+   2   6   4   1   0  #   16 floor in west_space >|< ground profile 1
+   2   7   0   0   0  #   17 jambl in west_space is External
+   2   8   0   0   0  #   18 jambr in west_space is External
+   2   9   0   0   0  #   19 sill in west_space is External
+   2  10   0   0   0  #   20 head in west_space is External
+   2  11   0   0   0  #   21 jl in west_space is External
+   2  12   0   0   0  #   22 jr in west_space is External
+   2  13   0   0   0  #   23 sillr in west_space is External
+   2  14   0   0   0  #   24 headr in west_space is External
+   3   1   3   8   7  #   25 s_buf in hall >|< s_hall in buf_2
+   3   2   3   5   4  #   26 s_bed1 in hall >|< s_hall in bed1
+   3   3   3   4   1  #   27 s_bath in hall >|< s_hall in bath
+   3   4   3   1   2  #   28 s_liv in hall >|< s_hall in kitliv
+   3   5   3  10   3  #   29 ceil in hall >|< hall in roof
+   3   6   4   1   0  #   30 floor in hall >|< ground profile 1
+   3   7   3   8   8  #   31 door in hall >|< door in buf_2
+   3   8   3   6   8  #   32 s_bed2 in hall >|< s_hall in bed2
+   4   1   3   3   3  #   33 s_hall in bath >|< s_bath in hall
+   4   2   3   6   4  #   34 s_bed2 in bath >|< s_bath in bed2
+   4   3   1   0   0  #   35 s_adjhouse in bath >|< Identical environment
+   4   4   3   1  10  #   36 s_liv in bath >|< s_bath in kitliv
+   4   5   3  10   4  #   37 ceil in bath >|< bath in roof
+   4   6   4   1   0  #   38 floor in bath >|< ground profile 1
+   5   1   3   8   3  #   39 s_buf in bed1 >|< s_bed in buf_2
+   5   2   0   0   0  #   40 ext_east in bed1 is External
+   5   3   3   6   1  #   41 s_bed2 in bed1 >|< s_bed1 in bed2
+   5   4   3   3   2  #   42 s_hall in bed1 >|< s_bed1 in hall
+   5   5   3  10   5  #   43 ceil in bed1 >|< bed1 in roof
+   5   6   4   1   0  #   44 floor in bed1 >|< ground profile 1
+   5   7   0   0   0  #   45 win in bed1 is External
+   6   1   3   5   3  #   46 s_bed1 in bed2 >|< s_bed2 in bed1
+   6   2   0   0   0  #   47 ext_east in bed2 is External
+   6   3   1   0   0  #   48 s_adjhouse in bed2 >|< Identical environment
+   6   4   3   4   2  #   49 s_bath in bed2 >|< s_bed2 in bath
+   6   5   3  10   6  #   50 ceil in bed2 >|< bed2 in roof
+   6   6   4   1   0  #   51 floor in bed2 >|< ground profile 1
+   6   7   0   0   0  #   52 win in bed2 is External
+   6   8   3   3   8  #   53 s_hall in bed2 >|< s_bed2 in hall
+   7   1   0   0   0  #   54 ext_wall in buf_1 is External
+   7   2   0   0   0  #   55 west in buf_1 is External
+   7   3   3   9   1  #   56 fict in buf_1 >|< buf_1 in buf_roof
+   7   4   4   1   0  #   57 floor in buf_1 >|< ground profile 1
+   7   5   0   0   0  #   58 westwin in buf_1 is External
+   7   6   3   1   1  #   59 s_liv in buf_1 >|< s_buf in kitliv
+   7   7   3   2   1  #   60 s_west in buf_1 >|< s_buf in west_space
+   7   8   3   1   8  #   61 int_win in buf_1 >|< win3 in kitliv
+   7   9   3   8   9  #   62 fictv in buf_1 >|< fictv in buf_2
+   8   1   0   0   0  #   63 ext_wall in buf_2 is External
+   8   2   0   0   0  #   64 east in buf_2 is External
+   8   3   3   5   1  #   65 s_bed in buf_2 >|< s_buf in bed1
+   8   4   3   9   7  #   66 fict in buf_2 >|< buf_2 in buf_roof
+   8   5   4   1   0  #   67 floor in buf_2 >|< ground profile 1
+   8   6   0   0   0  #   68 eastwin in buf_2 is External
+   8   7   3   3   1  #   69 s_hall in buf_2 >|< s_buf in hall
+   8   8   3   3   7  #   70 door in buf_2 >|< door in hall
+   8   9   3   7   9  #   71 fictv in buf_2 >|< fictv in buf_1
+   9   1   3   7   3  #   72 buf_1 in buf_roof >|< fict in buf_1
+   9   2   0   0   0  #   73 roof_e in buf_roof is External
+   9   3   0   0   0  #   74 roof_w in buf_roof is External
+   9   4   0   0   0  #   75 roof_s in buf_roof is External
+   9   5   0   0   0  #   76 win2 in buf_roof is External
+   9   6   0   0   0  #   77 glz_w in buf_roof is External
+   9   7   3   8   4  #   78 buf_2 in buf_roof >|< fict in buf_2
+   9   8   3  10   8  #   79 roof_buf in buf_roof >|< roof_buf in roof
+  10   1   0   0   0  #   80 roof_n in roof is External
+  10   2   3   1   5  #   81 liv in roof >|< ceil in kitliv
+  10   3   3   3   5  #   82 hall in roof >|< ceil in hall
+  10   4   3   4   5  #   83 bath in roof >|< ceil in bath
+  10   5   3   5   5  #   84 bed1 in roof >|< ceil in bed1
+  10   6   3   6   5  #   85 bed2 in roof >|< ceil in bed2
+  10   7   3   2   5  #   86 west_sp in roof >|< ceil in west_space
+  10   8   3   9   8  #   87 roof_buf in roof >|< roof_buf in buf_roof
+  10   9   0   0   0  #   88 roof_w in roof is External
+  10  10   0   0   0  #   89 roof_e in roof is External

@@ -103,6 +103,7 @@ C Scale vector and move CORNER(1,*)
         DISTVEC=DISTVEC+VEC(I)*VEC(I)
  60   continue
       DISTVEC=SQRT(DISTVEC)
+      if(DISTVEC.lt.0.0001) return   ! if zero length line.
       if(act(1:1).eq.'r')then
         SF=(DIST*aw)/DISTVEC
       elseif(act(1:1).eq.'a')then
@@ -127,6 +128,7 @@ C Calculate cross product to find corners 2 and 4.
         DISTVEC=DISTVEC+VECC(I)*VECC(I)
  61   continue
       DISTVEC=SQRT(DISTVEC)
+      if(DISTVEC.lt.0.0001) return   ! if zero length line.
       if(act(1:1).eq.'r')then
         SF=(DIST*aw)/DISTVEC
       elseif(act(1:1).eq.'a')then

@@ -528,7 +528,7 @@ C Loop through all zones to see if there is a domain flow description.
       return
       end
 
-C ***** Notice that a active description button has been pressed.
+C ***** Notice that an active description button has been pressed.
       subroutine cfgpk(act)
 #include "building.h"
 #include "plant.h"
@@ -586,9 +586,9 @@ C Images.
 
 C Registration, show all available images.
         call imgdisp(0,'****',ier)
-        h(1)='The current model is called:'
+        h(1)='The current model is named:'
         write(h(2),'(a)')LSNAM
-        h(3)='Documentation can be found in: '
+        h(3)='The model is documented in: '
         write(h(4),'(a)')LPRJLG
         h(5)=' '
         write(h(6),'(a,i2,a)')'There are ',noimg,' linked images.'
@@ -599,20 +599,20 @@ C Registration, show all available images.
 
 C Zone button, show zone/site/gridding related images.
         call imgdisp(1,'FZON',ier)
-        h(1)='The current model is called:'
+        h(1)='The current model is named:'
         write(h(2),'(a)')LSNAM
         h(3)=' '
         write(h(4),'(a,i3,a,i4,a)')'It is composed of',NCOMP,
      &    ' zones and',NCON,' surfaces.'
         h(5)=' '
-        h(6)='Documentation can be found in: '
+        h(6)='The model is documented in: '
         write(h(7),'(a)')LPRJLG
         nh=7
         do 42 i=1,NCOMP
-          if(LCFD(i)(1:2).eq.'  ')then
+          if(LCFD(i).eq.'UNKNOWN')then
           else
             nh=nh+1
-            write(h(nh),'(a,a)')' CFD (via: ',LCFD(i)(1:56)
+            write(h(nh),'(a,a)')' CFD via ',LCFD(i)(1:56)
           endif
   42    continue
         CALL PHELPD('zones button popup',nh,'-',0,0,IER)
@@ -620,58 +620,57 @@ C Zone button, show zone/site/gridding related images.
 
 C Show network related images.
         call imgdisp(1,'FNET',ier)
-        h(1)='The current networks are active:'
+        h(1)='Active networks:'
         nh=1
         if(LAPROB(1:2).eq.'  ')then
         else
           nh=nh+1
-          write(h(nh),'(a,a)')'  Flow  (via: ',LAPROB(1:56)
+          write(h(nh),'(a,a)')'  Flow via ',LAPROB(1:56)
         endif
         if(NOCNTM.EQ.1)then
           nh=nh+1
-          write(h(nh),'(a,a)')'  Contaminants  (via: ',CNTMFIL(1:56)
+          write(h(nh),'(a,a)')'  Contaminants via ',CNTMFIL(1:56)
         endif
         if(LPNF(1:2).eq.'  '.or.LPNF(1:4).eq.'UNKN')then
         else
           nh=nh+1
-          write(h(nh),'(a,a)')'  Plant (via: ',LPNF(1:56)
+          write(h(nh),'(a,a)')'  Plant via ',LPNF(1:56)
         endif
         if(ientxist.gt.0)then
           nh=nh+1
-          write(h(nh),'(a,a)')'  Power (via: ',entflnam(1:56)
+          write(h(nh),'(a,a)')'  Electrical via ',entflnam(1:56)
         endif
         CALL PHELPD('networks button popup',nh,'-',0,0,IER)
       elseif(act.eq.'c')then
 
-C Show control related images (assumes that control has already been scanned.
+C Show control related images (assumes that control has already been scanned).
         call imgdisp(1,'FCTL',ier)
         if(ncf.gt.0.or.ncl.gt.0.or.ncc.gt.0.or.ngf.gt.0)then
-          h(1)='The current controls are active:'
-          write(h(2),'(a,a)')' via: ',LCTLF(1:56)
-          nh=2
+          write(h(1),'(a,a)')'System control is via ',LCTLF(1:56)
+          nh=1
           if(ncf.gt.0)then
             nh=nh+1
-          write(h(nh),'(3a,i2)')' Zone (',znctldoc(1:50),
-     &      ') loops= ',ncf
+            write(h(nh),'(3a,i2,a)')' Zones - ',znctldoc(1:45),
+     &      '(',ncf,' loops)'
           endif
           if(ncl.gt.0)then
             nh=nh+1
-          write(h(nh),'(3a,i2)')' Plant (',plctldoc(1:50),
-     &      ') loops= ',ncl
+            write(h(nh),'(3a,i2,a)')' Plant - (',plctldoc(1:45),
+     &      '(',ncl,' loops)'
           endif
           if(ncc.gt.0)then
             nh=nh+1
-            write(h(nh),'(3a,i2)')' Flow (',flctldoc(1:50),
-     &        ') loops= ',ncc
+            write(h(nh),'(3a,i2,a)')' Flow - ',flctldoc(1:45),
+     &       '(',ncc,' loops)'
           endif
           if(ngf.gt.0)then
             nh=nh+1
-            write(h(nh),'(3a,i2)') ' Global (',glctldoc(1:50),
-     &        ') loops= ',ngf
+            write(h(nh),'(3a,i2,a)') ' Global - ',glctldoc(1:45),
+     &       '(',ngf,' loops)'
           endif
           CALL PHELPD('control button popup',nh,'-',0,0,IER)
         else
-          h(1)='This model includes no control definitions.'
+          h(1)='This model has no control definitions.'
           CALL PHELPD('control button popup',1,'-',0,0,IER)
         endif
       elseif(act.eq.'d')then
@@ -2310,16 +2309,15 @@ C Help messages for the menus below.
 C Produce help text.
       H(1)='A zone geometry file will be selected via the name of'
       H(2)='the zone held in the system configuration file.'
-      H(3)='The < command selects by index rather than a-z.'
 
 C Display the menu.
       call usrmsg(PROMPT,'  ','-')
       if(MOD.EQ.'M'.OR.MOD.EQ.'m')then
-        CALL EMENU(' Zone geometry & atrib',VERT,MVERT,IVERT)
+        CALL EMENU('Zone Geometry/Attribution',VERT,MVERT,IVERT)
       elseif(MOD.EQ.'T'.OR.MOD.EQ.'t')then
-        CALL EMENU(' Zone constructions',VERT,MVERT,IVERT)
+        CALL EMENU('Zone Constructions',VERT,MVERT,IVERT)
       else
-        CALL EMENU(' Zones',VERT,MVERT,IVERT)
+        CALL EMENU('Zones',VERT,MVERT,IVERT)
       endif
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -2333,7 +2331,7 @@ C If no selection has been made before exit then return with 0.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help text.
-        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',2,'-',0,0,IER)
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Decode from the potentially long list to the zone number via KEYIND.
@@ -2642,7 +2640,7 @@ C If a long list include page facility text and info on portion seen.
       ENDIF
 
       if(idzone.ne.0)then
-        write(VERT(M+2),'(a,a)') '* Deflt= ',zname(IDZONE)
+        write(VERT(M+2),'(a,a)') '* default is ',zname(IDZONE)
       else
         VERT(M+2)='                        '
       endif
@@ -2657,31 +2655,28 @@ C If a long list include page facility text and info on portion seen.
 
       if(izone.le.0)then
         if(mod.eq.'-')then
-          write(prompt2,'(a)')' (No previous zone defined)'
+          write(prompt2,'(a)')' (No previous zone defined.)'
         elseif(mod.eq.'c'.or.mod.eq.'o'.or.mod.eq.'s')then
-          write(prompt2,'(a)') ' (data file defined or undefined)'
+          write(prompt2,'(a)') ' (Data file defined or undefined.)'
         elseif(mod.eq.'v'.or.mod.eq.'g'.or.mod.eq.'h')then
-          write(prompt2,'(a)') ' (data file defined or undefined)'
+          write(prompt2,'(a)') ' (Data file defined or undefined.)'
         endif
       else
-        write(prompt2,'(3a)') '(',zname(izone),' is suggested)'
+        write(prompt2,'(3a)') '(',zname(izone),' is suggested.)'
       endif
 
-C Instanciate help message for this menu.
+C Help message for this menu.
       H(1)='A zone may be selected via the name in the list.'
-      H(2)='To select the default (if available) use command *'
-      h(3)='To accept the suggested zone just -exit'
+      h(2)='If you have just created a file it may not show up'
+      h(3)='as defined until you exit and re-enter this menu.'
       h(4)=' '
-      h(5)='If you have just updated a file it may not show up'
-      h(6)='as defined until you exit and re-enter this menu. '
-      h(7)=' '
-      h(8)='If the topic is shading then a number of global '
-      h(9)='tasks can be preformed - dereferencing current '
-      h(10)='files, specifying zones to have an insolation '
-      h(11)='analysis carried out. '
+      h(5)='If the topic is shading then a number of global'
+      h(6)='tasks can be performed - dereferencing current'
+      h(7)='files or specifying zones to include in an'
+      h(8)='insolation analysis.'
 
 C Display the menu.
-      call usrmsg(PROMPT,PROMPT2,'-')
+C      call usrmsg(PROMPT,PROMPT2,'-')
       CALL EMENU(title,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -2690,7 +2685,7 @@ C Display the menu.
 
 C If no selection has been made before exit then display error message.
         IF(.NOT.SELECT.and.mod.eq.'-')then
-          call usrmsg(errmsg,' you must select one... ','W')
+          call usrmsg(errmsg,'You must select one.','W')
           IVERT=-2
           goto 92
         endif
@@ -2698,7 +2693,7 @@ C If no selection has been made before exit then display error message.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help text.
-        CALL PHELPD('zone geom file section',11,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',8,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2).and.IDZONE.ne.0.and.MCTL.eq.4)THEN
 
 C Take default zone.

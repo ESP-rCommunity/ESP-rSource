@@ -317,7 +317,7 @@ C used.
 C  The following data statements carry the proportions of
 C  surrounding buildings, sky vault and ground assumed
 C  to be seen by a vertical surface for a particular site
-C  defined by the Index of Exposure: IEXP.
+C  defined by the Index of Exposure, IEXP.
 
       DATA PROPB/0.28,0.18,0.1,0.34,0.52,0.0,1.0,0.0/
       DATA PROPS/0.36,0.41,0.45,0.33,0.15,0.5,0.0,0.0/

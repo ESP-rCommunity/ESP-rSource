@@ -29,6 +29,11 @@
 
 using namespace std;
 
+//Prototypes
+int Increment_set_vector_count();
+bool Write_to_db_file(int var_index, double val, long step);
+double Read_from_db_file(int var_index, long step);
+
 //hack for VC++ not having std::max and std::min
 namespace h3kreports {
 
@@ -84,7 +89,7 @@ TVariableData::TVariableData()
   bSummarySearchStatus = false;
   bLogSearchStatus = false;
   bStepSearchStatus = false;
-
+  bNotSet = true; 
 
   UpdateHourly();
   UpdateDaily();
@@ -98,11 +103,24 @@ TVariableData::TVariableData()
 }
 
 
-
+/*
+  Take passed value, and apply time-step averaging if necessary.
+*/
 void TVariableData::Set(const double& val,
                         const bool& bTS_averaging,
+                        const bool& bSaveToDisk,
                         const int& timestep)
 {
+
+  // The first time this variable is set, 
+  // increment vector count, and save new value 
+  // as this vector's index
+  if ( bNotSet ){
+     set_vector_index = Increment_set_vector_count();
+     bNotSet = false;
+  }
+  
+  
 
   int ii;
 
@@ -118,7 +136,7 @@ void TVariableData::Set(const double& val,
 
   if ( timestep > 0 && bFirstCall ){
       for (ii=0;ii<timestep;ii++){
-        Update();
+        Update( bSaveToDisk, ii );
       }
   }
 
@@ -160,38 +178,61 @@ void TVariableData::SetMeta(const std::string& sMetaName, const std::string& sMe
     }
 
 }
-
-
-void TVariableData::Update(  )
+/**
+ * Take current value, and i) save it to a vector, or ii) save it to disk
+ */
+ 
+void TVariableData::Update( const bool& bSaveToDisk, const long& TimeRow )
 {
+
+  double SaveValue;
+  
+  // If new data was sent, use it.  
   if(bNewValueSentThisTimestep == true)
     {
-      // update for timestep averaging
+      // update old for timestep averaging
       m_oldValue = m_newValue;
-
-      m_steps.push_back(m_currentValue);
+      
+      SaveValue = m_currentValue;
+      
+      // Add current value to running hourly/daily/monthly/annual bins
       m_hourly.back().AddValue(m_currentValue);
       m_daily.back().AddValue(m_currentValue);
       m_monthly.back().AddValue(m_currentValue);
       m_annual.AddValue(m_currentValue);
+       
     }
+  // Otherwise, push a value of zero onto the stack...
   else
     {
 
       // set old value to zero for timestep averaging
       m_oldValue = 0.0;
-
-      m_steps.push_back(0);
+      
+      // push empty value on to vector.
+      
+      SaveValue = 0.0;
+      
     }
+
+  if ( bSaveToDisk ) {
+    // Save file to database
+    if ( ! Write_to_db_file(set_vector_index,SaveValue,TimeRow) ){
+      cout << "Error: Could not write to file\n";
+    }
+  }else{
+    // push value on to vector. 
+    m_steps.push_back(SaveValue);
+  }
 
   m_hourly.back().Increment();
   m_daily.back().Increment();
   m_monthly.back().Increment();
   m_annual.Increment();
-
-
   bNewValueSentThisTimestep = false;
 }
+
+
 
 void TVariableData::UpdateHourly(  )
 {
@@ -218,74 +259,11 @@ void TVariableData::UpdateAnnual(  )
 void TVariableData::UpdateUserDefined(  )
 {
 
-  m_userDefined.AddValue(m_currentValue);
-  m_userDefined.Increment();
+ //m_userDefined.AddValue(m_currentValue);
+ //m_userDefined.Increment();
 
 }
 
-TBinnedData TVariableData::GetDataForDate(const TTimeData& date)
-{
-  if(date.month == -1)
-    return m_annual;
-  else if(date.day == -1)
-    return m_monthly[date.month];
-  else if(date.hour == -1)
-    return m_daily[date.day];
-  else if(date.step == -1)
-    return m_hourly[date.hour];
-  else
-    {
-      TBinnedData temp;
-      temp.AddValue(m_steps[date.step]);
-      return temp;
-    }
-}
-
-void TVariableData::Log()
-{
-  unsigned int i;
-  cout << "Units: " << m_metadata["units"] << endl;
-
-
-  for(i = 0; i < m_steps.size(); i+=5)
-    {
-      cout << i << ": " << m_steps[i] << "\t"
-           << i + 1 << ": " << m_steps[i+1] << "\t"
-           << i + 2 << ": " << m_steps[i+2] << "\t"
-           << i + 3 << ": " << m_steps[i+3] << "\t"
-           << i + 4 << ": " << m_steps[i+4] << "\t"
-           << endl;
-    }
-
-  cout << endl << "Hourly: " << endl;
-  for(i = 0; i < m_hourly.size(); i++)
-    {
-      cout << i << ": ";
-      m_hourly[i].Log();
-    }
-
-  cout << endl << "Daily: " << endl;
-  for(i = 0; i < m_daily.size(); i++)
-    {
-      cout << i << ": ";
-      m_daily[i].Log();
-    }
-
-  cout << endl << "Monthly: " << endl;
-  for(i = 0; i < m_monthly.size(); i++)
-    {
-      cout << i << ": ";
-      m_monthly[i].Log();
-    }
-
-  cout << endl << "Annually: " << endl;
-  m_annual.Log();
-
-  cout << endl << "User-Defined: " << endl;
-  m_userDefined.Log();
-
-
-}
 
 
 /*
@@ -381,9 +359,16 @@ void TVariableData::UpdateSearchResult(int& i, bool bResult){
  *
  */
 
-double TVariableData::RetrieveValue(unsigned int i){
-
-  return m_steps[i];
+double TVariableData::RetrieveValue(unsigned int i, 
+                                    const unsigned int& first_step, 
+                                    const bool& bSaveToDisk){
+  if ( bSaveToDisk ){
+    // pull value from disk 
+    return Read_from_db_file ( set_vector_index, i + first_step ); 
+  }else{
+    // pop value from vector. 
+    return m_steps[i];
+  }
 
 }
 
@@ -657,3 +642,4 @@ std::string TVariableData::OutputTXT( const std::string& prefex, map<std::string
 
   return Result;
 }
+

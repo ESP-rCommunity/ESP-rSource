@@ -1291,35 +1291,47 @@ echo " Installing ESP-r system.  This may take some time."
  # Digest version information in Version text file
  release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
 
+
  # Try to collect svn information
- #svn_info_command="cat /home/aferguso/svn_info.txt"
- #svn_status_command="cat /home/aferguso/svn_status.txt"
- 
  svn_info_command="svn info"
  svn_status_command="svn status"
  
+ # For debugging...
+ # svn_info_command="cat ~/svn_info.txt"
+ # svn_status_command="cat ~svn_status.txt"
+  
  svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
  svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
  notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
 
+ # Attempt to collect URL from svn info
+ URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+   
+ # Ensure that the URL is from ESP-r central. Code built from
+ # other repositories is to be designated 'unversioned'
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn2.cvsdude.com/espr/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
+
  if [ "$svnnotfound" != "" ]    || 
     [ "$notworkingcopy" != "" ] ||
-    [ "$svnrevision"    =  "" ];   then
+    [ "$svnrevision"    =  "" ] ;   then
    versioned_repository="no";
  else
-   versioned_repository="yes"
+   if [ "$URLcvsdude" != "" ] || [ "$URLesprcentral"  != "" ]; then
+     versioned_repository="yes"
+   else
+     versioned_repository="no" 
+   fi
  fi
  
  # If svn is available and repository is under versioning,
  # get misc svn information
  if [ "$versioned_repository" = "yes" ]; then
    revision_number=`$svn_info_command 2>&1 | grep "^Revision" | sed "s/Revision: //g"`
-   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-      
+
    # Get branch name: Strip ESP-r.net/espr/esp-r portion of url
-   branch_name=`echo $URL | sed "s/https:\/\/esp-r\.net\/espr\/esp-r\///g"`
-   branch_name=`echo $branch_name | sed "s/https:\/\/svn2\.cvsdude\.com\/espr\/esp-r\///g"`
-   
+   branch_name=`echo $URL | sed "s/^.*\/esp-r\///g"`
+      
    # Strip leading 'branches', if any
    branch_name=`echo $branch_name | sed "s/branches\///g"`
    # Strip trailing 'src'
@@ -1768,20 +1780,7 @@ if [ "$install_training" = "yes" ]; then
      echo "Updating materials and climate databases in training models..."
      echo " "
      cd ${SRCdir}
-     ./bin/materials_db_conv training/cellular_bc/dbs cellular.materials.a cellular.materials
-     ./bin/materials_db_conv training/cellular_contam/dbs cellular.materials.a cellular.materials
-     ./bin/materials_db_conv training/cellular_furn/dbs cellular.materials.a cellular.materials
-     ./bin/materials_db_conv training/cellular_hires/dbs cellular.materials.a cellular.materials
-     ./bin/materials_db_conv training/cellular_shd/dbs cellular.materials.a cellular.materials
      ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
-     ./bin/materials_db_conv training/cellular_hvac/dbs cellular.materials.a cellular.materials
-     ./bin/materials_db_conv training/cellular_natv/dbs cellular.materials.a cellular.materials 
-     ./bin/materials_db_conv training/cellular_flh/dbs cellular.materials.a cellular.materials 
-     ./bin/materials_db_conv training/cellular_cvvt/dbs cellular.materials.a cellular.materials 
-     ./bin/materials_db_conv training/cellular_earth/dbs cellular.materials.a cellular.materials 
-     ./bin/materials_db_conv training/cellular_bound/dbs cellular.materials.a cellular.materials 
-     ./bin/materials_db_conv training/house/svph/dbs linford.materialdb.a linford.materialdb
-     ./bin/materials_db_conv training/glenview/databases constr.asc constr.db1
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
      echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
@@ -1900,6 +1899,11 @@ if [ "$install_dbs" = "yes" ]; then
   ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2
   ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3
   ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
+  cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a
+  cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
+  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
+  cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
   echo "... done."
   
      cd ${SRCdir}/databases
@@ -2243,21 +2247,7 @@ fi
 echo "  "
 echo "Removing binary materials db from exemplars ..."
 cd ${SRCdir}/
-rm -f training/glenview/databases/constr.db1
-rm -f training/cellular_furn/dbs/cellular.materials
-rm -f training/cellular_hires/dbs/cellular.materials
-rm -f training/cellular_contam/dbs/cellular.materials
-rm -f training/cellular_hvac/dbs/cellular.materials
-rm -f training/cellular_flh/dbs/cellular.materials
-rm -f training/cellular_natv/dbs/cellular.materials
-rm -f training/cellular_bc/dbs/cellular.materials
-rm -f training/cellular_cvvt/dbs/cellular.materials
 rm -f training/cellular_pv/dbs/cellular_pv.materials
-rm -f training/house/svph/dbs/linford.materialdb
-rm -f training/cellular_shd/dbs/cellular.materials
-rm -f training/cellular_earth/dbs/cellular.materials
-rm -f training/cellular_bound/dbs/cellular.materials
-rm -f training/glenview/databases/constr.db1
 rm -f training/constr/tp_sub/dbs/tp_sub.material
 rm -f training/plant/wch/dbs/db_prc
 rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm

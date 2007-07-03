@@ -69,45 +69,45 @@ C *********************************************************************
      &  '/validation/analytical/conduction01'
 C      VlDirR='/usr/esru/esp-r/validation/analytical/conduction01'
    10 INO=-3
-      ITEM(1)='1 Multi-layered construction'
-      ITEM(2)='2 Initial Temperature'
-      ITEM(3)='3 External boundary'
-      ITEM(4)='4 Internal boundary'
+      ITEM(1)='1 multi-layered construction'
+      ITEM(2)='2 initial temperature'
+      ITEM(3)='3 external boundary'
+      ITEM(4)='4 internal boundary'
       ITEM(5)='  __________________________'
       ITEM(6)='a advanced options'
       ITEM(7)='l list model details'
-      ITEM(8)='p Perform calculations'
-      ITEM(9)='c Compare results'
+      ITEM(8)='p perform calculation'
+      ITEM(9)='c compare results'
       ITEM(10)='  __________________________'
       ITEM(11)='? help                 '
-      ITEM(12)='- Exit '
+      ITEM(12)='- exit this menu'
       MITEM=12
 
       CALL USRMSG('  ','  ','-')
-      CALL EMENU('   Analytical Conduction',ITEM,MITEM,INO)
+      CALL EMENU('Analytical Conduction',ITEM,MITEM,INO)
 
 C Multi-layered construction.
       IF(INO.EQ.1)THEN
         if(MonNod.ne.1)then
           MonNod=1
-          call edisp(iuout,' Monitored node set external surface node.')
+C          call edisp(iuout,'Monitored node set external surface node.')
         endif
         CALL VldCon
 
 C Initial Temperature.
       ELSEIF(INO.EQ.2)THEN
-        WRITE(Msg,'(A)')'Enter the model initial temperature:'
-        H(1)='    Enter the model initial temperature.'
+        WRITE(Msg,'(A)')'Initial temperature:'
+        H(1)='Enter the model initial temperature.'
         CALL EASKR(Tinit,' ',Msg,0.,'-',1.,'-',0.,'temperature',IER,1)
 
 C External boundary.
       ELSEIF(INO.EQ.3)THEN
         if(NLayer.lt.1)then
-          call usrmsg('  ','Define construction first.','w')
+          call usrmsg('  ','Define construction first!','w')
         else
-          MsgT='External boundary Type:'
-          MsgC='Continue'
-          CALL EASKABC(MsgT,' ','Convective','Adiabatic',MsgC,IW,0)
+          MsgT='External boundary type:'
+          MsgC='cancel'
+          CALL EASKABC(MsgT,' ','convective','adiabatic',MsgC,IW,0)
 
 C Convective boundary.
           IF(IW.EQ.1)THEN
@@ -125,12 +125,12 @@ C Adiabatic boundary.
 C Internal boundary.
       ELSEIF(INO.EQ.4)THEN
         if(NLayer.lt.1)then
-          call usrmsg('  ','Define construction first.','w')
+          call usrmsg('  ','Define construction first!','w')
         else
-          MsgT='Internal boundary Type:'
-          MsgB='Known surface temperature'
-          MsgC='Continue'
-          CALL EASKABC(MsgT,' ','Convective',MsgB,MsgC,IW,0)
+          MsgT='Internal boundary type?'
+          MsgB='known surface temperature'
+          MsgC='cancel'
+          CALL EASKABC(MsgT,' ','convective',MsgB,MsgC,IW,0)
 
 C Convective boundary.
           IF(IW.EQ.1)THEN
@@ -142,8 +142,8 @@ C Known surface temperature.
           ELSEIF(IW.EQ.2)THEN
             IndBI=3
             Hin=1.0e32
-            WRITE(Promp,'(A)')'Enter the surface temperature:'
-            H(1)='    Enter the surface temperature.'
+            WRITE(Promp,'(A)')'Surface temperature?'
+            H(1)='Enter the surface temperature.'
             CALL EASKR(Tin,' ',Promp,0.,'-',1.,'-',0.,' temp. ',IER,1)
           ENDIF
         endif
@@ -156,10 +156,10 @@ C List model details.
       ELSEIF(INO.EQ.MITEM-5)THEN
         CALL EPAGE
         WRITE(LstDtl,'(A,F8.2)')
-     &       'Model initial temperature (Deg. C):', Tinit
+     &       'Initial temperature (deg.C):', Tinit
         CALL EDISP(IUOUT,LstDtl)
         IF(IndBO.EQ.0)THEN
-          WRITE(LstDtl,'(A)')'External boundary not defined yet.'
+          WRITE(LstDtl,'(A)')'External boundary not yet defined.'
         ELSEIF(IndBO.EQ.1)THEN
           WRITE(LstDtl,'(a,a,f7.2,a,f7.2,a)')'Convective external ',
      &    'boundary (To= ',Tout,', hc= ',Hout,' ).'
@@ -172,7 +172,7 @@ C List model details.
         CALL EDISP(IUOUT,LstDtl)
         CALL EDISP(IUOUT,' ')
         WRITE(LstDtl,'(2a)')'   Conductivity   Density        Cp     ',
-     &                     'Thicnkness    Nodes'
+     &                     'Thickness    Nodes'
         CALL EDISP(IUOUT,LstDtl)
         WRITE(LstDtl,'(2a)')'========================================',
      &                      '===================='
@@ -188,7 +188,7 @@ C List model details.
         CALL EDISP(IUOUT,LstDtl)
         CALL EDISP(IUOUT,' ')
         IF(IndBI.EQ.0)THEN
-          WRITE(LstDtl,'(A)')'Internal boundary not defined yet.'
+          WRITE(LstDtl,'(A)')'Internal boundary not yet defined.'
         ELSEIF(IndBI.EQ.1)THEN
           WRITE(LstDtl,'(a,a,f7.2,a,f7.2,a)')'Convective internal ',
      &    'boundary (Ti= ',Tin,', hc= ',Hin,' ).'
@@ -200,7 +200,7 @@ C List model details.
         ENDIF
         CALL EDISP(IUOUT,LstDtl)
 
-C Perform Calculations.
+C Perform calculation.
       ELSEIF(INO.EQ.MITEM-4)THEN
         if(NLayer.lt.1)then
           call usrmsg('  ','Define construction first.','w')
@@ -239,9 +239,9 @@ C Compare results.
       ELSEIF(INO.EQ.MITEM-3)THEN
         if(VldOK)then
           WRITE(Msg,'(A)')'Define output type:'
-          H(1)='    Define output type.'
-          CALL EASKABC(Msg,' ','graphical feedback (NA)',
-     &                'textual feedback','save in file',IW,1)
+          H(1)='Define output type.'
+          CALL EASKABC(Msg,' ','graphic feedback (NA)',
+     &                'text feedback','save to file',IW,1)
           IOutS=IFIL+20
           FileS='Simulation.out'
           CALL EFOPSEQ(IOutS,FileS,1,IER)
@@ -285,7 +285,7 @@ C Compare results.
 
 C Help.
       ELSEIF(INO.EQ.MITEM-1)THEN
-        H(1)='    This is the main controller for the analytical '
+        H(1)='This is the main controller for the analytical'
         H(2)='validation. Four types of validation can be performed:'
         H(3)='1 conduction testing of temperature distribution'
         H(4)='  within multi-layered building construction.'

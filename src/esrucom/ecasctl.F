@@ -89,7 +89,7 @@ C Daylight coefficient common block data definition:
      & IDCFID(MCOM,MLCOM,MDF)
 
       CHARACTER LCGCIN*72
-      character outs*124,OUTSTR*124,cgcdesc*64
+      character outs*124,OUTSTR*124,cgcdesc*64,info*18
 
       dimension DV(MDCFV)
 
@@ -384,11 +384,15 @@ c Trace output follows.
           call edisp(itru,'  ')
           if(IDFST(ICOMP,N).eq.1.or.IDFST(ICOMP,N).eq.2.or.
      &      IDFST(ICOMP,N).eq.4)then
-           call edisp(itru,' Sensor|  X  |  Y  |  Z  | DX | DY | DZ |')
-           call edisp(itru,' no.   |     |     |     |    |    |    |')
+           call edisp(itru,
+     &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |')
+           call edisp(itru,
+     &       ' no.   |      |      |      |     |     |     |')
           elseif(IDFST(ICOMP,N).eq.5)then
-      call edisp(itru,' Sensor|  X  |  Y  |  Z  | DX | DY | DZ | DC| ')
-      call edisp(itru,' no.   |     |     |     |    |    |    |   | ')
+           call edisp(itru,
+     &       ' Sensor|   X  |   Y  |   Z  |  DX |  DY |  DZ |  DC| ')
+           call edisp(itru,
+     &       ' no.   |      |      |      |     |     |     |    | ')
           elseif(IDFST(ICOMP,N).eq.3)then
             call edisp(itru,' Sensor | Sensor |')
             call edisp(itru,' posit. | type   |')
@@ -399,13 +403,13 @@ c Trace output follows.
      &        IDFST(ICOMP,N).eq.4)then
               write(outs,9914)J,CGX(ICOMP,N,J),CGY(ICOMP,N,J),
      &        CGH(ICOMP,N,J),UX(ICOMP,N,J),UY(ICOMP,N,J),UH(ICOMP,N,J)
- 9914         format(i7,3F6.1,3F5.1)
+ 9914         format(i7,3F7.2,3F6.2)
               call edisp(itru,outs)
             elseif(IDFST(ICOMP,N).eq.5)then
               write(outs,9915)J,CGX(ICOMP,N,J),CGY(ICOMP,N,J),
      &        CGH(ICOMP,N,J),UX(ICOMP,N,J),UY(ICOMP,N,J),UH(ICOMP,N,J),
      &        IDCFID(ICOMP,N,J)
- 9915         format(i7,3F6.1,3F5.1,I4)
+ 9915         format(i7,3F7.2,3F6.2,I4)
               call edisp(itru,outs)
             elseif(IDFST(ICOMP,N).eq.3)then
               write(outs,9916)CGX(ICOMP,N,1),CGY(ICOMP,N,1)
@@ -435,10 +439,18 @@ c Trace output follows.
  9985     CONTINUE
 
           call edisp(itru,' ')
-          call edisp(itru,' Start| Finish| Control| ')
-          call edisp(itru,'  Hour|   Hour|    Type| ')
-          write(outs,'(2I7,I8)')ICGCS(ICOMP),ICGCF(ICOMP),
-     &      ICGCFL(ICOMP,N)
+          call edisp(itru,' Start| Finish| Control    | ')
+          call edisp(itru,'  Hour|   Hour|    Type    | ')
+          info='unknown control'
+          if(ICGCFL(ICOMP,N).eq.-1) info='Always On'
+          if(ICGCFL(ICOMP,N).eq.0)  info='Always Off'
+          if(ICGCFL(ICOMP,N).eq.1)  info='On-Off'
+          if(ICGCFL(ICOMP,N).eq.2)  info='Step 100:50:0'
+          if(ICGCFL(ICOMP,N).eq.3)  info='Dimming - ideal'
+          if(ICGCFL(ICOMP,N).eq.4)  info='On-Off probability'
+          if(ICGCFL(ICOMP,N).eq.31) info='Dimming-int. reset'
+          if(ICGCFL(ICOMP,N).eq.32) info='Dimming-closd loop'
+          write(outs,'(2I7,1x,A)')ICGCS(ICOMP),ICGCF(ICOMP),info
           call edisp(itru,outs)
 
           IF(ICGCFL(ICOMP,N).EQ.31.OR.ICGCFL(ICOMP,N).EQ.32)THEN

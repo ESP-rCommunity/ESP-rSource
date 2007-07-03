@@ -627,18 +627,10 @@ C----------------------------------------------------------------------
       
 C------------------ MY_clm_db_menu ------------------------------------
 C
-C ABSTRACT:
-C
 C This procedure is used to control specification of a multi-year
 C climate database
 C
-C Inputs 
-C
-C  - None
-C
-C Outputs:
-C
-C  - None 
+C Inputs - none; outputs - none 
 C
 C---------------------------------------------------------------------- 
 
@@ -891,22 +883,19 @@ C........Standard options
 
          iMenu_count = iMenu_count + 3 
          
-         call emenu('Multi-year climate database',
+         call emenu('Multi-year Climate db',
      &              cMenu,iMenu_count, iChoice)
 
-C----------------------------------------------------------------------
-C        Respond to user's choices
-C----------------------------------------------------------------------
+C Respond to user's choice.
          if ( iChoice .eq. 1 ) then
-C----------------------------------------------------------------------
-C           User wants to change the file name 
-C----------------------------------------------------------------------
 
-C...........Do they want to save their changes?
+C User wants to change file name.
+
+C Save changes?
             if ( .not. bSaveOk ) then
                call eAskABC (cContext,
      &            'Do you wish to save your changes?',
-     &            'Yes','No','Cancel', iAnswer, 0 )
+     &            'yes','no','cancel', iAnswer, 0 )
 
                if ( iAnswer .eq. 1 ) then
 
@@ -924,15 +913,19 @@ C...........Do they want to save their changes?
 
 
             if ( bOk ) then
-C..............Allow user to specify a new file name
+
+C Allow user to specify a new file name.
                call spec_my_clm_db('Create', bExists, bCreate )
-C..............Does file exist?
+
+C Does file exist?
                if ( bExists ) then
-C.................Yes - Parse file and check for errors
-C.................(iFil+1 is used to open a temporary file)
+
+C Yes - parse file and check for errors
+C (iFil+1 used to open a temporary file).
                   call parse_my_clm_db( iFil + 1, .false., bMY_clm_err )
-C.................If file was parsed successfully, check
-C.................for errors in definitions
+
+C If file parsed successfully, check
+C for errors in definitions.
                   if (.not. bMY_clm_err )
      &             call check_my_clm_db ( .false., 'warn', bMY_clm_err )
 
@@ -985,10 +978,10 @@ C..............Get the record's index:
      &                 (1:lnblnk(cMY_clm_file_names(iRec_index))),
      &           ') '
                
-               write (cMsg, '(A)') 'Edit or delete this record?'
+               write (cMsg, '(A)') 'Edit/delete this record?'
 
                call eAskABC(cContext,cMsg,
-     &                      'Edit','Delete','Cancel',iAnswer,0)
+     &                      'edit','delete','cancel',iAnswer,0)
 
                if ( iAnswer .eq. 1 ) then
 C.................Edit the record.
@@ -1096,7 +1089,7 @@ C.................Do nothing - return to menu
 
          elseif ( iChoice .eq. iRecStop + 3 ) then
 C----------------------------------------------------------------------
-C           User wants to scroll aback page
+C           User wants to scroll back page
 C----------------------------------------------------------------------
             if ( iStartDisp .gt. 1 ) then
 
@@ -1108,7 +1101,7 @@ C----------------------------------------------------------------------
 
          elseif ( iChoice .eq. iRecStop + 4 ) then
 C----------------------------------------------------------------------
-C           User wants to scroll ahead a page 
+C           User wants to scroll forward page 
 C----------------------------------------------------------------------
             if ( iStopDisp .lt. iMY_clm_file_count ) then
 
@@ -1267,7 +1260,7 @@ C..............Update save status
          elseif ( iChoice .eq. iMenu_count - 3 ) then
 
 C----------------------------------------------------------------------
-C           User wants to save the data base
+C           User wants to save the database
 C----------------------------------------------------------------------         
             call Save_MY_clm_db ( iFil+1, bCriticalErr, bSaveOk )
             
@@ -1278,9 +1271,9 @@ C----------------------------------------------------------------------
 C...........Do they want to save their changes?
             if ( .not. bSaveOk ) then
                call eAskABC (
-     &            'Returning to previous menu:',
-     &            'Do you wish to save your changes?',
-     &            'Yes','No','Cancel', iAnswer, 0 )
+     &            'Returning to previous menu.',
+     &            'Save your changes?',
+     &            'yes','no','cancel', iAnswer, 0 )
                if ( iAnswer .eq. 1 ) then
 
                   call Save_MY_clm_db(iFil+1, bCriticalErr, bSaveOk)
@@ -1387,8 +1380,8 @@ C.....Loop controls
 
 C........Prompt user for file
          CALL EASKS(cMY_climate_db_name,
-     &     'Open multi-year database:',
-     &     'File name:',72,cMY_climate_db_name,'file name',IER,5)
+     &     ' ','Multi-year db name?',
+     &     72,cMY_climate_db_name,'file name',IER,5)
 
          if ( ier .ne. 0 ) then
 
@@ -1425,7 +1418,7 @@ C-------------------------------------------------------------------
 C-------------------------------------------------------------------
 C              File doesn't exist. What action should be taken?
 C-------------------------------------------------------------------
-               write (cContext,'(A)') 'Multi-year climate databse:'
+               write (cContext,'(A)') 'Multi-year climate db:'
 
                write (cMsg,'(3A)') 'File (',
      &            cMY_climate_db_name(1:lnblnk(cMY_climate_db_name)),
@@ -1453,7 +1446,7 @@ C.................Warn user, and return to menu
 C.................Perhaps create new file.
 
                   CALL EASKABC(cContext,cMsg,
-     &               'Create file', 'Try agian', 'Cancel',
+     &               'create file', 'try agian', 'cancel',
      &               iAsk_AB_result,5)
 
                   if ( iAsk_AB_result .eq. 1 ) then

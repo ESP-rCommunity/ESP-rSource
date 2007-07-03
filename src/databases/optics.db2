@@ -1,5 +1,18 @@
-# optical properties db for default windows,
-# TMC files and casual gain control
+# optical properties db for glazing, TMC files and casual gain control
+# the first line of each item is column sensitive and holds
+# an identifier (12 char) followed by a description
+# the 2nd line holds:
+# a) the number of default and tmc layers (always the same)
+# b) visable trans 
+# c) solar reflectance (outside)
+# d) overall solar absorbed
+# e) U value (for reporting purposes only)
+# the 3rd line holds:
+# a) direct solar tran at 0deg 40deg 55deg 70deg 80deg from normal
+# b) total heat gain at the same angles (for reporting purposes only)
+# then for each layer there is a line containing
+# a) refractive index
+# b) solar absorption at 0deg 40deg 55deg 70deg 80deg from normal
 # 
 # Glazed info follows:
 # 12 char id |  description       | thick | blind
