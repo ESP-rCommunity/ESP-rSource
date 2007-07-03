@@ -7,15 +7,10 @@
 *SMTP        Mailhost.nrcan.gc.ca
 # List of addresses: (MEMBER NAME) (EMAIL-ADDRESS)
 *ADDRESSES
-# Joe_Clarke              joe@esru.strath.ac.uk
-# Jon_Hand                jon@esru.strath.ac.uk
- Alex_Ferguson            aferguso@nrcan.gc.ca
- Ian_Beausoleil-Morrison  ibeausol@nrcan.gc.ca
-#   Phylroy_Lopez           plopez@nrcan.gc.ca
+# (exanple:) NAME                    name@domain.org
 *ADDRESSES-END
 # List of branches to test: 
 #   (BRANCH NAME) (LAST TESTED REVISION [rX for none]) (MEMBER NAME):(MEMBER NAME):(MEMBER NAME) (TEST):(TEST):(TEST)
 *BRANCHES
-  Alex_Ferguson             rX    Alex_Ferguson:Ian_Beausoleil-Morrison  NONE
-  Ian_Beausoleil-Morrison   rX    Alex_Ferguson:Ian_Beausoleil-Morrison  NONE
+# (example: ) branch_name       r123  NAME_1:NAME_2  STATIC:BUILD:REGRESSION
 *BRANCHES-END
