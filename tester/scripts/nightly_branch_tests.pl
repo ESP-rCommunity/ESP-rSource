@@ -73,7 +73,7 @@ my $gSMTP_Server="Mailhost.nrcan.gc.ca";    # SMTP server
 
 my $gTestOptions="-v";         # Generic test options. 
 
-my @gInput;                   # Buffer to store configuration file 
+my @gInput;                    # Buffer to store configuration file 
 
 #--------------------------------------------------------------------
 # SYNOPSYS 
@@ -205,37 +205,35 @@ sub test_branch($){
   
   my $last_revision = `svn info $gBaseURL/$branch | grep "Last Changed Rev:" `;
   
-  stream_out ("SVN INFO output: $last_revision\n");
-  
   $last_revision =~ s/Last Changed Rev://g;
   $last_revision =~ s/\s*//g;
   
-  stream_out ("Last revision on $branch: $last_revision\n");
   
   if ( ! $last_revision ){
+    my $svn_out = `svn info`;
+    stream_out ("SVN INFO: $svn_out \n");
     fatalerror ("Unable to collect output from command `svn info`")
   }
-  
-  stream_out ("Last tested revision on $branch:$gBranches{$branch}{\"ref_rev\"} ");
-  
+    
   $gBranches{$branch}{"test_rev"} = $last_revision;
   
+  
+  # rX has been specified in input file, test against revision 
+  # prior to last-changed revision. Otherwise, use specified 
+  # revsion.
   my $old_rev;
   if ( $gBranches{$branch}{"ref_rev"} =~ /^X$/ ){
     $old_rev = $last_revision - 1;
   }else{ 
     $old_rev = $gBranches{$branch}{"ref_rev"};
   }
-
-  stream_out ("\n");
   
   
-  
-  # If last changed revision is newer than last tested revision, test 
-  
+  # If last changed revision is newer than last tested revision, 
+  # perform tests.   
   if ( eval ("$old_rev < $gBranches{$branch}{\"test_rev\"}") ){
     
-    stream_out ("Testing $branch\@$old_rev vs. $branch\@$gBranches{$branch}{\"test_rev\"}\n");
+    stream_out ("Testing $branch\@r$old_rev vs. $branch\@r$gBranches{$branch}{\"test_rev\"}\n");
     
     # Determine which tests should be performed, and add '--skip-XXX' if necessary
     my $local_test_options = "";
@@ -269,7 +267,7 @@ sub test_branch($){
     # No changes on branch. Don't test, or update config file.  
     $gBranches{$branch}{"updated"} = 0;
     
-    stream_out ("Skipping $branch\@$old_rev: No change.\n");
+    stream_out ("Skipping $branch\@r$old_rev: No change.\n");
     
   }
   
@@ -287,7 +285,6 @@ sub update_data_file($){
   
   my $Branches_open = 0; 
   
-  stream_out("Updating configuration file\n");
   
   # Loop through file, and update branch entries as necessary
   for my $line ( @gInput ){
@@ -306,24 +303,27 @@ sub update_data_file($){
       $line_copy =~ s/#.*$//g;
       $line_copy =~ s/^\s*//g;
       $line_copy =~ s/\s+/ /g;
-      # Get particulars from copy : 
-      my ($name,$old_rev,$members,$tests) = split /\s+/, $line_copy;
-
-        # if branch has been updated, get
+      
+      # If there's anything left, perfrom seach and replace 
+      if ( $line_copy =~ /[^\s]/ ){
+      
+        # Get particulars from copy : 
+        my ($name,$old_rev,$members,$tests) = split /\s+/, $line_copy;
+  
+        # if branch has been updated, update line with new revision 
+        # number.
         if ( $gBranches{$name}{"updated"} ){
-      
-      
+        
           # Get updated branch number
           my $new_rev = $gBranches{$name}{"test_rev"};
-      
+        
           stream_out("Updating revision data in $name: $old_rev -> r$new_rev\n");
-      
+        
           # Update revision on line
           $line =~ s/(\s)$old_rev(\s)/$1r$new_rev$2/g;
-      
+        
         }
-      
-    
+      }
     }
     
     # Append line to output buffer
@@ -333,7 +333,6 @@ sub update_data_file($){
   }
   
   # Print out to file 
-  stream_out("Updating $input_file\n");
   open (OUTPUT, ">$input_file");
   print OUTPUT $Output; 
   close (OUTPUT);
@@ -373,8 +372,8 @@ sub read_data_file($){
       $line =~ s/^\s*//g;
       $line =~ s/\s+/ /g;
       # If there's anything left, parse contents
-      if ( $line !~ /^\s*$/ ){
-        
+      
+      if ( $line =~ /[^\s]/ ){
         # Open/close address and branch blocks as necessary
         if ( $line =~ /^\*ADDRESSES\s*$/ )     { $Addresses_open = 1; }
         if ( $line =~ /^\*ADDRESSES-END\s*$/ ) { $Addresses_open = 0; }
@@ -398,6 +397,7 @@ sub read_data_file($){
         
         # Parse branches
         if ( $Branches_open && $line !~ /^\*/ ){
+          
           my ($name,$rev,$members,$tests) = split /\s+/, $line;
           $rev =~ s/r//g;
           # Store branch info 
@@ -430,8 +430,8 @@ sub echo_config(){
   stream_out("\n  - branches:        ");
   foreach my $branch ( keys %gBranches ){
     stream_out("$branch\@"
-                   .$gBranches{$branch}{"ref_rev"}."("
-                   .$gBranches{$branch}{"tests"}.")->"
+                   .$gBranches{$branch}{"ref_rev"}." (tests - "
+                   .$gBranches{$branch}{"tests"}.") :: mailto: ->"
                    .$gBranches{$branch}{"members"}."\n                     ");
   }
   stream_out("\n");
