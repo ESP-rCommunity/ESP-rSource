@@ -103,7 +103,7 @@ C Begin with menu of default dbs.
          cTemp = 'None'
       endif
       
-      WRITE(ITEMS(1),'(2A)')'  model path: ',path(1:62)
+      WRITE(ITEMS(1),'(2A)')'  model path: ',path(1:56)
       ITEMS(2) ='  _______________________________ '
       WRITE(ITEMS(3),'(2A)')'a annual climate         : ',LCLIM(1:44)
       WRITE(ITEMS(4),'(2A)')'b multi-year climate     : ',cTemp(1:44)
@@ -716,16 +716,10 @@ C Read multilayer db information into common.
 C There were lots of undefined materials so likely the materials
 C database is for the wrong machine type. Guess the name of
 C the ascii version and if it exists, offer to convert it or use it.
-
           h(1)='It is likely that the materials db associated'
           h(2)='with this model is for a different computer '
           h(3)='type. ESP-r will try to find an ASCII version '
-          h(4)='of this file and either read it into the model'
-          h(5)='or convert it to a binary material database file'
-          h(6)='if you agree. '
-          h(7)=' '
-          h(8)='NOTE: ascii materials databases are the preferred'
-          h(9)='format so use them if they are available. '
+          h(4)='of this file and use it or convert it if you agree.'
           IAF=IFIL+1
           LASCI=' '
           write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
@@ -819,9 +813,8 @@ C try and re-scan the constructions database.
               CALL MKBPRC(IUOUT,IAF,LASCI,IER)
               if(ier.eq.0)then
                 call usrmsg(
-     &            'An ASCII Materials db was found and has been',
-     &            'converted: re-scanning constructions...done.',
-     &            '-')
+     &            'An ASCII materials file was found and converted.',
+     &            'Re-scanning constructions...','P')
                 CALL ERMLDB(0,IUOUT,IER)
                 if(ier.eq.0)then
                   MLDBOK=.TRUE.
@@ -845,16 +838,16 @@ C try and re-scan the constructions database.
           else
 
 C Ask user for ascii materials database to convert.
-          H(1)='The Materials db holds the thermophysical properties'
-          H(2)='of a range of materials (brick, concrete, insulation'
-          H(3)='etc.). An ascii version of this db may be used to'
-          H(4)='transfer the db between operating systems that have'
-          H(5)='incompatible binary representations (e.g. Unix and'
-          H(6)='Windows).'
+            H(1)='The materials database holds the thermo-physical'
+            H(2)='properties of a range of materials such as'
+            H(3)='brick, concrete, insulation, etc. An asci version'
+            H(4)='of this database is ofen used when transporting'
+            H(5)='models between operating systems. '
             IAF=IFIL+1
             DFILE=' '
-            CALL EASKS(LASCI,' ','Materials db (ascii)?',
-     &             72,DFILE,'materials db (ascii)',IER,6)
+            CALL EASKS(LASCI,' Materials database (ASCII)?',
+     &        ' ',72,DFILE,'materials db (ascii)',
+     &        IER,5)
             goto 155
           endif
         else
@@ -2306,7 +2299,7 @@ C
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESCP(100)
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
 
       CHARACTER H*72,LTMP*72,LASCI*72,DFILE*72,lltmp*144,lprev*144
@@ -2315,7 +2308,7 @@ C
       CHARACTER OUTS*124,OUTS248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      character DESCP*40
+      character PDBDESC*40
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2523,21 +2516,21 @@ C a new db, populate it and present editing facility.
 C Create a minimal events databases.
         moddb=.true.
         call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
-        NITEMS = 1
+        NPDBITEMS = 1
         NO(1) = 2
         NCG(1)= 1
-        DESCP(1)='Always ON 100%'
+        PDBDESC(1)='Always ON 100%'
         ICGS1(1)=0
         ICGF1(1)=24
         CGS1(1)=100.0
         CGL1(1)=100.0
         lastrec=4
         IREC = 1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NITEMS
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NPDBITEMS
         IREC=NO(1)
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(1)
         IREC=IREC+1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)DESCP(1)
+        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(1)
         IREC=IREC+1
         WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
      &        ICGS1(1),ICGF1(1),CGS1(1),CGL1(1)
@@ -2902,7 +2895,7 @@ C database contents.
       IF(ier.eq.0)then
         CALL USRMSG(' opened profiles db...',' ','-')
         IREC=1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NITEMS
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NPDBITEMS
         CALL USRMSG(' opened profiles db...ok',' ','-')
         CALL ERPFREE(IPRODB,ISTAT)
 
