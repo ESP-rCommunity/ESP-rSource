@@ -417,19 +417,20 @@ C Read current zone back in and then update the configuration file.
       ITEMS(ITEMC+10)='g solar distribution           '
       ITEMS(ITEMC+11)='h solar obstruction            '
       ITEMS(ITEMC+12)='i rotation & transforms        '
-      ITEMS(ITEMC+13)='j                              '
-      ITEMS(ITEMC+14)='  _____________________________'
-      ITEMS(ITEMC+15)='* list zone & surface details  '
-      ITEMS(ITEMC+16)='> save                         '
+      ITEMS(ITEMC+13)='j define linear thermal bridges'
+      ITEMS(ITEMC+14)='k                              '
+      ITEMS(ITEMC+15)='  _____________________________'
+      ITEMS(ITEMC+16)='* list zone & surface details  '
+      ITEMS(ITEMC+17)='> save                         '
       IF(ITRC.EQ.0)THEN
-        ITEMS(ITEMC+17)='t reporting >> silent  '
+        ITEMS(ITEMC+18)='t reporting >> silent  '
       ELSEIF(ITRC.EQ.1)THEN
-        ITEMS(ITEMC+17)='t reporting >> summary '
+        ITEMS(ITEMC+18)='t reporting >> summary '
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS(ITEMC+17)='t reporting >> detailed'
+        ITEMS(ITEMC+18)='t reporting >> detailed'
       ENDIF
-      ITEMS(ITEMC+18)='? help                         '
-      ITEMS(ITEMC+19)='- exit this menu               '
+      ITEMS(ITEMC+19)='? help                         '
+      ITEMS(ITEMC+20)='- exit this menu               '
 
       WRITE(HEAD,'(A,I2,A)')'Zone ',ICOMP,' Geometry'
 
@@ -491,8 +492,8 @@ C Help text for this menu.
       H(31)='  surface in a zone.'
 
 C Menu for zone geometry.
-      CALL EMENU(HEAD,ITEMS,ITEMC+19,INO)
-      IF(INO.EQ.ITEMC+19)THEN
+      CALL EMENU(HEAD,ITEMS,ITEMC+20,INO)
+      IF(INO.EQ.ITEMC+20)THEN
         if(browse)return
         if(MODGEO)then
           DOK=.false.
@@ -1636,9 +1637,13 @@ C zone mirroring may require boundary nodes to be updated.
         MODBND=.TRUE.
         MODGEO=.TRUE.
       ELSEIF(INO.EQ.ITEMC+13)THEN
+        CALL LINTHBRDG(ICOMP)
+
+      ELSEIF(INO.EQ.ITEMC+14)THEN     
 
 C << future position of linear thermophysical properties >>
-      ELSEIF(INO.EQ.ITEMC+15)THEN
+ 
+      ELSEIF(INO.EQ.ITEMC+16)THEN
 
 C Surface summary: print header, followed by surface information.
 C And also report other zone summary fields as in the QA report.
@@ -1701,17 +1706,17 @@ C For vertical walls assume horizontal hc coef.
 
 C For sloped surfaces.
                areaslproof = areaslproof + SSNA(icc)
-               uavslproof = uavslproof + (SSNA(icc) * UVH)
+               uavslproof = uavslproof + (SSNA(icc) * UVU)
              elseif(SVFC(is)(1:4).eq.'CEIL')then
 
 C For ceilings.
                areafltroof = areafltroof + SSNA(icc)
-               uavfltroof = uavfltroof + (SSNA(icc) * UVH)
+               uavfltroof = uavfltroof + (SSNA(icc) * UVU)
              else
 
 C For floors.
                areawall = areawall + SSNA(icc)
-               uavwall = uavwall + (SSNA(icc) * UVH)
+               uavwall = uavwall + (SSNA(icc) * UVD)
              endif
            elseif(SOTF(is)(1:4).eq.'TRAN')then
              if(SVFC(is)(1:4).eq.'CEIL'.or.
@@ -1719,7 +1724,7 @@ C For floors.
 
 C Consider glazing on ceiling or sloped to be a skylight.
                areaskylt = areaskylt + SSNA(icc)
-               uavgsky = uavgsky + (SSNA(icc) * UVH) 
+               uavgsky = uavgsky + (SSNA(icc) * UVU) 
              elseif(SVFC(is)(1:4).eq.'VERT')then
 
 C Consider glazing on walls to be a part of facade.
@@ -1858,7 +1863,7 @@ C Check if user wishes to see construction details as well.
             endif
           endif
         endif
-      ELSEIF(INO.EQ.ITEMC+16)THEN
+      ELSEIF(INO.EQ.ITEMC+17)THEN
 
 C Ask for name of file to put updated information into.
         if(browse)then
@@ -1880,12 +1885,12 @@ C Ask for name of file to put updated information into.
         LGEOM(ICOMP)=LTMP
         CALL EMKCFG('-',IER)
         MODGEO=.FALSE.
-      ELSEIF(INO.EQ.ITEMC+17)THEN
+      ELSEIF(INO.EQ.ITEMC+18)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
-      ELSEIF(INO.EQ.ITEMC+18)THEN
+      ELSEIF(INO.EQ.ITEMC+19)THEN
 
 C Produce help text for the menu.
         CALL PHELPD('geometry section',35,'zone_geo_ed ',0,0,IER)
@@ -6050,3 +6055,526 @@ C Found unexpected item.
 
       END
 
+
+C ******************** LINTHBRDG*************************************** 
+C linear thermal bridges definition for every zone 
+C psi values and lengths are the main inputs here
+C The extra fabric heat loss is calculated at the end
+C Additional information is given in the BRE IP 1/06 document
+ 
+      SUBROUTINE LINTHBRDG(ICOMP)
+#include "building.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+      common/SFIG/NSIGFIG
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON),SSPARENT(MCON)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
+
+      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+      
+      integer ibrdg   ! the type of thermal bridge:1 to 8 (NOT metal cladding)
+                      ! 1 is "roof-wall", 2 is "wall-ground floor"
+                      !3 is "wall-wall (convex corner)", 4 is "wall-wall (concave corner)"
+                      !5 is "wall-floor (not ground floor)", 6 is "lintel above window or door"
+                      !7 is "Sill below window", 8 is "jamb at window or door"
+                      !9 to 15 (metal cladding)
+                      !9 is "roof-wall", 10 is "wall-ground floor"
+                      !11 is "wall-wall (corner)", 12 is "wall-floor (not ground floor)"
+                      !13 is "lintel above window or door", 14 is "Sill below window"
+                      !15 is "jamb at window or door"
+		      !16 is for any other categories of thermal bridges
+		      
+      
+C Thermal bridge common block: psi is the linear thermal transmittance value, lngth is
+C the length of the thermal bridge and ibrdg is an index defining the type of thermal bridge
+      real psi,lngth
+      common/THRBRDG/psi(MCOM,16),lngth(MCOM,16),ibrdg(MCOM,16)
+      
+      LOGICAL context
+
+      DIMENSION TBRIDGE(30)
+      CHARACTER H*72,SNAME*12
+      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
+      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character SSPARENT*12
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER outs*124
+      CHARACTER LAPROB*72
+      character CUBN*6
+      character SIGSTR*12,t16a*16,t16b*16
+      character TBRIDGE*72
+      logical bndry
+
+      real totheatloss
+      real exposed,vexposed,areawall  ! local values for QA
+      real areaslproof,areafltroof
+      real uavwall,uavfltroof,uavslproof
+      real uavtotal
+      integer lna,lnb
+
+      
+      CALL SIGFIG(psi(ICOMP,16),5,RNO,SIGSTR,LSTR)
+      CALL SIGFIG(lngth(ICOMP,16),5,RNO,SIGSTR,LSTR)
+      
+C Call a menu with where the user has to specify lengths and 
+C psi values for thermal bridges - also, the name of the bridge
+C could be given in the future. Default names, lengths and psi values are provided
+   33 TBRIDGE(1)        ='Junctions NOT involving metal cladding   psi (
+     &W/mK)  length (m)'
+      WRITE(TBRIDGE(2),142)	   'a Roof-wall	                   :',  
+     &  '         ',psi(ICOMP,1),'     ',lngth(ICOMP,1)
+      WRITE(TBRIDGE(3),142)        'b Wall-ground floor            :',
+     &  '         ',psi(ICOMP,2),'     ',lngth(ICOMP,2)
+      WRITE(TBRIDGE(4),142)        'c Wall-wall (convex corner)    :',
+     &  '         ',psi(ICOMP,3),'     ',lngth(ICOMP,3)
+      WRITE(TBRIDGE(5),142)        'd Wall-wall (concave corner)   :',
+     &  '         ',psi(ICOMP,4),'     ',lngth(ICOMP,4)
+      WRITE(TBRIDGE(6),142)        'e Wall-floor (not ground floor):',
+     &  '         ',psi(ICOMP,5),'     ',lngth(ICOMP,5)
+      WRITE(TBRIDGE(7),142)        'f Lintel above window or door  :',
+     &  '         ',psi(ICOMP,6),'     ',lngth(ICOMP,6)
+      WRITE(TBRIDGE(8),142)        'g Sill below window            :',
+     &  '         ',psi(ICOMP,7),'     ',lngth(ICOMP,7)
+      WRITE(TBRIDGE(9),142)        'h Jamb at window or door       :',
+     &  '         ',psi(ICOMP,8),'     ',lngth(ICOMP,8)
+      TBRIDGE(10)       ='           _________________________________
+     &_______________ '
+      TBRIDGE(11)       ='Junctions involving metal cladding       psi (
+     &W/mK)  length (m)'
+      WRITE(TBRIDGE(12),142)	   'i Roof-wall	                   :',  
+     &  '         ',psi(ICOMP,9),'     ',lngth(ICOMP,9)
+      WRITE(TBRIDGE(13),142)       'j Wall-ground floor            :',
+     &  '         ',psi(ICOMP,10),'     ',lngth(ICOMP,10)
+      WRITE(TBRIDGE(14),142)       'k Wall-wall (corner)           :',
+     &  '         ',psi(ICOMP,11),'     ',lngth(ICOMP,11)
+      WRITE(TBRIDGE(15),142)       'l Wall-floor (not ground floor):',
+     &  '         ',psi(ICOMP,12),'     ',lngth(ICOMP,12)
+      WRITE(TBRIDGE(16),142)       'm Lintel above window or door  :',
+     &  '         ',psi(ICOMP,13),'     ',lngth(ICOMP,13)
+      WRITE(TBRIDGE(17),142)       'n Sill below window            :',
+     &  '         ',psi(ICOMP,14),'     ',lngth(ICOMP,14)
+      WRITE(TBRIDGE(18),142)       'o Jamb at window or door       :',
+     &  '         ',psi(ICOMP,15),'     ',lngth(ICOMP,15)
+      TBRIDGE(19)=       '          __________________________________
+     &_______________ '
+      WRITE(TBRIDGE(20),142)       'p Other linear thermal bridges :',
+     &  '         ',psi(ICOMP,16),'     ',lngth(ICOMP,16)
+      TBRIDGE(21)=       '          __________________________________
+     &_______________ '
+      TBRIDGE(22)=                   'q include % of thermal bridges'
+      TBRIDGE(23)=                   '? help                         '
+      TBRIDGE(24)=                   '- exit to zone description     '
+      ISDN=24
+
+      INODA=-4
+
+  142 FORMAT(2a,f5.3,a,f7.3)
+
+C Help text for the menu.
+      H(1) ='The user needs to define the length of the thermal' 
+      H(2) ='bridge around junction/openings/etc. Psi values can'
+      H(3) ='also be defined or the default values can be used'
+      H(4) ='This was based on the BRE IP 1/06 document'
+	
+C Menu control.
+      CALL EMENU('Thermal bridges',TBRIDGE,ISDN,INODA)
+	  
+      IF(INODA.EQ.ISDN)THEN
+        totheatloss = 0.0
+        do 1221 i=1,16
+
+C totheatloss is the total heat loss when all linear thermal bridges are added
+	  totheatloss = totheatloss + (psi(ICOMP,i) * lngth(ICOMP,i))
+ 1221   continue
+
+	write(6,*) 'total losses: ',totheatloss
+
+C jump back to the main geometry menu
+        return
+      ELSEIF(INODA.EQ.ISDN-1)THEN 
+
+C Produce help text for the menu.
+        CALL PHELPD('thermal bridge menu',4,'-',0,0,IER) 
+
+      ELSEIF(INODA.EQ.2)THEN
+          ibrdg(ICOMP,1) = 1
+	  	
+C ask the user for length and psi value	
+        write(outs,'(a)')'Roof-wall: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,1),' ',
+     &    '(accredited default psi: 0.12 W/mK)',
+     &    -2.0,'W',2.0,'W',0.12,'psi',IER,1)
+
+        write(outs,'(a)')'Roof-wall: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,1),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.3)THEN
+        ibrdg(ICOMP,2) = 2
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-ground floor: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,2),' ',
+     &    '(accredited default psi: 0.16 W/mK)',
+     &    -2.0,'W',2.0,'W',0.16,'psi',IER,1) 
+
+        write(outs,'(a)')'Wall-ground floor: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,2),' ','(default length: 0 m)',
+     &    -0.1,'W',200.0,'W',0.0,'length',IER,1)
+	  
+      ELSEIF(INODA.EQ.4)THEN
+        ibrdg(ICOMP,3) = 3  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-wall (convex corner): psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,3),' ',
+     &    '(accredited default psi: 0.09 W/mK)',
+     &    -2.0,'W',2.0,'W',0.09,'psi',IER,1)
+
+        write(outs,'(a)')'Wall-wall (convex corner): length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,3),' ','(default length: 0 m)',
+     &    -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.5)THEN
+        ibrdg(ICOMP,4) = 4  
+		  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-wall (concave corner): psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,4),' ',
+     &    '(accredited default psi: -0.09 W/mK)',
+     &    -2.0,'W',2.0,'W',-0.09,'psi',IER,1)
+
+        write(outs,'(a)')'Wall-wall (concave corner): length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,4),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.6)THEN
+        ibrdg(ICOMP,5) = 5  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-floor (not ground floor): psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,5),' ',
+     &    '(accredited default psi: 0.07 W/mK)',
+     &    -2.0,'W',2.0,'W',0.07,'psi',IER,1)
+
+        write(outs,'(a)')'Wall-floor (not ground floor): length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,5),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.7)THEN
+        ibrdg(ICOMP,6) = 6  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Lintel above window or door: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,6),' ',
+     &    '(accredited default psi: 0.3 W/mK)',
+     &    -2.0,'W',2.0,'W',0.3,'psi',IER,1)
+
+        write(outs,'(a)')'Lintel above window or door: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,6),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.8)THEN
+        ibrdg(ICOMP,7) = 7  
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Sill below window: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,7),' ',
+     &    '(accredited default psi: 0.04 W/mK)',
+     &    -2.0,'W',2.0,'W',0.04,'psi',IER,1)
+
+        write(outs,'(a)')'Sill below window: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,7),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.9)THEN
+        ibrdg(ICOMP,8) = 8 
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Jamb at window or door'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,8),' ',
+     &    '(accredited default psi: 0.05 W/mK)',
+     &    -2.0,'W',2.0,'W',0.05,'psi',IER,1)
+
+        write(outs,'(a)')'Jamb at window or door'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,8),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.12)THEN
+        ibrdg(ICOMP,9) = 9
+	  	
+C ask the user for length and psi value	
+        write(outs,'(a)')'Roof-wall: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,9),' ',
+     &    '(accredited default psi: 0.6 W/mK)',
+     &     -2.0,'W',2.0,'W',0.6,'psi',IER,1)
+
+        write(outs,'(a)')'Roof-wall: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,9),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+	  
+      ELSEIF(INODA.EQ.13)THEN
+        ibrdg(ICOMP,10) = 10
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-ground floor: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,10),' ',
+     &    '(accredited default psi: 1.15 W/mK)',
+     &     -2.0,'W',2.0,'W',1.15,'psi',IER,1)	 
+
+        write(outs,'(a)')'Wall-ground floor: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,10),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.14)THEN
+        ibrdg(ICOMP,11) = 11  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-wall (corner): psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,11),' ',
+     &    '(accredited default psi: 0.25 W/mK)',
+     &    -2.0,'W',2.0,'W',0.25,'psi',IER,1)
+
+        write(outs,'(a)')'Wall-wall (corner): length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,11),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.15)THEN
+        ibrdg(ICOMP,12) = 12  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Wall-floor (not ground floor): psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,12),' ',
+     &    '(accredited default psi: 0.07 W/mK)',
+     &    -2.0,'W',2.0,'W',0.07,'psi',IER,1)
+
+        write(outs,'(a)')'Wall-floor (not ground floor): length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,12),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.16)THEN
+        ibrdg(ICOMP,13) = 13  
+	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Lintel above window or door: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,13),' ',
+     &    '(accredited default psi: 1.27 W/mK)',
+     &    -2.0,'W',2.0,'W',1.27,'psi',IER,1)
+
+        write(outs,'(a)')'Lintel above window or door: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,13),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1) 
+
+      ELSEIF(INODA.EQ.17)THEN
+        ibrdg(ICOMP,14) = 14  
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Sill below window: psi value'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,14),' ',
+     &    '(accredited default psi: 1.27 W/mK)',
+     &    -2.0,'W',2.0,'W',1.27,'psi',IER,1)
+
+        write(outs,'(a)')'Sill below window: length'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,14),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.18)THEN
+        ibrdg(ICOMP,15) = 15 
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Jamb at window or door'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,15),' ',
+     &    '(accredited default psi: 1.27 W/mK)',
+     &    -2.0,'W',2.0,'W',1.27,'psi',IER,1)
+
+        write(outs,'(a)')'Jamb at window or door'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,15),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+
+      ELSEIF(INODA.EQ.20)THEN
+        ibrdg(ICOMP,16) = 16 
+	  	  
+C ask the user for length and psi value	
+        write(outs,'(a)')'Other type of thermal bridges'
+        H(1)='define psi value of thermal bridge '
+        CALL EASKR(psi(ICOMP,16),' ',
+     &   '(accredited default psi: 0.0 W/mK)',
+     &   -2.0,'W',2.0,'W',0.0,'psi',IER,1)
+
+        write(outs,'(a)')'Other type of thermal bridges'
+        H(1)='define lentgh of thermal bridge '
+        CALL EASKR(lngth(ICOMP,16),' ','(default length: 0 m)',
+     &                       -0.1,'W',200.0,'W',0.0,'length',IER,1)
+  	   	   
+
+      ELSEIF(INODA.EQ.ISDN-2)THEN
+
+C Find the area of external surfaces
+        exposed = 0.0
+        vexposed = 0.0
+        areawall = 0.0
+        areaslproof = 0.0
+        areafltroof = 0.0
+        uavwall = 0.0
+        uavfltroof = 0.0
+        uavslproof = 0.0
+        uavtotal =0.0
+
+        context=.true.
+        CALL SURINFO(ICOMP,iuout,context)
+        bndry=.true.
+        DO 2243 IS=1,NSUR
+         icc=IZSTOCN(icomp,is)
+         if(ICT(icc).eq.0.and.SSOTHER(icc)(1:5).ne.'EXTER')bndry=.false.
+         if(ICT(icc).eq.1.and.SSOTHER(icc)(1:5).ne.'SIMIL')bndry=.false.
+         if(ICT(icc).eq.2.and.SSOTHER(icc)(1:5).ne.'CONST')bndry=.false.
+         if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'CONST')bndry=.false.
+         if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'SIMIL')bndry=.false.
+         if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'EXTER')bndry=.false.
+         if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'GROUN')bndry=.false.
+         if(ICT(icc).eq.4.and.SSOTHER(icc)(1:5).ne.'GROUN')bndry=.false.
+         if(ICT(icc).eq.5.and.SSOTHER(icc)(1:5).ne.'ADIAB')bndry=.false.
+         if(ICT(icc).eq.6.and.SSOTHER(icc)(1:5).ne.'BASES')bndry=.false.
+	  	
+          if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
+
+C Check the U value for each external surface.
+C exposed walls and floors, pitched roofs, flat roofs
+            UVH = 0.0
+            UVU = 0.0
+            UVD = 0.0
+            do 1511 ii=1,nmlc
+              if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
+
+C Recover the ISO 6946 U values as in prjqa.F.
+                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
+              else
+                continue
+              endif
+ 1511       continue
+            exposed = exposed + SSNA(icc)
+            if(SVFC(is)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
+              areawall = areawall + SSNA(icc)
+              uavwall = uavwall + (SSNA(icc) * UVH)
+              vexposed = vexposed + SSNA(icc)	
+
+            elseif(SVFC(is)(1:4).eq.'SLOP')then
+
+C For sloped surfaces.
+              areaslproof = areaslproof + SSNA(icc)
+              uavslproof = uavslproof + (SSNA(icc) * UVU)
+            elseif(SVFC(is)(1:4).eq.'CEIL')then
+
+C For ceilings.
+              areafltroof = areafltroof + SSNA(icc)
+              uavfltroof = uavfltroof + (SSNA(icc) * UVU)
+            else
+
+C For floors.
+              areawall = areawall + SSNA(icc)
+              uavwall = uavwall + (SSNA(icc) * UVD)
+            endif
+          else
+            continue
+          endif
+	    
+ 2243   continue       
+
+        if(exposed.gt.0.1)then	       
+
+C report UA values
+          call rel16str(exposed,t16a,lna,ier)
+          call rel16str(vexposed,t16b,lnb,ier)
+          if(vexposed.gt.0.1)then
+            write(outs,'(5a)')' There is ',t16a(1:lna),
+     &      'm2 of exposed (to outside or to ground) surface area, ',
+     &      t16b(1:lnb),'m2 of which is vertical.'
+          else
+            write(outs,'(3a)')' There is ',
+     &        t16a(1:lna),'m2 of exposed surface area.'
+          endif
+          call edisp(iuout,outs)
+        endif	       
+
+        if(areawall.gt.0.1)then
+          call rel16str(uavwall,t16b,lnb,ier)
+          write(outs,'(3a)')' Exposed floor and vertical walls UA: ',
+     &      t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+        if(areaslproof.gt.0.1)then
+          call rel16str(uavslproof,t16b,lnb,ier)
+          write(outs,'(3a)')' Sloped roof UA: ',
+     &        t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+        if(areafltroof.gt.0.1)then
+          call rel16str(uavfltroof,t16b,lnb,ier)
+          write(outs,'(3a)')' Flat roof UA: ',
+     &      t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+
+C Add all the UA results together to get the zone's total UA value
+        uavtotal = uavwall + uavslproof + uavfltroof
+        call rel16str(uavtotal,t16b,lnb,ier)
+        write(outs,'(3a)')' Total UA: ',
+     &        t16b(1:lnb),' W/K'
+        call edisp(iuout,outs)
+
+      ENDIF
+
+C return to the thermal bridges menu
+      goto 33 
+      END
