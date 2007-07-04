@@ -1469,6 +1469,9 @@ C For global control, increment pass counter.
 C Save boundary condition data, if it exists
             if ( bH3K_rep_enabled() ) call report_BC_data()
 
+C Save control data
+            if ( bH3K_rep_enabled() ) call h3k_Transport_Ctl_Data()            
+
 C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
 C.....object update function to process and

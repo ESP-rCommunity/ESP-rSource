@@ -2106,6 +2106,40 @@ C........-> set name
       return
       end
 
+
+C------------ h3k_Transport_Ctl_Data -----------------------------------
+C     This routine transports control specific data into h3kreports.
+C     At present, it only transports MIMO control loop data.
+C
+C     inputs: none; outputs: none.
+C
+C-----------------------------------------------------------------------
+      subroutine h3k_Transport_Ctl_Data ()
+      implicit none
+      include 'mimo_ctl.h'
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+
+      integer iLoop             ! Counter for loops
+
+C-----------------------------------------------------------------------
+C     If MIMO controls are enabled, loop through loops and invoke
+C     reporting routine.
+C-----------------------------------------------------------------------
+      if ( bMIMOActive ) then
+
+        do iLoop = 1, iLoopCount
+
+          call H3KReportsSaveMIMOCtl ( iLoop ) 
+
+        enddo 
+
+      endif
+
+      return
+      end 
+
 C----------------  h3K_InitStringStorage -----------------------
 C
 C     This routine is a short-hand interface used to invoke

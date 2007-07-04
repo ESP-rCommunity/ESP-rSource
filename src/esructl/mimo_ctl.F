@@ -279,6 +279,7 @@ C.......... NAME, DOMAIN, OBJECT w, x, y, sensed-property
             if ( iWdCount == 7 ) then 
               iSenCount = iSenCount + 1
               cSenName ( iSenCount ) = cLnWords(1)(1:24)
+              iSenNameLen ( iSenCount ) = lnblnk ( cLnWords(1)(1:24) )
               cSenDomain (iSenCount) = cLnWords(2)(1:3)
               cSenObject (iSenCount) = cLnWords(3)(1:12)
 C.............Location data: 1-3              
@@ -316,6 +317,7 @@ C.........NAME, DOMAIN, OBJECT,  w, x, y, min val, max val
           if ( iWdCount == 8 ) then 
             iActCount = iActCount + 1
             cActName ( iActCount ) = cLnWords(1)(1:24)
+            iActNameLen ( iActCount ) = lnblnk ( cLnWords(1)(1:24) )
             cActDomain ( iActCount ) = cLnWords(2)(1:3)
             cActObject ( iActCount ) = cLnWords(3)(1:12)
 C...........Location data: 1-3
@@ -374,6 +376,7 @@ C.........   NAME Start-day (DD-MM-YYYY) End-day (DD-MM-YYYY)
           if ( iWdCount == 3 ) then
             iDayCount  = iDayCount + 1
             cDayName(iDayCount)     = cLnWords(1)(1:24)
+            iDayNameLen ( iDayCount ) = lnblnk ( cLnWords(1)(1:24) )
 C...........Use function bParseDate to turn ISO date into ESP-r-friendly            
 C...........data
             bError = bParseDate ( cLnWords(2), 
@@ -427,6 +430,7 @@ C.........  NAME, start-hr, end-hr
               iPerCount = iPerCount + 1 
 C.............Period name
               cPerName(iPerCount)  = cLnWords(1)(1:24)
+              iPerNameLen ( iPerCount ) = lnblnk ( cLnWords(1)(1:24) )
 C.............Period start hour 
               iPerStarthr(iPerCount) = iCtoI ( cLnWords(2), bError )
               if ( bError ) then 
@@ -506,7 +510,8 @@ C.........Valid tokens begin with 'LOOP-'
 
 C...........LOOP NAME: read single word
             cLoopName(iLoopCount) = cLnWords(2)(1:24)
-         
+            iLoopNameLen(iLoopCount) = lnblnk( cLnWords(2)(1:24) )
+            
           elseif ( cLnWords(1)(1:3)  == 'LAW'      ) then
           
 C...........LOOP LAW: read single word 
@@ -844,27 +849,28 @@ C.......Attempt to match specified Actuators to list
       
 C-----------------------------------------------------------------------
 C     Were fatal errors encountered?
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
       if ( bFatal_Error ) then
 C........Yes. Warn user and delete temporary file.
          call edisp(iUout, ' MIMO controls: Parsing error')
-         
+
          iER = 1
       else
-      
 
+C........No. report successful parse.
          call edisp(iUout, ' MIMO controls processed successfully')
          iER = 0
-         
+
+C........Set flag to 'activate' MIMO controls
+         bMIMOActive = .true.
+
       endif 
 
       call edisp ( iuout, ' ' )
-      
-      
+
       return
       end 
-      
-      
+
 C--------------------- procedure MIMO_Apply_Loops ----------------------
 C     Determine which control loops are relevant in the current context,
 C     and invoke them      
@@ -1089,7 +1095,16 @@ C-----------------------------------------------------------------------
       logical bFatal_Error         ! Error flag
       
       real fDay                    ! Current day number, and fraction thereof
+C-----------------------------------------------------------------------      
+C     References 
+C-----------------------------------------------------------------------
+
+      real fConvert_current_TS_to_DAY ! Function returining real-number 
+                                      !   representation of current time
       
+      real fGet_BC_data_by_col        ! Function returing data from 
+                                      !   bcd facility
+
 C-----------------------------------------------------------------------      
 C     Initialize 
 C-----------------------------------------------------------------------            
@@ -1144,7 +1159,11 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C         Sensor is attached to node in plant component.
 C-----------------------------------------------------------------------            
-          iPltNode  = NPcDat(iPltComp, 9 ) + iSenLoc( iSensor, 2 )    ! Node index 
+
+C.........Get index of node within plant component:
+C......... (Index of first node in component is given by NPcDat (  , 9),
+C.........  increment value by  [ sensor location data item # 2 ]-1 )
+          iPltNode  = NPcDat(iPltComp, 9 ) + iSenLoc( iSensor, 2 ) - 1   
           
           if ( cSenProp( iSensor )(1:4) == 'TEMP' ) then
           
@@ -1364,9 +1383,117 @@ C     Update function result
       return 
       end 
       
+C--------------------------- H3KReportsSaveMIMO ------------------------
+C
+C     Save data associated with a given loop in H3KReports
+C
+C     inputs:  iLoop - Index of control loop to be reported
+C
+C     outputs: none.
+C
 C-----------------------------------------------------------------------
+      subroutine H3KReportsSaveMIMOCtl ( iLoop ) 
+      implicit none 
+      include 'mimo_ctl.h'
+C-----------------------------------------------------------------------
+C     Passed arguements
+C-----------------------------------------------------------------------
+      integer iLoop             ! Index of loop to be reported.
+
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+
+C.....DECLARATIONS for H3Kreporting object
+      CHARACTER*128 char_temp
+      CHARACTER*128 root_name
+      CHARACTER*128 H3K_rep_NAME
+      CHARACTER*12  H3K_format
+      INTEGER LNBLNK
+
+C.....Counters
+      integer iSensor, iActuator     ! Sensor and Actuator loops
+
+C.....Indicies of sensors and actuators referenced by loops
+      integer iSensorIndex, iActuatorIndex
+
+C.....Flag for applicability
+      real fLoopApplicableFlag
+
+C.....Length of base string
+      integer iBaseLen
+
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      
+      logical bMIMOLawApplicable    ! Function indicating if control law
+                                    !   applies on current timestep
+
+C-----------------------------------------------------------------------
+C     Write base name for this control loop
+C-----------------------------------------------------------------------
+
+      write (root_name, '(A,A)'),
+     &  'control/MIMO/', cLoopName(iLoop)( 1:iLoopNameLen(iLoop) )
+
+      iBaseLen = iLoopNameLen(iLoop) + 13  ! Length of base string
+
+C-----------------------------------------------------------------------
+C     Determine if control loop was applicable on this timestep
+C-----------------------------------------------------------------------
+      if ( bMIMOLawApplicable ( iLoop ) ) then
+
+        fLoopApplicableFlag = 1.0
+
+      else 
+
+        fLoopApplicableFlag = 0.0
+
+      endif 
+
+      write (H3K_rep_NAME, '(A,A)') root_name(1:iBaseLen),
+     &                              '/applicability'
+
+      call add_to_xml_reporting ( fLoopApplicableFlag,
+     &                            H3K_rep_NAME,
+     &                            'units', '(-)',
+     &                            'Flag indicating if control loop '
+     &                            // 'is applicable on this timestep' )
+
+C-----------------------------------------------------------------------
+C     Loop through sensors
+C-----------------------------------------------------------------------
+      
+
+
+      
+
+      return
+      end 
+      
+C--------------------------- bMatchNameToIndex -------------------------
+C
+C     Search for matching pairs in two arrays:
 C     Return array iIndicies containing the index of each row in 
-C     array cSearchList that matches array cSourceList
+C     array cSearchList that matches a row in array cSourceList.
+C
+C     This function is used to determine if the sensors/actuators/periods/
+C     daytypes specified in a loop actually match those given in 
+C     the sensor/actuator/period/daytype section of the control file
+C
+C
+C     inputs: cNameType - Type of list to be tested (loop/sensor/actuator)
+C             iInstance - Loop/sensor/actuator index index 
+C             iSourceLength - number of rows in source list
+C             iSearchLength - number of rows in search list
+C             cSourceList - Array containing list of source terms
+C             cSearchList - Array containing list of terms 
+C      
+C     outputs: bMatchNameToIndex - logical result of match (true if 
+C                 all rows in cSourceList were matched)
+C              iIndicies - list of matching rows in cSearchList.
+C
 C-----------------------------------------------------------------------
 
       logical function bMatchNameToIndex ( cNameType, 
@@ -1471,8 +1598,10 @@ C.......Was source string matched?
       end 
       
       
-C-----------------------------------------------------------------------
-C     Attempt to coax a string into an integer. 
+C-------------- integer function iCtoI ---------------------------------
+C
+C     Coax a string into an integer.
+C
 C-----------------------------------------------------------------------       
       integer function  iCtoI ( cBuffer, bError )
       implicit none 
@@ -1490,8 +1619,10 @@ C-----------------------------------------------------------------------
       end 
       
       
-C-----------------------------------------------------------------------
-C     Attempt to coax a string into a float. 
+C-------------- real function fCtoR ------------------------------------
+C
+C     Attempt to coax a string into a float.
+C
 C-----------------------------------------------------------------------       
       real function  fCtoR ( cBuffer, bError )
       implicit none 

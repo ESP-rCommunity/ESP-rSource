@@ -4,24 +4,26 @@ C-----------------------------------------------------------------------
 
       common/MIMO_ctl/bMIMOActive,fMIMOVersion
 
-      common/MIMO_sensors/iSenCount, cSenName, iSenLoc, 
+      common/MIMO_sensors/iSenCount, cSenName, iSenNameLen, iSenLoc, 
      &                    cSenProp, cSenDomain, cSenObject
       
       common/MIMO_actuators/iActCount, cActName, iActLoc, cActVariable,
-     &                      fActMIN, fActMAX, cActDomain, cActObject
+     &                      fActMIN, fActMAX, cActDomain, cActObject,
+     &                      iActNameLen
      
       
-      common/MIMO_daytypes/iDayCount, cDayName, 
+      common/MIMO_daytypes/iDayCount, cDayName, iDayNameLen,
      &                     iDayStartDD, iDayStartMM, iDayStartYYYY, 
      &                     iDayEnd DD,  iDayEnd MM,  iDayEnd YYYY, 
      &                     iDayStartDOY, iDayEndDOY
 
      
       
-      common/MIMO_periods/iPerCount, cPerName, iPerStartHr, iPerEndHr
+      common/MIMO_periods/iPerCount, cPerName, iPerStartHr, iPerEndHr,
+     &                    iPerNameLen
       
       common/MIMO_loops/iLoopCount, cLoopName, cLoopLaw, iLoopLaw,
-     &                  iLoopPriority, 
+     &                  iLoopPriority, iLoopNameLen,
      &                  iLoopDayTypeCount, cLoopDayTypes, iLoopDayTypes,
      &                  iLoopSensorCount, cLoopSensors, iLoopSensors,
      &                      iLoopSensorDataCount, fLoopSensorData,
@@ -61,6 +63,7 @@ C.....Version info
 C.....SENSOR parameters
       integer       iSenCount                       ! # of sensors 
       character*24  cSenName(mMIMOList)             ! Sensor names
+      integer       iSenNameLen(mMIMOList)          ! Length of sensor names
       character*3   cSenDomain(mMIMOList)           ! Sensor domain
       character*12  cSenObject(mMIMOList)           ! Sensor object
       integer       iSenLoc(mMIMOList,mMIMOLoc)     ! Sensor locataion data
@@ -69,6 +72,7 @@ C.....SENSOR parameters
 C.....Actuator parameters
       integer       iActCount                       ! # of Actuators 
       character*24  cActName(mMIMOList)             ! Actuator names
+      integer       iActNameLen(mMIMOList)          ! Actuator name length
       character*3   cActDomain(mMIMOList)           ! Actuator domain 
       character*12  cActObject(mMIMOList)           ! Actuator object
       integer       iActLoc(mMIMOList,mMIMOLoc)     ! Actuator locataion data
@@ -79,6 +83,7 @@ C.....Actuator parameters
 C.....DAY Types
       integer iDayCount                             ! # days.
       character*24 cDayName(mMIMOList)              ! Daytype names
+      integer iDayNameLen(mMIMOList)                ! Daytype name length
       integer iDayStartDD(mMIMOList)                ! Start day-of-month
       integer iDayStartMM(mMIMOList)                ! Start month
       integer iDayStartYYYY(mMIMOList)              ! Start year
@@ -90,13 +95,15 @@ C.....DAY Types
       
 C.....PERIODS
       integer iPerCount                             ! # periods
-      character*24 cPerName(mMIMOList)              ! Period name
+      character*24 cPerName(mMIMOList)              ! Period names
+      integer iPerNameLen(mMIMOList)                ! Period name length
       integer iPerStartHr(mMIMOList)                ! Period start hour
       integer iPerEndHr(mMIMOList)                  ! Period end hour 
       
 C.....LOOPS
       integer iLoopCount                            ! # Loops 
       character*24 cLoopName(mMIMOLoop)             ! Loop names
+      integer iLoopNameLen(mMIMOLoop)               ! Loop name length
       character*24 cLoopLaw(mMIMOLoop)              ! Loop type (keyword)
       integer      iLoopLaw(mMIMOLoop)              ! Loop law index
       integer iLoopPriority(mMIMOLoop)              ! Priority of loop (1-10)
