@@ -187,7 +187,25 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
      &                SHOCCshzFile(mcom)
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
-
+     
+      integer ibrdg   ! the type of thermal bridge:1 to 8 (NOT metal cladding)
+                      ! 1 is "roof-wall", 2 is "wall-ground floor"
+                      !3 is "wall-wall (convex corner)", 4 is "wall-wall (concave corner)"
+                      !5 is "wall-floor (not ground floor)", 6 is "lintel above window or door"
+                      !7 is "Sill below window", 8 is "jamb at window or door"
+                      !9 to 15 (metal cladding)
+                      !9 is "roof-wall", 10 is "wall-ground floor"
+                      !11 is "wall-wall (corner)", 12 is "wall-floor (not ground floor)"
+                      !13 is "lintel above window or door", 14 is "Sill below window"
+                      !15 is "jamb at window or door"
+		      !16 is for any other categories of thermal bridges
+		      
+      
+C Thermal bridge common block: psi is the linear thermal transmittance value, lngth is
+C the length of the thermal bridge and ibrdg is an index defining the type of thermal bridge
+      real psi,lngth
+      common/THRBRDG/psi(MCOM,16),lngth(MCOM,16),ibrdg(MCOM,16)
+      
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
@@ -448,6 +466,13 @@ C Clear the connection list.
    60 CONTINUE
       SNFNAM=' '
 
+C Clear the linear thermal bridges variables
+      DO 3 I=1,16
+        DO 2 IX=1,MCOM
+          psi(IX,I) = 0.0
+          lngth(IX,I) = 0.0
+    2   CONTINUE
+    3 CONTINUE
       return
       end
 
