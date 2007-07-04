@@ -805,12 +805,11 @@ C     definitions
 C-----------------------------------------------------------------------      
       do ii = 1, iLoopCount
 C.................Attempt to match specified sensors to list
-        
         write (cBuffer, '(A)' ) 'sensor'
         if (.not. bMatchNameToIndex ( 
      &              cBuffer,
-     &              iLoopCount,
-     &              iLoopSensorCount,
+     &              ii,
+     &              iLoopSensorCount(ii),
      &              iSenCount,
      &              cLoopSensors,
      &              cSenName,
@@ -821,32 +820,29 @@ C.................Attempt to match specified sensors to list
      &      ' Could not resolve sensors for loop #', 
      &            iLoopCount
           call edisp(iUout, cMsg)
-        endif            
-     
+        endif
+
 C.......Attempt to match specified Actuators to list
-        
+
         write (cBuffer, '(A)' ) 'actuator'
         if (.not. bMatchNameToIndex ( 
      &              cBuffer,
-     &              iLoopCount,
-     &              iLoopActuatorCount,
+     &              ii,
+     &              iLoopActuatorCount(ii),
      &              iActCount,
      &              cLoopActuators,
      &              cActName,
      &              iLoopActuators      ) ) then 
-        
+
           bFatal_Error = .true. 
           write (cMsg, '(A,I2)')
      &      ' Could not resolve actuators for loop #', 
      &            iLoopCount
           call edisp(iUout, cMsg)
-        endif      
+        endif
       
-      enddo 
-        
+      enddo
 
-      
-      
 C-----------------------------------------------------------------------
 C     Were fatal errors encountered?
 C-----------------------------------------------------------------------
@@ -1382,6 +1378,8 @@ C     Update function result
       
       return 
       end 
+
+
       
 C--------------------------- H3KReportsSaveMIMO ------------------------
 C
@@ -1420,15 +1418,20 @@ C.....Indicies of sensors and actuators referenced by loops
 C.....Flag for applicability
       real fLoopApplicableFlag
 
-C.....Length of base string
+C.....Length of base, temporary strings
       integer iBaseLen
-
+      integer iTempLen
+      
 C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
       
       logical bMIMOLawApplicable    ! Function indicating if control law
                                     !   applies on current timestep
+
+      real fMIMOSensor              ! Function returning the most
+                                    !   recently measured value for a
+                                    !   given sensor 
 
 C-----------------------------------------------------------------------
 C     Write base name for this control loop
@@ -1464,14 +1467,37 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Loop through sensors
 C-----------------------------------------------------------------------
-      
+      do iSensor = 1, iLoopSensorCount ( iLoop )
 
+C.......Get index of sensor
+        iSensorIndex = iLoopSensors ( iLoop, iSensor ) 
+        
+C.......Append name of sensor to base string
+        write ( char_temp, '(A,A,A)')
+     &      root_name(1:iBaseLen), '/sensors/',
+     &      cSenName(iSensorIndex)(1:iSenNameLen( iSensorIndex ) )
 
-      
+        iTempLen = iBaseLen + iSenNameLen ( iSensorIndex ) + 9
+C.......Now report sensed value:
+
+        write ( H3K_rep_NAME, '(A,A)' )
+     &      char_temp(1:iTempLen),
+     &      '/measurement'
+
+C.......In the future, we could check the sensor's property value,
+C.......and use it to report some sensible units.     
+        
+        call add_to_xml_reporting ( fMIMOSensor ( iSensorIndex ),
+     &                              H3K_rep_NAME,
+     &                              'units','(-)',
+     &                              'Value measured by MIMO sensor' )
+
+      enddo
 
       return
       end 
       
+
 C--------------------------- bMatchNameToIndex -------------------------
 C
 C     Search for matching pairs in two arrays:
@@ -1561,7 +1587,7 @@ C.....For each item in source list...
         
 C.........Loop through search list, and check for match         
         do jj = 1, iSearchLength
-        
+
           iL2 = lnblnk( cSearchList(jj) )
           if ( cSourceList(iInstance,ii)(1:iL1) 
      &                ==  cSearchList(jj)(1:iL2) ) then
@@ -1569,8 +1595,9 @@ C.........Loop through search list, and check for match
             bMatched = .true. 
             
             iIndicies ( iInstance, ii ) = jj
-            
-          endif 
+
+          endif
+
         enddo 
 
 C.......Was source string matched?
