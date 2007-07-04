@@ -1082,23 +1082,56 @@ C-----------------------------------------------------------------------
       integer iPltComp             ! Index of plant component
       integer iPltNode             ! Index of node in plant component'
       integer iPltCtl              ! Index of control loop in plt domain
+      integer iBCDCol              ! Column of BCD file corresponding
+                                   !   to sensor data 
+      integer iBCDInterpMethod     ! Method to be used to interpolate BCD 
+                                   !   data 
       logical bFatal_Error         ! Error flag
       
-C-----------------------------------------------------------------------      
-C     Determine where sensor is located, and collect desired property.
-C
-C       iSenLoc( , 1) >= 0 : Sensor is in specified zone, or in 
-C                            the current zone.
-C
-C-----------------------------------------------------------------------      
+      real fDay                    ! Current day number, and fraction thereof
       
-!       write (cContext , '(A,I2,A)') ' MIMO control sensor # ', 
-!      &           iSensor, ':'
+C-----------------------------------------------------------------------      
+C     Initialize 
+C-----------------------------------------------------------------------            
+      write (cContext , '(A,I2,A)') ' MIMO control sensor # ', 
+     &           iSensor, ':'
       
+C-----------------------------------------------------------------------      
+C     Check cDomain and cObject variables to determine where sensor 
+C     is located, and then collect desired property
+C-----------------------------------------------------------------------      
             
       if ( cSenDomain(iSensor)(1:3) == 'bld'  ) then
       
       
+      
+      elseif ( cSenDomain(iSensor)(1:3) == 'bcd' ) then
+      
+C-----------------------------------------------------------------------
+C       Sensor reads data out of bcd file. 
+C
+C         - Sensor location provides BCD column number and interpolation
+C           method (step or linear).
+C-----------------------------------------------------------------------      
+        iBCDCol          = iSenLoc ( iSensor, 1 )
+        iBCDInterpMethod = iSenLoc ( iSensor, 2 )
+        
+C.......Get current day number:
+C.......Use function fConvert_current_TS_to_DAY to collect the current
+C.......time in the plt domain and convert to a real representing
+C.......the current day ( & fraction thereof )
+
+        fDay = fConvert_current_TS_to_DAY() 
+        
+C.......Use function fGet_BC_data_by_col to return current value of
+C.......requested boundary condition column.
+        
+        fMIMOSensor = fGet_BC_data_by_col( iBCDCol,
+     &                                     fDay,
+     &                                     iBCDInterpMethod,
+     &                                     cContext          )        
+        
+        
       elseif ( cSenDomain(iSensor)(1:3) == 'plt'  ) then  
       
 C-----------------------------------------------------------------------
