@@ -2,6 +2,7 @@
 # This file contains a list of branches, revisions, and email addresses
 # for use with the nightly build script.
 #
+*FILE-LOCK   UNLOCKED
 # Repository base URL
 *BASE-URL    https://svn2.cvsdude.com/espr/esp-r/branches/
 *SMTP        Mailhost.nrcan.gc.ca

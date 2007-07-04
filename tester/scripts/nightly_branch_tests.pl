@@ -52,7 +52,7 @@ sub fatalerror($);
 sub test_branch($);
 sub read_data_file($);
 sub update_data_file($);
-
+sub LockFile($$);
 #--------------------------------------------------------------------
 # Declare variables and defaults
 #--------------------------------------------------------------------
@@ -175,22 +175,115 @@ if ( @ARGV ){
   }
 }
 
-# Read input file.
-read_data_file($gInputFile);
+# Attempt to obtain lock on file 
 
-# Possibly dump configuration to buffer
-echo_config();
+stream_out (`date`);
 
-# Run tests
-foreach my $branch ( keys %gBranches ){
+if ( LockFile ( $gInputFile, "lock" ) ) {
+          
+  # Read input file.
+  read_data_file($gInputFile);
   
-  test_branch($branch);
+  # Possibly dump configuration to buffer
+  echo_config();
+  
+  # Run tests
+  foreach my $branch ( keys %gBranches ){
+    
+    test_branch($branch);
+  
+  }
+  
+  # Update 'last tested revision' numbers in configurtion file with
+  # most recent revision 
+  update_data_file($gInputFile);
+  
+  # Unlock file
+  LockFile( $gInputFile, "unlock" )
+
+}else{
+  
+  stream_out ("$gInputFile locked; no tests performed.\n");
+  
+}
+#-------------------------------------------------------------------
+# Read input file, and attempt to update 'locked' flag 
+#-------------------------------------------------------------------
+sub LockFile($$){
+  
+  my ($input_file, $action) = @_;
+  
+  my $FileLockedOk = 0;
+  
+  # Parse file
+ 
+  open (INPUT, "$input_file" ) or fatalerror ("Could not open $input_file for reading\n");
+    
+  my ($output) = "";
+    
+  while ( my $line = <INPUT> ){
+    
+    my $line_copy = $line;
+    
+    # Strip comments and leading spaces from copy 
+    $line_copy =~ s/#.*$//g;
+    $line_copy =~ s/^\s*//g;
+    $line_copy =~ s/\s+/ /g;
+      
+    # If there's anything left, check if line matches '*FILE-LOCK OPEN'
+    if ( $line_copy =~ /[^\s]/ ){
+    
+      
+      if ( $action =~ /lock/ ){
+          
+            if ( $line_copy =~ /\*FILE-LOCK UNLOCKED/ ){
+        
+            # Lock file 
+              $line =~ s/UNLOCKED/LOCKED/g;
+              
+              $FileLockedOk = 1;
+              
+            }
+            
+      }
+      
+      if ( $action =~ /unlock/ ){
+          
+            if ( $line_copy =~ /\*FILE-LOCK LOCKED/ ){
+        
+            # Lock file 
+              $line =~ s/LOCKED/UNLOCKED/g;
+              
+              $FileLockedOk = 1;
+              
+            }
+                        
+      }
+
+      
+    }
+    
+    # Append line to output
+    $output .= $line;
+  
+  }
+  
+  # Close input, and open output 
+  
+  close (INPUT);
+  
+  open (OUTPUT, ">$input_file" ) or fatalerror ("Could not open $input_file for writing\n");
+  
+  print OUTPUT $output;
+
+  close (OUTPUT);
+
+  return $FileLockedOk; 
+  
+  
 
 }
 
-# Update 'last tested revision' numbers in configurtion file with
-# most recent revision 
-update_data_file($gInputFile);
 
 #-------------------------------------------------------------------
 # Test specified branch
