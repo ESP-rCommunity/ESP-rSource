@@ -258,7 +258,7 @@ C........plt matrix not supported. Do nothing.
       endif
 
       return
-      end subroutine
+      end  ! of subroutine
 
 C------------------ A42_CHP_flow_char -----------------------------
 C
@@ -4115,7 +4115,7 @@ C........Write a name: cooling water control volume TC
      &      'A42 CHP model: Cooling water control volume time constant')
 
       return
-      end subroutine
+      end  ! of subroutine
 
 
 C------------------- Eval_TS_average ------------------------------------

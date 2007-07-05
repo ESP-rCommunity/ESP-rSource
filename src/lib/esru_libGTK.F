@@ -229,10 +229,10 @@ C by the user.
 C Examples:
 C Ask user for zone number.
 C        ICOMP=1
-C        H(1)='The zone number is required only for reporting '//
-C     &           'purposes.'
-C        CALL EASKI(ICOMP,' ',' What is the zone number? ',
-C     &             1,'F',MCOM,'W',1,'zone number',IER,1)
+C        H(1)='The zone number is required only for reporting'
+C        H(2)='purposes.'
+C        CALL EASKI(ICOMP,' ','Zone number?',
+C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
       SUBROUTINE EASKI(IVAL,PROMP1,PROMP2,MINV,MINACT,
      &                 MAXV,MAXACT,IDEFLT,ERMSG,IER,NHELP)
@@ -246,6 +246,7 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,1)
       CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72
       character prompt*144
       LOGICAL OK,DOK
+      integer ivalold
 
       IER=0
 
@@ -253,9 +254,13 @@ C If IVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.IVAL.LT.MINV)IVAL=IDEFLT
       if(MAXACT.EQ.'F'.and.IVAL.GT.MAXV)IVAL=IDEFLT
 
+C Clear string buffers and instantiate 'ask'
    20 WORD=' '
       ask ='        '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
+
+C Remember value passed in in case of a cancel.
+      ivalold=ival
 
 C Generate help and default strings.
       CALL INTSTR(IDEFLT,STR2,IW2,IER)
@@ -269,7 +274,7 @@ C Generate help and default strings.
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a)
+   64   FORMAT('No help available for ',a,'!')
         WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
    65   FORMAT('Default (d):',a,' or Current (ok):',a)
       ENDIF
@@ -278,9 +283,6 @@ C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic faciltiies to edit the number.
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         iwidth=10
         WORD=' '
         if(NHELP.GT.0)then
@@ -305,7 +307,8 @@ C        write (6,*) 'EASKI',IVALUE,IVAL,IFLG
 
         IF(iflg.EQ.-3)THEN
 
-C A cancel answer detected, set ier to -3 and return.
+C Cancel button was pressed, reset ival as ivalold and mark as cancel. 
+          IVAL=ivalold
           CALL USRMSG('User requested a cancel for dialog',PROMPT,'-')
           ier=-3
           RETURN
@@ -458,11 +461,11 @@ C Example:
 C    ....
 C Read a site latitude.
 C        XLAT=50.0
-C        H(1)='The latitude is required for calculating the '//
-C     &           'sun position, it should '
-C        H(2)='be similar to that assumed for the climate file.'
+C        H(1)='The latitude is required for calculating the sun'
+C        H(2)='position, it should be similar to that assumed for'
+C        H(3)='the climate file.'
 C        CALL EASKR(XLAT,' ',' What is the site latitude (deg) ? ',
-C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,2)
+C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,3)
 C    ...
 
       SUBROUTINE EASKR(RVAL,PROMP1,PROMP2,RMIN,MINACT,
@@ -484,21 +487,21 @@ C If RVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.RVAL.LT.RMIN)RVAL=DEFLT
       if(MAXACT.EQ.'F'.and.RVAL.GT.RMAX)RVAL=DEFLT
 
-C Check that value is not trivially close to zero (ie not instanciated
-C on the fortran side before the call).
+C Check that value is not trivially close to zero (i.e. not
+C instantiated on the Fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
-      if(close)RVAL=0.00
+      if(close)RVAL=0.0
    20 WORD=' '
       ask='           '
-      if(rval.gt.1.E+6)then
+      if(abs(rval).gt.1.E+6)then
         WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      elseif(rval.le.1.E+6.and.rval.gt.1.E+4)then
+      elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
         WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-      elseif(rval.le.1.E+4.and.rval.gt.1.E-3)then
+      elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
         WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
-      elseif(rval.le.1.E-3.and.rval.gt.1.E-4)then
+      elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
         WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
-      elseif(rval.le.1.E-4)then
+      elseif(abs(rval).le.1.E-4)then
         WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
       else
         WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
@@ -507,30 +510,25 @@ C on the fortran side before the call).
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
       WRITE(DSTR,27,iostat=ios,err=1)STR2(1:IW2)
-   27 FORMAT(' The default value (',a,') will be used.')
+   27 FORMAT('The default value (',a,') will be used.')
 
       CALL REL16STR(DEFLT,STR1,IW1,IER)
       CALL REL16STR(RVAL,STR2,IW2,IER)
       IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   63   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
+        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   63   FORMAT('(Current value: ',a,'; Default value: ',a,')')
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT(' No help available for ',a)
+   64   FORMAT('No help available for ',a,'!')
         WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   65   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
+   65   FORMAT('(Current value: ',a,'; Default value: ',a,')')
       ENDIF
 
 C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic facilities to edit the number.
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         iwidth=16
         WORD=' '
         if(NHELP.GT.0)then
@@ -559,6 +557,7 @@ C A cancel answer detected, set ier to -3 and return.
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
+          call edisp(iuout,' ')
           RVAL=DEFLT
           RETURN
         ELSEIF(IFLG.eq.-1)THEN
@@ -588,6 +587,7 @@ C In text mode, remind user of current value.
 
 C A 'D' or 'd' detected, set to default value.
             call edisp(iuout,DSTR)
+            call edisp(iuout,' ')
             RVAL=DEFLT
             RETURN
           ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
@@ -630,7 +630,7 @@ C Check RVALT against minimum and respond based on MINACT.
    28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this OK ? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -648,16 +648,16 @@ C Check RVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,39,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   39   FORMAT(' The value of ',a,' (',a,')',' is greater than ',a,'!')
+   39   FORMAT('The value of ',a,' (',a,')',' is greater than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this ok? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
           RETURN
         ELSEIF(MAXACT.EQ.'F')THEN
-          CALL USRMSG(OUTSTR,'Please re-enter: ','W')
+          CALL USRMSG(OUTSTR,'Please re-enter.','W')
           GOTO 20
         ELSEIF(MAXACT.EQ.'-')THEN
           RVAL=RVALT
@@ -671,13 +671,14 @@ C Check RVALT against minimum and respond based on MINACT.
 C Return to calling module
       IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
       RETURN
- 89   CALL USRMSG(' ',' Did not understand, try again..','-')
+ 89   CALL USRMSG(' ','Did not understand, try again.','-')
       GOTO 20
    1  write(6,*) 'EASKR: error composing message or prompt.'
       return
 
- 999  WRITE(outs,*) ' EASKR: invalid real or > 16 char: ',RVAL
+ 999  WRITE(outs,*) 'EASKR: invalid real or > 16 chars: ',RVAL
       call edisp(iuout,outs)
+      call edisp(iuout,' ')
       RETURN
 
       END

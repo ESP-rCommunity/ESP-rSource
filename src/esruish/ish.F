@@ -287,9 +287,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       IF(MMOD.NE.-6)ICOUT=IUOUT
 
-      CALL ESPrVersion("summary")
-
-
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
@@ -509,6 +506,9 @@ C been done, all user to delete them.
         CALL EPAGEND
         STOP
       endif
+
+C Something other than silent recalc so present application version info.
+      CALL ESPrVersion("summary")
       
 C Display opening menu.
   201 IER=0

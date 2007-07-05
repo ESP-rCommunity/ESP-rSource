@@ -450,8 +450,8 @@ C << test check parent and child by changing act='c' >>
 C << NOTE: parent - child not yet held in geometry file >>
       if(.NOT.browse)then
         if(firstin.or.MODGEO)then
-C          act = 'c'
-          act = '-'
+          act = 'c'
+C          act = '-'
           call suredgeadj(0,act,icomp,ier)
           firstin=.false.
         endif
@@ -3153,7 +3153,7 @@ C List help text for the vertex menu.
      &   'd angle between two lines','e intersect of a line & plane',
      &   'f distance from vertex to a line',
      &   'g align vertex with a line','h find close vertices',
-     &   'i move vertices along a line',' ',' ',' ',ino,idno,14)
+     &   'i move vertices along a line',' ',' ',' ',ino,idno,16)
         if(ino.eq.0.or.ino.eq.10)then
           continue
         elseif(ino.eq.1)then
@@ -3162,7 +3162,7 @@ C Vertices along a line between two verts.
           inpick=2
           CALL EPMENSV
           call EPKVERT(INPICK,IVLST,'Define Line',
-     &      'Select two vertices to define line.',' ',14,ier)
+     &      'Select two vertices to define line.',' ',16,ier)
           CALL EPMENRC
   72      if(inpick.eq.2)then
             iwhich1=IVLST(1)
