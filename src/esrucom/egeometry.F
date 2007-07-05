@@ -31,6 +31,8 @@ C  SURINFO: Display surface details and attributes in a tabular format.
 C  ZINFO:   Returns descriptive information zone geometry.
 C  ZGUPDATE: takes the geometry common G1 and updates G7 & PREC2
 C  SUREDGEADJ: detects polygon edge associations (how many assoc. surfs etc.)
+C  SURREL: checks each surface I in a zone and relates it to
+C          another surface J in that zone.
 C  zdata:   scan zones to build master geometry structures.
 C  FILSUR:  Fills the common block G5 with default assumptions.
 C  INSINFO: English description of default insolation options.
@@ -1515,6 +1517,14 @@ C iwhich is local variable to sort most often referenced adjacent surf.
       dimension iwhich(MV),iwhichs(MV),iwhichc(MV),iwhichb(MV)
 
       if(izone.ne.0.and.izone.le.NCOMP)then
+        if(act.eq.'c')then
+
+C Do test call to surrel to see if it picks up any parent child
+C relationships. Use strict test.
+C          call surrel('-',izone,ier)
+          call surrel('s',izone,ier)
+        endif
+
         do 43 isurf=1,NZSUR(izone)
           icc=izstocn(izone,isurf)
           if(icc.eq.0)then
@@ -1524,6 +1534,7 @@ C iwhich is local variable to sort most often referenced adjacent surf.
             ier=1
             return
           endif
+
           nbedgdup(icc)=0
 
 C Confirm whether there are any duplicate references to vertices
@@ -1554,7 +1565,7 @@ C     &          jes,jee,kes,kee
                 iedgdup(icc,n)=1
 
 C Debug...
-                if(itrc.gt.0)then
+                if(itrc.gt.1)then
                   write(outs,*) 'dupl edges for conn ',icc,' is ',
      &              iedgdup(icc,m),' m n ',m,n
                   call edisp(iuout,outs)
@@ -1564,7 +1575,7 @@ C Debug...
   40      continue
 
 C Debug...
-          if(itrc.gt.0)then
+          if(itrc.gt.1)then
             write(outs,*) 'duplicate edges for conn ',icc,' ',
      &        ssname(icc)(1:lnblnk(ssname(icc))),
      &        ' is ',nbedgdup(icc)
@@ -1650,7 +1661,7 @@ C increment nbedgshr once even if other surface shares several edges).
   44        continue
 
 C Debug...
-            if(itrc.gt.0)then
+            if(itrc.gt.1)then
               write(outs,*) 'iedgshr ',iedgshr(icc,i),
      &          ' shared construction ',imatshr(icc,i)
               call edisp(iuout,outs)
@@ -1658,7 +1669,7 @@ C Debug...
   42      continue
 
 C Debug...
-          if(itrc.gt.0)then
+          if(itrc.gt.1)then
             write(outs,*) 'nbedgshr for ',
      &        ssname(icc)(1:lnblnk(ssname(icc))),
      &        ' is ',nbedgshr(icc)
@@ -1666,110 +1677,67 @@ C Debug...
           endif
 
 C If most the edges are shared with other similarly facing surfaces
-C then if act='c' check to see if one of them is a parent. Do
-C this by sorting the iwhich array and then doing a frequency bin
-C on the sorted data and taking the most often referenced connection.
-C Usually when a door has been defined, it will include one edge to
-C a surface which is not co-planer.
+C then if act='c' and the call surrel did not find it ask the user
+C what to do.
           if(act.eq.'c')then
-            if(nbedgshr(icc).eq.NVER(isurf).or.
-     &         nbedgshr(icc).eq.(NVER(isurf)-1))then
-              KFLAG = -1
-              call SORTI(iwhich,iwhichs,list,KFLAG)
+            if(SSPARENT(icc)(1:2).eq.'  ')then
+              if(nbedgshr(icc).eq.NVER(isurf).or.
+     &           nbedgshr(icc).eq.(NVER(isurf)-1))then
+
+                KFLAG = -1
+                call SORTI(iwhich,iwhichs,list,KFLAG)
 
 C If all of iwhich is the same number excluding zero then use it.
-              same=.true.
-              do 442 im=1,list-1
-                 if(iwhich(im).ne.0.and.iwhich(im+1).ne.0)then
-                   if(iwhich(im).ne.iwhich(im+1)) same=.false.
-                 endif
-  442         continue
-              if(same)then
-                ibinval=iwhich(1)
-              else
-
-C Check if (other than zero) how many other surfaces are adjaent
-C to this surface. If there are more than two adjacent surfaces
-C then it cannot be a subsurface. Each unique gets stuffed into iwhichs
-C and inner loop runs through these stored values to see is iwhich() is unique.
-                do 445 imj=1,list
-                  iwhichs(imj)=0
-                  iwhichb(imj)=0
-  445           continue
-                idif=0
-                do 446 im=1,list
-                  itest=iwhich(im)
-                  do 447 imm=1,list
-                    if(iwhich(imm).eq.itest) iwhichb(im)=iwhichb(im)+1
-  447             continue
-  446           continue
-
-C Debug...
-C                write(6,*) 'iwhichb=',iwhichb
-
-C Find out how many of the binns (iwhichb) are non-zero.
-C Also find out which bin has the most entries.
-                nidif=0
-                midif=0
-                do 448, immm=1,list
-                  if(iwhichb(immm).gt.0)nidif=nidif+1
-                  if(iwhichb(immm).gt.midif) midif=immm
-  448           continue
-                if(itrc.gt.0)then
-                  write(outs,*)'nidif is ',nidif,' max @ array index',
-     &              midif,' for connection ',icc
-                  call edisp(iuout,outs)
-                endif
-                if(nidif.gt.2)then
-C for testing.
-C                if(nidif.gt.3)then
-                  ibinval=0
-                else
-                  if(itrc.gt.0)then
-                    write(outs,*)'primary adj surf is ',iwhich(midif)
-                    call edisp(iuout,outs)
+                same=.true.
+                do 442 im=1,list-1
+                  if(iwhich(im).ne.0.and.iwhich(im+1).ne.0)then
+                    if(iwhich(im).ne.iwhich(im+1)) same=.false.
                   endif
-                  ibinval=iwhich(midif)
+  442           continue
+                if(same)then
+                  ibinval=iwhich(1)
+                else
+                  ibinval=0
                 endif
-              endif
 
 C If current surface already marked and is the same as ibinval then do not
 C bother the user. If ibinval was set to zero then clear SSPARENT.
-              if(ibinval.ne.0)then
-                if(SSPARENT(icc).eq.ssname(ibinval))then
-                  ok=.true.
-                else
-                  write(outs,'(5a)') 'Is ',ssname(icc),
-     &              ' a subsurface of ',ssname(ibinval),'?'
-                  dok=.true.
-                  h(1)='The shape & edges of the two surfaces suggest'
-                  h(2)='that one is a subsurface. If not say no. '
-                  call askok(outs,' ',ok,dok,2)
-                endif
-                if(ok)then
-                  SSPARENT(icc)=ssname(ibinval)
-                endif
-              else
-                dok=.false.
-                h(1)='Is its parent surface in the current'
-                h(2)='zone. If not say no. '
-                izz=ic1(icc)
-                write(outs,'(5a)') 'Does ',ssname(icc),
-     &              ' have a parent surface in ',zname(izz),'?'
-                call askok(outs,
-     &            ' (saying no sets parent to blank)',ok,dok,2)
-                if(ok)then
-                  write(outs,'(5a)') 'Specify parent surface for ',
-     &               ssname(icc),' in ',zname(izz),'.'
-                  call easksur(izz,iss,'-',outs,' ',ier)
-                  ibinval=izstocn(izz,iss)
-                  if(ibinval.ne.0)then
+                if(ibinval.ne.0)then
+                  if(SSPARENT(icc).eq.ssname(ibinval))then
+                    ok=.true.
+                  else
+                    write(outs,'(5a)') 'Is ',ssname(icc),
+     &                ' a subsurface of ',ssname(ibinval),'?'
+                    dok=.true.
+                    h(1)='The shape & edges of the two surfaces suggest'
+                    h(2)='that one is a subsurface. If not say no. '
+                    call askok(outs,' ',ok,dok,2)
+                  endif
+                  if(ok)then
                     SSPARENT(icc)=ssname(ibinval)
+                  endif
+                else
+                  dok=.false.
+                  h(1)='Is its parent surface in the current'
+                  h(2)='zone. If not say no. '
+                  izz=ic1(icc)
+                  write(outs,'(5a)') 'Does ',ssname(icc),
+     &              ' have a parent surface in ',zname(izz),'?'
+                  call askok(outs,
+     &              ' (saying no sets parent to blank)',ok,dok,2)
+                  if(ok)then
+                    write(outs,'(5a)') 'Specify parent surface for ',
+     &                ssname(icc),' in ',zname(izz),'.'
+                    call easksur(izz,iss,'-',outs,' ',ier)
+                    ibinval=izstocn(izz,iss)
+                    if(ibinval.ne.0)then
+                      SSPARENT(icc)=ssname(ibinval)
+                    else
+                      SSPARENT(icc)=' '
+                    endif
                   else
                     SSPARENT(icc)=' '
                   endif
-                else
-                  SSPARENT(icc)=' '
                 endif
               endif
             endif
@@ -1778,6 +1746,159 @@ C bother the user. If ibinval was set to zero then clear SSPARENT.
       endif
       return
       end
+
+**************** SURREL ****************************
+C Subroutine SURREL checks each surface I in a zone and relates it to
+C another surface J in that zone. as parent if one less than all vertices
+C in I are also in surface J. One less because the child surface may be
+C at the edge of the parent as shown in the example below:
+C   xxxxxxxxxx
+C   x        x
+C   x        x
+C   xxxxx    x
+C   x   x    x
+C   x   x    x
+C   xxxxxxxxxx
+C Act = '-' a loose definition of child which allows for what is
+C   drawn above as well as the case of a door normally inserted
+C   which is not at the edge of the parent.
+C Act = 's' for a strict definition where a child must be fully
+C   bounded by the parent.
+
+      SUBROUTINE SURREL(ACT,ICOMP,IER)
+#include "building.h"
+
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON),SSPARENT(MCON)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
+      dimension idupv(MS,3)    ! duplicate vertex indices
+      dimension iduplist(MS,3) ! position in list
+      LOGICAL PARENT,closeazi,closeelv
+      CHARACTER SSPARENT*12
+      CHARACTER SSNAME*12,SSOTF*4,SSMLCN*12,SSVFC*4,SSOTHER*15
+      CHARACTER ACT*1
+      integer isur   ! loop counter for parent surface loop
+      integer jsur   ! loop counter for child surface loop
+      integer iver   ! loop counter for parent surface vertices
+      integer jver   ! loop counter for child surface vertices
+      integer iiver,jjver,next
+
+C First identify any surfaces with vertices that are
+C referenced more than once (e.g. surface with hole in it)
+      do 10 isur=1,NZSUR(ICOMP)
+        idupv(isur,1)=0     ! clear 1st duplicate vert index
+        idupv(isur,2)=0     ! clear 2nd duplicate vert index
+        idupv(isur,3)=0     ! clear 3rd duplicate vert index
+        iduplist(isur,1)=0  ! clear jvn duplicate position of idupv(isur,1)
+        iduplist(isur,2)=0  ! clear jvn duplicate position of idupv(isur,2)
+        iduplist(isur,3)=0  ! clear jvn duplicate position of idupv(isur,3)
+        next=0  ! counter to update to get to 2nd dimension.
+
+C Check for 2nd references of a vertex with the fast loop looping
+C through only the untested part of the surface edge list.
+        do 11 iver=1,nver(isur)
+          IIVER=JVN(isur,iver)  ! the vertex to check in slow loop
+          do 12 jver=iver,nver(isur)  ! fast loop is diagonal check
+            JJVER=JVN(isur,jver)  ! the fast loop vertex
+            if(iver.ne.jver)then  ! don't compare with same position in jvn()
+              if(JJVER.eq.IIVER)then
+                next=next+1
+                idupv(isur,next)=jjver  ! index of duplicate
+                iduplist(isur,next)=jver  ! duplicate position in list
+              endif 
+            endif
+  12      continue
+
+C Debug.
+C          if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
+C            write(6,*) isur,iver,iiver,next,idupv(isur,1),
+C     &        iduplist(isur,1),idupv(isur,2),iduplist(isur,2)
+C          endif
+  11    continue
+  10  continue
+
+      DO 101 ISUR=1,NZSUR(ICOMP)   ! for each possible parent
+        DO 102 JSUR=1,NZSUR(ICOMP) ! for each possible child
+
+C Initialise temporary holding array for common vertices. 
+          ICOMVER(JSUR)=0
+          IF(JSUR.EQ.ISUR)GOTO 102 ! skip if same
+          DO 103 IVER=1,NVER(ISUR)   ! for each item in parent vert list
+            if(iver.eq.iduplist(isur,1))then
+              continue  ! this is a 2nd reference
+            elseif(iver.eq.iduplist(isur,2))then
+              continue  ! this is a 2nd reference
+            elseif(iver.eq.iduplist(isur,3))then
+              continue  ! this is a 3rd reference
+            else
+              DO 104 JVER=1,NVER(JSUR) ! for each item in child vert list
+
+C Compare vertex numbers for possible parent and child avoiding any
+C 2nd duplicate references (e.g. iver is in iduplist)
+                IIVER=JVN(ISUR,IVER)
+                JJVER=JVN(JSUR,JVER)
+                IF(IIVER.EQ.JJVER)ICOMVER(JSUR)=ICOMVER(JSUR)+1
+ 104          CONTINUE
+            endif
+ 103      CONTINUE
+          if(NVER(JSUR).eq.3)then
+
+C If the number of vert in jsur is 3 (triangular) then icomver
+C must be >= nver(jsur).
+            if(ICOMVER(JSUR).GE.NVER(JSUR))then
+              continue
+            else
+              goto 105
+            endif
+          elseif(NVER(JSUR).gt.3)then
+
+C If the number of vert in jsur is 4 or more, icomver must be >= nver()
+C for the strict case and >= nver()-1 for the loose or blank action.
+C so as to pick up the door-in-corner.
+            if(act.eq.'-'.and.(ICOMVER(JSUR).GE.NVER(JSUR)-1))then
+              continue
+            elseif(act.eq.' '.and.(ICOMVER(JSUR).GE.NVER(JSUR)-1))then
+              continue
+            elseif(act.eq.'s'.and.(ICOMVER(JSUR).GE.NVER(JSUR)))then
+              continue
+            else
+              goto 105
+            endif
+          endif
+
+C If there are the same shared virtices check orientation as well.
+          icc=IZSTOCN(icomp,isur)
+          jcc=IZSTOCN(icomp,jsur)
+
+C Parent and child must have the same azimuth and elevation angles,
+C allow tolerance of 2deg and possible rotation of 360deg. 
+C<< Division mod 360 may be a more generic way for angle checking
+          call eclose(SSPAZI(icc),SSPAZI(JCC),2.0,closeazi)
+          if(.NOT.closeazi)then
+            zazi = abs(SSPAZI(icc)-SSPAZI(JCC))
+            call eclose(zazi,360.0,2.0,closeazi)
+          endif
+          call eclose(SSPELV(icc),SSPELV(JCC),2.0,closeelv)
+          if(closeazi.and.closeelv)then
+
+            SSPARENT(JCC)=SSNAME(ICC)
+C Debug...
+            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
+     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
+     &        ' nverts in child ',NVER(JSUR)
+          endif
+ 105      continue
+ 102    CONTINUE
+ 101  CONTINUE
+      RETURN
+      END
 
 C ***************** ZDATA 
 C ZDATA reads NZONES geometry and uses common blocks G1 G2 etc to fill

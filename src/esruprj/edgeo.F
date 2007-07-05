@@ -450,8 +450,8 @@ C << test check parent and child by changing act='c' >>
 C << NOTE: parent - child not yet held in geometry file >>
       if(.NOT.browse)then
         if(firstin.or.MODGEO)then
-C          act = 'c'
-          act = '-'
+          act = 'c'
+C          act = '-'
           call suredgeadj(0,act,icomp,ier)
           firstin=.false.
         endif
