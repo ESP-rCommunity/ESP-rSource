@@ -20,8 +20,6 @@ C Boston, MA 02111-1307 USA.
 
 C This file includes:
 C  EMKSBeM creates a model variant based on the SBEM methodology. 
-C  SURREL checks each surface I in a zone and relates it to
-C    another surface J in that zone as parent.
 C  ENLARGE performs geometric enlargement (contraction) of a surface.
 
 
@@ -98,8 +96,10 @@ C Setup Notional Model Flag
       ISBEM=1
       APE='_not'
 
-C<< Specify assumptions
-*      H(1) = 'ASSUMPTIONS THAT ARE USED IN DEFINING NOTIONAL MODEL:'
+C << Assumptions code below can be removed as soon as the common
+C << block variables isbem,ibtyp,ibusertyp,rooffr,wallfr are
+C << held in the configuration file.
+
       H(1) = '****************** IMPORTANT *****************'
       H(2) = ' '
       H(3) = 'Make sure that the original model follows the following '
@@ -460,91 +460,14 @@ C << do we leave it at that or return to the original model?
       RETURN
       END
 
-**************** SURREL ****************************
-C Subroutine SURREL checks each surface I in a zone and relates it to
-C another surface J in that zone as parent if one less than all vertices
-C in I are also in surface J. One less because the child surface may be
-C at the edge of the parent as shown in the example below:
-C   xxxxxxxxxx
-C   x        x
-C   x        x
-C   xxxxx    x
-C   x   x    x
-C   x   x    x
-C   xxxxxxxxxx
-
-      SUBROUTINE SURREL(ACT,ICOMP,IER)
-#include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/C24/IZSTOCN(MCOM,MS)
-
-      DIMENSION ICOMVER(MCON)
-      LOGICAL PARENT,closeazi,closeelv
-      CHARACTER SSPARENT*12
-      CHARACTER SSNAME*12,SSOTF*4,SSMLCN*12,SSVFC*4,SSOTHER*15
-      CHARACTER ACT*1
-
-C Parameters ACT and IER may be relevant for future use
-
-      DO 101 ISUR=1,NZSUR(ICOMP)
-        DO 102 JSUR=1,NZSUR(ICOMP)
-
-C Initialise temporary common vertex holding array
-          ICOMVER(JSUR)=0
-          IF(JSUR.EQ.ISUR)GOTO 102
-          DO 103 IVER=1,NVER(ISUR)
-            DO 104 JVER=1,NVER(JSUR)
-
-C Compare vertex numbers for possible parent and child
-              IIVER=JVN(ISUR,IVER)
-              JJVER=JVN(JSUR,JVER)
-              IF(IIVER.EQ.JJVER)ICOMVER(JSUR)=ICOMVER(JSUR)+1
- 104        CONTINUE
- 103      CONTINUE
-          IF(ICOMVER(JSUR).GE.NVER(JSUR)-1)THEN
-            DO 552 ICMP=1,NCOMP
-              DO 553 IS=1,NCON
-                DO 554 JS=1,NCON
-                  IF(IZSTOCN(ICMP,IS).EQ.ISUR.AND.
-     &                 IZSTOCN(ICMP,JS).EQ.JSUR)THEN
-                    icc=IZSTOCN(icomp,is)
-                    jcc=IZSTOCN(icomp,js)
-
-C Parent and child must have the same azimuth and elevation angles,
-C allow tolerance of 2deg and possible rotation of 360deg. 
-C<< Division mod 360 may be a more generic way for angle checking
-                    call eclose(SSPAZI(icc),SSPAZI(JCC),2.0,closeazi)
-                    if(.NOT.closeazi)then
-                      zazi = abs(SSPAZI(icc)-SSPAZI(JCC))
-                      call eclose(zazi,360.0,2.0,closeazi)
-                    endif
-                    call eclose(SSPELV(icc),SSPELV(JCC),2.0,closeelv)
-                    if(closeazi.and.closeelv)then
-                      SSPARENT(JCC)=SSNAME(ICC)
-
-C Debug...
-c      WRITE(6,*)"PARENT OF ",SSNAME(JCC)," IS ",SSPARENT(JCC)
-                    ENDIF
-                  ENDIF
- 554            CONTINUE
- 553          CONTINUE
- 552        CONTINUE
-          ENDIF
- 102    CONTINUE
- 101  CONTINUE
-      RETURN
-      END
-
 ************************* ENLARGE *****************************
 C Subroutine ENLARGE performs geometric enlargement (contraction) of a
-C surface based on a scale factor and centre of enlargement
+C surface and for a given vertex (POINT) it returns a transformed
+C vertex (TRANS) based on a scale factor (factor) and a centre of
+C enlargement (coe). TRANS will be somewhere along the line between
+C COE and POINT. It is expected to be called once for each vertex
+C of the surface who's size is to be adjusted.
+
 C Factor can be a fraction (in which case it is a contraction of a
 C geometric surface or may be greater than one in which case it is an
 C enlargement.

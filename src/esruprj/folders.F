@@ -193,7 +193,7 @@ C Get the current folder and display options to the user.
       write(H(10),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/doc (reports and notes)'
       write(H(11),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/temp (odds+ends)'
+     &  '/tmp (odds+ends)'
       write(H(12),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/dbs (project databases)'
       H(13)=' '
@@ -352,9 +352,9 @@ C << which uses GTK facilities.
       h(5)='folder.'
       h(6)=' '
       h(7)='Assuming you have an editor associated with ESP-r (defined'
-      h(3)='via your .esprc file), you can edit the log file now.'
+      h(8)='via your .esprc file), you can edit the log file now.'
 
-      CALL ASKOK(' ','Edit log file?',OK,dok,5)
+      CALL ASKOK(' ','Edit log file?',OK,dok,8)
       IF(OK)then
 
 C Check if Unix-based or DOS based.
@@ -961,7 +961,7 @@ C      call edisp(iuout,outs)
       h(1)='If an image is tagged `general` then it will be'
       h(2)='displayed when the model is loaded, otherwise it'
       h(3)='will only be displayed when requested via a graphic'
-      h(3)='display button.'
+      h(4)='display button.'
       call EASKATOG(' ','Image focus?',
      &  'general','building','networks','control',
      &  'CFD','performance','other',IRF,4)

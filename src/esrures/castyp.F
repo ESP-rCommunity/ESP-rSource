@@ -50,7 +50,10 @@ C VAL3(20,?) holds controlled convective casual type 3.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/AVRAGE/IDAVER
-      COMMON/CASPD/DUCCT1,DUCCT2,DUCCT3,DUCRT1,DUCRT2,DUCRT3
+
+C Hold this for each zone.
+      COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
+     &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -163,9 +166,9 @@ C previous day so assume DUCCT?= current day.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCCT1=UCCT1
-        DUCCT2=UCCT2
-        DUCCT3=UCCT3
+        DUCCT1(izone)=UCCT1
+        DUCCT2(izone)=UCCT2
+        DUCCT3(izone)=UCCT3
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
 
 C Need to get the last timestep of the previous day to have the last 
@@ -175,9 +178,9 @@ C gain for the day in question.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCCT1=UCCT1
-        DUCCT2=UCCT2
-        DUCCT3=UCCT3
+        DUCCT1(izone)=UCCT1
+        DUCCT2(izone)=UCCT2
+        DUCCT3(izone)=UCCT3
         CALL GCASC(IDAY,IZONE,ISET)
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
@@ -197,9 +200,9 @@ C For each time step determine each of the uncontrolled casual gains.
 C Save average fluxs in VAL1(8 to 13,N). If first timestep, then average with
 C that of the last of the previous day.
         IF(I.EQ.1)THEN
-          VAL3(15,I)=(UCCT1+DUCCT1)*0.5
-          VAL3(16,I)=(UCCT2+DUCCT2)*0.5
-          VAL3(17,I)=(UCCT3+DUCCT3)*0.5
+          VAL3(15,I)=(UCCT1+DUCCT1(izone))*0.5
+          VAL3(16,I)=(UCCT2+DUCCT2(izone))*0.5
+          VAL3(17,I)=(UCCT3+DUCCT3(izone))*0.5
           TUCC=VAL3(15,I)+VAL3(16,I)+VAL3(17,I)
         ELSE
           VAL3(15,I)=(UCCT1+PUCCT1)*0.5
@@ -230,9 +233,9 @@ C will be checked to match bps.
    50 CONTINUE
 
 C Save the last timestep for use the next day.
-        DUCCT1=UCCT1
-        DUCCT2=UCCT2
-        DUCCT3=UCCT3
+        DUCCT1(izone)=UCCT1
+        DUCCT2(izone)=UCCT2
+        DUCCT3(izone)=UCCT3
       RETURN
       END
 
@@ -265,7 +268,8 @@ C VAL3(20,?) holds controlled radiant casual type 3.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/AVRAGE/IDAVER
-      COMMON/CASPD/DUCCT1,DUCCT2,DUCCT3,DUCRT1,DUCRT2,DUCRT3
+      COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
+     &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -388,9 +392,9 @@ C previous day so assume DUCRT?= current day.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
 
 C Need to get the last timestep of the previous day to have the last 
@@ -400,9 +404,9 @@ C gain for the day in question.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
         CALL GCASR(IDAY,IZONE,ISET)
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
@@ -422,9 +426,9 @@ C For each time step determine each of the uncontrolled casual gains.
 C Save average fluxs in VAL3(15 to 20,N). If first timestep, then average with
 C that of the last of the previous day.
         IF(I.EQ.1)THEN
-          VAL3(15,I)=((UCCRT1*SCALE)+(DUCRT1*SCALE))*0.5
-          VAL3(16,I)=((UCCRT2*SCALE)+(DUCRT2*SCALE))*0.5
-          VAL3(17,I)=((UCCRT3*SCALE)+(DUCRT3*SCALE))*0.5
+          VAL3(15,I)=((UCCRT1*SCALE)+(DUCRT1(izone)*SCALE))*0.5
+          VAL3(16,I)=((UCCRT2*SCALE)+(DUCRT2(izone)*SCALE))*0.5
+          VAL3(17,I)=((UCCRT3*SCALE)+(DUCRT3(izone)*SCALE))*0.5
           TUCC=VAL3(15,I)+VAL3(16,I)+VAL3(17,I)
         ELSE
           VAL3(15,I)=((UCCRT1*SCALE)+(PUCRT1*SCALE))*0.5
@@ -454,9 +458,9 @@ C next timestep will be checked to match bps.
    50 CONTINUE
 
 C Save the last timestep for use the next day.
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
 
       RETURN
       END
@@ -486,7 +490,8 @@ C VAL3(20,?) holds controlled casual type 3.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/AVRAGE/IDAVER
-      COMMON/CASPD/DUCCT1,DUCCT2,DUCCT3,DUCRT1,DUCRT2,DUCRT3
+      COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
+     &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -601,9 +606,9 @@ C previous day so assume DUCRT?= current day.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
 
 C Need to get the last timestep of the previous day to have the last 
@@ -613,9 +618,9 @@ C gain for the day in question.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
         CALL GCASR(IDAY,IZONE,ISET)
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
@@ -634,9 +639,9 @@ C For each time step determine each of the uncontrolled casual gains.
 C Save average fluxs in VAL3(15 to 20,N). If first timestep, then average with
 C that of the last of the previous day.
         IF(I.EQ.1)THEN
-          VAL3(15,I)=(UCCRT1+DUCRT1)*0.5
-          VAL3(16,I)=(UCCRT2+DUCRT2)*0.5
-          VAL3(17,I)=(UCCRT3+DUCRT3)*0.5
+          VAL3(15,I)=(UCCRT1+DUCRT1(izone))*0.5
+          VAL3(16,I)=(UCCRT2+DUCRT2(izone))*0.5
+          VAL3(17,I)=(UCCRT3+DUCRT3(izone))*0.5
           TUCC=VAL3(15,I)+VAL3(16,I)+VAL3(17,I)
         ELSE
           VAL3(15,I)=(UCCRT1+PUCRT1)*0.5
@@ -666,9 +671,9 @@ C next timestep will be checked to match bps.
    50 CONTINUE
 
 C Save the last timestep for use the next day.
-        DUCRT1=UCCRT1
-        DUCRT2=UCCRT2
-        DUCRT3=UCCRT3
+        DUCRT1(izone)=UCCRT1
+        DUCRT2(izone)=UCCRT2
+        DUCRT3(izone)=UCCRT3
 
       RETURN
       END
