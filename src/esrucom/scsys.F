@@ -42,6 +42,7 @@ C ICLIM,LCLIM (for climate file)
 C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "lookup_data.h"
 
       PARAMETER (MSTMC=1)
 
@@ -263,6 +264,7 @@ C Check if running in dll mode.
 
       iSet_start = 1
       bBC_data_defined = .false.
+      bLookup_data_defined = .false.
 
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
