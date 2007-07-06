@@ -14,7 +14,7 @@ C-----------------------------------------------------------------------
       
       common/MIMO_daytypes/iDayCount, cDayName, iDayNameLen,
      &                     iDayStartDD, iDayStartMM, iDayStartYYYY, 
-     &                     iDayEnd DD,  iDayEnd MM,  iDayEnd YYYY, 
+     &                     iDayEndDD,  iDayEnd MM,  iDayEndYYYY,
      &                     iDayStartDOY, iDayEndDOY
 
      

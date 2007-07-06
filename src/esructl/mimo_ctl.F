@@ -577,7 +577,7 @@ C...............Attempt to match specified day-types to list
                 if (.not. bMatchNameToIndex ( 
      &                      cBuffer,
      &                      iLoopCount,
-     &                      iLoopDayTypeCount,
+     &                      iLoopDayTypeCount(iLoopCount),
      &                      iDayCount,
      &                      cLoopDayTypes,
      &                      cDayName,
@@ -622,7 +622,7 @@ C...............Attempt to match periods to list
                 if (.not. bMatchNameToIndex ( 
      &                      cBuffer,
      &                      iLoopCount,
-     &                      iLoopPeriodCount,
+     &                      iLoopPeriodCount(iLoopCount),
      &                      iPerCount,
      &                      cLoopPeriods,
      &                      cPerName,
@@ -1209,7 +1209,7 @@ C.........Return data control loop.
         endif
 
       endif  ! <- matches ' if ( iSenLoc( iSensor , 1 ) >= 0 ) then'
-      
+
       return
       end
       
