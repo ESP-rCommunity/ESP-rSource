@@ -791,7 +791,7 @@ C Manage images or browse by listing out current contents of image folder.
       ELSEIF(INO.eq.25)then
 
 C Enter the definitions for UK NCM related data.
-c        call sbmedit
+        call sbmedit
       ELSE
         GOTO 3
       ENDIF
