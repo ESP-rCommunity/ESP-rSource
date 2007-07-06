@@ -563,7 +563,7 @@ sub execute($){
 #----------------------------------------------
 sub fatalerror($){
   my ($err_msg) = @_;
-  LockFile ($gInputFile, "unlock")
+  LockFile ($gInputFile, "unlock");
   print "\ntester.pl -> Fatal error: \n";
   print " >>> $err_msg \n\n";
   die;
