@@ -24,7 +24,8 @@ C                          from an ASCII file.
 C   POWOC_PCU              Determines the power load to the node sending current to
 C                          the PCU and the power source to the node receiving current
 C                          from the PCU.
-C   POWOC_CETC_Battery     Battery model from CETC
+C   POWOC_nonHVACld_BCD    Determines the electrical load demanded by non-HVAC electrical
+C                          loads using the boundary condition definition facility,
 C                        
 C *******************************************************************************
 
@@ -1862,3 +1863,5 @@ C................Issue warning to user.
       
       RETURN
       END
+
+

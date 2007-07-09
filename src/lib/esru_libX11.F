@@ -221,7 +221,8 @@ C   accept value and ask again, '-' means no range checking.
 C IDEFLT is the default value if 'D','d' typed.
 C If a space or carriage return is typed then IVAL is not changed.
 C ERMSG is a string appended to the range checking or read error
-C to identify the value. IER is the error state, if 0 then OK.
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
@@ -272,7 +273,7 @@ C Generate help and default strings.
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a)
+   64   FORMAT('No help available for ',a,'!')
         WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
    65   FORMAT('Default (d):',a,' or Current (ok):',a)
       ENDIF
@@ -449,7 +450,8 @@ C   'W' means warn user but accept, 'F' means refuse/fail to
 C   accept value and ask again, '-' means no range checking.
 C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
-C to identify the value. IER is the error state, if 0 then OK.
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
 C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.

@@ -1235,7 +1235,7 @@ C Begin with high level menu.
       ITEMS(3)   ='b construction materials        '
       ITEMS(4)   ='c operational details           '
       ITEMS(5)   =' _____________________________  '
-      WRITE(ITEMS(6),'(A,I4,A)') ' .... Topology ....(',NCON,
+      WRITE(ITEMS(6),'(A,I4,A)') ' .... Topology ..(',NCON,
      &               ' connects)'
       ITEMS(7)   ='d connections & anchors         '
       ITEMS(8)   =' _____________________________  '

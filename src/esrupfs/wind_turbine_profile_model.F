@@ -45,12 +45,16 @@ C SUBROUTINE POWOC_Wind_Prof_Supp_Elec(IPWC)
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
+C Modified by: Maria Mottillo, February 2007
 C  
 C - This code will determine the power output of a wind turbine. 
 C - A wind turbine pwr vs wind speed profile is used to determine the power output at any given time.  
 C - The influence of geography and site layout on wind speed is handled through Nick Kelly's 
-C   wind model. This is optional. Direct wind speed from the climate data can be used as well.
-C -Note: In the case of Mulitple wind turbines it is assumed that the placement is as such that the turbines 
+C   wind model (this is optional). Direct wind speed from the climate data can be used instead or
+C   wind speed data from a boundary condition definition file can be used. In the latter case, it
+C   is assumed that the wind speed is measured at the site and at the height of the wind turbine(s),
+C   thus no adjustments are made to the .bcd wind speed data for geography or site layout.
+C -Note: In the case of multiple wind turbines it is assumed that the placement is as such that the turbines 
 C     do not affect each other. 
 C
 C
@@ -116,6 +120,7 @@ C in dll mode).
 C---------------------------------------------------------------------------------
       common/dllerr/dllsubr, dllmesg
 
+
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
@@ -147,6 +152,8 @@ C-------------------------------------------------------------------------------
  
       REAL      fWindSpeedProfile(100),fWindPowerProfile(100)
       INTEGER   iDataPoints
+
+
 C-------------------------------------------------------------------------------------------
 C If this subroutine is being called for the first time then process the user-specified
 C electrical supply data. Determine data type and convert from ASCII file to binary-format
@@ -163,7 +170,7 @@ C Determine the electrical supply for the current time-step.
 C-------------------------------------------------------------------------------------------
 
 C  Take into account scalar multiplier applied to wind supply
-C  POWCDAT(IPWC,1) holds the scalar multiplier (additional data item).
+C  POWCDAT(IPWC,2) holds the scalar multiplier (additional data item).
 
       QTotalWindSupply = GetWTPower(IPWC)*POWCDAT(IPWC,2)
 C      write(*,*) 'Wind Turbine Power = ',QTotalWindSupply 
@@ -315,6 +322,7 @@ C Read in the component data.
       IPROF= POWCDAT(IPWC,6)
       TURBI= POWCDAT(IPWC,7)
 
+
 C Make sure profile is only read in once.       
       IF(iWndSupp==0) THEN
 C         write(outs,*) 'Wind Turbine Profile Active ',LWndSupp
@@ -347,7 +355,7 @@ C     being processed (this can take some time).
 C      call usrmsg(' Processing wind-gen electric data...',' ','-')
 C-----Open the .wnd file.
       wnderror = .false.
-      IWndSupp_ascii = IFIL+16  ! Should be a safe unit number to use.
+      IWndSupp_ascii = IFIL+82  ! Should be a safe unit number to use.
       CALL ERPFREE(IWndSupp_ascii,ISTAT)
       CALL EFOPSEQ(IWndSupp_ascii,LWndSupp,1,IER)
       IF(IER /= 0)THEN
@@ -393,7 +401,7 @@ C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
 C  
 C - This routine will determine the wind power generated via the profile given in 
-C     the input file. It uses simple lineat interpolaton to determine the power.Any
+C     the input file. It uses simple linear interpolaton to determine the power.Any
 C     wind speeds outside of the given power curves will return a zero.
 C
 C INPUTS:
@@ -408,10 +416,14 @@ C *********************************************************************
      & fWindspeedProfile,
      & fWindPowerProfile,
      & iDataPoints
+
+
       REAL         QElecT, QTotalWindSupply, QFarmG
       REAL         fWindSpeedProfile(100),fWindPowerProfile(100)    
       INTEGER      iDataPoints,i  
       REAL WindSpeed
+
+
       i=0.
       GetWindTurbinePower =0.
 C      Determine if within turbine power curve range. 
@@ -430,6 +442,8 @@ C     use linear interpolation
      &              /
      &              ( fWindSpeedProfile(i+1) - fWindSpeedProfile(i) ) 
      &              * (fWindPowerProfile(i+1) - fWindPowerProfile(i)))
+
+
             ENDIF
          END DO   
             
@@ -437,6 +451,10 @@ C     Use linear interpolation to determine power output.
       ELSE
          GetWindTurbinePower = 0.
       ENDIF
+
+
+
+
       RETURN
       END  ! of FUNCTION
       
@@ -554,6 +572,9 @@ C-------------------------------------------------------------------------------
       
       INTEGER iDatapoints
       
+C.....Strings used for XML output reporting
+      CHARACTER*128  hold_name, root_name, H3K_rep_NAME
+
 
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
@@ -574,7 +595,15 @@ C-------------------------------------------------------------------------------
 
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
       character LAPROB*72
-      logical close
+
+      character*248 cName_buffer      ! Buffer for passing BCD column name corresponding to wind speed data
+      character*124 cContext          ! Contextual buffer
+
+      integer iInterp_Method          ! Flag indicating which method
+                                      ! used for interpolation of wind speed data in BCD file
+                                      ! (1 = step, 2 = linear)
+
+      integer lnblnk                  ! implicit function returning the length of a string
 
       REAL HDWTI
       REAL NTURB
@@ -607,10 +636,16 @@ C-------------------------------------------------------------------------------
       REAL WISPDM
       REAL WIDIRM
       REAL PWR,POWER
+
+      real fDay                ! real representing day of year
+                               !   (& fraction thereof)
+
 C Subroutine
       REAL  GetWindTurbinePower     
-
       REAL TotalPRC
+
+      real fConvert_current_TS_to_DAY     ! Function returning current day #
+      real fGet_BC_data_by_name           ! Function returning BC value
 
 
 C Read in the component data.
@@ -622,6 +657,7 @@ C Read in the component data.
       IWSTAT = NINT(POWCDAT( IPWC , 5 ) )
       IPROF = NINT( POWCDAT( IPWC , 6 ) )
       TURBI = POWCDAT( IPWC , 7 )
+      iInterp_Method = NINT( POWCDAT( IPWC , 8 ) )
 
 C Set up pi
       PI = 22. / 7.
@@ -637,9 +673,11 @@ C Calculate the wind velocity at the height of the wind turbine adjust the free
 C stream velocity to height. This data should be available if a flow network
 C is active. I f profiles or speed reduction are not specified then default
 C values are used.
-      IF(WRED .GT. 1E-6 .AND. IPROF .LT. 1 ) THEN
+      IF(WRED .GT. 1.0E-6 .AND. IPROF .LT. 1 ) THEN
+C.....Use wind speed from the weather file and apply the wind reduction factor
         WISPD = WISPD * WRED
-      ELSEIF(IPROF.GE.1)THEN
+      ELSEIF(IPROF.EQ.1)THEN
+C.....Correct the wind speed for the height of the tower relative to the reference height
 C      write(*,*)'Profile active',IPROF
 C If profiles are on then fill in the appropriate parameters
 C 1 urban, 2 suburban, 3 rural.
@@ -669,7 +707,7 @@ C set height of wind turbine to a small number if zero..
 C set reference height to small number if zero.
         IF( REFH .LT. 1E-6 ) REFH = 1E-6
 
-C The new wind speed corrected for height of tower and reference height (height of weather sation tower)
+C The new wind speed corrected for height of tower and reference height (height of weather station tower)
         WISPD = WISPD * ( HDWTI / REFH ) **PWR
 
 C Calulation of Turbidity.
@@ -678,6 +716,37 @@ C        TURBI=(ROUGH*LOG(30./REFH))/LOG(HDWTI/REFH)
 
 C        write(*,*) 'Profile Wind speed ',WISPD
 C        write(*,*) 'Profile TURBI ',TURBI
+
+
+      ELSEIF (IPROF.EQ.2) THEN
+
+C....Get the wind speed data from the boundary condition definition file
+C....In this case, it is assumed that the wind speed data is recorded at the wind farm site- no 
+C....corrections are applied for the site location and/or turbine height.
+
+C....The name of the boundary condition file column header containing the wind speed data
+C....should correspond to the second data string input specified for the power-only component.
+
+
+C....Save column header name as string
+        write (cName_buffer, '(A)') powcdats(IPWC,2)
+              
+C....Get day
+        fDay = fConvert_current_TS_to_DAY()
+
+C.....Write contextual buffer
+        write (cContext, '(A,A,I2,A)' ) 'Collecting boundary',
+     &     'condition data for power-only-component (pfs component ',
+     &      IPWC,')'
+
+       
+C....Get wind speed
+        WISPD =  fGet_BC_data_by_name ( cName_buffer,
+     &                                  fDay,
+     &                                  iInterp_Method,
+     &                                  cContext )
+
+
 
       ENDIF
 
@@ -788,6 +857,47 @@ C        write(*,*)'Windspeed',WISPD
 C        write(*,*)'Power',POWER
       ENDIF
         GetWTPower = POWER
+
+C XML reporting
+
+C.... Get component name
+      hold_name = powcomnam(IPWC)
+C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
+
+      write(root_name, '(A,A,A,A)')
+     &     'electrical_net/',
+     &     'power_only_components/',
+     &     hold_name(1:lnblnk(hold_name)),
+     &     '/misc_data'
+
+
+      write(H3K_rep_NAME,'(A,A)')
+     &     root_name(1:lnblnk(root_name)),
+     &     '/Wind_Gen_Output'
+
+
+      call add_to_xml_reporting(
+     &                       GetWTPower,
+     &                       H3K_rep_name,
+     &                       'units',
+     &                       '(W)',
+     &                       'Wind generator output' )
+
+
+      write(H3K_rep_NAME,'(A,A)')
+     &     root_name(1:lnblnk(root_name)),
+     &     '/Wind_Speed'
+
+
+      call add_to_xml_reporting(
+     &                       WISPD,
+     &                       H3K_rep_name,
+     &                       'units',
+     &                       '(m/s)',
+     &                       'Wind speed' )
+
+
+
       RETURN
       END
 

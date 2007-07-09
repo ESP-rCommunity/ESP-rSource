@@ -1,5 +1,5 @@
 # composite construction db defined in mlc.db
-# based on materials db /usr/esru/esp-r/databases/constr.db3
+# based on materials db /usr/esru/esp-r/databases/material.db3.a
     2     # no of composites 
 # layers  description   optics name   symmetry tag
     3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     

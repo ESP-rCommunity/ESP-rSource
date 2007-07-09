@@ -55,7 +55,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
-	  solar_collectors.o ground_temp_mains.o 
+	  solar_collectors.o ground_temp_mains.o Lookup_data.o
+
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -625,6 +626,9 @@ Annex42_fuel_cell.F:
 shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
+Lookup_data.F:
+	rm -f Lookup_data.F
+	ln -s $(COMdir)/Lookup_data.F
 
 ##Unused 'time-out' code.
 ##timeout.cpp:
@@ -699,7 +703,6 @@ clean:
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F
-
+	ground_temp_mains.F Lookup_data.F
 
 
