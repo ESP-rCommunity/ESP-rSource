@@ -1,0 +1,12 @@
+ONE_ZONE_MODEL
+(FnType) iFurnaceType        = 5
+(fuel)   iFuelType           = 2
+(zone1)  iZones[FIRST_ZONE]  = 1
+(frac)   fFracEquipCapToZone1= 1.000000
+(cap)    fFracEquipCapToZone1  = 1.000000
+(eff)    fEfficiency         = 0.780000
+(FanMode)iCircFanMode        = 1
+(FanPwr) fHeatFanPower       = -1.000000
+(FanPwr) fDraftFanPower      = 125.000000
+(pilot)  fPilotEnergy        = 0.000000
+(duct)   iDuctSystemFlag     = 1

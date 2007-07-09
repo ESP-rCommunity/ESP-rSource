@@ -1,0 +1,16 @@
+From: Hand, Jon
+Sent: Tuesday, November 16, 1999 10:53
+To: Beausoleil-Morrison, Ian
+Subject: databases
+
+
+Ian here are standard databases...
+
+
+
+November 19, 1999
+-----------------
+
+These must be located in c:/user/esru/esp-r/databases
+as there is hard-wired code in bld and bps to
+look for them there.

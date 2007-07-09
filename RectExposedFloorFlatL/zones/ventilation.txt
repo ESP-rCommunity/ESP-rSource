@@ -1,0 +1,2 @@
+1 ONE_ZONE_MODEL
+[main] fFracEquipCapToZone[0] = 0.000000

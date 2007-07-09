@@ -1,0 +1,167 @@
+ 
+Performance assessment report
+Results library T_E_Door2WindowsL_def.res
+Climate file ../../climate/ottawa.cwec
+Configuration file T_E_Door2WindowsL.cfg
+Configuration descr T_E_Door2WindowsL 3 zone model.
+Period Sat  1 Jan to Sun 31 Dec Year 2000
+ 
+ Zone         max air T  (occurance)                             min air T  (occurance)
+main           37.40 Fri 21 Jul@ 5.50   21.00 Sat  1 Jan@ 0.50
+Foundation     31.39 Fri 21 Jul@ 5.50   18.40 Wed 12 Jan@12.50
+attic          39.58 Thu 20 Jul@ 2.50  -11.38 Sat 29 Jan@15.50
+ 
+ Zone           max heat (occurance)      max cool (occurance)        heating     cooling
+                 (kW)                       (kW)                      (MJ)        (MJ)
+main              1.58 Fri 28 Jan@13.50      0.00 Sat  1 Jan@ 0.50     6098.2        0.0
+Foundation        7.50 Sun  2 Jan@ 7.50      0.00 Sat  1 Jan@ 0.50   106247.4        0.0
+attic             0.00 Sat  1 Jan@ 0.50      0.00 Sat  1 Jan@ 0.50        0.0        0.0
+ 
+All zones:
+ Max_Temp   39.6  in attic on Thu 20 Jul@ 2.50
+ Min_Temp  -11.4  in attic on Sat 29 Jan@15.50
+ Max_Heat    7.5  in Foundation on Sun  2 Jan@ 7.50
+ Max_Cool    0.0  in main on Sat  1 Jan@ 0.50
+ 
+Total heating requirements   112345.6 (MJ)
+Total cooling requirements       0.00 (MJ)
+ 
+Monthly metrics:
+Month   Heating   Cooling
+Month    (MJ)      (MJ)
+Jan    21820.7        0.0
+Feb    18932.6        0.0
+Mar    17122.3        0.0
+Apr     9952.3        0.0
+May     2972.3        0.0
+Jun       22.6        0.0
+Jul        0.0        0.0
+Aug        0.0        0.0
+Sep      789.8        0.0
+Oct     7372.6        0.0
+Nov    13531.6        0.0
+Dec    19829.2        0.0
+ 
+********BUILDING INFORMATION********
+ 
+ 
+INFILTRATION AIRCHANGE DATA FOR BUILDING
+         MAX AIR             MIN AIR           AVRG CHANGE
+MONTH   CHANGE/H DAY HOUR   CHANGE/H DAY HOUR     PER HOUR
+  JAN   0.28E+00  31    1   0.78E-01   1    2     0.15E+00
+  FEB   0.21E+00   1   20   0.76E-01  20   13     0.13E+00
+  MAR   0.27E+00   5   13   0.62E-01  24   16     0.12E+00
+  APR   0.18E+00   9    8   0.24E-01  27   17     0.94E-01
+  MAY   0.14E+00  29   15   0.16E-01  14   13     0.76E-01
+  JUN   0.14E+00  25    3   0.80E-02   8   11     0.66E-01
+  JUL   0.15E+00  26    4   0.16E-01  16   17     0.63E-01
+  AUG   0.13E+00  16   12   0.14E-01  19   15     0.60E-01
+  SEP   0.13E+00  19    4   0.11E-01   5   16     0.64E-01
+  OCT   0.16E+00  27    9   0.27E-01   6   13     0.85E-01
+  NOV   0.16E+00  21   16   0.43E-01   1    8     0.99E-01
+  DEC   0.21E+00  13    6   0.63E-01   5   14     0.13E+00
+VOLUME OF BUILD        0.3227E+03 M^3
+ 
+********SYSTEMS INFORMATION*********
+ 
+ 
+FAN, HRV, AND PUMP ELECTRIC ENERGY
+          MONTH        FAN_ENERGY MJ     HRV ENERGY MJ      GSHP_PUMP MJ      GCEP_PUMP MJ
+                 JAN           0.4334E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 FEB           0.3768E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 MAR           0.3447E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 APR           0.2086E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 MAY           0.7320E+02        0.0000E+00        0.0000E+00        0.0000E+00
+                 JUN           0.1231E+01        0.0000E+00        0.0000E+00        0.0000E+00
+                 JUL           0.0000E+00        0.0000E+00        0.0000E+00        0.0000E+00
+                 AUG           0.0000E+00        0.0000E+00        0.0000E+00        0.0000E+00
+                 SEP           0.2265E+02        0.0000E+00        0.0000E+00        0.0000E+00
+                 OCT           0.1601E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 NOV           0.2762E+03        0.0000E+00        0.0000E+00        0.0000E+00
+                 DEC           0.3958E+03        0.0000E+00        0.0000E+00        0.8760E-02
+   TOTAL ELEC ENERGY           0.2292E+04        0.0000E+00        0.0000E+00        0.8760E-02
+ 
+#HVAC SYSTEM NUMBER =       1
+HVAC SYSTEM TYPE = FURNACE
+STEADY STATE EFF. =   0.78
+PILOT POWER       =  0.000E+00
+ 
+ENERGY CONSUMED BY HVAC SYSTEM
+          MONTH HEATING ENERGY MJ COOLING ENERGY MJ     PIL_ENERGY MJ
+            JAN        0.2864E+05        0.0000E+00        0.0000E+00
+            FEB        0.2490E+05        0.0000E+00        0.0000E+00
+            MAR        0.2278E+05        0.0000E+00        0.0000E+00
+            APR        0.1379E+05        0.0000E+00        0.0000E+00
+            MAY        0.4837E+04        0.0000E+00        0.0000E+00
+            JUN        0.8138E+02        0.0000E+00        0.0000E+00
+            JUL        0.0000E+00        0.0000E+00        0.0000E+00
+            AUG        0.0000E+00        0.0000E+00        0.0000E+00
+            SEP        0.1497E+04        0.0000E+00        0.0000E+00
+            OCT        0.1058E+05        0.0000E+00        0.0000E+00
+            NOV        0.1825E+05        0.0000E+00        0.0000E+00
+            DEC        0.2615E+05        0.0000E+00        0.0000E+00
+TOTAL SYS ENRGY        0.1515E+06        0.0000E+00        0.0000E+00
+ 
+SYSTEM CAPACITY REPORT
+      %CAPACITY             HOURS          %OFTOTAL
+  0.0%- 10.0%          0.4112E+04        0.4694E+02
+ 10.0%- 20.0%          0.1221E+04        0.1394E+02
+ 20.0%- 30.0%          0.1979E+04        0.2259E+02
+ 30.0%- 40.0%          0.1448E+04        0.1653E+02
+ 40.0%- 50.0%          0.0000E+00        0.0000E+00
+ 50.0%- 60.0%          0.0000E+00        0.0000E+00
+ 60.0%- 70.0%          0.0000E+00        0.0000E+00
+ 70.0%- 80.0%          0.0000E+00        0.0000E+00
+ 80.0%- 90.0%          0.0000E+00        0.0000E+00
+ 90.0%-100.0%          0.0000E+00        0.0000E+00
+UNDERHEATED HRS        0.0000E+00        0.0000E+00
+UNDERCOOLED HRS        0.0000E+00        0.0000E+00
+ TOTAL HOURS =         0.8760E+04
+ 
+**********ZONE INFORMATION*********
+ 
+ 
+          Zone( 1) main
+          Month     Aver.Temp (oC)   Solar Extern(MJ)   Solar Intern(MJ)  Sol Abs Trans(MJ)   Sol Abs Opq.(MJ)   Casual Rad. (MJ)  Casual Conv. (MJ)   Fndtn Losses(MJ)
+            Jan         0.2100E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Feb         0.2102E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6163E+03         0.6163E+03         0.0000E+00
+            Mar         0.2132E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Apr         0.2250E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6603E+03         0.6603E+03         0.0000E+00
+            May         0.2435E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Jun         0.2792E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6603E+03         0.6603E+03         0.0000E+00
+            Jul         0.3099E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Aug         0.3047E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Sep         0.2572E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6603E+03         0.6603E+03         0.0000E+00
+            Oct         0.2257E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6823E+03         0.6823E+03         0.0000E+00
+            Nov         0.2142E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.6603E+03         0.6603E+03         0.0000E+00
+            Dec         0.2106E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.8364E+03         0.8364E+03         0.0000E+00
+ 
+          Zone( 2) Foundation
+          Month     Aver.Temp (oC)   Solar Extern(MJ)   Solar Intern(MJ)  Sol Abs Trans(MJ)   Sol Abs Opq.(MJ)   Casual Rad. (MJ)  Casual Conv. (MJ)   Fndtn Losses(MJ)
+            Jan         0.2011E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.1140E+06
+            Feb         0.2050E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1087E+03         0.1087E+03         0.1004E+06
+            Mar         0.2099E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.9365E+05
+            Apr         0.2100E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1165E+03         0.1165E+03         0.6581E+05
+            May         0.2113E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.4309E+05
+            Jun         0.2385E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1165E+03         0.1165E+03         0.3226E+05
+            Jul         0.2663E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.3583E+05
+            Aug         0.2613E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.3622E+05
+            Sep         0.2216E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1165E+03         0.1165E+03         0.3347E+05
+            Oct         0.2101E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1204E+03         0.1204E+03         0.5352E+05
+            Nov         0.2100E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1165E+03         0.1165E+03         0.7588E+05
+            Dec         0.2067E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.1476E+03         0.1476E+03         0.1266E+06
+ 
+          Zone( 3) attic
+          Month     Aver.Temp (oC)   Solar Extern(MJ)   Solar Intern(MJ)  Sol Abs Trans(MJ)   Sol Abs Opq.(MJ)   Casual Rad. (MJ)  Casual Conv. (MJ)   Fndtn Losses(MJ)
+            Jan        -0.5193E+01         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Feb        -0.1480E+01         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Mar         0.5434E+01         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Apr         0.1279E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            May         0.2132E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Jun         0.2775E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Jul         0.3149E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Aug         0.3166E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Sep         0.2319E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Oct         0.1321E+02         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Nov         0.6038E+01         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00
+            Dec        -0.2018E+01         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00         0.0000E+00

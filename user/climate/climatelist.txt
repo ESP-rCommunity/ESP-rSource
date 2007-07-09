@@ -1,0 +1,215 @@
+*CLIMATE_LIST
+*group	ESRU standard climates
+# WARNING: Keep this file up to date with current directory structure !
+*item
+*name	Bolzano TRY
+*aide	Bolzano European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/bolzano.clm
+*dbfl	c:\user\esru\esp-r\climate\bolzano.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	22 1  28  1  27  1
+*spring_typ	15 3  21  3  18  3
+*summer_typ	24 7  30  7  29  7
+*help_start
+Bolzano is located at 46.5N and 3.66W.  The solar
+radiation is Direct Normal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Danish TRY
+*aide	Danish European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/danish.clm
+*dbfl	c:\user\esru\esp-r\climate\danish.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	29 1   4  2   1  2
+*spring_typ	29 3   4  4   2  4
+*summer_typ	19 6  25  6  22  6
+*help_start
+Copenhagen is located at 55.0N and 3.0W.  The solar
+radiation is Global Horizontal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Kew TRY
+*aide	Kew European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/kew.clm
+*dbfl	c:\user\esru\esp-r\climate\kew.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	15 1  21  1  18  1
+*spring_typ	 8 3  14  3  10  3
+*summer_typ	29 5   4  6   2  6
+*help_start
+Kew is located at 51.47N and 0.37W.  The solar
+radiation is Direct Normal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Milan TRY
+*aide	Milan European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/milan.clm
+*dbfl	c:\user\esru\esp-r\climate\milan.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	1  1   7  1   5  1
+*spring_typ	22 3  28  3  24  3
+*summer_typ	17 7  23  7  19  7
+*help_start
+Milan is located at 45.46N and 5.83W.  The solar
+radiation is Global Horizontal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Naples TRY
+*aide	Naples European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/naples.clm
+*dbfl	c:\user\esru\esp-r\climate\naples.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	9  1  15  1  12  1
+*spring_typ	6  3  12  3  10  3
+*summer_typ	11 7  17  7  13  7
+*help_start
+Naples is located at 40.83N and 0.71W.  The solar
+radiation is Global Horizontal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Netherlands TRY
+*aide	Netherlands European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/netherlands.clm
+*dbfl	c:\user\esru\esp-r\climate\netherlands.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	1  1   7  1   5  1
+*spring_typ	29 3   4  4  30  3
+*summer_typ	29 5   4  6   1  6
+*help_start
+Netherlands is located at 55.0N and 6.0E.  The solar
+radiation is Direct Normal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*name	Nice TRY
+*aide	Nice European Test Reference Year.
+#*dbfl	/usr4/Tmp/milan_store/trys/nice.clm
+*dbfl	c:\user\esru\esp-r\climate\nice.clm
+*avail	ONLINE
+*winter_season	1  1  28  2  1  11  31  12
+*spring_season	1  3  30  4  1   9  31  10
+*summer_season	1  5  31  8
+*winter_typ	13 12 19 12  15 12
+*spring_typ	19  4 25  4  21  4
+*summer_typ	22  5 28  5  27  5
+*help_start
+Nice is located at 43.7N and 7.23E.  The solar
+radiation is Global Horizontal. 
+The db temperature range is from ?? to ??.  
+Month     Minimum      Maximum
+January   @  Jan        @   Jan
+February  @  Feb        @   Feb
+March     @  Mar        @   Mar
+April     @  Apr        @   Apr
+May       @  May        @   May
+June      @  Jun        @   Jun
+July      @  Jly        @   Jly
+August    @  Aug        @   Aug
+September @  Sep        @   Sep
+October   @  Oct        @   Oct
+November  @  Nov        @   Nov
+December  @  Dec        @   Dec
+*help_end
+*item
+*end

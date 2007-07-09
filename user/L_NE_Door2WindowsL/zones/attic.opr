@@ -1,0 +1,13 @@
+# operations of attic defined in: 
+# user/L_NE_Door2WindowsL/zones/attic.opr
+nil_operations  # description
+# control(no control of air flow   ), low & high setpoints
+   0      0.000      0.000      0.000
+     0   # number of Weekday flow periods
+     0  # number of Saturday flow periods
+     0   # number of Sunday flow periods
+     0  # number of Weekday casual gains 
+     0  # number of Saturday casual gains
+     0  # number of Sunday casual gains
+# Labels for gain types 
+Occupt Lights Equipt 
