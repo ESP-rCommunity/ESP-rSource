@@ -302,8 +302,15 @@ C
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
+
+C Required for WATSUN-PV model
+      COMMON/PVANG/fInc_angle(MS)
+      REAL fInc_angle          ! Angle of incidence for surface
+
      
       logical VTSOL,vsolfl,closea,neglum
+
+      logical bCloseToZero     ! Boolean used for comparison to zero
 
       character outs*124,zname*12,zdesc*64,vsnam*72
       CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
@@ -492,6 +499,10 @@ C Set default, otherwise undefined.
             IND1(ISRF)=5
             IND2(ISRF)=6
           ENDIF
+
+C Store angle of incidence in COMMON block variable; required by WATSUN-PV model
+          fInc_angle(ISRF) = ANGI(ISRF)
+
 
 C SOLAR PROCESSING: incident comprises direct, sky diffuse
 C and ground reflected components. Calculate direct (SRADDO)
@@ -848,6 +859,14 @@ C Not external construction.
           EXRAD(I)=SRADDO(I)*(1.-EXSHAD(I))+SRADF(I)
           EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
           EXDIF(I)=SRADF(I)
+C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
+          call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
+          if ( bCloseToZero ) then
+             EXDIR(I) = 0.
+             EXDIF(I) = 0.
+          endif
+
+
         ENDIF
    6  CONTINUE
 
@@ -984,6 +1003,12 @@ C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
               EXRAD(I)=SRADDO(I)*(1.-EXSHAD(I))+SRADF(I)
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
               EXDIF(I)=SRADF(I)
+C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
+             call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
+             if ( bCloseToZero ) then
+                EXDIR(I) = 0.
+                EXDIF(I) = 0.
+             endif
 
               QTMCA(I,INODE,2)=QTMCA(I,INODE,2)+(DAB+FAB)/(FNNOD*2.)
               DO 45 JJ=2,NNOD

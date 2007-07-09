@@ -1904,6 +1904,7 @@ C----------------------------------------------------------------------
      & + fAux_Power_Coeff ( iComponent, 6 )
      &             * ( fCOPY_CW_mass_flow - fCW_ref_flow )
      & + fAux_Power_Coeff ( iComponent, 7 )
+     &             * ( fCOPY_CW_mass_flow - fCW_ref_flow ) ** 2.0
 
 C----------------------------------------------------------------------
 C     Calculate system voltage and current:

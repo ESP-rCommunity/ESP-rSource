@@ -1,0 +1,10 @@
+*HC_CTL for zone zone-A
+*Date,Fri Mar 10 09:32:36 2006
+   1 # number control intervals
+   6 # number of surfaces
+# (Surf-1 Surf-2 Surf-3 Surf-4 ArrayA-Surf Surf-6)
+  0.00    24.00 # start and end time of interval
+   1 # calculation control type
+*Doc,User supplied hc values
+ 50.000,50.000,50.000,50.000,-1.000,50.000
+ 50.000,50.000,50.000,50.000,-1.000,50.000

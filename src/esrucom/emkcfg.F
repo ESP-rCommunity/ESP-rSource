@@ -42,6 +42,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "lookup_data.h"
 
       PARAMETER (MSTMC=1,MSGAL=1)
 
@@ -523,6 +524,14 @@ C BCD (boundary condition definiton file)
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*bcd  ',
      &     cBC_data_file_name(1:lnblnk(cBC_data_file_name)),
      &     '  # BCD file name'
+      endif 
+
+C Lookup table data file
+      if ( bLookup_data_defined ) then
+         WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*tab  ',
+     &     cLookup_data_file_name
+     &     (1:lnblnk(cLookup_data_file_name)),
+     &     '  # Lookup table file name'
       endif 
 
 C Write control file if known.
