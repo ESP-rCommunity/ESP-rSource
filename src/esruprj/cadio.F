@@ -97,7 +97,7 @@ C Help text for this menu.
       H(15)='VRML Version 2.0, with a matching html file containing'
       H(16)='     surface attributes.'
  
-      CALL EMENU('Export Model',ITEMS1,16,INO1)
+      CALL EMENU('Export Model',ITEMS1,11,INO1)
 
 C Prepare filter command lines with path.
 
