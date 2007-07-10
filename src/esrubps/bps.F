@@ -80,6 +80,8 @@ C           ifil+76 Runtime boundry condition definition file (BCD.tmp)
 C           ifil+77 Temporary binary file used when converting
 C                   hourly profiles 'Hrly_Load.tmp'
 C           ifil+80 CETC month status IO channel
+C           ifil+81 Runtime lookup table data file 
+C           ifil+82 File containing wind turbine power curve data
 
 C MMOD   -  index returned from the 'pages' routine
 C           and determines the device type attached to current job.

@@ -134,6 +134,7 @@ C default file names for databases
 #include "bc_data.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "lookup_data.h"
 
       PARAMETER (MSTMC=1)
 
@@ -897,6 +898,14 @@ C AIM-2, test and see if it exists.
             call edisp(iuout,outs)
           endif
         endif
+      elseif(WORD(1:4).eq.'*tab')then
+
+C Lookup table definition      
+        call EGETRM(OUTSTR,K,cTemp,'W','Lookup table data file', IER)
+        cLookup_data_file_name = cTemp(1:lnblnk(cTemp))
+        bLookup_data_defined = .true.
+
+
       elseif(WORD(1:4).eq.'*ctm')then
 
 C Contaminant model 

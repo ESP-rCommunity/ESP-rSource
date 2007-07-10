@@ -477,7 +477,7 @@ WATSUN-PV_multic
 298.      Reference temperature. (K)
 0.00065   Temperature coefficient of Isc (/K)
 -0.0036   Temperature coefficient of Voc (/K)
-1.        Empirical coefficient beta used in calc of Voc (-)
+1.        Coefficient of logarithm of irradiance for Voc (-)
 36.       Number of series connected cells (not modules) (-)
 1.        Number of parallel connected branches. (-)
 2.        Number of modules in surface. (-)     
@@ -804,19 +804,21 @@ and can deduct energy used by hydrogen equipment.
 *DESC
 wind_turbine2
 *SPECDATA 
-7 1
+8 2
 10.0      Height of the turbine (m)
 1.0       Number of turbines (-)
 1.0       Location (1-urban,2-suburban,3-open)
 10.0      Reference height (m)
 0.0       Wind speed statistics (ON/OFF)
-0.0       Wind speed/turbulence profile (ON/OFF)
+0.0       Wind speed data source (0=clm file w/o corr, 1= clm file w/ corr for height, 2= bcd file)
 0.2       Default turbulence intensity (-)
+1.0       Wind speed interpolation method (1 = step, 2 = linear)
 UNKNOWN
 Wind turbine power output profile file. 
+UNKNOWN
+Column heading corresponding to wind speed data (if using bcd data source). 
 *TEXT
 A simple user configurable wind turbine model. 
-
 *ENDTEXT
 *END
 *ENDPOWERODB

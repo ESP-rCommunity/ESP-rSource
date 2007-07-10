@@ -43,6 +43,8 @@ C HOT3000: Fuel cell.
 #include "CETC_definitions.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
+#include "lookup_data.h"
+
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
 
@@ -271,6 +273,9 @@ C Flag for whether plant network has storage tank that uses mains make up
 C water
       logical itank_flag
 
+      logical autook
+
+
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
@@ -483,6 +488,16 @@ C and process file if necessary.
         if ( bBC_data_err ) bBC_data_defined = .false.
       endif
 
+C Check to see if lookup table data file has been defined and
+C process file if necessary
+
+      if ( bLookup_data_defined ) then
+
+        call process_Lookup_data_file(ifil,autook,
+     &                            bLookup_data_err)
+        if ( bLookup_data_err ) bLookup_data_defined = .false.
+      endif
+      
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
@@ -1665,6 +1680,10 @@ C the impact of modifications on simulation times.
 
 C Delete temporary file created for boundary conditions, if one exists.        
       if ( bBC_data_defined ) call cleanup_BC_data()
+
+C Delete temporary file created for lookup table facility if applicable
+      if ( bLookup_data_defined ) call cleanup_Lookup_data()
+
 
 C Trace output.
    16 if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
