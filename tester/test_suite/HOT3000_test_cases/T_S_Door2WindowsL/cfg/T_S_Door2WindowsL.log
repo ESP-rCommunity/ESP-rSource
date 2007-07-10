@@ -1,0 +1,67 @@
+Current Directory:C:/H3000B~1
+Monday, 9 of July 2007 0:0:0
+All Directorys for project T_S_Door2WindowsL created
+=========Window data======
+***( 0 )***
+Window Tilt            = 0
+Window Curtain         = 0.000000
+Window Over Hang Width = 0
+Window Shutter Value   = 0
+Window Tilt Value      = 0
+Window SGHC            = 0
+***( 0 )***
+Window Tilt            = 0
+Window Curtain         = 0.000000
+Window Over Hang Width = 0
+Window Shutter Value   = 0
+Window Tilt Value      = 0
+Window SGHC            = 0
+CFG fileuser/T_S_Door2WindowsL/cfg/T_S_Door2WindowsL.cfg open for write
+AIM fileuser/T_S_Door2WindowsL/aim/T_S_Door2WindowsL.aim open for write
+CON fileuser/T_S_Door2WindowsL/zones/main.con open for write
+BSM fileuser/T_S_Door2WindowsL/bsm/Foundation.bsm open for write
+CON fileuser/T_S_Door2WindowsL/zones/Foundation.con open for write
+BSM fileuser/T_S_Door2WindowsL/bsm/Foundation.bsm open for write
+CON fileuser/T_S_Door2WindowsL/zones/attic.con open for write
+CNN fileuser/T_S_Door2WindowsL/cfg/T_S_Door2WindowsL.cnn open for write
+----------surface parameters-------------|---connecting zone-------
+ # zon       name optics  type    db_name|Zone      name type surf#
+-----------------------------------------|-------------------------
+ 1  1  MainWall-W1  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 2  1  MainWall-N1  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 3  1  MainWall-W2  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 4  1  MainWall-N2  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 5  1  MainWall-E1  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 6  1  MainWall-N3  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 7  1  MainWall-E2  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 8  1   MainWall-S  OPAQ  VERT   ext_wall|  0   EXTERIOR   0   0
+ 9  1       to_bsm  OPAQ  FLOR     floors|  2 Foundation   3  10
+10  1     to_attic  OPAQ  CEIL    ceiling|  3      attic   3   1
+11  1       Door-3  OPAQ  VERT   ext_door|  0   EXTERIOR   0   0
+12  1    Window-25  TRAN  VERT     window|  0   EXTERIOR   0   0
+13  1    Window-26  TRAN  VERT     window|  0   EXTERIOR   0   0
+----------surface parameters-------------|---connecting zone-------
+ # zon       name optics  type    db_name|Zone      name type surf#
+-----------------------------------------|-------------------------
+ 1  2 bsm_MainWall-W1  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 2  2 bsm_MainWall-N1  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 3  2 bsm_MainWall-W2  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 4  2 bsm_MainWall-N2  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 5  2 bsm_MainWall-E1  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 6  2 bsm_MainWall-N3  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 7  2 bsm_MainWall-E2  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 8  2 bsm_MainWall-S  OPAQ  VERT foundation| 10   BASESIMP   6  15
+ 9  2         slab  OPAQ  FLOR slab_floor| 10   BASESIMP   6  40
+10  2      to_main  OPAQ  CEIL   floors_r|  1       main   3   9
+----------surface parameters-------------|---connecting zone-------
+ # zon       name optics  type    db_name|Zone      name type surf#
+-----------------------------------------|-------------------------
+ 1  3      to_main  OPAQ  FLOR  ceiling_r|  1       main   3  10
+ 2  3    EastSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 3  3 NorthEastSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 4  3    EastGable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0
+ 5  3   SouthSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 6  3    WestGable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0
+ 7  3 NorthWestSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 8  3    WestSlope  OPAQ  SLOP    asphalt|  0   EXTERIOR   0   0
+ 9  3   NorthGable  OPAQ  VERT   cladding|  0   EXTERIOR   0   0
