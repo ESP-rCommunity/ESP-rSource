@@ -437,7 +437,6 @@ if ( $echo )  { die echo_config(); }
 
 # Create test directory, and move to path.
 stream_out("\nPreparing test directory $TestFolder...");
-# DEBUG
 
 if ( ! $debug_forcheck ){
   execute ("rm -fr $TestFolder");
@@ -479,7 +478,6 @@ if ( $test_forcheck || $test_builds || $test_regression ){
     
     # Pull down source.
     if ( ! -d $src_dirs{$key} ){
-# DEBUG
        execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
     }
     stream_out("Done\n");
@@ -509,7 +507,6 @@ if ( $test_forcheck ){
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
 
     # Build X11 debugging version.
-    # DEBUG
     if ( ! $debug_forcheck ) {
       buildESPr("default","debug","onebyone");
     }
@@ -758,18 +755,23 @@ if ( $test_forcheck ){
       my $code = $gShorthand{$code_desc};
 
       if ( defined ( $unmatched_codes{$code} ) ) {
-        # If so, split list of instances...
+
+        # If so, get instances where code appears...
 
         my %locations = %{$unmatched_codes{$code}};
-        
+
+        # ...loop though instancess
         foreach my $instance ( sort keys %locations ){
 
-
+          # Split instance into file/line and source tokens
           my ($location,$source ) = split /\{\}/, $instance;
           $location = ( $location =~ /none/ ) ? "" : "in $location";
 
+          # Get procedures that include this source code (there
+          # may be more than one if source is in a header file)
           my $procedures = $locations{$instance};
 
+          # Format output.
           if ($source =~ /^\s*$/ ){
             $source = "\n";
           }else{
