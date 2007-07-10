@@ -1,3 +1,0 @@
-2 TWO_ZONE_MODEL
-[main] fFracEquipCapToZone[0] = 0.000000
-[Foundation] fFracEquipCapToZone[1] = 0.000000
