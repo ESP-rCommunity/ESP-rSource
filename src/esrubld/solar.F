@@ -1124,19 +1124,23 @@ C Get diffuse transmission from common block.
               XF=THTSOB(1,1)
             ENDIF
 
+C Calculate diffuse transmission.
             TFF=SRADF(I)*SNA(ICOMP,I)*XF
             tfftrace(i)=tff
 
-C For bidirectional data, add in the direct-diffuse component.
-            if(IBIDIR.NE.0)then
-              TFF=TFF+SRADF(I)*SNA(ICOMP,I)*DTOD 
-              tfftrace(i)=tff
-            endif
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
             ELSE
               POO=PO(ICOMP,I,IHRF)
             ENDIF
+
+C For bidirectional data, add in the direct-diffuse component to the diffuse transmission.
+            if(IBIDIR.NE.0)then
+              TFF=TFF+SRADDO(I)*(1.-POO)*SNA(ICOMP,I)*DTOD 
+              tfftrace(i)=tff
+            endif
+
+C Calculate direct transmission.
             TD=SRADDO(I)*SNA(ICOMP,I)*(1.-POO)*XD
             tdtrace(i)=td
 
