@@ -898,13 +898,17 @@ if ( $test_regression ) {
   my $test_esp = "$TestFolder/esp-r_test/bin/";
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
-  execute ("./tester.pl $ref_esp/bps $test_esp/bps  -d $TestFolder/esp-r --ref_res $ref_esp --test_res $test_esp -p $TestFolder/$src_dirs{\"test\"}/tester/");
+  execute ("./tester.pl "
+           ."$ref_esp/bps $test_esp/bps "
+           ."-d $TestFolder/esp-r "
+           ."--ref_res $ref_esp --test_res $test_esp "
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
   # Digest test report 
   my $regression_results = `cat bps_test_report.txt`;
-  if ( $regression_results =~ /^ Overall result: Fail\./ ) {
+  if ( $regression_results =~ /^ Overall result: Fail\./m ) {
     $regression_fail = 1;
   }
   $results .= `cat bps_test_report.txt`;
