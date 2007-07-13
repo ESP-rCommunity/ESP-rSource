@@ -71,9 +71,9 @@ my $gInputFile="nightly_branch_tests.dat";  # Input file
 
 my $gSMTP_Server="Mailhost.nrcan.gc.ca";    # SMTP server
 
-my $gTestOptions="-v";         # Generic test options. 
+my $gTestOptions="-v";         # Generic test options.
 
-my @gInput;                    # Buffer to store configuration file 
+my @gInput;                    # Buffer to store configuration file
 
 #--------------------------------------------------------------------
 # SYNOPSYS 
@@ -228,7 +228,7 @@ sub LockFile($$){
     # Strip comments and leading spaces from copy 
     $line_copy =~ s/#.*$//g;
     $line_copy =~ s/^\s*//g;
-    $line_copy =~ s/\s+/ /g;
+    $line_copy =~ s/\s+//g;
       
     # If there's anything left, check if line matches '*FILE-LOCK OPEN'
     if ( $line_copy =~ /[^\s]/ ){
@@ -236,7 +236,7 @@ sub LockFile($$){
       
       if ( $action =~ /lock/ ){
           
-            if ( $line_copy =~ /\*FILE-LOCK UNLOCKED/ ){
+            if ( $line_copy =~ /\*FILE-LOCK,UNLOCKED/ ){
         
             # Lock file 
               $line =~ s/UNLOCKED/LOCKED/g;
@@ -249,7 +249,7 @@ sub LockFile($$){
       
       if ( $action =~ /unlock/ ){
           
-            if ( $line_copy =~ /\*FILE-LOCK LOCKED/ ){
+            if ( $line_copy =~ /\*FILE-LOCK,LOCKED/ ){
         
             # Lock file 
               $line =~ s/LOCKED/UNLOCKED/g;
@@ -350,9 +350,19 @@ sub test_branch($){
     
     # Strip trailing , off of address list
     $addresses =~ s/,$//g;
-      
-    execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 ");
-  
+
+    # Escape arguement string.
+
+    my $extra_args = "";
+    my $extra_options = "";
+    if ( $gBranches{$branch}{"args"} ) {
+      $extra_args = "\\\"$gBranches{$branch}{\"args\"}\\\"";
+      $extra_options  ="--test-build-args=$extra_args";
+      $extra_options .=" --reference-build-args=$extra_args";
+    }
+    
+    execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options");
+
     # Set flag to update branch entry in input file 
     $gBranches{$branch}{"updated"} = 1;
   
@@ -395,13 +405,13 @@ sub update_data_file($){
       # Strip comments and leading spaces from copy 
       $line_copy =~ s/#.*$//g;
       $line_copy =~ s/^\s*//g;
-      $line_copy =~ s/\s+/ /g;
+      $line_copy =~ s/\s+//g;
       
       # If there's anything left, perfrom seach and replace 
       if ( $line_copy =~ /[^\s]/ ){
       
         # Get particulars from copy : 
-        my ($name,$old_rev,$members,$tests) = split /\s+/, $line_copy;
+        my ($name,$old_rev,$members,$tests) = split /,/, $line_copy;
   
         # if branch has been updated, update line with new revision 
         # number.
@@ -459,44 +469,87 @@ sub read_data_file($){
       
       # Save line for use later 
       push @gInput, $line; 
+
+      # if line contains quotes, escape them and embedded spaces.
+
+      while ( $line =~ /"/ ){
+        my $quote_sting = $line;
+
+        $quote_sting =~ s/^[^"]*("[^"]*").*$/$1/;
+
+        my $convert_string = $quote_sting;
+       
+        # convert quoted spaces into '^~'s:
+        $convert_string =~ s/ /^~/g;
+
+        # convert quotes into '###':
+        $convert_string =~ s/"/###/g;
+
+        # Substitute back into command arguement string
+        $line =~ s/$quote_sting/$convert_string/;
+
+        
+      }
+
+      # Delete '###' character
+      $line =~ s/###//g;
       
       # Strip out comments (beginning with #)
       $line =~ s/#.*$//g;
       $line =~ s/^\s*//g;
-      $line =~ s/\s+/ /g;
+
+      # Eliminate white space
+      $line =~ s/\s+//g;
       # If there's anything left, parse contents
       
       if ( $line =~ /[^\s]/ ){
         # Open/close address and branch blocks as necessary
         if ( $line =~ /^\*ADDRESSES\s*$/ )     { $Addresses_open = 1; }
         if ( $line =~ /^\*ADDRESSES-END\s*$/ ) { $Addresses_open = 0; }
-        if ( $line =~ /^\*BRANCHES\s*$/ )      { $Branches_open = 1; }
-        if ( $line =~ /^\*BRANCHES-END\s*$/ )  { $Branches_open = 0; }
+        if ( $line =~ /^\*BRANCHES\s*$/ )      { $Branches_open  = 1; }
+        if ( $line =~ /^\*BRANCHES-END\s*$/ )  { $Branches_open  = 0; }
         
         # Parse base URL 
         if ( $line =~ /^\*BASE-URL/ ){
-          ( my $dummy, $gBaseURL ) = split /\s+/, $line;
+          ( my $dummy, $gBaseURL ) = split /,/, $line;
         }
         
         if ( $line =~/^\*SMTP/ ){
-          ( my $dummy, $gSMTP_Server ) = split /\s+/, $line;
+          ( my $dummy, $gSMTP_Server ) = split /,/, $line;
         }
         
         # Parse email addresses
         if ( $Addresses_open && $line !~ /^\*/ ) {
-          my ($name,$address) = split /\s/, $line; 
+          my ($name,$address) = split /,/, $line;
           $gMembers{$name} = $address;
         }
         
         # Parse branches
         if ( $Branches_open && $line !~ /^\*/ ){
+
+          # Initialize branch prop vars as empty strings 
+          my ($name,$rev,$members,$tests,$args);
+
+
+          # Strip leading 'r' from revision number
+          my @contents = split /,/, $line;
+
+          $name        = ( defined ( $contents[0] ) ) ?  $contents[0] : "";
+          $rev         = ( defined ( $contents[1] ) ) ?  $contents[1] : "";
+          $members     = ( defined ( $contents[2] ) ) ?  $contents[2] : "";
+          $tests       = ( defined ( $contents[3] ) ) ?  $contents[3] : "";
+          $args        = ( defined ( $contents[4] ) ) ?  $contents[4] : "";
           
-          my ($name,$rev,$members,$tests) = split /\s+/, $line;
           $rev =~ s/r//g;
-          # Store branch info 
-          $gBranches{$name}{"ref_rev"} = $rev;
+
+          # Turn '^~' in arg back into spaces
+          $args =~ s/\^~/ /g;
+          
+          # Store branch info
+          $gBranches{$name}{"ref_rev"}  = $rev;
           $gBranches{$name}{"members"}  = $members;
           $gBranches{$name}{"tests"}    = $tests;
+          $gBranches{$name}{"args"}     = $args;
         
         }
       
@@ -525,7 +578,9 @@ sub echo_config(){
     stream_out("$branch\@"
                    .$gBranches{$branch}{"ref_rev"}." (tests - "
                    .$gBranches{$branch}{"tests"}.") :: mailto: ->"
-                   .$gBranches{$branch}{"members"}."\n                     ");
+                   .$gBranches{$branch}{"members"}." :: extra args ("
+                   .$gBranches{$branch}{"args"}
+                   .")\n                     ");
   }
   stream_out("\n");
   return;

@@ -45,7 +45,7 @@ sub execute($);
 sub summarize_forcheck($);
 sub parse_forcheck($);
 sub fatalerror($);
-sub buildESPr($$$);
+sub buildESPr($$$$);
 sub passfail($);
 #--------------------------
 
@@ -106,6 +106,11 @@ my $test_forcheck   = 1;
 my $test_builds     = 1;
 my $test_regression = 1;
 
+# Additional compilation flags
+my %build_args;
+$build_args{"reference"} ="";
+$build_args{"test"}      ="";
+
 # Flag for forcheck debugging
 my $debug_forcheck = 0;
 
@@ -160,7 +165,6 @@ my $synopsys= "
        branch; 'trunk', 'trunk\@r1000', 'development_branch\@HEAD', and
        'branches/development_branch' are all valid.
 
-
    -a, --addresses abc\@xyz.net,def\@xyx.net,...:
        Mail the results to specified comma-separated recepient list. This
        option requires access a valid SMTP server.
@@ -172,6 +176,12 @@ my $synopsys= "
 
    --skip-forcheck, --skip-regression, --skip-builds:
        Skip portions of the QA tests
+
+   --ref-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
+       when compiling reference version.
+
+   --test-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
+       when compiling test version.
        
    -v: 
        Verbose output; print test progress to the buffer.
@@ -231,10 +241,37 @@ if ( @ARGV ){
   foreach my $arg (@ARGV){
     $cmd_arguements .= " $arg ";
   }
-  
+
+  # Grab strings inside quotes:
+  while ( $cmd_arguements =~ /"/ ){
+    my $quote_sting = $cmd_arguements;
+
+    $quote_sting =~ s/^[^"]*("[^"]*").*$/$1/;
+
+    my $convert_string = $quote_sting;
+       
+    # convert quoted spaces into '^~'s:
+    $convert_string =~ s/ /^~/g;
+
+    # convert quotes into '###':
+    $convert_string =~ s/"/###/g;
+
+    # Substitute back into command arguement string
+    $cmd_arguements =~ s/$quote_sting/$convert_string/;
+    
+  }
+
   # Compress white space, and convert to ';'
   $cmd_arguements =~ s/\s+/ /g;
   $cmd_arguements =~ s/\s+/;/g;
+  
+  # Convert ### and ^~ back into '"' and ' '
+
+  $cmd_arguements =~ s/\^~/ /g;
+  $cmd_arguements =~ s/###/\\"/g;
+
+  # convert '=' to ':'
+  $cmd_arguements =~ s/=/:/g;
   
   # Convert short hand arguements into longhand
   $cmd_arguements =~ s/-a;/--addresses;/g;
@@ -252,6 +289,10 @@ if ( @ARGV ){
   # If any options expecting arguements are followed by other
   # options, insert empty arguement:
   $cmd_arguements =~ s/:-/:;-/;
+
+  # Delete any remaining quotes
+  $cmd_arguements =~ s/\\"//g;
+
       
   # remove leading and trailing ;'s
   $cmd_arguements =~ s/^;//g;
@@ -259,9 +300,7 @@ if ( @ARGV ){
   
   # split processed arguements back into array
   my @processed_args = split /;/, $cmd_arguements;
-  
- 
-  
+
   # Intrepret arguements
   foreach my $arg (@processed_args){     
     SWITCH:
@@ -320,6 +359,21 @@ if ( @ARGV ){
         last SWITCH;
       }
       
+
+      # Additional build arguements for reference and test cases
+      if ( $arg =~ /--ref-build-args:/ ){
+        $build_args{"reference"} = $arg;
+        $build_args{"reference"} =~ s/--ref-build-args://g;
+        last SWITCH;
+      }
+
+      # Additional build arguements for reference and test cases
+      if ( $arg =~ /--test-build-args:/ ){
+        $build_args{"test"} = $arg;
+        $build_args{"test"} =~ s/--test-build-args://g;
+        last SWITCH;
+      }
+      
       # Debugging:
       if ( $arg =~ /^--echo/ ){
         $echo = 1;
@@ -338,16 +392,16 @@ if ( @ARGV ){
         $verbose = 1;
         last SWITCH;
       }
-      if ( $arg =~ /^--very_verbose/ ){
+      if ( $arg =~ /^--very-verbose/ ){
         # steam out all messages
         $verbose = 1;
         $veryverbose = 1;
         last SWITCH;
-      } 
+      }
     }
   }
 }
-     
+
 # Append default revisions to %revisions hash, if necessary
 for my $count ( scalar(@version_stack) ){
   SWITCH:{
@@ -508,7 +562,7 @@ if ( $test_forcheck ){
 
     # Build X11 debugging version.
     if ( ! $debug_forcheck ) {
-      buildESPr("default","debug","onebyone");
+      buildESPr($build_args{"$key"},"default","debug","onebyone");
     }
     stream_out(" Done\n");
     
@@ -845,7 +899,7 @@ if ($test_builds){
   stream_out("\nBuilding X11 version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");  
-  %build_result = buildESPr("X11","clean","onebyone");
+  %build_result = buildESPr($build_args{"test"},"X11","clean","onebyone");
   if (  $build_result{"fail"}  ) { $X11_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -854,7 +908,7 @@ if ($test_builds){
   stream_out("\nBuilding GTK version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr("GTK","clean","onebyone");
+  %build_result = buildESPr($build_args{"test"},"GTK","clean","onebyone");
   if (  $build_result{"fail"}  ) { $GTK_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -863,7 +917,7 @@ if ($test_builds){
   stream_out("\nBuilding noX version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr("noX","clean","onebyone");  
+  %build_result = buildESPr($build_args{"test"},"noX","clean","onebyone");  
   if (  $build_result{"fail"}  ) { $noX_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -887,7 +941,7 @@ if ( $test_regression ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
     execute("make clean");
-    buildESPr("default","clean","together");  
+    buildESPr($build_args{"$key"},"default","clean","together");
     execute("mv $TestFolder/esp-r $TestFolder/esp-r_$key");
     stream_out(" Done\n");
   }
@@ -1002,7 +1056,7 @@ close(OUTPUT_FILE);
 
 # DEBUG
 if ( ! $debug_forcheck ){
-  execute("rm -fr $TestFolder");
+  #execute("rm -fr $TestFolder");
 }
 
 #-------------------------------------------------------------------
@@ -1025,9 +1079,9 @@ sub passfail($){
 #   - $build=onebyone causes each esp-r binary to be built 
 #     individually, and the resulting target tested for completeness.
 #-------------------------------------------------------------------
-sub buildESPr($$$){
+sub buildESPr($$$$){
   
-  my($xLibs,$state,$build) =@_;
+  my($extra_args, $xLibs,$state,$build) =@_;
   
   
   my $Debug_flag;
@@ -1075,9 +1129,7 @@ sub buildESPr($$$){
       
       # Build executable. It would be to recover the output from this 
       # command and report it to the user, if a failure occurs.
-      
-      my $debug_temp = `./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $bin 2>&1`;
-      
+      my $debug_temp = `./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $extra_args $bin 2>&1`;
       # Test if target was created, and if not, note failure.
       if ( ! -r "$TestFolder/esp-r/bin/$target"      && 
            ! -r "$TestFolder/esp-r/bin/$target.exe"     ){
@@ -1091,7 +1143,7 @@ sub buildESPr($$$){
   }else{
   
     # Build all at once, omit training files.
-    execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force");
+    execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
   }
   
   
