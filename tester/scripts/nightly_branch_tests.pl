@@ -360,7 +360,6 @@ sub test_branch($){
       $extra_options  ="--test-build-args=$extra_args";
       $extra_options .=" --reference-build-args=$extra_args";
     }
-    
     execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options");
 
     # Set flag to update branch entry in input file 
@@ -419,12 +418,11 @@ sub update_data_file($){
         
           # Get updated branch number
           my $new_rev = $gBranches{$name}{"test_rev"};
-        
+          
           stream_out("Updating revision data in $name: $old_rev -> r$new_rev\n");
-        
+
           # Update revision on line
-          $line =~ s/(\s)$old_rev(\s)/$1r$new_rev$2/g;
-        
+          $line =~ s/(\s|,)$old_rev(\s|,)/$1r$new_rev$2/g;
         }
       }
     }

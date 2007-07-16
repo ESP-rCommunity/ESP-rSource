@@ -1056,7 +1056,7 @@ close(OUTPUT_FILE);
 
 # DEBUG
 if ( ! $debug_forcheck ){
-  #execute("rm -fr $TestFolder");
+  execute("rm -fr $TestFolder");
 }
 
 #-------------------------------------------------------------------
