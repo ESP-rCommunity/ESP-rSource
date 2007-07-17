@@ -1383,7 +1383,8 @@ C constructions are known.
           endif
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(5),'(a,i3)')'e  plant timestep/(bldg ts):',ispnstep
+          write(ITEMS(5),'(a,i3)')'e  plant timestep/(bldg ts):',
+     &      ispnstep
         else
           write(ITEMS(5),'(a)')   'e  plant timestep/(bldg ts): N/A'
         endif

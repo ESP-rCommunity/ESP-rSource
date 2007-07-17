@@ -144,7 +144,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g calendar (holidays)            '                             '
+      ITEMS(8) =                'g calendar (holidays)            '                   '
       ITEMS(9) =                'h                                '
       ITEMS(10)=                'i                                '
       ITEMS(11)=                '  ___________________________    '
