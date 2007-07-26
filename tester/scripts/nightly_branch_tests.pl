@@ -75,6 +75,8 @@ my $gTestOptions="-v";         # Generic test options.
 
 my @gInput;                    # Buffer to store configuration file
 
+my $debug = 0;
+
 #--------------------------------------------------------------------
 # SYNOPSYS 
 #--------------------------------------------------------------------
@@ -167,6 +169,11 @@ if ( @ARGV ){
       if ( $arg =~ /^[^-]/ ){
         $gInputFile = $arg;
         last SWITCH; 
+      }
+            
+      if ( $arg =~ /^--debug/ ){
+        $debug = 1;
+        last SWITCH;
       }
             
       fatalerror ("Unknown arguement $arg"); 
@@ -296,7 +303,7 @@ sub test_branch($){
   
   
   
-  my $last_revision = `svn info $gBaseURL/$branch | grep "Last Changed Rev:" `;
+  my $last_revision = `svn info $gBaseURL/$gBranches{$branch}{"name"} | grep "Last Changed Rev:" `;
   
   $last_revision =~ s/Last Changed Rev://g;
   $last_revision =~ s/\s*//g;
@@ -336,16 +343,20 @@ sub test_branch($){
     if ( $gBranches{$branch}{"tests"} !~ "REGRESSION" )  { $local_test_options .= " --skip-regression ";}
     
     # Build url arguements 
-    my $URL_1 = "$branch\@".$old_rev;
-    my $URL_2 = "$branch\@".$gBranches{$branch}{"test_rev"};
+    my $URL_1 = $gBranches{$branch}{"name"}."\@".$old_rev;
+    my $URL_2 = $gBranches{$branch}{"name"}."\@".$gBranches{$branch}{"test_rev"};
     
     # Collate email addresses 
     my ( @members ) = split /:/, $gBranches{$branch}{"members"};
     
     my $addresses = " -a " ; 
-    
-    foreach my $member ( @members ) {
-      $addresses .= $gMembers{$member}.",";
+
+    if ( ! $debug ){
+      foreach my $member ( @members ) {
+        $addresses .= $gMembers{$member}.",";
+      }
+    }else{
+      $addresses .= "aferguso\@nrcan.gc.ca";
     }
     
     # Strip trailing , off of address list
@@ -358,7 +369,7 @@ sub test_branch($){
     if ( $gBranches{$branch}{"args"} ) {
       $extra_args = "\\\"$gBranches{$branch}{\"args\"}\\\"";
       $extra_options  ="--test-build-args=$extra_args";
-      $extra_options .=" --reference-build-args=$extra_args";
+      $extra_options .=" --ref-build-args=$extra_args";
     }
     execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options");
 
@@ -410,16 +421,16 @@ sub update_data_file($){
       if ( $line_copy =~ /[^\s]/ ){
       
         # Get particulars from copy : 
-        my ($name,$old_rev,$members,$tests) = split /,/, $line_copy;
+        my ($alias,$name,$old_rev,$members,$tests) = split /,/, $line_copy;
   
         # if branch has been updated, update line with new revision 
         # number.
-        if ( $gBranches{$name}{"updated"} ){
+        if ( $gBranches{$alias}{"updated"} ){
         
           # Get updated branch number
-          my $new_rev = $gBranches{$name}{"test_rev"};
+          my $new_rev = $gBranches{$alias}{"test_rev"};
           
-          stream_out("Updating revision data in $name: $old_rev -> r$new_rev\n");
+          stream_out("Updating revision data in $alias: $old_rev -> r$new_rev\n");
 
           # Update revision on line
           $line =~ s/(\s|,)$old_rev(\s|,)/$1r$new_rev$2/g;
@@ -526,28 +537,30 @@ sub read_data_file($){
         if ( $Branches_open && $line !~ /^\*/ ){
 
           # Initialize branch prop vars as empty strings 
-          my ($name,$rev,$members,$tests,$args);
+          my ($alias,$name,$rev,$members,$tests,$args);
 
 
           # Strip leading 'r' from revision number
           my @contents = split /,/, $line;
 
-          $name        = ( defined ( $contents[0] ) ) ?  $contents[0] : "";
-          $rev         = ( defined ( $contents[1] ) ) ?  $contents[1] : "";
-          $members     = ( defined ( $contents[2] ) ) ?  $contents[2] : "";
-          $tests       = ( defined ( $contents[3] ) ) ?  $contents[3] : "";
-          $args        = ( defined ( $contents[4] ) ) ?  $contents[4] : "";
-          
-          $rev =~ s/r//g;
+          $alias       = ( defined ( $contents[0] ) ) ?  $contents[0] : "";
+          $name        = ( defined ( $contents[0] ) ) ?  $contents[1] : "";
+          $rev         = ( defined ( $contents[1] ) ) ?  $contents[2] : "";
+          $members     = ( defined ( $contents[2] ) ) ?  $contents[3] : "";
+          $tests       = ( defined ( $contents[3] ) ) ?  $contents[4] : "";
+          $args        = ( defined ( $contents[4] ) ) ?  $contents[5] : "";
 
+          $rev =~ s/r//g;
+                                                                   
           # Turn '^~' in arg back into spaces
           $args =~ s/\^~/ /g;
           
           # Store branch info
-          $gBranches{$name}{"ref_rev"}  = $rev;
-          $gBranches{$name}{"members"}  = $members;
-          $gBranches{$name}{"tests"}    = $tests;
-          $gBranches{$name}{"args"}     = $args;
+          $gBranches{$alias}{"name"}     = $name;
+          $gBranches{$alias}{"ref_rev"}  = $rev;
+          $gBranches{$alias}{"members"}  = $members;
+          $gBranches{$alias}{"tests"}    = $tests;
+          $gBranches{$alias}{"args"}     = $args;
         
         }
       
@@ -573,7 +586,7 @@ sub echo_config(){
   }
   stream_out("\n  - branches:        ");
   foreach my $branch ( keys %gBranches ){
-    stream_out("$branch\@"
+    stream_out($gBranches{$branch}{"name"}."\@"
                    .$gBranches{$branch}{"ref_rev"}." (tests - "
                    .$gBranches{$branch}{"tests"}.") :: mailto: ->"
                    .$gBranches{$branch}{"members"}." :: extra args ("
