@@ -1001,11 +1001,11 @@ a complete regression test between the two versions.
 
 ";
 
-my $ref_args = ( defined ( $build_args{"reference"} ) )
+my $ref_args = ( $build_args{"reference"} )
                 ? "Build options: $build_args{\"reference\"}"
                 : "Build options: none";
 
-my $test_args = ( defined ( $build_args{"test"} ) )
+my $test_args = ( $build_args{"test"}  )
                 ? "Build options: $build_args{\"test\"}"
                 : "Build options: none";                
 
@@ -1042,12 +1042,14 @@ if ( scalar(@addresses) > 0 ){
   stream_out("Mailing results...");
   
   my ($subject);
-  
+
   if ( $global_fail  ){
-    $subject = "ESP-r automated test: Fail ";
+    $subject = "ESP-r automated test: Fail  ($revisions{\"test\"}) ";
   }else{
-    $subject = "ESP-r automated test: Pass ";
+    $subject = "ESP-r automated test: Pass  ($revisions{\"test\"}) ";
   }
+
+  $subject =~ s/branches\///g;
   
   foreach my $address (@addresses){
     mail_message($smtp_server,$address,$mail_from,$subject,$output);
