@@ -544,16 +544,16 @@ sub read_data_file($){
           my @contents = split /,/, $line;
 
           $alias       = ( defined ( $contents[0] ) ) ?  $contents[0] : "";
-          $name        = ( defined ( $contents[0] ) ) ?  $contents[1] : "";
-          $rev         = ( defined ( $contents[1] ) ) ?  $contents[2] : "";
-          $members     = ( defined ( $contents[2] ) ) ?  $contents[3] : "";
-          $tests       = ( defined ( $contents[3] ) ) ?  $contents[4] : "";
-          $args        = ( defined ( $contents[4] ) ) ?  $contents[5] : "";
+          $name        = ( defined ( $contents[1] ) ) ?  $contents[1] : "";
+          $rev         = ( defined ( $contents[2] ) ) ?  $contents[2] : "";
+          $members     = ( defined ( $contents[3] ) ) ?  $contents[3] : "";
+          $tests       = ( defined ( $contents[4] ) ) ?  $contents[4] : "";
+          $args        = ( defined ( $contents[5] ) ) ?  $contents[5] : "";
 
           $rev =~ s/r//g;
-                                                                   
+
           # Turn '^~' in arg back into spaces
-          $args =~ s/\^~/ /g;
+          $args =~ s/\^~/ /g;                  
           
           # Store branch info
           $gBranches{$alias}{"name"}     = $name;
