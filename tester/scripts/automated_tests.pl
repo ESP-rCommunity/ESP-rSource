@@ -1001,14 +1001,22 @@ a complete regression test between the two versions.
 
 ";
 
+my $ref_args = ( defined ( $build_args{"reference"} ) )
+                ? "Build options: $build_args{\"reference\"}"
+                : "Build options: none";
+
+my $test_args = ( defined ( $build_args{"test"} ) )
+                ? "Build options: $build_args{\"test\"}"
+                : "Build options: none";                
+
 
 my $system = `uname -n`." (".`uname -m`.";".`uname -s`.";".`uname -r`.")";
 $system =~ s/\n//g;
 $output .= "Test system: $system\n\n";
 
 $output .= "Test summary:\n";
-$output .= "  - Reference version: $revisions{\"reference\"}\n";
-$output .= "  - Test version:      $revisions{\"test\"}\n\n";
+$output .= "  - Reference version: $revisions{\"reference\"} ($ref_args)\n";
+$output .= "  - Test version:      $revisions{\"test\"} ($test_args)\n\n";
 $output .= "------------------------------------------------\n";
 $output .= "TEST                                    RESULT\n";
 $output .= "------------------------------------------------\n";
