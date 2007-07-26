@@ -113,7 +113,7 @@ $build_args{"test"}      ="";
 
 # Flag for forcheck debugging
 my $debug_forcheck = 0;
-
+my $del_dir = 1; 
 # Hash for linking forcheck error codes to human-readable descriptions
 my %gShorthand;
 
@@ -386,6 +386,11 @@ if ( @ARGV ){
         last SWITCH;
       }
       
+      if ( $arg =~ /^--preserve-dir/ ){
+        $del_dir = 0;
+        last SWITCH;
+      }
+      
       # Verbosity
       if ( $arg =~ /^--verbose/ ){
         # stream out progess messages
@@ -530,8 +535,9 @@ if ( $test_forcheck || $test_builds || $test_regression ){
       }
     }
     
-    # Pull down source.
+    # Pull down source. Skip if source 
     if ( ! -d $src_dirs{$key} ){
+
        execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
     }
     stream_out("Done\n");
@@ -1055,7 +1061,7 @@ close(OUTPUT_FILE);
 #================================================
 
 # DEBUG
-if ( ! $debug_forcheck ){
+if ( ! $debug_forcheck && $del_dir ){
   execute("rm -fr $TestFolder");
 }
 
@@ -1083,6 +1089,11 @@ sub buildESPr($$$$){
   
   my($extra_args, $xLibs,$state,$build) =@_;
   
+  # Test if 'configure' script exists.
+  my $autotools = 0;
+  if ( -r "./configure" ) {
+    $autotools = 1;
+  }
   
   my $Debug_flag;
   
@@ -1090,13 +1101,19 @@ sub buildESPr($$$$){
   if ( $state =~ /clean/ ) { 
     $Debug_flag =""; 
   }else{
-    $Debug_flag ="--debug";
+    
+    $Debug_flag = ($autotools) ? "" : "--debug";
   }
-  
+
+  # SET xlibs flag
   if ( $xLibs =~ /default/ ){
     $xLibs = "";
   }else{
-    $xLibs = "--$xLibs";
+    if ( $autotools ) {
+      $xLibs = ( $xLibs =~ /noX/i ) ? "--with-noGUI" : "--with-$xLibs";
+    }else {
+      $xLibs = "--$xLibs";
+    }
   }
   
   # Empty target folder 
@@ -1107,6 +1124,21 @@ sub buildESPr($$$$){
   my %result = ( "fail" => 0, "msg" => "" );
   my $err_msg = "";
   my $fail="0";
+  my $bin_dest;
+
+  # If we're using auto-tools, invoke configure.
+  if ( $autotools ){
+    execute("rm -fr $TestFolder/bin  $TestFolder/lib");
+    execute("./configure --prefix=$TestFolder $xLibs $Debug_flag $extra_args");
+    execute("make clean");
+
+  }else{
+    
+    $bin_dest = "$TestFolder/esp-r/bin/";
+  
+  }
+  
+
   
   if ( $build =~ /onebyone/ ){
     # Test each binary separately, omit training and databases.
@@ -1129,23 +1161,32 @@ sub buildESPr($$$$){
       
       # Build executable. It would be to recover the output from this 
       # command and report it to the user, if a failure occurs.
-      my $debug_temp = `./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $extra_args $bin 2>&1`;
+      if ( $autotools ) {
+        execute("make $bin");
+        $bin_dest = "./$binlist{$bin}/"
+      }else{
+        execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $extra_args $bin 2>&1");
+      }
       # Test if target was created, and if not, note failure.
-      if ( ! -r "$TestFolder/esp-r/bin/$target"      && 
-           ! -r "$TestFolder/esp-r/bin/$target.exe"     ){
+      if ( ! -r "$bin_dest/$target"      &&
+           ! -r "$bin_dest/$target.exe"     ){
         
         $result{"fail"} = 1; 
-        
         $err_msg .= "    -> Binary $target could not be built.\n";
 
       }
     }
   }else{
-  
+
     # Build all at once, omit training files.
-    execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
+    if ( $autotools ) {
+      execute("make install SKIPtraining=yes");
+      execute ( "rm -fr $TestFolder/esp-r/bin");
+      execute ( "cp -fr $TestFolder/bin  $TestFolder/esp-r/bin");
+    }else{
+      execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
+    }
   }
-  
   
   # Return result
   my $status;
