@@ -213,6 +213,9 @@ if ( LockFile ( $gInputFile, "lock" ) ) {
   stream_out ("$gInputFile locked; no tests performed.\n");
   
 }
+
+die;
+
 #-------------------------------------------------------------------
 # Read input file, and attempt to update 'locked' flag 
 #-------------------------------------------------------------------

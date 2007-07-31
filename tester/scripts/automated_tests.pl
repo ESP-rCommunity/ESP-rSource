@@ -962,7 +962,7 @@ if ( $test_regression ) {
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r "
            ."--ref_res $ref_esp --test_res $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester" );
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
@@ -1074,6 +1074,8 @@ close(OUTPUT_FILE);
 if ( ! $debug_forcheck && $del_dir ){
   execute("rm -fr $TestFolder");
 }
+
+die;
 
 #-------------------------------------------------------------------
 # Pass/fail: turn test result into readable string
