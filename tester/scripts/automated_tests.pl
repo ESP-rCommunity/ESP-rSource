@@ -256,6 +256,9 @@ if ( @ARGV ){
     # convert quotes into '###':
     $convert_string =~ s/"/###/g;
 
+    # Convert '=' in quotes to '+++'
+    $convert_string =~ s/=/+++/g;
+
     # Substitute back into command arguement string
     $cmd_arguements =~ s/$quote_sting/$convert_string/;
     
@@ -272,6 +275,9 @@ if ( @ARGV ){
 
   # convert '=' to ':'
   $cmd_arguements =~ s/=/:/g;
+
+  # convert '+++' back to '='
+  $cmd_arguements =~ s/\+\+\+/=/g;
   
   # Convert short hand arguements into longhand
   $cmd_arguements =~ s/-a;/--addresses;/g;
@@ -962,7 +968,7 @@ if ( $test_regression ) {
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r "
            ."--ref_res $ref_esp --test_res $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite" );
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite --no_data" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
