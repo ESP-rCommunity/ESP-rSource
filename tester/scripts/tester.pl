@@ -1440,6 +1440,12 @@ sub create_report(){
 
     
     push @output, " XML output: Detailed report ";
+    push @output, " Maximum observed error";
+    push @output, "  - Folder:                 <> $gMax_difference{\"global\"}{\"folder\"}";
+    push @output, "  - Model:                  <> $gMax_difference{\"global\"}{\"model\"}.cfg";
+    push @output, "  - Element:                <> $gMax_difference{\"global\"}{\"element_path\"}";
+    push @output, "  - Relative difference (%):<> ".format_my_number($gMax_difference{"global"}{"relative"},15,"%-10.5g");
+
 
     push @output, " ";
     push @output, "  - Tolerances for comparisons: ";
@@ -1459,15 +1465,14 @@ sub create_report(){
     push @output, " ";
 
 
-    
     # Create horizontal rule. 
     $current_rule = " ";
-    for ( my $ii = 0; $ii<407; $ii++){
+    for ( my $ii = 0; $ii<186; $ii++){
          $current_rule .= "^";
     }
    
     foreach my $failure ( sort keys %gXML_Failures ){
-      my ($model,$folder,$element_path) = split /;/, $failure;
+      my ($folder,$model,$element_path,$attribute) = split /;/, $failure;
 
       # Add header row, if this is a new model or folder.
       if ( $folder ne $current_folder || $model ne $current_model){
@@ -1481,73 +1486,44 @@ sub create_report(){
         $current_folder = $folder;
         $current_model = $model;
 
-        push @output, "  - Folder:<>$folder";
-        push @output, "  - Model: <>$model";
-      
+        
+        push @output, " TEST CASE $model ($folder)";
+        push @output, "  - Folder:                     <> $folder";
+        push @output, "  - Model:                      <> $model.cfg";
+        push @output, "  - MAX error observed in:      <> $gMax_difference{\"$folder;$model\"}{\"element_path\"}";
+        push @output, "  - MAX Relative difference (%):<> ".format_my_number($gMax_difference{"$folder;$model"}{"relative"},15,"%-10.5g"),;
         push @output, $current_rule;
         $current_line  = sprintf  (" %\-80s<>%\-20s[]",
                                    "Elements exhibiting differences", "Units");
-        $current_line .= sprintf  ("%\-43s<>%\-1s<>%\-1s<>%\-15s<>%\-20s[]",
-                                   "Absolute difference", "", "", "", "", "", "" );
-        $current_line .= sprintf  ("%\-58s<>%\-1s<>%\-1s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
-                                   "Reference | Test values", "", "", "", "", "", "","", "", "", "", "", "", ""  );
+        $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s[]",
+                                   "Relative", "  Absolute", "    Reference", "    Test");
         push @output, $current_line;
         
         $current_line  = sprintf  (" %\-80s<>%\-20s[]"," ", " ");
-        $current_line .= sprintf  ("%\-15s<>%\-15s<>%\-15s<>%\-15s<>%\-20s[]",
-                                   "Total avg.", "Active avg.", "Max", "Min", "Integrated to GJ" );
+        $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s[]",
+                                   "Difference (%)", "  Difference", "    Value", "    Value");
        
-        $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
-                                   "Total avg. (ref)",
-                                   "Total avg. (test)",
-                                   "Active avg. (ref)",
-                                   "Active avg. (test)",
-                                   "Max (ref)",
-                                   "Max (test)",
-                                   "Min (ref)",
-                                   "Min (test)",
-                                   "Integrated to GJ (ref)",
-                                   "Integrated to GJ (test)" );
 
         push @output, $current_line;
-        push @output, $current_rule;        
+        push @output, $current_rule;
       }
 
-      $current_line  = sprintf (" %\-80s<>%\-20s[]", $element_path, $gXML_Failures{$failure}{"units"});
+      $current_line  = sprintf (" %\-80s<>%\-20s[]", "$element_path ($attribute)", $gXML_Failures{$failure}{"units"});
 
-      $current_line .= sprintf  ("%15s<>%15s<>%15s<>%15s<>%20s[]",
-                                   defined($gXML_Failures{$failure}{"total_average"}{"absolute"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"absolute"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"absolute"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"absolute"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"absolute"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"absolute"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"absolute"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"absolute"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"absolute"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"absolute"},20,"%10.5g") : "        ---         " ,);
-
-      $current_line .= sprintf  ("%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-20s<>%\-25s<>%\-25s[]",
-                                   defined($gXML_Failures{$failure}{"total_average"}{"reference_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"reference_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"total_average"}{"test_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"total_average"}{"test_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"reference_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"reference_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"active_average"}{"test_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"active_average"}{"test_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"reference_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"reference_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"max"}{"test_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"max"}{"test_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"reference_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"reference_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"min"}{"test_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"min"}{"test_value"},15,"%10.5g") : "      ---      " ,
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"reference_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"reference_value"},20,"%10.5g") : "        ---         ",
-                                   defined($gXML_Failures{$failure}{"integrated_to_GJ"}{"test_value"}) ?
-                                           format_my_number($gXML_Failures{$failure}{"integrated_to_GJ"}{"test_value"},20,"%10.5g") : "        ---         ");
+      $current_line .= sprintf ("%15s%5s<>%15s%5s<>%15s%5s<>%15s%5s[]",
+                                format_my_number(
+                                        $gXML_Failures{$failure}{"difference"}{"relative"},15,"%10.5g"),
+                                "",
+                                format_my_number(
+                                        $gXML_Failures{$failure}{"difference"}{"absolute"},15,"%10.5g"),
+                                "",
+                                format_my_number(
+                                        $gXML_Failures{$failure}{"difference"}{"reference_value"},15,"%10.5g"),
+                                "",
+                                format_my_number(
+                                        $gXML_Failures{$failure}{"difference"}{"test_value"},15,"%10.5g"),
+                                ""
+                                );
 
       push @output, $current_line;
 
@@ -2749,16 +2725,22 @@ sub CompareXMLResults($){
 
             $global_fail = 1;
 
-            if ( ! defined ( $gMax_difference{$units}{$attribute}{"value"} ) ||
-                   $difference{"absolute"} >= $gMax_difference{$units}{$attribute}{"absolute"} ){
-              $gMax_difference{$units}{$attribute}{"absolute"} = $difference{"absolute"};
-              $gMax_difference{$units}{$attribute}{"folder"} = $folder;
-              $gMax_difference{$units}{$attribute}{"model"} = $model;
-              $gMax_difference{$units}{$attribute}{"element_path"} = $element_path;
-              
-            } 
-            %{$gXML_Failures{"$folder;$model;$element_path"}{"$attribute"}} = %difference;
-            $gXML_Failures{"$folder;$model;$element_path"}{"units"} = $units;
+            if ( ! defined ( $gMax_difference{"global"}{"relative"} ) ||
+                  $difference{"relative"} >= $gMax_difference{"global"}{"relative"} ){
+                  $gMax_difference{"global"}{"relative"} = $difference{"relative"};
+                  $gMax_difference{"global"}{"folder"} = "$folder";
+                  $gMax_difference{"global"}{"model"}  = "$model";
+                  $gMax_difference{"global"}{"element_path"} = "$element_path";
+            }
+            
+            if ( ! defined ( $gMax_difference{"$folder;$model"}{"relative"} ) ||
+                  $difference{"relative"} >= $gMax_difference{"$folder;$model"}{"relative"} ){
+                  $gMax_difference{"$folder;$model"}{"relative"} = $difference{"relative"};
+                  $gMax_difference{"$folder;$model"}{"element_path"} = "$element_path";
+            }
+
+            %{$gXML_Failures{"$folder;$model;$element_path;$attribute"}{"difference"}} = %difference;
+            $gXML_Failures{"$folder;$model;$element_path;$attribute"}{"units"} = $units;
 
 
 
@@ -3039,12 +3021,12 @@ sub number_cruncher($$$){
     {
        if ( abs ($ref) > $gSmall )
              {
-                 $relative_difference = ($test - $ref ) / $ref ;
+                 $relative_difference = ($test - $ref ) / $ref * 100.0 ;
                  last SWITCH;
              }
        if ( abs($ref) < $gSmall && abs($test) > $gSmall )
              {
-                 $relative_difference = ( $ref - $test ) / $test ;
+                 $relative_difference = ( $ref - $test ) / $test * 100.0;
                  last SWITCH;
              }
        # Default (shouldn"t happen though)
