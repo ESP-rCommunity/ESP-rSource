@@ -92,6 +92,7 @@ extern long int menuchw;	/* char width of initial menu (from fortran) */
 
 /* Shared functions from esp-r.c */
 void	destroy( GtkWidget *widget,gpointer data);
+void	calculate_font_metrics( void);
 void	winfin_();
 void	egphelp_disp ( void);
 void	createwin_ (long int *width,long int *height,long int *imenuchw,long int *ilimtty,char *head,int lhead);
