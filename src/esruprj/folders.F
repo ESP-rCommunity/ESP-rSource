@@ -264,9 +264,9 @@ C Re-establish pwd and then project folders.
         call edisp(iuout,
      &        'System configuration file is located in folder:')
         call edisp(iuout,path)
-        write(path,'(5a)') 'Resetting path to: ',
-     &                  cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
-        call edisp(iuout,path)
+        write(path,'(4a)') cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
+        write(outs,'(2a)') 'Resetting path to: ',path
+        call edisp(iuout,outs)
         call edisp(iuout,' ')
       else
         return
