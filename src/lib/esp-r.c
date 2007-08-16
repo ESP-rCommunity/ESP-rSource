@@ -30,20 +30,6 @@
 #undef ESP_LIST_MAIN
 
 
-/* Create an enum which will point to the Indices of the array called
- * font_calculations_array[] 
- */
-    enum{
-	serif_small,          	// 0 position in array is for Serif Small
-	serif_medium,		// 1 position in array is for Serif Medium
-	serif_large,		// 2 position in array is for Serif Large
-	serif_largest,		// 3 position in array is for Serif Largest
-	courier_small,		// 4 position in array is for Courier Small
-	courier_medium,		// 5 position in array is for Courier Medium
-	courier_large,		// 6 position in array is for Courier Large
-  	courier_largest};	// 7 position in array is for Courier Largest
-
-
 /* Global variable definitions start here */
 FILE *wwc;
 GdkColor cscale[49], zscale[100], gscale[49];
@@ -55,22 +41,6 @@ long int mdepth;    /* to pass to fortran: sceen depth */
 long int disp_fnt;  /* font for text display box */
 long int butn_fnt;  /* button font size     */
 long int menu_fnt;  /* preferred command menu font */
-
-
-/* Create a structure called Font_Calculation_Variables that
- * contains the variables needed for font calculations
- */
-typedef struct  {
-
-   gint f_height;	     			// pixel height of default font 
-   gint f_width;	    			// pixel width of default font 
- }Font_Calculation_Variables;
- 
- 
-/* Create an aray of Font_Calculation_Variables */
-
-Font_Calculation_Variables font_calculations_array[8]; 
-
 
 GdkColor fg, bg, bd, bw, white, black, infofg, infobg;	/* essential colors */
 GdkColor gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;	/* interface colors */
@@ -96,7 +66,7 @@ char pmtype_list[MENU_LIST_LEN];	/* character array representing m_list array us
 int pm_width;		/* current popup menu max line length */
 int pm_lines;		/* current number of active popup menu lines */
 
-/* Global variables for font width. */
+/* Global variables for current font width and height. */
 gint f_height;
 gint f_width;
 
@@ -121,7 +91,7 @@ char zonenames[MCOM][13];  /* g pointer array to current zone names - filled by 
 
 
 
-/* Function calculate_font_metrics pre-processes font metrics */ 
+/* Function calculate_font_metrics  pre-processes font metrics */ 
 void calculate_font_metrics(void);
 
 /* The following code calculates font calculation metrics at the beginning of the program
@@ -426,6 +396,7 @@ void text_feedback_reset ( void)
  
      fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width);	//debug
     
+     
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
      f_height = font_calculations_array[serif_medium].f_height;
@@ -481,7 +452,7 @@ void text_feedback_reset ( void)
    gtk_widget_modify_font(text, pfd);
    
    fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
-  
+ 
    pango_font_description_free(pfd);
 
    ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
@@ -1545,16 +1516,16 @@ GtkWidget *create_dialog( void )
      pfd = pango_font_description_from_string("Serif,Medium 14");
      /* fprintf(stderr,"configure font medium 14\n"); debug */
    } else if (disp_fnt == 4 ) {
-     pfd = pango_font_description_from_string("Courieer,Medium 8");
+     pfd = pango_font_description_from_string("Courier,Medium 8");
      /* fprintf(stderr,"configure courier medium 8\n"); debug */
    } else if (disp_fnt == 5 ) {
-     pfd = pango_font_description_from_string("Courieer,Medium 10");
+     pfd = pango_font_description_from_string("Courier,Medium 10");
      /* fprintf(stderr,"configure courier medium 10\n"); debug */
    } else if (disp_fnt == 6 ) {
-     pfd = pango_font_description_from_string("Courieer,Medium 12");
+     pfd = pango_font_description_from_string("Courier,Medium 12");
      /* fprintf(stderr,"configure courier medium 12\n"); debug */
    } else if (disp_fnt == 7 ) {
-     pfd = pango_font_description_from_string("Courieer,Medium 14");
+     pfd = pango_font_description_from_string("Courier,Medium 14");
      /* fprintf(stderr,"configure courier medium 14\n"); debug */
    }
    gtk_widget_modify_font(dialog, pfd);
@@ -1942,9 +1913,7 @@ char *gintstr[] = {
     }
   g_free (head_local);
   
-  //@AOS9. function is called here
-  
-  calculate_font_metrics();
+  calculate_font_metrics();  /* get the width and height of all font combinations */
  
    
     }
