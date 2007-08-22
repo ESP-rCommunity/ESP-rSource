@@ -83,7 +83,7 @@ C If libraries and monitor support greyscale remember this.
 
 C Save the current font and switch to a smaller font for displaying
 C surface names etc.
-      NAMEFT=IFS-1
+      NAMEFT=IFS
 
 C The right offset for the graphic box is the character width of the
 C menu. Also allow 2 text lines at the bottom for future dialogue.

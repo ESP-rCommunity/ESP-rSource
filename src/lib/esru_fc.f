@@ -3,6 +3,7 @@ C	sizeint         :- passess window size & position
 C	win3d	:- opens a viewing box taking into account menu
 C                  width and dialogue box.
 C	win3dclr	:- clear viewing box.
+C	winfnt(n)	:- changes the font (4 different sizes 0,1,2,3)
 C	opensetup	:- place environment button on screen.
 C	viewtext	:- displays a line of text within the viewing
 C                          box with size and location parameters
