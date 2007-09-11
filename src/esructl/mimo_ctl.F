@@ -1632,9 +1632,11 @@ C
 C-----------------------------------------------------------------------       
       integer function  iCtoI ( cBuffer, bError )
       implicit none 
-      character*248 cBuffer 
+      character*(*) cBuffer
       logical bError 
       integer iMiscError , lnblnk
+
+
       
       read (cBuffer,*, IOSTAT=iMiscError) iCtoI
       if ( iMiscError /= 0 ) then
@@ -1653,7 +1655,7 @@ C
 C-----------------------------------------------------------------------       
       real function  fCtoR ( cBuffer, bError )
       implicit none 
-      character*248 cBuffer 
+      character*(*) cBuffer
       logical bError 
       integer iMiscError 
       
