@@ -6659,14 +6659,17 @@ C ***************** iEGetArrW
 C iEGetArrW reads all of the words in a 248 character string, and populates a character
 C array with each word. Words are separated by blanks, commas, or tab: WORD,WORD,WORD
 C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
-      integer function iEGetArrW(cString,cWORDS)
+      integer function iEGetArrW(cBuffer,cWORDS)
       implicit none
-
+      character*(*) cBuffer
       character*248 cString, cWords(124)
       character*1 cChar
       logical bWord
       integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
       parameter (iEnd=248)
+
+C Copy buffer into string
+      write (cString, '(A)') cBuffer(1:min(lnblnk(cBuffer),iEnd))
 
 C Empty word array
       do iWordCount = 1, 124
@@ -6675,6 +6678,9 @@ C Empty word array
 
 C Reset word counter
       iWordCount = 0
+
+C initialize bWord to false
+      bWord = .false. 
 
 C Loop through string
       do iStrLoc = 1, iEnd
@@ -6705,7 +6711,6 @@ C Copy current character into word buffer
           iWordLoc = iWordLoc + 1
 
         endif
-
       enddo
 
       iEGetArrW = iWordCount
