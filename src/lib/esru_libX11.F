@@ -6277,6 +6277,7 @@ C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
       character*1 cChar
       logical bWord
       integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
+      integer lnblnk
       parameter (iEnd=248)
 
 C Copy buffer into string

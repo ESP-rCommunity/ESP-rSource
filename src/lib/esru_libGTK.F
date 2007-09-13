@@ -6667,6 +6667,7 @@ C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
       logical bWord
       integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
       parameter (iEnd=248)
+      integer lnblnk
 
 C Copy buffer into string
       write (cString, '(A)') cBuffer(1:min(lnblnk(cBuffer),iEnd))
