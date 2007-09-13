@@ -7724,7 +7724,7 @@ C Find out the number of separate words/string groupings.
 
       END
 
-C ******************** LSTRIPC
+C ******************** LSTRIPC_LN
 C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
 C It assumes that if a string begins with a '#' then the whole line is
 C a comment an the next line is read.  If a ' #' is discovered within
@@ -7735,13 +7735,53 @@ C IEXP is the number of expected items in the line:
 C   IEXP = 0 means don't care or already know no. items - don't check
 C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
-
+C LineOut is the line number of the string that was returned.
+      
+C LSTRIPC is a legacy interface to LSTRIPC_LN
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+      CHARACTER*248 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248
+      CHARACTER*(*) MSG
+      
+      CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
+      
+      RETURN
+      END 
+      
+      SUBROUTINE LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineOut)
 #include "espriou.h"
 
       CHARACTER*248 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
       CHARACTER*(*) MSG
+
+
+      logical bInitialized
+      save bInitialized
+      data bInitialized /.false./
+
+      character*248 cNewName, cOldName
+      save cOldName
+
+
+      integer LineNum
+      save LineNum
+      
+C Collect current file name
+      inquire (UNIT=INPCH, NAME=cNewName)
+      
+      if ( .not. bInitialized ) then
+        write ( cOldName, '(A)') cNewName 
+        bInitialized = .true. 
+      endif
+
+C If file has changed, reset line counter and update
+C file name buffer. 
+      if ( cOldName .ne. cNewName ) then 
+        write ( cOldName, '(A)') cNewName 
+        LineNum = 0
+      endif 
+        
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -7749,6 +7789,10 @@ C character is a # then read the next line from the file.
     8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
       tmp=STRING(1:LNBLNK(STRING))
+
+C Increment line number counter
+      LineNum = LineNum + 1
+      LineOut = LineNum
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
