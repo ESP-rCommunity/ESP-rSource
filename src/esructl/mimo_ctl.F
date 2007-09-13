@@ -58,9 +58,6 @@ C
 C    - bMatchNameToIndex: Rerurn indicies of matching rows 
 C          in two arrays 
 C
-C    - fCtoR: coax a string into a float 
-C
-C    - iCtoi: coax a string into an integer
 C
 C=======================================================
 
@@ -1624,48 +1621,4 @@ C.......Was source string matched?
       return 
       end 
       
-      
-C-------------- integer function iCtoI ---------------------------------
-C
-C     Coax a string into an integer.
-C
-C-----------------------------------------------------------------------       
-      integer function  iCtoI ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError , lnblnk
-
-
-      
-      read (cBuffer,*, IOSTAT=iMiscError) iCtoI
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end 
-      
-      
-C-------------- real function fCtoR ------------------------------------
-C
-C     Attempt to coax a string into a float.
-C
-C-----------------------------------------------------------------------       
-      real function  fCtoR ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError 
-      
-      read (cBuffer,*, IOSTAT=iMiscError) fCtoR
-      
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end       
       
