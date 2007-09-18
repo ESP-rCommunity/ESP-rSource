@@ -8178,7 +8178,7 @@ C character is a # then read the next line from the file.
       IER=0
     8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
-      tmp=STRING(1:LNBLNK(STRING))
+   11 tmp=STRING(1:LNBLNK(STRING))
 C Increment line number counter
       LineNum = LineNum + 1
       LineOut = LineNum
@@ -8232,7 +8232,10 @@ C Find out the number of separate words/string groupings.
       ENDIF
       goto 4
 
+C End of file reached.
   102 IER=2
+C But if last line is non-blank, parse contents anyways.
+      if (lnblnk(STRING).gt.0 ) goto 11
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
