@@ -7786,13 +7786,14 @@ C file name buffer.
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
-    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
-   10 FORMAT(A)
-   11 tmp=STRING(1:LNBLNK(STRING))
-
+C Empty string      
+    8 write (STRING, '(A)') ' '
 C Increment line number counter
       LineNum = LineNum + 1
-      LineOut = LineNum
+      LineOut = LineNum          
+      READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A)
+   11 tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -7846,6 +7847,7 @@ C End of file reached.
   102 IER=2
 C But if last line is non-blank, parse contents anyways.
       if (lnblnk(STRING).gt.0 ) goto 11
+      OUTSTR = ''
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
