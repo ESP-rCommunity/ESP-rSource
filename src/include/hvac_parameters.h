@@ -12,6 +12,44 @@ C Named constants for system types
      &           iSysGSHP            = 8,
      &           iSysGSHP_GCEP       = 9 )
 
+C Named constants for furnace Types
+      integer iFurn_AdvWoodStove
+      integer iFurn_CatConverter
+      integer iFurn_FlameRetenHead
+      integer iFurn_FlueVentDamper
+      integer iFurn_SparkIgn
+      integer iFurn_SparkIgnVentDamper
+      integer iFurn_ContPilot
+      integer iFurn_Condensing
+      integer iFurn_NonCondensingDirVent
+      integer iFurn_InducedDraft
+      integer iFurn_MidEfficiency
+      integer iFurn_ElecForcedAir
+      integer iFurn_Wood
+      integer iFurn_Oil
+      
+      parameter( iFurn_AdvWoodStove             = 1   )
+      parameter( iFurn_CatConverter             = 2   )
+      parameter( iFurn_FlameRetenHead           = 3   )
+      parameter( iFurn_FlueVentDamper           = 4   )
+      parameter( iFurn_SparkIgn                 = 5   )
+      parameter( iFurn_SparkIgnVentDamper       = 6   )
+      parameter( iFurn_ContPilot                = 7   )
+      parameter( iFurn_Condensing               = 8   )
+      parameter( iFurn_NonCondensingDirVent     = 9   )
+      parameter( iFurn_InducedDraft             = 10  )
+      parameter( iFurn_MidEfficiency            = 11  )
+      parameter( iFurn_ElecForcedAir            = 12  )
+      parameter( iFurn_Wood                     = 13  )
+      parameter( iFurn_Oil                      = 14  )
+
+
+C Named constatns for furnace fan operation
+      integer iFan_None, iFan_Auto, iFan_Cont
+      parameter ( iFan_None = 0,
+     &            iFan_Auto = 1,
+     &            iFan_Cont = 2 )
+
 C Named constants for fuel types
       integer iElectricity, iNaturalGas, iOil, iPropane, iWood
       parameter ( iElectricity = 1,

@@ -788,11 +788,209 @@ C-----------------------------------------------------------------------
         endif        !<- matches "if ( iFileErr == 0 )"
 
       enddo          !<- matches "do while ( iFileErr == 0 )..."
+C-----------------------------------------------------------------------
+C     Now loop through systems and validate data.
+C-----------------------------------------------------------------------
+      do iSystem = 1, num_hvac_sys
+
+C-----------------------------------------------------------------------
+C       Parse and validate block data
+C-----------------------------------------------------------------------
+        select case ( ihvac_type (iSystem) )
+
+C-----------------------------------------------------------------------
+C         Furnace --- Expect X values:
+C
+C           - Furnace type (value between 1-14)
+C           - Equipment steady-state capacity
+C           - Equipment steady-state efficiency
+C           - Furnace fan operation (value between 0-2)
+C
+C
+C-----------------------------------------------------------------------
+          case ( iSysFurnace )
+C...........Count data items
+            if ( iDataCount( iSystem ) /= 4 ) then
+              write (cMsg, '(A,A,I2,A,I2,A)' )
+     &          ' Error interpreting furnace data ',
+     &          'for HVAC system # ',
+     &          iSystem,
+     &          '. ', iDataCount ( iSystem ),
+     &          ' items were specified but 4 items are expected.'
+              call edisp248( iUout, cMsg, 80 )
+              bParseError = .true.
+            endif 
+
+C...........System type
+            isys_type ( iSystem ) = int ( fDataBlock( iSystem, 1 ) )
+
+            if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
+     &        .and. isys_type ( iSystem ) /= iFurn_CatConverter
+     &        .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
+     &        .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
+     &        .and. isys_type ( iSystem ) /= iFurn_SparkIgn
+     &        .and. isys_type ( iSystem ) /= iFurn_SparkIgnVentDamper
+     &        .and. isys_type ( iSystem ) /= iFurn_ContPilot
+     &        .and. isys_type ( iSystem ) /= iFurn_Condensing
+     &        .and. isys_type ( iSystem ) /= iFurn_NonCondensingDirVent
+     &        .and. isys_type ( iSystem ) /= iFurn_InducedDraft
+     &        .and. isys_type ( iSystem ) /= iFurn_MidEfficiency
+     &        .and. isys_type ( iSystem ) /= iFurn_ElecForcedAir
+     &        .and. isys_type ( iSystem ) /= iFurn_Wood
+     &        .and. isys_type ( iSystem ) /= iFurn_Oil    ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace type (data item 1) ',
+     &          'for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be one of the following:'
+              call edisp248( iUout, cMsg, 80 )
+
+              write (cMsg, '(A)')
+     &          '   - 1  (advanced air tight wood stove)'
+              call edisp248( iUout, cMsg, 80 )
+
+              write (cMsg, '(A)')
+     &          '   - 2  (catalytic converter)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 3  (flame retention head)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 4  (flue vent damper)'
+              call edisp248( iUout, cMsg, 80 )
+
+              write (cMsg, '(A)')
+     &          '   - 5  (spark ignition)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 6  (spark ignition with flue vent damper)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 7  (continuious pilot) '
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 8  (condensing)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 9  (direct vent, non condensing)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 10 (induced draft)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 11 (mid-efficiency)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 12 (electric forced-air)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 13 (wood furnace)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 14 (oil furnace)'
+              call edisp248( iUout, cMsg, 80 )
+
+C.............Set error flag
+              bParseError = .true.
+
+            endif
+
+C...........Steady-state capacity
+            ss_capacity(iSystem) = fDataBlock( iSystem, 2 )
+            if ( ss_capacity(iSystem) <= 0 ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace capacity (data item 2) ',
+     &          'for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be greater than zero.'
+              call edisp248( iUout, cMsg, 80 )
+
+C.............Set error flag
+              bParseError = .true.
+            
+            endif
+
+C...........Steady-state efficency
+            ss_efficiency(iSystem) = fDataBlock( iSystem, 3 )
+
+            if ( ss_efficiency(iSystem) <= 0.0 .or.
+     &           ss_efficiency(iSystem) >  1.0     ) then
+
+              write (cMsg, '(A,A,I2,A,A)' )
+     &          ' Error interpreting furnace efficiency (data item 3) ',
+     &          'for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be greater than zero and less than or ',
+     &          ' equal to one.'
+              call edisp248( iUout, cMsg, 80 )
+C.............Set error flag
+              bParseError = .true.
+              
+            endif            
+            
+C...........Fan operation 
+            iFan_Operation  ( iSystem )
+     &            = int ( fDataBlock( iSystem, 4 ) )
+
+            if (    iFan_Operation( iSystem ) /= iFan_None
+     &        .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &        .and. iFan_Operation( iSystem ) /= iFan_Cont
+     &          ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace fan operation ',
+     &          '(data item 1) for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be one of the following:'
+              call edisp248( iUout, cMsg, 80 )
+
+              write (cMsg, '(A)')
+     &          '   - 0  (no fan associated with this furance)'
+              call edisp248( iUout, cMsg, 80 )
+
+              write (cMsg, '(A)')
+     &          '   - 1  (Automatic fan operation)'
+              call edisp248( iUout, cMsg, 80 )
+              
+              write (cMsg, '(A)')
+     &          '   - 2  (continuious fan operation)'
+              call edisp248( iUout, cMsg, 80 )
+C.............Set error flag
+              bParseError = .true.
+            endif 
+          case ( iSysBoiler )
+
+          case ( iSysBaseboard )
+
+          case ( iSysIMS )
+                                                    
+          case ( iSysASHP ) 
+
+          case ( iSysGSHP )
+
+          case ( iSysGSHP_GCEP )
+
+          case default
+
+        end select
 
 C-----------------------------------------------------------------------
 C     Validate furnace/fuel combination
 C-----------------------------------------------------------------------
-      do iSystem = 1, num_hvac_sys
+
 
         select case ( ihvac_type (iSystem) )
 
