@@ -533,8 +533,8 @@ C << for now assume that the file passed is not an exemplar >>
           endif
 
 C          call edisp(iuout,'* Loading supplied model description.')
-C          call tstamp('>','PRJ: loading supplied model')
-C          call tstamp('>',LCFGF)
+          call tstamp('>','PRJ: loading supplied model')
+          call tstamp('>',LCFGF)
         else
 
 C The model file might not exist.
@@ -549,8 +549,8 @@ C << for now assume that the file passed is not an exemplar >>
           endif
 
 C          call edisp(iuout,'* Loading supplied model description.')
-C          call tstamp('>','PRJ: loading supplied model')
-C          call tstamp('>',LCFGF)
+          call tstamp('>','PRJ: loading supplied model')
+          call tstamp('>',LCFGF)
         endif
       endif
 
@@ -1202,8 +1202,8 @@ C Also check about connections file.
           endif
         endif
 
-C        call tstamp('>','PRJ: update configuration')
-C       call tstamp('>',LCFGF)
+        call tstamp('>','PRJ: update configuration')
+        call tstamp('>',LCFGF)
         CALL EMKCFG('-',IER)
         IF(IER.EQ.1)THEN
           call usrmsg('Problem creating new file. Check disk space',
@@ -3219,7 +3219,7 @@ C Check to see if this connection only pointed to once in the whole list.
         endif
   290 continue
       if(prob)then
-C        call tstamp('>','PRJ: found topology inconsistent')
+        call tstamp('>','PRJ: found topology inconsistent')
         call usrmsg('Topology found to be inconsistent. This',
      &  'should be resolved before running a simulation.','W')
         CALL PHELPD('boundary checks',lh,'-',0,0,IER)
