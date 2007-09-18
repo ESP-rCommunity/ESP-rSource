@@ -810,13 +810,13 @@ C
 C-----------------------------------------------------------------------
           case ( iSysFurnace )
 C...........Count data items
-            if ( iDataCount( iSystem ) /= 4 ) then
+            if ( iDataCount( iSystem ) /= 7 ) then
               write (cMsg, '(A,A,I2,A,I2,A)' )
      &          ' Error interpreting furnace data ',
      &          'for HVAC system # ',
      &          iSystem,
      &          '. ', iDataCount ( iSystem ),
-     &          ' items were specified but 4 items are expected.'
+     &          ' items were specified but 7 items are expected.'
               call edisp248( iUout, cMsg, 80 )
               bParseError = .true.
             endif 
@@ -970,7 +970,53 @@ C...........Fan operation
               call edisp248( iUout, cMsg, 80 )
 C.............Set error flag
               bParseError = .true.
-            endif 
+            endif
+
+
+C...........Indoor fan power
+            fan_power(iSystem) = fDataBlock( iSystem, 5 )
+            if ( fan_power(iSystem) < 0 ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace fan power (data item 5) ',
+     &          'for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be equal-to or greater-than zero.'
+              call edisp248( iUout, cMsg, 80 )
+C.............Set error flag
+              bParseError = .true.
+
+            endif
+
+C...........Draft fan power
+            draft_fan_power(iSystem) = fDataBlock( iSystem, 6 )
+            if ( draft_fan_power(iSystem) < 0 ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace draft fan power ',
+     &          '(data item 6) for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be equal-to or greater-than zero.'
+              call edisp248( iUout, cMsg, 80 )
+C.............Set error flag
+              bParseError = .true.
+            endif
+
+C...........Pilot power
+            pilot_power(iSystem) = fDataBlock( iSystem, 7 )
+            if ( pilot_power(iSystem) < 0 ) then
+
+              write (cMsg, '(A,A,I2,A)' )
+     &          ' Error interpreting furnace pilot power ',
+     &          '(data item 7) for HVAC system # ',
+     &          iSystem,
+     &          '. Value must be equal-to or greater-than zero.'
+              call edisp248( iUout, cMsg, 80 )
+C.............Set error flag
+              bParseError = .true.
+
+            endif
+            
           case ( iSysBoiler )
 
           case ( iSysBaseboard )
