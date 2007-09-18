@@ -1,5 +1,30 @@
 c Declare integer variables in parameter file hvac.h
 
+C Named constants for system types
+      integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS,
+     &        iSysASHP, iSysGSHP, iSysGSHP_GCEP
+
+      parameter (iSysFurnace         = 1,
+     &           iSysBoiler          = 2,
+     &           iSysBaseboard       = 3,
+     &           iSysIMS             = 4,
+     &           iSysASHP            = 7,
+     &           iSysGSHP            = 8,
+     &           iSysGSHP_GCEP       = 9 )
+
+C Named constants for fuel types
+      integer iElectricity, iNaturalGas, iOil, iPropane, iWood
+      parameter ( iElectricity = 1,
+     &            iNaturalGas  = 2,
+     &            iOil         = 3,
+     &            iPropane     = 4,
+     &            iWood        = 5 )
+
+
+C Data block size
+      integer iBlockSize
+      parameter (iBlockSize = 10 )
+
 c Maximum number of hvac systems that can be declared in the .hvac file
       INTEGER max_sys
       parameter (max_sys = 5)

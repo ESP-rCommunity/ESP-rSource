@@ -55,7 +55,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
-	  solar_collectors.o ground_temp_mains.o Lookup_data.o mimo_ctl.o mimo_laws.o
+	  solar_collectors.o ground_temp_mains.o Lookup_data.o mimo_ctl.o mimo_laws.o \
+	  hvacinput_versioned.o
 
 
 
@@ -458,6 +459,9 @@ CentralVentSys.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
+hvacinput_versioned.F:
+	rm -f hvacinput_versioned.F
+	ln -s $(CETCdir)/hvacinput_versioned.F .
 hvacsim.F:
 	rm -f hvacsim.F
 	ln -s $(CETCdir)/hvacsim.F .
@@ -703,6 +707,6 @@ clean:
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F Lookup_data.F mimo_ctl.F mimo_laws.F
+	ground_temp_mains.F Lookup_data.F mimo_ctl.F mimo_laws.F hvacinput_versioned.F
 
 

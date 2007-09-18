@@ -1,6 +1,7 @@
 c Common for hvac system input data. These variables are used for hvac systems
 c modeled ideally
-      common/HVAC_INPUT_DATA/site_altitude, num_hvac_sys, 
+      common/HVAC_INPUT_DATA/iHVACFileVersion,
+     &site_altitude, num_hvac_sys,
      &ihvac_type(max_hvac_types), ipriority(max_sys),
      &isys_type(max_hvac_vars), num_sys_zones(max_sys),
      &ss_capacity(max_sys), flow_rate(max_sys),
@@ -9,17 +10,23 @@ c modeled ideally
      &fan_power_auto(max_sys), ifan_position_r(max_sys),
      &fan_power_r(max_sys), draft_fan_power(max_sys),
      &isys_zone_num(max_sys,mcom), iduct_sys_flag(max_sys),
-     &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys)
+     &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys),
+     &bParseError, fDataBlock(max_sys,iBlockSize), iDataCount(max_sys)
 
 c Declare integer values in HVAC_INPUT_DATA common
       INTEGER num_hvac_sys, ihvac_type, ipriority, isys_type,
      &num_sys_zones, ifan_operation, ifan_position, ifan_position_r,
-     &isys_zone_num, iduct_sys_flag, icontrol_function
+     &isys_zone_num, iduct_sys_flag, icontrol_function, iDataCount,
+     &iHVACFileVersion
+     
 
 c Declare real parameters in HVAC_INPUT_DATA common
-      REAL site_altitude, ss_capacity, flow_rate, flow_rate_r,
+      REAL 
+     &site_altitude, ss_capacity, flow_rate, flow_rate_r,
      &fan_power, fan_power_auto, fan_power_r, draft_fan_power,
-     &sys_zone_cap_frac
+     &sys_zone_cap_frac, fDataBlock
+
+      logical bParseError
 
 c Common for time step computed parameters of HVAC system
 
