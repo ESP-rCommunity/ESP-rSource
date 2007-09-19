@@ -29,7 +29,7 @@ fuel cell charges stand-alone heating and dhw tank
 1.0  0.3                                         # HX method and fixed eff
 20.0 1470.  21000.  19608.  4.E6                 # HX "s" coefficients
 0.  0.  0.  0.  0.  0.  0.  0.  0.               # HX method 3
-1.E-5.  0.  90.                                  # HX condensation
+1.E-5  0.  90.                                  # HX condensation
 1.0  0.  0.  0.  0.                              # skin losses
 0.  1. 100.  500.  1.  0.5  50. 1.E8  0.3        # auxiliary burner
 0.  0.  0.  0.                                   # dilution air system
