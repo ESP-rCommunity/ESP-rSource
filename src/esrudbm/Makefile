@@ -11,7 +11,7 @@ PROG = dbm$(EXE)
 OBJECTS = jdbm.o bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
 	gendbb.o hyged.o implegadb.o item.o mfcdat.o mlced.o nwkrewr.o pltcfg.o \
-	prsitem.o sort.o startupg.o tdfile.o
+	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
 $(PROG) : $(OBJECTS)
 	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -64,6 +64,9 @@ sort.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -74,4 +77,4 @@ install:
 clean :
 	rm -f core $(PROG) $(OBJECTS) c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F item.F mfcdat.F nwkrewr.F \
-	pltcfg.F sort.F tdfile.F
+	pltcfg.F sort.F tdfile.F readTrnsys.F

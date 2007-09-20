@@ -281,6 +281,9 @@ C Pressurized WCH pump
 C 1 node simple solar collector model
       ELSE IF(ITYPE.EQ.118) THEN
          CALL simple_solar_coll_static(IPCOMP)
+C X node generic TRNSYS type
+      ELSE IF(ITYPE.EQ.119) THEN
+         CALL trnsys_static_temp(IPCOMP)
       ELSE
 
         call elinc(1)

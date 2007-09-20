@@ -16,7 +16,7 @@ OBJECTS = espvwf.o arrow.o ascii_mat.o bound.o bubble.o c2fdum.o checkrec.o comm
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
 	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
 	  plelev.o plne.o pltcfg.o sort.o sparea.o startup.o \
-	  surinv.o survis.o tdfile.o temper.o
+	  surinv.o survis.o tdfile.o temper.o readTrnsys.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -96,6 +96,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -108,4 +111,4 @@ clean:
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
 	edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
 	eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
-	plelev.F pltcfg.F scsys.F sort.F startup.F tdfile.F
+	plelev.F pltcfg.F scsys.F sort.F startup.F tdfile.F readTrnsys.F
