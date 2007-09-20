@@ -55,7 +55,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  MultiYear_climate.o CETC_BATTERY.o wind_turbine_profile_model.o \
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
-	  solar_collectors.o ground_temp_mains.o Lookup_data.o
+	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -651,6 +651,15 @@ solar_collectors.F:
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
+trnsys_wrapper.F:
+	rm -f trnsys_wrapper.F
+	ln -s $(CETCdir)/trnsys_wrapper.F .
+trnsys_lib.F:
+	rm -f trnsys_lib.F
+	ln -s $(CETCdir)/trnsys_lib.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -696,6 +705,6 @@ clean:
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F Lookup_data.F
+	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F
 
 

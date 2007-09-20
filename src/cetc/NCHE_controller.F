@@ -1134,6 +1134,7 @@ C bHW_tank          ! Flag indicating if cold water tank exists.
 #include "plant.h"
 #include "building.h"
 #include "DG_controller_include.h"
+#include "trnsys.h"
 C-------------------------------------------------------------------------------------
 C     Required common blocks
 C-------------------------------------------------------------------------------------
@@ -1150,6 +1151,10 @@ C-------------------------------------------------------------------------------
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
       common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
       common/entfile/entflnam, ientxist
+C Common for TRNSYS general information
+      COMMON/TRNSYSGEN/NTRNCMP,ITRNTYPE(MTRNCOM)
+      INTEGER NTRNCMP,ITRNTYPE
+
 C------------------------------------------------------------------------------------
 C     Declare common block variables
 C------------------------------------------------------------------------------------
@@ -1213,6 +1218,16 @@ C..............Save model type for later use
                if(NPCDAT(ii,4) .eq. 103 ) FC_TYPE = Stirling_model
             end if     
          end do
+
+C       Check the case of trnsys components
+C       Type 152 is for A42_SOFC_model
+         do ii=1, NTRNCMP
+            if(ITRNTYPE(ii) .eq. 152) then
+               Number_FCs = Number_FCs + 1
+               FC_TYPE = A42_SOFC_model
+            end if
+         end do
+
          if(Number_FCs.eq.0) then
             write(IUOUT,*) ' Cogeneration system controller: ',
      &           'NO cogeneration unit found in plant configuration ',
