@@ -285,7 +285,7 @@ C and change any / to \.
      &              zn(1:lnz),'?'
                   CALL ASKOK(outs,' ',OK,DOK,2)
                   if(OK)then
-C                    call tstamp('>','PRJ: start shading recalculation')
+                    call tstamp('>','PRJ: start shading recalculation')
                     doit = ' '
                     call tchild(ICPMOD)
                     call termode(ICPMOD,tmode)
@@ -3000,7 +3000,7 @@ C rather than starting up a new xterm.
      &            zn(1:lnz),' ?'
             CALL ASKOK(outs,' ',OK,DOK,2)
             if(OK)then
-C              call tstamp('>','PRJ: start shading recalculation')
+              call tstamp('>','PRJ: start shading recalculation')
               doit = ' '
               call tchild(ICPMOD)
               call termode(ICPMOD,tmode)
