@@ -13,7 +13,7 @@ C Logical function indicating that H3KREPORTS is not available
       END
   
       SUBROUTINE REP_SET_META(DUMMY1, DUMMY2, DUMMY3)
-      CHARACTER*128 DUMMY1
+      CHARACTER*(*) DUMMY1
       CHARACTER DUMMY2, DUMMY3
 
         ! Do nothing
@@ -22,7 +22,7 @@ C Logical function indicating that H3KREPORTS is not available
       END 
 
       SUBROUTINE REP_REPORT(DUMMY1, DUMMY2)
-      CHARACTER*128 DUMMY2
+      CHARACTER*(*) DUMMY2
       REAL DUMMY1
 
         ! Do nothing
@@ -32,8 +32,8 @@ C Logical function indicating that H3KREPORTS is not available
       
       SUBROUTINE ADD_TO_XML_REPORTING(DUMMY1, DUMMY2, DUMMY3, DUMMY4,
      &  DUMMY5)
-      CHARACTER*128 DUMMY2, DUMMY3, DUMMY4
-      CHARACTER*512 DUMMY5
+      CHARACTER*(*) DUMMY2, DUMMY3, DUMMY4
+      CHARACTER*(*) DUMMY5
       REAL DUMMY1
 
         ! Do nothing
@@ -74,7 +74,7 @@ C Logical function indicating that H3KREPORTS is not available
       END 
 
       SUBROUTINE REP_SET_PARAMETER(DUMMY1, DUMMY2)
-      CHARACTER*128 DUMMY2, DUMMY1
+      CHARACTER*(*) DUMMY2, DUMMY1
            
       Return
       end

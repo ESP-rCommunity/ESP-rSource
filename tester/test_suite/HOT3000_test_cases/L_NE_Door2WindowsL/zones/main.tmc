@@ -1,0 +1,26 @@
+# transparent properties of main defined in user/L_NE_Door2WindowsL/zones/main.tmc
+  12    # surfaces
+# tmc index for each surface
+  0  0  0  0  0  0  0  0  0  1  2  3
+   1  Window-27     # layers in tmc type  1
+# Transmission @ 5 angles & visible tr.
+0.000 0.000 0.105 0.108 0.105 0.880
+# For each layer absorption @ 5 angles
+0.8370 0.8210 0.7520 0.6390 0.3900 
+0   # blind/shutter control flag
+   3  WindowN     # layers in tmc type  2
+# Transmission @ 5 angles & visible tr.
+0.000 0.000 0.000 0.000 0.000 0.780
+# For each layer absorption @ 5 angles
+0.7050 0.6780 0.5770 0.4360 0.2040 
+0.0000 0.0000 0.0000 0.0000 0.0000 
+0.0000 0.1030 0.1170 0.1270 0.1330 
+0   # blind/shutter control flag
+   3  WindowS1     # layers in tmc type  3
+# Transmission @ 5 angles & visible tr.
+0.000 0.000 0.000 0.000 0.000 0.780
+# For each layer absorption @ 5 angles
+0.7050 0.6780 0.5770 0.4360 0.2040 
+0.0000 0.0000 0.0000 0.0000 0.0000 
+0.0000 0.1030 0.1170 0.1270 0.1330 
+0   # blind/shutter control flag

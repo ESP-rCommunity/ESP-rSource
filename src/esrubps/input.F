@@ -531,12 +531,14 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
       IF(.NOT.MATDBOK)THEN
   55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)then
+C Database was not found, or file could not be read.
           if(dll)then
             dllsubr='mzinpt'
             dllmesg='Problem opening materials database.'
             ier=2
             return
-          else
+C In interactive mode, prompt user for new database.
+          elseif ( .not. autook ) then
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
@@ -549,7 +551,11 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
             else
               goto 56
             endif
-          endif
+          else
+C In silent running mode, notify user and terminate simulation.
+            call UsrMsg('Materials database could not be found',
+     &                  ' ', 'F')
+          endif ! <- matches 'if(ier.ne.0)then'
         else
 
 C Also check to see if the file has correct info (using pattern of

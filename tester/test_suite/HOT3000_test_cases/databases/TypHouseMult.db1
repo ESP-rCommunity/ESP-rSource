@@ -1,0 +1,66 @@
+# composite construction db defined in ../../TypHouse/TypHouseMult.db1
+# based on materials db ../../TypHouse/constr.db1
+   11     # no of composites 
+# layers  description   optics 
+    4    ExtWall       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  102    0.0100  Light plaster
+   67    0.0095  Chipboard
+  282    0.1400  2x4 @ 16
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    2    Roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   71    0.0150  Softwood
+   67    0.0111  Chipboard
+# layers  description   optics 
+    2    Ceil          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  284    0.3522  BlownCellulose
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    4    VaultRoof     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   71    0.0150  Softwood
+   67    0.0111  Chipboard
+  283    0.2800  2x6 @ 24
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    2    BaseWall      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2030  Heavy mix concrete
+  283    0.0890  2x6 @ 24
+# layers  description   optics 
+    4    AboveGarage   OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  225    0.0150  Synthetic carpet
+   67    0.0111  Chipboard
+  282    0.2820  2x4 @ 16
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    3    GarToLaundry  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  107    0.0127  Gypsum plasterboard
+  282    0.1400  2x4 @ 16
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    1    Slab          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.1020  Heavy mix concrete
+# layers  description   optics 
+    3    BaseCeil      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   67    0.0111  Chipboard
+    0    0.1400  air  0.170 0.170 0.170
+  107    0.0127  Gypsum plasterboard
+# layers  description   optics 
+    3    Window        TRAN  DC_8074_04nb        
+# db ref  thick   db name & air gap R 
+  242    0.0040  Plate glass
+    0    0.0100  air  0.170 0.170 0.170
+  242    0.0040  Plate glass
+# layers  description   optics 
+    2    Soffit        OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   43    0.0020  Aluminium
+  284    0.3522  BlownCellulose

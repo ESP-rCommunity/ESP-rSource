@@ -42,9 +42,10 @@ sub stream_out($);
 sub mail_message($$$$$);
 sub main();
 sub execute($);
+sub summarize_forcheck($);
 sub parse_forcheck($);
 sub fatalerror($);
-sub buildESPr($$$);
+sub buildESPr($$$$);
 sub passfail($);
 #--------------------------
 
@@ -58,7 +59,6 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "b2e"   =>   "esrub2e",     
                 "bps"   =>   "esrubps",
                 "c2e"   =>   "esruc2e",     
-                "cfg"   =>   "esrucfg",     
                 "clm"   =>   "esruclm",     
                 "dbm"   =>   "esrudbm",     
                 "dfs"   =>   "esrudfs",     
@@ -104,6 +104,17 @@ my $veryverbose = 0;
 my $test_forcheck   = 1;
 my $test_builds     = 1;
 my $test_regression = 1;
+
+# Additional compilation flags
+my %build_args;
+$build_args{"reference"} ="";
+$build_args{"test"}      ="";
+
+# Flag for forcheck debugging
+my $debug_forcheck = 0;
+my $del_dir = 1; 
+# Hash for linking forcheck error codes to human-readable descriptions
+my %gShorthand;
 
 #------------------------------------------------------------
 # Synopsys
@@ -153,7 +164,6 @@ my $synopsys= "
        branch; 'trunk', 'trunk\@r1000', 'development_branch\@HEAD', and
        'branches/development_branch' are all valid.
 
-
    -a, --addresses abc\@xyz.net,def\@xyx.net,...:
        Mail the results to specified comma-separated recepient list. This
        option requires access a valid SMTP server.
@@ -162,6 +172,15 @@ my $synopsys= "
    --smtp mailhost.xyz.net:
        Use the spedified mailhost when sending mail, instead of the 
        default ($smtp_server).
+
+   --skip-forcheck, --skip-regression, --skip-builds:
+       Skip portions of the QA tests
+
+   --ref-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
+       when compiling reference version.
+
+   --test-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
+       when compiling test version.
        
    -v: 
        Verbose output; print test progress to the buffer.
@@ -221,10 +240,43 @@ if ( @ARGV ){
   foreach my $arg (@ARGV){
     $cmd_arguements .= " $arg ";
   }
-  
+
+  # Grab strings inside quotes:
+  while ( $cmd_arguements =~ /"/ ){
+    my $quote_sting = $cmd_arguements;
+
+    $quote_sting =~ s/^[^"]*("[^"]*").*$/$1/;
+
+    my $convert_string = $quote_sting;
+       
+    # convert quoted spaces into '^~'s:
+    $convert_string =~ s/ /^~/g;
+
+    # convert quotes into '###':
+    $convert_string =~ s/"/###/g;
+
+    # Convert '=' in quotes to '+++'
+    $convert_string =~ s/=/+++/g;
+
+    # Substitute back into command arguement string
+    $cmd_arguements =~ s/$quote_sting/$convert_string/;
+    
+  }
+
   # Compress white space, and convert to ';'
   $cmd_arguements =~ s/\s+/ /g;
   $cmd_arguements =~ s/\s+/;/g;
+  
+  # Convert ### and ^~ back into '"' and ' '
+
+  $cmd_arguements =~ s/\^~/ /g;
+  $cmd_arguements =~ s/###/\\"/g;
+
+  # convert '=' to ':'
+  $cmd_arguements =~ s/=/:/g;
+
+  # convert '+++' back to '='
+  $cmd_arguements =~ s/\+\+\+/=/g;
   
   # Convert short hand arguements into longhand
   $cmd_arguements =~ s/-a;/--addresses;/g;
@@ -242,6 +294,10 @@ if ( @ARGV ){
   # If any options expecting arguements are followed by other
   # options, insert empty arguement:
   $cmd_arguements =~ s/:-/:;-/;
+
+  # Delete any remaining quotes
+  $cmd_arguements =~ s/\\"//g;
+
       
   # remove leading and trailing ;'s
   $cmd_arguements =~ s/^;//g;
@@ -249,9 +305,7 @@ if ( @ARGV ){
   
   # split processed arguements back into array
   my @processed_args = split /;/, $cmd_arguements;
-  
- 
-  
+
   # Intrepret arguements
   foreach my $arg (@processed_args){     
     SWITCH:
@@ -310,9 +364,35 @@ if ( @ARGV ){
         last SWITCH;
       }
       
+
+      # Additional build arguements for reference and test cases
+      if ( $arg =~ /--ref-build-args:/ ){
+        $build_args{"reference"} = $arg;
+        $build_args{"reference"} =~ s/--ref-build-args://g;
+        last SWITCH;
+      }
+
+      # Additional build arguements for reference and test cases
+      if ( $arg =~ /--test-build-args:/ ){
+        $build_args{"test"} = $arg;
+        $build_args{"test"} =~ s/--test-build-args://g;
+        last SWITCH;
+      }
+      
       # Debugging:
       if ( $arg =~ /^--echo/ ){
-        $echo = 1; 
+        $echo = 1;
+        last SWITCH;
+      }
+
+            
+      if ( $arg =~ /^--debug-forcheck/ ){
+        $debug_forcheck = 1;
+        last SWITCH;
+      }
+      
+      if ( $arg =~ /^--preserve-dir/ ){
+        $del_dir = 0;
         last SWITCH;
       }
       
@@ -322,16 +402,16 @@ if ( @ARGV ){
         $verbose = 1;
         last SWITCH;
       }
-      if ( $arg =~ /^--very_verbose/ ){
+      if ( $arg =~ /^--very-verbose/ ){
         # steam out all messages
         $verbose = 1;
         $veryverbose = 1;
         last SWITCH;
-      } 
+      }
     }
   }
 }
-     
+
 # Append default revisions to %revisions hash, if necessary
 for my $count ( scalar(@version_stack) ){
   SWITCH:{
@@ -366,6 +446,8 @@ for my $count ( scalar(@version_stack) ){
 
 }
 
+
+
 # Coerse branch names into /branches/name format.
 while ( my  ( $key, $branch ) = each %revisions ){
   if ( $branch !~ /^branches/i && $branch !~ /^trunk/i ){
@@ -385,8 +467,8 @@ my $path = getcwd();
 
 # Initialize results buffer, and set test status to 'pass'. 
 my $results; 
-my $res_header = "Automated test of ESP-r system\n";
-$res_header .= "Testing commenced on ".`date`."\n";
+my $res_header = "\nAutomated test of ESP-r system\n";
+$res_header .= "Testing commenced on ".`date`;
 
 my $global_fail = 0;
 
@@ -399,6 +481,9 @@ while ( -d $TestFolder ) {
   $count++;
   $TestFolder="$TestFolder_root\_$count";
 }
+
+if ( $debug_forcheck ) { $TestFolder = "/tmp/test_debug_forcheck"; }
+
 
 #Username that sends e-mail. 
 my $mail_from= $ENV{USER}.'@esp-r.net';
@@ -416,8 +501,15 @@ if ( $echo )  { die echo_config(); }
 
 # Create test directory, and move to path.
 stream_out("\nPreparing test directory $TestFolder...");
-execute ("rm -fr $TestFolder");
-execute ("mkdir $TestFolder");
+
+if ( ! $debug_forcheck ){
+  execute ("rm -fr $TestFolder");
+}
+
+if ( ! -d $TestFolder ){
+  execute ("mkdir $TestFolder");
+}
+
 chdir("$TestFolder");
 stream_out("Done\n");
 
@@ -425,32 +517,37 @@ stream_out("Done\n");
 
 my %src_dirs;
 
-while ( my ($key, $revision ) = each  %revisions ) {
+if ( $test_forcheck || $test_builds || $test_regression ){
 
-  # Label source directories "src_1, src_2", and save in hash
-  $src_dirs{$key} ="src_$key";
+  while ( my ($key, $revision ) = each  %revisions ) {
   
-  # Progress update 
-  stream_out("Checking out $revision from ESP-r central...");
-  
-  # Split revision from format branch@rev into 'branch' and 'rev'.
-  my ( $branch, $rev ) = split /\@/, $revision; 
-  
-  # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
-  for ($rev) {
-    SWITCH: {
-      if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
-      if ( /HEAD/ )     { $rev ="";       last SWITCH; }
-      if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
-      fatalerror{"Invalid revision $revision!\n"};
+    # Label source directories "src_1, src_2", and save in hash
+    $src_dirs{$key} ="src_$key";
+    
+    # Progress update 
+    stream_out("Checking out $revision from ESP-r central...");
+    
+    # Split revision from format branch@rev into 'branch' and 'rev'.
+    my ( $branch, $rev ) = split /\@/, $revision; 
+    
+    # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
+    for ($rev) {
+      SWITCH: {
+        if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
+        if ( /HEAD/ )     { $rev ="";       last SWITCH; }
+        if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
+        fatalerror{"Invalid revision $revision!\n"};
+      }
     }
+    
+    # Pull down source. Skip if source 
+    if ( ! -d $src_dirs{$key} ){
+
+       execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+    }
+    stream_out("Done\n");
   }
-  
-  # Pull down source.
-  if ( ! -d $src_dirs{$key} ){
-    execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
-  }
-  stream_out("Done\n");
+
 }
 
 #------------------------------------------------------------
@@ -473,8 +570,11 @@ if ( $test_forcheck ){
     
     # Progress update 
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
-    # Build X11 debugging version. 
-    buildESPr("default","debug","onebyone");
+
+    # Build X11 debugging version.
+    if ( ! $debug_forcheck ) {
+      buildESPr($build_args{"$key"},"default","debug","onebyone");
+    }
     stream_out(" Done\n");
     
   }
@@ -508,9 +608,6 @@ if ( $test_forcheck ){
     # Loop through list of esp-r binaries
     while ( my ( $bin, $folder ) = each %binlist ){
     
-      # Path to relevant esp-r source for given binary.
-      my $folder = $binlist{$bin};
-      
       # Pseudo-progress meter.
       stream_out ".";
       
@@ -520,11 +617,14 @@ if ( $test_forcheck ){
       # Run forcheck, and parse output. Use system command, because
       # execute function may redirect output to /dev/null, depending on 
       # verbosity.
-      system ("forchk -I ../include *.F ../lib/esru_blk.F ../lib/esru_libX11.F ../esru_ask.F  > forcheck_$bin.out 2>&1 " ); 
-      
+      # DEBUG
+
+      if ( ! $debug_forcheck || ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
+        system ("forchk -I ../include *.F ../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
+      }
       # Save location of forcheck output
       $forcheck_output{$bin}{$key} = "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out";
-        
+ 
       
     }
     stream_out(" Done\n");
@@ -547,23 +647,77 @@ if ( $test_forcheck ){
   foreach my $bin ( sort keys %binlist ){
     
     
-    # read forcheck output
-    my %old_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"reference"}`);
-    my %new_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"test"}`);
-  
+    # read forcheck output: Summary
+    my %old_summary = summarize_forcheck ( `cat $forcheck_output{$bin}{"reference"}`);
+    my %new_summary = summarize_forcheck ( `cat $forcheck_output{$bin}{"test"}`);
+
+    # read forcheck: Details
+    my %old_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"reference"}` );
+    my %new_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"test"} ` );
+
+    # initialize flag for pass/fail
+    my $bin_fail = 0; 
+
+    #=============== DETAILED OUTPUT ==================================
+    # Loop through each new message and check if similar case in
+    # old_msgs exists. If not, add message to 'unmatched code' hash. 
+
+    my %unmatched_codes;
+    my %procedures;
+    foreach my $msg ( keys %new_msgs ) {
+      
+      if ( ! defined ( $old_msgs{$msg}{"count"} ) ) {
+        $old_msgs{$msg}{"count"} = 0;
+      }
+
+      my $old_count = $old_msgs{$msg}{"count"};
+      my $new_count = $new_msgs{$msg}{"count"};
+
+      # Check to see if an unmatched instance exists in new_msgs.
+      # if so, append to unmatched_msgs/ unmatched_codes, and
+      # set failure flag.
+      if ( $new_count > $old_count ){
+        
+        my ($files, $procedure, $source, $code) = split /{}/, $msg;
+        my( $topfile, $file) = split /:/, $files;
+        
+        my $line = $new_msgs{$msg}{"line"};
+
+        my $location = "$file - line $line";
+
+        my $procedure_call = ( $file ne $topfile ) ? " ($topfile) " : "";
+        
+        $unmatched_codes{$code}{"$location\{\}$source"} .=
+          ( defined( $unmatched_codes{$code}{"$location\{\}$source"} ) ) ?
+               ";$procedure$procedure_call" : "$procedure$procedure_call";
+
+        
+#         $procedures{"location"} = 
+#             ( defined ( $procedures{"location"} ) )
+#             ? "|$location" : "$location";
+
+        if ( $code =~ /[EW]/ ){ $bin_fail = 1; }
+
+      }
+
+    }
+
+    
+
+    #=============== SUMMARY OUTPUT ==================================
     # Create new hash for compiling old and new messages.
-    my %all_msgs = ();
+    my %all_summary = ();
     
     # Push all codes on to stack for processing.
     my @all_codes = ();
-    push @all_codes, keys %old_msgs, keys %new_msgs; 
+    push @all_codes, keys %old_summary, keys %new_summary;
     
     # loop through all codes, and append counts to all_messages
     foreach my $code ( @all_codes ){
-      if ( ! defined ( $all_msgs{$code} ) ){
-        if ( ! defined ( $old_msgs{$code} ) ){ $old_msgs{$code} = "0"; }
-        if ( ! defined ( $new_msgs{$code} ) ){ $new_msgs{$code} = "0"; }
-        $all_msgs{$code} = "$old_msgs{$code}:$new_msgs{$code}";
+      if ( ! defined ( $all_summary{$code} ) ){
+        if ( ! defined ( $old_summary{$code} ) ){ $old_summary{$code} = "0"; }
+        if ( ! defined ( $new_summary{$code} ) ){ $new_summary{$code} = "0"; }
+        $all_summary{$code} = "$old_summary{$code}:$new_summary{$code}";
       }
     }
     
@@ -573,13 +727,12 @@ if ( $test_forcheck ){
     my @info_codes    = (); 
     my @total_counts  = ();  # <- already declared!
   
-    # initialize flag for pass/fail
-    my $bin_fail = 0; 
+
     my $status;
   
     # Build lists of errors/warnings/info msgs for which the number of 
     # instances do not match between old and new versions
-    while ( my ( $code, $count ) = each %all_msgs ){
+    while ( my ( $code, $count ) = each %all_summary ){
     
       # Split old and new count.
       my ($old_count, $new_count)= split /:/, $count;
@@ -591,12 +744,10 @@ if ( $test_forcheck ){
           SWITCH: {
             if ( /^Err\./  )  { 
                                 push @error_codes, $code;  
-                                $bin_fail   = 1;    
                                 last SWITCH; 
                               } 
             if ( /^Warn\./ )  {
                                 push @warning_codes, $code;
-                                $bin_fail   = 1;    
                                 last SWITCH; 
                               } 
             if ( /^Info\./ )  { 
@@ -619,9 +770,9 @@ if ( $test_forcheck ){
         }  
           
         if ( $class !~ /none/ ){
-          if ( $old_count > $new_count ) { $forcheck_delta{$bin}{$class} = "(-)"; }
-          if ( $old_count < $new_count )  { $forcheck_delta{$bin}{$class} = "(+)"; }
-          if ( $old_count == $new_count )  { $forcheck_delta{$bin}{$class} = "( )"; }
+          if ( $old_count >  $new_count ) { $forcheck_delta{$bin}{$class} = "(-)"; }
+          if ( $old_count <  $new_count ) { $forcheck_delta{$bin}{$class} = "(+)"; }
+          if ( $old_count == $new_count ) { $forcheck_delta{$bin}{$class} = "( )"; }
         }
       }
       
@@ -646,27 +797,78 @@ if ( $test_forcheck ){
     $forcheck_details .= "\n - binary $bin: $status\n";
     
     # Summarize results
-    $forcheck_details .= "   Total errors:     reference $old_msgs{\"Total error messages\"}, test $new_msgs{\"Total error messages\"} \n";
-    $forcheck_details .= "   Total warnings:   reference $old_msgs{\"Total warning messages\"}, test $new_msgs{\"Total warning messages\"} \n";
-    $forcheck_details .= "   Total info msgs:  reference $old_msgs{\"Total informational messages\"}, test $new_msgs{\"Total informational messages\"} \n";
+    $forcheck_details .= "   Total errors:     reference $old_summary{\"Total error messages\"}, test $new_summary{\"Total error messages\"} \n";
+    $forcheck_details .= "   Total warnings:   reference $old_summary{\"Total warning messages\"}, test $new_summary{\"Total warning messages\"} \n";
+    $forcheck_details .= "   Total info msgs:  reference $old_summary{\"Total informational messages\"}, test $new_summary{\"Total informational messages\"} \n";
     
     # Now append unmatched errors to result string 
-    if ( $bin_fail ){
+    if ( scalar ( @error_codes )   > 0 ||
+         scalar ( @warning_codes ) > 0 ||
+         scalar ( @info_codes )    > 0    ) {
       $forcheck_details .= "   Summary of differences:\n";
+    }else{
+      $forcheck_details .= "   No differences to report.\n";
     }
-    foreach my $code ( sort @error_codes, sort @warning_codes, sort @info_codes ){
-      $forcheck_details .= "     -> $code [ Instances: reference $old_msgs{$code}, test $new_msgs{$code} ]\n";
+    foreach my $code_desc ( sort @error_codes, sort @warning_codes, sort @info_codes ){
+
+      $forcheck_details .= "     -> $code_desc [ Instances: reference $old_summary{$code_desc}, test $new_summary{$code_desc} ]\n";
+
+
+      
+      # Check if this code appears in unmatched codes:
+
+      my $code = $gShorthand{$code_desc};
+
+      if ( defined ( $unmatched_codes{$code} ) ) {
+
+        # If so, get instances where code appears...
+
+        my %locations = %{$unmatched_codes{$code}};
+
+        # ...loop though instancess
+        foreach my $instance ( sort keys %locations ){
+
+          # Split instance into file/line and source tokens
+          my ($location,$source ) = split /\{\}/, $instance;
+          $location = ( $location =~ /none/ ) ? "" : "in $location";
+
+          # Get procedures that include this source code (there
+          # may be more than one if source is in a header file)
+          my $procedures = $locations{$instance};
+
+          # Format output.
+          if ($source =~ /^\s*$/ ){
+            $source = "\n";
+          }else{
+            $source     =~ s/^(.+)$/                $1/mg;
+          }
+          
+          $procedures =~ s/;/;\n                             /mg;
+          $forcheck_details .=  "          - New instance $location:$source"
+                               ."                [appears in: $procedures]\n";
+        }
+      }
     }
 
+    
   
     # pseudo-progress meter:
     stream_out(".");
   }
   
   # Prepare output: Summary table
-  $results .= "\n";
-  $results .= "Summary of static analysis: Changes in number of\n";
-  $results .= "reported errors, warnings and informational messages.\n";
+
+  $results .= "
+The tester has compared the results from Forcheck analysis of both
+reference and test versions; differences between the total number of
+errors, warnings and informational messages are summarized below.
+This test is deemed to fail if new errors or warnings are introduced
+into the test version, even if the total number of errors or warings
+decreases.
+
+";
+  $results .= "Summary of static analysis --- changes in number of reported errors\n";
+  $results .= "warnings and informational messages:\n\n";
   $results .= "-------------------------------------------------\n";
   $results .= "Binary                # Err.    # Warn.    #Info.\n";
   $results .= "-------------------------------------------------\n";
@@ -708,7 +910,7 @@ if ($test_builds){
   stream_out("\nBuilding X11 version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");  
-  %build_result = buildESPr("X11","clean","onebyone");
+  %build_result = buildESPr($build_args{"test"},"X11","clean","onebyone");
   if (  $build_result{"fail"}  ) { $X11_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -717,7 +919,7 @@ if ($test_builds){
   stream_out("\nBuilding GTK version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr("GTK","clean","onebyone");
+  %build_result = buildESPr($build_args{"test"},"GTK","clean","onebyone");
   if (  $build_result{"fail"}  ) { $GTK_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -726,7 +928,7 @@ if ($test_builds){
   stream_out("\nBuilding noX version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr("noX","clean","onebyone");  
+  %build_result = buildESPr($build_args{"test"},"noX","clean","onebyone");  
   if (  $build_result{"fail"}  ) { $noX_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -750,7 +952,7 @@ if ( $test_regression ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
     execute("make clean");
-    buildESPr("default","clean","together");  
+    buildESPr($build_args{"$key"},"default","clean","together");
     execute("mv $TestFolder/esp-r $TestFolder/esp-r_$key");
     stream_out(" Done\n");
   }
@@ -761,13 +963,17 @@ if ( $test_regression ) {
   my $test_esp = "$TestFolder/esp-r_test/bin/";
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
-  execute ("./tester.pl $ref_esp/bps $test_esp/bps  -d $TestFolder/esp-r --ref_res $ref_esp --test_res $test_esp -p $TestFolder/$src_dirs{\"test\"}/tester/");
+  execute ("./tester.pl "
+           ."$ref_esp/bps $test_esp/bps "
+           ."-d $TestFolder/esp-r "
+           ."--ref_res $ref_esp --test_res $test_esp "
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite --no_data" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
   # Digest test report 
   my $regression_results = `cat bps_test_report.txt`;
-  if ( $regression_results =~ /^ Overall result: Fail\./ ) {
+  if ( $regression_results =~ /^ Overall result: Fail\./m ) {
     $regression_fail = 1;
   }
   $results .= `cat bps_test_report.txt`;
@@ -778,23 +984,57 @@ if ( $test_regression ) {
 # Format output 
 #---------------------------------------
 
+
+if ( $forcheck_fail || $build_fail || $regression_fail ){ $global_fail = 1; }
+
+if ( ! $test_forcheck  ) { $forcheck_fail  = "Skipped"; }
+if ( ! $test_builds    ) { 
+                           $X11_fail        = "Skipped"; 
+                           $GTK_fail        = "Skipped"; 
+                           $noX_fail        = "Skipped"; 
+                                                         }
+if ( ! $test_regression ){ $regression_fail = "Skipped"; }
+
 my $output; 
-$output = "$res_header";
+$output .= "$res_header";
+$output .= "
+This report describes the results of testing between two versions
+of ESP-r. The tester ensures the test version compiles in X11, GTK
+and no-X configurations, and compares the results of Forcheck static
+analysis with the reference version. In addition, the tester peforms
+a complete regression test between the two versions.
+
+";
+
+my $ref_args = ( $build_args{"reference"} )
+                ? "Build options: $build_args{\"reference\"}"
+                : "Build options: none";
+
+my $test_args = ( $build_args{"test"}  )
+                ? "Build options: $build_args{\"test\"}"
+                : "Build options: none";                
+
+
+my $system = `uname -n`." (".`uname -m`.";".`uname -s`.";".`uname -r`.")";
+$system =~ s/\n//g;
+$output .= "Test system: $system\n\n";
 
 $output .= "Test summary:\n";
-$output .= "  - Reference version: $revisions{\"reference\"}\n";
-$output .= "  - Test version:      $revisions{\"test\"}\n";
+$output .= "  - Reference version: $revisions{\"reference\"} ($ref_args)\n";
+$output .= "  - Test version:      $revisions{\"test\"} ($test_args)\n\n";
 $output .= "------------------------------------------------\n";
 $output .= "TEST                                    RESULT\n";
 $output .= "------------------------------------------------\n";
-$output .= "Static analyis (Forcheck)                 ".passfail($forcheck_fail)."\n";
-$output .= "Compilation: X11 build                    ".passfail($X11_fail)."\n";
-$output .= "             GTK build                    ".passfail($GTK_fail)."\n";
-$output .= "             X-less build                 ".passfail($noX_fail)."\n";
-$output .= "Regression test                           ".passfail($regression_fail)."\n";
+$output .= "Static analyis (Forcheck)               ".passfail($forcheck_fail)."\n";
+$output .= "Compilation: X11 build                  ".passfail($X11_fail)."\n";
+$output .= "             GTK build                  ".passfail($GTK_fail)."\n";
+$output .= "             X-less build               ".passfail($noX_fail)."\n";
+$output .= "Regression test                         ".passfail($regression_fail)."\n";
 $output .= "------------------------------------------------\n";
-
-$output .= "\n$results\n";
+$output .= "'-': pass; 'X': fail\n";
+if ( defined ($results) ){
+  $output .= "\n$results\n";
+}
 
 
   
@@ -807,12 +1047,14 @@ if ( scalar(@addresses) > 0 ){
   stream_out("Mailing results...");
   
   my ($subject);
-  
-  if ( $forcheck_fail || $build_fail || $regression_fail  ){
-    $subject = "ESP-r automated test: Fail"
+
+  if ( $global_fail  ){
+    $subject = "ESP-r automated test: Fail  ($revisions{\"test\"}) ";
   }else{
-    $subject = "ESP-r automated test: Pass"
+    $subject = "ESP-r automated test: Pass  ($revisions{\"test\"}) ";
   }
+
+  $subject =~ s/branches\///g;
   
   foreach my $address (@addresses){
     mail_message($smtp_server,$address,$mail_from,$subject,$output);
@@ -832,7 +1074,13 @@ close(OUTPUT_FILE);
 #================================================
 # Clean up
 #================================================
-execute("rm -fr $TestFolder");
+
+# DEBUG
+if ( ! $debug_forcheck && $del_dir ){
+  execute("rm -fr $TestFolder");
+}
+
+die;
 
 #-------------------------------------------------------------------
 # Pass/fail: turn test result into readable string
@@ -840,10 +1088,12 @@ execute("rm -fr $TestFolder");
 sub passfail($){
   my ($result) =@_;
   my $string;
-  if ($result){ 
-    $string = "X"; 
+  if ($result =~ /1/ ){ 
+    $string = "   X"; 
+  }elsif ( $result =~ /0/ ){
+    $string = "   -"; 
   }else{
-    $string = "-"; 
+    $string = $result; 
   }
   return $string;
 }
@@ -852,10 +1102,15 @@ sub passfail($){
 #   - $build=onebyone causes each esp-r binary to be built 
 #     individually, and the resulting target tested for completeness.
 #-------------------------------------------------------------------
-sub buildESPr($$$){
+sub buildESPr($$$$){
   
-  my($xLibs,$state,$build) =@_;
+  my($extra_args, $xLibs,$state,$build) =@_;
   
+  # Test if 'configure' script exists.
+  my $autotools = 0;
+  if ( -r "./configure" ) {
+    $autotools = 1;
+  }
   
   my $Debug_flag;
   
@@ -863,13 +1118,19 @@ sub buildESPr($$$){
   if ( $state =~ /clean/ ) { 
     $Debug_flag =""; 
   }else{
-    $Debug_flag ="--debug";
+    
+    $Debug_flag = ($autotools) ? "" : "--debug";
   }
-  
+
+  # SET xlibs flag
   if ( $xLibs =~ /default/ ){
     $xLibs = "";
   }else{
-    $xLibs = "--$xLibs";
+    if ( $autotools ) {
+      $xLibs = ( $xLibs =~ /noX/i ) ? "--with-noGUI" : "--with-$xLibs";
+    }else {
+      $xLibs = "--$xLibs";
+    }
   }
   
   # Empty target folder 
@@ -880,6 +1141,21 @@ sub buildESPr($$$){
   my %result = ( "fail" => 0, "msg" => "" );
   my $err_msg = "";
   my $fail="0";
+  my $bin_dest;
+
+  # If we're using auto-tools, invoke configure.
+  if ( $autotools ){
+    execute("rm -fr $TestFolder/bin  $TestFolder/lib");
+    execute("./configure --prefix=$TestFolder $xLibs $Debug_flag $extra_args");
+    execute("make clean");
+
+  }else{
+    
+    $bin_dest = "$TestFolder/esp-r/bin/";
+  
+  }
+  
+
   
   if ( $build =~ /onebyone/ ){
     # Test each binary separately, omit training and databases.
@@ -902,29 +1178,37 @@ sub buildESPr($$$){
       
       # Build executable. It would be to recover the output from this 
       # command and report it to the user, if a failure occurs.
-      my $debug_temp = `./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $bin 2>&1`;
-      
+      if ( $autotools ) {
+        execute("make $bin");
+        $bin_dest = "./$binlist{$bin}/"
+      }else{
+        execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_dbs --no_training --force $extra_args $bin 2>&1");
+      }
       # Test if target was created, and if not, note failure.
-      if ( ! -r "$TestFolder/esp-r/bin/$target"      && 
-           ! -r "$TestFolder/esp-r/bin/$target.exe"     ){
+      if ( ! -r "$bin_dest/$target"      &&
+           ! -r "$bin_dest/$target.exe"     ){
         
         $result{"fail"} = 1; 
-        
         $err_msg .= "    -> Binary $target could not be built.\n";
 
       }
     }
   }else{
-  
+
     # Build all at once, omit training files.
-    execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force");
+    if ( $autotools ) {
+      execute("make install SKIPtraining=yes");
+      execute ( "rm -fr $TestFolder/esp-r/bin");
+      execute ( "cp -fr $TestFolder/bin  $TestFolder/esp-r/bin");
+    }else{
+      execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
+    }
   }
-  
   
   # Return result
   my $status;
   
-  if ( $build_result{"fail"} ){ 
+  if ( $result{"fail"} ){
     
     $status = "Failed"; 
   
@@ -937,17 +1221,182 @@ sub buildESPr($$$){
   
   return %result;
 }
-
-
 #----------------------------------------------
 # Parse forcheck output 
 #----------------------------------------------
-sub parse_forcheck($){
+sub parse_forcheck ($){
+
+  my ( $output ) = @_;
+
+  my ( %forcheck_details );
+
+  # Strip everything before '-- program unit analysis:' string
+  $output =~ s/.*-- program unit analysis//sg;
+
+  # Strip everything after '-- messages presented:' string
+  $output =~ s/-- messages presented:.*//sg;
+
+  # Eliminate empty lines 
+  $output =~ s/^\s+//gm;
+
+  # Remove useless '-- reference structure' statement 
+  $output =~ s/-- reference structure([^\n]*)\n//sg;
+  
+  # Forcheck output is very unstructured, making parsing difficult.
+  # To solve this problem, we'll coax it into a semi structured format
+  # that's parser-friendly.
+  #
+  # We'll enclose interesting parts of the file in xml-like <XXX></XXX>
+  # tags, to make it easier to parse the file later. Under this
+  # scheme, the following forcheck output snippit: 
+  #
+  #    -- file: ADS_storage_tanks.F
+  # 
+  #        - program unit: ADS_TANK_FUEL_STATIC_TEMP
+  #      397       tank_DHW_draw = ADATA(IPCOMP,13)
+  #    tank_DHW_draw = ADATA(IPCOMP,13)
+  #  (file: ADS_storage_tanks.F, line:     397)
+  #  **[699 I] implicit conversion of real or complex to integer
+  #
+  # Looks like:
+  #
+  #    <file>ADS_storage_tanks.F</file>
+  #    <procedure>ADS_TANK_FUEL_STATIC_TEMP</procedure>
+  #    <msg>
+  #    <source>
+  #    tank_DHW_draw = ADATA(IPCOMP,13)
+  #    </source>
+  #    <line>397</line>
+  #    <code>699 I</code>
+  #    <description>implicit conversion of real or complex to integer</description>
+  #    </msg>
+
+  # Convert all angle operators in $output to place-holders
+  $output =~ s/</({)/g;
+  $output =~ s/>/(})/g;
+  
+  # Insert demarcation markers <XXX>...</XXX>:
+
+  # ... in place of each new file marker ('-- file:')
+  $output =~ s/-- file: ([^\n]*)\n/<topfile>$1<\/topfile>\n/sg;
+
+  # ... in place of each new function marker ('- program unit:')
+  $output =~ s/- program unit: ([^\n]*)\n/<procedure>$1<\/procedure>\n/sg;
+
+  # ... in place of global marker ('-- global program analysis')
+
+  $output =~ s/-- global program analysis([^\n]*)\n/<topfile>none<\/topfile>\n<procedure>global references<\/procedure>\n/sg;
+
+  # ... at end of forcheck message
+
+  $output =~ s/(\*\*\[[^\n]*)\n/$1\n<\/msg>\n/sg;
+
+  # ... at beginning of forcheck message
+  #   $output =~ s/(<\/[^>]+>)\n([^<]+)<\/msg>/$1\n<msg>\n$2<\/msg>/sg;
+  $output =~ s/([^>]+)<\/msg>/\n<msg>$1<\/msg>/xsg;
+
+  # ... around line number 
+  $output =~ s/\(file:\s*([^\s]+),\s*line:\s*([0-9]+)\)/<file>$1<\/file>\n<line>$2<\/line>/sg;
+
+  # ... around error code
+  $output =~ s/\*\*\[([^\]]+)\]/<code>$1<\/code>\n/sg;
+
+  # ... around description
+  $output =~ s/<\/code>\s*([^<\n]*)\n<\/msg>/<\/code>\n<description>$1<\/description>\n<\/msg>/sg;
+
+  # ... around source statement
+  $output =~ s/<msg>([^<]+)</<msg>\n<source>$1<\/source>\n</sg;
+
+  # Source records sometimes contain line numbers at start -
+  # replace with spaces
+  $output =~ s/^[0-9\.]+//mg;
+
+  # Gobble up leading spaces on each line
+  $output =~ s/^ +//mg;
+
+
+  # Revert angle operators
+  $output =~ s/({)/</g;
+  $output =~ s/(})/>/g;
+
+  # Insert additional demarcation at end of file/procedure/msg entities
+  # for use by split command
+  $output =~ s/(<\/topfile>|<\/procedure>|<\/msg>)/$1\{break\}/g;
+
+  # Now, split output 
+
+  my @forcheck_objects = split /\{break\}/, $output;
+
+  # Loop through objects, and add to output hash.
+
+  my ($topfile, $procedure);
+
+  foreach my $object ( @forcheck_objects){
+    # Extract data from tags
+    SWITCH: {
+      if ( $object =~ /<topfile>/ )
+              { $topfile = $object;
+                $topfile =~ s/^.*<topfile>(.+)<\/topfile>.*$/$1/sg;
+                last SWITCH;
+              }
+      if ( $object =~ /<procedure>/ )
+              { $procedure = $object;
+                $procedure =~ s/^.*<procedure>(.+)<\/procedure>.*$/$1/sg;
+                last SWITCH;
+              }
+
+      if ( $object =~ /<msg>/ )
+              {
+                my $file;
+                my $line;
+                if ( $object =~ /<file>/ ){
+                    $file = $object;
+                    $file =~ s/^.*<file>(.+)<\/file>.*$/$1/sg;
+                }else{
+                    $file = $topfile;
+                }
+
+                my $code = $object;
+                   $code =~ s/^.*<code>(.+)<\/code>.*$/$1/sg;
+
+                my $source = $object;
+                   $source =~ s/^.*<source>(.+)<\/source>.*$/$1/sg;
+
+                if ( $object =~ /<line>/ ){
+                     $line = $object;
+                     $line =~ s/^.*<line>(.+)<\/line>.*$/$1/sg;
+                }else{
+                  $line = "none";
+                }
+
+
+                my $description = $object;
+                   $description =~ s/^.*<description>(.+)<\/description>.*$/$1/sg;
+
+
+                # Now push message object into forcheck hash
+
+                $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"count"}++;
+                $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"line"} = $line;
+
+                last SWITCH;
+
+              }  
+    }
+  }
+
+  return %forcheck_details;
+
+}
+#----------------------------------------------
+# Summarize forcheck output
+#----------------------------------------------
+sub summarize_forcheck($){
   # Get section after --messages presented header...
   
   my ($output)=@_;
   
-  my %shorthand = ( "I" => "Info.",
+  my %code_types = ( "I" => "Info.",
                     "W" => "Warn.",
                     "E" => "Err. " );
   
@@ -984,7 +1433,8 @@ sub parse_forcheck($){
       my ($number,$type)= split / +/, $code;
       $count =~ s/x//g;
       $count =~ s/\s//g;
-      $messages{"$shorthand{$type} #$number - $desc"}=$count;
+      $messages{"$code_types{$type} #$number - $desc"}=$count;
+      $gShorthand{"$code_types{$type} #$number - $desc"}=$code;
     }
     
   }
