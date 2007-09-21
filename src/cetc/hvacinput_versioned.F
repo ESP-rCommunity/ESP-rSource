@@ -90,6 +90,7 @@ C-----------------------------------------------------------------------
       integer iZone               !
       integer iDaytype            !
       integer iPeriod             !
+      integer iData               !
 
       integer iFileLine           ! Line number in file
 
@@ -214,12 +215,16 @@ C-----------------------------------------------------------------------
         bSysFuncOK(iSystem)      = .false.
         bSysBackOK(iSystem)      = .false.
         bSysOAPeriodsOK(iSystem) = .false.
+        
 
 C.......Initialize OA daytype and period counters to zero.
         iNum_OA_daytypes(iSystem) = 0
         do iDaytype = 1, 10
           iNum_OA_periods(iSystem,iDaytype) = 0
         enddo
+        
+        iDataCount(iSystem) = 0
+
         
       enddo
 
@@ -1163,22 +1168,52 @@ C.............Close block
 
             endif
 
-
-
-C-----------------------------------------------------------------------
-C         Parse block data (that is, data sandwiched between
-C          *data-start and *data-end tags)
-C-----------------------------------------------------------------------
-          elseif ( bDataBlockOpen ) then
-
-
-
 C-----------------------------------------------------------------------
 C         Allow empty lines in the file
 C-----------------------------------------------------------------------
           elseif ( iWordCount == 0 ) then
 
             ! Do nothing.
+
+C-----------------------------------------------------------------------
+C         Parse block data (that is, data sandwiched between
+C         *data-start and *data-end tags)
+C-----------------------------------------------------------------------
+          elseif ( bDataBlockOpen ) then
+
+C...........Line must have 2 words: Token Value
+            if ( iWordCount /= 2 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'System data must be in token-value format '
+     &          // '("<token> <value>")' )
+
+            else
+
+C.............Increment system data counter
+              iDataCount(iSystem) = iDataCount(iSystem) + 1
+              iData = iDataCount(iSystem)
+
+C.............Attempt to read token name
+             print*, 'System #:', iSystem, 'Data #:', iData
+              write(cTokens(iSystem,iData), '(A)')
+     &           cLnWords(2)(1:min(72,lnblnk(cLnWords(2))))
+
+C.............Attempt to read token value
+              fTokenVals(iSystem,iData) = fCtoR_err(
+     &               cLnWords(2),
+     &               'interpreting token "'
+     &                  //cLnWords(2)(1:lnblnk(cLnWords(2)))//'"',
+     &               bConvErr)
+
+              if ( bConvErr ) then
+
+                call HVACinput_RepErr( iFileLine,
+     &                'Could not interpret token value')
+
+              endif
+
+            endif
 
 C-----------------------------------------------------------------------
 C         Default case: if line does not start with a known keyword and

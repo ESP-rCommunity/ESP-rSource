@@ -8,11 +8,14 @@ c modeled ideally
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount
-      parameter (iHPTokenCount = 15)
+      parameter (iHPTokenCount = 20)
+      integer iMAXTokenCount
+      parameter (iMAXTokenCount = iHPTokenCount)
+      
       
       common/HVAC_parsing/iHVACFileVersion,
      &bParseError,
-     &cFurnaceTokenNames,
+     &cFurnaceTokenNames(iFurnaceTokenCount),
      &cBaseboardTokenNames(iBaseboardTokenCount),
      &cIMSTokenNames(iIMSTokenCount),
      &cHPTokenNames(iHPTokenCount),
@@ -24,16 +27,18 @@ c modeled ideally
      &fBaseboardTokenVals(max_sys,iBaseboardTokenCount),
      &fIMSTokenVals(max_sys,iIMSTokenCount),
      &fHPTokenVals(max_sys,iHPTokenCount),
-     &iDataCount(max_sys)
+     &iDataCount(max_sys),
+     &cTokens(max_sys,iMAXTokenCount),
+     &fTokenVals(max_sys,iMAXTokenCount)
 
 
-      character*72 cFurnaceTokenNames(iFurnaceTokenCount),
+      character*72 cFurnaceTokenNames,
      &             cBaseboardTokenNames,
-     &             cIMSTokenNames, cHPTokenNames
+     &             cIMSTokenNames, cHPTokenNames, cTokens
       logical bFurnaceTokenSet, bIMSTokenSet, bBaseboardTokenSet,
      &        bHPTokenSet
       real fFurnaceTokenVals, fBaseboardTokenVals, fIMSTokenVals,
-     &     fHPTokenVals
+     &     fHPTokenVals, fTokenVals
 
       common/HVAC_INPUT_DATA/
      &site_altitude, num_hvac_sys,
