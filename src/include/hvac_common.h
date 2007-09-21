@@ -1,6 +1,41 @@
 c Common for hvac system input data. These variables are used for hvac systems
 c modeled ideally
-      common/HVAC_INPUT_DATA/iHVACFileVersion,
+
+      integer iFurnaceTokenCount
+      parameter (iFurnaceTokenCount = 7)
+      integer iIMSTokenCount
+      parameter (iIMSTokenCount = 1)
+      integer iBaseboardTokenCount
+      parameter (iBaseboardTokenCount = 4)
+      integer iHPTokenCount
+      parameter (iHPTokenCount = 15)
+      
+      common/HVAC_parsing/iHVACFileVersion,
+     &bParseError,
+     &cFurnaceTokenNames,
+     &cBaseboardTokenNames(iBaseboardTokenCount),
+     &cIMSTokenNames(iIMSTokenCount),
+     &cHPTokenNames(iHPTokenCount),
+     &bFurnaceTokenSet(max_sys,iFurnaceTokenCount),
+     &bBaseboardTokenSet(max_sys,iBaseboardTokenCount),
+     &bIMSTokenSet(max_sys,iIMSTokenCount),
+     &bHPTokenSet(max_sys,iHPTokenCount),
+     &fFurnaceTokenVals(max_sys,iFurnaceTokenCount),
+     &fBaseboardTokenVals(max_sys,iBaseboardTokenCount),
+     &fIMSTokenVals(max_sys,iIMSTokenCount),
+     &fHPTokenVals(max_sys,iHPTokenCount),
+     &iDataCount(max_sys)
+
+
+      character*72 cFurnaceTokenNames(iFurnaceTokenCount),
+     &             cBaseboardTokenNames,
+     &             cIMSTokenNames, cHPTokenNames
+      logical bFurnaceTokenSet, bIMSTokenSet, bBaseboardTokenSet,
+     &        bHPTokenSet
+      real fFurnaceTokenVals, fBaseboardTokenVals, fIMSTokenVals,
+     &     fHPTokenVals
+
+      common/HVAC_INPUT_DATA/
      &site_altitude, num_hvac_sys,
      &ihvac_type(max_hvac_types), ipriority(max_sys),
      &isys_type(max_hvac_vars), num_sys_zones(max_sys),
@@ -11,22 +46,24 @@ c modeled ideally
      &fan_power_r(max_sys), draft_fan_power(max_sys),
      &isys_zone_num(max_sys,mcom), iduct_sys_flag(max_sys),
      &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys),
-     &bParseError, fDataBlock(max_sys,iBlockSize), iDataCount(max_sys)
+     &cSys_Name(max_sys), iSys_Function(max_sys), iSys_Backup(max_sys),
+     &cSys_Backup(max_sys)
 
 c Declare integer values in HVAC_INPUT_DATA common
       INTEGER num_hvac_sys, ihvac_type, ipriority, isys_type,
      &num_sys_zones, ifan_operation, ifan_position, ifan_position_r,
      &isys_zone_num, iduct_sys_flag, icontrol_function, iDataCount,
-     &iHVACFileVersion
+     &iHVACFileVersion, iSys_Function, iSys_Backup
      
 
 c Declare real parameters in HVAC_INPUT_DATA common
       REAL 
      &site_altitude, ss_capacity, flow_rate, flow_rate_r,
      &fan_power, fan_power_auto, fan_power_r, draft_fan_power,
-     &sys_zone_cap_frac, fDataBlock
+     &sys_zone_cap_frac
 
       logical bParseError
+      character*72 cSys_Name,cSys_Backup
 
 c Common for time step computed parameters of HVAC system
 

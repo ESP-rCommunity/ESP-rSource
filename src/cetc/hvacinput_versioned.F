@@ -57,6 +57,7 @@ C=======================================================================
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 #include "furnace_common.h"
+#include "ashp_common.h"
 C-----------------------------------------------------------------------
 C     Passed arguements
 C-----------------------------------------------------------------------
@@ -85,13 +86,10 @@ C-----------------------------------------------------------------------
       integer iFileErr
       integer iDummy
 
-      integer iMaxSys
-      parameter ( iMaxSys = 2 )
-
       integer iSystem             ! Counters
       integer iZone               !
-      integer iBlockIndex         !
-      integer iValue
+      integer iDaytype            !
+      integer iPeriod             !
 
       integer iFileLine           ! Line number in file
 
@@ -100,12 +98,30 @@ C.....Parsing flags
       logical bSystemBlockOpen
       logical bZoneBlockOpen
       logical bDataBlockOpen
+      logical bOASchedBlockOpen
+      logical bDayTypeBlockOpen
       logical bSiteAltitudeOK
-      logical bSysPriorityOK(iMaxSys)
-      logical bSysZonesOK(iMaxSys)
-      logical bSysDataOK(iMaxSys)
-      logical bSysTypeOK(iMaxSys)
-      logical bSysFuelOK(iMaxSys)
+      
+      logical bSysPriorityOK(max_sys)
+      logical bSysZonesOK(max_sys)
+      logical bSysOAPeriodsOK(max_sys)
+      logical bSysDataOK(max_sys)
+      logical bSysTypeOK(max_sys)
+      logical bSysFuelOK(max_sys)
+      logical bSysNameOK(max_sys)
+      logical bSysFuncOK(max_sys)
+      logical bSysBackOK(max_sys)
+
+C.....Variables needed to parse outdoor air schedule
+      integer iNum_OA_daytypes(max_sys)
+      integer iNum_OA_periods(max_sys,10)
+      integer iOA_DayType_EndHour(max_sys,10)
+      integer iOA_Period_EndHour(max_sys,10,24)
+      real fOA_Period_FlowRate(max_sys,10,24)
+
+C-----------------------------------------------------------------------
+C     
+C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     References
@@ -115,23 +131,96 @@ C-----------------------------------------------------------------------
       integer iCtoI_err          ! Convert a char to an int
 
 C-----------------------------------------------------------------------
+C     Initialize token lists
+C-----------------------------------------------------------------------
+      integer iName,iSys
+      data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
+     &                         /'furnace-type   ',
+     &                          'capacity       ',
+     &                          'efficiency     ',
+     &                          'circ-fan-mode  ',
+     &                          'circ-fan-power ',
+     &                          'draft-fan-power',
+     &                          'pilot-fan-power'  /
+
+      integer    iFurnaceLocs
+      parameter (iFurnaceLocs=max_sys*iFurnaceTokenCount)
+      data ( (bFurnaceTokenSet(iSys,iName),
+     &        iName=1,iFurnaceTokenCount),
+     &        iSys=1,max_sys )
+     &      / iFurnaceLocs * .false. /
+
+
+
+
+      data (cHPTokenNames(iName),iName=1,iHPTokenCount)
+     &                   /  'performance              ',
+     &                      'capacity                 ',
+     &                      'COP                      ',
+     &                      'circ-fan-flow            ',
+     &                      'circ-fan-rated-flow      ',
+     &                      'circ-fan-position        ',
+     &                      'circ-fan-power           ',
+     &                      'outdoor-fan-power        ',
+     &                      'fan-power-in-auto        ',
+     &                      'circ-fan-rated-position  ',
+     &                      'circ-ran-rated-power     ',
+     &                      'temp-control-mode        ',
+     &                      'cut-off-temperature      ',
+     &                      'SHR                      ',
+     &                      'cooling-control-mode     '  /
+
+      integer    iHPLocs
+      parameter (iHPLocs=max_sys*iHPTokenCount)
+      data ( (bHPTokenSet(iSys,iName),
+     &        iName=1,iHPTokenCount),
+     &        iSys=1,max_sys )
+     &      / iHPLocs * .false. /
+
+
+      data (cBaseboardTokenNames(iName),iName=1,iBaseboardTokenCount)
+     &                          / 'circ-fan-mode  ',
+     &                            'circ-fan-power ',
+     &                            'draft-fan-power',
+     &                            'pilot-fan-power'  /
+
+      integer    iBaseboardLocs
+      parameter (iBaseboardLocs=max_sys*iBaseboardTokenCount)
+      data ( (bBaseboardTokenSet(iSys,iName),
+     &        iName=1,iBaseboardTokenCount),
+     &        iSys=1,max_sys )
+     &      / iBaseboardLocs * .false. /
+
+C-----------------------------------------------------------------------
 C     Initialize parsing flags
 C-----------------------------------------------------------------------
-      iFileErr         = 0
-      bParseError      = .false.
-      num_hvac_sys     = 0
-      bVersionOK       = .false.
-      bSiteAltitudeOK  = .false.
-      bSystemBlockOpen = .false.
-      bZoneBlockOpen   = .false.
-      bDataBlockOpen   = .false.
+      iFileErr          = 0
+      bParseError       = .false.
+      num_hvac_sys      = 0
+      bVersionOK        = .false.
+      bSiteAltitudeOK   = .false.
+      bSystemBlockOpen  = .false.
+      bZoneBlockOpen    = .false.
+      bDataBlockOpen    = .false.
+      bOASchedBlockOpen = .false.
 
-      do iSystem = 1, iMaxSys
-        bSysPriorityOK(iSystem) = .false.
-        bSysZonesOK(iSystem)    = .false.
-        bSysDataOK(iSystem)     = .false.
-        bSysTypeOK(iSystem)     = .false.
-        bSysFuelOK(iSystem)     = .false.
+      do iSystem = 1, max_sys
+        bSysPriorityOK(iSystem)  = .false.
+        bSysZonesOK(iSystem)     = .false.
+        bSysDataOK(iSystem)      = .false.
+        bSysTypeOK(iSystem)      = .false.
+        bSysFuelOK(iSystem)      = .false.
+        bSysNameOK(iSystem)      = .false.
+        bSysFuncOK(iSystem)      = .false.
+        bSysBackOK(iSystem)      = .false.
+        bSysOAPeriodsOK(iSystem) = .false.
+
+C.......Initialize OA daytype and period counters to zero.
+        iNum_OA_daytypes(iSystem) = 0
+        do iDaytype = 1, 10
+          iNum_OA_periods(iSystem,iDaytype) = 0
+        enddo
+        
       enddo
 
 C.....Collect HVAC file name
@@ -276,151 +365,72 @@ C.............Increment number of systems, and open block
 
             endif
 
-C-----------------------------------------------------------------------
-C         Parse *system-end keyword, and close system block if open
-C-----------------------------------------------------------------------
-          elseif (cLnWords(1)(1:12) == '*system-end ' ) then
 
-            if ( .not. bSystemBlockOpen ) then
+C-----------------------------------------------------------------------
+C         Parse *backup keyword, and collect associated backup (system
+C         block must also be open!)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:8) == '*backup ' ) then
+
+            if ( iWordCount /= 2 ) then
 
               call HVACinput_RepErr( iFileLine,
-     &            'There`s no open system block to close!' )
+     &           'Incorrect number of items following '
+     &           //'*backup tag '
+     &           //'(should be "*backup <name>").')
 
-            elseif ( iWordCount /= 1 ) then
+            elseif ( bSysBackOK(iSystem) ) then
 
               call HVACinput_RepErr( iFileLine,
-     &          'Additional data items following '
-     &          //'*system-end tag are unsupported. ')
+     &          '"*backup" has already been defined for this system')
+
+              bSysBackOK(iSystem) = .false.
+
+            elseif ( .not. bSystemBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*backup" tag must be located within  '
+     &           //'system definition block.')
 
             else
 
-C.............Close block
-              bSystemBlockOpen = .false.
+              write (cSys_Backup(iSystem),'(A)') cLnWords(2)(1:72)
+              bSysBackOK(iSystem) = .true.
 
-            endif
-
-
+            endif 
 
 C-----------------------------------------------------------------------
-C         Parse *zone-links-start keyword, and open zone links block
-C         (system block must also be open)
+C         Parse *name keyword, and collect associated name (system
+C         block must also be open!)
 C-----------------------------------------------------------------------
-          elseif (cLnWords(1)(1:18) == '*zone-links-start ' ) then
+          elseif (cLnWords(1)(1:6) == '*name ' ) then
 
-            if ( bZoneBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &            'Zone block already open!' )
-
-            elseif ( iWordCount /= 1 ) then
+            if ( iWordCount /= 2 ) then
 
               call HVACinput_RepErr( iFileLine,
-     &          'Additional data items following '
-     &          //'*zone-links-end tag are unsupported. ')
+     &           'Incorrect number of items following '
+     &           //'*name tag '
+     &           //'(should be "*name <name>").')
 
-            elseif ( bSysZonesOK(iSystem) ) then
+            elseif ( bSysNameOK(iSystem) ) then
 
               call HVACinput_RepErr( iFileLine,
-     &            'Zone links have already been defined for this'
-     &            //' system.')
+     &          '"*name" has already been defined for this system')
 
-              bSysZonesOK(iSystem) = .false.
+              bSysNameOK(iSystem) = .false.
+
+            elseif ( .not. bSystemBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*name" tag must be located within  '
+     &           //'system definition block.')
 
             else
 
-              bZoneBlockOpen = .true.
+              write (cSys_name(iSystem),'(A)') cLnWords(2)(1:72)
+              bSysNameOK(iSystem) = .true.
 
-C.............Defaut zone validation tag to true - set to false
-C.............on parsing failure.
-              bSysZonesOK(iSystem) = .true.
-
-            endif
-
-
-C-----------------------------------------------------------------------
-C         Parse *zone-links-end keyword, and close zone block if open
-C-----------------------------------------------------------------------
-          elseif ( cLnWords(1)(1:16) == '*zone-links-end ' ) then
-
-            if ( .not. bZoneBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &            'There`s no open zone-links block to close!' )
-
-            elseif ( iWordCount /= 1 ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &          'Additional data items following '
-     &          //'*zone-links-start tag are unsupported. ')
-
-            else
-
-              bZoneBlockOpen = .false.
-
-            endif
-
-C-----------------------------------------------------------------------
-C         Parse *data-start keyword, and open data block
-C         (system block must also be open)
-C-----------------------------------------------------------------------
-          elseif (cLnWords(1)(1:12) == '*data-start ' ) then
-
-            if ( bZoneBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &            'A data block is already open!' )
-
-            elseif ( iWordCount /= 1 ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &          'Additional data items following '
-     &          //'*data-end tag are unsupported. ')
-
-            elseif ( bSysDataOK(iSystem) ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &            'Data have already been defined for this'
-     &            //' system.')
-
-              bSysDataOK(iSystem) = .false.
-
-            else
-
-              bDataBlockOpen = .true.
-
-C.............Defaut data validation tag to true - set to false
-C.............on parsing failure.
-              bSysDataOK(iSystem) = .true.
-
-C.............Reset counter for index.
-              iBlockIndex = 0
-
-            endif
-
-C-----------------------------------------------------------------------
-C         Parse *data-end keyword, and close data block if open
-C-----------------------------------------------------------------------
-          elseif ( cLnWords(1)(1:10) == '*data-end ' ) then
-
-            if ( .not. bDataBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &            'There`s no open data block to close!' )
-
-            elseif ( iWordCount /= 1 ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &          'Additional data items following '
-     &          //'*data-start tag are unsupported. ')
-
-            else
-
-              bDataBlockOpen = .false.
-              iDataCount (iSystem) = iBlockIndex
-
-            endif
-
-
+            endif 
 
 C-----------------------------------------------------------------------
 C         Parse *type keyword, and collect associated type (system
@@ -533,119 +543,6 @@ C.............Unknown type
 
             endif
 
-C-----------------------------------------------------------------------
-C         Parse *priority keyword, and collect associated priority
-C         (system block must also be open!)
-C-----------------------------------------------------------------------
-          elseif (cLnWords(1)(1:10) == '*priority ' ) then
-
-            if ( iWordCount /= 2 ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &           'Incorrect number of items following '
-     &           //'*priority tag '
-     &           //'(should be "*priority <keyword>").')
-
-            elseif ( bSysPriorityOK(iSystem) ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &          '"*priority" has already been defined for'
-     &          // ' this system')
-
-              bSysPriorityOK(iSystem) = .false.
-
-            elseif ( .not. bSystemBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &           '"*priority" tag must be located within  '
-     &           //'system definition block.')
-
-            else
-
-C.............System priority must be one 1 (primary), or 2 (backup).
-
-C.............Default priority flag to OK
-              bSysPriorityOK(iSystem) = .true.
-
-C.............interpret keyword.
-              if ( cLnWords(2)(1:8) == 'primary ' ) then
-
-                ipriority(iSystem) = 1
-
-              elseif ( cLnWords(2)(1:7) == 'backup ') then
-
-                ipriority(iSystem) = 2
-
-              else
-
-                bSysTypeOK(iSystem) = .false.
-
-                write (cMsg, '(A,A,A,I2,A)')
-     &          ' Error parsing system priority ("',
-     &          cLnWords(2)(1:lnblnk(cLnWords(2))),
-     &          '") for HVAC system #', iSystem,
-     &          '. Value must be "primary" or "backup".'
-                  call edisp248(iuout,cMsg,80)
-
-              endif
-
-            endif
-
-C-----------------------------------------------------------------------
-C         Parse *zone-link keyword, and collect associated zone index
-C         and fraction. (Both system and zone-link blocks must be
-C         open!)
-C-----------------------------------------------------------------------
-          elseif ( cLnWords(1)(1:11) == '*zone-link '  ) then
-
-            if ( iWordCount /= 3 ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &           'Incorrect number of items following '
-     &           //'*zone-link tag '
-     &           //'(should be "*zone-link <value> <value>").')
-
-              bSysZonesOK(iSystem) = .false.
-
-            elseif ( .not. bZoneBlockOpen ) then
-
-              call HVACinput_RepErr( iFileLine,
-     &           '"*zone-link" tag must be located within  '
-     &           //'zone-links definition block.')
-
-              bSysZonesOK(iSystem) = .false.
-
-            else
-
-C.............Increment zone counter
-              num_sys_zones (iSystem) = num_sys_zones (iSystem) + 1
-              iZone = num_sys_zones (iSystem)
-
-C.............Get zone index
-              isys_zone_num(iSystem, iZone) =
-     &            iCtoI_err(cLnWords(2),'Zone index',bConvErr)
-
-              if ( bConvErr ) then
-                call HVACinput_RepErr ( iFileLine,
-     &            'Could not interpret zone index provided with '
-     &            //'"*zone-link" tag.' )
-                bSysZonesOK(iSystem) = .false.
-              endif
-
-C.............Get zone fraction
-              sys_zone_cap_frac(iSystem,iZone) =
-     &            fCtoR_err(cLnWords(3), 'System capacity fraction',
-     &            bConvErr)
-
-              if ( bConvErr ) then
-                call HVACinput_RepErr ( iFileLine,
-     &            'Could not interpret system capcacity fraction '
-     &            //' provided with "*zone-link" tag.' )
-                bSysZonesOK(iSystem) = .false.
-
-              endif
-
-            endif    !<- matches "if ( iWordCount /= 3 ... "
 
 
 C-----------------------------------------------------------------------
@@ -745,25 +642,536 @@ C.............interpret keyword.
             endif
 
 C-----------------------------------------------------------------------
+C         Parse *function keyword, and collect associated function (system
+C         block must also be open!)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:10) == '*function ' ) then
+
+            if ( iWordCount /= 2 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'Incorrect number of items following '
+     &           //'*function tag '
+     &           //'(should be "*function <keyword>").')
+
+            elseif ( bSysFuncOK(iSystem) ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          '"*function" has already been defined for this system')
+
+              bSysFuncOK(iSystem) = .false.
+
+            elseif ( .not. bSystemBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*function" tag must be located within  '
+     &           //'system definition block.')
+
+            else
+
+C.............System function must be one of the following.
+C                1 - heating
+C                2 - cooling
+C
+
+C.............Default type flag to ok.
+
+              bSysFuncOK(iSystem) = .true.
+
+C.............Collect system function 
+
+              if ( cLnWords(2)(1:8) == 'heating ' ) then
+                iSys_Function(iSystem) = iFuncHeating
+
+              elseif ( cLnWords(2)(1:8) == 'cooling ' ) then
+                iSys_Function(iSystem) = iFuncCooling
+
+C.............Unknown function
+               else
+
+                bSysFuncOK(iSystem) = .false.
+
+                write (cMsg, '(A,A,A,I2,A)')
+     &           ' Error parsing system function ("',
+     &            cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &           '") for HVAC system #', iSystem,
+     &           '. Value must be one of the following:'
+                call edisp248(iuout,cMsg,80)
+
+                write (cMsg, '(A)')
+     &    '     - "heating"'
+                call edisp248(iuout,cMsg,80)
+
+                write (cMsg, '(A)')
+     &    '     - "cooling"'
+                call edisp248(iuout,cMsg,80)
+
+              endif ! <- matches 'if ( cLnWords(2)(1:8) == 'furnace ' )'
+
+            endif
+
+C-----------------------------------------------------------------------
+C         Parse *priority keyword, and collect associated priority
+C         (system block must also be open!)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:10) == '*priority ' ) then
+
+            if ( iWordCount /= 2 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'Incorrect number of items following '
+     &           //'*priority tag '
+     &           //'(should be "*priority <keyword>").')
+
+            elseif ( bSysPriorityOK(iSystem) ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          '"*priority" has already been defined for'
+     &          // ' this system')
+
+            elseif ( .not. bSystemBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*priority" tag must be located within  '
+     &           //'system definition block.')
+
+            else
+
+C.............System priority must be one 1 (primary), or 2 (backup).
+
+C.............Default priority flag to OK
+              bSysPriorityOK(iSystem) = .true.
+
+C.............interpret keyword.
+              if ( cLnWords(2)(1:8) == 'primary ' ) then
+
+                ipriority(iSystem) = 1
+
+              elseif ( cLnWords(2)(1:7) == 'backup ') then
+
+                ipriority(iSystem) = 2
+
+              else
+
+                write (cMsg, '(A,A,A,I2,A)')
+     &          ' Error parsing system priority ("',
+     &          cLnWords(2)(1:lnblnk(cLnWords(2))),
+     &          '") for HVAC system #', iSystem,
+     &          '. Value must be "primary" or "backup".'
+                  call edisp248(iuout,cMsg,80)
+
+                call HVACinput_RepErr(iFileLine,
+     &               'Could not interpret system priority')
+              endif
+
+            endif
+
+
+C-----------------------------------------------------------------------
+C         Parse *zone-links-start keyword, and open zone links block
+C         (system block must also be open)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:18) == '*zone-links-start ' ) then
+
+            if ( bZoneBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'Zone block already open!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*zone-links-start tag are unsupported. ')
+
+            elseif ( bSysZonesOK(iSystem) ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'Zone links have already been defined for this'
+     &            //' system.')
+
+
+            else
+
+              bZoneBlockOpen = .true.
+
+C.............Defaut zone validation tag to true - set to false
+C.............on parsing failure.
+              bSysZonesOK(iSystem) = .true.
+
+            endif
+
+
+C-----------------------------------------------------------------------
+C         Parse *zone-link keyword, and collect associated zone index
+C         and fraction. (Both system and zone-link blocks must be
+C         open!)
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:11) == '*zone-link '  ) then
+
+            if ( iWordCount /= 3 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'Incorrect number of items following '
+     &           //'*zone-link tag '
+     &           //'(should be "*zone-link <value> <value>").')
+
+            elseif ( .not. bZoneBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*zone-link" tag must be located within  '
+     &           //'zone-links definition block.')
+
+            else
+
+C.............Increment zone counter
+              num_sys_zones (iSystem) = num_sys_zones (iSystem) + 1
+              iZone = num_sys_zones (iSystem)
+
+C.............Get zone index
+              isys_zone_num(iSystem, iZone) =
+     &            iCtoI_err(cLnWords(2),'Zone index',bConvErr)
+
+              if ( bConvErr ) then
+                call HVACinput_RepErr ( iFileLine,
+     &            'Could not interpret zone index provided with '
+     &            //'"*zone-link" tag.' )
+                bSysZonesOK(iSystem) = .false.
+              endif
+
+C.............Get zone fraction
+              sys_zone_cap_frac(iSystem,iZone) =
+     &            fCtoR_err(cLnWords(3), 'System capacity fraction',
+     &            bConvErr)
+
+              if ( bConvErr ) then
+                call HVACinput_RepErr ( iFileLine,
+     &            'Could not interpret system capcacity fraction '
+     &            //' provided with "*zone-link" tag.' )
+
+              endif
+
+            endif    !<- matches "if ( iWordCount /= 3 ... "
+
+
+
+C-----------------------------------------------------------------------
+C         Parse *zone-links-end keyword, and close zone block if open
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:16) == '*zone-links-end ' ) then
+
+            if ( .not. bZoneBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open zone-links block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*zone-links-start tag are unsupported. ')
+
+            else
+
+              bZoneBlockOpen = .false.
+
+            endif
+
+
+
+C-----------------------------------------------------------------------
+C         Parse *data-start keyword, and open data block
+C         (system block must also be open)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:16) == '*sys-data-start ' ) then
+
+            if ( bZoneBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'A data block is already open!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*data-end tag are unsupported. ')
+
+            elseif ( bSysDataOK(iSystem) ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'Data have already been defined for this'
+     &            //' system.')
+
+              bSysDataOK(iSystem) = .false.
+
+            else
+
+              bDataBlockOpen = .true.
+
+C.............Defaut data validation tag to true - set to false
+C.............on parsing failure.
+              bSysDataOK(iSystem) = .true.
+            
+            endif
+
+C-----------------------------------------------------------------------
+C         Parse *data-end keyword, and close data block if open
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:14) == '*sys-data-end ' ) then
+
+            if ( .not. bDataBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open data block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*data-start tag are unsupported. ')
+
+            else
+
+              bDataBlockOpen = .false.
+
+            endif
+
+
+
+C-----------------------------------------------------------------------
+C         Parse *OA-schedule-start keyword, and open system block
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:19) == '*OA-schedule-start ' ) then
+
+            if ( bOASchedBlockOpen) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'OA schedule block already open!' )
+
+            elseif ( .not. bSystemBlockOpen ) then
+            
+              call HVACinput_RepErr( iFileLine,
+     &            'OA schedule block must be embedded'
+     &             //' inside system block' )
+     
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*OA-schedule-start tag are unsupported. ')
+
+            else
+
+C............. open block
+              bOASchedBlockOpen = .true.
+
+
+            endif
+
+C-----------------------------------------------------------------------
+C         Parse *day-type-start keyword, and open day-type block
+C         (OA-schedule block must also be open)
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:16) == '*day-type-start ' ) then
+
+            if ( bDayTypeBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'Day-type block already open!' )
+
+            elseif ( .not. bOASchedBlockOpen ) then
+
+              call HVACinput_RepErr ( iFileLine,
+     &             'Day-type block must be embedded inside '
+     &             //'OA-schedule block!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*day-type-start tag are unsupported. ')
+
+            else
+
+              bDayTypeBlockOpen = .true.
+
+C.............Increment total number of OA day types
+              iNum_OA_daytypes(iSystem) = iNum_OA_daytypes(iSystem) + 1 
+              iDaytype = iNum_OA_daytypes(iSystem)
+            
+            endif
+
+
+C-----------------------------------------------------------------------
+C         Parse *end-hour keyword, and collect associated OA schedule
+C         data. (Daytype block must be open 
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:10) == '*end-hour '  ) then
+
+            if ( iWordCount /= 2 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'Incorrect number of items following '
+     &           //'*end-hour tag '
+     &           //'(should be '
+     &           //'"*end-hour <end-hour>").')
+
+            elseif ( .not. bDayTypeBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*end-hour" tag must be located within  '
+     &           //'OA-schedule definition block.')
+
+            else
+
+              iOA_DayType_EndHour(iSystem,iDaytype)
+     &          = iCtoI_err(cLnWords(2),'Day-type end hour', bConvErr)
+
+              if ( bConvErr ) then
+
+                call HVACinput_RepErr( iFileLine,
+     &               'Could not interpret day-type end-hour.' )
+  
+              endif 
+
+              iNum_OA_periods(iSystem,iDaytype) =
+     &           iNum_OA_periods(iSystem,iDaytype)
+
+            endif    !<- matches "if ( iWordCount /= 3 ... "
+
+C-----------------------------------------------------------------------
+C         Parse *period keyword, and collect associated OA schedule
+C         data. (OA block must be open!)
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:8) == '*period '  ) then
+
+            if ( iWordCount /= 3 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'Incorrect number of items following '
+     &           //'*period tag '
+     &           //'(should be '
+     &           //'"*period <end-hour> <flow-rate>").')
+
+            elseif ( .not. bDayTypeBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           '"*period" tag must be located within  '
+     &           //'OA-schedule definition block.')
+
+            else
+
+
+C.............Increment period counter
+              iNum_OA_periods(iSystem,iDaytype) =
+     &           iNum_OA_periods(iSystem,iDaytype) + 1
+              
+              iPeriod = iNum_OA_periods(iSystem,iDaytype)
+
+C.............Get end hour (0-24)
+              iOA_Period_EndHour(iSystem, iDaytype, iPeriod) =
+     &           iCtoI_err(cLnWords(2),'period end hour',bConvErr)
+
+              if ( bConvErr ) then
+
+                call HVACinput_RepErr(iFileLine,
+     &            'Could not interpret period end hour (item #1'
+     &            //' following "*period" tag')
+
+              endif
+
+              fOA_Period_FlowRate(iSystem, iDaytype, iPeriod) =
+     &          fCtoR_err(cLnWords(3), 'period flow rate', bConvErr)
+
+              if ( bConvErr ) then
+
+                call HVACinput_RepErr(iFileLine,
+     &            'Could not interpret period OA flow rate (item #2'
+     &            //' following "*period" tag')
+
+              endif 
+
+            endif    !<- matches "if ( iWordCount /= 3 ... "
+
+
+C-----------------------------------------------------------------------
+C         Parse *day-type-end keyword, and close zone block if open
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:14) == '*day-type-end ' ) then
+
+            if ( .not. bDayTypeBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open day-type block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*day-type-end tag are unsupported. ')
+
+            else
+
+              bDayTypeBlockOpen = .false.
+
+            endif
+
+C-----------------------------------------------------------------------
+C         Parse *OA-schedule-end keyword, and close system block if open
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:17) == '*OA-schedule-end ' ) then
+
+            if ( .not. bOASchedBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open OA-schedule block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*OA-schedule-end tag are unsupported. ')
+
+            else
+
+C.............Close block
+              bOASchedBlockOpen = .false.
+
+            endif
+
+
+C-----------------------------------------------------------------------
+C         Parse *system-end keyword, and close system block if open
+C-----------------------------------------------------------------------
+          elseif (cLnWords(1)(1:12) == '*system-end ' ) then
+
+            if ( .not. bSystemBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open system block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*system-end tag are unsupported. ')
+
+            else
+
+C.............Close block
+              bSystemBlockOpen = .false.
+
+            endif
+
+
+
+C-----------------------------------------------------------------------
 C         Parse block data (that is, data sandwiched between
 C          *data-start and *data-end tags)
 C-----------------------------------------------------------------------
           elseif ( bDataBlockOpen ) then
 
-            do iValue = 1, iWordCount
 
-              iBlockIndex = iBlockIndex + 1
-              fDataBlock(iSystem,iBlockIndex)
-     &            = fCtoR_err ( cLnWords(iValue), 'System data',
-     &                          bConvErr)
-              if ( bConvErr ) then
-
-                call HVACinput_RepErr( iFileLine,
-     &              "Could not interpret system data." )
-
-              endif
-
-            enddo
 
 C-----------------------------------------------------------------------
 C         Allow empty lines in the file
@@ -798,226 +1206,13 @@ C       Parse and validate block data
 C-----------------------------------------------------------------------
         select case ( ihvac_type (iSystem) )
 
-C-----------------------------------------------------------------------
-C         Furnace --- Expect X values:
-C
-C           - Furnace type (value between 1-14)
-C           - Equipment steady-state capacity
-C           - Equipment steady-state efficiency
-C           - Furnace fan operation (value between 0-2)
-C
-C
-C-----------------------------------------------------------------------
           case ( iSysFurnace )
-C...........Count data items
-            if ( iDataCount( iSystem ) /= 7 ) then
-              write (cMsg, '(A,A,I2,A,I2,A)' )
-     &          ' Error interpreting furnace data ',
-     &          'for HVAC system # ',
-     &          iSystem,
-     &          '. ', iDataCount ( iSystem ),
-     &          ' items were specified but 7 items are expected.'
-              call edisp248( iUout, cMsg, 80 )
-              bParseError = .true.
-            endif 
 
-C...........System type
-            isys_type ( iSystem ) = int ( fDataBlock( iSystem, 1 ) )
-
-            if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
-     &        .and. isys_type ( iSystem ) /= iFurn_CatConverter
-     &        .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
-     &        .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
-     &        .and. isys_type ( iSystem ) /= iFurn_SparkIgn
-     &        .and. isys_type ( iSystem ) /= iFurn_SparkIgnVentDamper
-     &        .and. isys_type ( iSystem ) /= iFurn_ContPilot
-     &        .and. isys_type ( iSystem ) /= iFurn_Condensing
-     &        .and. isys_type ( iSystem ) /= iFurn_NonCondensingDirVent
-     &        .and. isys_type ( iSystem ) /= iFurn_InducedDraft
-     &        .and. isys_type ( iSystem ) /= iFurn_MidEfficiency
-     &        .and. isys_type ( iSystem ) /= iFurn_ElecForcedAir
-     &        .and. isys_type ( iSystem ) /= iFurn_Wood
-     &        .and. isys_type ( iSystem ) /= iFurn_Oil    ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace type (data item 1) ',
-     &          'for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be one of the following:'
-              call edisp248( iUout, cMsg, 80 )
-
-              write (cMsg, '(A)')
-     &          '   - 1  (advanced air tight wood stove)'
-              call edisp248( iUout, cMsg, 80 )
-
-              write (cMsg, '(A)')
-     &          '   - 2  (catalytic converter)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 3  (flame retention head)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 4  (flue vent damper)'
-              call edisp248( iUout, cMsg, 80 )
-
-              write (cMsg, '(A)')
-     &          '   - 5  (spark ignition)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 6  (spark ignition with flue vent damper)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 7  (continuious pilot) '
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 8  (condensing)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 9  (direct vent, non condensing)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 10 (induced draft)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 11 (mid-efficiency)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 12 (electric forced-air)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 13 (wood furnace)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 14 (oil furnace)'
-              call edisp248( iUout, cMsg, 80 )
-
-C.............Set error flag
-              bParseError = .true.
-
-            endif
-
-C...........Steady-state capacity
-            ss_capacity(iSystem) = fDataBlock( iSystem, 2 )
-            if ( ss_capacity(iSystem) <= 0 ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace capacity (data item 2) ',
-     &          'for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be greater than zero.'
-              call edisp248( iUout, cMsg, 80 )
-
-C.............Set error flag
-              bParseError = .true.
-            
-            endif
-
-C...........Steady-state efficency
-            ss_efficiency(iSystem) = fDataBlock( iSystem, 3 )
-
-            if ( ss_efficiency(iSystem) <= 0.0 .or.
-     &           ss_efficiency(iSystem) >  1.0     ) then
-
-              write (cMsg, '(A,A,I2,A,A)' )
-     &          ' Error interpreting furnace efficiency (data item 3) ',
-     &          'for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be greater than zero and less than or ',
-     &          ' equal to one.'
-              call edisp248( iUout, cMsg, 80 )
-C.............Set error flag
-              bParseError = .true.
-              
-            endif            
-            
-C...........Fan operation 
-            iFan_Operation  ( iSystem )
-     &            = int ( fDataBlock( iSystem, 4 ) )
-
-            if (    iFan_Operation( iSystem ) /= iFan_None
-     &        .and. iFan_Operation( iSystem ) /= iFan_Auto
-     &        .and. iFan_Operation( iSystem ) /= iFan_Cont
-     &          ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace fan operation ',
-     &          '(data item 1) for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be one of the following:'
-              call edisp248( iUout, cMsg, 80 )
-
-              write (cMsg, '(A)')
-     &          '   - 0  (no fan associated with this furance)'
-              call edisp248( iUout, cMsg, 80 )
-
-              write (cMsg, '(A)')
-     &          '   - 1  (Automatic fan operation)'
-              call edisp248( iUout, cMsg, 80 )
-              
-              write (cMsg, '(A)')
-     &          '   - 2  (continuious fan operation)'
-              call edisp248( iUout, cMsg, 80 )
-C.............Set error flag
-              bParseError = .true.
-            endif
-
-
-C...........Indoor fan power
-            fan_power(iSystem) = fDataBlock( iSystem, 5 )
-            if ( fan_power(iSystem) < 0 ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace fan power (data item 5) ',
-     &          'for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be equal-to or greater-than zero.'
-              call edisp248( iUout, cMsg, 80 )
-C.............Set error flag
-              bParseError = .true.
-
-            endif
-
-C...........Draft fan power
-            draft_fan_power(iSystem) = fDataBlock( iSystem, 6 )
-            if ( draft_fan_power(iSystem) < 0 ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace draft fan power ',
-     &          '(data item 6) for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be equal-to or greater-than zero.'
-              call edisp248( iUout, cMsg, 80 )
-C.............Set error flag
-              bParseError = .true.
-            endif
-
-C...........Pilot power
-            pilot_power(iSystem) = fDataBlock( iSystem, 7 )
-            if ( pilot_power(iSystem) < 0 ) then
-
-              write (cMsg, '(A,A,I2,A)' )
-     &          ' Error interpreting furnace pilot power ',
-     &          '(data item 7) for HVAC system # ',
-     &          iSystem,
-     &          '. Value must be equal-to or greater-than zero.'
-              call edisp248( iUout, cMsg, 80 )
-C.............Set error flag
-              bParseError = .true.
-
-            endif
+!             call HVAC_FuranaceBoiler_Input(iSystem,iSysFurnace)
             
           case ( iSysBoiler )
+
+!             call HVAC_FuranaceBoiler_Input(iSystem,iSysBoiler)
 
           case ( iSysBaseboard )
 
@@ -1128,3 +1323,318 @@ C.....Set parsing error flag
       return
       end
 
+C================== HVAC_FuranaceBoiler_Input ==========================
+C
+C This routine parses the data block for furnaces and boilers.
+C
+C Inputs:
+C   -iSystem: System index
+C   -iType: system type keyword (iFurnace/iBoiler)
+C
+C=======================================================================
+      subroutine HVAC_FuranaceBoiler_Input ( iSystem, iType )
+      implicit none 
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "furnace_common.h"
+
+C-----------------------------------------------------------------------
+C     Passed variables 
+C-----------------------------------------------------------------------
+      integer iSystem     ! System index
+      integer iType       ! Keyword indicating system type.
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      character*248 cMsg  ! Message buffer 
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+C-----------------------------------------------------------------------
+C     Process data in fDataBlock
+C
+C     Furnace --- Expect 7 values:
+C
+C       - Furnace type (value between 1-14)
+C       - Equipment steady-state capacity
+C       - Equipment steady-state efficiency
+C       - Furnace fan operation (value between 0-2)
+C       - Circulation fan power
+C       - Draft fan power
+C       - Pilot light power
+C
+C-----------------------------------------------------------------------
+
+C.....Count data items
+      if ( iDataCount( iSystem ) /= 7 ) then
+        write (cMsg, '(A,A,I2,A,I2,A)' )
+     &    ' Error interpreting furnace data ',
+     &    'for HVAC system # ',
+     &    iSystem,
+     &    '. ', iDataCount ( iSystem ),
+     &    ' items were specified but 7 items are expected.'
+        call edisp248( iUout, cMsg, 80 )
+        bParseError = .true.
+
+      else
+
+C.......System type
+!         isys_type ( iSystem ) = int ( fDataBlock( iSystem, 1 ) )
+
+        if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
+     &    .and. isys_type ( iSystem ) /= iFurn_CatConverter
+     &    .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
+     &    .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
+     &    .and. isys_type ( iSystem ) /= iFurn_SparkIgn
+     &    .and. isys_type ( iSystem ) /= iFurn_SparkIgnVentDamper
+     &    .and. isys_type ( iSystem ) /= iFurn_ContPilot
+     &    .and. isys_type ( iSystem ) /= iFurn_Condensing
+     &    .and. isys_type ( iSystem ) /= iFurn_NonCondensingDirVent
+     &    .and. isys_type ( iSystem ) /= iFurn_InducedDraft
+     &    .and. isys_type ( iSystem ) /= iFurn_MidEfficiency
+     &    .and. isys_type ( iSystem ) /= iFurn_ElecForcedAir
+     &    .and. isys_type ( iSystem ) /= iFurn_Wood
+     &    .and. isys_type ( iSystem ) /= iFurn_Oil    ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace type (data item 1) ',
+     &      'for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be one of the following:'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 1  (advanced air tight wood stove)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 2  (catalytic converter)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 3  (flame retention head)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 4  (flue vent damper)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 5  (spark ignition)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 6  (spark ignition with flue vent damper)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 7  (continuious pilot) '
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 8  (condensing)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 9  (direct vent, non condensing)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 10 (induced draft)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 11 (mid-efficiency)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 12 (electric forced-air)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 13 (wood furnace)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 14 (oil furnace)'
+          call edisp248( iUout, cMsg, 80 )
+
+C.........Set error flag
+          bParseError = .true.
+
+        endif
+
+C.......Steady-state capacity
+!         ss_capacity(iSystem) = fDataBlock( iSystem, 2 )
+        if ( ss_capacity(iSystem) <= 0 ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace capacity (data item 2) ',
+     &      'for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be greater than zero.'
+          call edisp248( iUout, cMsg, 80 )
+
+C.........Set error flag
+          bParseError = .true.
+
+        endif
+
+C.......Steady-state efficency
+!         ss_efficiency(iSystem) = fDataBlock( iSystem, 3 )
+
+        if ( ss_efficiency(iSystem) <= 0.0 .or.
+     &       ss_efficiency(iSystem) >  1.0     ) then
+
+          write (cMsg, '(A,A,I2,A,A)' )
+     &      ' Error interpreting furnace efficiency (data item 3) ',
+     &      'for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be greater than zero and less than or ',
+     &      ' equal to one.'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+
+        endif
+
+C.......Fan operation
+!         iFan_Operation  ( iSystem )
+!      &        = int ( fDataBlock( iSystem, 4 ) )
+
+        if (    iFan_Operation( iSystem ) /= iFan_None
+     &    .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &    .and. iFan_Operation( iSystem ) /= iFan_Cont
+     &      ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace fan operation ',
+     &      '(data item 1) for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be one of the following:'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 0  (no fan associated with this furance)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 1  (Automatic fan operation)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 2  (continuious fan operation)'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+        endif
+
+
+C.......Indoor fan power
+!         fan_power(iSystem) = fDataBlock( iSystem, 5 )
+        if ( fan_power(iSystem) < 0 ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace fan power (data item 5) ',
+     &      'for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be equal-to or greater-than zero.'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+
+        endif
+
+C.......Draft fan power
+!         draft_fan_power(iSystem) = fDataBlock( iSystem, 6 )
+        if ( draft_fan_power(iSystem) < 0 ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace draft fan power ',
+     &      '(data item 6) for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be equal-to or greater-than zero.'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+        endif
+
+C.......Pilot power
+!         pilot_power(iSystem) = fDataBlock( iSystem, 7 )
+        if ( pilot_power(iSystem) < 0 ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace pilot power ',
+     &      '(data item 7) for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be equal-to or greater-than zero.'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+
+        endif
+
+      endif
+
+      return
+      end
+
+C================== HVAC_HP_Input ==========================
+C
+C This routine parses the data block for ASHP, GSHP, GCEP models
+C
+C Inputs:
+C   -iSystem: System index
+C   -iType: system type keyword (iFurnace/iBoiler)
+C
+C=======================================================================
+      subroutine HVAC_HP_Input ( iSystem, iType )
+      implicit none 
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "ashp_common.h"
+
+C-----------------------------------------------------------------------
+C     Passed variables 
+C-----------------------------------------------------------------------
+      integer iSystem     ! System index
+      integer iType       ! Keyword indicating system type.
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      character*248 cMsg  ! Message buffer 
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+
+C-----------------------------------------------------------------------
+C     Parse data in fDataBlock.
+C
+C     ASHP models expect X inputs
+C       - mode of operation (1-heating; 2-cooling)
+C       - units performance (1-typical; 2-good; 3-poor)
+C       - steady-state capacity
+C       - steady-state COP
+C       - circulation fan flow rate
+C       - circulation fan rated flow rate
+C       - fan operating mode (0-no fan; 1-auto; 2-continuous)
+C       - circulation fan power
+C       - outdoor fan power
+C       - faction of total fan power in auto mode
+C       - position of circulation fan in heat exchanger (1-blow-through;
+C         2-draw-through)
+C 
+C     GSHP/GCEP models expect X inputs
+C       - mode of operation (1-heating; 2-cooling)
+C
+C-----------------------------------------------------------------------
+
+      
+      return
+      end

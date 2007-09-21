@@ -44,11 +44,22 @@ C Named constants for furnace Types
       parameter( iFurn_Oil                      = 14  )
 
 
-C Named constatns for furnace fan operation
+C Named constants for furnace fan operation
       integer iFan_None, iFan_Auto, iFan_Cont
       parameter ( iFan_None = 0,
      &            iFan_Auto = 1,
      &            iFan_Cont = 2 )
+
+C Named constants for ASHP operation
+      integer iASHP_heating
+      integer iASHP_cooling
+      parameter( iASHP_heating = 1, iASHP_cooling = 2 )
+
+C Named consants for ASHP perforamnce
+      integer iASHP_GoodUnit
+      integer iASHP_TypUnit
+      integer iASHP_PoorUnit
+      parameter( iASHP_TypUnit=1, iASHP_GoodUnit=2, iASHP_PoorUnit=3 )
 
 C Named constants for fuel types
       integer iElectricity, iNaturalGas, iOil, iPropane, iWood
@@ -58,6 +69,11 @@ C Named constants for fuel types
      &            iPropane     = 4,
      &            iWood        = 5 )
 
+C Named constants for system functions
+      integer iFuncHeating, iFuncCooling
+      parameter ( iFuncHeating = 1,
+     &            iFuncCooling = 2 )
+
 
 C Data block size
       integer iBlockSize
@@ -65,7 +81,7 @@ C Data block size
 
 c Maximum number of hvac systems that can be declared in the .hvac file
       INTEGER max_sys
-      parameter (max_sys = 5)
+      parameter (max_sys = 6)
 
 c Maximum number of control functions that can be defined in the .ctl file
       INTEGER max_cont_fun
