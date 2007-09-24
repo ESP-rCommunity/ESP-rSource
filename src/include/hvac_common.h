@@ -8,11 +8,11 @@ c modeled ideally
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount
-      parameter (iHPTokenCount = 20)
+      parameter (iHPTokenCount = 23)
       integer iMAXTokenCount
       parameter (iMAXTokenCount = iHPTokenCount)
-      
-      
+
+
       common/HVAC_parsing/iHVACFileVersion,
      &bParseError,
      &cFurnaceTokenNames(iFurnaceTokenCount),

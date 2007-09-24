@@ -102,7 +102,7 @@ C.....Parsing flags
       logical bOASchedBlockOpen
       logical bDayTypeBlockOpen
       logical bSiteAltitudeOK
-      
+
       logical bSysPriorityOK(max_sys)
       logical bSysZonesOK(max_sys)
       logical bSysOAPeriodsOK(max_sys)
@@ -121,7 +121,7 @@ C.....Variables needed to parse outdoor air schedule
       real fOA_Period_FlowRate(max_sys,10,24)
 
 C-----------------------------------------------------------------------
-C     
+C
 C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
@@ -169,7 +169,16 @@ C-----------------------------------------------------------------------
      &                      'temp-control-mode        ',
      &                      'cut-off-temperature      ',
      &                      'SHR                      ',
-     &                      'cooling-control-mode     '  /
+     &                      'cooling-control-mode     ',
+     &                      'cooling-control-mode     ',
+     &                      'econ-control-type        ',
+     &                      'econ-min-OA-flow         ',
+     &                      'econ-space-set-point     ',
+     &                      'econ-OA-temp-limit       ',
+     &                      'econ-OA-enth-limit       ',
+     &                      'sys-num-for-heating-mode ',
+     &                      'ctl-file-function-num    '  /
+
 
       integer    iHPLocs
       parameter (iHPLocs=max_sys*iHPTokenCount)
@@ -435,7 +444,7 @@ C-----------------------------------------------------------------------
               write (cSys_name(iSystem),'(A)') cLnWords(2)(1:72)
               bSysNameOK(iSystem) = .true.
 
-            endif 
+            endif
 
 C-----------------------------------------------------------------------
 C         Parse *type keyword, and collect associated type (system
@@ -1195,9 +1204,8 @@ C.............Increment system data counter
               iData = iDataCount(iSystem)
 
 C.............Attempt to read token name
-             print*, 'System #:', iSystem, 'Data #:', iData
               write(cTokens(iSystem,iData), '(A)')
-     &           cLnWords(2)(1:min(72,lnblnk(cLnWords(2))))
+     &           cLnWords(1)(1:min(72,lnblnk(cLnWords(1))))
 
 C.............Attempt to read token value
               fTokenVals(iSystem,iData) = fCtoR_err(
@@ -1236,6 +1244,17 @@ C     Now loop through systems and validate data.
 C-----------------------------------------------------------------------
       do iSystem = 1, num_hvac_sys
 
+         ! Debugging statements
+
+         print*, "System: ", iSystem
+         do iData = 1, iDataCount(iSystem)
+            print*, "TV: ",
+     &      cTokens(iSystem, iData)(1:lnblnk(cTokens(iSystem,iData))),
+     &      " --- ", fTokenVals(iSystem,iData)
+
+         enddo
+
+
 C-----------------------------------------------------------------------
 C       Parse and validate block data
 C-----------------------------------------------------------------------
@@ -1243,17 +1262,17 @@ C-----------------------------------------------------------------------
 
           case ( iSysFurnace )
 
-!             call HVAC_FuranaceBoiler_Input(iSystem,iSysFurnace)
-            
+            call HVAC_FuranaceBoiler_Input(iSystem,iSysFurnace)
+
           case ( iSysBoiler )
 
-!             call HVAC_FuranaceBoiler_Input(iSystem,iSysBoiler)
+            call HVAC_FuranaceBoiler_Input(iSystem,iSysBoiler)
 
           case ( iSysBaseboard )
 
           case ( iSysIMS )
-                                                    
-          case ( iSysASHP ) 
+
+          case ( iSysASHP )
 
           case ( iSysGSHP )
 
@@ -1368,26 +1387,31 @@ C   -iType: system type keyword (iFurnace/iBoiler)
 C
 C=======================================================================
       subroutine HVAC_FuranaceBoiler_Input ( iSystem, iType )
-      implicit none 
+      implicit none
 #include "building.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 #include "furnace_common.h"
 
 C-----------------------------------------------------------------------
-C     Passed variables 
+C     Passed variables
 C-----------------------------------------------------------------------
       integer iSystem     ! System index
       integer iType       ! Keyword indicating system type.
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      character*248 cMsg  ! Message buffer 
+      character*248 cMsg  ! Message buffer
+      logical bFound      ! Result of string search
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      real fHVAC_FindToken
 C-----------------------------------------------------------------------
 C     Process data in fDataBlock
 C
@@ -1418,8 +1442,24 @@ C.....Count data items
 
 C.......System type
 !         isys_type ( iSystem ) = int ( fDataBlock( iSystem, 1 ) )
+        isys_type ( iSystem )
+     &       = int ( fHVAC_FindToken( iSystem,
+     &                                'furnace-type',
+     &                                bFound ) )
 
-        if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
+        if ( .not. bFound ) then
+
+          write (cMsg, '(A,A,I2,A,A)' )
+     &      ' Error parsing data for ',
+     &      'for HVAC system # ',
+     &      iSystem,
+     &      '. Furnace type not specified! Add "furnace-type" ',
+     &      'token to HVAC file.'
+          call edisp248( iUout, cMsg, 80 )
+
+          bParseError = .true.
+
+        elseif (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
      &    .and. isys_type ( iSystem ) /= iFurn_CatConverter
      &    .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
      &    .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
@@ -1627,21 +1667,21 @@ C   -iType: system type keyword (iFurnace/iBoiler)
 C
 C=======================================================================
       subroutine HVAC_HP_Input ( iSystem, iType )
-      implicit none 
+      implicit none
 #include "building.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 #include "ashp_common.h"
 
 C-----------------------------------------------------------------------
-C     Passed variables 
+C     Passed variables
 C-----------------------------------------------------------------------
       integer iSystem     ! System index
       integer iType       ! Keyword indicating system type.
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      character*248 cMsg  ! Message buffer 
+      character*248 cMsg  ! Message buffer
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -1664,12 +1704,86 @@ C       - outdoor fan power
 C       - faction of total fan power in auto mode
 C       - position of circulation fan in heat exchanger (1-blow-through;
 C         2-draw-through)
-C 
+C
 C     GSHP/GCEP models expect X inputs
 C       - mode of operation (1-heating; 2-cooling)
 C
 C-----------------------------------------------------------------------
 
-      
+
       return
       end
+
+C================== fHVAC_FindToken ====================================
+C
+C This routine searches for a string inside the array 'cTokens',
+C and returns the corresponding value inside 'fTokenVals'
+C
+C
+C Inputs:
+C   -iSystem: Index of the system
+C   -cToken:  String to search for
+C
+C Outputs:
+C   -fHVAC_FindToken: float value from fTokenVals
+C   -bFound: flag indicating if token was found.
+C
+C=======================================================================
+
+      real function fHVAC_FindToken(iSystem, cToken, bFound)
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+
+C-----------------------------------------------------------------------
+C     Passed arguements.
+C-----------------------------------------------------------------------
+      integer iSystem                 ! System #
+      character*(*) cToken            ! Search token
+      logical bFound                  ! Result of search
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      integer iData                   ! counter
+      integer iStrLength              ! Length of search string
+
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      integer lnblnk
+
+C.....Initialize result flag
+      bFound = .false.
+
+C.....Get length of search-string
+      iStrLength = lnblnk( cToken )
+
+
+C-----------------------------------------------------------------------
+C     Now loop through cTokens array, and search for cToken
+C-----------------------------------------------------------------------
+      do iData = 1, iDataCount ( iSystem )
+
+C.......Do tokens match?
+        if ( cToken(1:iStrLength) ==
+     &        cTokens(iSystem,iData)(1:lnblnk(cTokens(iSystem,iData)))
+     &       ) then
+C.........Yes! Recover value
+          fHVAC_FindToken = fTokenVals( iSystem, iData)
+
+C.........Set 'found' result
+          bFound = .true.
+
+        else
+C.........No! Do nothing
+
+        endif
+
+      enddo
+
+      if ( .not. bFound ) fHVAC_FindToken = 0.0
+
+      return
+      end
+
