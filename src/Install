@@ -981,12 +981,21 @@ esac
 
 # Append XML output libararies to ULIBS as required (libxml2 and libstdc++)
 case $xml_support in
-  yes) ULIBS="$ULIBS -lxml2 -lstdc++";
+  yes) # Add c++ library
+       ULIBS="$ULIBS -lstdc++";
        # If libxslt is available, link it too
        case $xsl_libs_available in
-         "yes") ULIBS="$ULIBS -lxslt ";;
+         "yes") ULIBS="$ULIBS -lxslt";;
          "no")  ULIBS="$ULIBS";;
          esac;
+       # Add support for libxml2. This must follow
+       # -lxslt on mingw.
+       ULIBS="$ULIBS -lxml2";
+       # Append ws2_32 library on mingw.
+       case $platform in
+            mingw)    ULIBS="$ULIBS -lws2_32";;
+            *)        ULIBS="$ULIBS";;
+       esac;
        # Flag xml for inclusion in bps
        xml_status="include_XML";;
   no)  ULIBS="$ULIBS";
