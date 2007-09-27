@@ -8,7 +8,7 @@ c modeled ideally
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount
-      parameter (iHPTokenCount = 23)
+      parameter (iHPTokenCount = 24)
       integer iMAXTokenCount
       parameter (iMAXTokenCount = iHPTokenCount)
 

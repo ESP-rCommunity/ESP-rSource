@@ -13,7 +13,7 @@ PROG = b2e$(EXE)
 
 OBJECTS = b2e.o c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o simcomis.o sort.o startup.o tdfile.o mimo_dummy.o
+	nwkrewr.o pltcfg.o simcomis.o sort.o startup.o tdfile.o mimo_dummy.o readTrnsys.o \
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -72,11 +72,12 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
-	
 mimo_dummy.F:
 	rm -f mimo_dummy.F
 	ln -s $(CTLdir)/mimo_dummy.F .
-
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -88,4 +89,5 @@ clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F mimo_dummy.F  \
+	readTrnsys.F
 

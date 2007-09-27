@@ -74,6 +74,12 @@ C Named constants for system functions
       parameter ( iFuncHeating = 1,
      &            iFuncCooling = 2 )
 
+C Named constants for heat pump control
+      integer iTemp_BalancedPoint, iTemp_Restricted, iTemp_Unrestricted
+      parameter ( iTemp_BalancedPoint = 1,
+     &            iTemp_Restricted    = 2,
+     &            iTemp_Unrestricted  = 3 )
+      
 
 C Data block size
       integer iBlockSize

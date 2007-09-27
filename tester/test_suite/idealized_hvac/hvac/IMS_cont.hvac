@@ -40,7 +40,7 @@
   circ-fan-mode     1
   circ-fan-power    500.0
   draft-fan-power   50.0
-  pilot-fan-power   0.
+  pilot-power       0.
 *sys-data-end
 *system-end
 #------------------------
@@ -61,15 +61,16 @@
   capacity                  32000
   COP                       3.2
   circ-fan-flow             1
-  circ-fan-rated-flow      -1.0
+  circ-fan-rated-flow       0.0
   circ-fan-position         1
-  circ-fan-power           -1.0
-  outdoor-fan-power        -1.0
+  circ-fan-power            0.0
+  circ-fan-mode             2
+  outdoor-fan-power         0.0
   fan-power-in-auto         0.0
-  circ-fan-rated-position   0.0
-  circ-ran-rated-power      0.
+  circ-fan-rated-position   1
+  circ-fan-rated-power      0.
   temp-control-mode         1
-  cut-off-temperature       26
+#   cut-off-temperature       26
 *sys-data-end
 *backup                     furnace
 *system-end

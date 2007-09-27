@@ -130,7 +130,7 @@ C-----------------------------------------------------------------------
       integer iEGetArrW
       real fCtoR_err             ! Convert a char to a real
       integer iCtoI_err          ! Convert a char to an int
-
+      integer lnblnk
 C-----------------------------------------------------------------------
 C     Initialize token lists
 C-----------------------------------------------------------------------
@@ -158,6 +158,7 @@ C-----------------------------------------------------------------------
      &                   /  'performance              ',
      &                      'capacity                 ',
      &                      'COP                      ',
+     &                      'circ-fan-mode            ',
      &                      'circ-fan-flow            ',
      &                      'circ-fan-rated-flow      ',
      &                      'circ-fan-position        ',
@@ -165,11 +166,10 @@ C-----------------------------------------------------------------------
      &                      'outdoor-fan-power        ',
      &                      'fan-power-in-auto        ',
      &                      'circ-fan-rated-position  ',
-     &                      'circ-ran-rated-power     ',
+     &                      'circ-fan-rated-power     ',
      &                      'temp-control-mode        ',
      &                      'cut-off-temperature      ',
      &                      'SHR                      ',
-     &                      'cooling-control-mode     ',
      &                      'cooling-control-mode     ',
      &                      'econ-control-type        ',
      &                      'econ-min-OA-flow         ',
@@ -247,7 +247,7 @@ C.....Inform user that we're about to parse the HVAC file.
 C-----------------------------------------------------------------------
 C     Loop through file and read each line
 C-----------------------------------------------------------------------
-      do while ( iFileErr == 0 )
+      file_read: do while ( iFileErr == 0 )
 
 C-------------------------------------------------------------------
 C       Get current line
@@ -280,14 +280,14 @@ C-------------------------------------------------------------------
 
 C.......And make sure current line was parsed correctly before
 C.......proceeding...
-        if ( iFileErr == 0 .or.
-     &       ( iFileErr == 2 .and. iWordCount .gt. 0 ) ) then
+        read_ok: if ( iFileErr == 0 .or.
+     &              ( iFileErr == 2 .and. iWordCount .gt. 0 ) ) then
 
 C-----------------------------------------------------------------------
 C         Now interpret first word on line:
 C         Parse *version keyword, and associated version
 C-----------------------------------------------------------------------
-          if ( cLnWords(1)(1:8) == '*version' ) then
+          parse_line: if ( cLnWords(1)(1:8) == '*version' ) then
 
 C...........Check that one value is provided.
             if ( iWordCount /= 2 ) then
@@ -452,7 +452,7 @@ C         block must also be open!)
 C-----------------------------------------------------------------------
           elseif (cLnWords(1)(1:6) == '*type ' ) then
 
-            if ( iWordCount /= 2 ) then
+            type_keyword: if ( iWordCount /= 2 ) then
 
               call HVACinput_RepErr( iFileLine,
      &           'Incorrect number of items following '
@@ -491,7 +491,7 @@ C.............Default type flag to ok.
 
 C.............Collect HVAC type
 
-              if ( cLnWords(2)(1:8) == 'furnace ' ) then
+              type_parse: if ( cLnWords(2)(1:8) == 'furnace ' ) then
                 ihvac_type(iSystem) = iSysFurnace
 
               elseif ( cLnWords(2)(1:7) == 'boiler ' ) then
@@ -553,10 +553,9 @@ C.............Unknown type
      &    'Ecole Polytechnique advanced ground coupling model.)'
                 call edisp248(iuout,cMsg,80)
 
-              endif ! <- matches 'if ( cLnWords(2)(1:8) == 'furnace ' )'
+              endif  type_parse ! <- matches 'if ( cLnWords(2)(1:8) == 'furnace ' )'
 
-            endif
-
+            endif type_keyword
 
 
 C-----------------------------------------------------------------------
@@ -565,7 +564,7 @@ C-----------------------------------------------------------------------
 
           elseif (cLnWords(1)(1:6) == '*fuel ' ) then
 
-            if ( iWordCount /= 2 ) then
+            fuel_keyword: if ( iWordCount /= 2 ) then
 
               call HVACinput_RepErr( iFileLine,
      &           'Incorrect number of items following '
@@ -600,7 +599,7 @@ C.............Default priority flag to OK
               bSysFuelOK(iSystem) = .true.
 
 C.............interpret keyword.
-              if ( cLnWords(2)(1:12) == 'electricity ' ) then
+              fuel_parse: if (cLnWords(2)(1:12) == 'electricity ') then
 
                 ifuel_type(iSystem) = iElectricity
 
@@ -651,9 +650,9 @@ C.............interpret keyword.
      &    '     - "wood"'
                 call edisp248(iuout,cMsg,80)
 
-              endif  !<- matches if ( cLnWords(2)(1:12) == 'elec'
+              endif fuel_parse !<- matches if ( cLnWords(2)(1:12) == 'elec'
 
-            endif
+            endif fuel_keyword
 
 C-----------------------------------------------------------------------
 C         Parse *function keyword, and collect associated function (system
@@ -1234,25 +1233,25 @@ C-----------------------------------------------------------------------
             call HVACinput_RepErr( iFileLine,
      &           "Could not interpret line." )
 
-          endif      !<- matches "if ( cLnWords(1)(1:X) == ... "
+          endif parse_line !<- matches "if ( cLnWords(1)(1:X) == ... "
 
-        endif        !<- matches "if ( iFileErr == 0 )"
+        endif read_ok      !<- matches "if ( iFileErr == 0 )"
 
-      enddo          !<- matches "do while ( iFileErr == 0 )..."
+      enddo file_read      !<- matches "do while ( iFileErr == 0 )..."
 C-----------------------------------------------------------------------
 C     Now loop through systems and validate data.
 C-----------------------------------------------------------------------
-      do iSystem = 1, num_hvac_sys
+      system_loop: do iSystem = 1, num_hvac_sys
 
          ! Debugging statements
 
-         print*, "System: ", iSystem
-         do iData = 1, iDataCount(iSystem)
-            print*, "TV: ",
-     &      cTokens(iSystem, iData)(1:lnblnk(cTokens(iSystem,iData))),
-     &      " --- ", fTokenVals(iSystem,iData)
+!          print*, "System: ", iSystem
+!          do iData = 1, iDataCount(iSystem)
+!             print*, "TV: ",
+!      &      cTokens(iSystem, iData)(1:lnblnk(cTokens(iSystem,iData))),
+!      &      " --- ", fTokenVals(iSystem,iData)
 
-         enddo
+!          enddo
 
 
 C-----------------------------------------------------------------------
@@ -1274,9 +1273,15 @@ C-----------------------------------------------------------------------
 
           case ( iSysASHP )
 
+            call HVAC_HP_Input(iSystem,iSysASHP)
+
           case ( iSysGSHP )
 
+            call HVAC_HP_Input(iSystem,iSysGSHP)
+
           case ( iSysGSHP_GCEP )
+
+            call HVAC_HP_Input(iSystem,iSysGSHP_GCEP)
 
           case default
 
@@ -1299,7 +1304,7 @@ C-----------------------------------------------------------------------
 
         end select
 
-      enddo
+      enddo system_loop
 C-----------------------------------------------------------------------
 C     Error trapping: Were errors encountered?
 C-----------------------------------------------------------------------
@@ -1403,6 +1408,12 @@ C     Local variables
 C-----------------------------------------------------------------------
       character*248 cMsg  ! Message buffer
       logical bFound      ! Result of string search
+      logical bInLimits   ! Flag indicating if value is within limits
+
+C.....Named constants
+      logical bRequired, bNotRequired
+      parameter (bRequired = .true., bNotRequired = .false.)
+
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -1411,7 +1422,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
-      real fHVAC_FindToken
+      real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
 C-----------------------------------------------------------------------
 C     Process data in fDataBlock
 C
@@ -1428,7 +1439,7 @@ C
 C-----------------------------------------------------------------------
 
 C.....Count data items
-      if ( iDataCount( iSystem ) /= 7 ) then
+      furnace_items_count: if ( iDataCount( iSystem ) /= 7 ) then
         write (cMsg, '(A,A,I2,A,I2,A)' )
      &    ' Error interpreting furnace data ',
      &    'for HVAC system # ',
@@ -1441,25 +1452,14 @@ C.....Count data items
       else
 
 C.......System type
-!         isys_type ( iSystem ) = int ( fDataBlock( iSystem, 1 ) )
         isys_type ( iSystem )
-     &       = int ( fHVAC_FindToken( iSystem,
-     &                                'furnace-type',
-     &                                bFound ) )
+     &       = int ( fHVAC_FindTokenNoLimits( iSystem,
+     &                                        'furnace-type',
+     &                                        'Furnace type',
+     &                                        bRequired,
+     &                                        bFound ) )
 
-        if ( .not. bFound ) then
-
-          write (cMsg, '(A,A,I2,A,A)' )
-     &      ' Error parsing data for ',
-     &      'for HVAC system # ',
-     &      iSystem,
-     &      '. Furnace type not specified! Add "furnace-type" ',
-     &      'token to HVAC file.'
-          call edisp248( iUout, cMsg, 80 )
-
-          bParseError = .true.
-
-        elseif (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
+        if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
      &    .and. isys_type ( iSystem ) /= iFurn_CatConverter
      &    .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
      &    .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
@@ -1543,46 +1543,39 @@ C.........Set error flag
         endif
 
 C.......Steady-state capacity
-!         ss_capacity(iSystem) = fDataBlock( iSystem, 2 )
-        if ( ss_capacity(iSystem) <= 0 ) then
 
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace capacity (data item 2) ',
-     &      'for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be greater than zero.'
-          call edisp248( iUout, cMsg, 80 )
-
-C.........Set error flag
-          bParseError = .true.
-
-        endif
+        ss_capacity(iSystem) = fHVAC_FindTokenWithLimits(
+     &                               iSystem,
+     &                               'capacity',
+     &                               'furnace steady-state capacity',
+     &                               bRequired,
+     &                               0.0, 1.0e07,
+     &                               bFound,
+     &                               bInLimits )
 
 C.......Steady-state efficency
-!         ss_efficiency(iSystem) = fDataBlock( iSystem, 3 )
 
-        if ( ss_efficiency(iSystem) <= 0.0 .or.
-     &       ss_efficiency(iSystem) >  1.0     ) then
-
-          write (cMsg, '(A,A,I2,A,A)' )
-     &      ' Error interpreting furnace efficiency (data item 3) ',
-     &      'for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be greater than zero and less than or ',
-     &      ' equal to one.'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
-
-        endif
-
+        ss_efficiency(iSystem) = fHVAC_FindTokenWithLimits(
+     &                              iSystem,
+     &                              'efficiency',
+     &                              'furnace steady-state efficiency',
+     &                              bRequired,
+     &                              0.0, 1.0,
+     &                              bFound,
+     &                              bInLimits )
+     
 C.......Fan operation
-!         iFan_Operation  ( iSystem )
-!      &        = int ( fDataBlock( iSystem, 4 ) )
-
-        if (    iFan_Operation( iSystem ) /= iFan_None
-     &    .and. iFan_Operation( iSystem ) /= iFan_Auto
-     &    .and. iFan_Operation( iSystem ) /= iFan_Cont
+        iFan_Operation(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                               iSystem,
+     &                               'circ-fan-mode',
+     &                               'furnace circulation fan mode',
+     &                               bRequired,
+     &                               bFound) )
+     
+        if ( bFound 
+     &      .and. iFan_Operation( iSystem ) /= iFan_None
+     &      .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &      .and. iFan_Operation( iSystem ) /= iFan_Cont
      &      ) then
 
           write (cMsg, '(A,A,I2,A)' )
@@ -1609,50 +1602,39 @@ C.........Set error flag
 
 
 C.......Indoor fan power
-!         fan_power(iSystem) = fDataBlock( iSystem, 5 )
-        if ( fan_power(iSystem) < 0 ) then
-
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace fan power (data item 5) ',
-     &      'for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be equal-to or greater-than zero.'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
-
-        endif
+        fan_power(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'circ-fan-power',
+     &       'furnace circulation fan power',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+     
 
 C.......Draft fan power
-!         draft_fan_power(iSystem) = fDataBlock( iSystem, 6 )
-        if ( draft_fan_power(iSystem) < 0 ) then
+        draft_fan_power(iSystem) = fHVAC_FindTokenWithLimits(
+     &                             iSystem,
+     &                               'draft-fan-power',
+     &                               'furnace draft fan power',
+     &                               bRequired,
+     &                               0.0, 1.0e07,
+     &                               bFound,
+     &                               bInLimits )
 
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace draft fan power ',
-     &      '(data item 6) for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be equal-to or greater-than zero.'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
-        endif
 
 C.......Pilot power
-!         pilot_power(iSystem) = fDataBlock( iSystem, 7 )
-        if ( pilot_power(iSystem) < 0 ) then
+        pilot_power(iSystem) = fHVAC_FindTokenWithLimits(
+     &                               iSystem,
+     &                               'pilot-power',
+     &                               'furnace pilot power',
+     &                               bRequired,
+     &                               0.0, 1.0e07,
+     &                               bFound,
+     &                               bInLimits )
 
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace pilot power ',
-     &      '(data item 7) for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be equal-to or greater-than zero.'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
 
-        endif
-
-      endif
+      endif furnace_items_count
 
       return
       end
@@ -1682,12 +1664,24 @@ C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
       character*248 cMsg  ! Message buffer
+      logical bFound      ! Search result
+      integer iToken_1    ! Counter
+      integer iToken_2    ! Counter
+      integer iLength_S   ! Length of a string
+      logical bInLimits   ! Flag indicating if value is within limits
+C.....Named constants
+      logical bRequired, bNotRequired
+      parameter (bRequired = .true., bNotRequired = .false.)
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen
-
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      integer lnblnk
+      real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
 C-----------------------------------------------------------------------
 C     Parse data in fDataBlock.
 C
@@ -1710,7 +1704,294 @@ C       - mode of operation (1-heating; 2-cooling)
 C
 C-----------------------------------------------------------------------
 
+C-----------------------------------------------------------------------
+C     First, check that all tokens match known values
+C-----------------------------------------------------------------------
+      
+      search_tokens: do iToken_1 = 1, iDataCount( iSystem )
 
+C.......Initialize found flag
+        bFound = .false.
+
+C.......Look for strings in known token list
+        do iToken_2 = 1, iHPTokenCount
+
+          if ( cTokens(iSystem,iToken_1) == cHPTokenNames(iToken_2) )
+     &         bFound = .true.
+
+        enddo
+
+C.......If token wasn't found, then report message to user.
+        if ( .not. bFound ) then
+
+          write (cMsg, '(A,A,A,I2,A)') ' Error: Unknown token "',
+     &      cTokens(iSystem,iToken_1)
+     &             (1:lnblnk(cTokens(iSystem,iToken_1))),
+     &      '" encountered in HVAC system #', iSystem,
+     &      '. Valid tokens are:'
+          call edisp248(iUout, cMsg, 80)
+
+          do iToken_2 = 1, iHPTokenCount
+
+             write (cMsg, '(A,A)') '  - ',
+     &        cHPTokenNames(iToken_2)(1:lnblnk(cHPTokenNames(iToken_2)))
+
+              call edisp248(iUout, cMsg, 80)
+
+          enddo
+
+        endif
+
+      enddo search_tokens
+
+C-----------------------------------------------------------------------
+C     Check performance keyword
+C-----------------------------------------------------------------------
+      isys_type(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                          iSystem,
+     &                          'performance',
+     &                          'heat pump performance characteristics',
+     &                          bRequired,
+     &                          bFound ) )
+
+      if ( bFound                  .and.
+     &     isys_type(iSystem) /= 1 .and.
+     &     isys_type(iSystem) /= 2 .and.
+     &     isys_type(iSystem) /= 3 ) then
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting "performance" token ',
+     &    'for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+        call edisp248( iUout,'   - 1  (typical unit)',80)
+        call edisp248( iUout,'   - 2  (good unit)',   80)
+        call edisp248( iUout,'   - 3  (poor unit)',   80)
+        
+      endif 
+
+C-----------------------------------------------------------------------
+C     Read capacity
+C-----------------------------------------------------------------------
+      ss_capacity(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'capacity',
+     &       'heat pump steady-state capacity',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+
+C-----------------------------------------------------------------------
+C     Read COP
+C-----------------------------------------------------------------------
+      ss_COP(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'COP',
+     &       'heat pump steady-state COP',
+     &       bRequired,
+     &       0.0, 100.0,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Read circulation fan flow rate
+C-----------------------------------------------------------------------
+      flow_rate(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'circ-fan-flow',
+     &       'heat pump circulation fan flow rate',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+
+C-----------------------------------------------------------------------
+C     Read circulation fan rated-flow rate
+C-----------------------------------------------------------------------
+      flow_rate_r(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'circ-fan-rated-flow',
+     &       'heat pump circulation fan flow rate at rating conditions',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Check fan location keyword
+C-----------------------------------------------------------------------
+      ifan_position(iSystem) = int( fHVAC_FindTokenNoLimits
+     &     ( iSystem,
+     &       'circ-fan-position',
+     &       'heat pump circulation fan position',
+     &       bRequired,
+     &       bFound ) )
+
+C.......Set error flag
+        bParseError = .true.
+
+      if (ifan_position(iSystem) /= 1 .and.
+     &        ifan_position(iSystem) /= 2  ) then
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting "circ-fan-position" token ',
+     &    'for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+        call edisp248( iUout,'   - 1  (blow-through)',80)
+        call edisp248( iUout,'   - 2  (draw-through)',   80)
+      endif 
+C-----------------------------------------------------------------------
+C     Read circulation fan power
+C-----------------------------------------------------------------------
+      fan_power(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'circ-fan-power',
+     &       'heat pump circulation fan flow power',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Read circulation fan rated power
+C-----------------------------------------------------------------------
+      fan_power_r(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'circ-fan-rated-power',
+     &       'heat pump circulation fan rated power',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Read outdoor fan power
+C-----------------------------------------------------------------------
+      outdoor_fan_power(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'outdoor-fan-power',
+     &       'heat pump outdoor fan power',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Check fan location during rating keyword
+C-----------------------------------------------------------------------
+      ifan_position_r(iSystem) = int( fHVAC_FindTokenNoLimits
+     &     ( iSystem,
+     &       'circ-fan-rated-position',
+     &       'heat pump circulation location during rating',
+     &       bRequired,
+     &       bFound ) )
+
+      if ( bFound                        .and.
+     &     ifan_position_r(iSystem) /= 1 .and.
+     &     ifan_position_r(iSystem) /= 2  ) then
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting "circ-fan-rated-position" token ',
+     &    'for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+        call edisp248( iUout,'   - 1  (blow-through)',80)
+        call edisp248( iUout,'   - 2  (draw-through)',   80)
+      endif 
+      
+C-----------------------------------------------------------------------
+C     Read outdoor fan power in auto
+C-----------------------------------------------------------------------
+      fan_power_auto(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'fan-power-in-auto',
+     &       'heat pump circulation fan power use in auto',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Heating temperature control  
+C-----------------------------------------------------------------------
+
+        iTemp_Control(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                       iSystem,
+     &                       'temp-control-mode',
+     &                       'heat pump temperature control strategy',
+     &                       bRequired,
+     &                       bFound) )
+     
+        if ( bFound 
+     &      .and. iTemp_Control( iSystem ) /= iTemp_BalancedPoint
+     &      .and. iTemp_Control( iSystem ) /= iTemp_Restricted
+     &      .and. iTemp_Control( iSystem ) /= iTemp_Unrestricted
+     &      ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      'Error interpreting heat temperature control strategy ',
+     &      '(data item 1) for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be one of the following:'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 1  (Balanced point)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 2  (Restricted)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 3  (Unrestricted)'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+        endif
+
+C-----------------------------------------------------------------------
+C     Cut-off temperature
+C-----------------------------------------------------------------------
+
+      cutoff_temp(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'cut-off-temperature',
+     &       'Heat pump control cut-off temperature',
+     &       bRequired,
+     &       -99.0, 99.0,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Sensible heat ratio 
+C-----------------------------------------------------------------------
+      shrr(iSystem) = fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'SHR',
+     &       'heat pump sensible heat ratio',
+     &       bRequired,
+     &       0.0, 99.0,
+     &       bFound,
+     &       bInLimits )
+
+
+! 'cut-off-temperature      '
+! 'SHR                      '
+! 'cooling-control-mode     '
+! 'econ-control-type        '
+! 'econ-min-OA-flow         '
+! 'econ-space-set-point     '
+! 'econ-OA-temp-limit       '
+! 'econ-OA-enth-limit       '
+! 'sys-num-for-heating-mode '
+! 'ctl-file-function-num    '
+
+      stop
       return
       end
 
@@ -1721,16 +2002,94 @@ C and returns the corresponding value inside 'fTokenVals'
 C
 C
 C Inputs:
-C   -iSystem: Index of the system
-C   -cToken:  String to search for
+C   -iSystem:      Index of the system
+C   -cToken:       String to search for
+C   -cDescription: Contextual description
+C   -bLimitCheck:  Flag indicating if limits should be checked
+C   -fLLimit, fULimit:
+C                  Lower and upper limits
+C   -bRequired:    Flag indicating if token is required (that is,
+C                  should a fatal error occur if it isn't found?)
 C
 C Outputs:
 C   -fHVAC_FindToken: float value from fTokenVals
 C   -bFound: flag indicating if token was found.
+C   -bInLimits: flag indicating if token was found to be within limits.
+C
+C fHVAC_FindToken also sets the global variable, bParseError, if an
+C input fails its limit check (provided limit-checking is specified),
+C or if a token is not found (provided 'bRequired' is 'true').
 C
 C=======================================================================
 
-      real function fHVAC_FindToken(iSystem, cToken, bFound)
+
+C-----------------------------------------------------------------------
+C     Interface function: Call fHVAC_FindToken without optional
+C     limit-checking
+C-----------------------------------------------------------------------
+      real function fHVAC_FindTokenNoLimits
+     &                             (iSystem,
+     &                              cToken,
+     &                              cDescription,
+     &                              bReqired,
+     &                              bFound)
+      implicit none
+      integer iSystem
+      character*(*) cToken, cDescription
+      logical bFound, bReqired, bInLimits
+      real fLLimit, fULimit, fHVAC_FindToken
+      
+      fHVAC_FindTokenNoLimits = fHVAC_FindToken(iSystem,
+     &                                          cToken,
+     &                                          cDescription,
+     &                                          0.0,0.0,.false.,
+     &                                          bReqired,
+     &                                          bFound,
+     &                                          bInLimits)
+
+      return
+      end function fHVAC_FindTokenNoLimits
+
+C-----------------------------------------------------------------------
+C     Interface function: Call fHVAC_FindToken with optional
+C     limit-checking
+C-----------------------------------------------------------------------
+      real function fHVAC_FindTokenWithLimits
+     &                             (iSystem,
+     &                              cToken,
+     &                              cDescription,
+     &                              bReqired,
+     &                              fLLimit, fULimit,
+     &                              bFound,
+     &                              bInLimits)
+      implicit none
+      integer iSystem
+      character*(*) cToken, cDescription
+      logical bFound, bReqired, bInLimits
+      real fLLimit, fULimit, fHVAC_FindToken
+      
+      fHVAC_FindTokenWithLimits = fHVAC_FindToken(iSystem,
+     &                                            cToken,
+     &                                            cDescription,
+     &                                          fLLimit,fULimit,.true.,
+     &                                            bReqired,
+     &                                            bFound,
+     &                                            bInLimits)
+
+      return
+      end function fHVAC_FindTokenWithLimits
+
+C-----------------------------------------------------------------------
+C     Principal function
+C-----------------------------------------------------------------------
+      real function fHVAC_FindToken(iSystem,
+     &                              cToken,
+     &                              cDescription,
+     &                              fLLimit, fULimit,
+     &                              bLimitCheck,
+     &                              bRequired,
+     &                              bFound,
+     &                              bInLimits)
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
@@ -1741,12 +2100,25 @@ C     Passed arguements.
 C-----------------------------------------------------------------------
       integer iSystem                 ! System #
       character*(*) cToken            ! Search token
+      character*(*) cDescription      ! Description
       logical bFound                  ! Result of search
+      logical bLimitCheck             ! Should limits be checked?
+      logical bInLimits               ! Is input in limits?
+      logical bRequired               ! Is token critical?
+      real fLLimit, fULimit           ! Lower and upper limits for
+                                      !   bounds check.
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
       integer iData                   ! counter
       integer iStrLength              ! Length of search string
+      character*248 cMsg              ! Msg buffer
+      logical bNumsAreClose           ! flag for close-to-zero comps.
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
 
 C-----------------------------------------------------------------------
 C     References
@@ -1758,7 +2130,6 @@ C.....Initialize result flag
 
 C.....Get length of search-string
       iStrLength = lnblnk( cToken )
-
 
 C-----------------------------------------------------------------------
 C     Now loop through cTokens array, and search for cToken
@@ -1782,8 +2153,76 @@ C.........No! Do nothing
 
       enddo
 
-      if ( .not. bFound ) fHVAC_FindToken = 0.0
 
+C-----------------------------------------------------------------------
+C     Check if token was found 
+C-----------------------------------------------------------------------
+      token_found: if ( .not. bFound ) then
+
+C.......No! default value to zero.
+        fHVAC_FindToken = 0.0
+
+C-----------------------------------------------------------------------
+C       If token was not found, then check if it was required.
+C-----------------------------------------------------------------------
+        token_required: if ( bRequired ) then
+C.........Yes! Set parse error, and warn user.
+          bParseError = .true.
+
+          write (cMsg, '(A,A,A,I2,A,A,A)')
+     &    'Error: token "',
+     &    cToken(1:min(48,lnblnk(cToken))),
+     &    '" was not found while parsing data block for HVAC system #',
+     &    iSystem,'. This token describes the ',
+     &    cDescription(1:min(72,lnblnk(cDescription))),
+     &    '. Add token to .hvac file.'
+
+          call edisp248 (iUout, cMsg, 80)
+
+        endif token_required
+C-----------------------------------------------------------------------
+C     Token was found. Check limits, if requested
+C-----------------------------------------------------------------------
+      elseif ( bLimitCheck ) then 
+
+        call eclose ( fHVAC_FindToken, fLLimit, 1.0e-07, bNumsAreClose)
+
+        if ( fHVAC_FindToken < fLLimit .and. .not. bNumsAreClose ) then
+
+C.........Value is less than lower-limit. Set flag and warn user.
+          bParseError = .true.
+
+          write (cMsg, '(A,I2,A,A,A,F12.4,A,F12.4,A,A,A)')
+     &    'Error: HVAC system # ', iSystem,' - ',
+     &     cDescription(1:min(72,lnblnk(cDescription))), 
+     &    ' (', fHVAC_FindToken,') must be greater-than or equal to ',
+     &    fLLimit,'. Check value of token "',
+     &    cToken(1:min(48,lnblnk(cToken))),'".'
+
+          call edisp248 (iUout, cMsg, 80)
+
+        endif
+
+        call eclose ( fHVAC_FindToken, fULimit, 1.0e-07, bNumsAreClose)
+
+        if ( fHVAC_FindToken > fULimit .and. .not. bNumsAreClose ) then
+
+C.........Value is greater than upper-limit. Set flag and warn user.
+          bParseError = .true.
+
+          write (cMsg, '(A,I2,A,A,A,F12.4,A,F12.4,A,A,A)')
+     &    'Error: HVAC system # ', iSystem,' - ',
+     &     cDescription(1:min(72,lnblnk(cDescription))), 
+     &    ' (', fHVAC_FindToken,') must be less-than or equal to ',
+     &    fULimit,'. Check value of token "',
+     &    cToken(1:min(48,lnblnk(cToken))),'".'
+
+          call edisp248 (iUout, cMsg, 80)
+
+        endif
+
+      endif token_found
+        
       return
-      end
+      end function fHVAC_FindToken
 

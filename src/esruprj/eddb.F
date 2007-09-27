@@ -237,11 +237,11 @@ C     &    LTMP(1:lnblnk(LTMP))
         H(4)=' '
         H(5)='Wind pressure coefficients are pressure coefficients'
         H(6)='for surfaces in typical positions and within several'
-        H(7)='different exposure categories. '
+        H(7)='different exposure categories.'
         H(8)=' '
         H(9)='The following options can be selected:'
         H(10)=' '
-        H(11)='a) If the file exists than you can browse the database '
+        H(11)='a) If the file exists than you can browse the database'
         H(12)='   and if you have permission to update the file you'
         H(13)='   can edit the entities in the database.'
         H(14)=' '
@@ -249,13 +249,12 @@ C     &    LTMP(1:lnblnk(LTMP))
         H(16)='   name and if it is found you can browse or edit it.'
         H(17)=' '
         H(18)=' '
-        H(19)='c) make a new database: a new database will be created '
+        H(19)='c) make a new database: a new database will be created'
         H(20)='   based on the file name you supply.'
         H(21)=' '
         H(22)='d) copy default database: a project copy of the default'
-        H(23)='  database will be made and you will be offered a '
+        H(23)='  database will be made and you will be offered a'
         H(24)='  chance to rename it.'
-        H(25)=' '
         CALL ERPFREE(IAPRES,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
@@ -269,7 +268,7 @@ C Get length of path to where esp-r databases were installed.
           call MENUATOL(outs,'Pressure Distributions db',
      &      ' ','b select another db',
      &      'c create a new db','d copy the default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,25)
+     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,24)
           copydef=.true.
         elseif(LTMP(1:linst).eq.linstd(1:linst))then
 
@@ -540,70 +539,78 @@ C Place holder for mould database
       ELSEIF(INO.EQ.13)THEN
 
 C Menu help text.
-        H(1)='Information on each of the databases is provided. '
-        call easkatog('Help options:',' ','overview','climate',
-     &   'materials','constructions','optics','plant','return',ihd,1)
+        H(1)='Information on each databases is provided.'
+        call easkatog(' ','Help options:','overview','climate',
+     &   'materials','constructions','optics','plant','cancel',ihd,1)
         if(ihd.eq.1)then
-          H(1)='ESP-r is provided with a number of corporate (standard)'
-          H(2)='databases located in the directory /usr/esru/esp-r/'
-          H(3)='databases.  For some simulation models a user may'
-          H(4)='require a bespoke version of a database.  In such a'
-          H(5)='case the user may either copy a corporate database'
-          H(6)='into a local directory for modification or simply begin'
-          H(7)='from scratch.'
-          H(8)=' '
-          H(9)='In most cases a bespoke database may be created by'
-          H(10)='copying a corporate database into the project'
-          H(11)='directory (hint: give it a name identifiable with' 
-          H(12)='the project) and then modifying it to fit the needs'
-          H(13)='of the project.'
-          H(14)=' '
-          H(15)='Initially the database names will correspond to'
-          H(16)='the defaults supplied by ESRU.  If these defaults'
-          H(17)='are not found, the most likely reason is that they'
-          H(18)='have not been correctly installed in folders'
-          H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
-          CALL PHELPD('databases overview',19,'-',0,0,IER)
+          H(1)='ESP-r is provided with a number of standard databases'
+          H(2)='and these are located in `/usr/esru/esp-r/databases`.'
+          H(3)='Where a model requires a bespoke version of a'
+          H(4)='database, the user may either copy a standard database'
+          H(6)='into a local directory and modify it or create a new'
+          H(7)='database from scratch.'
+          CALL PHELPD('databases overview',7,'-',0,0,IER)
         elseif(ihd.eq.2)then
-          H(1)='Climate databases are hourly sets of values from '
-          H(2)='1h00 on 1 Jan to 24h00 on 31 December.  For each hour' 
-          H(3)=' the following data is held:'
-          H(4)=' '
-          H(5)=' Diffuse horizontal solar intensity (W/m^2)'
-          H(6)=' Dry bulb temp. (tenths of degree C ie. 102 = 10.2C)'
-          H(7)=' Direct normal or global horiz. solar intensity (W/m^2)'
-          H(8)=' Wind speed (tenths m/s ie. 15 = 1.5 m/s)'
-          H(9)=' Wind direction (degrees from north, clockwise)'
-          H(10)=' Relative humidity (percent)'
-          CALL PHELPD('climate overview',10,'clm_dbitems ',0,0,IER)
+          H(1)='Climate databases contain hourly parameters over the'
+          H(2)='period 1h00 on 1 Jan to 24h00 on 31 December (i.e. no'
+          H(3)='leap years). Where data is supplied for only one or' 
+          H(4)='more parts of this period, the remaining data will be' 
+          H(5)='set to zero. The parameters required for each hour are' 
+          H(6)='as follows.'
+          H(7)=' '
+          H(8)=' 1. Diffuse horizontal solar intensity (W/m^2).'
+          H(9)=' 2. Dry bulb temperature (tenths degC, i.e. 102 ='
+          H(10)='   10.2degC).'
+          H(11)=' 3. Direct normal solar intensity (W/m^2). As an'
+          H(12)='    alternative, global horizontal intensity may be'
+          H(13)='    used in which case a corresponding db flag must'
+          H(14)='    be set.'
+          H(15)=' 4. Wind speed (tenths m/s, i.e. 15 = 1.5 m/s).'
+          H(16)=' 5. Wind direction (clockwise degrees from North.'
+          H(17)=' 6. Relative humidity (%).'
+          H(18)=' '
+          H(19)='When using these climate parameters ESP-r will'
+          H(20)='assume that the data represents the one hour period'
+          H(21)='centered on the hour in question. Where sub hour'
+          H(22)='simulation time steps are used, interpolation is'
+          H(22)='applied.'
+          H(23)=' ' 
+          H(24)='The database is held in binary format to allow random' 
+          H(25)='access. Conversion to an ASCII format is supported to'
+          H(26)='allow transfer between different operating systems.' 
+          CALL PHELPD('climate overview',26,'clm_dbitems ',0,0,IER)
         elseif(ihd.eq.3)then
-          H(1)='The materials database holds the density, specific' 
+          H(1)='The Materials database holds the density, specific' 
           H(2)='heat, conductivity, diffusion resistance and surface'
-          H(3)='absorption and emissivity of elements such as earth,' 
-          H(4)='stone, steel, oak etc.  This database is normally in' 
-          H(5)='a binaryformat for quick random access although an'
-          H(6)='ASCII form is available fortransfer between machine' 
-          H(7)='types.'
-          CALL PHELPD('materials db overview',7,'materials_db',0,0,IER)
+          H(3)='absorptivity and emissivity of products such as brick,' 
+          H(4)='concrete, metal, wood and so on.' 
+          H(5)=' ' 
+          H(6)='The database is held in binary format to allow random' 
+          H(7)='access. Conversion to an ASCII format is supported to'
+          H(8)='allow transfer between different operating systems.' 
+          CALL PHELPD('materials db overview',8,'materials_db',0,0,IER)
         elseif(ihd.eq.4)then
-          H(1)='A multilayer construction database defines the com-'
-          H(2)='position of constructions such as walls and glazing'
-          H(3)='systems in terms of layers of materials of particular'
-          H(4)='thickness in a particular order and, where appropriate,' 
-          H(5)='with a named set of optical properties. '
+          H(1)='The Constructions database defines the composition of'
+          H(2)='walls, floors, roofs etc in terms of layer ordering,'
+          H(3)='thickness and material. Where the construction is' 
+          H(4)='transparent a named set of optical properties, as held'
+          H(5)='in the Optical Properties database, is associated.'
           CALL PHELPD('constr db overview',5,'mlc_database',0,0,IER)
         elseif(ihd.eq.5)then
-          H(1)='The optical properties of multilayer constructions'
-          H(2)='are defined in an optical database.  The data include'
-          H(3)='angular (0, 40, 55, 70, 80 degrees from normal) solar' 
-          H(4)='transmission and absorption at each layer.'
-          CALL PHELPD('optics overview',4,'optical_db  ',0,0,IER)
+          H(1)='The Optical Properties database holds the solar'
+          H(2)='transmissivity and absorptivity for each layer within'
+          H(3)='a transparent construction and for 5 angles of' 
+          H(4)='incidence - 0 (normal), 40, 55, 70 and 80 degrees.' 
+          CALL PHELPD('optics overview',4,'optical_db',0,0,IER)
         elseif(ihd.eq.6)then
-          H(1)='The plant components database is a binary, random '
-          H(2)='access file holding plant component descriptions to '
-          H(3)='enable the establishment of component state-space '
-          H(4)=' representations used by ESP-r.'
-          CALL PHELPD('plant db overview',4,'plant_db_fld',0,0,IER)
+          H(1)='The Plant Ccomponents database holds data defining'
+          H(2)='individual plant components for assembly into networks'
+          H(3)='defining particular systems of arbitrary complexity.'
+          H(4)=' ' 
+          H(5)='The database is held in binary format to allow random' 
+          H(6)='access. Conversion to an ASCII format is supported to'
+          H(7)='allow transfer between different operating systems.' 
+          CALL PHELPD('plant db overview',7,'plant_db_fld',0,0,IER)
         endif
       ELSE
         INO=-4
@@ -644,9 +651,9 @@ C Material data arrays.
 
       IER=0
 
-C Open currently named materials database.  Note that
-C by a minor rewrite of ICLN in rec 601 we can get by with changing
-C this to 24 words wide.
+C Open currently named Materials database.  Note that
+C by a minor rewrite of ICLN in rec 601 we can get by
+C with changing this to 24 words wide.
       CALL ERPFREE(IFMAT,ISTAT)
       call EFOPRAN(IFMAT,LFMAT,40,0,IER)
       IF(ier.ne.0)THEN
@@ -657,7 +664,7 @@ C this to 24 words wide.
         MATDBOK=.FALSE.
       else
 
-C Also check to see if the file has correct info in 
+C Check to see if the file has correct info. 
         IREC=601
         READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
      &    (ICLN(I),I=1,30)
@@ -680,19 +687,19 @@ C Also check to see if the file has correct info in
           else
             call eclose(matver,1.1,0.001,close)
             if(close)then
-              call edisp(iuout,' Filled material data arrays...')
+C              call edisp(iuout,'Filled material data arrays.')
               MATDBOK=.TRUE.
             else
               call usrmsg(
-     &          'No readable material database was found. ',
-     &          'check other warnings for advise.','W')
+     &          'No readable Materials database was found!',
+     &          ' ','W')
               MATDBOK=.FALSE.
             endif
           endif
         elseif(ier.eq.0)then
           call eclose(matver,1.1,0.001,close)
           if(close)then
-            call edisp(iuout,' Filled material data arrays...')
+C            call edisp(iuout,'Filled material data arrays...')
             MATDBOK=.TRUE.
           endif
         endif
@@ -706,20 +713,21 @@ C Read multilayer db information into common.
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.eq.1)then
           write(outs,'(3a)') 
-     &    ' Problems with materials used by Constructions db ',
+     &    ' Problems with materials used by Constructions db',
      &     LFMAT(1:lnblnk(LFMAT)),'!'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
           MLDBOK=.FALSE.
         ELSEIF(IER.eq.2)then
 
-C There were lots of undefined materials so likely the materials
+C There were lots of undefined materials so likely the Materials
 C database is for the wrong machine type. Guess the name of
 C the ascii version and if it exists, offer to convert it or use it.
-          h(1)='It is likely that the materials db associated'
-          h(2)='with this model is for a different computer '
-          h(3)='type. ESP-r will try to find an ASCII version '
-          h(4)='of this file and use it or convert it if you agree.'
+          h(1)='It is likely that the Materials db associated with'
+          h(2)='this model is for use under a different operating'
+          h(3)='system. ESP-r will attempt to locate an ASCII version'
+          h(4)='of this database and, if successful, convert it to'
+          h(5)='the required binary format if you agree.'
           IAF=IFIL+1
           LASCI=' '
           write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
@@ -728,30 +736,30 @@ C Label 155 is a jump back point for the case of users supplying a name.
   155     CALL EFOPSEQ(IAF,LASCI,1,IER)
           if(ier.eq.0)then
 
-C If the ascii version exists there is no need to convert it
-C ask use whether to scan it into the materials arrays or convert
+C If the ascii version exists there is no need to convert it.
+C Ask whether to scan it into the materials arrays or convert
 C to a binary file.
             CALL EASKABC(
-     &        'An ascii version of materials database was found.',
-     &        'Options (see help):','use info in file',
-     &        'convert into a binary file','continue',IW,9)
+     &        'Ascii version of Materials database found.',
+     &        'Options:','use',
+     &        'convert to a binary file','cancel',IW,5)
             if(iw.eq.1)then
               call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
               if(ier.eq.-2)then
                 ier=0
                 call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
                 if(ier.ne.0)then
-                  call usrmsg('No readable materials database was ',
-     &                        'found or the file was corrupt','W')
+                  call usrmsg('No readable Materials database was',
+     &                        'found or the file was corrupt.','W')
                   MATDBOK=.FALSE.
                 else
                   call eclose(matver,1.1,0.001,close)
                   if(close)then
 
 C Materials data in place, set this as the new file name and then
-C try and re-scan the constructions database.
+C try and re-scan the Constructions database.
                     call usrmsg(
-     &                'An ASCII materials file was found and used.',
+     &                'An ASCII Materials db was found and used.',
      &                'Re-scanning constructions...','P')
                     MATDBOK=.TRUE.
                     LFMAT=LASCI
@@ -762,19 +770,19 @@ C try and re-scan the constructions database.
                       if(ier.eq.0)then
                         MLDBOK=.TRUE.
                         call usrmsg(
-     &                  'An ASCII materials file was found and used.',
+     &                  'An ASCII Materials db was found and used.',
      &                  'Re-scanning constructions...done.','-')
                       else
                         MLDBOK=.FALSE.
                         call usrmsg(
-     &                  'An ASCII materials file was found and used.',
+     &                  'An ASCII Materials db was found and used.',
      &                  'Re-scanning constructions...failed.','W')
                       endif
                     endif
                   else
                     call usrmsg(
-     &                'No readable material database was found. ',
-     &                'check other warnings for advise.','W')
+     &                'No readable Material db was found.',
+     &                'Check other warnings for advice.','W')
                     MATDBOK=.FALSE.
                   endif
                 endif
@@ -783,7 +791,7 @@ C try and re-scan the constructions database.
 C Materials data in place, set this as the new file name and then
 C try and re-scan the constructions database.
                 call usrmsg(
-     &            'An ASCII materials file was found and used.',
+     &            'An ASCII Materials db was found and used.',
      &            'Re-scanning constructions...','P')
                 MATDBOK=.TRUE.
                 LFMAT=LASCI
@@ -794,12 +802,12 @@ C try and re-scan the constructions database.
                   if(ier.eq.0)then
                     MLDBOK=.TRUE.
                     call usrmsg(
-     &                'An ASCII materials file was found and used.',
+     &                'An ASCII Materials db was found and used.',
      &                'Re-scanning constructions...done.','-')
                   else
                     MLDBOK=.FALSE.
                     call usrmsg(
-     &                'An ASCII materials file was found and used.',
+     &                'An ASCII Materials db was found and used.',
      &                'Re-scanning constructions...failed.','W')
                   endif
                 endif
@@ -807,47 +815,46 @@ C try and re-scan the constructions database.
             elseif(iw.eq.2)then
               CALL ERPFREE(IAF,ISTAT)
               call edisp(iuout,
-     &          'Attempting to convert an ASCII materials db into a')
+     &          'Attempting to convert an ASCII Materials db to a')
               call edisp(iuout,
-     &          'binary materials db matching the constructions db.')
+     &          'binary version matching the Constructions db.')
               CALL MKBPRC(IUOUT,IAF,LASCI,IER)
               if(ier.eq.0)then
                 call usrmsg(
-     &            'An ASCII materials file was found and converted.',
+     &            'An ASCII Materials db was found and converted.',
      &            'Re-scanning constructions...','P')
                 CALL ERMLDB(0,IUOUT,IER)
                 if(ier.eq.0)then
                   MLDBOK=.TRUE.
                   call usrmsg(
-     &              'An ASCII materials file was found and converted.',
+     &              'An ASCII Materials db was found and converted.',
      &              'Re-scanning constructions...done.','-')
                 else
                   MLDBOK=.FALSE.
                   call usrmsg(
-     &              'An ASCII materials file was found and converted.',
+     &              'An ASCII Materials db was found and converted.',
      &              'Re-scanning constructions...failed.','W')
                 endif
               else
                 call usrmsg(
-     &          'An materials file was not found or was not readable.',
-     &          'You should correct this before using constructions.',
+     &          'A Materials db was not found or was not readable.',
+     &          'Please correct this before using constructions.',
      &             'W')
                 MLDBOK=.FALSE.
               endif
             endif
           else
 
-C Ask user for ascii materials database to convert.
-            H(1)='The materials database holds the thermo-physical'
-            H(2)='properties of a range of materials such as'
-            H(3)='brick, concrete, insulation, etc. An asci version'
-            H(4)='of this database is ofen used when transporting'
-            H(5)='models between operating systems. '
+C Ask user for ascii Materials database to convert.
+          H(1)='The Materials db holds the thermo-physical properties'
+          H(2)='of a range of materials. An ascii version of this db'
+          H(3)='may be used to transfer the contents between operating'
+          H(4)='systems that have incompatible binary representations'
+          H(5)='(e.g. Unix and Windows).'
             IAF=IFIL+1
             DFILE=' '
-            CALL EASKS(LASCI,' Materials database (ASCII)?',
-     &        ' ',72,DFILE,'materials db (ascii)',
-     &        IER,5)
+            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
+     &        72,DFILE,'materials db (ascii)',IER,5)
             goto 155
           endif
         else
@@ -858,19 +865,19 @@ C Scan was ok so set mldbok to true.
       else
 
 C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') ' Constructions db ',
+        write(outs,'(3a)') 'Constructions db ',
      &     LFMUL(1:lnblnk(LFMUL)),' not found!'
         call edisp(iuout,outs)
         call edisp(iuout,' ')
         MLDBOK=.FALSE.
       endif
 
-C Open optical database and read into common.
+C Open Ooptical Properties db and read into common.
       SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
-        call usrmsg('Optical Properties db not found or there',
-     &              'was a problem reading it!','W')
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
         OPTKOK=.FALSE.
       else
         OPTKOK=.TRUE.
@@ -882,8 +889,8 @@ C Open the Pressure Coefficients db.
         CALL ERPRCDB(LAPRES,0,3,IER)
 C        call usrmsg(' ',' ','-')
       else
-        call usrmsg('Pressure Coefficients db not found or',
-     &              'there was a problem reading it!','W')
+        call usrmsg('Pressure Coefficients db not found',
+     &              'or there was a problem reading it!','W')
       endif
 
       return
@@ -946,30 +953,30 @@ C Set folder separator (fs) to \ or / as required.
 C      write(outs,'(2a)') 'Options for materials db: ',
 C     &  LTMP(1:lnblnk(LTMP))
 
-C If db does not exist offer the following choices:
+C If db does not exist offer the following choices.
       H(1)='The Materials database holds the density, specific' 
       H(2)='heat, conductivity, diffusion resistance and surface'
-      H(3)='absorptivity/emissivity for materials such as steel' 
-      H(4)='concrete, brick, oak etc. This db is held in binary' 
-      H(5)='format to permit rapid, random access. The db may be'
+      H(3)='absorptivity/emissivity for materials such as brick' 
+      H(4)='concrete, wood, metal etc. This db is held in binary' 
+      H(5)='format to permit random access. The db may be converted'
       H(6)='converted to ASCII to allow transfer between operating' 
       H(7)='systems with incompatible binary representations.'
       H(8)=' '
       H(9)='The following options are available.'
       H(10)=' '
-      H(11)='a) If the db exists then it can be browsed and used.'
+      H(11)='a) If the db exists then it may be browsed and used.'
       H(12)='   If you are the owner you may also edit the db'
-      H(13)='   entities.'
+      H(13)='   entries.'
       H(14)=' '
       H(15)='b) Select another db: e.g. you might copy a standard'
-      H(16)='   db to your directory (option d) in order to own it.'
-      H(17)='   Selecting it here then gives you edit permission.'
+      H(16)='   db to your directory (option below) in order to own'
+      H(17)='   it. Selecting it here then gives you edit permission.'
       H(18)=' '
       H(19)='c) Create a new db: to which you can then make material'
       H(20)='   entries as required.'
       H(21)=' '
-      H(22)='d) Copy default db: a copy of the default db is made'
-      H(23)='   which you own and can therefore modify.'
+      H(22)='d) Copy standard db: a copy of ESP-r`s standard db is'
+      H(23)='   made which you own and can therefore modify.'
       H(24)=' '
       H(25)='e) Export the binary representation of the db (which is'
       H(26)='   platform dependant) to an ascii representation.'
@@ -990,31 +997,31 @@ C Get length of path to where ESP-r databases were installed.
       IF(.NOT.XST)THEN
         idno=2
         isw=0
-        call MENUATOL(outs,'Materials db',
-     &    ' ','b select another db',
-     &    'c create new db','d copy default db',
+        call MENUATOL(' ','Materials db:',
+     &    ' ','b select another',
+     &    'c create new','d copy standard',
      &    'e binary >> ascii export','f ascii >> binary import',
      &    'g ascii >> memory import',' ',' ',' ',' ',' ',isw,idno,33)
           copydef=.true.
       elseif(LFMAT(1:linst).eq.linstd(1:linst))then
 
-C If corporate db:.
+C If standard db.
         idno=1
         isw=0
-        call MENUATOL(outs,'Materials db',
-     &    'a browse/edit db','b select another db',
-     &    'c create new db','d copy default db',
+        call MENUATOL(' ','Materials db:',
+     &    'a browse/edit','b select another',
+     &    'c create new','d copy standard',
      &    'e binary >> ascii export','f ascii >> binary import',
      &    'g ascii >> memory import',' ',' ',' ',' ',' ',isw,idno,33)
           copydef=.false.
       else
 
-C If db exists locally:.
+C If db exists locally.
         idno=1
         isw=0
-        call MENUATOL(outs,'Materials db',
-     &    'a browse/edit db','b select another db',
-     &    'c create new db','d copy default db',
+        call MENUATOL(' ','Materials db:',
+     &    'a browse/edit','b select another',
+     &    'c create new','d copy standard',
      &    'e binary >> ascii export','f ascii >> binary import',
      &    'g ascii >> memory import',' ',' ',' ',' ',' ',isw,idno,33)
           copydef=.true.
@@ -1041,14 +1048,12 @@ C re-read as a legacy materials file.
               ier=0
               call rlegacymat(iuout,IFMAT,LTMP,ier)
               if(ier.ne.0)then
-                call usrmsg('The materials database was not found or',
-     &                      'was corrupt','W')
+                call usrmsg('The Materials db was not found',
+     &                      'or was corrupt!','W')
                 goto 138
-              else
-                call edisp(iuout,' Filled material data arrays...')
               endif
             elseif(ier.eq.0)then
-              call edisp(iuout,' Filled material data arrays...')
+C              call edisp(iuout,'Filled material data arrays.')
             endif
           else
 
@@ -1069,7 +1074,7 @@ C then proceed with matver still set to zero.
           moddb=.true.
           modcon=.true.
           LFMAT=LTMP
-C          call tstamp('>','PRJ: enter materials db')
+          call tstamp('>','PRJ: enter materials db')
           call eclose(matver,1.1,0.001,close)
           if(close)then
 
@@ -1080,7 +1085,7 @@ C Offer display of material common blocks.
           endif
           if(ier.eq.1)then
 
-C The materials db was empty so it might be an ascii version
+C The Materials db was empty so it might be an ascii version
 C of the file.
             goto 138
           elseif(ier.eq.2)then
@@ -1102,8 +1107,7 @@ C make a backup copy if the initial file was binary.
 C If the materials db was edited write a backup ASCII version.
               H(1)='The binary Materials db file could get corrupted.'
               H(2)='It is good to have a backup to restore from and'
-              H(3)='also to give the option to have an ascii verson'
-              H(4)='for the model.'
+              H(3)='this is held in ascii format.'
               DFILE='./newmat.db1.a'
               clkok=.false.
               LASCI=' '
@@ -1111,7 +1115,7 @@ C If the materials db was edited write a backup ASCII version.
               CALL EASKSCNCL(LASCI,
      &          'Materials database (ASCII backup)?',
      &          ' ','cancel',clkok,72,DFILE,'materials db (ascii)',
-     &          IER,4)
+     &          IER,3)
               if(clkok)then
                 continue
               else
@@ -1373,7 +1377,7 @@ C          call edisp(iuout,outs)
      &        'binary representation corresponds to another OS.)','W')
             goto 138
           endif
-C          call tstamp('>','PRJ: enter materials db')
+          call tstamp('>','PRJ: enter materials db')
           CALL ELISTC(iw,chgdb,'M',IER)
           if(ier.eq.1)then
 
@@ -1856,7 +1860,7 @@ C            call lusrmsg('copying default file via',doit,'-')
      &      LCOPY(1:lnblnk(LCOPY))
           call edisp(iuout,outs)
           call edisp(iuout,' ')
-C          call tstamp('>','PRJ: enter Construction db')
+          call tstamp('>','PRJ: enter Construction db')
           CALL ERMLDB(0,IUOUT,IER)
           IF(IER.eq.1)then
 
@@ -3650,7 +3654,7 @@ C use the editing facility.
           if(ier.eq.0)then
 C            write(outs,'(2a)') 'Accessing ',LCLIM(1:lnblnk(LCLIM))
 C            call edisp(iuout,outs)
-C            call tstamp('>','PRJ: start clm')
+            call tstamp('>','PRJ: start clm')
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
@@ -3842,7 +3846,7 @@ C            call usrmsg('copying file via',doit,'-')
 C          write(outs,'(2a)') 'Accessing climate file: ',
 C     &        LCLIM(1:lnblnk(LCLIM))
 C          call edisp(iuout,outs)
-C          call tstamp('>','PRJ: start clm')
+          call tstamp('>','PRJ: start clm')
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
@@ -3894,7 +3898,7 @@ C to asking clm to do the conversion.
 C          write(outs,'(2a)') 'Converting climate data: ',
 C     &        LCLIM(1:lnblnk(LCLIM))
 C          call edisp(iuout,outs)
-C          call tstamp('>','PRJ: start clm for conversion')
+          call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
      &        longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
@@ -3939,7 +3943,7 @@ C to asking clm to do the conversion.
 C          write(outs,'(2a)') 'Converting climate data: ',
 C     &        LCLIM(1:lnblnk(LCLIM))
 C          call edisp(iuout,outs)
-C          call tstamp('>','PRJ: start clm for conversion')
+          call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
      &        longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',

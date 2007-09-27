@@ -5538,3 +5538,27 @@ fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     85
+
+ Component Description
+    Generic type     : TRNSYS Wrapper
+    Description      : Generic Trnsys Type with Dummy Values
+    Insertion date   : 8 May 2007
+    Type: Single component                    Component code :   1190
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+
+ Miscellaneous Data
+    Adata items   :  0     Bdata items   :   0    Cdata items   :   0
+   
+ Number of additional output parameters:     0
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
