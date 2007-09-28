@@ -232,8 +232,8 @@ clean:
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F mimo_dummy.F readTrnsys.F
-	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F 
+	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F mimo_dummy.F readTrnsys.F 
+
 
 
 
