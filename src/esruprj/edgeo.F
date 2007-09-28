@@ -907,12 +907,7 @@ C (T14) and ensure that there are no spaces or strange characters.
      &                   14,D14,'surface name',IER,2)
               write(T12,'(a)') T14(1:12)
 
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-              write(D12,'(a)') T14(1:12)
-#else
               call st2name(T12,D12)
-#endif
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
                 SNAME(ICOMP,ISS)=D12
@@ -2335,12 +2330,7 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
      &               14,'new_surface','surface name',IER,2)
         write(SN,'(a)') T14(1:12)
 
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-        write(SN2,'(a)') T14(1:12)
-#else
         call st2name(SN,SN2)
-#endif
         call snamdup(SN2,icomp,is,nameok)
         if(nameok)then
           SNAME(ICOMP,IS)=SN2
@@ -4817,7 +4807,7 @@ C Up the surface count and zone surface attributes.
           NSUR=NSUR+1
           NZSUR(ICOMP)=NZSUR(ICOMP)+1
           NGL(NSUR)=0
-          SNAME(ICOMP,NSUR)=SNAME1  ! << ? MINGW patch here? >>
+          SNAME(ICOMP,NSUR)=SNAME1
           SMLCN(NSUR)='UNKNOWN'
           SVFC(NSUR)='UNKN'
           SOTHER(NSUR)='UNKNOWN'
@@ -4962,12 +4952,7 @@ C its future position via `one connection past the current last
      &      14,'new_door','surface name',IER,2)
           write(SN,'(a)') T14(1:12)
 
-C Return from easks in MINGW results in _____ after the actual text.
-#ifdef MINGW
-          write(SNAME(ICOMP,NSUR),'(a)') T14(1:12)
-#else
           call st2name(SN,SNAME(ICOMP,NSUR))
-#endif
 
           SOTF(NSUR)='OPAQ'
           if(IRT.eq.5) SVFC(NSUR)='VERT'

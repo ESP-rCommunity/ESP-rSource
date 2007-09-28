@@ -2417,7 +2417,22 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      /* g_print("configure font medium 10\n"); debug */
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     /* g_print("configure font medium 12\n");	/* debug */
+     /* g_print("configure font medium 12\n"); debug */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     /* g_print("configure font medium 14\n"); debug */
+   } else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+     /* g_print("configure courier medium 8\n"); debug */
+   } else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+     /* g_proint("configure courier medium 10\n");  debug */
+   } else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+     /* g_print("configure courier medium 12\n");  debug */
+   } else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+     /* g_print("configure courier medium 14\n");  debug */
    }
    gtk_widget_modify_font(entry, pfd);
    pango_font_description_free(pfd);

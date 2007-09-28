@@ -80,6 +80,9 @@ C f90 -o reposition_include reposition_include.o
           write(2,'(4a)') '      INCLUDE ',sq,'dhw_common.h',sq
         elseif(outs(11:29).eq.'Annex42_fuel_cell.h')then
           write(2,'(4a)') '      INCLUDE ',sq,'Annex42_fuel_cell.h',sq
+        elseif(outs(11:34).eq.'Annex42_combustion_CHP.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,
+     &      'Annex42_combustion_CHP.h',sq
         elseif(outs(11:36).eq.'ground_temp_mains_common.h')then
           write(2,'(4a)') '      INCLUDE ',sq,
      &     'ground_temp_mains_common.h',sq
@@ -114,6 +117,49 @@ C f90 -o reposition_include reposition_include.o
           write(2,'(4a)') '      INCLUDE ',sq,'h3kstore_parameters.h',sq
         elseif(outs(11:27).eq.'h3kstore_common.h')then
           write(2,'(4a)') '      INCLUDE ',sq,'h3kstore_common.h',sq
+        elseif(outs(11:34).eq.'Annex42_combustion_CHP.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,
+     &      'Annex42_combustion_CHP.h',sq
+        elseif(outs(11:23).eq.'lookup_data.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'lookup_data.h',sq
+        elseif(outs(11:22).eq.'build_info.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'build_info.h',sq
+        elseif(outs(11:20).eq.'acoustic.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'acoustic.h',sq
+        elseif(outs(11:15).eq.'b2e.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'b2e.h',sq
+        elseif(outs(11:15).eq.'TAC.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'TAC.h',sq
+        elseif(outs(11:17).eq.'gagge.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gagge.h',sq
+        elseif(outs(11:15).eq.'LCA.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'LCA.h',sq
+        elseif(outs(11:19).eq.'BATTERY.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'BATTERY.h',sq
+        elseif(outs(11:28).eq.'Ventilation_Data.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'Ventilation_Data.h',sq
+        elseif(outs(11:27).eq.'gcep_parameters.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gcep_parameters.h',sq
+        elseif(outs(11:23).eq.'gcep_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gcep_common.h',sq
+        elseif(outs(11:23).eq.'ashp_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'ashp_common.h',sq
+        elseif(outs(11:26).eq.'gshp_v1_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gshp_v1_common.h',sq
+        elseif(outs(11:23).eq.'gshp_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gshp_common.h',sq
+        elseif(outs(11:26).eq.'gshp_hs_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gshp_hs_common.h',sq
+        elseif(outs(11:26).eq.'gshp_sl_common.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'gshp_sl_common.h',sq
+        elseif(outs(11:19).eq.'monitor.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'monitor.h',sq
+        elseif(outs(11:19).eq.'H2_wind.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'H2_wind.h',sq
+        elseif(outs(11:26).eq.'Hydrogen_PEMFC.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'Hydrogen_PEMFC.h',sq
+        elseif(outs(11:27).eq.'WaterProperties.h')then
+          write(2,'(4a)') '      INCLUDE ',sq,'WaterProperties.h',sq
         elseif(outs(11:33).eq.'DG_controller_include.h')then
           write(2,'(4a)') '      INCLUDE ',sq,
      &      'DG_controller_include.h',sq

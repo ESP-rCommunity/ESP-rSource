@@ -29,6 +29,21 @@
 #include <esp_list.h>
 #undef ESP_LIST_MAIN
 
+
+/* Create an enum which will point to the Indices of the array called
+ * font_calculations_array[] 
+ */
+    enum{
+	serif_small,          	// 0 position in array is for Serif Small
+	serif_medium,		// 1 position in array is for Serif Medium
+	serif_large,		// 2 position in array is for Serif Large
+	serif_largest,		// 3 position in array is for Serif Largest
+	courier_small,		// 4 position in array is for Courier Small
+	courier_medium,		// 5 position in array is for Courier Medium
+	courier_large,		// 6 position in array is for Courier Large
+  	courier_largest};	// 7 position in array is for Courier Largest
+
+
 /* Global variable definitions start here */
 FILE *wwc;
 GdkColor cscale[49], zscale[100], gscale[49];
@@ -40,6 +55,22 @@ long int mdepth;    /* to pass to fortran: sceen depth */
 long int disp_fnt;  /* font for text display box */
 long int butn_fnt;  /* button font size     */
 long int menu_fnt;  /* preferred command menu font */
+
+
+/* Create a structure called Font_Calculation_Variables that
+ * contains the variables needed for font calculations
+ */
+typedef struct  {
+
+   gint f_height;	     			// pixel height of default font 
+   gint f_width;	    			// pixel width of default font 
+ }Font_Calculation_Variables;
+ 
+ 
+/* Create an aray of Font_Calculation_Variables */
+
+Font_Calculation_Variables font_calculations_array[8]; 
+
 
 GdkColor fg, bg, bd, bw, white, black, infofg, infobg;	/* essential colors */
 GdkColor gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;	/* interface colors */
@@ -65,6 +96,10 @@ char pmtype_list[MENU_LIST_LEN];	/* character array representing m_list array us
 int pm_width;		/* current popup menu max line length */
 int pm_lines;		/* current number of active popup menu lines */
 
+/* Global variables for font width. */
+gint f_height;
+gint f_width;
+
 char cappl[5];	/* f77 application name */
 char cfgroot[25];	/* f77 project root name    */
 char path[73];	/* f77 project path    */
@@ -83,6 +118,64 @@ gint menu_pix_wd;	/* pixel width of initial menu (based on nb of characters *ime
 long int menuchw;	/* char width of initial menu (from fortran) */
 
 char zonenames[MCOM][13];  /* g pointer array to current zone names - filled by calling the fortran routine getzonenames() */
+
+
+
+/* Function calculate_font_metrics pre-processes font metrics */ 
+void calculate_font_metrics(void);
+
+/* The following code calculates font calculation metrics at the beginning of the program
+ * When the window is iniltialized for the first time, all the calculations are done.
+ * These resuts are then assigned to the local variables at runtime.
+ */
+
+void calculate_font_metrics(void){
+  PangoFontDescription *pfd;	 /* to hold test font  */
+  PangoContext *context;	 /* for use in finding font properties */ 
+  PangoFontMetrics *metrics;
+  long int cur_disp_fnt;  /* initial font for text display box */
+
+  cur_disp_fnt = disp_fnt;  /* remember initial value */
+
+  for( disp_fnt = 0; disp_fnt <=7; disp_fnt++){             // this sets the font to Serif Small
+   
+    if (disp_fnt == 0)     
+      pfd = pango_font_description_from_string("Serif,Medium 8"); 
+    else if (disp_fnt == 1)
+      pfd = pango_font_description_from_string("Serif,Medium 10");
+    else if(disp_fnt == 2)
+      pfd = pango_font_description_from_string("Serif,Medium 12");
+    else if(disp_fnt ==3)
+      pfd = pango_font_description_from_string("Serif,Medium 14");
+    else if(disp_fnt ==4)
+      pfd = pango_font_description_from_string("Courier,Medium 8");
+    else if(disp_fnt == 5)
+      pfd = pango_font_description_from_string("Courier,Medium 10");
+    else if(disp_fnt == 6)
+      pfd = pango_font_description_from_string("Courier,Medium 12");
+    else if(disp_fnt == 7)
+      pfd = pango_font_description_from_string("Courier,Medium 14");
+   
+    context = gtk_widget_get_pango_context (text);
+    metrics = pango_context_get_metrics (context, pfd,
+              pango_context_get_language (context));
+
+    font_calculations_array[disp_fnt].f_height = PANGO_PIXELS (pango_font_metrics_get_ascent (metrics) +
+             pango_font_metrics_get_descent (metrics));	   
+             
+    font_calculations_array[disp_fnt].f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
+    
+    
+    // debug
+    fprintf(stderr, " for disp_fnt  , f_height and f_width are %d and %d\n", font_calculations_array[disp_fnt].f_height,
+    font_calculations_array[disp_fnt].f_width);
+
+  }
+  disp_fnt = cur_disp_fnt;  /* re-establish initial value */
+  pango_font_metrics_unref (metrics); /* free these two structures */
+  pango_font_description_free(pfd);
+}
+
 
 /* event loops */
 /* configure_event currently not called, but might be included at
@@ -216,13 +309,28 @@ GtkWidget *create_text( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     /* fprintf(stderr,"configure font medium 8\n");	debug */
+     g_print("create_text configure font medium 8\n");  /* debug */
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     /* fprintf(stderr,"configure font medium 10\n");	debug */
+     g_print("create_text configure font medium 10\n"); /* debug */
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     /* fprintf(stderr,"configure font medium 12\n");	debug */
+     g_printf("create_text configure font medium 12\n");  /*debug */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     g_print("create_text configure font medium 14\n"); /* debug */
+   } else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+     g_print("create_text configure courier medium 8\n"); /* debug */
+   } else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+     g_print("create_text configure courier medium 10\n"); /* debug */
+   } else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+     g_print("create_text configure courier medium 12\n"); /* debug */
+   } else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+     g_print("create_text configure courier medium 14\n"); /* debug */
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -280,11 +388,9 @@ void esru_ask_wire ( void)
  * callbacks to pass information back to fortran via updview_. */
 void text_feedback_reset ( void)
 {
-   PangoFontDescription *pfd;	/* to hold test font */
-   PangoContext *context;	/* for use in finding font properties */
-   PangoFontMetrics *metrics;
-   gint f_height;	/* pixel height of default font */
-   gint f_width;	/* pixel width of default font */
+
+  PangoFontDescription *pfd;	/* to hold test font */
+   
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
    gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
@@ -294,9 +400,7 @@ void text_feedback_reset ( void)
 
 /* First find the size of the graphic window. Note: do this prior to changing
  * the text feedback display font by using Pango context previously setup in esp-r.c */
-   f_height = PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics) +
-            pango_font_metrics_get_descent (pango_metrics));
-   f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (pango_metrics));
+    
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
    fprintf(stderr,"std font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height); /* debug */
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
@@ -308,31 +412,76 @@ void text_feedback_reset ( void)
    fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right); /* debug */
    fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw); /* debug */
 
-/* create font description to use for resetting the text feedback font.
- * Use pango_font_get_metrics to get font width and height for this font. */
+/* Originally there were three options for fonts and disp_fnt was either 0, 1, or 2.
+ * With the addition of Serif Largest, Courier Small, Courier Medium, Courier Large and Courier Largest,
+ * the disp_fnt also has the values 3, 4, 5, 6, 7 
+ * << NOTE: the fortran side does not know about these new values >>
+ */
+
+/* Read the calculated values from the array depending on value of disp_fnt */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     /* fprintf(stderr,"re-configure font medium 8\n");	debug */
+     f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
+     f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
+ 
+     fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width);	//debug
+    
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     /* fprintf(stderr,"re-configure font medium 10\n");	debug */
+     f_height = font_calculations_array[serif_medium].f_height;
+     f_width  = font_calculations_array[serif_medium].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width);	//debug
+      
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     /* fprintf(stderr,"re-configure font medium 12\n");	debug */
-   }
-   gtk_widget_modify_font(text, pfd);
-   fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
+     f_height = font_calculations_array[serif_large].f_height;
+     f_width  = font_calculations_array[serif_large].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width);	//debug	
 
-/* next lines would probably find out new fonts metrics....but need to find
- * out the extent of the current text feedback window in order to sort out lttyc
- *  context = gtk_widget_get_pango_context (text);
- *  metrics = pango_context_get_metrics (context, pfd,
- *            pango_context_get_language (context));
- * f_height = PANGO_PIXELS (pango_font_metrics_get_ascent (metrics) +
- *          pango_font_metrics_get_descent (metrics));
- * f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
- * pango_font_metrics_unref (metrics);
- */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     f_height = font_calculations_array[serif_largest].f_height;
+     f_width  = font_calculations_array[serif_largest].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width);	//debug	
+   }
+   
+   else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+     f_height = font_calculations_array[courier_small].f_height;
+     f_width  = font_calculations_array[courier_small].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width);	//debug	 
+      
+   } 
+   else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+     f_height = font_calculations_array[courier_medium].f_height;
+     f_width  = font_calculations_array[courier_medium].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width);	//debug	 
+   }
+    else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+     f_height = font_calculations_array[courier_large].f_height;
+     f_width  = font_calculations_array[courier_large].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width);	//debug	  
+   }
+   else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+     f_height = font_calculations_array[courier_largest].f_height;
+     f_width  = font_calculations_array[courier_largest].f_width;
+ 
+     fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width);	//debug	 
+   }
+   
+   gtk_widget_modify_font(text, pfd);
+   
+   fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
+  
    pango_font_description_free(pfd);
 
    ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
@@ -478,16 +627,21 @@ static GtkWidget *sml_menu_fbk ( void)
 
    sml_menu = gtk_menu_new ();
    group = NULL;
-
-   menuitem = gtk_radio_menu_item_new_with_label (group,"small");
-   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   
+   /* There is a Serif submenu and a Courier submenu. First create the Serif label: */
+   menuitem= gtk_menu_item_new_with_label ("Serif");
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
-   g_signal_connect (G_OBJECT (menuitem), "activate",
-                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (0));
    gtk_widget_show (menuitem);
+   
+   menuitem = gtk_radio_menu_item_new_with_label (group,"small");              // creation of radio button
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));     // assigning radio button to its group
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);		       // adds the menuitem to the end of the menu shell's item list
+   g_signal_connect (G_OBJECT (menuitem), "activate",			       // when radio button is activated, set GINT_TO_POINTER (0)
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (0));       // therefore disp_font == 0
+   gtk_widget_show (menuitem);						      // display the radio button
 
-   menuitem = gtk_radio_menu_item_new_with_label (group,"medium");
-   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   menuitem = gtk_radio_menu_item_new_with_label (group,"medium");		
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));	
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
    g_signal_connect (G_OBJECT (menuitem), "activate",
                      G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (1));
@@ -498,6 +652,52 @@ static GtkWidget *sml_menu_fbk ( void)
    gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
    g_signal_connect (G_OBJECT (menuitem), "activate",
                      G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (2));
+   gtk_widget_show (menuitem);
+   
+   menuitem = gtk_radio_menu_item_new_with_label (group,"largest");
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   g_signal_connect (G_OBJECT (menuitem), "activate",
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (3));
+   gtk_widget_show (menuitem);
+   
+   /* Separator between Serif and Courier sections */
+   menuitem= gtk_menu_item_new_with_label ("-----------");
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   gtk_widget_show (menuitem);
+   
+   
+   /* "Courier" label in the submenu */
+   menuitem= gtk_menu_item_new_with_label ("Courier");
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   gtk_widget_show (menuitem);
+  
+   menuitem = gtk_radio_menu_item_new_with_label (group,"small ");
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   g_signal_connect (G_OBJECT (menuitem), "activate",
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (4));
+   gtk_widget_show (menuitem);
+
+   menuitem = gtk_radio_menu_item_new_with_label (group,"medium");
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   g_signal_connect (G_OBJECT (menuitem), "activate",
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (5));
+   gtk_widget_show (menuitem);
+
+   menuitem = gtk_radio_menu_item_new_with_label (group,"large ");
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   g_signal_connect (G_OBJECT (menuitem), "activate",
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (6));
+   gtk_widget_show (menuitem);
+   
+    menuitem = gtk_radio_menu_item_new_with_label (group,"largest");
+   group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+   gtk_menu_shell_append (GTK_MENU_SHELL (sml_menu), menuitem);
+   g_signal_connect (G_OBJECT (menuitem), "activate",
+                     G_CALLBACK (sml_menu_fbk_cb), GINT_TO_POINTER (7));
    gtk_widget_show (menuitem);
 
    return sml_menu;
@@ -1341,6 +1541,21 @@ GtkWidget *create_dialog( void )
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
      /* fprintf(stderr,"configure font medium 12\n"); debug */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     /* fprintf(stderr,"configure font medium 14\n"); debug */
+   } else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courieer,Medium 8");
+     /* fprintf(stderr,"configure courier medium 8\n"); debug */
+   } else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courieer,Medium 10");
+     /* fprintf(stderr,"configure courier medium 10\n"); debug */
+   } else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courieer,Medium 12");
+     /* fprintf(stderr,"configure courier medium 12\n"); debug */
+   } else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courieer,Medium 14");
+     /* fprintf(stderr,"configure courier medium 14\n"); debug */
    }
    gtk_widget_modify_font(dialog, pfd);
    pango_font_description_free(pfd);
@@ -1726,7 +1941,13 @@ char *gintstr[] = {
        fprintf(stderr,"Display does not support many colours\n");
     }
   g_free (head_local);
-}
+  
+  //@AOS9. function is called here
+  
+  calculate_font_metrics();
+ 
+   
+    }
 
 /* The colour routines taken from esru_x.c and converted to gtk/gdk */
 
