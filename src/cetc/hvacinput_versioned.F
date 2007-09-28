@@ -167,6 +167,7 @@ C-----------------------------------------------------------------------
      &                      'fan-power-in-auto        ',
      &                      'circ-fan-rated-position  ',
      &                      'circ-fan-rated-power     ',
+     &                      'circ-fan-mode            ',
      &                      'temp-control-mode        ',
      &                      'cut-off-temperature      ',
      &                      'SHR                      ',
