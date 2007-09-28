@@ -33,7 +33,7 @@
 
 use Cwd;
 use warnings;
-use strict;
+use strict 'vars';
 
 #--------------------------
 # Prototypes:
@@ -75,9 +75,12 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "res"   =>   "esrures",          
                 "tdf"   =>   "esrutdf",         
                 "vew"   =>   "esruvew" );         
-                          
+
 my %binalias = ( "vew"    =>   "viewer",
                  "mrt"    =>   "espvwf" );                          
+
+
+my @Suppress_code_list = ( "222 W" );
                           
 my $Test_base_URL="https://svn2.cvsdude.com/espr/esp-r";
              
@@ -114,7 +117,9 @@ $build_args{"test"}      ="";
 my $debug_forcheck = 0;
 my $del_dir = 1; 
 # Hash for linking forcheck error codes to human-readable descriptions
-my %gShorthand;
+my %gDescriptions;
+my %gLong_codes;
+
 
 #------------------------------------------------------------
 # Synopsys
@@ -603,13 +608,13 @@ if ( $test_forcheck ){
   while ( my ($key, $revision ) = each  %revisions ) {
   
     # progress update
-    stream_out("Running Forcheck static analyzer on $key version.");
+    stream_out("Running Forcheck static analyzer on $key version:");
   
     # Loop through list of esp-r binaries
     while ( my ( $bin, $folder ) = each %binlist ){
     
       # Pseudo-progress meter.
-      stream_out ".";
+      stream_out " $bin,";
       
       # Move to appropriate folder.
       chdir("$TestFolder/$src_dirs{$key}/src/$folder");
@@ -642,18 +647,19 @@ if ( $test_forcheck ){
   
   # Now, loop through binaries, and compare 
   
-  stream_out("Comparing Forcheck output.");
+  stream_out("Comparing Forcheck output:");
   
   foreach my $bin ( sort keys %binlist ){
     
-    
-    # read forcheck output: Summary
-    my %old_summary = summarize_forcheck ( `cat $forcheck_output{$bin}{"reference"}`);
-    my %new_summary = summarize_forcheck ( `cat $forcheck_output{$bin}{"test"}`);
+
 
     # read forcheck: Details
     my %old_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"reference"}` );
     my %new_msgs = parse_forcheck ( `cat $forcheck_output{$bin}{"test"} ` );
+
+    # read forcheck output: Summary
+    my %old_summary = summarize_forcheck ( \%old_msgs );
+    my %new_summary = summarize_forcheck ( \%new_msgs );
 
     # initialize flag for pass/fail
     my $bin_fail = 0; 
@@ -664,8 +670,9 @@ if ( $test_forcheck ){
 
     my %unmatched_codes;
     my %procedures;
+    
     foreach my $msg ( keys %new_msgs ) {
-      
+
       if ( ! defined ( $old_msgs{$msg}{"count"} ) ) {
         $old_msgs{$msg}{"count"} = 0;
       }
@@ -677,21 +684,21 @@ if ( $test_forcheck ){
       # if so, append to unmatched_msgs/ unmatched_codes, and
       # set failure flag.
       if ( $new_count > $old_count ){
-        
+
         my ($files, $procedure, $source, $code) = split /{}/, $msg;
         my( $topfile, $file) = split /:/, $files;
-        
+
         my $line = $new_msgs{$msg}{"line"};
 
         my $location = "$file - line $line";
 
         my $procedure_call = ( $file ne $topfile ) ? " ($topfile) " : "";
-        
+
         $unmatched_codes{$code}{"$location\{\}$source"} .=
           ( defined( $unmatched_codes{$code}{"$location\{\}$source"} ) ) ?
                ";$procedure$procedure_call" : "$procedure$procedure_call";
 
-        
+
 #         $procedures{"location"} = 
 #             ( defined ( $procedures{"location"} ) )
 #             ? "|$location" : "$location";
@@ -741,21 +748,47 @@ if ( $test_forcheck ){
         # Stuff code into appropriate array. Differences in errors 
         # and warnings produce failures.
         for ( $code ) {
+
           SWITCH: {
-            if ( /^Err\./  )  { 
+            if ( /E$/  )  {
                                 push @error_codes, $code;  
                                 last SWITCH; 
                               } 
-            if ( /^Warn\./ )  {
+            if ( /W$/ )  {
                                 push @warning_codes, $code;
                                 last SWITCH; 
                               } 
-            if ( /^Info\./ )  { 
+            if ( /I$/ )  {
                                 push @info_codes, $code;       
                                 last SWITCH; 
                               } 
           }
         }
+
+        # Turn code into human-readable string
+
+        if ( ! defined ( $gLong_codes{$code} ) ) {
+          my $number = $code;
+          $number =~ s/ (E|W|I)//g;
+          for ($code) {
+            SWITCH: {
+              if ( /E$/  )  {
+                             $gLong_codes{$code} = "Err.  # $number";
+                             last SWITCH;
+                                } 
+              if ( /W$/ )  {
+                             $gLong_codes{$code} = "Warn. # $number";
+                             last SWITCH;
+                                } 
+              if ( /I$/ )  {
+                             $gLong_codes{$code} = "Info. # $number";
+                             last SWITCH;
+                                } 
+            }
+  
+          }
+        }
+        
       }
       
       # Get summary information: Are there more warnings, errors & 
@@ -809,23 +842,20 @@ if ( $test_forcheck ){
     }else{
       $forcheck_details .= "   No differences to report.\n";
     }
-    foreach my $code_desc ( sort @error_codes, sort @warning_codes, sort @info_codes ){
+    foreach my $code ( sort @error_codes, sort @warning_codes, sort @info_codes ){
+      $forcheck_details .= "     -> $gLong_codes{$code} ---"
+                           ." $gDescriptions{$code} "
+                           ."[ Instances: reference $old_summary{$code}, "
+                           ."test $new_summary{$code} ]\n";
 
-      $forcheck_details .= "     -> $code_desc [ Instances: reference $old_summary{$code_desc}, test $new_summary{$code_desc} ]\n";
-
-
-      
       # Check if this code appears in unmatched codes:
-
-      my $code = $gShorthand{$code_desc};
-
       if ( defined ( $unmatched_codes{$code} ) ) {
 
         # If so, get instances where code appears...
 
         my %locations = %{$unmatched_codes{$code}};
 
-        # ...loop though instancess
+        # ...loop though instances
         foreach my $instance ( sort keys %locations ){
 
           # Split instance into file/line and source tokens
@@ -853,7 +883,7 @@ if ( $test_forcheck ){
     
   
     # pseudo-progress meter:
-    stream_out(".");
+    stream_out(" $bin,");
   }
   
   # Prepare output: Summary table
@@ -1243,7 +1273,7 @@ sub parse_forcheck ($){
   $output =~ s/-- reference structure([^\n]*)\n//sg;
   
   # Forcheck output is very unstructured, making parsing difficult.
-  # To solve this problem, we'll coax it into a semi structured format
+  # To solve this problem, we'll coax it into a semi-structured format
   # that's parser-friendly.
   #
   # We'll enclose interesting parts of the file in xml-like <XXX></XXX>
@@ -1369,16 +1399,29 @@ sub parse_forcheck ($){
                   $line = "none";
                 }
 
-
                 my $description = $object;
                    $description =~ s/^.*<description>(.+)<\/description>.*$/$1/sg;
 
+                if  ( ! defined($gDescriptions{$code}) ){$gDescriptions{$code}=$description; }
 
-                # Now push message object into forcheck hash
+                # Loop through suppression list, and check if this message is
+                # marked for suppression
 
-                $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"count"}++;
-                $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"line"} = $line;
+                my $suppress = 0;
 
+                foreach my $suppress_code ( @Suppress_code_list ){
+
+                  if ( $code =~ /$suppress_code/ ){ $suppress = 1; }
+
+                }
+
+                if ( ! $suppress ){
+                  # Now push message object into forcheck hash
+                  $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"count"}++;
+                  $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"line"} = $line;
+
+                  # And add to running tally
+                }
                 last SWITCH;
 
               }  
@@ -1388,58 +1431,49 @@ sub parse_forcheck ($){
   return %forcheck_details;
 
 }
+
+
 #----------------------------------------------
 # Summarize forcheck output
 #----------------------------------------------
 sub summarize_forcheck($){
-  # Get section after --messages presented header...
-  
-  my ($output)=@_;
-  
-  my %code_types = ( "I" => "Info.",
-                    "W" => "Warn.",
-                    "E" => "Err. " );
-  
-  # Strip everything before the '-- messages presented:' string
-    
-  $output =~ s/.*-- messages presented://sg;
-  
- 
-  
-  # Eliminate empty lines
-  $output =~ s/^\s+//gm;
-  my @lines = split /\n/, $output;
-  
-  my (%messages);
-  
-  foreach my $line (@lines){
-    
 
-    if ($line =~ /number of error messages:/ ){
-      my $error_messages = $line;
-      $error_messages =~ s/number of error messages:\s+//g;
-      $messages{"Total error messages"}=$error_messages;
-    }elsif ($line =~ /number of warnings:/ ){
-      my $warning_messages = $line;
-      $warning_messages =~ s/number of warnings:\s+//g;
-      $messages{"Total warning messages"}=$warning_messages;
-    }elsif ($line =~ /number of informative messages:/ ){
-      my $info_messages = $line;
-      $info_messages =~ s/number of informative messages:\s+//g;
-      $messages{"Total informational messages"}=$info_messages;
-    }else{
-      my ($count,$code,$desc) = split /\]|\[/, $line;
-      $code =~ s/^ *//g;
-      my ($number,$type)= split / +/, $code;
-      $count =~ s/x//g;
-      $count =~ s/\s//g;
-      $messages{"$code_types{$type} #$number - $desc"}=$count;
-      $gShorthand{"$code_types{$type} #$number - $desc"}=$code;
+  my ($arg_ref) = @_;
+
+  my %forcheck_details = %{$arg_ref};
+  my %forcheck_summary;
+
+  $forcheck_summary{"Total warning messages"}       = 0;
+  $forcheck_summary{"Total error messages"}         = 0;
+  $forcheck_summary{"Total informational messages"} = 0;
+
+  # Loop through instances, and increment global code counter.
+  foreach my $instance ( keys %forcheck_details ){
+    my ($file,$procedure,$source,$code) =  split /\{\}/, $instance;
+    my $count = $forcheck_details{$instance}{"count"};
+    if ( ! defined($forcheck_summary{$code}) ) {$forcheck_summary{$code} = 0;}
+    $forcheck_summary{$code} = $forcheck_summary{$code} + $count;
+    SWITCH: {
+      if ( $code =~ /W/ ){
+         $forcheck_summary{"Total warning messages"} =
+                 $forcheck_summary{"Total warning messages"} + $count;
+         last SWITCH;
+      }
+      if ( $code =~ /E/ ){
+         $forcheck_summary{"Total error messages"}  =
+                 $forcheck_summary{"Total error messages"} + $count;
+         last SWITCH;
+      }
+      if ( $code =~ /I/ ){
+         $forcheck_summary{"Total informational messages"} =
+                 $forcheck_summary{"Total informational messages"} + $count;
+         last SWITCH;
+      }
     }
-    
   }
-  return %messages;
+  return %forcheck_summary;
 }
+
 
 #-------------------------------------------------------------------
 # Optionally write text to buffer
