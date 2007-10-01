@@ -7739,8 +7739,7 @@ C LineOut is the line number of the string that was returned.
       
 C LSTRIPC is a legacy interface to LSTRIPC_LN
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-      CHARACTER*248 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248
+      CHARACTER*248 OUTSTR
       CHARACTER*(*) MSG
       
       CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
@@ -10381,10 +10380,8 @@ C-----------------------------------------------------------------------
       implicit none 
       character*(*) cBuffer
       logical bError 
-      integer iMiscError , lnblnk
+      integer iMiscError
 
-
-      
       read (cBuffer,*, IOSTAT=iMiscError) iCtoI
       if ( iMiscError /= 0 ) then
         bError = .true. 
@@ -10413,7 +10410,6 @@ C----------------------------------------------------------------------
       character*124 cMsg
       character*80 cTemp
       logical bError 
-      integer iMiscError 
 
       integer iCtoI
       
@@ -10478,7 +10474,6 @@ C----------------------------------------------------------------------
       character*248 cMsg
       character*80 cTemp
       logical bError 
-      integer iMiscError
 
       real fCtoR
       
