@@ -1,5 +1,6 @@
 /* Miscel non-graphic functions taken from esru_x.c
-
+   
+   winfnt(n)   changes the font (4 different sizes 0,1,2,3)
    tchild_() return child process terminal info.
    Timer(msec) pause_for_milliseconds
    pausems_() pause_for_milliseconds
@@ -25,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <esp-r.h>
+#include <commons.h>
 
 
 /* circa Dec. 2005, MinGW apparently no longer offers 'sleep'.
@@ -36,6 +38,112 @@
 #endif 
 
 extern FILE *wwc;
+extern gint f_height;
+extern gint f_width;
+
+/* ************ Select a font **************** */
+/* select one of the 8 fonts by its index, load it and update the graphic context.
+ * for some reason font_0 has been cleared after initial jwinint call and so
+ * it is refreshed. 
+ * Displays the vetrices in the smallest font avaialble until more fonts are added
+ * Surface normals will be displayed in the font selected by user 
+ */
+void winfnt_(font_index)
+ long int *font_index;
+
+{
+   
+   gint ifont_index;
+   ifont_index = (gint) *font_index;
+   PangoFontDescription *pfd;	/* to hold test font */
+   
+   long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
+
+/* Originally there were three options for fonts and disp_fnt was either 0, 1, or 2.
+ * With the addition of Serif Largest, Courier Small, Courier Medium, Courier Large and Courier Largest,
+ * the font_index also has the values 3, 4, 5, 6, 7 
+ * << NOTE: the fortran side does not know about these new values >>
+ */
+
+
+  if (ifont_index == 0 ) {
+   pfd = pango_font_description_from_string("Serif,Medium 8");
+   f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
+   f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
+ 
+   //fprintf(stderr,"graphic_reset at serif medium 8 change font height and width is %d %d %d\n", f_height, f_width, ifont_index);	//debug
+    
+  } else if (ifont_index == 1 ) {
+   pfd = pango_font_description_from_string("Serif,Medium 10");
+   f_height = font_calculations_array[serif_medium].f_height;
+   f_width  = font_calculations_array[serif_medium].f_width;
+ 
+   //fprintf(stderr,"graphic_reset at serif medium 10 change font height and width is %d %d %d\n", f_height, f_width,ifont_index );	//debug
+      
+   } else if (ifont_index == 2 ) {
+   pfd = pango_font_description_from_string("Serif,Medium 12");
+   f_height = font_calculations_array[serif_large].f_height;
+   f_width  = font_calculations_array[serif_large].f_width;
+ 
+   // fprintf(stderr,"graphic_reset at serif medium 12 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	
+
+   } else if (ifont_index == 3 ) {
+   pfd = pango_font_description_from_string("Serif,Medium 14");
+   f_height = font_calculations_array[serif_largest].f_height;
+   f_width  = font_calculations_array[serif_largest].f_width;
+ 
+   //fprintf(stderr,"graphic_reset at serif medium 14 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	
+   }
+   
+   else if (ifont_index == 4) {
+   pfd = pango_font_description_from_string("Courier,Medium 8");
+   f_height = font_calculations_array[courier_small].f_height;
+   f_width  = font_calculations_array[courier_small].f_width;
+ 
+   //fprintf(stderr,"graphic_reset at courier medium 8 change font height and width is %d %d %d \n ", f_height, f_width, ifont_index);	//debug	 
+      
+   } 
+   else if (ifont_index == 5  ) {
+   pfd = pango_font_description_from_string("Courier,Medium 10");
+   f_height = font_calculations_array[courier_medium].f_height;
+   f_width  = font_calculations_array[courier_medium].f_width;
+ 
+   // fprintf(stderr,"graphic_reset at courier medium 10 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	 
+   }
+   else if (ifont_index == 6 ) {
+   pfd = pango_font_description_from_string("Courier,Medium 12");
+   f_height = font_calculations_array[courier_large].f_height;
+   f_width  = font_calculations_array[courier_large].f_width;
+ 
+     //fprintf(stderr,"graphic_reset at courier medium 12 change font height and width is %d %d %d\n", f_height, f_width, ifont_index);	//debug	  
+   }
+   else if (ifont_index == 7 ) {
+   pfd = pango_font_description_from_string("Courier,Medium 14");
+   f_height = font_calculations_array[courier_largest].f_height;
+   f_width  = font_calculations_array[courier_largest].f_width;
+ 
+   //fprintf(stderr,"graphic_reset at courier medium 14 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	 
+   }
+   
+   
+   
+   fprintf(stderr,"graphic_reset font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	 
+ 
+  
+  /* This function has been removed from the wstxpt_() in esp_draw.c and used here to modify the fonts  
+   * changed by the user in graphic feedback area */ 
+   gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
+   
+   pango_font_description_free(pfd);
+
+  /*  ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
+   lttyc=10;	<< this is a place holder >> */
+
+  /* pass revised information back to the fortran side */
+  /*  updview_(&ifsc,&itfsc,&imfsc,&b_left,&b_right,&b_top,&b_bottom,&gw,&gh,&lttyc); */
+   
+  return;
+}
 
 /* *************** tchild_() return child process terminal info. ******** */
 void tchild_(cterm)

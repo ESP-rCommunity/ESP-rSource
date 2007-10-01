@@ -451,8 +451,8 @@ C (if applicable).
 C Reporting
           IF(MODE.EQ.'R') THEN
             WRITE(OUTS,'(A,A)')
-     &' Node no.  Node name    Phase type  Phase Node type    Base volt',
-     &'      Comp'
+     &      ' Node no.  Node name    Phase type  Phase Node type    ',
+     &      'Base volt      Comp'
             CALL EDISP(IUOUT,OUTS)   
             WRITE(OUTS,1111) ENODNO(INODE),ENODNAM(INODE),
      &      PHTYPSTR(ENODPHTYP(INODE)),ENODPH(INODE),ENODTYPSTR(INODE),

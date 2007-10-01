@@ -6320,7 +6320,7 @@ C Variable supply temperature with limit constraints.
           h(3)='for heating & cooling). The heating supply temperature'
           h(4)='varies up to a maximum set-point and the cooling'
           h(5)='supply temperature varies down to a minimum set-point.'
-          h(6)=''
+          h(6)=' '
           h(7)='The room heating and cooling set-points (typically'
           h(8)='defined so that there is a deadband) are met on the'
           h(9)='basis of the heating and/or cooling implicit at the'

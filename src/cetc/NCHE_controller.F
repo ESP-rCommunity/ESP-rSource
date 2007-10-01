@@ -1995,7 +1995,7 @@ C*******************************************************************************
 C---------------------------------------------------------------------------------
 C     Standard vbl. declarations
 C---------------------------------------------------------------------------------
-#include"DG_controller_include.h"
+#include "DG_controller_include.h"
 
 C---------------------------------------------------------------------------------
 C     Common blocks req'd to determine timestep frequency 
@@ -2393,7 +2393,7 @@ C******************************************************************************
 C------------------------------------------------------------------------------
 C     Common definitions 
 C------------------------------------------------------------------------------
-#include"DG_controller_include.h"
+#include "DG_controller_include.h"
 C------------------------------------------------------------------------------
 C     Local variables
 C------------------------------------------------------------------------------
@@ -2461,7 +2461,7 @@ C     corresponding future temperature.
 C---------------------------------------------------------------------------------
       REAL FUNCTION DG_temperature_sensor(node)
       IMPLICIT NONE 
-#include"plant.h"
+#include "plant.h"
 C.....Common block variable containing plant present and future temperatures
       common/pcval/csvf(mpnode,mpvar),csvp(mpnode,mpvar)
 C.....Common block declarations

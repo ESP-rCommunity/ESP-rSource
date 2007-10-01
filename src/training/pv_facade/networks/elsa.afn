@@ -19,11 +19,11 @@
  cvg2      1    0       0.       20.000           0.           0.    
  dvg       1    0       0.       20.000           0.           0.    
  Comp   Type C+ L+ Description
- slot     40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ slot     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
      1.00000    2.40000   0.300000
- plant    40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ plant    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
      1.00000    0.10000   0.800000
- plant2   40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ plant2   40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
      1.00000    0.20000   0.800000
  fan      30  2  0 Constant vol. flow rate component   m = rho.a               
      1.00000   0.500000
