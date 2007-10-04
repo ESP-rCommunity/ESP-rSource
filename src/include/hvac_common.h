@@ -1,18 +1,6 @@
 c Common for hvac system input data. These variables are used for hvac systems
 c modeled ideally
 
-      integer iFurnaceTokenCount
-      parameter (iFurnaceTokenCount = 7)
-      integer iIMSTokenCount
-      parameter (iIMSTokenCount = 1)
-      integer iBaseboardTokenCount
-      parameter (iBaseboardTokenCount = 4)
-      integer iHPTokenCount
-      parameter (iHPTokenCount = 24)
-      integer iMAXTokenCount
-      parameter (iMAXTokenCount = iHPTokenCount)
-
-
       common/HVAC_parsing/iHVACFileVersion,
      &bParseError,
      &cFurnaceTokenNames(iFurnaceTokenCount),
@@ -52,7 +40,8 @@ c modeled ideally
      &isys_zone_num(max_sys,mcom), iduct_sys_flag(max_sys),
      &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys),
      &cSys_Name(max_sys), iSys_Function(max_sys), iSys_Backup(max_sys),
-     &cSys_Backup(max_sys)
+     &cSys_Backup(max_sys),bFan_AutoSized(max_sys),
+     &bFan_Auto_AutoSized(max_sys), bFan_Rated_AutoSized(max_sys)
 
 c Declare integer values in HVAC_INPUT_DATA common
       INTEGER num_hvac_sys, ihvac_type, ipriority, isys_type,
@@ -67,7 +56,8 @@ c Declare real parameters in HVAC_INPUT_DATA common
      &fan_power, fan_power_auto, fan_power_r, draft_fan_power,
      &sys_zone_cap_frac
 
-      logical bParseError
+      logical bParseError, bFan_AutoSized, bFan_Auto_AutoSized,
+     &        bFan_Rated_AutoSized
       character*72 cSys_Name,cSys_Backup
 
 c Common for time step computed parameters of HVAC system

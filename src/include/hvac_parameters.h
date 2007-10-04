@@ -69,17 +69,34 @@ C Named constants for fuel types
      &            iPropane     = 4,
      &            iWood        = 5 )
 
+C Named constants for fan position
+      integer iFan_BlowThrough, iFan_DrawThrough
+      parameter ( iFan_BlowThrough = 1,
+     &            iFan_DrawThrough = 2  )
+
 C Named constants for system functions
       integer iFuncHeating, iFuncCooling
       parameter ( iFuncHeating = 1,
      &            iFuncCooling = 2 )
 
-C Named constants for heat pump control
+C Named constants for heat pump heating control
       integer iTemp_BalancedPoint, iTemp_Restricted, iTemp_Unrestricted
       parameter ( iTemp_BalancedPoint = 1,
      &            iTemp_Restricted    = 2,
      &            iTemp_Unrestricted  = 3 )
-      
+
+C Named constants for heat pump cooling control
+      integer iCool_Economizer, iCool_Conventional
+      parameter ( iCool_Conventional = 1,
+     &            iCool_Economizer   = 2  )
+
+C Named constants for economizer control
+      integer iEcon_TempIntegrated, iEcon_TempNonIntegrated,
+     &        iEcon_EnthIntegrated, iEcon_EnthNonIntegrated
+      parameter ( iEcon_TempIntegrated    = 1,
+     &            iEcon_TempNonIntegrated = 2,
+     &            iEcon_EnthIntegrated    = 3,
+     &            iEcon_EnthNonIntegrated = 4   )
 
 C Data block size
       integer iBlockSize
@@ -106,13 +123,21 @@ c the size of the hvac array isys_type
       INTEGER max_hvac_vars
       parameter (max_hvac_vars = 10)
 
-
- 
-
-
 c Maximum number of fuels. This sets the size of the array ifuel_type
       INTEGER max_fuels
       parameter (max_fuels = 6)
+
+C Dimensions of token/data arrays for version 2+ format.
+      integer iFurnaceTokenCount
+      parameter (iFurnaceTokenCount = 8)
+      integer iIMSTokenCount
+      parameter (iIMSTokenCount = 1)
+      integer iBaseboardTokenCount
+      parameter (iBaseboardTokenCount = 4)
+      integer iHPTokenCount
+      parameter (iHPTokenCount = 24)
+      integer iMAXTokenCount
+      parameter (iMAXTokenCount = iHPTokenCount)
 
 
 C Patrice -> Commented out all parameters associated with the GCEP model

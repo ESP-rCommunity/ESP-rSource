@@ -91,6 +91,9 @@ C-----------------------------------------------------------------------
       integer iDaytype            !
       integer iPeriod             !
       integer iData               !
+      integer iBackupSystem       !
+      integer iHour, iDay         !
+      integer iHourInYear         !
 
       integer iFileLine           ! Line number in file
 
@@ -102,6 +105,7 @@ C.....Parsing flags
       logical bOASchedBlockOpen
       logical bDayTypeBlockOpen
       logical bSiteAltitudeOK
+      logical bFound
 
       logical bSysPriorityOK(max_sys)
       logical bSysZonesOK(max_sys)
@@ -132,17 +136,20 @@ C-----------------------------------------------------------------------
       integer iCtoI_err          ! Convert a char to an int
       integer lnblnk
 C-----------------------------------------------------------------------
-C     Initialize token lists
+C     Initialize token lists. These arrays describe the various 
+C     tokens that can be specified for each of the three primary
+C     system topologies (furnace/boiler, baseboard & GSHP/ASHP)
 C-----------------------------------------------------------------------
       integer iName,iSys
       data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
-     &                         /'furnace-type   ',
-     &                          'capacity       ',
-     &                          'efficiency     ',
-     &                          'circ-fan-mode  ',
-     &                          'circ-fan-power ',
-     &                          'draft-fan-power',
-     &                          'pilot-fan-power'  /
+     &                         /'furnace-type    ',
+     &                          'capacity        ',
+     &                          'efficiency      ',
+     &                          'circ-fan-mode   ',
+     &                          'circ-fan-power  ',
+     &                          'draft-fan-power ',
+     &                          'pilot-fan-power ',
+     &                          'duct-system-flag'  /
 
       integer    iFurnaceLocs
       parameter (iFurnaceLocs=max_sys*iFurnaceTokenCount)
@@ -155,31 +162,30 @@ C-----------------------------------------------------------------------
 
 
       data (cHPTokenNames(iName),iName=1,iHPTokenCount)
-     &                   /  'performance              ',
-     &                      'capacity                 ',
-     &                      'COP                      ',
-     &                      'circ-fan-mode            ',
-     &                      'circ-fan-flow            ',
-     &                      'circ-fan-rated-flow      ',
-     &                      'circ-fan-position        ',
-     &                      'circ-fan-power           ',
-     &                      'outdoor-fan-power        ',
-     &                      'fan-power-in-auto        ',
-     &                      'circ-fan-rated-position  ',
-     &                      'circ-fan-rated-power     ',
-     &                      'circ-fan-mode            ',
-     &                      'temp-control-mode        ',
-     &                      'cut-off-temperature      ',
-     &                      'SHR                      ',
-     &                      'cooling-control-mode     ',
-     &                      'econ-control-type        ',
-     &                      'econ-min-OA-flow         ',
-     &                      'econ-space-set-point     ',
-     &                      'econ-OA-temp-limit       ',
-     &                      'econ-OA-enth-limit       ',
-     &                      'sys-num-for-heating-mode ',
-     &                      'ctl-file-function-num    '  /
-
+     &                   /  'performance                ',
+     &                      'capacity                   ',
+     &                      'COP                        ',
+     &                      'circ-fan-mode              ',
+     &                      'circ-fan-flow              ',
+     &                      'circ-fan-rated-flow        ',
+     &                      'circ-fan-position          ',
+     &                      'circ-fan-power             ',
+     &                      'outdoor-fan-power          ',
+     &                      'fan-power-in-auto          ',
+     &                      'circ-fan-rated-position    ',
+     &                      'circ-fan-rated-power       ',
+     &                      'circ-fan-mode              ',
+     &                      'temp-control-mode          ',
+     &                      'cut-off-temperature        ',
+     &                      'SHR                        ',
+     &                      'cooling-control-mode       ',
+     &                      'economizer-control-type    ',
+     &                      'economizer-min-OA-flow     ',
+     &                      'economizer-indoor-set-point',
+     &                      'economizer-OA-temp-limit   ',
+     &                      'economizer-OA-enth-limit   ',
+     &                      'sys-num-for-heating-mode   ',
+     &                      'ctl-file-function-num      '  /
 
       integer    iHPLocs
       parameter (iHPLocs=max_sys*iHPTokenCount)
@@ -225,7 +231,9 @@ C-----------------------------------------------------------------------
         bSysFuncOK(iSystem)      = .false.
         bSysBackOK(iSystem)      = .false.
         bSysOAPeriodsOK(iSystem) = .false.
-        
+        bFan_AutoSized(iSystem) = .false.
+        bFan_Rated_AutoSized(iSystem) = .false.
+        bFan_Auto_AutoSized(iSystem) = .false.
 
 C.......Initialize OA daytype and period counters to zero.
         iNum_OA_daytypes(iSystem) = 0
@@ -850,19 +858,16 @@ C.............Get zone index
                 call HVACinput_RepErr ( iFileLine,
      &            'Could not interpret zone index provided with '
      &            //'"*zone-link" tag.' )
-                bSysZonesOK(iSystem) = .false.
               endif
 
 C.............Get zone fraction
               sys_zone_cap_frac(iSystem,iZone) =
      &            fCtoR_err(cLnWords(3), 'System capacity fraction',
      &            bConvErr)
-
               if ( bConvErr ) then
                 call HVACinput_RepErr ( iFileLine,
      &            'Could not interpret system capcacity fraction '
      &            //' provided with "*zone-link" tag.' )
-
               endif
 
             endif    !<- matches "if ( iWordCount /= 3 ... "
@@ -976,9 +981,11 @@ C-----------------------------------------------------------------------
 
             else
 
-C............. open block
+C.............open block
               bOASchedBlockOpen = .true.
 
+C.............Set OA schedule specification flag
+              bSysOAPeriodsOK(iSystem) = .true.
 
             endif
 
@@ -1012,7 +1019,7 @@ C-----------------------------------------------------------------------
 C.............Increment total number of OA day types
               iNum_OA_daytypes(iSystem) = iNum_OA_daytypes(iSystem) + 1 
               iDaytype = iNum_OA_daytypes(iSystem)
-            
+
             endif
 
 
@@ -1254,11 +1261,10 @@ C-----------------------------------------------------------------------
 
 !          enddo
 
-
 C-----------------------------------------------------------------------
 C       Parse and validate block data
 C-----------------------------------------------------------------------
-        select case ( ihvac_type (iSystem) )
+        parse_data_by_HVAC_type: select case ( ihvac_type (iSystem) )
 
           case ( iSysFurnace )
 
@@ -1269,6 +1275,8 @@ C-----------------------------------------------------------------------
             call HVAC_FuranaceBoiler_Input(iSystem,iSysBoiler)
 
           case ( iSysBaseboard )
+
+            call HVAC_Baseboard_Input(iSystem)
 
           case ( iSysIMS )
 
@@ -1286,14 +1294,174 @@ C-----------------------------------------------------------------------
 
           case default
 
-        end select
+        end select parse_data_by_HVAC_type
 
+C-----------------------------------------------------------------------
+C       Determine backup system, if any
+C-----------------------------------------------------------------------
+        backup_system_speced: if ( bSysBackOK(iSystem) ) then
+
+          bFound = .false.
+
+          backup_system_search_loop: do iBackupSystem = 1, num_hvac_sys
+
+            backup_match_name:
+     &      if( cSys_Backup(iSystem) == cSys_name(iBackupSystem) ) then
+
+C..............Record backup system #
+              ibackup_sys_num(iSystem) = iBackupSystem
+
+C.............Ensure backup system is valid (that is,
+C.............one of furnace/baseboards/boiler)
+
+              bFound = .true.
+
+              backup_type: select case ( ihvac_type( iBackupSystem ) )
+
+              case (iSysFurnace, iSysBoiler, iSysBaseboard )
+
+                iBackup_Heat(iSystem) = ihvac_type( iBackupSystem )
+
+              case default 
+
+                 write (cMsg, '(A,A,I2,A,A)') 'Backup system for HVAC',
+     &             ' system # ', iSystem, ' must be furnace, boiler',
+     &             ' or heat pump.'
+                 call edisp248( iUout, cMsg, 80 )
+                 bParseError = .true.
+                 
+              end select backup_type
+
+            endif backup_match_name
+
+          enddo backup_system_search_loop
+
+          backup_found: if ( .not. bFound ) then
+
+            write (cMsg, '(A,A,A,A,I2,A)') 'Backup system "',
+     &             cSys_Backup(iSystem)(1:lnblnk(cSys_Backup(iSystem))),
+     &             '" for HVAC',
+     &             ' system # ', iSystem, ' could not be found!'
+            call edisp248( iUout, cMsg, 80 )
+            bParseError = .true.
+
+          endif backup_found
+
+C-----------------------------------------------------------------------
+C         If back-up and primary fans have been auto-sized,
+C         compare fan sizes and pick largest.
+C-----------------------------------------------------------------------
+          iBackupSystem = iBackup_sys_num(iSystem)
+
+          if ( bFan_AutoSized(iSystem)       .and.
+     &         bFan_AutoSized(iBackupSystem)
+     &       ) then
+
+            fan_power(iSystem) = max ( fan_power(iSystem),
+     &                                 fan_power(iBackupSystem) )
+            fan_power(iBackupSystem) = fan_power(iSystem)
+
+          endif
+
+          if ( bFan_Rated_AutoSized(iSystem)      .and.
+     &         bFan_Rated_AutoSized(iBackupSystem)
+     &       ) then
+
+            fan_power_r(iSystem) = max ( fan_power_r(iSystem),
+     &                                   fan_power_r(iBackupSystem) )
+            fan_power_r(iBackupSystem) = fan_power_r(iSystem)
+
+          endif
+
+          if ( bFan_Auto_AutoSized(iSystem)      .and.
+     &         bFan_Auto_AutoSized(iBackupSystem)
+     &       ) then
+
+            fan_power_auto(iSystem) 
+     &                = max ( fan_power_auto(iSystem),
+     &                        fan_power_auto(iBackupSystem) )
+     &
+            fan_power_auto(iBackupSystem) = fan_power_auto(iSystem)
+
+          endif
+
+          
+     
+
+        endif backup_system_speced
+
+C-----------------------------------------------------------------------
+C       Parse outdoor air schedule (if any)
+C-----------------------------------------------------------------------
+        OA_schedule_speced: if ( bSysOAPeriodsOK(iSystem) ) then
+          iDayType = 1
+C-----------------------------------------------------------------------
+C         Loop through each day in a year
+C-----------------------------------------------------------------------
+          DayLoop: do iDay = 1, 365
+            iPeriod  = 1
+C-----------------------------------------------------------------------
+C           Loop though each hour in a day
+C-----------------------------------------------------------------------
+            HourLoop: do iHour = 1, 24
+
+C-----------------------------------------------------------------------
+C             Compute hour in year
+C-----------------------------------------------------------------------
+              iHourInYear = ( iDay - 1 ) * 24 + iHour 
+
+C-----------------------------------------------------------------------
+C             Is current period valid?
+C-----------------------------------------------------------------------
+              Period_Valid:
+     &        if ( iHour
+     &            > iOA_Period_EndHour(iSystem, iDaytype, iPeriod)
+     &            )then
+C...............No. Increment period
+                iPeriod = iPeriod + 1
+
+C...............Does incrementing the period exceed the total number 
+C...............of specified periods? If so, reset counter
+                if ( iPeriod > iNum_OA_periods(iSystem,iDaytype) )
+     &            iPeriod = 1
+      
+              endif Period_Valid
+
+C-----------------------------------------------------------------------
+C             Is current daytype valid?
+C-----------------------------------------------------------------------
+
+              DayType_Valid:
+     &        if ( iHourInYear
+     &               > iOA_DayType_EndHour(iSystem,iDaytype) )  then
+
+C...............No. Move to next daytype
+                iDaytype = iDaytype + 1
+                iPeriod  = 1
+
+C...............But check that we haven't exhausted all possible
+C...............daytypes, and reset counter if so.
+                if ( iDaytype > iNum_OA_daytypes(iSystem) )
+     &            iDaytype = 1
+
+              endif DayType_Valid
+
+C-----------------------------------------------------------------------
+C             Now assign flow-rate from OA schedule to hvac common
+C             for the current hour
+C-----------------------------------------------------------------------
+              outdoor_air_flow(iSystem, iHourInYear) =
+     &            fOA_Period_FlowRate( iSystem, iDaytype, iPeriod )
+
+            enddo HourLoop
+
+          enddo DayLoop
+
+        endif OA_schedule_speced
 C-----------------------------------------------------------------------
 C     Validate furnace/fuel combination
 C-----------------------------------------------------------------------
-
-
-        select case ( ihvac_type (iSystem) )
+        validate_fuel: select case ( ihvac_type (iSystem) )
 
           case ( iSysFurnace )
 
@@ -1303,7 +1471,7 @@ C-----------------------------------------------------------------------
 
           case default
 
-        end select
+        end select validate_fuel
 
       enddo system_loop
 C-----------------------------------------------------------------------
@@ -1385,6 +1553,133 @@ C.....Set parsing error flag
 
 C================== HVAC_FuranaceBoiler_Input ==========================
 C
+C This routine parses the data block for baseboards
+C
+C Inputs:
+C   -iSystem: System index
+C
+C=======================================================================
+      subroutine HVAC_Baseboard_Input ( iSystem )
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "furnace_common.h"
+
+C-----------------------------------------------------------------------
+C     Passed variables
+C-----------------------------------------------------------------------
+      integer iSystem     ! System index
+C-----------------------------------------------------------------------
+C     Input/Output channel
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      character*248 cMsg  ! Message buffer
+      logical bFound      ! Result of string search
+      logical bInLimits   ! Flag indicating if value is within limits
+
+C.....Named constants
+      logical bRequired, bNotRequired
+      parameter (bRequired = .true., bNotRequired = .false.)
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
+      real Fan_AutoSize_Improved
+
+C.....Steady-state capacity
+
+      ss_capacity(iSystem) = fHVAC_FindTokenWithLimits(
+     &                             iSystem,
+     &                             'capacity',
+     &                             'baseboard steady-state capacity',
+     &                             bRequired,
+     &                             0.0, 1.0e07,
+     &                             bFound,
+     &                             bInLimits )
+
+C.....Steady-state efficency
+
+      ss_efficiency(iSystem) = fHVAC_FindTokenWithLimits(
+     &                            iSystem,
+     &                            'efficiency',
+     &                            'baseboard steady-state efficiency',
+     &                            bRequired,
+     &                            0.0, 1.0,
+     &                            bFound,
+     &                            bInLimits )
+
+C.....Fan operation
+      iFan_Operation(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                             iSystem,
+     &                             'circ-fan-mode',
+     &                             'furnace circulation fan mode',
+     &                             bNotRequired,
+     &                             bFound) )
+
+      baseboard_fanfound:
+     &if ( bFound
+     &    .and. iFan_Operation( iSystem ) /= iFan_None
+     &    .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &    .and. iFan_Operation( iSystem ) /= iFan_Cont
+     &    ) then
+
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting baseboard fan operation ',
+     &    '(data item 1) for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 0  (no fan associated with baseboards)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 1  (Automatic fan operation)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 2  (continuious fan operation)'
+        call edisp248( iUout, cMsg, 80 )
+C.......Set error flag
+        bParseError = .true.
+
+      elseif ( bFound ) then
+
+C.......If fan has been specified, read fan power.
+        fan_power(iSystem) = fHVAC_FindTokenWithLimits
+     &   ( iSystem,
+     &     'circ-fan-power',
+     &     'baseboard circulation fan power',
+     &     bNotRequired,
+     &     0.0, 1.0e07,
+     &     bFound,
+     &     bInLimits )
+
+        if ( .not. bFound ) then
+          fan_power( iSystem ) = Fan_AutoSize_Improved( iSystem )
+          bFan_AutoSized(iSystem) = .true.
+        endif 
+
+      else
+
+        iFan_Operation(iSystem) = iFan_None
+        fan_power(iSystem) = 0.0
+
+      endif baseboard_fanfound
+
+      return
+      end 
+
+
+
+C================== HVAC_FuranaceBoiler_Input ==========================
+C
 C This routine parses the data block for furnaces and boilers.
 C
 C Inputs:
@@ -1424,6 +1719,7 @@ C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
       real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
+      real Fan_AutoSize_Improved
 C-----------------------------------------------------------------------
 C     Process data in fDataBlock
 C
@@ -1440,13 +1736,14 @@ C
 C-----------------------------------------------------------------------
 
 C.....Count data items
-      furnace_items_count: if ( iDataCount( iSystem ) /= 7 ) then
+      furnace_items_count: if ( iDataCount( iSystem )
+     &                            > iFurnaceTokenCount ) then
         write (cMsg, '(A,A,I2,A,I2,A)' )
      &    ' Error interpreting furnace data ',
      &    'for HVAC system # ',
      &    iSystem,
      &    '. ', iDataCount ( iSystem ),
-     &    ' items were specified but 7 items are expected.'
+     &    ' items were specified but 8 items are expected.'
         call edisp248( iUout, cMsg, 80 )
         bParseError = .true.
 
@@ -1542,6 +1839,12 @@ C.........Set error flag
           bParseError = .true.
 
         endif
+C-----------------------------------------------------------------------
+C       Set the correlation coefficients for the part-load performance by
+c       calling FURNACE_COEFF. The correlation coefficients are stored in 
+c       common furnace_corr
+C-----------------------------------------------------------------------
+        call FURNACE_COEFF(iSystem,isys_type(iSystem))
 
 C.......Steady-state capacity
 
@@ -1601,27 +1904,33 @@ C.........Set error flag
           bParseError = .true.
         endif
 
-
 C.......Indoor fan power
         fan_power(iSystem) = fHVAC_FindTokenWithLimits
      &     ( iSystem,
      &       'circ-fan-power',
      &       'furnace circulation fan power',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
      
+        if ( .not. bFound ) then
+          fan_power(iSystem) = Fan_AutoSize_Improved(iSystem)
+          bFan_AutoSized(iSystem) = .true.
+        endif 
+
 
 C.......Draft fan power
         draft_fan_power(iSystem) = fHVAC_FindTokenWithLimits(
      &                             iSystem,
      &                               'draft-fan-power',
      &                               'furnace draft fan power',
-     &                               bRequired,
+     &                               bNotRequired,
      &                               0.0, 1.0e07,
      &                               bFound,
      &                               bInLimits )
+
+        if ( .not. bFound ) draft_fan_power(iSystem) = 0.0
 
 
 C.......Pilot power
@@ -1634,8 +1943,24 @@ C.......Pilot power
      &                               bFound,
      &                               bInLimits )
 
+C.......Duct system flag
+        iduct_sys_flag(iSystem) = int( fHVAC_FindTokenWithLimits(
+     &                               iSystem,
+     &                               'duct-system-flag',
+     &                               'duct-system-flag',
+     &                               bNotRequired,
+     &                               0.0, 1.0e07,
+     &                               bFound,
+     &                               bInLimits ) )
+
+        if ( .not. bFound ) iduct_sys_flag(iSystem) = 1
 
       endif furnace_items_count
+C-----------------------------------------------------------------------
+C     Valiate fuel/furnace combination.
+C-----------------------------------------------------------------------
+
+      ! Code to go here...
 
       return
       end
@@ -1673,6 +1998,7 @@ C-----------------------------------------------------------------------
 C.....Named constants
       logical bRequired, bNotRequired
       parameter (bRequired = .true., bNotRequired = .false.)
+      logical bRequiredHeating, bRequiredCooling
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -1683,6 +2009,7 @@ C     References
 C-----------------------------------------------------------------------
       integer lnblnk
       real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
+      real SYS_FLOW_RATE, Fan_AutoSize_Improved
 C-----------------------------------------------------------------------
 C     Parse data in fDataBlock.
 C
@@ -1704,6 +2031,20 @@ C     GSHP/GCEP models expect X inputs
 C       - mode of operation (1-heating; 2-cooling)
 C
 C-----------------------------------------------------------------------
+
+C-----------------------------------------------------------------------
+C     Assign heating and cooling function flags
+C-----------------------------------------------------------------------
+      if ( iSys_Function(iSystem) == iFuncHeating ) then
+        bRequiredHeating = .true.
+        bRequiredCooling = .false.
+      else 
+        bRequiredHeating = .false.
+        bRequiredCooling = .true.
+      endif
+
+C.....Update HP-specific iUnitFunc flag
+      iUnit_Function ( iSystem ) = iSys_Function( iSystem )
 
 C-----------------------------------------------------------------------
 C     First, check that all tokens match known values
@@ -1741,6 +2082,9 @@ C.......If token wasn't found, then report message to user.
 
           enddo
 
+C.........Set error flag
+          bParseError = .true.          
+
         endif
 
       enddo search_tokens
@@ -1748,28 +2092,58 @@ C.......If token wasn't found, then report message to user.
 C-----------------------------------------------------------------------
 C     Check performance keyword
 C-----------------------------------------------------------------------
-      isys_type(iSystem) = int( fHVAC_FindTokenNoLimits(
+
+
+      hvac_type: if ( ihvac_type(iSystem) == iSysGSHP       .or.
+     &                ihvac_type(iSystem) == iSysGSHP_GCEP       ) then
+
+C-----------------------------------------------------------------------
+C       If a GSH or a GCEP P system is being modelled, the correlation
+C       coefficients will be determined in a slightly different way than
+C       for ASHP systems.  GSHP coefficients will be based on entering
+C       water temperature (EWT) and as such will vary every day of
+C       the simulation. For that reason, they are calculated within the
+C       time-step simulation, instead of here.  The following initializes
+C       the correlation coefficients to zero.
+C-----------------------------------------------------------------------  
+
+           ahp(iSystem) = 0.0
+           bhp(iSystem) = 0.0
+           chp(iSystem) = 0.0
+           dhp(iSystem) = 0.0
+           isys_type(iSystem) = 4
+
+      else 
+
+     
+        isys_type(iSystem) = int( fHVAC_FindTokenNoLimits(
      &                          iSystem,
      &                          'performance',
      &                          'heat pump performance characteristics',
      &                          bRequired,
      &                          bFound ) )
 
-      if ( bFound                  .and.
+        if ( bFound                .and.
      &     isys_type(iSystem) /= 1 .and.
      &     isys_type(iSystem) /= 2 .and.
      &     isys_type(iSystem) /= 3 ) then
-        write (cMsg, '(A,A,I2,A)' )
+          write (cMsg, '(A,A,I2,A)' )
      &    ' Error interpreting "performance" token ',
      &    'for HVAC system # ',
      &    iSystem,
      &    '. Value must be one of the following:'
-        call edisp248( iUout, cMsg, 80 )
-        call edisp248( iUout,'   - 1  (typical unit)',80)
-        call edisp248( iUout,'   - 2  (good unit)',   80)
-        call edisp248( iUout,'   - 3  (poor unit)',   80)
-        
-      endif 
+          call edisp248( iUout, cMsg, 80 )
+          call edisp248( iUout,'   - 1  (typical unit)',80)
+          call edisp248( iUout,'   - 2  (good unit)',   80)
+          call edisp248( iUout,'   - 3  (poor unit)',   80)
+
+        else
+          call ASHP_COEFF(iSystem)
+        end if
+
+      endif hvac_type 
+
+
 
 C-----------------------------------------------------------------------
 C     Read capacity
@@ -1803,12 +2177,14 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-flow',
      &       'heat pump circulation fan flow rate',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
 
-
+C.....If the flow rate was not specified, estimate it.
+      if ( .not. bFound ) flow_rate(iSystem) = SYS_FLOW_RATE(iSystem)
+  
 C-----------------------------------------------------------------------
 C     Read circulation fan rated-flow rate
 C-----------------------------------------------------------------------
@@ -1816,10 +2192,52 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-rated-flow',
      &       'heat pump circulation fan flow rate at rating conditions',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
+
+C.....If the flow rate was not specified, estimate it.
+      if ( .not. bFound ) flow_rate_r(iSystem) = SYS_FLOW_RATE(iSystem)
+
+C-----------------------------------------------------------------------
+C     Fan operation
+C-----------------------------------------------------------------------
+        iFan_Operation(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                               iSystem,
+     &                               'circ-fan-mode',
+     &                               'furnace circulation fan mode',
+     &                               bRequired,
+     &                               bFound) )
+
+        if ( bFound 
+     &      .and. iFan_Operation( iSystem ) /= iFan_None
+     &      .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &      .and. iFan_Operation( iSystem ) /= iFan_Cont
+     &      ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      ' Error interpreting furnace fan operation ',
+     &      '(data item 1) for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be one of the following:'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 0  (no fan associated with this furance)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 1  (Automatic fan operation)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 2  (continuious fan operation)'
+          call edisp248( iUout, cMsg, 80 )
+C.........Set error flag
+          bParseError = .true.
+        endif
+
 
 C-----------------------------------------------------------------------
 C     Check fan location keyword
@@ -1828,14 +2246,11 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-position',
      &       'heat pump circulation fan position',
-     &       bRequired,
+     &       bNotRequired,
      &       bFound ) )
 
-C.......Set error flag
-        bParseError = .true.
-
-      if (ifan_position(iSystem) /= 1 .and.
-     &        ifan_position(iSystem) /= 2  ) then
+      if (ifan_position(iSystem) /= iFan_BlowThrough .and.
+     &    ifan_position(iSystem) /= iFan_DrawThrough        ) then
         write (cMsg, '(A,A,I2,A)' )
      &    ' Error interpreting "circ-fan-position" token ',
      &    'for HVAC system # ',
@@ -1844,6 +2259,10 @@ C.......Set error flag
         call edisp248( iUout, cMsg, 80 )
         call edisp248( iUout,'   - 1  (blow-through)',80)
         call edisp248( iUout,'   - 2  (draw-through)',   80)
+
+C.......Set error flag
+        bParseError = .true.
+        
       endif 
 C-----------------------------------------------------------------------
 C     Read circulation fan power
@@ -1852,10 +2271,17 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-power',
      &       'heat pump circulation fan flow power',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
+
+C.....If not found, set value to less than 0. This will cause
+C.....Fan_AutoSize_Improved routine to estimate its value
+      if ( .not. bFound ) then
+        fan_power(iSystem) = Fan_AutoSize_Improved(iSystem)
+        bFan_AutoSized(iSystem) = .true.
+      endif
 
 C-----------------------------------------------------------------------
 C     Read circulation fan rated power
@@ -1864,10 +2290,17 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-rated-power',
      &       'heat pump circulation fan rated power',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
+
+C.....If not found, set value to less than 0. This will cause
+C.....Fan_AutoSize_Improved routine to estimate its value
+      if ( .not. bFound ) then
+          fan_power_r(iSystem) = Fan_AutoSize_Improved(iSystem)
+          bFan_Rated_AutoSized(iSystem) = .true.
+        endif
 
 C-----------------------------------------------------------------------
 C     Read outdoor fan power
@@ -1876,7 +2309,7 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'outdoor-fan-power',
      &       'heat pump outdoor fan power',
-     &       bRequired,
+     &       bRequiredCooling,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
@@ -1888,7 +2321,7 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'circ-fan-rated-position',
      &       'heat pump circulation location during rating',
-     &       bRequired,
+     &       bNotRequired,
      &       bFound ) )
 
       if ( bFound                        .and.
@@ -1902,71 +2335,92 @@ C-----------------------------------------------------------------------
         call edisp248( iUout, cMsg, 80 )
         call edisp248( iUout,'   - 1  (blow-through)',80)
         call edisp248( iUout,'   - 2  (draw-through)',   80)
+
+C.......Set error flag
+        bParseError = .true.
+
       endif 
       
 C-----------------------------------------------------------------------
-C     Read outdoor fan power in auto
+C     Read fan power in auto
 C-----------------------------------------------------------------------
+
+      
       fan_power_auto(iSystem) = fHVAC_FindTokenWithLimits
      &     ( iSystem,
      &       'fan-power-in-auto',
      &       'heat pump circulation fan power use in auto',
-     &       bRequired,
+     &       bNotRequired,
      &       0.0, 1.0e07,
      &       bFound,
      &       bInLimits )
+
+C.....If not found, set value to less than 0. This will cause
+C.....Fan_AutoSize_Improved routine to estimate its value
+      if ( iFan_Operation(iSystem) == iFan_Auto
+     &     .and. .not. bFound
+     &   ) then
+          fan_power_auto(iSystem) = Fan_AutoSize_Improved(iSystem)
+          bFan_Auto_AutoSized(iSystem) = .true.
+      elseif ( .not. bFound ) then
+          fan_power_auto(iSystem) = 0.0
+      endif
 
 C-----------------------------------------------------------------------
 C     Heating temperature control  
 C-----------------------------------------------------------------------
 
-        iTemp_Control(iSystem) = int( fHVAC_FindTokenNoLimits(
-     &                       iSystem,
-     &                       'temp-control-mode',
-     &                       'heat pump temperature control strategy',
-     &                       bRequired,
-     &                       bFound) )
-     
-        if ( bFound 
-     &      .and. iTemp_Control( iSystem ) /= iTemp_BalancedPoint
-     &      .and. iTemp_Control( iSystem ) /= iTemp_Restricted
-     &      .and. iTemp_Control( iSystem ) /= iTemp_Unrestricted
-     &      ) then
+      iTemp_Control(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                     iSystem,
+     &                     'temp-control-mode',
+     &                     'heat pump temperature control strategy',
+     &                     bRequiredHeating,
+     &                     bFound) )
 
-          write (cMsg, '(A,A,I2,A)' )
-     &      'Error interpreting heat temperature control strategy ',
-     &      '(data item 1) for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be one of the following:'
-          call edisp248( iUout, cMsg, 80 )
+      if ( bFound
+     &    .and. iTemp_Control( iSystem ) /= iTemp_BalancedPoint
+     &    .and. iTemp_Control( iSystem ) /= iTemp_Restricted
+     &    .and. iTemp_Control( iSystem ) /= iTemp_Unrestricted
+     &    ) then
 
-          write (cMsg, '(A)')
-     &      '   - 1  (Balanced point)'
-          call edisp248( iUout, cMsg, 80 )
+        write (cMsg, '(A,A,I2,A)' )
+     &    'Error interpreting heating temperature control strategy ',
+     &    '(data item 1) for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
 
-          write (cMsg, '(A)')
-     &      '   - 2  (Restricted)'
-          call edisp248( iUout, cMsg, 80 )
+        write (cMsg, '(A)')
+     &    '   - 1  (Balanced point)'
+        call edisp248( iUout, cMsg, 80 )
 
-          write (cMsg, '(A)')
-     &      '   - 3  (Unrestricted)'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
-        endif
+        write (cMsg, '(A)')
+     &    '   - 2  (Restricted)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 3  (Unrestricted)'
+        call edisp248( iUout, cMsg, 80 )
+C.......Set error flag
+        bParseError = .true.
+      endif
 
 C-----------------------------------------------------------------------
 C     Cut-off temperature
 C-----------------------------------------------------------------------
-
-      cutoff_temp(iSystem) = fHVAC_FindTokenWithLimits
+      if ( bFound .and.
+     &     bRequiredHeating .and.
+     &     iTemp_Control(iSystem) == iTemp_Restricted
+     &    ) then
+        cutoff_temp(iSystem) = fHVAC_FindTokenWithLimits
      &     ( iSystem,
      &       'cut-off-temperature',
-     &       'Heat pump control cut-off temperature',
+     &       'heat pump control cut-off temperature',
      &       bRequired,
      &       -99.0, 99.0,
      &       bFound,
      &       bInLimits )
+      endif 
 
 C-----------------------------------------------------------------------
 C     Sensible heat ratio 
@@ -1975,24 +2429,205 @@ C-----------------------------------------------------------------------
      &     ( iSystem,
      &       'SHR',
      &       'heat pump sensible heat ratio',
-     &       bRequired,
+     &       bRequiredCooling,
      &       0.0, 99.0,
      &       bFound,
      &       bInLimits )
 
+C-----------------------------------------------------------------------
+C     Cooling control strategy
+C-----------------------------------------------------------------------
 
-! 'cut-off-temperature      '
-! 'SHR                      '
-! 'cooling-control-mode     '
-! 'econ-control-type        '
-! 'econ-min-OA-flow         '
-! 'econ-space-set-point     '
-! 'econ-OA-temp-limit       '
-! 'econ-OA-enth-limit       '
-! 'sys-num-for-heating-mode '
-! 'ctl-file-function-num    '
+      iCooling_Type(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                     iSystem,
+     &                     'cooling-control-mode',
+     &                     'heat pump cooling control strategy',
+     &                     bRequiredCooling,
+     &                     bFound) )
 
-      stop
+      if ( bFound
+     &    .and. iCooling_Type( iSystem ) /= iCool_Conventional
+     &    .and. iCooling_Type( iSystem ) /= iCool_Economizer
+     &    ) then
+
+        write (cMsg, '(A,A,I2,A)' )
+     &    'Error interpreting cooling control strategy ',
+     &    '(data item 1) for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 1  (Conventional system)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 2  (Economizer)'
+        call edisp248( iUout, cMsg, 80 )
+
+C.......Set error flag
+        bParseError = .true.
+      endif
+
+      economizer: if ( iCooling_Type(iSystem) == iCool_Economizer ) then
+C-------------------------------------------------------------------------
+C       Economizer control strategy
+C-------------------------------------------------------------------------
+        iEconomizer_Control(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                       iSystem,
+     &                       'economizer-control-mode',
+     &                       'economizer control strategy',
+     &                       bRequired,
+     &                       bFound) )
+
+        if ( bFound
+     &   .and. iEconomizer_Control( iSystem ) /= iEcon_TempIntegrated
+     &   .and. iEconomizer_Control( iSystem ) /= iEcon_TempNonIntegrated
+     &   .and. iEconomizer_Control( iSystem ) /= iEcon_EnthIntegrated
+     &   .and. iEconomizer_Control( iSystem ) /= iEcon_EnthNonIntegrated
+     &   ) then
+
+          write (cMsg, '(A,A,I2,A)' )
+     &      'Error interpreting ecomomizer control strategy ',
+     &      '(token "economizer-control-mode") for HVAC system # ',
+     &      iSystem,
+     &      '. Value must be one of the following:'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &      '   - 1  (Indoor/outdoor temperature integrated compressor'
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &    '         control and option for outdoor dry-bulb temp. limit'
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &      '         control.)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &   '   - 2  (Indoor/outdoor temperature non-integrated compressor'
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &   '         control and option for outdoor dry-bulb temp. limit'
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &     '         control.)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &   '   - 3  (Enthalpy-integrated compressor control and enthalpy'
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &     '         limit control.)'
+          call edisp248( iUout, cMsg, 80 )
+
+          write (cMsg, '(A)')
+     &   '   - 4  (Enthalpy non-integrated compressor control and '
+          call edisp248( iUout, cMsg, 80 )
+          write (cMsg, '(A)')
+     &     '         enthalpy limit control.)'
+          call edisp248( iUout, cMsg, 80 )          
+
+C.........Set error flag
+          bParseError = .true.
+        endif
+
+
+C-------------------------------------------------------------------------
+C       Economizer minimum outdoor air flow
+C-------------------------------------------------------------------------
+        economizer_min_out_air_flow(iSystem) = fHVAC_FindTokenWithLimits
+     &       ( iSystem,
+     &         'ecomomizer-min-OA-flow',
+     &         'economizer minimum outdoor air flow',
+     &         bRequired,
+     &         0.0, 99.0,
+     &         bFound,
+     &         bInLimits )
+
+C-------------------------------------------------------------------------
+C       Economizer indoor temperature set point
+C-------------------------------------------------------------------------
+        economizer_ind_temp_setpoint(iSystem)
+     &     = fHVAC_FindTokenWithLimits
+     &       ( iSystem,
+     &         'ecomomizer-indoor-set-point',
+     &         'economizer indoor temperature set point',
+     &         bRequired,
+     &         -99.0, 99.0,
+     &         bFound,
+     &         bInLimits )
+
+        economizer_limit: select case ( iEconomizer_Control(iSystem) )
+C-------------------------------------------------------------------------
+C       Economizer outdoor temperature limit
+C-------------------------------------------------------------------------
+        case ( iEcon_TempIntegrated, iEcon_TempNonIntegrated ) 
+          economizer_out_temp_limitcon(iSystem)
+     &      = fHVAC_FindTokenWithLimits
+     &       ( iSystem,
+     &         'ecomomizer-OA-temp-limit',
+     &         'economizer indoor temperature limit',
+     &         bRequired,
+     &         -99.0, 99.0,
+     &         bFound,
+     &         bInLimits )
+
+C-------------------------------------------------------------------------
+C       Economizer outdoor enthalpy limit
+C-------------------------------------------------------------------------
+        case ( iEcon_EnthIntegrated, iEcon_EnthNonIntegrated )
+        economizer_out_temp_limitcon(iSystem)
+     &      = fHVAC_FindTokenWithLimits
+     &       ( iSystem,
+     &         'ecomomizer-OA-enth-limit',
+     &         'economizer indoor enthalpy limit',
+     &         bRequired,
+     &         0.0, 1.0E06,
+     &         bFound,
+     &         bInLimits )
+        end select economizer_limit
+      endif economizer 
+C-----------------------------------------------------------------------
+C     Corresponding system number for heating mode
+C-----------------------------------------------------------------------
+      isys_num_heating(iSystem) = int ( fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'sys-num-for-heating-mode',
+     &       'corresponding system # for heating mode',
+     &       bNotRequired,
+     &       0.0, real(max_sys),
+     &       bFound,
+     &       bInLimits ) )
+
+C.....this kludge has no affect on the model, but ensures parity
+C.....in .h3k files.     
+      if ( iUnit_Function ( iSystem ) == iFuncCooling .and.
+     &     .not. bFound ) isys_num_heating(iSystem) = iSystem
+
+C-----------------------------------------------------------------------
+C     Corresponding control function for cooling mode:
+C-----------------------------------------------------------------------
+      icontrol_function(iSystem) = int ( fHVAC_FindTokenWithLimits
+     &     ( iSystem,
+     &       'ctl-file-function-num',
+     &       'corresponding function number from .ctl file',
+     &       bRequiredCooling,
+     &       0.0, 20.0,
+     &       bFound,
+     &       bInLimits ) )
+C-----------------------------------------------------------------------
+C     For a heat pump in the cooling mode, it is possible using the
+C     information at rating conditions to determine the bypass factor
+C     of the unit at these rating conditions. This will be used in
+C     subroutine ASHP_COOLING to estimate the energy consumption of unit.
+C-----------------------------------------------------------------------
+      if ( iUnit_Function ( iSystem ) == iFuncCooling ) then
+        
+        call BYPASS_FACTOR_R( iSystem )
+
+      endif 
+
       return
       end
 
