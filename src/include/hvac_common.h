@@ -5,15 +5,11 @@ c modeled ideally
      &bParseError,
      &cFurnaceTokenNames(iFurnaceTokenCount),
      &cBaseboardTokenNames(iBaseboardTokenCount),
-     &cIMSTokenNames(iIMSTokenCount),
+     &cP10_IMSTokenNames(iP10_IMSTokenCount),
      &cHPTokenNames(iHPTokenCount),
-     &bFurnaceTokenSet(max_sys,iFurnaceTokenCount),
-     &bBaseboardTokenSet(max_sys,iBaseboardTokenCount),
-     &bIMSTokenSet(max_sys,iIMSTokenCount),
-     &bHPTokenSet(max_sys,iHPTokenCount),
      &fFurnaceTokenVals(max_sys,iFurnaceTokenCount),
      &fBaseboardTokenVals(max_sys,iBaseboardTokenCount),
-     &fIMSTokenVals(max_sys,iIMSTokenCount),
+     &fP10_IMSTokenVals(max_sys,iP10_IMSTokenCount),
      &fHPTokenVals(max_sys,iHPTokenCount),
      &iDataCount(max_sys),
      &cTokens(max_sys,iMAXTokenCount),
@@ -22,10 +18,8 @@ c modeled ideally
 
       character*72 cFurnaceTokenNames,
      &             cBaseboardTokenNames,
-     &             cIMSTokenNames, cHPTokenNames, cTokens
-      logical bFurnaceTokenSet, bIMSTokenSet, bBaseboardTokenSet,
-     &        bHPTokenSet
-      real fFurnaceTokenVals, fBaseboardTokenVals, fIMSTokenVals,
+     &             cP10_IMSTokenNames, cHPTokenNames, cTokens
+      real fFurnaceTokenVals, fBaseboardTokenVals, fP10_IMSTokenVals,
      &     fHPTokenVals, fTokenVals
 
       common/HVAC_INPUT_DATA/

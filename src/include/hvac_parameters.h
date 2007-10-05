@@ -1,13 +1,13 @@
 c Declare integer variables in parameter file hvac.h
 
 C Named constants for system types
-      integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS,
+      integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS_P10,
      &        iSysASHP, iSysGSHP, iSysGSHP_GCEP
 
       parameter (iSysFurnace         = 1,
      &           iSysBoiler          = 2,
      &           iSysBaseboard       = 3,
-     &           iSysIMS             = 4,
+     &           iSysIMS_P10         = 4,
      &           iSysASHP            = 7,
      &           iSysGSHP            = 8,
      &           iSysGSHP_GCEP       = 9 )
@@ -98,10 +98,6 @@ C Named constants for economizer control
      &            iEcon_EnthIntegrated    = 3,
      &            iEcon_EnthNonIntegrated = 4   )
 
-C Data block size
-      integer iBlockSize
-      parameter (iBlockSize = 10 )
-
 c Maximum number of hvac systems that can be declared in the .hvac file
       INTEGER max_sys
       parameter (max_sys = 6)
@@ -130,8 +126,8 @@ c Maximum number of fuels. This sets the size of the array ifuel_type
 C Dimensions of token/data arrays for version 2+ format.
       integer iFurnaceTokenCount
       parameter (iFurnaceTokenCount = 8)
-      integer iIMSTokenCount
-      parameter (iIMSTokenCount = 1)
+      integer iP10_IMSTokenCount
+      parameter (iP10_IMSTokenCount = 19)
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount

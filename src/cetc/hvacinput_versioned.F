@@ -1,3 +1,75 @@
+! C=======================================================================
+! C This file contains data structures used by the idealized Integrated
+! C Mechanical System model (IMS).
+! C
+! C=======================================================================
+! 
+! C.....Number of part-load points
+!       integer iP10_num_SpaceH_PLP
+!       parameter ( iP10_num_SpaceH_PLP = 3 )
+! 
+! C.....Named constants for part-load ratios
+!       integer iP10_PLR_15, iP10_PLR_40, iP10_PLR_100
+!       parameter ( iP10_PLR_15  = 1,
+!      &            iP10_PLR_40  = 2,
+!      &            iP10_PLR_100 = 3 )
+! 
+! C.....Number of ventilation modes
+!       integer iP10_num_vent_modes
+!       parameter ( iP10_num_vent_modes = 3 )
+!       
+! C.....Named consants for ventilaton modes
+!       integer iP10_NoVent, iP10_LowVent, iP10_HighVent, iP10_SHVent
+!       parameter ( iP10_NoVent   = 1,
+!      &            iP10_LowVent  = 2,
+!      &            iP10_HighVent = 3,
+!      &            iP10_SHVent   = 4 )
+! 
+! C.....Space heating capacity (W)
+!       real fP10_SH_capacity(max_sys)
+! 
+! C.....Hourly Water heater delivery rating (L)
+!       real fP10_WH_OneHourRating(max_sys)
+! 
+! C.....Water heater performance factor (-)
+!       real fP10_WaterH_PF(max_sys)
+! 
+! C.....Space heating net efficiency (-)
+!       real fP10_SpaceH_NetEff(max_sys,iP10_num_SpaceH_PLP)
+! 
+! C.....Power consumption during space heating (W)
+!       real fP10_SpaceH_Power(max_sys, iP10_num_SpaceH_PLP)
+! 
+! C.....Power consumption of controls (W)
+!       real fP10_PowerControls(max_sys)
+! 
+! C.....Power consumption in circulation mode (W)
+!       real fP10_PowerCirc(max_sys)
+! 
+! C.....Fresh and exhaust ventilation rates (l/s)
+!       real fP10_Vent_FA_Flow(max_sys,iP10_num_vent_modes)
+!       real fP10_Vent_EA_Flow(max_sys,iP10_num_vent_modes)
+!       
+! C.....Fresh and exhaust fan power consumption (W)
+!       real fP10_Vent_FA_Power(max_sys,iP10_num_vent_modes)
+!       real fP10_Vent_EA_Power(max_sys,iP10_num_vent_modes)
+! 
+! C.....Sensible heat recovery efficiecy
+!       real fP10_Vent_SRE(max_sys, iP10_num_vent_modes)
+! 
+!       common/IMS_P10_inputs/
+!      &   fP10_SH_capacity,
+!      &   fP10_WH_OneHourRating,
+!      &   fP10_WaterH_PF,
+!      &   fP10_SpaceH_NetEff,
+!      &   fP10_SpaceH_Power,
+!      &   fP10_PowerControls,
+!      &   fP10_PowerCirc,
+!      &   fP10_Vent_FA_Flow,
+!      &   fP10_Vent_EA_Flow,
+!      &   fP10_Vent_FA_Power,
+!      &   fP10_Vent_EA_Power,
+!      &   fP10_Vent_SRE
 C This file is part of the ESP-r system.
 C Copyright Natural Resources Canada, Government
 C of Canada 2007. Please contact Alex Ferguson
@@ -135,79 +207,6 @@ C-----------------------------------------------------------------------
       real fCtoR_err             ! Convert a char to a real
       integer iCtoI_err          ! Convert a char to an int
       integer lnblnk
-C-----------------------------------------------------------------------
-C     Initialize token lists. These arrays describe the various 
-C     tokens that can be specified for each of the three primary
-C     system topologies (furnace/boiler, baseboard & GSHP/ASHP)
-C-----------------------------------------------------------------------
-      integer iName,iSys
-      data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
-     &                         /'furnace-type    ',
-     &                          'capacity        ',
-     &                          'efficiency      ',
-     &                          'circ-fan-mode   ',
-     &                          'circ-fan-power  ',
-     &                          'draft-fan-power ',
-     &                          'pilot-fan-power ',
-     &                          'duct-system-flag'  /
-
-      integer    iFurnaceLocs
-      parameter (iFurnaceLocs=max_sys*iFurnaceTokenCount)
-      data ( (bFurnaceTokenSet(iSys,iName),
-     &        iName=1,iFurnaceTokenCount),
-     &        iSys=1,max_sys )
-     &      / iFurnaceLocs * .false. /
-
-
-
-
-      data (cHPTokenNames(iName),iName=1,iHPTokenCount)
-     &                   /  'performance                ',
-     &                      'capacity                   ',
-     &                      'COP                        ',
-     &                      'circ-fan-mode              ',
-     &                      'circ-fan-flow              ',
-     &                      'circ-fan-rated-flow        ',
-     &                      'circ-fan-position          ',
-     &                      'circ-fan-power             ',
-     &                      'outdoor-fan-power          ',
-     &                      'fan-power-in-auto          ',
-     &                      'circ-fan-rated-position    ',
-     &                      'circ-fan-rated-power       ',
-     &                      'circ-fan-mode              ',
-     &                      'temp-control-mode          ',
-     &                      'cut-off-temperature        ',
-     &                      'SHR                        ',
-     &                      'cooling-control-mode       ',
-     &                      'economizer-control-type    ',
-     &                      'economizer-min-OA-flow     ',
-     &                      'economizer-indoor-set-point',
-     &                      'economizer-OA-temp-limit   ',
-     &                      'economizer-OA-enth-limit   ',
-     &                      'sys-num-for-heating-mode   ',
-     &                      'ctl-file-function-num      '  /
-
-      integer    iHPLocs
-      parameter (iHPLocs=max_sys*iHPTokenCount)
-      data ( (bHPTokenSet(iSys,iName),
-     &        iName=1,iHPTokenCount),
-     &        iSys=1,max_sys )
-     &      / iHPLocs * .false. /
-
-
-      data (cBaseboardTokenNames(iName),iName=1,iBaseboardTokenCount)
-     &                          / 'circ-fan-mode  ',
-     &                            'circ-fan-power ',
-     &                            'draft-fan-power',
-     &                            'pilot-fan-power'  /
-
-      integer    iBaseboardLocs
-      parameter (iBaseboardLocs=max_sys*iBaseboardTokenCount)
-      data ( (bBaseboardTokenSet(iSys,iName),
-     &        iName=1,iBaseboardTokenCount),
-     &        iSys=1,max_sys )
-     &      / iBaseboardLocs * .false. /
-
 C-----------------------------------------------------------------------
 C     Initialize parsing flags
 C-----------------------------------------------------------------------
@@ -510,7 +509,7 @@ C.............Collect HVAC type
                 ihvac_type(iSystem) = iSysBaseboard
 
               elseif ( cLnWords(2)(1:4) == 'IMS ' ) then
-                ihvac_type(iSystem) = iSysIMS
+                ihvac_type(iSystem) = iSysIMS_P10
 
               elseif ( cLnWords(2)(1:5) == 'ASHP ' ) then
                 ihvac_type(iSystem) = iSysASHP
@@ -1278,7 +1277,9 @@ C-----------------------------------------------------------------------
 
             call HVAC_Baseboard_Input(iSystem)
 
-          case ( iSysIMS )
+          case ( iSysIMS_P10 )
+
+            call HVAC_IMS_P10_Input(iSystem)
 
           case ( iSysASHP )
 
@@ -1293,6 +1294,8 @@ C-----------------------------------------------------------------------
             call HVAC_HP_Input(iSystem,iSysGSHP_GCEP)
 
           case default
+
+            ! Can't happen --- iHVAC_type trapped above.
 
         end select parse_data_by_HVAC_type
 
@@ -1467,7 +1470,7 @@ C-----------------------------------------------------------------------
 
           case ( iSysBoiler )
 
-          case ( iSysIMS )
+          case ( iSysIMS_P10 )
 
           case default
 
@@ -1551,7 +1554,268 @@ C.....Set parsing error flag
       return
       end
 
-C================== HVAC_FuranaceBoiler_Input ==========================
+C================== HVAC_IMS_P10_Input =================================
+C
+C  This routine parses the data block for a P10-compliant IMS system
+C
+C  Inputs:
+C    - iSystem: index of current IMS system
+C=======================================================================
+      subroutine HVAC_IMS_P10_Input( iSystem )
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "IMS_common.h"
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      integer iSystem     ! System index
+C-----------------------------------------------------------------------
+C     Input/Output channel
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      character*248 cMsg  ! Message buffer
+      logical bFound      ! Result of string search
+      logical bInLimits   ! Flag indicating if value is within limits
+
+C.....Named constants
+      logical bRequired, bNotRequired
+      parameter (bRequired = .true., bNotRequired = .false.)
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits      
+
+C-----------------------------------------------------------------------
+C     First, check that all tokens are valid
+C-----------------------------------------------------------------------
+      call AreTokensValid (iSystem) 
+
+C-----------------------------------------------------------------------
+C     Now read system capacity
+C-----------------------------------------------------------------------
+      fP10_SpaceH_capacity(iSystem) = fHVAC_FindTokenWithLimits(
+     &                  iSystem,
+     &                  'SH-capacity',
+     &                  'IMS unit space-heating capacity (W)',
+     &                  bRequired,
+     &                  0.0, 1.0e07,
+     &                  bFound,
+     &                  bInLimits )
+C-----------------------------------------------------------------------
+C     Water heating rating
+C-----------------------------------------------------------------------
+      fP10_WaterH_OneHourRating(iSystem)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'WH-one-hour-rating',
+     &       'IMS unit water-heating one-hour rating (L)',
+     &       bRequired,
+     &       0.0, 1.0e07,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Space heating net efficiency
+C-----------------------------------------------------------------------
+      fP10_SpaceH_NetEff(iSystem,iP10_PLR_15)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-net-eff-15',
+     &       'IMS unit space-heating HHV net efficiency @ 15% load (-)',
+     &       bRequired,
+     &       0.0, 1.0,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_SpaceH_NetEff(iSystem,iP10_PLR_40)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-net-eff-40',
+     &       'IMS unit space-heating HHV net efficiency @ 40% load (-)',
+     &       bRequired,
+     &       0.0, 1.0,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_SpaceH_NetEff(iSystem,iP10_PLR_100)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-net-eff-100',
+     &      'IMS unit space-heating HHV net efficiency @ 100% load (-)',
+     &       bRequired,
+     &       0.0, 1.0,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Power consumption in space heating 
+C-----------------------------------------------------------------------
+      fP10_SpaceH_Power(iSystem,iP10_PLR_15)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-power-15',
+     &       'IMS unit space-heating power use @ 15% load (W)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_SpaceH_Power(iSystem,iP10_PLR_40)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-power-40',
+     &       'IMS unit space-heating power use @ 40% load (W)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_SpaceH_Power(iSystem,iP10_PLR_100)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'SH-power-100',
+     &      'IMS unit space-heating power use @ 100% load (W)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_WaterH_PF(iSystem)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'WHPF',
+     &      'IMS unit water heater performance factor (-)',
+     &       bRequired,
+     &       0.0, 1.0,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Fresh air ventilation rates 
+C-----------------------------------------------------------------------
+      fP10_Vent_FA_Flow(iSystem, iP10_LowVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-FA-flow-C',
+     &      'IMS unit fresh air ventilation in continuious mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_Vent_FA_Flow(iSystem, iP10_HighVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-FA-flow-H',
+     &      'IMS unit fresh air ventilation in high-vent mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Exhaust air ventilation rates
+C-----------------------------------------------------------------------
+      fP10_Vent_EA_Flow(iSystem, iP10_LowVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-EA-flow-C',
+     &      'IMS unit exh. air ventilation in continuious mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_Vent_EA_Flow(iSystem, iP10_HighVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-EA-flow-H',
+     &      'IMS unit exh. air ventilation in high-vent mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Fresh air fan power
+C-----------------------------------------------------------------------
+      fP10_Vent_FA_Power(iSystem, iP10_LowVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-FA-fan-power-C',
+     &      'IMS unit fresh air fan power in continuious mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_Vent_FA_Flow(iSystem, iP10_HighVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-FA-fan-power-C',
+     &      'IMS unit fresh air fan power in high-vent mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Exhaust air fan power
+C-----------------------------------------------------------------------
+      fP10_Vent_EA_Power(iSystem, iP10_LowVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-EA-fan-power-C',
+     &      'IMS unit exh. fan power in continuious mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      fP10_Vent_EA_Flow(iSystem, iP10_HighVent)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-EA-fan-power-C',
+     &      'IMS unit exh. fan power in high-vent mode (l/s)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+C-----------------------------------------------------------------------
+C     Controls power
+C-----------------------------------------------------------------------
+      fP10_PowerControls(iSystem)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'controls-power',
+     &      'IMS unit controls power consumption (W)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Controls power
+C-----------------------------------------------------------------------
+      fP10_PowerCirc(iSystem)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'circ-fan-power',
+     &      'IMS unit circulation fan power consumption (W)',
+     &       bRequired,
+     &       0.0, 1.0E04,
+     &       bFound,
+     &       bInLimits )
+
+      return
+      end
+C================== HVAC_Baseboard_Input ===============================
 C
 C This routine parses the data block for baseboards
 C
@@ -1590,6 +1854,11 @@ C     References
 C-----------------------------------------------------------------------
       real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits
       real Fan_AutoSize_Improved
+
+C-----------------------------------------------------------------------
+C     Check to make sure all specified tokens match known list
+C-----------------------------------------------------------------------
+      call AreTokensValid ( iSystem )
 
 C.....Steady-state capacity
 
@@ -1735,232 +2004,217 @@ C       - Pilot light power
 C
 C-----------------------------------------------------------------------
 
-C.....Count data items
-      furnace_items_count: if ( iDataCount( iSystem )
-     &                            > iFurnaceTokenCount ) then
-        write (cMsg, '(A,A,I2,A,I2,A)' )
-     &    ' Error interpreting furnace data ',
+C-----------------------------------------------------------------------
+C     Check to make sure all specified tokens match known list
+C-----------------------------------------------------------------------
+      call AreTokensValid ( iSystem )
+
+C.....System type
+      isys_type ( iSystem )
+     &     = int ( fHVAC_FindTokenNoLimits( iSystem,
+     &                                      'furnace-type',
+     &                                      'Furnace type',
+     &                                      bRequired,
+     &                                      bFound ) )
+
+      if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
+     &  .and. isys_type ( iSystem ) /= iFurn_CatConverter
+     &  .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
+     &  .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
+     &  .and. isys_type ( iSystem ) /= iFurn_SparkIgn
+     &  .and. isys_type ( iSystem ) /= iFurn_SparkIgnVentDamper
+     &  .and. isys_type ( iSystem ) /= iFurn_ContPilot
+     &  .and. isys_type ( iSystem ) /= iFurn_Condensing
+     &  .and. isys_type ( iSystem ) /= iFurn_NonCondensingDirVent
+     &  .and. isys_type ( iSystem ) /= iFurn_InducedDraft
+     &  .and. isys_type ( iSystem ) /= iFurn_MidEfficiency
+     &  .and. isys_type ( iSystem ) /= iFurn_ElecForcedAir
+     &  .and. isys_type ( iSystem ) /= iFurn_Wood
+     &  .and. isys_type ( iSystem ) /= iFurn_Oil    ) then
+
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting furnace type (data item 1) ',
      &    'for HVAC system # ',
      &    iSystem,
-     &    '. ', iDataCount ( iSystem ),
-     &    ' items were specified but 8 items are expected.'
+     &    '. Value must be one of the following:'
         call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 1  (advanced air tight wood stove)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 2  (catalytic converter)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 3  (flame retention head)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 4  (flue vent damper)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 5  (spark ignition)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 6  (spark ignition with flue vent damper)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 7  (continuious pilot) '
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 8  (condensing)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 9  (direct vent, non condensing)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 10 (induced draft)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 11 (mid-efficiency)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 12 (electric forced-air)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 13 (wood furnace)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 14 (oil furnace)'
+        call edisp248( iUout, cMsg, 80 )
+
+C.......Set error flag
         bParseError = .true.
 
-      else
+      endif
+C---------------------------------------------------------------------
+C     Set the correlation coefficients for the part-load performance by
+c     calling FURNACE_COEFF. The correlation coefficients are stored in
+c     common furnace_corr
+C---------------------------------------------------------------------
+      call FURNACE_COEFF(iSystem,isys_type(iSystem))
 
-C.......System type
-        isys_type ( iSystem )
-     &       = int ( fHVAC_FindTokenNoLimits( iSystem,
-     &                                        'furnace-type',
-     &                                        'Furnace type',
-     &                                        bRequired,
-     &                                        bFound ) )
+C.....Steady-state capacity
 
-        if (    isys_type ( iSystem ) /= iFurn_AdvWoodStove
-     &    .and. isys_type ( iSystem ) /= iFurn_CatConverter
-     &    .and. isys_type ( iSystem ) /= iFurn_FlameRetenHead
-     &    .and. isys_type ( iSystem ) /= iFurn_FlueVentDamper
-     &    .and. isys_type ( iSystem ) /= iFurn_SparkIgn
-     &    .and. isys_type ( iSystem ) /= iFurn_SparkIgnVentDamper
-     &    .and. isys_type ( iSystem ) /= iFurn_ContPilot
-     &    .and. isys_type ( iSystem ) /= iFurn_Condensing
-     &    .and. isys_type ( iSystem ) /= iFurn_NonCondensingDirVent
-     &    .and. isys_type ( iSystem ) /= iFurn_InducedDraft
-     &    .and. isys_type ( iSystem ) /= iFurn_MidEfficiency
-     &    .and. isys_type ( iSystem ) /= iFurn_ElecForcedAir
-     &    .and. isys_type ( iSystem ) /= iFurn_Wood
-     &    .and. isys_type ( iSystem ) /= iFurn_Oil    ) then
-
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace type (data item 1) ',
-     &      'for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be one of the following:'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 1  (advanced air tight wood stove)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 2  (catalytic converter)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 3  (flame retention head)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 4  (flue vent damper)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 5  (spark ignition)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 6  (spark ignition with flue vent damper)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 7  (continuious pilot) '
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 8  (condensing)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 9  (direct vent, non condensing)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 10 (induced draft)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 11 (mid-efficiency)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 12 (electric forced-air)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 13 (wood furnace)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 14 (oil furnace)'
-          call edisp248( iUout, cMsg, 80 )
-
-C.........Set error flag
-          bParseError = .true.
-
-        endif
-C-----------------------------------------------------------------------
-C       Set the correlation coefficients for the part-load performance by
-c       calling FURNACE_COEFF. The correlation coefficients are stored in 
-c       common furnace_corr
-C-----------------------------------------------------------------------
-        call FURNACE_COEFF(iSystem,isys_type(iSystem))
-
-C.......Steady-state capacity
-
-        ss_capacity(iSystem) = fHVAC_FindTokenWithLimits(
-     &                               iSystem,
-     &                               'capacity',
-     &                               'furnace steady-state capacity',
-     &                               bRequired,
-     &                               0.0, 1.0e07,
-     &                               bFound,
-     &                               bInLimits )
-
-C.......Steady-state efficency
-
-        ss_efficiency(iSystem) = fHVAC_FindTokenWithLimits(
-     &                              iSystem,
-     &                              'efficiency',
-     &                              'furnace steady-state efficiency',
-     &                              bRequired,
-     &                              0.0, 1.0,
-     &                              bFound,
-     &                              bInLimits )
-     
-C.......Fan operation
-        iFan_Operation(iSystem) = int( fHVAC_FindTokenNoLimits(
-     &                               iSystem,
-     &                               'circ-fan-mode',
-     &                               'furnace circulation fan mode',
-     &                               bRequired,
-     &                               bFound) )
-     
-        if ( bFound 
-     &      .and. iFan_Operation( iSystem ) /= iFan_None
-     &      .and. iFan_Operation( iSystem ) /= iFan_Auto
-     &      .and. iFan_Operation( iSystem ) /= iFan_Cont
-     &      ) then
-
-          write (cMsg, '(A,A,I2,A)' )
-     &      ' Error interpreting furnace fan operation ',
-     &      '(data item 1) for HVAC system # ',
-     &      iSystem,
-     &      '. Value must be one of the following:'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 0  (no fan associated with this furance)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 1  (Automatic fan operation)'
-          call edisp248( iUout, cMsg, 80 )
-
-          write (cMsg, '(A)')
-     &      '   - 2  (continuious fan operation)'
-          call edisp248( iUout, cMsg, 80 )
-C.........Set error flag
-          bParseError = .true.
-        endif
-
-C.......Indoor fan power
-        fan_power(iSystem) = fHVAC_FindTokenWithLimits
-     &     ( iSystem,
-     &       'circ-fan-power',
-     &       'furnace circulation fan power',
-     &       bNotRequired,
-     &       0.0, 1.0e07,
-     &       bFound,
-     &       bInLimits )
-     
-        if ( .not. bFound ) then
-          fan_power(iSystem) = Fan_AutoSize_Improved(iSystem)
-          bFan_AutoSized(iSystem) = .true.
-        endif 
-
-
-C.......Draft fan power
-        draft_fan_power(iSystem) = fHVAC_FindTokenWithLimits(
+      ss_capacity(iSystem) = fHVAC_FindTokenWithLimits(
      &                             iSystem,
-     &                               'draft-fan-power',
-     &                               'furnace draft fan power',
-     &                               bNotRequired,
-     &                               0.0, 1.0e07,
-     &                               bFound,
-     &                               bInLimits )
+     &                             'capacity',
+     &                             'furnace steady-state capacity',
+     &                             bRequired,
+     &                             0.0, 1.0e07,
+     &                             bFound,
+     &                             bInLimits )
 
-        if ( .not. bFound ) draft_fan_power(iSystem) = 0.0
+C.....Steady-state efficency
+
+      ss_efficiency(iSystem) = fHVAC_FindTokenWithLimits(
+     &                            iSystem,
+     &                            'efficiency',
+     &                            'furnace steady-state efficiency',
+     &                            bRequired,
+     &                            0.0, 1.0,
+     &                            bFound,
+     &                            bInLimits )
+
+C.....Fan operation
+      iFan_Operation(iSystem) = int( fHVAC_FindTokenNoLimits(
+     &                             iSystem,
+     &                             'circ-fan-mode',
+     &                             'furnace circulation fan mode',
+     &                             bRequired,
+     &                             bFound) )
+
+      if ( bFound
+     &    .and. iFan_Operation( iSystem ) /= iFan_None
+     &    .and. iFan_Operation( iSystem ) /= iFan_Auto
+     &    .and. iFan_Operation( iSystem ) /= iFan_Cont
+     &    ) then
+
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting furnace fan operation ',
+     &    '(data item 1) for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 0  (no fan associated with this furance)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 1  (Automatic fan operation)'
+        call edisp248( iUout, cMsg, 80 )
+
+        write (cMsg, '(A)')
+     &    '   - 2  (continuious fan operation)'
+        call edisp248( iUout, cMsg, 80 )
+C.......Set error flag
+        bParseError = .true.
+      endif
+
+C.....Indoor fan power
+      fan_power(iSystem) = fHVAC_FindTokenWithLimits
+     &   ( iSystem,
+     &     'circ-fan-power',
+     &     'furnace circulation fan power',
+     &     bNotRequired,
+     &     0.0, 1.0e07,
+     &     bFound,
+     &     bInLimits )
+
+      if ( .not. bFound ) then
+        fan_power(iSystem) = Fan_AutoSize_Improved(iSystem)
+        bFan_AutoSized(iSystem) = .true.
+      endif
 
 
-C.......Pilot power
-        pilot_power(iSystem) = fHVAC_FindTokenWithLimits(
-     &                               iSystem,
-     &                               'pilot-power',
-     &                               'furnace pilot power',
-     &                               bRequired,
-     &                               0.0, 1.0e07,
-     &                               bFound,
-     &                               bInLimits )
+C.....Draft fan power
+      draft_fan_power(iSystem) = fHVAC_FindTokenWithLimits(
+     &                           iSystem,
+     &                             'draft-fan-power',
+     &                             'furnace draft fan power',
+     &                             bNotRequired,
+     &                             0.0, 1.0e07,
+     &                             bFound,
+     &                             bInLimits )
 
-C.......Duct system flag
-        iduct_sys_flag(iSystem) = int( fHVAC_FindTokenWithLimits(
-     &                               iSystem,
-     &                               'duct-system-flag',
-     &                               'duct-system-flag',
-     &                               bNotRequired,
-     &                               0.0, 1.0e07,
-     &                               bFound,
-     &                               bInLimits ) )
+      if ( .not. bFound ) draft_fan_power(iSystem) = 0.0
 
-        if ( .not. bFound ) iduct_sys_flag(iSystem) = 1
 
-      endif furnace_items_count
-C-----------------------------------------------------------------------
-C     Valiate fuel/furnace combination.
-C-----------------------------------------------------------------------
+C.....Pilot power
+      pilot_power(iSystem) = fHVAC_FindTokenWithLimits(
+     &                             iSystem,
+     &                             'pilot-power',
+     &                             'furnace pilot power',
+     &                             bRequired,
+     &                             0.0, 1.0e07,
+     &                             bFound,
+     &                             bInLimits )
 
-      ! Code to go here...
+C.....Duct system flag
+      iduct_sys_flag(iSystem) = int( fHVAC_FindTokenWithLimits(
+     &                             iSystem,
+     &                             'duct-system-flag',
+     &                             'duct-system-flag',
+     &                             bNotRequired,
+     &                             0.0, 1.0e07,
+     &                             bFound,
+     &                             bInLimits ) )
+
+      if ( .not. bFound ) iduct_sys_flag(iSystem) = 1
+
 
       return
       end
@@ -2046,49 +2300,12 @@ C-----------------------------------------------------------------------
 C.....Update HP-specific iUnitFunc flag
       iUnit_Function ( iSystem ) = iSys_Function( iSystem )
 
+
 C-----------------------------------------------------------------------
-C     First, check that all tokens match known values
+C     Check to make sure all specified tokens match known list
 C-----------------------------------------------------------------------
+      call AreTokensValid ( iSystem )
       
-      search_tokens: do iToken_1 = 1, iDataCount( iSystem )
-
-C.......Initialize found flag
-        bFound = .false.
-
-C.......Look for strings in known token list
-        do iToken_2 = 1, iHPTokenCount
-
-          if ( cTokens(iSystem,iToken_1) == cHPTokenNames(iToken_2) )
-     &         bFound = .true.
-
-        enddo
-
-C.......If token wasn't found, then report message to user.
-        if ( .not. bFound ) then
-
-          write (cMsg, '(A,A,A,I2,A)') ' Error: Unknown token "',
-     &      cTokens(iSystem,iToken_1)
-     &             (1:lnblnk(cTokens(iSystem,iToken_1))),
-     &      '" encountered in HVAC system #', iSystem,
-     &      '. Valid tokens are:'
-          call edisp248(iUout, cMsg, 80)
-
-          do iToken_2 = 1, iHPTokenCount
-
-             write (cMsg, '(A,A)') '  - ',
-     &        cHPTokenNames(iToken_2)(1:lnblnk(cHPTokenNames(iToken_2)))
-
-              call edisp248(iUout, cMsg, 80)
-
-          enddo
-
-C.........Set error flag
-          bParseError = .true.          
-
-        endif
-
-      enddo search_tokens
-
 C-----------------------------------------------------------------------
 C     Check performance keyword
 C-----------------------------------------------------------------------
@@ -2098,7 +2315,7 @@ C-----------------------------------------------------------------------
      &                ihvac_type(iSystem) == iSysGSHP_GCEP       ) then
 
 C-----------------------------------------------------------------------
-C       If a GSH or a GCEP P system is being modelled, the correlation
+C       If a GSHP or a GCEP system is being modelled, the correlation
 C       coefficients will be determined in a slightly different way than
 C       for ASHP systems.  GSHP coefficients will be based on entering
 C       water temperature (EWT) and as such will vary every day of
@@ -2743,6 +2960,13 @@ C-----------------------------------------------------------------------
       logical bRequired               ! Is token critical?
       real fLLimit, fULimit           ! Lower and upper limits for
                                       !   bounds check.
+
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
@@ -2750,11 +2974,6 @@ C-----------------------------------------------------------------------
       integer iStrLength              ! Length of search string
       character*248 cMsg              ! Msg buffer
       logical bNumsAreClose           ! flag for close-to-zero comps.
-C-----------------------------------------------------------------------
-C     ESP-r commons
-C-----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iuout, iuin      ! channels for writing messages to screen
 
 C-----------------------------------------------------------------------
 C     References
@@ -2862,3 +3081,227 @@ C.........Value is greater than upper-limit. Set flag and warn user.
       return
       end function fHVAC_FindToken
 
+
+C===================== AreTokensValid ==================================
+C This routine compares two lists of tokens to ensure all the 
+C specified tokens match known values
+C
+C inputs:
+C  - iSystem - index of current system
+C
+C outputs:
+C  - None.
+C
+C=======================================================================
+      subroutine AreTokensValid (iSystem)
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+
+C-----------------------------------------------------------------------
+C     Passed variables
+C-----------------------------------------------------------------------
+      integer iSystem
+
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      integer iUserToken, iValidToken
+      integer iValidTokenCount
+      logical bFound, bTokenError
+      character*72 cValidToken
+      character*248 cMsg
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+C-----------------------------------------------------------------------
+C     Find length of valid token array according to system type
+C-----------------------------------------------------------------------
+      find_length: select case ( iHVAC_type(iSystem) )
+
+        case ( iSysFurnace, iSysBoiler )
+          iValidTokenCount = iFurnaceTokenCount
+
+        case ( iSysIMS_P10 )
+          iValidTokenCount = iP10_IMSTokenCount
+
+        case ( iSysBaseboard )
+          iValidTokenCount = iBaseboardTokenCount
+
+        case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP )
+          iValidTokenCount = iHPTokenCount
+          
+        case default
+          ! Can't happen - iHVAC_type error trapped above.
+
+      end select find_length
+      
+C-----------------------------------------------------------------------
+C     Check that all tokens match known values
+C-----------------------------------------------------------------------
+      bTokenError = .false.
+      search_tokens: do iUserToken = 1, iDataCount( iSystem )
+
+C.......Initialize found flag
+        bFound = .false.
+
+C.......Look for strings in known token list
+        valid_token_loop: do iValidToken = 1, iValidTokenCount
+
+C.........Check system type and collect token from appropriate
+C.........array
+
+          collect_valid_token: select case ( iHVAC_type (iSystem) )
+            case ( iSysFurnace, iSysBoiler )
+              cValidToken = cFurnaceTokenNames(iValidToken)
+    
+            case ( iSysIMS_P10 )
+              cValidToken  = cP10_IMSTokenNames(iValidToken)
+    
+            case ( iSysBaseboard )
+              cValidToken  = cBaseboardTokenNames(iValidToken)
+    
+            case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP )
+              cValidToken  = cHPTokenNames(iValidToken)
+
+          end select collect_valid_token
+
+          if ( cTokens(iSystem,iUserToken) == cValidToken  )
+     &         bFound = .true.
+
+        enddo valid_token_loop
+
+C.......If token wasn't found, then report message to user,
+C.......and provide list of valid tokens
+        token_not_found: if ( .not. bFound ) then
+
+          write (cMsg, '(A,A,A,I2)') ' Error: Unknown token "',
+     &      cTokens(iSystem,iUserToken)
+     &             (1:lnblnk(cTokens(iSystem,iUserToken))),
+     &      '" encountered in HVAC system #', iSystem
+          call edisp248(iUout, cMsg, 80)
+
+C.........Set error flag
+          bTokenError = .true.
+
+        endif token_not_found
+
+      enddo search_tokens
+
+C-----------------------------------------------------------------------
+C     If an error occured, list valid tokens
+C-----------------------------------------------------------------------
+      token_error: if ( bTokenError ) then
+
+        call edisp248(iUout,' Valid tokens are:', 80)
+        
+        list_token_loop: do iValidToken = 1, iValidTokenCount
+          get_valid_token: select case ( iHVAC_type (iSystem) )
+            case ( iSysFurnace, iSysBoiler )
+              cValidToken = cFurnaceTokenNames(iValidToken)
+
+            case ( iSysIMS_P10 )
+              cValidToken  = cP10_IMSTokenNames(iValidToken)
+
+            case ( iSysBaseboard )
+              cValidToken  = cBaseboardTokenNames(iValidToken)
+
+            case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP )
+              cValidToken  = cHPTokenNames(iValidToken)
+
+          end select get_valid_token
+          
+          write (cMsg, '(A,A)') '  - ',
+     &      cValidToken(1:lnblnk(cValidToken))
+
+          call edisp248(iUout, cMsg, 80)
+
+        enddo list_token_loop
+C.......Set gloabal error flag
+        bParseError = .true. 
+
+      endif token_error
+
+      return
+      end subroutine AreTokensValid
+C===================== Initialize_tokens ===============================
+C-----------------------------------------------------------------------
+C Initialize token lists. These arrays describe the various
+C tokens that can be specified for each of the three primary
+C system topologies (furnace/boiler, baseboard & GSHP/ASHP)
+C-----------------------------------------------------------------------
+      blockdata initialize_tokens
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+
+      integer iName,iSys
+
+      data (cP10_IMSTokenNames(iName),iName=1,iP10_IMSTokenCount)
+     &                         /'SH-capacity          ',
+     &                          'WH-one-hour-rating   ',
+     &                          'SH-net-eff-15        ',
+     &                          'SH-net-eff-40        ',
+     &                          'SH-net-eff-100       ',
+     &                          'SH-power-15          ',
+     &                          'SH-power-40          ',
+     &                          'SH-power-100         ',
+     &                          'WHPF                 ',
+     &                          'vent-FA-flow-C       ',
+     &                          'vent-EA-flow-C       ',
+     &                          'vent-FA-flow-H       ',
+     &                          'vent-EA-flow-H       ',
+     &                          'vent-FA-fan-power-C  ',
+     &                          'vent-EA-fan-power-C  ',
+     &                          'vent-FA-fan-power-H  ',
+     &                          'vent-EA-fan-power-H  ',
+     &                          'controls-power       ',
+     &                          'circ-fan-power'  /
+
+
+      data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
+     &                         /'furnace-type    ',
+     &                          'capacity        ',
+     &                          'efficiency      ',
+     &                          'circ-fan-mode   ',
+     &                          'circ-fan-power  ',
+     &                          'draft-fan-power ',
+     &                          'pilot-power     ',
+     &                          'duct-system-flag'  /
+
+      data (cHPTokenNames(iName),iName=1,iHPTokenCount)
+     &                   /  'performance                ',
+     &                      'capacity                   ',
+     &                      'COP                        ',
+     &                      'circ-fan-mode              ',
+     &                      'circ-fan-flow              ',
+     &                      'circ-fan-rated-flow        ',
+     &                      'circ-fan-position          ',
+     &                      'circ-fan-power             ',
+     &                      'outdoor-fan-power          ',
+     &                      'fan-power-in-auto          ',
+     &                      'circ-fan-rated-position    ',
+     &                      'circ-fan-rated-power       ',
+     &                      'circ-fan-mode              ',
+     &                      'temp-control-mode          ',
+     &                      'cut-off-temperature        ',
+     &                      'SHR                        ',
+     &                      'cooling-control-mode       ',
+     &                      'economizer-control-type    ',
+     &                      'economizer-min-OA-flow     ',
+     &                      'economizer-indoor-set-point',
+     &                      'economizer-OA-temp-limit   ',
+     &                      'economizer-OA-enth-limit   ',
+     &                      'sys-num-for-heating-mode   ',
+     &                      'ctl-file-function-num      '  /
+
+      data (cBaseboardTokenNames(iName),iName=1,iBaseboardTokenCount)
+     &                          / 'circ-fan-mode  ',
+     &                            'circ-fan-power ',
+     &                            'capacity       ',
+     &                            'efficiency     '  /
+
+      end blockdata initialize_tokens
