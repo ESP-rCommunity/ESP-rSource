@@ -4,6 +4,10 @@ C Mechanical System model (IMS).
 C
 C=======================================================================
 
+C-----------------------------------------------------------------------
+C     Data for P.10 description
+C-----------------------------------------------------------------------
+
 C.....Number of part-load points
       integer iP10_num_SpaceH_PLP
       parameter ( iP10_num_SpaceH_PLP = 3 )
@@ -19,11 +23,11 @@ C.....Number of ventilation modes
       parameter ( iP10_num_vent_modes = 3 )
       
 C.....Named consants for ventilaton modes
-      integer iP10_NoVent, iP10_LowVent, iP10_HighVent, iP10_SHVent
-      parameter ( iP10_NoVent   = 1,
-     &            iP10_LowVent  = 2,
-     &            iP10_HighVent = 3,
-     &            iP10_SHVent   = 4 )
+      integer iMode_NoVent, iMode_LowVent, iMode_HighVent, iMode_SHVent
+      parameter ( iMode_NoVent   = 1,
+     &            iMode_LowVent  = 2,
+     &            iMode_HighVent = 3,
+     &            iMode_SHVent   = 4 )
 
 C.....Space heating capacity (W)
       real fP10_SpaceH_capacity(max_sys)
@@ -70,3 +74,9 @@ C.....Sensible heat recovery efficiecy
      &   fP10_Vent_FA_Power,
      &   fP10_Vent_EA_Power,
      &   fP10_Vent_SRE
+
+
+C-----------------------------------------------------------------------
+C     Data for general description
+C-----------------------------------------------------------------------
+
