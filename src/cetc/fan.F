@@ -180,7 +180,7 @@ C Check HVAC type, and compute fan size
 
             Fan_AutoSize_improved = 0.0467 * ss_capacity(iSystem)
 
-          case ( iSysIMS )
+          case ( iSysIMS_P10 )
 
             ! What to do here?
 
