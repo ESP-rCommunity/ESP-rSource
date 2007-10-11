@@ -655,6 +655,9 @@ C.............Unknown function
      &    '     - "cooling"'
                 call edisp248(iuout,cMsg,80)
 
+                call HVACinput_RepErr( iFileLine,
+     &            '"*function" value could not be interpreted.')
+
               endif ! <- matches 'if ( cLnWords(2)(1:8) == 'furnace ' )'
 
             endif
@@ -711,6 +714,10 @@ C.............interpret keyword.
 
                 call HVACinput_RepErr(iFileLine,
      &               'Could not interpret system priority')
+
+C...............Set error flag
+                bParseError = .true.
+
               endif
 
             endif
