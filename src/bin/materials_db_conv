@@ -11,14 +11,21 @@ else
 fi
 cd $DBdir
 rm -f $MATdb
+
+# Get file name from specified database
+
+target_file=`echo "$MATdb" | sed 's/^.*\///g'`
+target_path=`echo "$MATdb" | sed 's/[^\/]*$//g'`
+
 echo "Creating binary materials database in "$DBdir
 $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
 d
 f
 $ASCdb
-$MATdb
+$target_file
 -
 -
 zzz
+mv $target_file $target_path
 echo " "
