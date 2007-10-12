@@ -61,6 +61,18 @@ C Named consants for ASHP perforamnce
       integer iASHP_PoorUnit
       parameter( iASHP_TypUnit=1, iASHP_GoodUnit=2, iASHP_PoorUnit=3 )
 
+C Named constants for IMS heat sources:
+      integer iIMS_CondensingTank
+      integer iIMS_ConventionalTank
+      integer iIMS_InducedDraftFanTank
+      integer iIMS_InstantaneousHeater
+      integer iIMS_TanklessHeater
+      parameter ( iIMS_CondensingTank       = 1,
+     &            iIMS_ConventionalTank     = 2,
+     &            iIMS_InducedDraftFanTank  = 3,
+     &            iIMS_InstantaneousHeater  = 4,
+     &            iIMS_TanklessHeater       = 5  )
+
 C Named constants for fuel types
       integer iElectricity, iNaturalGas, iOil, iPropane, iWood
       parameter ( iElectricity = 1,
@@ -127,7 +139,7 @@ C Dimensions of token/data arrays for version 2+ format.
       integer iFurnaceTokenCount
       parameter (iFurnaceTokenCount = 8)
       integer iP10_IMSTokenCount
-      parameter (iP10_IMSTokenCount = 19)
+      parameter (iP10_IMSTokenCount = 20)
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount

@@ -1158,7 +1158,8 @@ C.............Attempt to read token value
               if ( bConvErr ) then
 
                 call HVACinput_RepErr( iFileLine,
-     &                'Could not interpret token value')
+     &                'Could not interpret value for token "'
+     &              //cLnWords(1)(1:min(72,lnblnk(cLnWords(1)))) //'"')
 
               endif
 
@@ -1534,7 +1535,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Now read system capacity
 C-----------------------------------------------------------------------
-      fP10_SpaceH_capacity(iSystem) = fHVAC_FindTokenWithLimits(
+      fIMS_SpaceH_capacity(iSystem) = fHVAC_FindTokenWithLimits(
      &                  iSystem,
      &                  'SH-capacity',
      &                  'IMS unit space-heating capacity (W)',
@@ -1558,7 +1559,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Space heating net efficiency
 C-----------------------------------------------------------------------
-      fP10_SpaceH_NetEff(iSystem,iP10_PLR_15)
+      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_15)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-15',
@@ -1568,7 +1569,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
-      fP10_SpaceH_NetEff(iSystem,iP10_PLR_40)
+      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_40)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-40',
@@ -1578,7 +1579,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
-      fP10_SpaceH_NetEff(iSystem,iP10_PLR_100)
+      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_100)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-100',
@@ -1701,6 +1702,43 @@ C-----------------------------------------------------------------------
      &       bInLimits )
 
 C-----------------------------------------------------------------------
+C     Heat source in IMS unit
+C-----------------------------------------------------------------------
+      iIMS_HeatSource(iSystem)
+     &   = int( fHVAC_FindTokenNoLimits (
+     &          iSystem,
+     &          'heat-source-type',
+     &          'IMS unit primary heat source (-)',
+     &          bRequired,
+     &          bFound )
+     &        )
+
+C.....Check that IMS heat source is supported
+      CheckIMSHeatSource: if (
+     &  iIMS_HeatSource(iSystem) /= iIMS_CondensingTank      .and.
+     &  iIMS_HeatSource(iSystem) /= iIMS_ConventionalTank    .and.
+     &  iIMS_HeatSource(iSystem) /= iIMS_InducedDraftFanTank .and. 
+     &  iIMS_HeatSource(iSystem) /= iIMS_InstantaneousHeater .and.
+     &  iIMS_HeatSource(iSystem) /= iIMS_TanklessHeater       ) then
+
+        write (cMsg, '(A,A,I2,A)' )
+     &    ' Error interpreting IMS unit heat source ',
+     &    '(tag "heat-source-type") for HVAC system # ',
+     &    iSystem,
+     &    '. Value must be one of the following:'
+        call edisp248( iUout, cMsg, 80 )
+
+        call edisp248( iUout, '   - 1 (condensing tank)', 80 )
+        call edisp248( iUout, '   - 2 (conventional tank)', 80 )
+        call edisp248( iUout, '   - 3 (induced draft fan tank)', 80 )
+        call edisp248( iUout, '   - 4 (instantaneous heater)', 80 )
+        call edisp248( iUout, '   - 5 (tankless water heater)', 80 )
+
+C.......Set error flag:
+        bParseError = .true. 
+
+      endif CheckIMSHeatSource
+C-----------------------------------------------------------------------
 C     Exhaust air fan power
 C-----------------------------------------------------------------------
       fP10_Vent_EA_Power(iSystem, iMode_LowVent)
@@ -1725,7 +1763,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Controls power
 C-----------------------------------------------------------------------
-      fP10_PowerControls(iSystem)
+      fIMS_ControlsPower(iSystem)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'controls-power',
@@ -1736,7 +1774,7 @@ C-----------------------------------------------------------------------
      &       bInLimits )
 
 C-----------------------------------------------------------------------
-C     Controls power
+C     Circulation fan power
 C-----------------------------------------------------------------------
       fP10_PowerCirc(iSystem)
      &   = fHVAC_FindTokenWithLimits(
@@ -1747,6 +1785,12 @@ C-----------------------------------------------------------------------
      &       0.0, 1.0E04,
      &       bFound,
      &       bInLimits )
+
+
+C-----------------------------------------------------------------------
+C     Derive general IMS model inputs from P.10 data
+C-----------------------------------------------------------------------
+      call IMS_ConvertP10Data( iSystem )
 
       return
       end
@@ -1825,8 +1869,8 @@ C.....Fan operation
      &                             bNotRequired,
      &                             bFound) )
 
-      baseboard_fanfound:
-     &if ( bFound
+      
+      baseboard_fanfound: if ( bFound
      &    .and. iFan_Operation( iSystem ) /= iFan_None
      &    .and. iFan_Operation( iSystem ) /= iFan_Auto
      &    .and. iFan_Operation( iSystem ) /= iFan_Cont
@@ -3184,6 +3228,7 @@ C-----------------------------------------------------------------------
      &                          'SH-power-15          ',
      &                          'SH-power-40          ',
      &                          'SH-power-100         ',
+     &                          'heat-source-type     ',
      &                          'WHPF                 ',
      &                          'vent-FA-flow-C       ',
      &                          'vent-EA-flow-C       ',
@@ -3194,7 +3239,7 @@ C-----------------------------------------------------------------------
      &                          'vent-FA-fan-power-H  ',
      &                          'vent-EA-fan-power-H  ',
      &                          'controls-power       ',
-     &                          'circ-fan-power'  /
+     &                          'circ-fan-power'         /
 
 
       data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
