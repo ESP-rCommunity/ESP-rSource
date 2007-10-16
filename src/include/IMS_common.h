@@ -29,9 +29,6 @@ C.....Named consants for ventilaton modes
      &            iMode_HighVent = 3,
      &            iMode_SHVent   = 4 )
 
-C.....Hourly Water heater delivery rating (L)
-      real fP10_WaterH_OneHourRating(max_sys)
-
 C.....Water heater performance factor (-)
       real fP10_WaterH_PF(max_sys)
 
@@ -54,7 +51,6 @@ C.....Sensible heat recovery efficiecy
 
 C.....P10 input common
       common/IMS_P10_inputs/
-     &   fP10_WaterH_OneHourRating,
      &   fP10_WaterH_PF,
      &   fP10_SpaceH_Power,
      &   fP10_PowerCirc,
@@ -69,21 +65,47 @@ C-----------------------------------------------------------------------
 C     Data for general description
 C-----------------------------------------------------------------------
 
+C.....Named constants for variable types
+      integer iIMSVar_SpaceHEfficiency
+      integer iIMSVar_SpaceHFanPower
+      integer iIMSVar_SpaceHAuxPower
+      integer iIMSVar_WaterHEfficiency
+      integer iIMSVar_WaterHPower
+      parameter ( iIMSVar_SpaceHEfficiency = 1,
+     &            iIMSVar_SpaceHFanPower   = 2,
+     &            iIMSVar_SpaceHAuxPower   = 3,
+     &            iIMSVar_WaterHEfficiency = 4,
+     &            iIMSVar_WaterHPower      = 5  )
+
 C.....Number of space heating data points
       integer iIMS_NumOPSpaceH(max_sys)
 
 C.....IMS heat source
       integer iIMS_HeatSource(max_sys)
 
-C.....Maximum number of space heating data points
-      integer iIMS_MaxOPSpaceH
-      parameter ( iIMS_MaxOPSpaceH = 10 )
+C.....Maximum number of space and water heating data points
+      integer iIMS_MaxOP
+      parameter ( iIMS_MaxOP = 10 )
+
+C.....Nominal burner output (W)
+      real fIMS_NominalBurnerInput(max_sys)
+
+C.....Nominal burner output (W)
+      real fIMS_NominalBurnerOutput(max_sys)
 
 C.....Space heating capacity (W)
-      real fIMS_SpaceH_capacity(max_sys)
+      real fIMS_SpaceHCapacity(max_sys)
+
+C.....Minimum hourly-averaged space heating capacity (W)
+      real fIMS_SpaceHMinCapacity(max_sys)
+
+C.....Part load ratios for space-heating, water-heating
+C.....performance maps
+      real fIMS_SpaceHPLR(max_sys, iIMS_MaxOP),
+     &     fIMS_WaterHPLR(max_sys, iIMS_MaxOP)
 
 C.....Space heating net efficiency (-)
-      real fIMS_SpaceH_NetEff(max_sys,iIMS_MaxOPSpaceH)
+      real fIMS_SpaceHNetEff(max_sys,iIMS_MaxOP)
 
 C.....Power for ventilation fans (supply+exhaust, W)
       real fIMS_VentPower(max_sys, iNum_vent_modes)
@@ -98,23 +120,22 @@ C.....Incremental consumption of distribution equipment (W)
       real fIMS_IncDistPower(max_sys)
 
 C.....Fan power (W)
-      real fIMS_FanPower(max_sys, iIMS_MaxOPSpaceH)
+      real fIMS_FanPower(max_sys, iIMS_MaxOP)
 
 C.....Auxiliary system power (W)
-      real fIMS_AuxPower(max_sys, iIMS_MaxOPSpaceH)
+      real fIMS_AuxPower(max_sys, iIMS_MaxOP)
 
 C.....Number of WaterH data points
       integer iIMS_NumOPWaterH (max_sys)
 
-C.....Maximum number of water heating data points
-      integer iIMS_MaxOPWaterH
-      parameter ( iIMS_MaxOPWaterH = 10 )
-
 C.....WaterH Efficiency
-      real fIMS_WaterHEff( max_sys, iIMS_MaxOPWaterH )
+      real fIMS_WaterHEff( max_sys, iIMS_MaxOP )
+
+C.....WaterH capacity (W)
+      real fIMS_WaterHCapacity ( max_sys )
 
 C.....WaterH Power consumption
-      real fIMS_WaterHPower( max_sys, iIMS_MaxOPWaterH)
+      real fIMS_WaterHPower( max_sys, iIMS_MaxOP)
 
 C.....Estimated WaterH skin losses
       real fIMS_WaterHSkinLoss(max_sys)
@@ -126,8 +147,13 @@ C.....General model input common
       common/IMS_General_inputs/
      &   iIMS_HeatSource,
      &   iIMS_NumOPSpaceH,
-     &   fIMS_SpaceH_capacity,
-     &   fIMS_SpaceH_NetEff,
+     &   fIMS_NominalBurnerInput,
+     &   fIMS_NominalBurnerOutput,
+     &   fIMS_SpaceHCapacity,
+     &   fIMS_SpaceHMinCapacity,
+     &   fIMS_SpaceHPLR,
+     &   fIMS_WaterHPLR,
+     &   fIMS_SpaceHNetEff,
      &   fIMS_VentPower,
      &   fIMS_VentFlow,
      &   fIMS_ControlsPower,
@@ -135,6 +161,7 @@ C.....General model input common
      &   fIMS_FanPower,
      &   fIMS_AuxPower,
      &   iIMS_NumOPWaterH,
+     &   fIMS_WaterHCapacity,
      &   fIMS_WaterHEff,
      &   fIMS_WaterHSkinLoss,
      &   fIMS_WaterHPower,

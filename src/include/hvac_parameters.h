@@ -12,6 +12,11 @@ C Named constants for system types
      &           iSysGSHP            = 8,
      &           iSysGSHP_GCEP       = 9 )
 
+C Named constants for primary/backup
+      integer iHVACPrimarySys, iHVACBackupSys
+      parameter ( iHVACPrimarySys = 1,
+     &            iHVACBackupSys  = 2 )
+
 C Named constants for furnace Types
       integer iFurn_AdvWoodStove
       integer iFurn_CatConverter

@@ -697,11 +697,11 @@ C.............Default priority flag to OK
 C.............interpret keyword.
               if ( cLnWords(2)(1:8) == 'primary ' ) then
 
-                ipriority(iSystem) = 1
+                ipriority(iSystem) = iHVACPrimarySys
 
               elseif ( cLnWords(2)(1:7) == 'backup ') then
 
-                ipriority(iSystem) = 2
+                ipriority(iSystem) = iHVACBackupSys
 
               else
 
@@ -1535,7 +1535,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Now read system capacity
 C-----------------------------------------------------------------------
-      fIMS_SpaceH_capacity(iSystem) = fHVAC_FindTokenWithLimits(
+      fIMS_SpaceHCapacity(iSystem) = fHVAC_FindTokenWithLimits(
      &                  iSystem,
      &                  'SH-capacity',
      &                  'IMS unit space-heating capacity (W)',
@@ -1544,13 +1544,13 @@ C-----------------------------------------------------------------------
      &                  bFound,
      &                  bInLimits )
 C-----------------------------------------------------------------------
-C     Water heating rating
+C     Nominal burner output
 C-----------------------------------------------------------------------
-      fP10_WaterH_OneHourRating(iSystem)
+      fIMS_NominalBurnerInput(iSystem)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
-     &       'WH-one-hour-rating',
-     &       'IMS unit water-heating one-hour rating (L)',
+     &       'nominal-burner-input',
+     &       'Nominal output of IMS burner (W)',
      &       bRequired,
      &       0.0, 1.0e07,
      &       bFound,
@@ -1559,7 +1559,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Space heating net efficiency
 C-----------------------------------------------------------------------
-      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_15)
+      fIMS_SpaceHNetEff(iSystem,iP10_PLR_15)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-15',
@@ -1569,7 +1569,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
-      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_40)
+      fIMS_SpaceHNetEff(iSystem,iP10_PLR_40)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-40',
@@ -1579,7 +1579,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits )
 
-      fIMS_SpaceH_NetEff(iSystem,iP10_PLR_100)
+      fIMS_SpaceHNetEff(iSystem,iP10_PLR_100)
      &   = fHVAC_FindTokenWithLimits(
      &       iSystem,
      &       'SH-net-eff-100',
@@ -2796,7 +2796,7 @@ C-----------------------------------------------------------------------
      &       bFound,
      &       bInLimits ) )
 
-C.....this kludge has no affect on the model, but ensures parity
+C.....This kludge has no affect on the model, but ensures parity
 C.....in .h3k files.     
       if ( iUnit_Function ( iSystem ) == iFuncCooling .and.
      &     .not. bFound ) isys_num_heating(iSystem) = iSystem
@@ -3221,7 +3221,7 @@ C-----------------------------------------------------------------------
 
       data (cP10_IMSTokenNames(iName),iName=1,iP10_IMSTokenCount)
      &                         /'SH-capacity          ',
-     &                          'WH-one-hour-rating   ',
+     &                          'nominal-burner-input ',
      &                          'SH-net-eff-15        ',
      &                          'SH-net-eff-40        ',
      &                          'SH-net-eff-100       ',
@@ -3239,7 +3239,8 @@ C-----------------------------------------------------------------------
      &                          'vent-FA-fan-power-H  ',
      &                          'vent-EA-fan-power-H  ',
      &                          'controls-power       ',
-     &                          'circ-fan-power'         /
+     &                          'circ-fan-power       ' /
+     
 
 
       data (cFurnaceTokenNames(iName),iName=1,iFurnaceTokenCount)
