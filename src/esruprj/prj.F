@@ -41,6 +41,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+C LSBEM (SBEM database)
 C default file names for databases
       PARAMETER (MSTMC=1)
 
@@ -65,6 +66,11 @@ C default file names for databases
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -151,6 +157,7 @@ C Name of current application
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit,foundutl
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
@@ -200,6 +207,7 @@ C Initialize variables and recover command line arguments.
       isavgh=0
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
+      newgeo=.false.  ! assume older format geometry.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -238,6 +246,9 @@ C Assume weekends are Saturday/ Sunday unless re-defined.
       idwe2=7
       wkd1='Saturday'
       wkd2='Sunday'
+
+C Set upgrade files flag to zero (no opinion yet)
+      igupgrade=0
 
 C Clear number of images and allow image browsing.
       noimg=0
@@ -493,7 +504,7 @@ C If it is, extract configuration file name and command data.
             isdok=.true.
             cpth=' '
             cmdn=' '
- 22         CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'tags',IIER)
+ 22         CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'idst tags',IIER)
             if(iier.ne.0)then
 C Debug.
 C              write(6,*)'idst naloc =',nidst,naloc
@@ -501,7 +512,7 @@ C              write(6,*)'idst naloc =',nidst,naloc
             endif
             if(OUTSTR(1:9).eq.'*abs_path')then
               k=10
-              CALL EGETRM(OUTSTR,K,cpth,'W','cfg path',IER)
+              CALL EGETRM(OUTSTR,K,cpth,'W','idst cfg path',IER)
               goto 22
             elseif(OUTSTR(1:8).eq.'*win_cfg'.or.
      &             OUTSTR(1:8).eq.'*trn_cfg'.or.
@@ -651,7 +662,12 @@ C Pass information to C library code if running in graphic mode.
           else
 C            call edisp(iuout,'* Changing focus to specified zone.')
             itru=iuout
-            CALL EGOMIN(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
+            call eclose(gversion(index),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
+            else
+              call egomin(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
+            endif
             IF(IER.NE.0)goto 3
 
 C If there is an obstructions file read it.
@@ -1257,7 +1273,7 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "esprdbfile.h"
-
+#include "sbem.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       common/pophelp/h(60)
@@ -1298,7 +1314,7 @@ C level).
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,tfile*72,ITEMS*33,H*72,key*1
+      character doit*248,tmode*8,tfile*72,ITEMS*36,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
@@ -1450,10 +1466,15 @@ C Display the simulation period.
       ITEMS(M+2) ='r  fluid flow only              '
       ITEMS(M+3) ='s  visual impact                '
       ITEMS(M+4) ='t  integrated performance view  '
-      ITEMS(M+5) ='  ______________________________ '
-      ITEMS(M+6) ='? help                           '
-      ITEMS(M+7) ='- exit this menu                 '
-      MITEM=M+7
+      IF(ISBEM.EQ.1)THEN
+        ITEMS(M+5) ='u  NCM compliance checking     '
+      ELSE
+        ITEMS(M+5) ='   NCM compliance checking N/A '
+      ENDIF
+      ITEMS(M+6) ='  ______________________________ '
+      ITEMS(M+7) ='? help                           '
+      ITEMS(M+8) ='- exit this menu                 '
+      MITEM=M+8
 
 C At each pass update for recent parameter changes.
       if(modparms)then
@@ -1490,10 +1511,9 @@ C Help text for this menu.
 
 C List help text for the simulations menu.
         CALL PHELPD('Simulation',14,'-',0,0,IER)
-      elseif(INO.EQ.MITEM-6)then
+      elseif(INO.EQ.MITEM-7)then
 
-C << Add logic to determine whether bps/mfs/dfs should be run. >> 
-C Invoke simulator.
+C Invoke simulator for the case of a simulation parameter set.
         if(nsset.gt.0)then
           h(1)='Interactive mode uses simulation parameters as'
           h(2)='defaults, which can be overwritten. The silent'
@@ -1553,6 +1573,8 @@ C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         else
+
+C Invoke simulator for the case without a simulation parameter set.
           call tstamp('>','PRJ: beginning simulation')
           doit = ' '
           call tchild(ICPMOD)
@@ -1596,7 +1618,7 @@ C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif
-      elseif(INO.EQ.MITEM-5)then
+      elseif(INO.EQ.MITEM-6)then
         H(1)='The first option computes the pressure induced'
         H(2)='fluid flow within a network of connected flow'
         H(3)='components representing the building and/or plant'
@@ -1650,7 +1672,7 @@ C an offset from prj start position.
 C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
-      elseif(INO.EQ.MITEM-4)then
+      elseif(INO.EQ.MITEM-5)then
 
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
@@ -1680,11 +1702,24 @@ C and change any / to \.
         endif
 C        call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
-      elseif(INO.EQ.MITEM-3)then
+      elseif(INO.EQ.MITEM-4)then
 
 C IPV for the actual number of simulations required.
         call ipvactions(ier)
-      elseif(MITEM.eq.9.and.INO.EQ.1)then
+      elseif(INO.EQ.MITEM-3)then
+
+C UK NCM Compliance checking
+        IF(ISBEM.EQ.1)THEN
+
+C Assume that NCM details have been completed and commence simulations
+          call NCMCAL(IER)
+        ELSE
+
+C NCM details have not been completed do nothing
+          CALL EDISP(IUOUT,
+     &    'Complete NCM details from model context menu')
+        ENDIF
+      elseif(MITEM.eq.10.and.INO.EQ.1)then
 
 C Case of no initial sets, offer default or user defined sets.
         if(lnblnk(lipvdatf).eq.0.or.lipvdatf(1:7).eq.'UNKNOWN')then
@@ -1801,7 +1836,7 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.1)then
+      elseif(MITEM.eq.24.and.INO.EQ.1)then
 
 C Select an existing set, create a new one or cancel.
  170     do 60 ii=1, nsset
@@ -1894,7 +1929,7 @@ C << description first >>
         endif
 C        call edisp(iuout,'* Rechecking startup days.')
         call scntcnst(TDM,istd,TCM,ISTC)
-      elseif(MITEM.eq.23.and.INO.EQ.2)then
+      elseif(MITEM.eq.24.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
@@ -1908,7 +1943,7 @@ C do not allow this set name to be changed.
           write(spfdescr(isset),'(a8)')de(1:8)
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.3)then
+      elseif(MITEM.eq.24.and.INO.EQ.3)then
         if(INDCFG.eq.2)then
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
@@ -1929,7 +1964,7 @@ C          call edisp(iuout,'* Rechecking start-up days.')
             modparms=.true.
           endif 
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.4)then
+      elseif(MITEM.eq.24.and.INO.EQ.4)then
 
 C The simulation timestep. Edit local variable and if not canceling
 C instantiate it and also ask about results integration if more than
@@ -1980,7 +2015,7 @@ C There is temporal data so must save at each timestep.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.5)then
+      elseif(MITEM.eq.24.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           H(1)='Plant-side time step is an integer subdivision'
           H(2)='of the active building side time steps per hour.'
@@ -1995,7 +2030,7 @@ C There is temporal data so must save at each timestep.
             modparms=.true.
           endif
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.6)then
+      elseif(MITEM.eq.24.and.INO.EQ.6)then
         H(1)='Level 0 - summary table'
         H(2)='Level 1 - zone temperatures and plant demand'
         H(3)='Level 2 - as 1 + zone surface temperatures'
@@ -2010,14 +2045,14 @@ C There is temporal data so must save at each timestep.
           issave=issavet
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.7)then 
+      elseif(MITEM.eq.24.and.INO.EQ.7)then 
         CALL EDAY(isstday(isset),isstmon(isset),ISDS)
         CALL EDAY(isfnday(isset),isfnmon(isset),ISDF)
         call EASKPER('Assessment period:',ISDS,ISDF,IFDAY,IER)
         call EDAYR(ISDS,isstday(isset),isstmon(isset))
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
-      elseif(MITEM.eq.23.and.INO.EQ.8)then
+      elseif(MITEM.eq.24.and.INO.EQ.8)then
         h(1)='This library holds the predictions associated'
         h(2)='with a building simulation.'
         t72=sblres(isset)
@@ -2025,7 +2060,7 @@ C There is temporal data so must save at each timestep.
      &    'zones.res','bld library',IER,2)
         sblres(isset)=t72
         modparms=.true.
-      elseif(MITEM.eq.23.and.INO.EQ.9)then
+      elseif(MITEM.eq.24.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
           h(1)='This library holds the predictions associated'
           h(2)='with a network flow simulation.'
@@ -2035,7 +2070,7 @@ C There is temporal data so must save at each timestep.
           sflres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.10)then
+      elseif(MITEM.eq.24.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           h(1)='This library holds the predictions associated'
           h(2)='with a plant simulation.'
@@ -2045,11 +2080,11 @@ C There is temporal data so must save at each timestep.
           splres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.11)then
+      elseif(MITEM.eq.24.and.INO.EQ.11)then
         if(ispmxist.gt.0)then
           continue
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.12)then
+      elseif(MITEM.eq.24.and.INO.EQ.12)then
         if(MSTROK)then
           h(1)='This library holds the predictions associated'
           h(2)='with a moisture simulation.'
@@ -2059,7 +2094,7 @@ C There is temporal data so must save at each timestep.
           smstres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.13)then
+      elseif(MITEM.eq.24.and.INO.EQ.13)then
         if(ientxist.gt.0)then
           h(1)='This library holds the predictions associated'
           h(2)='with an electrical simulation.'
@@ -2069,7 +2104,7 @@ C There is temporal data so must save at each timestep.
           selres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.14)then
+      elseif(MITEM.eq.24.and.INO.EQ.14)then
         if(lnblnk(lipvdatf).eq.0)then
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
         else
@@ -2081,7 +2116,7 @@ C There is temporal data so must save at each timestep.
           sipvres=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.23.and.INO.EQ.15)then
+      elseif(MITEM.eq.24.and.INO.EQ.15)then
         h(1)='You can save changes to simulation parameter sets or'
         h(2)='dereference the current sets (e.g. to import new '
         h(3)='IPV assessment periods).'
@@ -2918,9 +2953,14 @@ C to include the path and create a string to drive the modules.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
@@ -2934,7 +2974,7 @@ C to include the path and create a string to drive the modules.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       character H*72,CXSTR*78
-      character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64,zn*12
@@ -2945,8 +2985,10 @@ C to include the path and create a string to drive the modules.
       logical tmcok,shdok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       asked=.false.
+      newgeo=.false.  ! assume older format geometry.
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
@@ -2980,7 +3022,7 @@ C constructions are known.
       lh=0
       bndryok=.true.
       do 41 i=1,ncon
-        if(SSOTHER(i)(1:7).eq.'UNKNOWN')then
+        if(SSOTHER(i,1)(1:7).eq.'UNKNOWN')then
           CALL ZSID(IC1(I),IE1(I),ZSDES,ZSDESC,ZSDESS)
           bndryok=.false.
           if(lh.lt.60)then
@@ -3007,7 +3049,7 @@ C constructions are known.
       do 42 i=1,ncon
         CALL ZSID(IC1(I),IE1(I),ZSDES,ZSDESC,ZSDESS)
         CALL CONXINFO(1,i,CXSTR)
-        if(ICT(i).eq.0.and.SSOTHER(i)(1:5).ne.'EXTER')then
+        if(ICT(i).eq.0.and.SSOTHER(i,1)(1:5).ne.'EXTER')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3015,10 +3057,11 @@ C constructions are known.
             lh=lh+1
             write(h(lh),'(2a)') 'connection is... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.1.and.SSOTHER(i)(1:5).ne.'SIMIL')then
+        if(ICT(i).eq.1.and.SSOTHER(i,1)(1:5).ne.'SIMIL')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3026,10 +3069,11 @@ C constructions are known.
             lh=lh+1
             write(h(lh),'(2a)') 'connection is... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.2.and.SSOTHER(i)(1:5).ne.'CONST')then
+        if(ICT(i).eq.2.and.SSOTHER(i,1)(1:5).ne.'CONST')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3037,10 +3081,11 @@ C constructions are known.
             lh=lh+1
             write(h(lh),'(2a)') 'connection is... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.3.and.SSOTHER(i)(1:5).eq.'CONST')then
+        if(ICT(i).eq.3.and.SSOTHER(i,1)(1:5).eq.'CONST')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3048,10 +3093,11 @@ C constructions are known.
             lh=lh+1
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.3.and.SSOTHER(i)(1:5).eq.'SIMIL')then
+        if(ICT(i).eq.3.and.SSOTHER(i,1)(1:5).eq.'SIMIL')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3059,10 +3105,11 @@ C constructions are known.
             lh=lh+1
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.3.and.SSOTHER(i)(1:5).eq.'EXTER')then
+        if(ICT(i).eq.3.and.SSOTHER(i,1)(1:5).eq.'EXTER')then
           bndrysxc=.false.
           if(lh.lt.59)then
             lh=lh+1
@@ -3071,7 +3118,7 @@ C constructions are known.
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
           endif
         endif
-        if(ICT(i).eq.3.and.SSOTHER(i)(1:5).eq.'GROUN')then
+        if(ICT(i).eq.3.and.SSOTHER(i,1)(1:5).eq.'GROUN')then
           bndrysxc=.false.
           if(lh.lt.59)then
             lh=lh+1
@@ -3102,7 +3149,7 @@ C Do same check as in solar.F
           endif
         endif
 
-        if(ICT(i).eq.4.and.SSOTHER(i)(1:5).ne.'GROUN')then
+        if(ICT(i).eq.4.and.SSOTHER(i,1)(1:5).ne.'GROUN')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3110,10 +3157,11 @@ C Do same check as in solar.F
             lh=lh+1
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.5.and.SSOTHER(i)(1:5).ne.'ADIAB')then
+        if(ICT(i).eq.5.and.SSOTHER(i,1)(1:5).ne.'ADIAB')then
           bndrysxc=.false.
           if(lh.lt.58)then
             lh=lh+1
@@ -3121,10 +3169,11 @@ C Do same check as in solar.F
             lh=lh+1
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
-        if(ICT(i).eq.6.and.SSOTHER(i)(1:5).ne.'BASES')then
+        if(ICT(i).eq.6.and.SSOTHER(i,1)(1:5).ne.'BASES')then
 
 C HOT3000: BASESIMP.
           bndrysxc=.false.
@@ -3134,7 +3183,8 @@ C HOT3000: BASESIMP.
             lh=lh+1
             write(h(lh),'(2a)') 'connection... ',CXSTR(1:50)
             lh=lh+1
-            write(h(lh),'(2a)') 'found surface attribute... ',SSOTHER(i)
+            write(h(lh),'(2a)') 'found surface attribute... ',
+     &        SSOTHER(i,1)
           endif
         endif
 C HOT3000: BASESIMP.
@@ -3157,7 +3207,12 @@ C Check contiguity.
       ICC=0
       prob=.false.
       do 287 IZ=1,NCOMP
-        CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+        call eclose(gversion(iz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+        endif
         do 289 IS=1,NSUR
           ICC=ICC+1
           CALL ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
@@ -3325,7 +3380,12 @@ C Do cursory check to see if the file is sorted.
           else
 
 C Zone construction file exists so attempt to scan it.
-            CALL EGOMIN(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+            call eclose(gversion(i),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+            else
+              call egomin(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+            endif
             CALL ECONST(LTHRM(I),IFIL+1,I,0,IUOUT,IER)
             if(ier.ne.0)then
               if(lh.lt.60)then
@@ -4050,6 +4110,11 @@ C Path to model and command line file (if any).
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -4072,12 +4137,14 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER SALT*31,CNTMDESC*124
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       M=ILM
       call isunix(unixok)
 
 C Assume that a new connections file does not need to be created.
       docnn=.false.
+      newgeo=.false.  ! assume older format geometry.
 
 C Change name of configuration file
       IF(LRCR.eq.0)THEN
@@ -4108,10 +4175,23 @@ C geometry and attribution
             IUF=IFIL+2
             ICOMP=ivals(IC)
             EXT='.geo'
-            CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            else
+              call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            endif
             CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
             LGEOM(ICOMP)=NNAME
-            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+            else
+              call emkgeo(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            endif
 
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
@@ -4714,10 +4794,23 @@ C Check if geometry file has already been updated.
  149        continue
             if(.NOT.donegeo)then
               EXT='.geo'
-              CALL EGOMIN(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
+              call eclose(gversion(icomp),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
+              else
+                call egomin(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
+              endif
               CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
               LGEOM(ICOMP)=NNAME
-              CALL EMKGEO(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+              if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                gversion(icomp) =1.1
+                newgeo = .true.
+              endif
+              if(newgeo)then
+                call geowrite(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+              else
+                call emkgeo(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+              endif
               WRITE(MSG1,'(2A)')
      &        '* New geometry file written out for zone ',ZNAME(ICOMP)
               CALL EDISP(IUOUT,MSG1)

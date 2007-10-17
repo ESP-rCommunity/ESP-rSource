@@ -60,7 +60,8 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
       COMMON/PREC10/NWINS(MCOM,MS)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
@@ -663,6 +664,13 @@ C Once per hour storage of results, averaged over that hour.
      &            sqlwrbd(MCOM,MS),sqlwrsk(MCOM,MS),sqswrde(MCOM,MS),
      &            soutopq(MCOM),souttrn(MCOM),sopqin(MCOM),strnin(MCOM)
 
+C Thermal bridge common block is described in esruprj/edgeo.F
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent
+
 C This declaration is required to support the bugfix noted below
       logical bInStartup        ! <- function for determining if simulation
                                 !    is in startup
@@ -1114,6 +1122,9 @@ C QW2 slot used for solar from adjacent zones and QSA is solar absorbed.
           QW1=q1outs(2)
           QW2=q1adjz(2)
           QSA=q2tmc(2)+q2wall(2)+q2rem(2)
+
+C Thermal bridges.
+          qbridge=totheatloss(icomp)*(TF-TFA(icomp))
         else
           QV1=(CVIP*(TP-TPA(ICOMP))+CVIF*(TF-TFA(ICOMP)))*0.5
           X=TF
@@ -1127,6 +1138,10 @@ C Solar trace rather than default window stuff.
           QW2=(q1adjz(1)+q1adjz(2))*0.5
           QSA=((q2tmc(1)+q2tmc(2))*0.5)+((q2wall(1)+q2wall(2))*0.5)+
      &        ((q2rem(1)+q2rem(2))*0.5)
+
+C Thermal bridges.
+          qbridge=totheatloss(icomp)*
+     &            ((TF-TFA(icomp))+(TP-TPA(icomp)))*0.5
         endif
 
 C Total Real and reactive power consumptions for each zone. 
@@ -1484,7 +1499,7 @@ C Only print the following zone data once.
 C Need to account for the storage of the air mass itself.
               qair=real(ntstep)*0.33*VOL(ICOMP)*(TPA(ICOMP)-TFA(ICOMP))
 
-C Get sum at the air node. d1 to d4 are the present and future
+C Get sum at the air node. d1 to d6 are the present and future
 C portions of each of the saved variables. qma from QM calc above.
 C              tot=QV1+QV2+QW1+QW2+QSA+QCASC+outopq+opqin+
 C     &                                           outtrn+trnin+qma+qair
@@ -1494,6 +1509,8 @@ C QW1 and QW2 and QSA are used for solar trace only.
               d2=CVIF*(TF-TFA(ICOMP))
               d3=CVVPM*Y-CVVP*TPA(ICOMP)
               d4=CVVFM*X-CVVF*TFA(ICOMP)
+              d5=totheatloss(icomp)*(TP-TPA(icomp))
+              d6=totheatloss(icomp)*(TF-TFA(icomp))
               call edisp(itu,'  ')
               call edisp(itu,
      &            ' Energy at the air node:   saved    pres    futr')
@@ -1502,6 +1519,9 @@ C QW1 and QW2 and QSA are used for solar trace only.
               call edisp(itu,outs)
               write(outs,'(A,3F9.2)')' Ventilation air load   ',
      &                                                      QV2,d3,d4
+              call edisp(itu,outs)
+              write(outs,'(A,3F9.2)')' Thermal bridge air load   ',
+     &                                                  qbridge,d5,d6
               call edisp(itu,outs)
 
 C Solar distribution info.

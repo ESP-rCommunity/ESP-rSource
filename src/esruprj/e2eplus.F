@@ -60,10 +60,16 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
@@ -98,7 +104,8 @@ C compact schedule is correctly written out.
      &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
      &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
       COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -135,8 +142,9 @@ C Arrays of material properties.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,CLMLOC*30,LCFGF*72
       character cfgroot*24
       character ctldoc*248,LCTLF*72,BLKNAME*8,BLKMAT*12
@@ -180,6 +188,7 @@ C surface can be resolved into a quad).
       logical found,close,close1,foundmlc,closea,closeb,closec,closed
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
       logical loadonday,ok,dok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Viewfactor to ground.
       dimension PROPG(8)
@@ -199,6 +208,7 @@ C Set character variable com to be a single comma and sim to be a
 C simicolon. 
       com=','
       sim=';'
+      newgeo=.false.  ! assume older format geometry.
 
 C Check the version number and set iver.
       iver = 00
@@ -1071,7 +1081,7 @@ C First clear loadcasp, looping for each gain type.
   8       continue
   9     continue
 
-C Looping through weekdays.
+C Looping through weekdays. 
         if(ncas1.eq.0)then
           CGNS=0.
           CGNL=0.
@@ -1083,8 +1093,12 @@ C Looping through weekdays.
             if (ICGT1(J).eq.-1) then
 
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              CGNS=real(int((ZBASEA(mz)/CMGS1(J))))*95.
-              CGNL=real(int((ZBASEA(mz)/CMGS1(J))))*45.
+              if(CMGS1(J).lt.0.001)then
+                continue   ! to avoid division by zero.
+              else
+                CGNS=real(int((ZBASEA(mz)/CMGS1(J))))*95.
+                CGNL=real(int((ZBASEA(mz)/CMGS1(J))))*45.
+              endif
             elseif (ICGT1(J).lt.-1) then
               CGNS=CMGS1(J)*ZBASEA(mz)
               CGNL=CMGL1(J)*ZBASEA(mz)
@@ -1113,8 +1127,12 @@ C If nonzero for the day for this type set loadonday() true.
             if (ICGT2(J).eq.-1) then
 
 C For case of m2/person CMGL2()J remains zero so use cmgs2(J) instead.
-              CGNS=real(int((ZBASEA(mz)/CMGS2(J))))*95.
-              CGNL=real(int((ZBASEA(mz)/CMGS2(J))))*45.
+              if(CMGS2(J).lt.0.001)then
+                continue   ! to avoid division by zero.
+              else
+                CGNS=real(int((ZBASEA(mz)/CMGS2(J))))*95.
+                CGNL=real(int((ZBASEA(mz)/CMGS2(J))))*45.
+              endif
             elseif (ICGT2(J).lt.-1) then
               CGNS=CMGS2(J)*ZBASEA(mz)
               CGNL=CMGL2(J)*ZBASEA(mz)
@@ -1140,8 +1158,12 @@ C If the current periods gain is a new max for the type then update loadcasp.
             CGNL=0.
             ity=iabs(ICGT3(J))
             if (ICGT3(J).eq.-1) then
-              CGNS=real(int((ZBASEA(mz)/CMGS3(J))))*95.
-              CGNL=real(int((ZBASEA(mz)/CMGS3(J))))*45.
+              if(CMGS3(J).lt.0.001)then
+                continue   ! to avoid division by zero.
+              else
+                CGNS=real(int((ZBASEA(mz)/CMGS3(J))))*95.
+                CGNL=real(int((ZBASEA(mz)/CMGS3(J))))*45.
+              endif
             elseif (ICGT3(J).lt.-1) then
               CGNS=CMGS3(J)*ZBASEA(mz)
               CGNL=CMGL3(J)*ZBASEA(mz)
@@ -1827,7 +1849,12 @@ C Read in the zone geometry.
      &    '   !- Type and Muitiplier'
         WRITE(outs,'(a,a)',iostat=ios,err=5)' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        call eclose(gversion(mz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7
@@ -1990,8 +2017,9 @@ C Have not yet worked out equivalent to a constant boundary condition.
 
 C If a surface is transparent, it must have a non-blank
 C parent, if not ask the user for a suggestion.
-          if(SSOTF(icc)(1:4).EQ.'TRAN'.and.
-     &       SSPARENT(icc)(1:2).eq.'  ')then
+          if(SSOTF(icc)(1:4).NE.'OPAQ'.and.
+     &       (SSPARENT(icc)(1:2).eq.'  '.or.
+     &        SSPARENT(icc)(1:2).eq.'- '))then
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
             write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
      &        ' is transparent without parent.'
@@ -2040,7 +2068,7 @@ C internal mass.
 C Generate combined zone & generate surface names as identifiers.
           WRITE(ioout,'(a)') ' '
 
-          if(SSOTF(icc)(1:4).EQ.'TRAN')then
+          if(SSOTF(icc)(1:4).NE.'OPAQ')then
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &        'Surface:HeatTransfer:sub',com
           else
@@ -2048,7 +2076,8 @@ C Generate combined zone & generate surface names as identifiers.
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:HeatTransfer:InternalMass',com
             else
-              if(SSPARENT(icc)(1:2).eq.'  ')then
+              if(SSPARENT(icc)(1:2).eq.'  '.or.
+     &           SSPARENT(icc)(1:2).eq.'- ')then
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &            'Surface:HeatTransfer',com
               else
@@ -2061,7 +2090,7 @@ C Generate combined zone & generate surface names as identifiers.
           WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
      &      ZSDES(1:lnblnk(ZSDES)),com,
      &      '   !- User Supplied Surface Name'
-          if(SSOTF(icc)(1:4).EQ.'TRAN')then
+          if(SSOTF(icc)(1:4).NE.'OPAQ')then
             WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WINDOW',com,
      &        '   !- Surface Type!'
             WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
@@ -2127,7 +2156,10 @@ C and site exposure.
      &          SSNA(icc),sim,'   !-  Area {m}'
               goto 60
             else
-              if(SSPARENT(icc)(1:2).eq.'  ')then
+
+C Check if parent surface name is a blank or just a dash.
+              if(SSPARENT(icc)(1:2).eq.'  '.or.
+     &           SSPARENT(icc)(1:2).eq.'- ')then
                 if(SSVFC(icc)(1:4).eq.'VERT')then
                   WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WALL',com,
      &              '   !- Surface Type'
@@ -2237,6 +2269,8 @@ C A constant connection still has to be resolved.
      &              '   !- View Factor to Ground'
                 endif
               else
+
+C There is a parent for this surface.
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','DOOR',com,
      &            '   !- Surface Type!'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
@@ -2255,11 +2289,16 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
                 if(ICT(icc).eq.0)then
                   WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &              '   !- OutsideFaceEnvironment Object'
-                else 
-                  call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &              ZSDES(1:lnblnk(ZSDES)),com,
-     &              '   !- OutsideFaceEnvironment Object'
+                else
+                  if(ic2(icc).eq.0.or.ie2(icc).eq.0)then  ! if unknown zone & surface
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+     &                '   !- OutsideFaceEnvironment Object'
+                  else  ! if known zone & surface
+                    call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+     &                ZSDES(1:lnblnk(ZSDES)),com,
+     &                '   !- OutsideFaceEnvironment Object'
+                  endif
                 endif 
                 WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
      &            '   !- View Factor to Ground'

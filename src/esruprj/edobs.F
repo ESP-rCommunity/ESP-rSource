@@ -32,15 +32,14 @@ C Use file unit IPRODB temporarily.
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/CFGV/icfgv
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -48,12 +47,10 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/appw/iappw,iappx,iappy
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -66,15 +63,14 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*33 VERT(35)
       character*30 PICK(MB)
-      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,zname*12,HOLD*24
-      character blkroot*6,mat*12,DESC*48,tbn*8,HOLD32*32
+      character blkroot*6,mat*12,DESC*48,tbn*8
       character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
-      character doit*248,tmode*8,tfile*72,LCFGF*72,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character longtfile*144,longtfiledos*144
-      LOGICAL MODIFY,MODLEN,MODBND,concat,modcfg
+      LOGICAL MODIFY,MODLEN,MODBND,modcfg
       LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
 
 C Check if Unix-based or DOS based.
@@ -242,49 +238,14 @@ C Allow user to start shading analysis or at least mark preferences.
 C Get logical name of terminal type, expand problem name
 C to include the path and create a string to drive ish.
            call tstamp('>','PRJ: start shading')
-           doit = ' '
-           call tchild(ICPMOD)
-           call termode(ICPMOD,tmode)
-           if(unixok)then
-             call addpath(LCFGF,longtfile,concat)
-           else
 
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-             call addpath(LCFGF,longtfile,concat)
-             call cmdfiledos(longtfile,longtfiledos,ier)
-             longtfile=' '
-             longtfile=longtfiledos
-           endif
-
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.  If existing db out of date the
-C perform recalculation.
+C If existing db out of date the perform recalculation otherwise
+C start interactive session.
            if(ishold)then
-             if(iappw.gt.0.and.iappw.le.200)then
-               write(doit,'(3a,3i4,5a)') 'ish -mode ',tmode,
-     &           ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &           longtfile(:lnblnk(longtfile)),' -zone ',
-     &           ZN(1:lnblnk(ZN)),' -act recalculate &'
-             else
-               write(doit,'(7a)') 'ish -mode ',tmode,
-     &           ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
-     &           ' -zone ',ZN(1:lnblnk(ZN)),' -act recalculate &'
-             endif
+             call comissionish(icomp,'sra',ier)
            else
-             if(iappw.gt.0.and.iappw.le.200)then
-               write(doit,'(3a,3i4,5a)') 'ish -mode ',tmode,
-     &           ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &           longtfile(:lnblnk(longtfile)),' -zone ',
-     &           ZN(1:lnblnk(ZN)),' &'
-             else
-               write(doit,'(7a)') 'ish -mode ',tmode,
-     &           ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
-     &           ' -zone ',ZN(1:lnblnk(ZN)),' &'
-             endif
+             call comissionish(icomp,'in ',ier)
            endif
-           call usrmsg(doit,'starting shading analysis.','-')
-           call runit(doit,tmode)
            ishold=.false.
          endif
        ELSEIF(IVERT.EQ.(MVERT-3))THEN
@@ -306,7 +267,8 @@ C wall.
      &    'be build around (a vertical transparent surface).',IER)
         CALL EPMENRC
         if(IRS.ne.0)then
-          write(blkroot,'(a)')SNAME(ICOMP,IRS)(1:6)
+          icc=izstocn(ICOMP,IRS)
+          write(blkroot,'(a)')SSNAME(icc)(1:6)
           H(1)='This root name will be added to for each of the 4 '
           H(2)='obstructions: nglz -> nglzs, nglzh, nglzl, nglzr '
           H(3)='where nglzs is the sill, nglzh is the head, nglzl and'
@@ -333,8 +295,8 @@ C Material to associate with the reveal.
           else
             mat='NONE'
           endif
-          AZI=SSPAZI(izstocn(icomp,irs))
-          ELV=SSPELV(izstocn(icomp,irs))
+          AZI=SSPAZI(icc)
+          ELV=SSPELV(icc)
           call EREVEAL(ICOMP,IRS,AZI,ELV,RTK,OWID,blkroot,mat,IER)
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')

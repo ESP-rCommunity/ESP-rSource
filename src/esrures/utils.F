@@ -1019,12 +1019,14 @@ C the user is interested in for stats/ graphs/ listings etc.
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVA(MS),IVALS(MS)
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
-      character H*72,ST(MS)*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character H*72,ST(MS)*12,CSTR*25
       CHARACTER zname*12,zdesc*64,outs*124
 
 C Check for illegal zone number.
@@ -1039,7 +1041,8 @@ C Create list of surfaces in current zone (IZ) and reset call parameters.
       NP=0
       INPIC=NZSUR(IZ)
       DO 11 I=1,INPIC
-        ST(I)=SNAME(IZ,I)
+        CALL SURADJ(IZ,I,IE,T,IZC,ISC,ICN,CSTR)
+        ST(I)=SSNAME(ICN)
         IVA(I)=0
    11 CONTINUE
 

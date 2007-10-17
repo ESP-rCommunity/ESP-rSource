@@ -1,49 +1,55 @@
-# geometry of living_room defined in: ../zones/living_room.geo
-GEN  living_room  living_room describes a...  # type, name, descr
-      16       9   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-     10.58800     8.29400     0.00000  # vert   1
-      6.41100     7.17500     0.00000  # vert   2
-      5.27500     6.87100     0.00000  # vert   3
-      6.09100     3.82800     0.00000  # vert   4
-     11.40300     5.25100     0.00000  # vert   5
-     10.58800     8.29400     2.40000  # vert   6
-      7.25400     7.40100     2.40000  # vert   7
-      6.41100     7.17500     2.40000  # vert   8
-      5.27500     6.87100     2.40000  # vert   9
-      6.09100     3.82800     2.40000  # vert  10
-      8.06900     4.35800     2.40000  # vert  11
-     11.40300     5.25100     2.40000  # vert  12
-      9.80500     4.82300     0.00000  # vert  13
-      9.80500     4.82300     2.10000  # vert  14
-      6.32700     3.89100     2.10000  # vert  15
-      6.32700     3.89100     0.00000  # vert  16
-# no of vertices followed by list of associated vert
-   5,  1,  2,  8,  7,  6,
-   4,  2,  3,  9,  8,
-   4,  3,  4, 10,  9,
-   9,  4, 16, 15, 14, 13,  5, 12, 11, 10,
-   4,  5,  1,  6, 12,
-   4,  6,  7, 11, 12,
-   5,  7,  8,  9, 10, 11,
-   7,  5, 13, 16,  4,  3,  2,  1,
-   4, 13, 14, 15, 16,
-# unused index
- 0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, hall_liv      OPAQ  VERT  int_part_1   hall           
-  2, kit_liv       OPAQ  VERT  int_part_1   kitchen        
-  3, din_liv       OPAQ  VERT  int_part_1   dining_room    
-  4, liv_con       OPAQ  VERT  ext_wall     conservatory   
-  5, e_ext         OPAQ  VERT  ext_wall     EXTERIOR       
-  6, ceil_b2       OPAQ  CEIL  grnd_ceiling bedroom_2      
-  7, ceil_b4       OPAQ  CEIL  grnd_ceiling bedroom_4      
-  8, floor         OPAQ  FLOR  grnd_floor   GROUND         
-  9, glazing       TRAN  VERT  double_glaz  conservatory   
-# base
-  8  0  0  0  0  0    17.33 0
+*Geometry 1.1,GEN,living_room # tag version, format, zone name
+*date Thu Aug 23 18:13:58 2007  # latest file modification 
+living_room describes a...
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,10.58800,8.29400,0.00000  #   1
+*vertex,6.41100,7.17500,0.00000  #   2
+*vertex,5.27500,6.87100,0.00000  #   3
+*vertex,6.09100,3.82800,0.00000  #   4
+*vertex,11.40300,5.25100,0.00000  #   5
+*vertex,10.58800,8.29400,2.40000  #   6
+*vertex,7.25400,7.40100,2.40000  #   7
+*vertex,6.41100,7.17500,2.40000  #   8
+*vertex,5.27500,6.87100,2.40000  #   9
+*vertex,6.09100,3.82800,2.40000  #  10
+*vertex,8.06900,4.35800,2.40000  #  11
+*vertex,11.40300,5.25100,2.40000  #  12
+*vertex,9.80500,4.82300,0.00000  #  13
+*vertex,9.80500,4.82300,2.10000  #  14
+*vertex,6.32700,3.89100,2.10000  #  15
+*vertex,6.32700,3.89100,0.00000  #  16
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,5,1,2,8,7,6  #  1
+*edges,4,2,3,9,8  #  2
+*edges,4,3,4,10,9  #  3
+*edges,9,4,16,15,14,13,5,12,11,10  #  4
+*edges,4,5,1,6,12  #  5
+*edges,4,6,7,11,12  #  6
+*edges,5,7,8,9,10,11  #  7
+*edges,7,5,13,16,4,3,2,1  #  8
+*edges,4,13,14,15,16  #  9
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,hall_liv,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,03,07  #   1 ||< p_living:hall
+*surf,kit_liv,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,04,05  #   2 ||< kit_liv:kitchen
+*surf,din_liv,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,02,05  #   3 ||< din_liv:dining_room
+*surf,liv_con,VERT,-,-,-,ext_wall,OPAQUE,ANOTHER,15,01  #   4 ||< liv_con:conservatory
+*surf,e_ext,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,ceil_b2,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,07,08  #   6 ||< flr_liv:bedroom_2
+*surf,ceil_b4,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,09,08  #   7 ||< flr_liv:bedroom_4
+*surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,00,01  #   8 ||< user def grnd profile  1
+*surf,glazing,VERT,-,-,-,double_glaz,DCF7672_06nb,ANOTHER,15,02  #   9 ||< glazing:conservatory
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,8,    17.33 0  # zone base list

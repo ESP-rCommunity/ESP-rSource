@@ -35,6 +35,11 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -57,6 +62,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
+      logical newgeo  ! to use for testing if new/old geometry file.
       
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
@@ -66,6 +72,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       CHARACTER*26 LABELS(17)
       CHARACTER*9 TITLE1(17)
 
+      newgeo=.false.  ! assume older format geometry.
       LABELS(1)=' Infiltration air load    '
       LABELS(2)=' Ventilation air load     '
       LABELS(3)=' N/A                      '
@@ -111,7 +118,12 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
 C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
-      call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+      call eclose(gversion(izone),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+      else
+        call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+      endif
       idwins=0
 
 C Reset display unit if redirecting output.
@@ -424,13 +436,15 @@ C CALLED BY: MOZSUM
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Versions of libraries (zone, plant, electrical).
       common/recver/izver,ipver,iever
 
       CHARACTER*25 CSTR
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       DIMENSION CQ(MTS)
 
@@ -492,13 +506,15 @@ C use the exact values from the results library.
           CALL CSCONV(IDAY,IZONE,ISN,CQ)
           DO 61 ISTP=ISTART,IEND
             IF(IE.GE.1)THEN
-              IF(SOTF(ISN).EQ.'OPAQ'.OR.SOTF(ISN).EQ.'UNKN')THEN
+              IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &           SSOTF(ICN)(1:4).EQ.'UNKN')THEN
                 VAL1(13,ISTP)=VAL1(13,ISTP)+CQ(ISTP)*(-1.0)
               ELSE
                 VAL1(15,ISTP)=VAL1(15,ISTP)+CQ(ISTP)*(-1.0)
               ENDIF
             ELSEIF(IE.EQ.0)THEN
-              IF(SOTF(ISN).EQ.'OPAQ'.OR.SOTF(ISN).EQ.'UNKN')THEN
+              IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &           SSOTF(ICN)(1:4).EQ.'UNKN')THEN
                 VAL1(12,ISTP)=VAL1(12,ISTP)+CQ(ISTP)*(-1.0)
               ELSE
                 VAL1(14,ISTP)=VAL1(14,ISTP)+CQ(ISTP)*(-1.0)

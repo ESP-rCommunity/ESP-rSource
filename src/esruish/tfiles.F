@@ -27,18 +27,21 @@ C         transitional shading file.
 
 C ************** TFILE1 ***********************
 C Write to transitional shading file.
-      SUBROUTINE TFILE1
+      SUBROUTINE TFILE1(icomp)
 #include "building.h"
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/G0/ETYPE
+      character ETYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/ETYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/FIND/IRECL
-      CHARACTER ETYPE*3,BLKNAME*8,BLKMAT*12,outs*124
+      CHARACTER BLKNAME*8,BLKMAT*12,outs*124
 
 C Dummy for default windows.
       DIMENSION NGLD(MS)
@@ -59,7 +62,7 @@ C file.
      &      IYD
       if(tok)write(iut,*)irec,MON,(ISC(I),I=1,NSUR),IYD
       IREC=IREC+1
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE,NSUR,NTV,
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE(icomp),NSUR,NTV,
      &     (NVER(I),I=1,NSUR)
       IREC=IREC+1
       DO 10 I=1,NSUR
@@ -435,7 +438,8 @@ C shading file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GRID3/OGRIDA(MS)
@@ -444,8 +448,11 @@ C shading file.
       COMMON/FIND/IRECL
       COMMON/IHTIME/IHOUR
       COMMON/DATA1/PSO(MS,MT)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
       CHARACTER BLKNAME*8,BLKMAT*12,outs*124
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       logical tok
 
 C If verbose trace requested enable writing of text version of transition
@@ -515,19 +522,20 @@ C Compute gross surface area.
       CALL AREA(NV,XFT,ZFT,GSA)
 
       PSO(IS,IHOUR)=GSSA/GSA
+      icn=izstocn(icomp,is)   ! find connection for zone and surface.
 
     1 IF(PSO(IS,IHOUR).GT.1.0)THEN
-         WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
-     &     SNAME(ICOMP,IS),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
-     &     'hr - saved as 1.00'
-         call edisp(iuout,outs)
-         PSO(IS,IHOUR)=1.0
+        WRITE(outs,'(3a,F4.2,a,I2,a)') ' Shading coef for ',
+     &    SSNAME(icn),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
+     &    'hr - saved as 1.00'
+        call edisp(iuout,outs)
+        PSO(IS,IHOUR)=1.0
       ELSEIF(PSO(IS,IHOUR).LT.0.0)THEN
-         WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
-     &     SNAME(ICOMP,IS),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
-     &     'hr - saved as 1.00'
-         call edisp(iuout,outs)
-         PSO(IS,IHOUR)=0.0
+        WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
+     &    SSNAME(icn),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
+     &    'hr - saved as 1.00'
+        call edisp(iuout,outs)
+        PSO(IS,IHOUR)=0.0
       ENDIF
       IRECL=IREC
 

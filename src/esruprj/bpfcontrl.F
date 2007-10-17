@@ -1142,6 +1142,7 @@ C *********** EBCNTRL
 C Edit building control function II.
       SUBROUTINE EBCNTRL(ITRC,II,IV,IER)
 #include "building.h"
+#include "plant.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -1149,6 +1150,10 @@ C Edit building control function II.
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      
+C Plant common required for building/plant flux linkage      
+      common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
+     &               ndcon(mpcom,mnodec)
 
       DIMENSION SALT(22),IVALS(22)
       CHARACTER*82 VERT(20)
@@ -1517,23 +1522,32 @@ C Zone - plant connector.
 
           H(1)='The number of data items required is either'
           H(2)='5 or 7 and depends on whether there is an'
-          H(3)='extract component (e.g fan). Refer to the' 
-          H(4)='ESP-r Data Model Section 9.'
+          H(3)='extract component (e.g fan).'
           CALL EASKR(cm(1),'Number of miscellaneous','data items?',
-     &      5.,'F',7.,'F',7.,'no. of misc data items',IER,5)
+     &      5.,'F',7.,'F',7.,'no. of misc data items',IER,3)
+     
+C Display list of plant components:         
+          CALL ASKPCMP(' Supply plant component ? ',
+     &                 '-',ISELS,IER)
+          cm(2)=ISELS
+          if(ISELS.eq.0) return
+  
+          if(nnodes(ISELS).gt.1) then
+            call getnod(ISELS,knode)
+            if(knode.eq.0) return
+            cm(3)=knode
+          else
+            cm(3)=1.0
+          endif
 
-          H(1)='This is the plant component which supplies'
-          H(2)='the energy to the zone - e.g. a radiator in'
-          H(3)='a heating system.'          
-          CALL EASKR(cm(2),' ','Supply plant component index?',
-     &      0.,'F',0.,'-',1.,' sply plt comp no',IER,3)
-
-          H(1)='Refer to the ESP-r Data Model Section 9.'
-          CALL EASKR(cm(3),' ','Plant node within supply component?',
-     &      0.,'F',0.,'-',1.,'plant node',IER,1)
-          CALL EASKR(cm(4),'Coupling index?',
-     &      ' (1. mCpdT or 2. hrAdT)',
-     &      1.,'F',2.,'F',1.,'coupling index',IER,1)
+          h(1)=' The coupling type depends upon the component '
+          h(2)=' that connects the plant to the building zone'
+          h(3)=' For warm/cool air-based systems use type 1,'
+          h(4)=' and for radiators, heated floors, etc. '
+          h(5)=' use type 2. '    
+          CALL EASKR(cm(4),'  Coupling type',
+     &      ' 1.) mCpdT calc, 2.) heat flux transfer ? ',
+     &      1.,'F',2.,'F',1.,'coupling type',IER,5)
 
 C Check if coupling index = 1. If so determine if the most recent
 C zone temperatures should be used when determining the zone 
@@ -1595,14 +1609,20 @@ C (Q=m'Cp(Ts' + Ta'))
      &      0.,'-',0.,'-',1000.,'max cool flux',IER,1)
 
           IF(int(cm(1)).EQ.7)THEN
-           H(1)=' This is the plant component which is coupled to'
-           H(2)=' the zone in order to extract zone air.'
-           CALL EASKR(cm(7),' ','Extract plant component?',
-     &      0.,'F',0.,'-',1.,' extract plant compt',IER,2)
+           CALL ASKPCMP(' Extract plant component ? ',
+     &                  '-',ISELE,IER)
+           cm(7)=ISELE
+           if(ISELE.eq.0) return
 
-           CALL EASKR(cm(8),' ','Extract component node?',
-     &      0.,'F',0.,'-',1.,' extract comp`t node ',IER,0)
+           if(nnodes(ISELE).gt.1) then
+             call getnod(ISELE,knode)
+             if(knode.eq.0) return
+             cm(8)=knode
+           else
+             cm(8)=1.0
+           endif
           ENDIF
+  
         elseif(IBCLAW(II,JJ,KK).eq.7.or.IBCLAW(II,JJ,KK).eq.8)then
 
 C Multi-stage (7) is taken care of by a call to editctlperiod.
@@ -4063,6 +4083,7 @@ C flow connections.It is assumed that the user will make one selection only.
      &  isense,nsup,errmsg,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "plant.h"
 #include "epara.h"
 
       common/pophelp/h(60)
@@ -4072,6 +4093,9 @@ C flow connections.It is assumed that the user will make one selection only.
      &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
      &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
+     &               ndcon(mpcom,mnodec)
+     
       LOGICAL SELECT,OK,dok
       CHARACTER*(*) prompt,title,errmsg
 
@@ -4082,7 +4106,7 @@ C flow connections.It is assumed that the user will make one selection only.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
-      SELECT=.FALSE.
+   3  SELECT=.FALSE.
       if(icfoc.eq.0)then
         MHEAD=14
       elseif(icfoc.eq.1)then
@@ -4104,7 +4128,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-    3 M=MHEAD
+      M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
         WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
@@ -4271,20 +4295,19 @@ C Offer the user a cancel option.
         H(4)='If you choose cancel the controller data will not be'
         H(5)='altered and you will be returned to the main menu. '
         isn2T=isn2
-        CALL EASKI(isn2T,' ',' Plant component index for sensor ? ',
-     &      0,'F',0,'-',1,'plant comp no',IERI,5)
-        if(ieri.eq.-3) goto 3
+        CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
+        if(IP.eq.0) goto 3
+        ISN2T=IP
 
-        H(1)='This value specifies the plant component node (see '
-        H(2)='the plant component database). '
-        H(3)=' '
-        H(4)='If you choose cancel the controller data will not be'
-        H(5)='altered and you will be returned to the main menu. '
-        isn3T=isn3
-        CALL EASKI(isn3T,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IERI,5)
-        if(ieri.eq.-3) goto 3
 
+        if(nnodes(ip).eq.1) then
+          ISN3T=1
+        elseif(nnodes(ip).gt.1) then
+           call getnod(ip,knode)
+           if(knode.eq.0) goto 3
+           ISN3T=knode
+        endif
+        
 C If the user has not canceled instanciate from temporary values.
         nsup=0
         if(icfoc.eq.2)nsup=0
@@ -4645,6 +4668,7 @@ C flow connections.It is assumed that the user will make one selection only.
      &  errmsg,IER)
 #include "building.h"
 #include "net_flow.h"
+#include "plant.h"
 #include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -4664,6 +4688,8 @@ C flow connections.It is assumed that the user will make one selection only.
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
+     &               ndcon(mpcom,mnodec)
       LOGICAL SELECT
       CHARACTER*(*) prompt,title,errmsg
 
@@ -4674,7 +4700,7 @@ C flow connections.It is assumed that the user will make one selection only.
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
-      SELECT=.FALSE.
+   3  SELECT=.FALSE.
       if(icfoc.eq.0)then
         MHEAD=3
       elseif(icfoc.eq.1)then
@@ -4726,7 +4752,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-    3 M=MHEAD
+      M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)')'a at current zone air point           '
         WRITE(VERT(2),'(a)')'b mix of convection and radiation     '
@@ -4851,16 +4877,20 @@ C Within a plant component (offer the user a cancel option).
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
         H(3)='A cancel restores the previous value. '
-        ian2T=ian2
-        CALL EASKI(ian2T,' ',' Plant component index ? ',
-     &      0,'F',0,'-',1,'plant comp no',IERI,3)
-        if(ieri.eq.-3) goto 3
-        H(1)='This value specifies the plant component node (see '
-        H(2)='the plant component database). '
-        H(3)='A cancel restores the previous value. '
-        ian3T=ian3
-        CALL EASKI(ian3T,' ',' Plant component node ? ',
-     &      0,'F',0,'-',1,'plant node no',IERI,3)
+        IP=-1
+        CALL ASKPCMP('Plant component for actuator ? ','-',IP,IER)
+        if(IP.le.0) goto 3
+        IAN2T=IP
+
+        if(nnodes(ip).eq.1) then
+          IAN3T=1
+        elseif(nnodes(ip).gt.1) then
+          knode=-1
+           call getnod(ip,knode)
+           if(knode.le.0) goto 3
+           IAN3T=knode
+        endif
+ 
         if(ieri.eq.-3) goto 3
         ian1=ian1T
         ian2=ian2T
@@ -6320,7 +6350,7 @@ C Variable supply temperature with limit constraints.
           h(3)='for heating & cooling). The heating supply temperature'
           h(4)='varies up to a maximum set-point and the cooling'
           h(5)='supply temperature varies down to a minimum set-point.'
-          h(6)=' '
+          h(6)=''
           h(7)='The room heating and cooling set-points (typically'
           h(8)='defined so that there is a deadband) are met on the'
           h(9)='basis of the heating and/or cooling implicit at the'

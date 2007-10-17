@@ -384,10 +384,12 @@ C 1.0-AI() is assumed to represent the visible reflectance of surfaces.
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       logical close
 
 C Loop through zone verticies and find out ZMIN and ZMAX.
@@ -421,14 +423,14 @@ C Get information about areas of all surfaces opaque and TMC:
       IF(.NOT.close)THEN
         ZAREA=ZAREA+SNA(I)
         ITVTR=ITMCFL(ICOMP,I)
-        IF(SOTF(I).EQ.'OPAQ')THEN
+        IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
           AVREF=AVREF+SNA(I)*(1.-AI(ICOMP,I))
         ELSE
           AVREF=AVREF+SNA(I)*(1.-(TVTR(ICOMP,ITVTR)+AI(ICOMP,I)))
         ENDIF
 
         IF(SVFC(I).EQ.'CEIL')THEN
-          IF(SOTF(I).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)
             AU=AU+SNA(I)
           ELSE
@@ -436,8 +438,8 @@ C Get information about areas of all surfaces opaque and TMC:
             AU=AU+SNA(I)
           ENDIF
 
-        ELSEIF(SVFC(I).EQ.'FLOR')THEN
-          IF(SOTF(I).EQ.'OPAQ')THEN
+        ELSEIF(SVFC(I)(1:4).EQ.'FLOR')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)
             AL=AL+SNA(I)
           ELSE
@@ -446,7 +448,7 @@ C Get information about areas of all surfaces opaque and TMC:
           ENDIF
 
         ELSE
-          IF(SOTF(I).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)*HU/RDZ
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)*HL/RDZ
             AU=AU+SNA(I)*HU/RDZ

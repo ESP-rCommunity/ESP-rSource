@@ -52,7 +52,7 @@ C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
       dimension name(60), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character cdblfil*72, group*32,key*1,look*32,tlook*32
-      character clmdb*72,h*72,actreturn*1
+      character clmdb*72,llclmdb*144,h*72,actreturn*1
 
 C Set default early winter, spring, summer, autumn, late winter periods.
       CALL EDAY(9,1,ia1wins)
@@ -98,6 +98,7 @@ C Read the header and see if '*CLIMATE_LIST' is a string.
 C In the first pass, make up the display, beginning with
 C an organizational header and the `names' of each climate db.
       clmdb='UNKNOWN'
+      llclmdb='UNKNOWN'
       MHEAD=2
       MCTL=5
 
@@ -124,9 +125,6 @@ C Find how many items to display.
       ILEN=IN
       IPACT=CREATE
       CALL EKPAGE(IPACT)
-
-C debug...
-C      write(6,*)cdblfil
 
 C Build and present the display.
   42  ICO= -2
@@ -184,18 +182,44 @@ C Help @ db file level.
 
 C New db.
         clmdb='USER_DEFINED'
+        llclmdb='USER_DEFINED'
         CALL ERPFREE(idblfil,ISTAT)
         return
       ELSEIF(ICO.EQ.(NCO-3))THEN
 
-C User supplied (which assumes default periods).
-C << this code should be using easkf, but there is an issue >>
-C << that clmdb is still 72 characters. >>
+C User supplied (which assumes default periods). Use file browser
+C with the GTK version.
         clmdb=' '
-        h(1)='This climate db is assumed to be in ESP-r format. '
- 289    CALL EASKS(clmdb,' Climate file (esp-r binary format) ?',
-     &    ' ',72,DCLIM,'climate file',IER,1)
-        IF(clmdb.EQ.' ')GOTO 289
+        llclmdb=' '
+        h(1)='This climate db is assumed to be in ESP-r format.'
+        h(2)='Note: selecting a file that is not in the official'
+        h(3)='list (climate/climatelist) will not contain the meta-'
+        h(4)='data about the length of seasons or typical weeks. '
+ 289    llt=lnblnk(llclmdb)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
+     &        ' ',96,DCLIM,'climate file name',IER,4)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
+     &        ' ',124,DCLIM,'climate file name',IER,4)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
+     &        ' ',144,DCLIM,'climate file name',IER,4)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
+     &      ' ',144,DCLIM,'climate file name',IER,4)
+        else
+          CALL EASKF(llclmdb,' Climate file (esp-r binary format)?',
+     &      ' ',96,DCLIM,'climate file name',IER,4)
+        endif
+        IF(llclmdb(1:2).EQ.'  ')GOTO 289
+
+C Cast back to 72 char name.
+        llt=MIN0(lnblnk(llclmdb),72)
+        write(clmdb,'(a)') llclmdb(1:llt)
         CALL ERPFREE(idblfil,ISTAT)
         IER=0
         return
@@ -739,6 +763,10 @@ C ************ editemclimatelist
 C Edit/create an item for climatelist file. Data fields include
 C five seasons and typical assessment periods, documentation
 C strings.
+
+C << idea, add in the option to edit the climatelist file and
+C << the text block from within clm!
+
       subroutine editemclimatelist()
 #include "building.h"
 #include "esprdbfile.h"
@@ -760,17 +788,29 @@ C Typical periods and season definitions.
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
+C External text editor.
+      common/texted/tedlbl,teditor
+      common/clmlst/cdblbl,cdblfil
+
 C ITM is main item editing menu.
-      character ITM(23)*40
+      character ITM(24)*40
       character NMTHNM(12)*3
       character descr*7,descrst*10,descrfn*10,h*72
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,ltfil*72,DFILE*72,outs*124
+      character clmlhelp*72,DFILE*72,outs*124
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
       CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
-      
+      character llasci*144,llitem*144,longtfile*144,longtfiledos*144
+      character tedlbl*20,teditor*20,tmode*8,doit*248
+      character cdblbl*20,cdblfil*72
+      logical unixok,xst,concat
+      integer llt   ! length of string buffer
+     
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
 
     3 INO=-4
       IIER=0
@@ -826,10 +866,11 @@ C ITM is main item editing menu.
      &  ')----------'
       WRITE(ITM(19),'(A)')     'o list/generate/edit documentation'
       WRITE(ITM(20),'(A)')     ' _________________________________'
-      WRITE(ITM(21),'(A)')     '> save                            '
-      WRITE(ITM(22),'(A)')     '? help                            '
-      WRITE(ITM(23),'(A)')     '- end                             '
-      nitms=23
+      WRITE(ITM(21),'(A)')     '> save item documentation         '
+      WRITE(ITM(22),'(A)')     '> edit climatelist file           '
+      WRITE(ITM(23),'(A)')     '? help                            '
+      WRITE(ITM(24),'(A)')     '- end                             '
+      nitms=24
       CALL EMENU('Climate list item',ITM,nitms,INO)
       if(INO.EQ.nitms)then
         return
@@ -856,18 +897,48 @@ C Aide memorie for the menu.
         if(t72(1:2).ne.'  ')clmlaid=t72
       elseif(INO.eq.3)then
 
-C Installed location of climate file.
+C Installed location of climate file. If GTK then use file browser.
         H(1)='This is the `installed` location of the climate file.'
         h(2)='(remember to copy new climate files to this folder)'
-        t72=clmldbfile
-        if(t72(1:2).eq.'  ') t72 = LCLIM
-        d72 = LCLIM
-        CALL EASKS(t72,'associated climate file (installed location)',
-     &    ' ',72,d72,'clm file',IER,2)
-        if(t72(1:2).ne.'  ')clmldbfile=t72
+        write(llasci,'(a)') lclim(1:lnblnk(lclim))
+        write(6,*) llasci
+  290   llt=lnblnk(llasci)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',96,DCLIM,'climate file location',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',124,DCLIM,'climate file location',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LLASCI,' Climate file installed location?',
+     &        ' ',144,DCLIM,'climate file location',IER,3)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,' Climate file installed location?',
+     &      ' ',144,DCLIM,'climate file location',IER,3)
+        else
+          CALL EASKF(LLASCI,' Climate file installed location?',
+     &      ' ',96,DCLIM,'climate file location',IER,3)
+        endif
+        IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
+
+C Cast back to 72 char name.
+        llt=MIN0(lnblnk(llasci),72)
+        write(clmldbfile,'(a)') LLASCI(1:llt)
       elseif(INO.eq.4)then
 
-C Toggle for available << ? check for file existance >>
+C Toggle for available
+        call FINDFIL(clmldbfile,XST)
+        if(XST)then
+          call usrmsg('The file was found in the install location',
+     &      'so it is ok to mark it as ONLINE','P')
+        else
+          call usrmsg('The file was NOT found in the install location',
+     &      'so check it prior to marking it as ONLINE','P')
+        endif
+
         h(1)='Set to OFFLINE if climate files tend to be kept as'
         h(2)='compressed files or are held in a secure location. '
         call easkabc('Choices:',' ','online','offline','continue',IW,2)
@@ -1351,29 +1422,100 @@ C Now for the `all line'.
      &      descrst
           nbclmlhelp=27
         elseif(idw.eq.3)then
-          continue
+
+C Edit the block of text.
+          if(unixok)then
+            call addpath(llitem,longtfile,concat)
+          else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+            call addpath(llitem,longtfile,concat)
+            call cmdfiledos(longtfile,longtfiledos,ier)
+            longtfile=' '
+            longtfile=longtfiledos
+          endif
+          tmode='graph'
+          if(teditor(1:2).eq.'  ')then
+            call usrmsg(
+     &    'The external word processor has not be defined. See your',
+     &    'administrator about updating the esprc definition.','W')
+          elseif(teditor(1:2).eq.'vi')then
+            tmode='text'
+          endif
+          write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &      longtfile(1:lnblnk(longtfile)),' &'
+          call usrmsg('Begining edit via',doit,'-')
+          call runit(doit,tmode)
         elseif(idw.eq.4)then
           continue
         endif
       elseif(INO.eq.21)then
 
-C Save to file, confirm file name and open, call mkitemclimatelist
-C and then close file.
-        ltfil='/tmp/climateitem'
-        DFILE=ltfil
+C Save climatelist text block to file, confirm file name and open,
+C call mkitemclimatelist and then close file.
+        write(llitem,'(a)') 'climateitem'
+        write(DFILE,'(a)') 'climateitem'
         h(1)='Information on the current climate file (seasons etc.)'
-        h(2)='will be written to a small file which can be copied into'
-        h(3)='the /usr/esru/esp-r/climatelist file. '
-        CALL EASKS(ltfil,' (new) file to write item data to? ',
-     &     ' ',72,DFILE,'climate list item file',IER,3)
+        h(2)='will be written to a small ASCII file which can be'
+        h(3)='copied into /usr/esru/esp-r/climatelist file. '
+        llt=lnblnk(llitem)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,' Climatelist entry text block?',
+     &        ' ',96,DFILE,'climatelist entry file',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,' Climatelist entry text block?',
+     &        ' ',124,DFILE,'climatelist entry file',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,' Climatelist entry text block?',
+     &        ' ',144,DFILE,'climatelist entry file',IER,3)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,' Climatelist entry text block?',
+     &      ' ',144,DFILE,'climatelist entry file',IER,3)
+        else
+          CALL EASKF(llitem,' Climatelist entry text block?',
+     &      ' ',96,DFILE,'climatelist entry file',IER,3)
+        endif
         iuf=ifil+1
-        CALL EFOPSEQ(iuf,ltfil,4,IER)
+        CALL EFOPSEQ(iuf,llitem,4,IER)
         call mkitemclimatelist(iuf,ier)
         CALL ERPFREE(iuf,ISTAT)
+
       elseif(INO.eq.22)then
 
-C << Include a note about how to take typical week information
-C << generated elsewhere.
+C Edit the climatelist file. First warn the user.
+        call usrmsg('WARNING: be careful when editing this file!',
+     &    'The tag and data format should be maintained.','W')
+        if(unixok)then
+          call addpath(cdblfil,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(cdblfil,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'  ')then
+          call usrmsg(
+     &    'The external word processor has not be defined. See your',
+     &    'administrator about updating the esprc definition.','W')
+        elseif(teditor(1:2).eq.'vi')then
+          tmode='text'
+        endif
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call usrmsg('Begining edit via',doit,'-')
+        call runit(doit,tmode)
+
+      elseif(INO.eq.23)then
+
+C Context help
         h(1)='How to use the climate list facility: '
         h(2)=' '
         h(3)='Climate data resides in individual files and ESP includes'
@@ -1397,7 +1539,12 @@ C << generated elsewhere.
         h(20)='degree days & solar radiation. If you use that facility' 
         h(21)='a typical week in each season will be found and can be'
         h(22)='saved into the `climatelist` file. '
-        CALL PHELPD('clm list mgt',22,'-',0,0,IER)
+        h(23)=' '
+        h(24)='If you have a text editor defined you can edit the text'
+        h(25)='created by the list/generate menu selection. You can'
+        h(26)='also edit the climatelist file. BE CAREFUL if you'
+        h(27)='corrupt the file then you may get an incomplete list.'
+        CALL PHELPD('clm list mgt',27,'-',0,0,IER)
       else
         INO=-4
         goto 3

@@ -42,7 +42,8 @@ C ******************** MZCONV ********************
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/C1/NCOMP,NCON
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -74,7 +75,8 @@ C Indicies of simulation toggles for inside and outside hc coef.
       common/hcthry/ihct,icorexhct
 
       character outs*124,LCFD*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C Iterate through each zone.
       DO 100 ICOMP=1,NCOMP
@@ -333,7 +335,8 @@ C but the file can hold alternative values.
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
 
 C Commons to support CEN upwards or downwards heat flow hc coef.
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -351,7 +354,8 @@ C       jj=12-14 wall inside, partition, external
 C Logical variables for close to floor, ceiling, wall, other for CEN tests.
       logical isfloor,isceiling,iswall,isother
       logical dotrace
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       character outs*124
 
 C Check whether we are within one of the time intervals with type 4 control.

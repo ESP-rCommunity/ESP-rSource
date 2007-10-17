@@ -35,12 +35,20 @@ C will have been defined prior to calling edmrt.
       common/CFGV/icfgv
 
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -61,17 +69,21 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
+      logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character doit*248,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,act*1
       character longtfile*144,longtfiledos*144
+      integer icni,icnj  ! connection numbers for pair of surfaces.
 
       cfgmod=.false.
+      newgeo=.false.  ! assume older format geometry.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -97,16 +109,25 @@ C matching geometry file.
       write(ZN,'(A)') zname(ICOMP)
 
 C Set VEWF array in preparation for editing or silent creation.
-      CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      else
+        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      endif
+
+C << update logic to use alternative source for ZOA rather than call zinfo >>
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
-      NS=NSUR
+      NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
         DO 201 J=1,NS
           JJ=J
+          icc=izstocn(icomp,ii)
+          jcc=izstocn(icomp,jj)
           VEWF(II,JJ)=0.0
           IF(II.EQ.JJ)goto 201
-          VEWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
+          VEWF(II,JJ)=(SSNA(jcc)/(ZOA-SSNA(icc)))
   201   CONTINUE
   111 CONTINUE
       if(silent)then
@@ -286,8 +307,7 @@ C Check just in case the file exists (or was previously dereferenced).
 
 C On entry refresh geometry, determine its bounds, force it
 C drawn and remember number of surfaces to pass to sensor file.
-C      CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      NZS=NSUR
+      NZS=NZSUR(icomp)
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
@@ -412,7 +432,9 @@ C List viewfactor contents.
         call edisp(itru,' View Factors from Surface to Surface')
         DO 860 I=1,NZS
           DO 850 J=1,NZS
-            WRITE(outs,5203)SNAME(icomp,I),I,SNAME(icomp,J),J,VEWF(I,J)
+            ICNI=IZSTOCN(ICOMP,I)
+            ICNJ=IZSTOCN(ICOMP,J)
+            WRITE(outs,5203)SSNAME(icni),I,SSNAME(icnj),J,VEWF(I,J)
  5203       FORMAT(10X,A12,I3,'  to ',A12,I3,' = ',F6.4)
             call edisp(itru,outs)
   850     CONTINUE
@@ -471,8 +493,10 @@ C Manual editing of viewfactors.
      &    'Select surface for viewfactor editing.',' ',IER)
   31    do 33 MM=1,NZS
           if(MM.NE.IS)then
-            write(outs,'(A,A15,A,A15)') ' For ',SNAME(ICOMP,IS),' to ',
-     &                                   SNAME(ICOMP,MM)
+            ICNI=IZSTOCN(ICOMP,IS)
+            ICNJ=IZSTOCN(ICOMP,MM)
+            write(outs,'(A,A15,A,A15)') ' For ',SSNAME(ICNI),' to ',
+     &                                   SSNAME(ICNJ)
             V=VEWF(IS,MM)
             CALL EASKR(V,outs,' view factor: ',
      &        0.,'F',0.999,'F',0.,'viewfactors',IER,1)
@@ -501,15 +525,20 @@ C use in area weighted computation.
      &    ':','Area weighted','Based on ray-tracing calcs','continue',
      &    IW,1)
         if(IW.eq.1)then
+
+C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
+
           CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
-          NS=NSUR
+          NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I
             DO 20 J=1,NS
               JJ=J
+              icc=izstocn(icomp,ii)
+              jcc=izstocn(icomp,jj)
               VEWF(II,JJ)=0.0
               IF(II.EQ.JJ)goto 20
-              VEWF(II,JJ)=(SNA(JJ)/(ZOA-SNA(II)))
+              VEWF(II,JJ)=(SSNA(jcc)/(ZOA-SSNA(icc)))
    20       CONTINUE
    11     CONTINUE
         elseif(IW.eq.2)then

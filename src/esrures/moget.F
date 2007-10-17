@@ -429,7 +429,7 @@ C TDF commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
@@ -3058,6 +3058,11 @@ C This recovers one day.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -3073,18 +3078,22 @@ C This recovers one day.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
 
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character outs*124
+      character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
+      logical newgeo  ! to use for testing if new/old geometry file.
 
+      newgeo=.false.  ! assume older format geometry.
       if(IGETNO(KGET,1).eq.1)then
 
 C IGETNO(KGET,1) =  1 Zone temperature
@@ -3374,7 +3383,12 @@ C Read in the zone geometry, construction data, zone operational data,
 C utility file, and casual gain control file. << Work towards not reading
 C zone files >>
         IUNIT=IFIL+1
-        CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
+        endif
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
         CALL EROPER(0,iuout,iunit,iz,IER)
         if(ip3ver.eq.0)then
@@ -3445,6 +3459,7 @@ C no radiant plant component.
             CALL XTVAL1(XDUM,ISTART,IEND,KGET)
           ENDIF
         else
+          CALL SURADJ(IZ,IS,IE,T,IZC,ISC,ICN,CSTR)
           DO 198 JTS=ISTART,IEND
             CALL GSURFB(IDAY,IZ,IS,JTS,TSout,qswrdi,
      &         qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
@@ -3474,7 +3489,8 @@ C no radiant plant component.
             elseif(IPK.eq.17)then
 
 C Determine if the surface is transparent or opaque.
-              if (SOTF(IS).EQ.'OPAQ'.OR.SOTF(IS).EQ.'UNKN') then
+              if(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &           SSOTF(ICN)(1:4).EQ.'UNKN')then
                 GVAL(JTS)=qswrde/(SAREA*absorb)
               else
                 call edisp(iuout,

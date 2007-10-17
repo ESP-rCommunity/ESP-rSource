@@ -1,41 +1,47 @@
-# geometry of garage defined in: ../../ccht_geometry/zones_basic/garage.geo
-GEN  garage  garage describes the garage with slab on grade floor, exterior s  # type, name, descr
-      12       7   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      4.97000     6.79000     2.60000  # vert   1
-     12.00000     6.79000     2.60000  # vert   2
-     12.00000    12.20000     2.60000  # vert   3
-      4.97000    12.20000     2.60000  # vert   4
-      4.97000     6.79000     5.62000  # vert   5
-     12.00000     6.79000     5.62000  # vert   6
-     12.00000    12.20000     5.62000  # vert   7
-      4.97000    12.20000     5.62000  # vert   8
-     12.00000     7.07000     2.60000  # vert   9
-     12.00000    11.95000     2.60000  # vert  10
-     12.00000    11.95000     4.60000  # vert  11
-     12.00000     7.07000     4.60000  # vert  12
-# no of vertices followed by list of associated vert
-   4,  1,  2,  6,  5,
-   8,  2,  9, 12, 11, 10,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  4,  1,  5,  8,
-   4,  5,  6,  7,  8,
-   6,  1,  4,  3, 10,  9,  2,
-   4,  9, 10, 11, 12,
-# unused index
- 0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, main_share    OPAQ  VERT  ccht_wall_r  main_second    
-  2, front_garage  OPAQ  VERT  ccht_wall    EXTERIOR       
-  3, side_wall     OPAQ  VERT  ccht_wall    EXTERIOR       
-  4, garage_back   OPAQ  VERT  ccht_wall_r  main_second    
-  5, garage_ceiln  OPAQ  CEIL  exp_flr_r    main_second    
-  6, slab-on-grad  OPAQ  FLOR  slab_floor   GROUND         
-  7, garage_door   OPAQ  VERT  ext_doors    EXTERIOR       
-# base
-  6  0  0  0  0  0    38.03 0
+*Geometry 1.1,GEN,garage # tag version, format, zone name
+*date Fri Aug 17 15:30:17 2007  # latest file modification 
+garage describes the garage with slab on grade floor, exterior s
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,4.97000,6.79000,2.60000  #   1
+*vertex,12.00000,6.79000,2.60000  #   2
+*vertex,12.00000,12.20000,2.60000  #   3
+*vertex,4.97000,12.20000,2.60000  #   4
+*vertex,4.97000,6.79000,5.62000  #   5
+*vertex,12.00000,6.79000,5.62000  #   6
+*vertex,12.00000,12.20000,5.62000  #   7
+*vertex,4.97000,12.20000,5.62000  #   8
+*vertex,12.00000,7.07000,2.60000  #   9
+*vertex,12.00000,11.95000,2.60000  #  10
+*vertex,12.00000,11.95000,4.60000  #  11
+*vertex,12.00000,7.07000,4.60000  #  12
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,6,5  #  1
+*edges,8,2,9,12,11,10,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,4,1,5,8  #  4
+*edges,4,5,6,7,8  #  5
+*edges,6,1,4,3,10,9,2  #  6
+*edges,4,9,10,11,12  #  7
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,main_share,VERT,-,-,-,ccht_wall_r,OPAQUE,ANOTHER,02,16  #   1 ||< garage_in:main_second
+*surf,front_garage,VERT,-,-,-,ccht_wall,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,side_wall,VERT,-,-,-,ccht_wall,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,garage_back,VERT,-,-,-,ccht_wall_r,OPAQUE,ANOTHER,02,17  #   4 ||< garage_back:main_second
+*surf,garage_ceiln,CEIL,-,-,-,exp_flr_r,OPAQUE,ANOTHER,02,18  #   5 ||< garage_ceil:main_second
+*surf,slab-on-grad,FLOR,-,-,-,slab_floor,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
+*surf,garage_door,VERT,-,-,-,ext_doors,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,    38.03 0  # zone base list

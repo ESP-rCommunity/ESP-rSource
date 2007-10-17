@@ -432,18 +432,21 @@ C Error handling.
 
 C ************** RETRV1 *********************
 C 'RETRV1' Retrives all input information from the header block of the
-C transitional shading file.
-      SUBROUTINE RETRV1
+C transitional shading file for zone icomp)
+      SUBROUTINE RETRV1(icomp)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/G0/ETYPE
+      character ETYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/ETYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/HEADL/IRECS(MS)
-      CHARACTER ETYPE*3,BLKNAME*8,BLKMAT*12,outs*124
+      CHARACTER BLKNAME*8,BLKMAT*12,outs*124
 
       IUNIT=IFIL
       
@@ -455,7 +458,7 @@ C  IYD - the julian day of the analysis.
 C << alternative is to recover G1 commons via reading the geometry file >>
 C << alternative is to have a global ISC array (same for all months) >>
       IREC=3
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE,NSUR,NTV,
+      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE(icomp),NSUR,NTV,
      & (NVER(I),I=1,NSUR)
       IREC=2
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)MON,(ISC(I),I=1,NSUR),

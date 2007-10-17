@@ -146,13 +146,22 @@ C IVA array of selections. Uses information from ZONDF.
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/CONTR/MON,ISC(MS),IYD
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation; iaplic(3)
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       DIMENSION STMP(MS),IVA(MS),IVALS(MS)
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character H*72,STMP*33,act*1
 
       IER=0
@@ -205,7 +214,8 @@ C Process initial selection.
         if(act.eq.'s'.or.act.eq.'S')then
           NP=0
           DO 13 I=1,NZSUR(IZONE)
-            if(SOTHER(I)(1:5).eq.'EXTER')then
+            ICN=IZSTOCN(izone,i)
+            if(SSOTHER(icn,1)(1:5).eq.'EXTER')then
               NP=NP+1
               IVA(NP)=I
             endif
@@ -218,7 +228,9 @@ C Process initial selection.
         elseif(act.eq.'i'.or.act.eq.'I')then
           NP=0
           DO 15 I=1,NZSUR(IZONE)
-            if(SOTHER(I)(1:5).eq.'EXTER'.and.SOTF(I)(1:4).eq.'TRAN')then
+            ICN=IZSTOCN(izone,i)
+            if(SSOTHER(icn,1)(1:5).eq.'EXTER'.and.
+     &         SSOTF(icn)(1:4).ne.'OPAQ')then
               NP=NP+1
               IVA(NP)=I
             endif
@@ -232,22 +244,24 @@ C Process initial selection.
       elseif(IIC.eq.2)then
         INPIC=NZSUR(IZONE)
         DO 11 I=1,INPIC
+         ICN=IZSTOCN(izone,i)
          if(act.eq.'s'.or.act.eq.'S')then
-           if(SOTHER(I)(1:5).eq.'EXTER')then
-             write(STMP(I),'(a,a,a,a,a)')SNAME(IZONE,I),'|',SOTF(I),'|',
-     &         SOTHER(I)
+           if(SSOTHER(ICN,1)(1:5).eq.'EXTER')then
+             write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
+     &         SSOTHER(ICN,1)(1:15)
            else
-             write(STMP(I),'(a,a)')SNAME(IZONE,I),' not applicable'
+             write(STMP(I),'(2a)')SSNAME(ICN),' not applicable'
            endif
          elseif(act.eq.'-')then
-           write(STMP(I),'(a,a,a,a,a)')SNAME(IZONE,I),'|',SOTF(I),'|',
-     &       SOTHER(I)
+           write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
+     &       SSOTHER(ICN,1)(1:15)
          elseif(act.eq.'i'.or.act.eq.'I')then
-           if(SOTHER(I)(1:5).eq.'EXTER'.and.SOTF(I)(1:4).eq.'TRAN')then
-             write(STMP(I),'(a,a,a,a,a)')SNAME(IZONE,I),'|',SOTF(I),'|',
-     &         SOTHER(I)
+           if(SSOTHER(ICN,1)(1:5).eq.'EXTER'.and.
+     &        SSOTF(ICN)(1:4).ne.'OPAQ')then
+             write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
+     &         SSOTHER(ICN,1)(1:15)
            else
-             write(STMP(I),'(a,a)')SNAME(IZONE,I),' not applicable'
+             write(STMP(I),'(a,a)')SSNAME(ICN),' not applicable'
            endif
          endif
          IVA(I)=0
@@ -270,11 +284,12 @@ C        write(6,*) 'act np iva ',act,np,iva
       elseif(IIC.eq.4)then
         INPIC=NZSUR(IZONE)
         DO 21 I=1,INPIC
+          ICN=IZSTOCN(izone,i)
           if(ISC(I).EQ.1)then
-            write(STMP(I),'(a,a,a,a,a)')SNAME(IZONE,I),'|',SOTF(I),'|',
-     &         SOTHER(I)
+            write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
+     &         SSOTHER(ICN,1)(1:15)
           else
-            write(STMP(I),'(a,a)')SNAME(IZONE,I),' not assessed'
+            write(STMP(I),'(a,a)')SSNAME(ICN),' not assessed'
           endif
           IVA(I)=0
    21   CONTINUE

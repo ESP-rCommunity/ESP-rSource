@@ -277,31 +277,47 @@ C ZoneDisp - displays zone based information and allows....
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER zname*12,zdesc*64
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER outs*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero
       logical close,context
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Initialisation
       zbzero=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
       ITRC=1
-      call EGOMIN(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      else
+        call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      endif
       MODIFY=.TRUE.
       MODBND=.TRUE.
       nzg=1
@@ -318,7 +334,8 @@ C Recover zone data (read only, no display).
       OPQ=0.
       TRN=0.
       DO 41 I=1,NSUR
-        if(SOTF(I).EQ.'TRAN')then
+        icon=IZSTOCN(icomp,i)
+        if(SSOTF(icon)(1:4).NE.'OPAQ')then
           TRN=TRN+SNA(I)
         else
           OPQ=OPQ+SNA(I)
@@ -462,10 +479,17 @@ C          1 = textual feedback or 2 = File
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MetNam/ACOName,CalName(4),LabFreq(MNbAbs)
@@ -481,7 +505,8 @@ C          1 = textual feedback or 2 = File
      &            SurfEquT(MNbAbs), SurfTot, TReverb(MNbAbs), Tmean
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER zname*12,zdesc*64
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
@@ -489,7 +514,9 @@ C          1 = textual feedback or 2 = File
       CHARACTER CalName*12,ACOName*72
       CHARACTER*4 LabFreq
       CHARACTER PubType*12, FurType*12, FurCat*4, CovSurf*12
+      logical newgeo  ! to use for testing if new/old geometry file.
 
+      newgeo=.false.  ! assume older format geometry.
       ITMP=IFIL+1
       RevLabA = ' '
       RevLabB = ' '
@@ -668,20 +695,28 @@ C for each surface in the zone according to the frequency band
                  WRITE(outs,'(a,a)') 'zone: ', ZNAME(nZnog(J))
                  call edisp(Ichanel,outs)
               endif
-              call EGOMIN(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,IER)
+              call eclose(gversion(nZnog(J)),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
+     &           IER)
+              else
+                call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
+     &           IER)
+              endif
               CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
             DO 400 I = 1,NSUR
-              In = MLCIndex(SMLCN(I))
+              icon=IZSTOCN(nZnog(J),I)
+              In = MLCIndex(SSMLCN(icon))
               IF (SNA(I) .GT. 0.) THEN
                 if (IOctave .EQ. 1) then
-                  WRITE(outs,311) SNAME(nZnog(J),I), SMLCN(I),
+                  WRITE(outs,311) SSNAME(icon), SSMLCN(icon),
      &                           (SysAbsCo(In,IY),IY=2,17,3)
  311              FORMAT(1X,A12,3x, 5x, 3x, A12, 6(4x, F4.2))
                   call edisp(Ichanel,outs)
                 elseif (IOctave .EQ. 2) then
                   IF (ICompact.EQ.1) THEN
-                    WRITE(outs,321) SNAME(nZnog(J),I),SNA(I), 
-     &                 SMLCN(I),(SysAbsCo(In,IY),IY=3,15,3)
+                    WRITE(outs,321) SSNAME(icon),SNA(I), 
+     &                 SSMLCN(icon),(SysAbsCo(In,IY),IY=3,15,3)
  321                FORMAT(1X,A12,3x,F5.1,3x,a12, 6(4x, F4.2))
                     call edisp(Ichanel,outs)
                     WRITE(outs,322) (SysAbsCo(In,IY),IY=2,17,3)
@@ -693,7 +728,7 @@ C for each surface in the zone according to the frequency band
                     call edisp(Ichanel,' ')
                   ELSE
 C Display material name rather surface name
-                    WRITE(outs,324) SMLCN(I),
+                    WRITE(outs,324) SSMLCN(icon),
      &               (SysAbsCo(In,IY),IY=1,17)
  324                FORMAT(1X,A12,2x,7x, 17(2x, F4.2))
                     call edisp(Ichanel,outs)
@@ -850,20 +885,28 @@ C Display equivalent surface for MATERIAL
                 call edisp(Ichanel,outs)
                 call edisp(Ichanel,'-----')
               endif
-              call EGOMIN(ITMP,LGEOM(nznog(k)),nznog(k),0,0,iuout,IER)
+              call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
+     &           IER)
+              else
+                call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
+     &           IER)
+              endif
               CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
-              ISys = MLCIndex(SMLCN(I))
+              icon=IZSTOCN(nZnog(k),I)
+              ISys = MLCIndex(SSMLCN(icon))
               IF (SNA(I) .GT. 0.) THEN
                 if (IOctave .EQ. 1) then
-                  WRITE(outs,111)SNAME(nZnog(k),I),SNA(I),SMLCN(I),
+                  WRITE(outs,111)SSNAME(icon),SNA(I),SSMLCN(icon),
      &                           (SurfEquM(I,IY),IY=2,17,3)
  111              FORMAT(1X,A12,1x, F7.1, 1x, A12, 2x, 6(2x, F6.1))
                   call edisp(Ichanel,outs)
                   IF (ABS(SNA(I)-SNAeff(I)).GT.0.001) THEN
                     DO 997 J = 1,MaxFur
-                      if (CovSurf(J).EQ.SNAME(nZnog(k),I)) then
+                      if (CovSurf(J).EQ.SSNAME(icon)) then
                         WRITE(outs,116) '*',-XNbFur(J),FurType(J),
      &                    (-XNbFur(J)* SysAbsCo(ISys,IY),IY=2,17,3)
  116                    FORMAT(13x,A1,1x,F7.1,1x,A12,2x, 6(2x,F6.1))
@@ -873,8 +916,8 @@ C Display equivalent surface for MATERIAL
                   ENDIF
                 elseif (IOctave .EQ. 2) then
                   IF (ICompact.EQ.1) THEN
-                    WRITE(outs,206)SNAME(nZnog(k),I),SNA(I),
-     &                              SMLCN(I),(SurfEquM(I,IY),IY=3,15,3)
+                    WRITE(outs,206)SSNAME(icon),SNA(I),
+     &                SSMLCN(icon),(SurfEquM(I,IY),IY=3,15,3)
  206                FORMAT(1X,A12,3x, F7.1, 3x, A12, 6(2x, F6.1))
                     call edisp(Ichanel,outs)
                     WRITE(outs,208) (SurfEquM(I,IY),IY=2,17,3)
@@ -887,7 +930,7 @@ C Display equivalent surface for MATERIAL
                     if (ABS(SNA(I)-SNAeff(I)).GT.0.001) then
 C If furniture infront of surface
                       DO 999 J = 1,MaxFur
-                        if (CovSurf(J).EQ.SNAME(nZnog(k),I)) then
+                        if (CovSurf(J).EQ.SSNAME(icon)) then
                           WRITE(outs,216)'*',-XNbFur(J),FurType(J),
      &                      (-XNbFur(J)* SysAbsCo(ISys,IY),IY=3,15,3)
  216                      FORMAT(1X,A12,3x, F6.1, 3x, A12, 
@@ -906,7 +949,7 @@ C If furniture infront of surface
  999                  CONTINUE
                     endif
                   ELSE
-                    WRITE(extraouts,214) SNAME(nZnog(k),I),SNA(I),
+                    WRITE(extraouts,214) SSNAME(icon),SNA(I),
      &                         (SurfEquM(I,IY),IY=1,17)
  214                FORMAT(1X,A12,1x,F7.1,1x,17(F6.1))
                     call edisp(Ichanel,extraouts)
@@ -914,7 +957,7 @@ C If furniture infront of surface
                     if (ABS(SNA(I)-SNAeff(I)).GT.0.001) then
 C If furniture infront of surface
                       DO 998 J = 1,MaxFur
-                       if (CovSurf(J).NE.SNAME(nZnog(k),I)) then
+                       if (CovSurf(J).NE.SSNAME(icon)) then
                           WRITE(extraouts,117) '*',FurType(IndexFur(J)),
      &                    -XNbFur(J),
      &                    (-XNbFur(J)* SysAbsCo(Isys,IY),IY=1,17)
@@ -1096,9 +1139,17 @@ C Display equivalent surface for Air absorption
 
  199        CONTINUE
           ELSE
+
 C Should any way compute the equivalent area
             DO 691 k =1,NZG 
-              call EGOMIN(ITMP,LGEOM(nznog(k)),nznog(k),0,0,iuout,IER)
+              call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
+     &           IER)
+              else
+                call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
+     &           IER)
+              endif
               CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE

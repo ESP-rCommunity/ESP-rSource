@@ -397,9 +397,19 @@ C 5 for low; 6 for high.
    20 CONTINUE
 
 C Set convergence criteria for a coarse convergence. This is adequate to get
-C an indication of the flow field.
-      MAXITR(ICFD) = 1000
-      SRMAX(ICFD) = 0.02
+C an indication of the flow field. If the convergence criteria in the DFS
+C file for this domain is greater than 0.02 then use it and if iterations
+C less than 1000 set to 1000.
+      write(6,*) 'In GOPHER SRMAX and MAXITR were ',SRMAX(ICFD),
+     &  MAXITR(ICFD)
+      if(MAXITR(ICFD).lt.1000)then
+        MAXITR(ICFD) = 1000
+      endif
+      if(SRMAX(ICFD).lt.0.02)then
+        SRMAX(ICFD) = 0.02
+      endif
+      write(6,*) 'In GOPHER SRMAX and MAXITR are now ',SRMAX(ICFD),
+     &  MAXITR(ICFD)
       LRENORM = .FALSE.
 
 C Set the relaxation factors at safe levels to ensure a converged solution.
@@ -415,7 +425,7 @@ C Record ACC actions (begin).
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
         write(IACC,*) 'Initiating preliminary CFD sim to assess flow.'
       ENDIF
-      call edisp(IUOUT,'Initiating CFD to assess flow.')
+      call edisp(IUOUT,'Initiating prelimanary CFD to assess flow.')
 
 C Record ACC actions (end).
 C Now do the gopher CFD simulation. 
@@ -894,12 +904,23 @@ C surface convection estimates and halting simulation when changes between
 C iterations drop below a threshold) and set as a function of the type of
 C adaptive conflation control in operation. For now, just set the maximum
 C residuals and number of iterations to drive the solution to a well-converged
-C state.
+C state unless the user has defined a loose criteria in the DFS file.
 
-      MAXITR(ICFD) = 10000
+C << why doesnt it just pay attention to what is in the DFS file? >>
+      if(MAXITR(ICFD).lt.2000)then
+        MAXITR(ICFD) = 2000
+      endif
+
 C Relax convergence a bit for IEA-hut case.
 c      SRMAX(ICFD) = 0.001
-      SRMAX(ICFD) = 0.005
+      if(SRMAX(ICFD).lt.0.005)then
+        SRMAX(ICFD) = 0.005
+      elseif(SRMAX(ICFD).gt.0.02)then
+        continue
+      else
+        SRMAX(ICFD) = 0.02
+      endif
+      write(6,*) 'In setConv SRMAX is now ',SRMAX(ICFD)
       LRENORM = .FALSE.
 
       RETURN

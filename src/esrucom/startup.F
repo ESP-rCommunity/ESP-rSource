@@ -398,11 +398,11 @@ C in a string instpath.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
       CHARACTER OUTSTR*124,WORD*20,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD,DSBEM
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
       logical unixok,dll
@@ -438,6 +438,7 @@ C file or failure reading it).
         write(DMCMPDBFL,'(2a)') di(1:ln),'/databases/mscomp.db1'
         write(DICONDBFL,'(2a)') di(1:ln),'/databases/icons.db1'
         write(dmdbnam,'(2a)') di(1:ln),'/databases/mould.db1'
+        write(DSBEM,'(2a)') di(1:ln),'/databases/SBEM.db1'
       else
 C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
@@ -466,6 +467,7 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DMCMPDBFL,'(2a)') di(1:ln),'/databases/mscomp.db1'
         write(DICONDBFL,'(2a)') di(1:ln),'/databases/icons.db1'
         write(dmdbnam,'(2a)') di(1:ln),'/databases/mould.db1'
+        write(DSBEM,'(2a)') di(1:ln),'/databases/SBEM.db1'
       endif
 
 C Check if running in dll mode, if so skip reading defaults file.
@@ -539,6 +541,8 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
         CALL EGETRM(OUTSTR,K,DICONDBFL,'W','default icons',IER)
       elseif(WORD(1:5).eq.'*mldb')then
         CALL EGETRM(OUTSTR,K,dmdbnam,'W','default mycotoxin db',IER)
+      elseif(WORD(1:5).eq.'*sbem')then
+        CALL EGETRM(OUTSTR,K,DSBEM,'W','default SBEM db',IER)
 
       elseif(WORD(1:4).eq.'*end')then
         goto 45
@@ -2141,7 +2145,7 @@ C Arrays mapping binary names to longer descriptions
       
       data cBinNames / 'aco', 'b2e', 'bps', 'dbm', 'dfs', 'c2e', 'cfg', 
      &                 'clm', 'e2r', 'ecnv', 'eco', 'grd', 'ish', 'mfs',
-     &                 'mld', 'mrt', 'net', 'pdb', 'prj', 'res', 'tdf', 
+     &                 'mld', 'vwf', 'net', 'pdb', 'prj', 'res', 'tdf', 
      &                 'vew' /
       
       

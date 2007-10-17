@@ -45,10 +45,17 @@ C output, IER=0 OK.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
@@ -75,17 +82,21 @@ C output, IER=0 OK.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,DFILE
       CHARACTER zname*12,zdesc*64,SFILE*72,H*72,LTMP*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,TOPTIC*12,OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
+      logical newgeo  ! to use for testing if new/old geometry file.
+      integer lzn  ! length of zone name string
 
 C Clear number of TMC's and layers in each before loading common data.
       NTMC=0
       DO 249 I=1,MTMC
         NGLAZ(I)=0
   249 CONTINUE
+      newgeo=.false.  ! assume older format geometry.
 
 C DFILE is the default file name for any TMC file to be created,
 C UFILE is default for utility file. CFILE is default for constr file.
@@ -109,7 +120,12 @@ C Set existance of a zone construction file to false.
       CALL USRMSG(' ',outs,'-')
 
 C Read in the related geometry file into common.
-      CALL EGOMIN(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      else
+        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      endif
       IF(IER.NE.0)THEN
         CALL USRMSG(' ',' Problem detected in geometry... ','W')
         RETURN
@@ -119,10 +135,11 @@ C Scan through the geometry file and if most of the construction
 C attributes have not been set then advise the user to use the
 C geometry facility first.
       ig=0
-      DO 11 I=1,NSUR
-        if(SMLCN(I)(1:4).EQ.'UNKN')ig=ig+1
+      DO 11 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
+        if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
   11  CONTINUE
-      if(ig.gt.(NSUR/2))then
+      if(ig.gt.(NZSUR(icomp)/2))then
         H(1)='In scanning the geometry it was found that many of '
         H(2)='the surfaces have not been attributed as to their '
         H(3)='construction type.  It is recommended that you: '
@@ -233,23 +250,23 @@ C If in quiet mode: the file should exist => error if we are here.
       endif
 
 C Having done so check to see if there are any transparent surfaces.
-C If surface attribute TRAN reset ITMCFL otherwise reconcile mismatches!
+C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
       TFOUND=.FALSE.
-      DO 60 IS=1,NSUR
-        IF((SOTF(IS).NE.'TRAN').AND.ITMCFL(ICOMP,IS).ne.0)then
-          write(outs,'(A,A)')SNAME(ICOMP,IS),' is opaque.'
+      DO 60 IS=1,NZSUR(icomp)
+        icn1=izstocn(icomp,is)
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+          write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
           dok=.true.
           h(1)='The opaque/transparent attribute of the surface is not'
-          h(2)='`TRAN` but another attribute suggests that the surface'
-          h(3)='might be opaque. If it is opaque then select `ok`.'
-          CALL ASKOK(outs,'Confirm?',OK,DOK,2)
+          h(2)='OPAQUE. If it is opaque then select `ok`.'
+          CALL ASKOK(outs,'Confirm surface is opaque?',OK,DOK,2)
           if(OK)then
             ITMCFL(ICOMP,IS)=0
-          else
-            SOTF(IS)='TRAN'
+C            SOTF(IS)='OPAQUE'   ! remove this line later when geo write uses G6
+            SSOTF(icn1)='OPAQUE'
           endif
         endif
-        IF(SOTF(IS).EQ.'TRAN')TFOUND=.TRUE.
+        IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN
@@ -321,7 +338,7 @@ C user that there should be rectified before merging details
 C into the model description.
   777 MHEAD=1
       MCTL=7
-      ILEN=NSUR
+      ILEN=NZSUR(icomp)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
@@ -340,7 +357,9 @@ C current menu line index. Build up text strings for the menu.
           else
             optic=' - '
           endif
-          WRITE(VERT(M),14)KEY,SNAME(ICOMP,L),SOTF(L),SMLCN(L),OPTIC
+          icn1=izstocn(icomp,L)
+          WRITE(VERT(M),14)KEY,SSNAME(icn1),SSOTF(icn1)(1:4),
+     &      SSMLCN(icn1)(1:12),OPTIC
    14     FORMAT(A1,1X,A12,1X,A4,1X,A12,1X,A12)
         ENDIF
    10 CONTINUE
@@ -435,7 +454,8 @@ C Help text for this menu.
       H(54)='intended.'
 
 C Now display the menu.
-      write(head,'(3a)')'Composition of `',zname(ICOMP),'`'
+      lzn=lnblnk(zname(ICOMP))
+      write(head,'(3a)')'Composition of `',zname(ICOMP)(1:lzn),'`'
       CALL EMENU(head,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -490,8 +510,9 @@ C Linear thermal conductivity.
 
 C TMC details, check that something transparent first.
         TFOUND=.FALSE.
-        DO 71 IS=1,NSUR
-          IF(SOTF(IS).EQ.'TRAN')TFOUND=.TRUE.
+        DO 71 IS=1,NZSUR(icomp)
+          icn1=izstocn(icomp,is)
+          IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
   71    CONTINUE
         IF(TFOUND)THEN
           CALL EPMENSV
@@ -536,9 +557,9 @@ C Save...
       H(2)='file. If this is the same name as the source file'
       H(3)='then it will be overwritten.'
       H(4)='In addition, details of surfaces which are transparent'
-      H(5)='will be place in a zone TMC file. '
+      H(5)='will be place in a separate zone TMC file. '
       IF (.NOT.QUIET) THEN
-        CALL PHELPD('zone constr file merge',5,'-',0,0,IER)
+        CALL PHELPD('zone constr file save',5,'-',0,0,IER)
       ENDIF
   88  IF(LTHRM(ICOMP)(1:2).EQ.'  '.OR.
      &   LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN
@@ -580,8 +601,9 @@ C and save the system configuration file if not browsing.
 
 C If any of the surfaces are transparent save this info.
       TFOUND=.FALSE.
-      DO 61 IS=1,NSUR
-        IF(SOTF(IS).EQ.'TRAN')TFOUND=.TRUE.
+      DO 61 IS=1,NZSUR(icomp)
+        icn1=izstocn(icomp,is)
+        IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
@@ -618,7 +640,16 @@ C If geometry info has changed then save it as well.
         CALL ASKOK('Save zone geometry to reflect recent changes',
      &    'to surfaces and attributes? (see help)',OK,dok,3)
         if(OK)then
-          CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(icomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          else
+            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          endif
           MODGEO=.FALSE.
         endif
       ENDIF
@@ -633,7 +664,7 @@ C Return to menu or exit from editing facility as required.
       END
 
 C ************* EDSCON 
-C Edit zone surface construction attributes in common block G5 and 
+C Edit zone surface construction attributes in common block G6 and 
 C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
@@ -645,9 +676,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/pophelp/h(60)
 
 C Optical and geometric properties.
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -685,10 +715,11 @@ C Arrays of material properties.
       LOGICAL MODGEO,MODCON,told,closemat
 
       DIMENSION ISD(19)
-      CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER DESC*48
       CHARACTER TITL*72,NAM*72,ISD*46
-      CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
@@ -696,9 +727,15 @@ C Thermal property checking values follow.
 
 C Setup text for menu.
    12 INODA=-3
-   13 write(ISD(1),'(A,A)') '  Surface name    : ',SNAME(ICOMP,ISUR)     
-      write(ISD(2),'(A,A)') 'a Surface type    : ',SOTF(ISUR)
-      write(ISD(3),'(A,A)') 'b Construction    : ',SMLCN(ISUR)     
+      icn1=izstocn(icomp,isur)
+   13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)     
+      if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
+     &   SSOTF(icn1)(1:4).eq.'TRAN')then     
+        write(ISD(2),'(A,A)') 'a Surface type    : ',SSOTF(icn1)(1:12)
+      else
+        WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
+      endif
+      write(ISD(3),'(A,A)') 'b Construction    : ',SSMLCN(icn1)(1:12)     
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
         write(ISD(4),'(2A)')'  Optical property: ',optic     
@@ -718,12 +755,12 @@ C Surface properties.
 
 C Find composite which matches. 
       ICF=-1
-      lstr=lnblnk(SMLCN(ISUR))
+      lstr=lnblnk(SSMLCN(icn1))
       DO 20 IC=1,NMLC
         if(lstr.lt.12)then
-          IF(DESC(IC)(1:lstr).EQ.SMLCN(ISUR)(1:lstr))ICF=IC
+          IF(DESC(IC)(1:lstr).EQ.SSMLCN(icn1)(1:lstr))ICF=IC
         else
-          IF(DESC(IC)(1:12).EQ.SMLCN(ISUR)(1:12))ICF=IC
+          IF(DESC(IC)(1:12).EQ.SSMLCN(icn1)(1:12))ICF=IC
         endif
   20  CONTINUE
 
@@ -810,30 +847,30 @@ C an additional surface attribute!!!)
         H(2)='is dependent on the optical properties. Where there is a'
         H(3)='mix of opaque and transparent layers the construction'
         H(4)='should be marked transparent.'
-        H(5)='Fictitious surfaces are used for two purposes:'
-        H(6)='  1) to allow zones to be subdivided for greater'
-        H(7)='     detail in mass flow simulations, '
-        H(8)='  2)for handling extremely complex geometries.'
-        if(SOTF(ISUR)(1:4).eq.'OPAQ')ino=1
-        if(SOTF(ISUR)(1:4).eq.'TRAN')ino=2
-        if(SOTF(ISUR)(1:4).eq.'FICA')ino=3
-        if(SOTF(ISUR)(1:4).eq.'FICB')ino=4
+        H(5)=' '
+        H(6)='After selecting TRAN you will be asked for further '
+        H(7)='information. '
+        if(SSOTF(icn1)(1:4).eq.'OPAQ')then
+          ino=1
+        elseif(SSOTF(icn1)(1:4).eq.'TRAN')then
+          ino=2
+        elseif(SSOTF(icn1)(1:4).eq.'UNKN')then
+          ino=1
+        else
+          ino=2
+        endif
         ilno=ino
-        idno=1
-        call MENUATOL('Select a type for the surface.',' Surface type',
-     &   'a Opaque (all layers)','b Transparent (at least 1 layer)',
-     &   'c (N/A) Fictitious mass flow','d (N/A) Fictitious geometric',
-     &   ' ',' ',' ',' ',' ',' ',' ',' ',ino,idno,8)
+        CALL EASKABC('Select a type for the surface.',' Surface type',
+     &      'Opaque (all layers)','Transparent (at least 1 layer)',
+     &      'cancel',ino,7)
         IF(ilno.eq.ino)GOTO 12
         IF(ino.eq.0)GOTO 12
         IF(ino.EQ.1)THEN
-          SOTF(ISUR)='OPAQ'
+          SSOTF(icn1)='OPAQUE'
         ELSEIF(ino.EQ.2)THEN
-          SOTF(ISUR)='TRAN'
+          SSOTF(icn1)='TRAN'
         ELSEIF(ino.EQ.3)THEN
-          SOTF(ISUR)='FICA'
-        ELSEIF(ino.EQ.4)THEN
-          SOTF(ISUR)='FICB'
+          GOTO 12
         ENDIF
         MODGEO=.TRUE.
         MODCON=.TRUE.
@@ -848,16 +885,12 @@ C the OPAQUE/TRANSPARENT flag as well.
           RETURN
         ENDIF
         IF(IC.GT.0)THEN
-          ioc=IZSTOCN(icomp,isur)
-          WRITE(SMLCN(ISUR),'(A)')DESC(IC)(1:12)
-          SSMLCN(ioc)=SMLCN(isur)
+          WRITE(SSMLCN(icn1),'(A)')DESC(IC)(1:12)
           if(DESC(IC)(15:18).EQ.'TRAN')then
-            SOTF(ISUR)='TRAN'
-            SSOTF(ioc)='TRAN'
+            SSOTF(icn1)='TRAN'
           endif
           if(DESC(IC)(15:18).EQ.'OPAQ')then
-            SOTF(ISUR)='OPAQ'
-            SSOTF(ioc)='OPAQ'
+            SSOTF(icn1)='OPAQUE'
             ITMCFL(ICOMP,ISUR)=0
           endif
         ELSE
@@ -913,9 +946,10 @@ C assign an appropriate U value to each air gap encountered.
             else
               NAIRG(ISUR)=NAIRG(ISUR)+1
               IPAIRG(ISUR,NAIRG(ISUR))=IL
-              IF(SVFC(ISUR).EQ.'VERT')THEN
+              IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
-              ELSEIF(SVFC(ISUR).EQ.'FLOR'.OR.SVFC(ISUR).EQ.'CEIL')THEN
+              ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
+     &               SSVFC(icn1)(1:4).EQ.'CEIL')THEN
                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
               ELSE
                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
@@ -1013,15 +1047,15 @@ C ****************** EDZCON
 C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
+
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1060,8 +1094,8 @@ C Arrays of material properties.
       logical closemat
 
       CHARACTER outs*124,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER DESC*48,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER DESC*48
       CHARACTER NAM*72,TITL*72
 
 C Assume no window optical properties asked for.
@@ -1089,32 +1123,29 @@ C composite construction database.
         ENDIF
       ENDIF
 
- 244  DO 10 IS=1,NSUR
+ 244  DO 10 IS=1,NZSUR(icomp)
+        ioc=IZSTOCN(ICOMP,is)
 
 C Take the composite name associated with this surface and find the
 C equivalent composite db.  If composite name is UNKN then must ask
 C the user to select one.
+
+C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
         NAIRG(IS)=0
-        IF(SMLCN(IS)(1:4).EQ.'UNKN')THEN
-  245     WRITE(outs,'(3A)')' Composition of ',SNAME(ICOMP,IS),
+        IF(SSMLCN(ioc)(1:4).EQ.'UNKN')THEN
+  245     WRITE(outs,'(3A)')' Composition of ',SSNAME(ioc),
      &                         ' is unknown.'
           CALL EPKMLC(ISEL,outs,'Please select one...',IER)
           IF(ISEL.GT.0)THEN
-            ioc=IZSTOCN(ICOMP,is)
-            WRITE(SMLCN(IS),'(A)')DESC(ISEL)(1:12)
-            SSMLCN(ioc)=SMLCN(is)
+            WRITE(SSMLCN(ioc),'(A)')DESC(ISEL)(1:12)
             if(DESC(ISEL)(15:18).EQ.'TRAN')then
-              SOTF(IS)='TRAN'
               SSOTF(ioc)='TRAN'
               ITMCFL(ICOMP,IS)=1
             endif
             if(DESC(ISEL)(15:18).EQ.'OPAQ')then
-              SOTF(IS)='OPAQ'
-              SSOTF(ioc)='OPAQ'
+              SSOTF(ioc)='OPAQUE'
               ITMCFL(ICOMP,IS)=0
             endif
-C            IF(DESC(ISEL)(15:18).EQ.'TRAN')SOTF(IS)='TRAN'
-C            IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(IS)='OPAQ'
 
 C Remember this change by saving the file.....
             MODGEO=.TRUE.
@@ -1129,7 +1160,7 @@ C the material was not found and must be asked for.
         call eclose(matver,1.1,0.01,closemat)
         NE(IS)=0
         DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SMLCN(IS))THEN
+          IF(DESC(IC)(1:12).EQ.SSMLCN(ioc))THEN
             MODCON=.TRUE.
             NE(IS)=LAYERS(IC)
 
@@ -1175,9 +1206,10 @@ C assign an appropriate U value to each air gap encountered.
                 else
                   NAIRG(IS)=NAIRG(IS)+1
                   IPAIRG(IS,NAIRG(IS))=IL
-                  IF(SVFC(IS).EQ.'VERT')THEN
+                  IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
                     RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-                  ELSEIF(SVFC(IS).EQ.'FLOR'.OR.SVFC(IS).EQ.'CEIL')THEN
+                  ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &                   SSVFC(ioc)(1:4).EQ.'CEIL')THEN
                     RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
                   ELSE
                     RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
@@ -1188,11 +1220,9 @@ C assign an appropriate U value to each air gap encountered.
           ENDIF
    20   CONTINUE
         if(NE(IS).eq.0)then
-          write(outs,'(5A)') ' The construction ',SMLCN(IS),
-     &         ' of ',SNAME(ICOMP,IS),' was not found in the mlc db...'
+          write(outs,'(5A)') ' The construction ',SSMLCN(ioc),
+     &         ' of ',SSNAME(ioc),' was not found in the mlc db...'
           call usrmsg(outs,'resetting attribute to UNKNOWN.','W')
-          ioc=IZSTOCN(ICOMP,is)
-          SMLCN(IS)='UNKNOWN'          
           SSMLCN(ioc)='UNKNOWN'          
           goto 244
         endif
@@ -1224,7 +1254,7 @@ C the number of composite layers to build this up.
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1276,8 +1306,9 @@ C Write out the transparent construction file data.
   30  FORMAT('# transparent properties of ',a,' defined in ',a)
 
 C Build one or two packed strings and write out. Should be good
-C for up to NSUR of ~62.
-      WRITE(IFU,'(I4,A)',IOSTAT=ISTAT,ERR=98)NSUR,'   # surfaces'
+C for up to NZSUR() of ~62.
+      WRITE(IFU,'(I4,A)',IOSTAT=ISTAT,ERR=98)NZSUR(icomp),
+     &  '   # surfaces'
       do 32 ij=1,MS
         ival(ij)=ITMCFL(icomp,ij)
   32  continue
@@ -1285,7 +1316,7 @@ C for up to NSUR of ~62.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call ailist(ipos,nsur,ival,MS,'C',louts,loutlen,itrunc)
+        call ailist(ipos,nzsur(icomp),ival,MS,'C',louts,loutlen,itrunc)
         write(ifu,'(a)',IOSTAT=ios,ERR=98) louts(1:loutlen)
         ipos=itrunc+1
       end do
@@ -1392,8 +1423,10 @@ C through each of the existing surfaces and finds unique optical types.
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -1415,34 +1448,36 @@ C through each of the existing surfaces and finds unique optical types.
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
       CHARACTER DESC*48,outs*124
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER zname*12,zdesc*64,msg*28
       
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.
       IF(NTMC.GT.0)GOTO 90
 
-C Loop through each surface and if transparent get its composite
+C Loop through each surface and if not opaque get its composite
 C description (DESC) and remember its index ICF, otherwise set ITMCFL
 C to 0.
       lastopt='  '
-      DO 10 IS=1,NSUR
-        IF(SOTF(IS).NE.'TRAN')THEN
+      DO 10 IS=1,NZSUR(icomp)
+        icn1=izstocn(icomp,is)
+        IF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
           ITMCFL(ICOMP,IS)=0
           GOTO 10
         ENDIF
 
  246    ICF=-1
         DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SMLCN(IS))ICF=IC
+          IF(DESC(IC)(1:12).EQ.SSMLCN(icn1))ICF=IC   ! find matching MLC
   20    CONTINUE
         IF(ICF.EQ.-1)THEN
           WRITE(outs,'(A,A12)')
-     &    ' select a transparent one for: ',SNAME(ICOMP,IS)
+     &    ' select a transparent one for: ',SSNAME(icn1)
           CALL EPKMLC(ISEL,'From the available composites please',
      &      outs,IER)
           IF(ISEL.GT.0)THEN
-            WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+            WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
             ICF=ISEL
           ELSE
             RETURN
@@ -1453,7 +1488,7 @@ C Check this composite db entry is also transparent and that it has
 C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
         WRITE(outs,'(A12,A)') DESC(ICF)(1:12),' is not transparent!'
-        IF(DESC(ICF)(15:18).NE.'TRAN')THEN
+        IF(DESC(ICF)(15:18).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,0)
           if(IWB.eq.1)then
@@ -1461,10 +1496,10 @@ C optical properties then the user will have to supply this manually.
 C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
-              SOTF(IS)='OPAQ'
+              SSOTF(icn1)='OPAQUE'
               OPT='OPAQUE'
               goto 10
             endif
@@ -1472,7 +1507,7 @@ C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
      &        ' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
               ICF=ISEL
             endif
           endif
@@ -1480,8 +1515,9 @@ C Switch back to opaque construction.
 
 C Check to see if this new construction has a known set of opticals.
         WRITE(OPT,'(A)') DESC(ICF)(21:32)
-        IF(OPT.EQ.' '.OR.OPT.EQ.'UNKNOWN'.OR.OPT.EQ.'OPAQUE')THEN
-          WRITE(outs,'(1X,A12,A)')SMLCN(IS),
+        IF(OPT(1:2).EQ.'  '.OR.OPT(1:7).EQ.'UNKNOWN'.OR.
+     &     OPT(1:6).EQ.'OPAQUE')THEN
+          WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
      &      ' has unknown optical properties!'
           h(1)='Supplying optical properties if you know the angular'
           h(2)='transmission and absorption data. '
@@ -1497,7 +1533,7 @@ C << todo consider how one might treat a cancel request within eoptks
             GOTO 246
           else
             ITMCFL(ICOMP,IS)=0
-            SOTF(IS)='OPAQ'
+            SSOTF(icn1)='OPAQUE'
             OPT='OPAQUE'
             goto 10
           ENDIF
@@ -1553,11 +1589,12 @@ C Display of current information...
  9996 FORMAT(' Transparent construction file details for ',A)
       CALL EDISP(ITRU,outs)
       CALL EDISP(ITRU,' ')
-      CALL EDISP(ITRU,' Surface      Construction OPAQ/  Optical   ')
-      CALL EDISP(ITRU,' Name         Description  TRANS  Reference ')
-      DO 31, ISR=1,NSUR
-        WRITE(outs,'(1X,A12,2X,A12,2X,A4,I4)')SNAME(ICOMP,ISR),
-     &        SMLCN(ISR),SOTF(ISR),ITMCFL(ICOMP,ISR)
+      CALL EDISP(ITRU,' Surface      Construction OPAQ/   Optical  ')
+      CALL EDISP(ITRU,' Name         Description  TRANS   Reference')
+      DO 31, ISR=1,NZSUR(icomp)
+        icn1=izstocn(icomp,isr)
+        WRITE(outs,'(1X,A12,2X,A12,2X,A6,I4)')SSNAME(icn1),
+     &    SSMLCN(icn1)(1:12),SSOTF(icn1)(1:6),ITMCFL(ICOMP,ISR)
         CALL EDISP(ITRU,outs)
    31 CONTINUE
       DO 202 I=1,NTMC
@@ -1706,7 +1743,7 @@ C been set during the prior edit.
           IBCSUR(ICOMP,IT)=0
         else
           CALL EASKI(N2,' ','Surface for common sensor location?',
-     &      1,'F',NSUR,'F',1,'sensor location',IERI,8)
+     &      1,'F',NZSUR(icomp),'F',1,'sensor location',IERI,8)
           if(ieri.eq.-3) then
             canceled=.true.
             goto 203
@@ -1996,7 +2033,7 @@ C Loop through referenced mlc and derives the longest timeconstant.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2024,7 +2061,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
 
       character NAM*72,TITL*72,outs*124
-      character SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character MLCN*12,DESC*48,SSPARENT*12
       logical found,closemat
 

@@ -75,8 +75,9 @@ C *********************************************************************
       COMMON/PREC8/SLAT,SLON
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -88,7 +89,8 @@ C *********************************************************************
       CHARACTER*72 H
       CHARACTER SSRF*12,zname*12,zdesc*64,ITEMS(MS)*17,CORDNT*24
       CHARACTER ITEM*28,SZN*12,STTS*5
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       SZN=zname(IZ)
       SSRF=' '
@@ -161,7 +163,8 @@ C Show the surface selection menu.
           ELSEIF(INDXS(ISS).EQ.3)THEN
             STTS='( D )'
           ENDIF
-          WRITE(ITEMS(ISS),'(A12,A5)')SNAME(IZ,ISS),STTS
+          icon=IZSTOCN(iz,iss)
+          WRITE(ITEMS(ISS),'(A12,A5)')SSNAME(icon),STTS
    50   CONTINUE
         H(1)='     Select the surface whose multi-D gridding details'
         H(2)=' are to be edited or modified.'
@@ -174,7 +177,8 @@ C Show the surface selection menu.
           SSRF=' '
           SRFOK=.FALSE.
         ELSEIF(IS.GT.0.AND.IS.LE.NSUR)THEN
-          SSRF=SNAME(IZ,IS)
+          icon=IZSTOCN(iz,is)
+          SSRF=SSNAME(icon)
           SRFOK=.TRUE.
           CALL TRNSF4(IS)
           XMIN=XMINS(IS)+1.E-3
@@ -903,9 +907,11 @@ C *********************************************************************
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -917,8 +923,8 @@ C *********************************************************************
       CHARACTER*72 H,LINDSC,DISCR
       CHARACTER SRF(2)*12,zname*12,zdesc*64,ITEMS(MEZ)*27
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
-
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -1011,8 +1017,10 @@ C Draw the selected edge.
             IDRW2=IEG
             CALL GRAAPH(IDRW1,IDRW2)
           ENDIF
-          SRF(1)=SNAME(IZ,ISFEDG(IEG,1))
-          SRF(2)=SNAME(IZ,ISFEDG(IEG,2))
+          icon1=IZSTOCN(iz,ISFEDG(IEG,1))
+          icon2=IZSTOCN(iz,ISFEDG(IEG,2))
+          SRF(1)=SSNAME(icon1)
+          SRF(2)=SSNAME(icon2)
           EDGOK=.TRUE.
         ELSEIF(IEG.EQ.0)THEN
           EDGOK=.FALSE.
@@ -1116,8 +1124,10 @@ C        CALL EPAGE
           ENDIF
           ISF1=ISFEDG(IG,1)
           ISF2=ISFEDG(IG,2)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
           WRITE(MSG,'(3(I3,3X),3(A12,3X))')IG,IVXEDG(IG,1),
-     &      IVXEDG(IG,2),SNAME(IZ,ISF1),SNAME(IZ,ISF2),STATS
+     &      IVXEDG(IG,2),SSNAME(icon1),SSNAME(icon2),STATS
           CALL EDISP(IUOUT,MSG)
    90   CONTINUE
       ELSEIF(INO.EQ.MITEM-1)THEN
@@ -1275,7 +1285,9 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
@@ -1291,15 +1303,19 @@ C *********************************************************************
 
       CHARACTER*72 H,PROPS
       CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
       IS2=ISFEDG(IEG,2)
       SZN=ZNAME(IZ)
-      SRF(1)=SNAME(IZ,IS1)
-      SRF(2)=SNAME(IZ,IS2)
+      icon1=IZSTOCN(iz,is1)
+      icon2=IZSTOCN(iz,is2)
+      SRF(1)=SSNAME(icon1)
+      SRF(2)=SSNAME(icon2)
       IL=1
       IF(MMOD.EQ.8)CALL FHCEDG(IZ,IEG,IL)
       IDRW=1
@@ -1489,7 +1505,8 @@ C List construction details.
       ELSEIF(INO.EQ.(MITEM-2))THEN
         BAR='I'
 C        CALL EPAGE
-        WRITE(TEXT,'(A12,4X,A1,10A)')SNAME(IZ,IS2),
+        icon=IZSTOCN(iz,is2)
+        WRITE(TEXT,'(A12,4X,A1,10A)')SSNAME(icon),
      &        '-',('--------',IX=1,NDXE(IEG))
         CALL EDISP(IUOUT,TEXT)
         WRITE(TEXT,'(14X,2X,A1,8(2X,I3,2X,A1))')
@@ -1504,7 +1521,8 @@ C        CALL EPAGE
           WRITE(TEXT,'(16X,A1,8A8)')'-',('--------',IX=1,NDXE(IEG))
           CALL EDISP(IUOUT,TEXT)
   100   CONTINUE
-        WRITE(TEXT,'(18X,A12)')SNAME(IZ,IS1)
+        icon=IZSTOCN(iz,is1)
+        WRITE(TEXT,'(18X,A12)')SSNAME(icon)
         CALL EDISP(IUOUT,TEXT)
 
 C Display help statements.
@@ -1534,7 +1552,9 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -1543,7 +1563,8 @@ C *********************************************************************
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
 
       CHARACTER LABELN*3,LABELS*16
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1595,11 +1616,13 @@ C Define the two surfaces.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXEDG(IEG,1)
       CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
-      WRITE(LABELS,'(A12)')SNAME(IZ,IS1)
+      icon=IZSTOCN(iz,is1)
+      WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
       CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
-      WRITE(LABELS,'(A12)')SNAME(IZ,IS2)
+      icon=IZSTOCN(iz,is2)
+      WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
       CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)
@@ -1836,7 +1859,9 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
@@ -1850,7 +1875,8 @@ C *********************************************************************
       CHARACTER*72 H,DISCR
       CHARACTER SRF(3)*12,zname*12,zdesc*64,ITEMS(MCZ)*25
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 
       SZN=zname(IZ)
@@ -1947,9 +1973,12 @@ C Draw the selected corner.
             IDRW2=ICR
             CALL GRAAPH(IDRW1,IDRW2)
           ENDIF
-          SRF(1)=SNAME(IZ,ISFCRN(ICR,1))
-          SRF(2)=SNAME(IZ,ISFCRN(ICR,2))
-          SRF(3)=SNAME(IZ,ISFCRN(ICR,3))
+          icon1=IZSTOCN(iz,ISFCRN(ICR,1))
+          icon2=IZSTOCN(iz,ISFCRN(ICR,2))
+          icon3=IZSTOCN(iz,ISFCRN(ICR,3))
+          SRF(1)=SSNAME(icon1)
+          SRF(2)=SSNAME(icon2)
+          SRF(3)=SSNAME(icon3)
           CRNOK=.TRUE.
         ELSEIF(ICR.EQ.0)THEN
           CRNOK=.FALSE.
@@ -2058,8 +2087,12 @@ C        CALL EPAGE
           ISF1=ISFCRN(ICC,1)
           ISF2=ISFCRN(ICC,2)
           ISF3=ISFCRN(ICC,3)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
+          icon3=IZSTOCN(iz,isf3)
+
           WRITE(MSG,'(2(I3,3X),4(A12,3X))')ICC,IVXCRN(ICC),
-     &          SNAME(IZ,ISF1),SNAME(IZ,ISF2),SNAME(IZ,ISF3),STATS
+     &          SSNAME(icon1),SSNAME(icon2),SSNAME(icon3),STATS
           CALL EDISP(IUOUT,MSG)
    70   CONTINUE
       ELSEIF(INO.EQ.MITEM-1)THEN
@@ -2211,7 +2244,9 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
@@ -2227,17 +2262,22 @@ C *********************************************************************
 
       CHARACTER*72 H,PROPS,DISCR
       CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)
       IS2=ISFCRN(ICR,2)
       IS3=ISFCRN(ICR,3)
+      icon1=IZSTOCN(iz,is1)
+      icon2=IZSTOCN(iz,is2)
+      icon3=IZSTOCN(iz,is3)
       SZN=zname(IZ)
-      SRF(1)=SNAME(IZ,IS1)
-      SRF(2)=SNAME(IZ,IS2)
-      SRF(3)=SNAME(IZ,IS3)
+      SRF(1)=SSNAME(icon1)
+      SRF(2)=SSNAME(icon2)
+      SRF(3)=SSNAME(icon3)
       IL=1
       IF(MMOD.EQ.8)CALL FHCCRN(IZ,ICR,IL)
       INO=-3
@@ -2433,8 +2473,8 @@ C Copy the construction data of existing corner level.
 
 C List construction details.
         BAR='I'
-C        CALL EPAGE
-        WRITE(TEXT,'(A12,4X,A1,10A)')SNAME(IZ,IS2),
+        icon=IZSTOCN(iz,is2)
+        WRITE(TEXT,'(A12,4X,A1,10A)') SSNAME(icon),
      &                    '-',('--------',IX=1,NDXC(ICR))
         CALL EDISP(IUOUT,TEXT)
         WRITE(TEXT,'(14X,2X,A1,8(2X,I3,2X,A1))')
@@ -2449,7 +2489,8 @@ C        CALL EPAGE
           WRITE(TEXT,'(16X,A1,8A8)')'-',('--------',IX=1,NDXC(ICR))
           CALL EDISP(IUOUT,TEXT)
   100   CONTINUE
-        WRITE(TEXT,'(18X,A12)')SNAME(IZ,IS1)
+        icon=IZSTOCN(iz,is1)
+        WRITE(TEXT,'(18X,A12)') SSNAME(icon)
         CALL EDISP(IUOUT,TEXT)
       ELSEIF(INO.EQ.(MITEM-1))THEN
 
@@ -2472,7 +2513,9 @@ C *********************************************************************
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -2481,7 +2524,8 @@ C *********************************************************************
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
 
       CHARACTER LABELN*3,LABELS*16
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2537,11 +2581,13 @@ C Define the two surfaces.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXCRN(ICR)
       CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
-      WRITE(LABELS,'(A12)')SNAME(IZ,IS1)
+      icon=IZSTOCN(iz,is1)
+      WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
       CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
-      WRITE(LABELS,'(A12)')SNAME(IZ,IS2)
+      icon=IZSTOCN(iz,is2)
+      WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
       CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)

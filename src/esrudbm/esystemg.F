@@ -135,9 +135,10 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
 C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -181,7 +182,13 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-      COMMON/G0/CTYPE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -398,7 +405,7 @@ C is a logical flag, .true. restricts update/save options.
       character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12
+      CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
@@ -413,8 +420,10 @@ C is a logical flag, .true. restricts update/save options.
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER SSPARENT*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
@@ -1609,19 +1618,19 @@ C Quick read, get the zone name and the number of surfaces.
           K=0
           IF(ND.EQ.1)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
+            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             zname(ICOMP)=' '
             zdesc(ICOMP)=' '
           ELSEIF(ND.EQ.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
+            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
             zdesc(ICOMP)=' '
           ELSEIF(ND.gt.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
+            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
@@ -1857,11 +1866,84 @@ C NOTE: call to zgupdate is after connection lists established.
      &          ' & sur',is
               goto 243
             endif
-            SSNAME(icc)=SNAME(icomp,is)
-            SSOTF(icc)=SOTF(is)
-            SSMLCN(icc)=SMLCN(is)
-            SSVFC(icc)=SVFC(is)
-            SSOTHER(icc)=SOTHER(is)
+
+C If this is an older model only sother(is,1) will have a value
+C so do some tests before instanciating.
+            IF(SOTHER(is,1)(1:2).EQ.'  ')then
+              SSOTHER(icc,1)='UNKNOWN'
+              SSOTHER(icc,2)='0'
+              SSOTHER(icc,3)='0'
+            ELSEIF(SOTHER(is,1)(1:7).EQ.'UNKNOWN')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:8).EQ.'EXTERIOR')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:9).EQ.'ADIABATIC')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:9).EQ.'IDENT_CEN')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:7).EQ.'SIMILAR'.OR.
+     &             SOTHER(is,1)(1:8).EQ.'CONSTANT'.OR.
+     &             SOTHER(is,1)(1:8).EQ.'BASESIMP')then
+
+C If similar check if 2nd item is a '-', if so use the values
+C from IC2 and IE2, otherwise use sother data.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            ELSEIF(SOTHER(is,1)(1:6).EQ.'GROUND')then
+
+C If constant check if 2nd item is a '-', if so use the values
+C from IC2 and IE2, otherwise use sother data.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            ELSEIF(SOTHER(is,1)(1:6).EQ.'WITH')then
+
+C << ?? trickey if a legacy file, how to tell this from
+C << a new format data???
+
+C If partition check if 2nd item is a '-', if so we are missing
+C the surface info so get from the connection variables.
+C from IC2 (zone) and IE2 (surf), otherwise use sother data.
+C Note ssother(icc,2) is a slot for surface and ssother(icc,3) is zone.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            else
+              SSOTHER(icc,1)='UNKNOWN'
+              SSOTHER(icc,2)='0'
+              SSOTHER(icc,3)='0'
+            endif
+
+            SSUSE(icc,1)=SUSE(is,1)
+            SSUSE(icc,2)=SUSE(is,2)
+
  243      continue
           call zgupdate(0,icomp,ier)
 
@@ -2328,9 +2410,12 @@ C if possible. If ICON=0 then generate a text heading.
 #include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
       if(ICON.EQ.0.AND.ICF.GT.0)then
         WRITE(CXSTR,8986)  

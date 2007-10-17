@@ -35,7 +35,7 @@ C ECONST reads zone thermophysical data from a user-constructed data
 C file as ASCII strings and with or without comments.  LCONS is the
 C name of the file, ICOMP is the zone number, ITRC trace level, 
 C ITRU output unit, IER error reading file.  Geometry data is taken
-C from the current contents of common blocks G0 G1 G2 G4 G5.
+C from the current contents of common blocks G0 G2 G4 G6.
 
 C Common block variables are:
 C NE      - no of homogeneous layers in each construction. 
@@ -58,7 +58,7 @@ C ABSE    - solar absorptivity of external surfaces.
 #include "espriou.h"
 C espriou.h provides currentfile.
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -107,7 +107,7 @@ C defined in the geometry file. If the constructions file is
 C out of date the call to STRIPC can give a fatal error so check
 C if the number of items found on a line is 2 and if not gracefully
 C exit.
-      DO 51 I=1,NSUR
+      DO 51 I=1,NZSUR(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'layers & gaps',IER)
         IF(IER.NE.0)goto 1001
         if(ND.NE.2)goto 1001
@@ -118,7 +118,7 @@ C exit.
    51 CONTINUE
 
 C For each surface with air gaps read in the air gap position & U value.
-      DO 10 I=1,NSUR
+      DO 10 I=1,NZSUR(icomp)
         IGPS=NAIRG(I)
         IF(IGPS.GT.0)THEN
           igl=IGPS*2
@@ -154,7 +154,7 @@ C Move across gap position and U value one item at a time.
 
 c Read layer thermophysical properties from 'outside' to inside.
       ILTHPZ(ICOMP)=.FALSE.
-      DO 30 I=1,NSUR
+      DO 30 I=1,NZSUR(icomp)
         IELT=NE(I)
         DO 40 J=1,IELT
           CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'properties',IER)
@@ -229,40 +229,40 @@ C some files generated before 1995).
 
 c Read surface emissivity and solar absorptivity data.  This may take
 C more than one line. Begin with inside face ir emissivity.
-      IF(NSUR.GT.0) THEN
-        CALL EGETWRA(IUNIT,RVC,NSUR,0.0001,0.999,'W',
+      IF(NZSUR(icomp).GT.0) THEN
+        CALL EGETWRA(IUNIT,RVC,NZSUR(icomp),0.0001,0.999,'W',
      &               'inside face emis',IER)
-        DO 114 KV=1,NSUR
+        DO 114 KV=1,NZSUR(icomp)
           EMISI(KV)=RVC(KV)
   114   CONTINUE
         IF(IER.NE.0) goto  1001
       ENDIF
 
 C Outside side face ir emissivity.
-      IF(NSUR.GT.0) THEN
-        CALL EGETWRA(IUNIT,RVC,NSUR,0.0001,0.999,'W',
+      IF(NZSUR(icomp).GT.0) THEN
+        CALL EGETWRA(IUNIT,RVC,NZSUR(icomp),0.0001,0.999,'W',
      &               'outside face emis',IER)
-        DO 116 KV=1,NSUR
+        DO 116 KV=1,NZSUR(icomp)
           EMISE(KV)=RVC(KV)
   116   CONTINUE
       ENDIF
       IF(IER.NE.0) GOTO 1001
 
 C Inside face solar absorption.
-      IF(NSUR.GT.0) THEN
-        CALL EGETWRA(IUNIT,RVC,NSUR,0.0001,0.999,'W',
+      IF(NZSUR(icomp).GT.0) THEN
+        CALL EGETWRA(IUNIT,RVC,NZSUR(icomp),0.0001,0.999,'W',
      &               'inside face abs',IER)
-        DO 118 KV=1,NSUR
+        DO 118 KV=1,NZSUR(icomp)
           ABSI(KV)=RVC(KV)
   118   CONTINUE
       ENDIF
       IF(IER.NE.0) GOTO 1001
 
 C Outside face solar absorption.
-      IF(NSUR.GT.0) THEN
-        CALL EGETWRA(IUNIT,RVC,NSUR,0.0001,0.999,'W',
+      IF(NZSUR(icomp).GT.0) THEN
+        CALL EGETWRA(IUNIT,RVC,NZSUR(icomp),0.0001,0.999,'W',
      &               'outside face abs',IER)
-        DO 120 KV=1,NSUR
+        DO 120 KV=1,NZSUR(icomp)
           ABSE(KV)=RVC(KV)
   120   CONTINUE
       ENDIF
@@ -302,8 +302,10 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
@@ -314,7 +316,9 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       logical QUIET
 
       CHARACTER*72 CONFIL
-      CHARACTER ZNAME*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER ZNAME*12
       character outs*124,louts*248,zdesc*64
 
       IER=0
@@ -334,19 +338,20 @@ C If in quiet mode then file should exist.
 
 C Write out the construction file data.
       WRITE(IFILT,30,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(:lnblnk(zname(ICOMP))),CONFIL(:lnblnk(CONFIL))
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CONFIL(1:lnblnk(CONFIL))
   30  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
      &'# layers|gaps|  no.  name      | database name ')
 
-      DO 1180 I=1,NSUR
+      DO 1180 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
         WRITE(IFILT,5632,IOSTAT=IOS,ERR=146)NE(I),NAIRG(I),I,
-     &      SNAME(ICOMP,I),SMLCN(I)
+     &      SSNAME(icn1),SSMLCN(icn1)(1:12)
 5632    FORMAT(I6,',',I6,'  # ',I2,' ',A12,' ',A12)
 
 C Trap in case of mlc not being found.
         if(NE(I).eq.0)then
-          write(outs,'(A,A)') ' FAILURE: writing out ',SNAME(ICOMP,I)
+          write(outs,'(A,A)') ' FAILURE: writing out ',SSNAME(icn1)
           call usrmsg(outs,' Please check!....','W')
           ier=1
           goto 99
@@ -354,7 +359,7 @@ C Trap in case of mlc not being found.
 1180  CONTINUE
 
 C Write out air gap details.
-      DO 1190 I = 1,NSUR
+      DO 1190 I = 1,NZSUR(icomp)
         IF (NAIRG(I).GT.0)THEN
           WRITE(IFILT,5641,IOSTAT=IOS,ERR=146)I
 5641      FORMAT('# air gap position & resistance for surface ',I2)
@@ -369,9 +374,9 @@ C Write out layer thermophysical properties.
      & '# conduc-  |  density | specific | thick- |dpnd|',
      & '  ref. |  temp. |moisture| surf|lyr'
       WRITE(IFILT,'(2A)',IOSTAT=IOS,ERR=146)
-     & '# tivity   |          | heat     |ness(mm)|type|',
+     & '# tivity   |          | heat     |ness(m) |type|',
      & '  temp | factor | factor |     |  '
-      DO 1220 I = 1,NSUR
+      DO 1220 I = 1,NZSUR(icomp)
         DO 1210 J = 1,NE(I)
           IF(J.EQ.1)THEN
             WRITE(IFILT,5661,IOSTAT=IOS,ERR=146)CON(I,J),DEN(I,J),
@@ -396,7 +401,7 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,EMISI,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,nzsur(icomp),EMISI,MS,'C',louts,loutln,itrunc)
         write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
         ipos=itrunc+1
       end do
@@ -406,7 +411,7 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,EMISE,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,nzsur(icomp),EMISE,MS,'C',louts,loutln,itrunc)
         write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
         ipos=itrunc+1
       end do
@@ -416,7 +421,7 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,ABSI,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,nzsur(icomp),ABSI,MS,'C',louts,loutln,itrunc)
         write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
         ipos=itrunc+1
       end do
@@ -426,7 +431,7 @@ C strings. Code should be good for any number of surfaces.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,ABSE,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,nzsur(icomp),ABSE,MS,'C',louts,loutln,itrunc)
         write(ifilt,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
         ipos=itrunc+1
       end do
@@ -454,8 +459,10 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS), SVFC(MS),SOTHER(MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -488,7 +495,9 @@ C Arrays of material properties.
       logical closemat
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER zname*12
       CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
       character iprtext*4,DESC*48,TITL*72,GDESCR*36
 
@@ -508,15 +517,16 @@ C Reporting.
       write(outs,'(2a)') 'layer  |db | (mm)  |tivity |',
      &                   '        |heat  |emis|abs |'
       CALL EDISP(ITRU,outs)
-      DO 9994 I=1,NSUR
+      DO 9994 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
 
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
-        sn=SNAME(ICOMP,I)
+        sn=SSNAME(icn1)
         imatch(i)=0
         RT(I)=0.
         do 5 ii=1,nmlc
-          if(SMLCN(i).eq.DESC(ii)(1:12)) then
+          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
             imatch(i)=ii          
           endif
   5     continue
@@ -536,7 +546,7 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
-          IF(SOTF(i).EQ.'TRAN')THEN
+          IF(SSOTF(icn1)(1:4).NE.'OPAQ')THEN
            WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)
            IF(OPT(i).EQ.' ')OPT(i)='UNKNOWN'
           ELSE
@@ -586,21 +596,22 @@ C Find matching air gap layer and resistance.
         endif
  9994 CONTINUE
 
-      DO 9986 I=1,NSUR
+      DO 9986 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
 
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9986
-        sn=SNAME(ICOMP,I)
-        lsml=lnblnk(SMLCN(i))
-        if(OPT(i)(1:6).eq.'OPAQUE')then
+        sn=SSNAME(icn1)
+        lsml=lnblnk(SSMLCN(icn1))
+        if(OPT(i)(1:4).eq.'OPAQ')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
-     &      SMLCN(i)(1:lsml),' and is opaque:'
+     &      SSMLCN(icn1)(1:lsml),' and is opaque:'
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
-     &      SMLCN(i)(1:lsml),' and has unknown optical properties:'
+     &      SSMLCN(icn1)(1:lsml),' and has unknown optical properties:'
         else
           write(outs,'(5a)') sn(1:lnblnk(sn)),' is composed of ',
-     &      SMLCN(i)(1:lsml),' & optics ',OPT(i)
+     &      SSMLCN(icn1)(1:lsml),' & optics ',OPT(i)
         endif
         CALL EDISP(ITRU,OUTS)
         NELT=NE(I)
@@ -645,13 +656,13 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
         UVALUEI=1.0/RTI
         write(OUTS,'(3A,3F7.3,a,F7.3)')
      &    ' ISO 6946 U values (hor/up/dn heat flow) for ',
-     &    SMLCN(i)(1:lnblnk(SMLCN(i))),' is',
+     &    SSMLCN(icn1)(1:lnblnk(SSMLCN(icn1))),' is',
      &    UVALUEH,UVALUEU,UVALUED,' (partn)',UVALUEI
         call edisp(itru,OUTS)
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is likely to be known).
-        if(OPT(i)(1:6).eq.'OPAQUE')then
+        if(OPT(i)(1:4).eq.'OPAQ')then
           continue
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           continue
@@ -721,7 +732,9 @@ c         (not used in the current implementation),
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
@@ -742,7 +755,9 @@ c         (not used in the current implementation),
       
       DIMENSION IVA(MS),RVC(MS)
 
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER zname*12
       CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20,zdesc*64
       character msg*28
       LOGICAL MODGEO
@@ -771,10 +786,11 @@ C if the surface attribute should be updated.
       CALL EGETWIA(IUA,IVA,IRVA,0,MTMC,'W','tmc list',IER)
       NTMC=0
       DO 10 I=1,NS
+        icn1=izstocn(icomp,i)
         ITMCFL(ICOMP,I)=IVA(I)
-        IF(ITMCFL(ICOMP,I).NE.0.AND.(SOTF(I).NE.'TRAN'))THEN
+        IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
           WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SNAME(ICOMP,I),' is transparent.'
+     &      ' not sure if ',SSNAME(icn1),' is transparent.'
           call edisp(itru,outs)
           call edisp(itru,' Check your zone files.')
         ENDIF
@@ -792,11 +808,12 @@ C Reporting.
  9996   FORMAT(' Transparent construction file details for ',A)
         CALL EDISP(ITRU,OUTS)
         CALL EDISP(ITRU,' ')
-        CALL EDISP(ITRU,' Surface      Construction OPAQ/  Optical   ')
-        CALL EDISP(ITRU,' Name         Description  TRANS  Reference ')
+        CALL EDISP(ITRU,' Surface      Construction OPAQ/   Optical  ')
+        CALL EDISP(ITRU,' Name         Description  TRANS   Reference')
         DO 31, ISR=1,NS
-          WRITE(OUTS,'(1X,A12,2X,A12,2X,A4,I4)')SNAME(ICOMP,ISR),
-     &      SMLCN(ISR),SOTF(ISR),ITMCFL(ICOMP,ISR)
+          icn=izstocn(icomp,isr)
+          WRITE(OUTS,'(1X,A12,2X,A12,2X,A6,I4)')SSNAME(icn),
+     &      SSMLCN(icn)(1:12),SSOTF(icn)(1:6),ITMCFL(ICOMP,ISR)
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF
@@ -815,13 +832,14 @@ C the list points to an existing set of properties.
         endif
         IERR=0
         DO 90 J=1,NS
+          icn=izstocn(icomp,j)
           IF(ITMCFL(ICOMP,J).EQ.I.AND.NTGLAZ.NE.NE(J))IERR=1
           IF(IERR.EQ.1)THEN
             write(outs,'(6a,1x,a)')
      &      ' Mismatched TMC & mlc layers: ',
-     &      SNAME(ICOMP,J)(1:lnblnk(SNAME(ICOMP,J))),' in ',
+     &      SSNAME(icn)(1:lnblnk(SSNAME(icn))),' in ',
      &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
-     &      SMLCN(J),TOPTIC(ICOMP,I)
+     &      SSMLCN(icn),TOPTIC(ICOMP,I)
             call edisp(iuout,outs)
             goto 1002
           ENDIF

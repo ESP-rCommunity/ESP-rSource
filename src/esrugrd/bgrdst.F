@@ -225,12 +225,15 @@ C *********************************************************************
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
 
       CHARACTER KEY*1,H*72,ITEM(20)*31,STTS*13
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -256,7 +259,8 @@ C current menu line index. Build up text strings for the menu.
           ELSE
             STTS='| Not Defined'
           ENDIF
-          WRITE(ITEM(M),'(A1,1X,A12,2X,A14)')KEY,SNAME(IZ,L),STTS
+          icon=IZSTOCN(iz,L)
+          WRITE(ITEM(M),'(A1,1X,A12,2X,A14)')KEY,SSNAME(icon),STTS
         ENDIF
    20 CONTINUE
 
@@ -937,15 +941,17 @@ C *********************************************************************
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
       COMMON/GRSD52/IMRowS(MMTR),IMRowE(MMTR)
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
       COMMON/GRSD54/IMLayS(MMTR),IMLayE(MMTR)
 
-
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER KEY*1,H*72,LstMtr*72,SrfNm*12
       character*38 ITEM(20)
 
@@ -978,7 +984,8 @@ C current menu line index. Build up text strings for the menu.
           IF(IMtrS(L).EQ.0.OR.IMtrE(L).EQ.0)THEN
             WRITE(ITEM(M),'(A1,3X,I2,7X,A12)')KEY,L,'no material'
           ELSE
-            SrfNm=SNAME(IComp,IMtrS(L))
+            icon=IZSTOCN(IComp,IMtrS(L))
+            SrfNm=SSNAME(icon)
             WRITE(ITEM(M),'(A1,3X,I2,7X,A12,6X,I3)')KEY,L,SrfNm,IMtrE(L)
           ENDIF
         ENDIF
@@ -1095,7 +1102,8 @@ C        CALL EPAGE
            WRITE(LstMtr,52)Lst,SrfNm,           IMRowS(Lst),IMColS(Lst),
      &                  IMLayS(Lst),IMRowE(Lst),IMColE(Lst),IMLayE(Lst)
           ELSE
-           SrfNm=SNAME(IComp,IMtrS(Lst))
+           icon=IZSTOCN(IComp,IMtrS(Lst))
+           SrfNm=SSNAME(icon)
            WRITE(LstMtr,51)Lst,SrfNm,IMtrE(Lst),IMRowS(Lst),IMColS(Lst),
      &                  IMLayS(Lst),IMRowE(Lst),IMColE(Lst),IMLayE(Lst)
           ENDIF
@@ -1468,6 +1476,11 @@ C *********************************************************************
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
@@ -1485,6 +1498,7 @@ C *********************************************************************
       COMMON/GRSD64/IBLayS(MBND),IBLayE(MBND)
 
       LOGICAL ZONOK
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION IVALZ(MCOM)
 
@@ -1492,6 +1506,7 @@ C *********************************************************************
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
       IUNIT=IFIL+2
+      newgeo=.false.  ! assume older format geometry.
 
 C Show the zone selection menu.
       H(1)='    Select the zone for which the multi-D gridding'
@@ -1503,7 +1518,12 @@ C Show the zone selection menu.
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
-        CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        endif
         IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
         IF(IER.EQ.0)THEN
           ZONOK=.TRUE.

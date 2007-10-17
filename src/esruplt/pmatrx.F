@@ -152,6 +152,8 @@ C             new non-zero elements.
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       common/packa/nrowc(mpnode,2,mpvar),iptrd(mpnode),
      &             iptrod(mcoefg,mpvar),ntcoe
@@ -1688,7 +1690,9 @@ C      common/pcres/
 C     &     qdata(mpcom),        ! not used in current context
 C     &     pcaout(mpcom,mpcres), ! not used in current context
 C     &     napdat(mpcom)        ! # of plant additional outputs
-C
+C       REAL QDATA,PCAOUT
+C       INTEGER NAPDAT
+
 C
 CC COMMON DELAY required only by primitive parts components.
 C      COMMON/DELAY/TEMPF(MPCOM,MDLY),YPOSF(MPCOM,MDLY),NSECTF(MPCOM),

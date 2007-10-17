@@ -746,7 +746,7 @@ C Error handling
 
  1003 CALL USRMSG(' Error reading electrical data', OUTSTR,'W')
       GOTO 900
-        end      
+      end      
 
 C ************************* findpc *********************
 C This subroutine finds component index by searching 

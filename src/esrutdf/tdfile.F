@@ -78,7 +78,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL      OPTDF,OPIMP,OPEXP,XST
 
@@ -122,6 +122,11 @@ C Search instances in temporal file to find match(s).
                   if(DBTASK(ITD1)(1:6).eq.'ZIVENT')IZIVENT(itd3)=itd4
                   if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
                   if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
+
+C ...........new item starts here..............
+                  if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
+C ...........new item ends here..............
+
                     endif
   77              continue
                 endif

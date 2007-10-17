@@ -33,8 +33,14 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -44,14 +50,17 @@ C THF (THINGS) file for use in MicroGDS.
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
-      LOGICAL doobs
+      logical doobs
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character oformat*24,head*4,zname*12,ZN*12,zdesc*64,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C Setup standard assumptions.
+      newgeo=.false.  ! assume older format geometry.
       if(incobs.eq.1)doobs=.true.
       IFIL=11
 
@@ -73,7 +82,12 @@ C Clear properties.
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
           call strup(zname(newfoc),ZN)
 
 C Write surface information to the viewer file. First invert edges.
@@ -129,7 +143,12 @@ C Write obstructions to output file.
           ENDIF
 
 C Free the viewer file and eeread in the geometry file.
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
    4    continue
 
         CALL ERPFREE(ioout,ISTAT)
@@ -282,7 +301,12 @@ C Clear properties.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        call eclose(gversion(mz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
         call strup(zname(mz),ZN)
 
 C Read in util & obstruction file.
@@ -320,7 +344,12 @@ C obstruction.
   43      continue
 
 C Reread in the geometry file.
-          CALL EGOMIN(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          call eclose(gversion(mz),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          endif
         endif
   61    continue
 
@@ -423,8 +452,14 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
@@ -440,10 +475,13 @@ C THF (THINGS) file for use in MicroGDS.
       character oformat*24,head*4,zname*12,ZN*12,zdesc*64,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER BLKNAME*8,BLKMAT*12
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.
+      newgeo=.false.  ! assume older format geometry.
       if(incobs.eq.1)doobs=.true.
       IFIL=11
 
@@ -465,7 +503,12 @@ C Clear properties.
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
           call strup(zname(newfoc),ZN)
 
 C Write surface information to the THF file.
@@ -507,7 +550,12 @@ C Write obstruction information as a clump of surfaces.
 C << Still to do - read and convert any ground topology. >>
 
 C Free the THF file and reread in the geometry file.
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
    4    continue
 
         CALL ERPFREE(ioout,ISTAT)

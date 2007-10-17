@@ -2026,7 +2026,13 @@ C within current zone set.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -2045,7 +2051,8 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,zname*12,zdesc*64
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,lodlabel*6,act*1,prompt*124
@@ -2053,12 +2060,14 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check for sufficient information.
       IF(ISAVE.le.1)THEN
         CALL EPAGEW
         RETURN
       ENDIF
+      newgeo=.false.  ! assume older format geometry.
 
       LABSurf(1)= ' @opq'
       LABSurf(2)= ' @trn'
@@ -2125,7 +2134,12 @@ C Read geometry and construction files and setup labels.
       DO 65 JZ=1,NZ
         izone=NZNO(JZ)
         iunit=ifil+1
-        call egomin(iunit,LGEOM(izone),izone,0,0,iuout,ier)
+        call eclose(gversion(izone),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,LGEOM(izone),izone,0,0,iuout,ier)
+        else
+          call egomin(iunit,LGEOM(izone),izone,0,0,iuout,ier)
+        endif
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
@@ -2205,23 +2219,26 @@ C connection class.
         DO 210 ISN= 1,NN
           CALL SURADJ(IZONE,ISN,IE,T,IZC,ISC,ICN,CSTR)
           IF(IE.EQ.0)THEN
-            IF(SOTF(ISN).EQ.'OPAQ'.OR.SOTF(ISN).EQ.'UNKN')THEN
+            if(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &         SSOTF(ICN)(1:4).EQ.'UNKN')THEN
               SURFAE=SURFAE+SNA(IZONE,ISN)*EMISI(ISN)
-            ELSE
+            else
               SURFTE=SURFTE+SNA(IZONE,ISN)*EMISI(ISN)
-            ENDIF
+            endif
           ELSEIF(IE.EQ.4)THEN
-            IF(SOTF(ISN).EQ.'OPAQ'.OR.SOTF(ISN).EQ.'UNKN')THEN
+            if(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &         SSOTF(ICN)(1:4).EQ.'UNKN')THEN
               SURFAG=SURFAG+SNA(IZONE,ISN)*EMISI(ISN)
-            ELSE
+            else
               SURFTG=SURFTG+SNA(IZONE,ISN)*EMISI(ISN)
-            ENDIF
+            endif
           ELSE
-            IF(SOTF(ISN).EQ.'OPAQ'.OR.SOTF(ISN).EQ.'UNKN')THEN
+            if(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &         SSOTF(ICN)(1:4).EQ.'UNKN')THEN
               SURFAI=SURFAI+SNA(IZONE,ISN)*EMISI(ISN)
-            ELSE
+            else
               SURFTI=SURFTI+SNA(IZONE,ISN)*EMISI(ISN)
-            ENDIF
+            endif
           ENDIF
   210   CONTINUE
 

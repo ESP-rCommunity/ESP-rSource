@@ -48,7 +48,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Path to model.
       common/rpath/path
@@ -120,7 +120,7 @@ C Materials data array.
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character path*72,upath*72,esprc*72,cfgroot*24
       character dfdblbl*20,defdbfl*72
       character crenrp*160,coconv*40
@@ -758,7 +758,7 @@ C Path to model.
 
       character path*72,cfgroot*24,runpath*72,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
-      character outs*124,fs*1,tldir*72,upath*72
+      character outs*124,fs*1,tldir*72,upath*72,MODE*4
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -774,7 +774,8 @@ C Set folder separator (fs) to \ or / as required.
 C Configuration file and path are held in common/rcmd/LCMDFL
       call fdroot(LCMDFL,path,LCFGF)
       IAIRP = IFIL+9
-      call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+      MODE='NONE'
+      call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
       if(IER.eq.0)then
         call inqu_tmc
         CFGOK=.TRUE.
@@ -991,6 +992,11 @@ C inqu_tmc: Check if tmc control active.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1006,11 +1012,13 @@ C inqu_tmc: Check if tmc control active.
       character outs*124
 
       logical XST
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       ITA1=IFIL+6
 
 C NABS = number of alternative blind states.
       NABS=0
+      newgeo=.false.  ! assume older format geometry.
 
 C Loop through zones checking if a tmc file has been referenced.
       do 10 ICOMP=1,NCOMP
@@ -1020,7 +1028,12 @@ C Rescan zone Construction and TMC file
 C (need to test blind/ shuter control flags).
           call FINDFIL(LTHRM(ICOMP),XST)
           if(XST)then
-            call EGOMIN(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+            else
+              call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+            endif
             CALL ECONST(LTHRM(ICOMP),ITA1,ICOMP,0,IUOUT,IER)
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else

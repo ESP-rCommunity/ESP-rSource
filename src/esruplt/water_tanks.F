@@ -1921,9 +1921,7 @@ C ------------------------------------------------------------------------------
       REAL CONVAR
       INTEGER ICONTP,ICONDX
 
-      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),
-     & napdat(mpcom)
-
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER napdat
 
