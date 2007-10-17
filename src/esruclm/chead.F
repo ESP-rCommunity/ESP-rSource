@@ -52,7 +52,8 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
         call winclr
         CALL feedbox(menuchw,2,igfw,igfh)
         CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-        CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
+
+        CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
 #else
         continue
 #endif
@@ -94,7 +95,7 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       END
 
 C Display heading for climate graph.
-      SUBROUTINE GHEAD(imenuch)
+      SUBROUTINE GHEAD(imenuch,onleft,onright)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -109,6 +110,8 @@ C Display heading for climate graph.
       CHARACTER*72 ETEXT,GTEXT
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*44,PERST3*44
+      integer onleft  ! number of left axis
+      integer onright ! number of right axis
 
       IF(MMOD.EQ.8)THEN
 #ifdef X11
@@ -124,7 +127,41 @@ C Display heading for climate graph.
         call winclr
         CALL feedbox(menuchw,2,igfw,igfh)
         CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-        CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+
+C The calling code will know how many axis are required.
+        if(onright.eq.3)then
+          if(onleft.eq.2)then
+            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.1)then
+            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.0)then
+            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        elseif(onright.eq.2)then
+          if(onleft.eq.2)then
+            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.1)then
+            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.0)then
+            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        elseif(onright.eq.1)then
+          if(onleft.eq.2)then
+            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.1)then
+            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.0)then
+            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        elseif(onright.eq.0)then
+          if(onleft.eq.2)then
+            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.1)then
+            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+          elseif(onleft.eq.0)then
+            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        endif
 #else
         continue
 #endif

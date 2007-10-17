@@ -153,8 +153,23 @@ C Reset error condition flag.
 C File header and conflation.
       write(IUF,'(a)',IOSTAT=ios,ERR=3)
      &  '*DFS V2.2 # Zone air movement description.'
-      write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',IFCFD(izone),
-     &  '  # conflation type (not applicable to cfd-only)'
+      if(IFCFD(izone).eq.0)then
+        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
+     &    IFCFD(izone),
+     &    '  # for use with stand-alone cfd solver only'
+      elseif(IFCFD(izone).eq.1)then
+        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
+     &    IFCFD(izone),
+     &    '  # thermal 1: derives surface hc from cfd'
+      elseif(IFCFD(izone).eq.2)then
+        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
+     &    IFCFD(izone),
+     &    '  # thermal 2: surface hc and air temp from cfd'
+      elseif(IFCFD(izone).eq.3)then
+        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
+     &    IFCFD(izone),
+     &    '  # mass flow and cfd cooperate for solution'
+      endif
 
 C Title, date and documentation.
       write(IUF,'(2a)',IOSTAT=ios,ERR=3) '*title ',TITLE(ICFD)
@@ -1042,7 +1057,10 @@ C Read data and match to volume with same name.
 C Read conflated data.
                 CALL EGETW(OUTSTR,K,WORD,'W','vert bar',IER)
                 CALL EGETW(OUTSTR,K,WORD,'W','conf',IER)
-                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
+
+C Following line commented because vertical bar is considered a comment 
+C from circa rev1700
+C                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
                 IVConfl(IV,ICFD)=IVALS
                 CALL EGETW(OUTSTR,K,WORD,'W','surface',IER)
                 VCsurf(IV,ICFD)=WORD(1:12)

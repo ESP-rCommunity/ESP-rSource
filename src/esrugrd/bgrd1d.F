@@ -42,8 +42,10 @@ C *********************************************************************
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -53,7 +55,8 @@ C *********************************************************************
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
       CHARACTER H*72,TEXT*40,zname*12,zdesc*64,LGRD1D*72
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       DIMENSION IVALSZ(MCOM),IVALSC(MS),IVALSL(ME)
 
@@ -142,10 +145,11 @@ C Show the constructions menu.
    50     NC=NCONST(ICOMP)
           INPICK=1
           DO 60 IS=1,NC
+            icn1=izstocn(icomp,is)
             IF(ILUMP(ICOMP,IS).GE.1)THEN
               ITEMC(IS)=' ** LUMPED **'
             ELSE
-              ITEMC(IS)=SNAME(ICOMP,IS)
+              ITEMC(IS)=SSNAME(icn1)
             ENDIF
    60     CONTINUE
           H(1)=' Select the surface in which the required layer '
@@ -520,9 +524,12 @@ C *********************************************************************
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -534,7 +541,8 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50,zname*12,zdesc*64
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Initialise the external and internal convective heat transfer 
 C coefficient.
@@ -619,7 +627,8 @@ C Display the available constructions menu.
           ENDIF
           ITEMC(2)='----------------------------'
           DO 70 IS=1,NC
-            WRITE(ITEMC(IS+2),'(A,A,F7.1)')SNAME(ICOMP,IS),':',
+            icn1=izstocn(icomp,is)
+            WRITE(ITEMC(IS+2),'(A,A,F7.1)')SSNAME(icn1),':',
      &              HCSRF(ICOMP,IS,IEXT)
    70     CONTINUE
           H(1)=' Select the surface for which the convective heat ' 

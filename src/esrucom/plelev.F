@@ -33,6 +33,11 @@ C IUF is file unit for geometry, utility file units.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -54,6 +59,8 @@ C IUF is file unit for geometry, utility file units.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
+      logical newgeo  ! to use for testing if new/old geometry file.
+      newgeo=.false.  ! assume older format geometry.
 
       IER=0
       IF(MMOD.LT.8)THEN
@@ -99,7 +106,12 @@ C file and plot it. Move to first vertex and give the zone name.
       newpic=nzg
       do 54 mz=1,newpic
         newfoc=nznog(mz)
-        CALL EGOMIN(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+        call eclose(gversion(newfoc),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+        else
+          call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+        endif
 
 C Check for a utility file and obstructions.
         IF(IOBS(newfoc).EQ.1)THEN
@@ -210,7 +222,12 @@ C file then reload current zone geometry file before returning.
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN
-          CALL EGOMIN(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+          else
+            call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+          endif
         endif
       endif
       RETURN

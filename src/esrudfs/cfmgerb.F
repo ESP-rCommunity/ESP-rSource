@@ -34,7 +34,9 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       common/outin/iuout,iuin
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/cfcall/icfcal(MNZ)
@@ -64,7 +66,8 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       DIMENSION HC(MNSBZ),SFNAM(MNSBZ)
 
       CHARACTER NBCHAR*10,SFNAM*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*72 TITLE,outfil,CFTRFL,LPHI,LCFD,out
       LOGICAL INITFL,CONVER,GGDH
 
@@ -184,7 +187,8 @@ C Activate mfs-cfd coupling via MFBNDR if airflow network is defined
 
 C Convection coefficients.
  257  DO 100 I=1,NCONST(ICP)
-        SFNAM(I)=SNAME(ICP,I)
+        icon=IZSTOCN(icp,i)
+        SFNAM(I)=SSNAME(icon)
  100  CONTINUE
 
 C Surface conflation:

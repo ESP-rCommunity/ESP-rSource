@@ -58,9 +58,14 @@ C LPRFDB,IPRODB (for event profile database)
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -75,7 +80,7 @@ C Plant network.
       common/C23/IFPNF,LPNF
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -131,6 +136,7 @@ C Controls.
       logical MODIFY,MODLEN,MODBND,browse
       logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       dimension ITEMS(29)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
@@ -139,7 +145,7 @@ C Controls.
       character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*38,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp,DSBEM
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
@@ -150,11 +156,12 @@ C Controls.
       character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character SSPARENT*12,CONTMNAM*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character ltpath*72,filen*72
 
 C Set folder separator (fs) to \ or / as required.
+      newgeo=.false.  ! assume older format geometry.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
@@ -709,7 +716,12 @@ C lowest and highest point and cog of surface.
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
-            CALL EGOMIN(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+            call eclose(gversion(IZ),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+            else
+              call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+            endif
             DO 931 IS = 1,NSUR
               szlow= 1000.0
               szcog= 0.0
@@ -1148,10 +1160,16 @@ C output, IER=0 indicates no error.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1193,23 +1211,26 @@ C Descriptive label for a zone load or casual gain types.
 
 C Flag noting whether casual gain periods are currently sorted.
       logical sorted,problem
+      logical newgeo  ! to use for testing if new/old geometry file.
 
-      dimension ITEMS(24),IVALS(MCOM)
+      dimension ITEMS(25),IVALS(MCOM)
       dimension jict(MS),jic2(MS),jie2(MS)
-      dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms)
-      dimension jsname(MS),jsparent(MS)
+      dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
+      dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LCFGF*72,H*72,ITEMS*32,SFIL*72
-      character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER jsmlcn*12,jsvfc*4,jsotf*4,jsother*15,jsname*12
-      character jsparent*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
+      character jsparent*12,jsuse*8
       character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
-      character outs*124,SNAME*12,cfgroot*24,longtfiledos*144
+      character outs*124,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -1219,6 +1240,7 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER LAPROB*72
 
 C Set folder separator (fs) to \ or / as required.
+      newgeo=.false.  ! assume older format geometry.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
@@ -1237,25 +1259,26 @@ C Begin with high level menu.
       ITEMS(5)   =' _____________________________  '
       WRITE(ITEMS(6),'(A,I4,A)') ' .... Topology ..(',NCON,
      &               ' connects)'
-      ITEMS(7)   ='d connections & anchors         '
-      ITEMS(8)   =' _____________________________  '
-      ITEMS(9)   =' .... Options ....              ' 
-      ITEMS(10)  ='f shading & insolation          '   
-      ITEMS(11)  ='g convection coefficients       ' 
-      ITEMS(12)  ='h view factors & radiant sensors'
-      ITEMS(13)  ='i casual gain control           '
-      ITEMS(14)  ='j computational fluid dynamics  '
-      ITEMS(15)  ='k adaptive gridding & moisture  '
-      ITEMS(16)  =' _____________________________  '    
-      ITEMS(17)  =' .... Special components ....   '
-      ITEMS(18)  ='m integrated renewables'
-      ITEMS(19)  ='n active materials              '
-      ITEMS(20)  ='o advanced optics               '
-      ITEMS(21)  =' _____________________________  '
-      ITEMS(22)  ='* global tasks                  '
-      ITEMS(23)  ='? help                          '
-      ITEMS(24)  ='- exit this menu                '
-      nitems=24
+      ITEMS(7)   ='d surface connections & boundary'
+      ITEMS(8)   ='e anchors (groups of surfaces)  '
+      ITEMS(9)   =' _____________________________  '
+      ITEMS(10)   =' .... Options ....              ' 
+      ITEMS(11)  ='f shading & insolation          '   
+      ITEMS(12)  ='g convection coefficients       ' 
+      ITEMS(13)  ='h view factors & radiant sensors'
+      ITEMS(14)  ='i casual gain control           '
+      ITEMS(15)  ='j computational fluid dynamics  '
+      ITEMS(16)  ='k adaptive gridding & moisture  '
+      ITEMS(17)  =' _____________________________  '    
+      ITEMS(18)  =' .... Special components ....   '
+      ITEMS(19)  ='m integrated renewables'
+      ITEMS(20)  ='n active materials              '
+      ITEMS(21)  ='o advanced optics               '
+      ITEMS(22)  =' _____________________________  '
+      ITEMS(23)  ='* global tasks                  '
+      ITEMS(24)  ='? help                          '
+      ITEMS(25)  ='- exit this menu                '
+      nitems=25
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
@@ -1290,6 +1313,34 @@ C Help text for this menu.
       H(2)='and edit zone-level data such as geometry and'
       H(3)='construction, schedules and miscellaneous technical'
       H(4)='data relating to CFD, casual gain control etc.'
+      H(5)=' '
+      H(6)='The `Zones` section (geometry, construction, operations)'
+      H(7)='are the essential attributes of zones which must be'
+      H(8)='completed prior to simulation.'
+      H(9)=' '
+      H(10)='The `Topology` section allows you to automate the'
+      H(11)='specification of what-is-on-the-other-side of surfaces'
+      H(12)='in the model (which can also be done on a surface by'
+      H(13)='surface basis within the geometry facility). Anchors'
+      H(14)='can be thought of as named lists of surfaces e.g.'
+      H(15)='a list called `finistration` might point to all windows'
+      H(16)='in a facade to allow you to change them all to a new'
+      H(17)='type of glazing.'
+      H(18)=' '
+      H(19)='The `Options` section allows you to add additional'
+      H(20)='descriptions and or detail to your model as and when'
+      H(21)='such concepts become important to your performance'
+      H(22)='assessments. If you do not specify these additional'
+      H(23)='model attributes default assumptions are made.'
+      H(24)=' '
+      H(25)='The `Special components` section also allows you to'
+      H(26)='add detail to your model to support specialists'
+      H(27)='tasks (e.g. assigning electrical characteristics to'
+      H(28)='PV cells embedded within surfaces).'
+      H(29)=' '
+      H(30)='The `Global tasks` option allows you to transform and'
+      H(31)='rotate the model on the site and do search & replace '
+      H(32)='actions on surface attributes. '
 
       CALL EMENU('Zones Composition',ITEMS,nitems,INO)
       IF(INO.EQ.nitems)THEN
@@ -1298,7 +1349,7 @@ C Exit back to calling menu and clear dialogue box.
         CALL USRMSG(' ',' ','-')
         RETURN
       elseif(INO.EQ.nitems-1)THEN
-        CALL PHELPD('zones definition',4,'-',0,0,IER)
+        CALL PHELPD('zones definition',32,'-',0,0,IER)
       elseif(INO.EQ.nitems-2)THEN
 
 C Global actions such as transforms, rotations, attributions.
@@ -1337,14 +1388,29 @@ C Ask for transform distance then which zones and then apply.
      &          '...'
               CALL USRMSG(' ',outs,'-')
               LTMP=LGEOM(IICOMP)
-              CALL EGOMIN(IUF,LTMP,IICOMP,1,0,iuout,IER)
+              call eclose(gversion(IICOMP),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+              else
+                call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
+              endif
               DO 62 I=1,NTV
                 X(I)=X(I)+VALX
                 Y(I)=Y(I)+VALY
                 Z(I)=Z(I)+VALZ
    62         continue
               ZBFLG(IICOMP)=0.
-              CALL EMKGEO(IUF,LTMP,IICOMP,ITRU,3,IER)
+
+C Decide whether to upgrade the geometry file format.
+              if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                gversion(iicomp) =1.1
+                newgeo = .true.
+              endif
+              if(newgeo)then
+                call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+              else
+                call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+              endif
 
 C After transform update the g6 & g7 commons and find dependencies.
               call zgupdate(0,IICOMP,ier)
@@ -1441,10 +1507,23 @@ C Rotation degree and choices.
      &           '...'
                 CALL USRMSG(' ',outs,'-')
                 LTMP=LGEOM(IICOMP)
-                CALL EGOMIN(IUF,LTMP,IICOMP,1,0,iuout,IER)
+                call eclose(gversion(IICOMP),1.1,0.01,newgeo)
+                if(newgeo)then
+                  call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+                else
+                  call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
+                endif
                 CALL ESCROT(VAL,x1,y1)
                 ZBFLG(IICOMP)=0.
-                CALL EMKGEO(IUF,LTMP,IICOMP,ITRU,3,IER)
+                if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                  gversion(iicomp) =1.1
+                  newgeo = .true.
+                endif
+                if(newgeo)then
+                  call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+                else
+                  call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+                endif
 
 C After transform update the g6 & g7 commons and find dependencies.
                 call zgupdate(0,IICOMP,ier)
@@ -1540,6 +1619,7 @@ C Rotate any obstructions associated with this zone.
           endif
           goto 3
         endif
+
       elseif(INO.EQ.2)THEN
 
 C Geometry editing and browsing facilities. If creating zone from
@@ -1599,7 +1679,11 @@ C Recover connections associated with that zone.
               jsotf(jixu)=SSOTF(IXU)
               jsmlcn(jixu)=SSMLCN(IXU)
               jsvfc(jixu)=SSVFC(IXU)
-              jsother(jixu)=SSOTHER(IXU)
+              jsother(jixu,1)=SSOTHER(IXU,1)
+              jsother(jixu,2)=SSOTHER(IXU,2)
+              jsother(jixu,3)=SSOTHER(IXU,3)
+              jsuse(jixu,1)=SSUSE(IXU,1)
+              jsuse(jixu,2)=SSUSE(IXU,2)
               jsname(jixu)=SSNAME(IXU)
               jsparent(jixu)=SSPARENT(IXU)
             endif
@@ -1647,7 +1731,12 @@ C          write(6,*) 'lctlf is ',LCTLF
 
 C Read the geometry to fill in the data below.
           NCOMP=NCOMP+1
-          CALL EGOMIN(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
+          call eclose(gversion(NCOMP),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
+          else
+            call egomin(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
+          endif
           IF(IER.NE.0)THEN
             dok=.true.
             h(1)='While scanning the file a problem was noted. If you'
@@ -1801,19 +1890,10 @@ C Rotation choices.
               ZBFLG(NCOMP)=0.
             endif
           endif
-          CALL EMKGEO(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
-          IF(IER.EQ.1)THEN
-            dok=.true.
-            h(1)='When writing the geometry file a problem was found.'
-            h(2)='Check that you have permission to update the file '
-            h(3)='and that there is sufficient disk space. '
-            CALL ASKOK(' ','Problem creating geometry...try again?',
-     &        OK,dok,3)
-            IF(OK)GOTO 42
-          ENDIF
 
-C Update the connection list and then the model configuration.
-C Retain similar and adiabatic connections if found.
+C Because the writing of geometry files is based on G6 common
+C block data update connections based info prior to writing
+C the new geometry file. Retain similar and adiabatic connections if found.
           NZSUR(NCOMP)=NSUR
           NZTV(NCOMP)=NTV
           NCCODE(NCOMP)=NCOMP
@@ -1827,7 +1907,11 @@ C Retain similar and adiabatic connections if found.
             SSOTF(ICCC)=jsotf(icc)
             SSMLCN(ICCC)=jsmlcn(icc)
             SSVFC(ICCC)=jsvfc(icc)
-            SSOTHER(ICCC)=jsother(icc)
+            SSOTHER(ICCC,1)=jsother(icc,1)
+            SSOTHER(ICCC,2)=jsother(icc,2)
+            SSOTHER(ICCC,3)=jsother(icc,3)
+            SSUSE(ICCC,1)=jsuse(icc,1)
+            SSUSE(ICCC,2)=jsuse(icc,2)
             SSNAME(ICCC)=jsname(icc)
             SSPARENT(ICCC)=jsparent(icc)
             if(jict(ICC).eq.0)then
@@ -1839,8 +1923,12 @@ C Retain similar and adiabatic connections if found.
               IC2(ICCC)=jic2(ICC)
               IE2(ICCC)=jie2(ICC)
             elseif(jict(ICC).eq.3)then
-              SOTHER(ICC)='UNKNOWN'
-              SSOTHER(ICCC)='UNKNOWN'
+              SOTHER(ICC,1)='UNKNOWN'
+              SOTHER(ICC,2)='0'
+              SOTHER(ICC,3)='0'
+              SSOTHER(ICCC,1)='UNKNOWN'
+              SSOTHER(ICCC,2)='0'
+              SSOTHER(ICCC,3)='0'
               ICT(ICCC)=0
               IC2(ICCC)=0
               IE2(ICCC)=0
@@ -1852,6 +1940,27 @@ C Retain similar and adiabatic connections if found.
   132     CONTINUE
           NCON=ICCC
           call zgupdate(0,ncomp,ier)
+
+C Now it is ok to write out the copied zone.
+          call eclose(gversion(NCOMP),1.1,0.01,newgeo)
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(ncomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+          else
+            call emkgeo(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+          endif
+          IF(IER.EQ.1)THEN
+            dok=.true.
+            h(1)='When writing the geometry file a problem was found.'
+            h(2)='Check that you have permission to update the file '
+            h(3)='and that there is sufficient disk space. '
+            CALL ASKOK(' ','Problem creating geometry...try again?',
+     &        OK,dok,3)
+            IF(OK)GOTO 42
+          ENDIF
 
 C Do same transformation to obstructions?
           if(OKOB)then
@@ -2298,7 +2407,12 @@ C Update the configuration file.
         ELSEIF(IC.LE.NCOMP)THEN
 
 C Scan the geometry file and freshen derived geometric common blocks.
-          CALL EGOMIN(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          call eclose(gversion(IC),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          endif
           if(IER.NE.0)then
             dok=.true.
             h(1)='A problem was found while reading the geometry and'
@@ -2331,6 +2445,7 @@ C If there is an obstructions file read it.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 248
+
       elseif(INO.EQ.3)THEN
 
 C Construction file.
@@ -2370,6 +2485,7 @@ C error occurs.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 249
+
       elseif(INO.EQ.4)THEN
 
 C Operation file creation and editing.
@@ -2487,10 +2603,20 @@ C other than the versioning facility.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 250
+
       elseif(INO.EQ.7)THEN
-        call tstamp('>','PRJ: enter topology')
+
+C Check and edit topology.
+        call tstamp('>','PRJ: enter topology menu')
         CALL EDCONN(IER)
-      elseif(INO.EQ.10)THEN
+
+      elseif(INO.EQ.8)THEN
+
+C Set and tag anchor points.
+        call tstamp('>','PRJ: enter anchors menu')
+        call anchlist(iasel,ier)
+
+      elseif(INO.EQ.11)THEN
 
 C Shading/ insolation analysis.
  253    IC=-1
@@ -2499,6 +2625,10 @@ C Shading/ insolation analysis.
      &         's','Zone index for shading.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         if(IC.eq.99)then
+
+C << note: the add insolation option actually should cause
+C << the zone geometry file to be updated if the version 1.1
+C << geometry files are used. This is not yet done.
 
 C Global tasks.
           h(1)='You can establish detailed shading and/orinsolation'
@@ -2574,6 +2704,13 @@ C procedure can overwrite.
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
      &            zname(icomp)(1:lnblnk(zname(icomp)))
                 CALL ERPFREE(IUF,ios)
+
+C << note: the add insolation option actually should cause
+C << the zone geometry file to be updated if the version 1.1
+C << geometry files are used. Add code here to open gem file
+C << figure out insolation sources and then write out the
+C << geometry file (if version 1.1).
+
  151          continue
             endif
             CALL EMKCFG('-',IER)
@@ -2614,10 +2751,7 @@ C If browsing, do not save files but allow ish to be started.
           if(SFIL(1:2).ne.'  ')then
             LSHAD(IC)=SFIL
             ISI(IC)=1
-C            call usrmsg(' updating model for shading file...',' ','-')
             CALL EMKCFG('-',IER)
-C            call usrmsg(' updating model for shading file...done.',
-C     &        ' ','-')
           endif
         else
 
@@ -2652,12 +2786,7 @@ C Reset common blocks, save configuration and see if another zone is requested.
             if(SFIL(1:2).ne.'  ')then
               LSHAD(IC)=SFIL
               ISI(IC)=1
-C              call usrmsg(' updating model to include shading file...',
-C     &        ' ','-')
               CALL EMKCFG('-',IER)
-C              call usrmsg(
-C     &          ' updating model to include shading file...done.',
-C     &          ' ','-')
             endif
          endif
         endif
@@ -2673,46 +2802,14 @@ C     &          ' ','-')
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
           call tstamp('>','PRJ: start shading')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-          if(unixok)then
-            call addpath(LCFGF,longtfile,concat)
-          else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-            call addpath(LCFGF,longtfile,concat)
-            call cmdfiledos(longtfile,longtfiledos,ier)
-
-C Debug the patched file name.
-            write(outs,'(2a)') 'Corrected file ',
-     &        longtfiledos(1:lnblnk(longtfiledos))
-            call edisp(iuout,outs)
-            longtfile=' '
-            longtfile=longtfiledos
-          endif
-
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-          if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,5a)') 'ish -mode ',tmode,
-     &        ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' -zone ',
-     &        ZN(1:lnblnk(ZN)),' &'
-          else
-            write(doit,'(7a)') 'ish -mode ',tmode,' -s 0 0 0 -file ',
-     &        longtfile(1:lnblnk(longtfile)),' -zone ',
-     &        ZN(1:lnblnk(ZN)),' &'
-          endif
-          call usrmsg('starting shading analysis via',doit,'-')
-          call runit(doit,tmode)
+          call comissionish(ic,'in ',ier)
         endif
 
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 253
-      elseif(INO.EQ.11)THEN
+
+      elseif(INO.EQ.12)THEN
 
 C Zone convective regime description. If an existing file the
 C call to hcfmk has the option to dereference it.
@@ -2737,7 +2834,8 @@ C If browsing, do not save files but allow ish to be started.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 260
-      elseif(INO.EQ.12)THEN
+
+      elseif(INO.EQ.13)THEN
 
 C View factor editing, begin by identifying the zone and then
 C reading in the geometry file followed by view factor editing 
@@ -2790,13 +2888,7 @@ C Global tasks.
                   call EDMRT(ITRC,ITRU,IUF,ICOMP,silent,'v',IER)
                 endif
  164          continue
-C              call usrmsg(
-C     &        ' updating model to add viewfactor files...',
-C     &        ' ','-')
               CALL EMKCFG('-',IER)
-C              call usrmsg(
-C     &        ' updating model to add viewfactor files...done.',
-C     &        ' ','-')
             endif
           elseif(iw.eq.3)then
             inpic=0
@@ -2809,13 +2901,7 @@ C     &        ' ','-')
                 LVIEW(icomp)=' '
                 IVF(ICOMP)=0
  163          continue
-C              call usrmsg(
-C     &        ' updating model to ignore viewfactor file...',
-C     &        ' ','-')
               CALL EMKCFG('-',IER)
-C              call usrmsg(
-C     &        ' updating model to ignore viewfactor file...done.',
-C     &        ' ','-')
             endif
           elseif(iw.eq.4)then
             continue
@@ -2833,7 +2919,8 @@ C Deal with one zone.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 251
-      elseif(INO.EQ.13)THEN
+
+      elseif(INO.EQ.14)THEN
 
 C Casual gain control.
         if(browse)then
@@ -2903,7 +2990,8 @@ C     &        ' Dereferencing casual gain control file...done.',' ','-')
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 252
-      elseif(INO.EQ.14)THEN
+
+      elseif(INO.EQ.15)THEN
 
 C CFD.
         H(1)='This facility allows you to compose a file defining'
@@ -2917,7 +3005,12 @@ C CFD.
         call askzone(ic,izdef,' ','Zone CFD Selection',
      &         'd','Zone index for cfd.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
-        CALL EGOMIN(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+        call eclose(gversion(IC),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+        endif
 
         IUF=IFIL+1
         call cfdcomp(ic,iuf,ier)
@@ -2949,7 +3042,8 @@ C If browsing do not offer inclusion option.
             call usrmsg(' Dereferencing CFD domain...done.',' ','-')
           endif
         endif
-      elseif(INO.EQ.15)THEN
+
+      elseif(INO.EQ.16)THEN
 
 C Adaptive gridding module.
         IC=-1
@@ -3125,20 +3219,24 @@ C Confirm file names.
           call usrmsg('starting gridding display via',doit,'-')
           call runit(doit,tmode)
         endif
-      elseif(INO.EQ.18)THEN
+
+      elseif(INO.EQ.19)THEN
 
 C Call embedded renewables.
         call EDSPLIST('EG',IDV,IER)
 
-      elseif(INO.EQ.19)THEN
+      elseif(INO.EQ.20)THEN
 
 C Call active materials menu.
         call EDSPLIST('EM',IDV,IER)
-      elseif(INO.EQ.20)THEN
+
+      elseif(INO.EQ.21)THEN
 
 C Call advanced (bidirectional) optics.
         call edbioptics()
       ELSE
+
+C Fall through case.
         INO=-1
         GOTO 3
       ENDIF
@@ -3179,7 +3277,7 @@ C selected an exemplar model.
       common/deflt4/dinstpath
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -3194,7 +3292,7 @@ C Defaults.
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15

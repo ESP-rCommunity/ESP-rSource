@@ -35,7 +35,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       integer igraphiclib  ! external definition
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -54,7 +53,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/appw/iappw,iappx,iappy
 
 C IPV description.
       common/IPVF/lipvdatf
@@ -79,7 +77,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg
 
-      logical MODSIT,browse,XST,modish,OK,DOK,concat,unixok
+      logical MODSIT,browse,XST,modish,OK,DOK,unixok
       logical FOUND
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
@@ -90,8 +88,7 @@ C ITEMS is menu for site/context items.
       character*35 ITEMS(28)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
-      character doit*248,tmode*8,cfgroot*24,LCFGF*72
-      character longtfile*144,longtfiledos*144
+      character cfgroot*24,LCFGF*72
       character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
 
@@ -136,7 +133,7 @@ C Begin with high level menu.
       WRITE(ITEMS(4),'(A,A)')   'c exposure: ',SEXP(1:21)
       IF(ITGREF.EQ.1) THEN
         WRITE(ITEMS(5),'(a,f5.3,a)')
-     &                     'd grd reflectivity: constant (',GREF,')'
+     &                     'd grd reflectivity: const. (',GREF,')'
       ELSEIF(ITGREF.EQ.2) THEN
         ITEMS(5) =         'd grd reflectivity: simple'
       ELSEIF(ITGREF.EQ.3) THEN
@@ -144,7 +141,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g calendar (holidays)            '                   '
+      ITEMS(8) =                'g calendar (holidays)            '                             '
       ITEMS(9) =                'h                                '
       ITEMS(10)=                'i                                '
       ITEMS(11)=                '  ___________________________    '
@@ -257,26 +254,7 @@ C as the command line. For silent do the runit via
 C the current applications command window rather than
 C starting up a new xterm (i.e. use '-' rather than 'text')
                 if(IRT.eq.1)then
-                  if(unixok)then
-                    call addpath(LCFGF,longtfile,concat)
-                  else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                    call addpath(LCFGF,longtfile,concat)
-                    call cmdfiledos(longtfile,longtfiledos,ier)
-                    longtfile=' '
-                    longtfile=longtfiledos
-                  endif
-
-                  write(doit,'(5a)') 'ish -mode text -file ',
-     &              longtfile(1:lnblnk(longtfile)),' -zone ',
-     &              ZN(1:lnz),' -act update_silent'
-                  call usrmsg('starting shading analysis via',doit,'-')
-                  call runit(doit,'-')
-                  write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &            ' has been recalculated.'
-                  call edisp(iuout,outs)
+                  call comissionish(iz,'sr ',ier)
                 else
                   DOK=.TRUE.
                   h(1)='Each zone is calculated in turn. If you do '
@@ -285,37 +263,7 @@ C and change any / to \.
      &              zn(1:lnz),'?'
                   CALL ASKOK(outs,' ',OK,DOK,2)
                   if(OK)then
-                    call tstamp('>','PRJ: start shading recalculation')
-                    doit = ' '
-                    call tchild(ICPMOD)
-                    call termode(ICPMOD,tmode)
-                    if(unixok)then
-                      call addpath(LCFGF,longtfile,concat)
-                    else
-                      call addpath(LCFGF,longtfile,concat)
-                      call cmdfiledos(longtfile,longtfiledos,ier)
-                      longtfile=' '
-                      longtfile=longtfiledos
-                    endif
-
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-                    if(iappw.gt.0.and.iappw.le.200)then
-                      write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &                  tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                  longtfile(1:lnblnk(longtfile)),' -zone ',
-     &                  ZN(1:lnz),' -act recalculate &'
-                    else
-                      write(doit,'(7a)') 'ish -mode ',tmode,
-     &                 ' -s 0 0 0 -file ',longtfile(:lnblnk(longtfile)),
-     &                 ' -zone ',ZN(1:lnz),' -act recalculate &'
-                    endif
-                    call usrmsg('starting shading analysis via',doit,
-     &                '-')
-                    call runit(doit,tmode)
-                    write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &              ' has been recalculated.'
-                    call edisp(iuout,outs)
+                    call comissionish(iz,'ir ',ier)
                   endif
                 endif
               endif
@@ -1041,11 +989,11 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       logical FOUND,XST
 
       character H*72,outs*124,ltmp*72,hold*40
-      character doit*124,tmode*8,tfile*72,cfgroot*24,LCFGF*72
+      character doit*124,tmode*8,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
       character*72 LTDF,LTDFA,DLTDF
-      character DBTAG*12,DBTASK*12,DBZN*15,FOCUS*8
+      character DBTAG*12,DBTASK*12,DBZN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
       character longtfile*144,longtfiledos*144
@@ -1544,6 +1492,16 @@ C << between 0.0 and 1.0 giving ON fraction.
             call askzone(ic,izdef,' Related zone for control state?',
      &        'Related zone','-','Set point requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+          elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
+
+C Depending on the type of the data, ask for associated zone.
+            IC=-1
+ 1252       izdef=0
+            call askzone(ic,izdef,' Related zone for activity db?',
+     &      'Related zone','-','Activity db can be assigned to a zone.',
+     &       ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 1252
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
           elseif(TTYPE(it)(1:6).eq.'SETPTT')then
 
@@ -2915,18 +2873,17 @@ C EDDGTP Sets up shading and insolation files
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/appw/iappw,iappx,iappy
 
-      character*72 TFILE,LTHRM,H,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
-      CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
-      logical XST,OK,DOK,concat,unixok
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character H*72,ZNAME*12,ZN*12,LCFGF*72
+      character zdesc*64,outs*248,CFGROOT*24
+      logical XST,OK,DOK,unixok
 
       if(ncomp.eq.0)then
         return
@@ -2953,10 +2910,7 @@ C Check if Unix-based or DOS based.
      &  'recalculate (silent)','recalculate (interactive)','continue',
      &  IRT,2)
       if(IRT.eq.1.or.IRT.eq.2)then
-C        call edisp(iuout,'Each zone will be processed in sequence.')
         if(IRT.eq.1)then
-C          call edisp(iuout,
-C     & 'When finished control will be returned to Project Manager.')
         endif
         do 43 iz=1,ncomp
           if(ISI(iz).eq.0) goto 43
@@ -2970,28 +2924,7 @@ C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
           if(IRT.eq.1)then
-            if(unixok)then
-              call addpath(LCFGF,longtfile,concat)
-            else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-              call addpath(LCFGF,longtfile,concat)
-              call cmdfiledos(longtfile,longtfiledos,ier)
-              longtfile=' '
-              longtfile=longtfiledos
-            endif
-            write(doit,'(5a)') 'ish -mode text -file ',
-     &        longtfile(1:lnblnk(longtfile)),' -zone ',
-     &        ZN(1:lnz),' -act update_silent'
-            call usrmsg('starting shading analysis via',doit,'-')
-
-C Since silent, tell runit to use the current command window
-C rather than starting up a new xterm.
-            call runit(doit,'-')
-            write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &            ' has been recalculated.'
-            call edisp(iuout,outs)
+            call comissionish(iz,'sra',ier)
           else
             DOK=.true.
             h(1)='Each zone is calculated in sequence.'
@@ -3000,36 +2933,7 @@ C rather than starting up a new xterm.
      &            zn(1:lnz),' ?'
             CALL ASKOK(outs,' ',OK,DOK,2)
             if(OK)then
-              call tstamp('>','PRJ: start shading recalculation')
-              doit = ' '
-              call tchild(ICPMOD)
-              call termode(ICPMOD,tmode)
-              if(unixok)then
-                call addpath(LCFGF,longtfile,concat)
-              else
-                call addpath(LCFGF,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
-
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &                tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &                longtfile(1:lnblnk(longtfile)),' -zone ',
-     &                ZN(1:lnz),' -act recalculate &'
-              else
-                write(doit,'(7a)') 'ish -mode ',tmode,
-     &               ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &               ' -zone ',ZN(1:lnz),' -act recalculate &'
-              endif
-              call usrmsg('starting shading analysis via',doit,'-')
-              call runit(doit,tmode)
-              write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &            ' has been recalculated.'
-              call edisp(iuout,outs)
+              call comissionish(iz,'ira',ier)
             endif
           endif
   43    continue

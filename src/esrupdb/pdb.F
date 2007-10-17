@@ -38,7 +38,7 @@ C database entry.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -72,7 +72,7 @@ C Name of current application
       CHARACTER ZITEM(9)*26 
       CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,mfsdsc*68,ltpcmp*60 
 

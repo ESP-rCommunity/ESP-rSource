@@ -39,6 +39,10 @@ C the results database.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -48,10 +52,17 @@ C the results database.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER outs*124
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Read (silently) in the zone geometry data.
+      newgeo=.false.  ! assume older format geometry.
       IUNITF=IFIL+1
-      CALL EGOMIN(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      else
+        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      endif
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')
@@ -131,8 +142,9 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
@@ -167,8 +179,9 @@ C Arrays of material properties.
       logical closemat
       DIMENSION ICLN(30)
 
-      CHARACTER outs*124,DESC*48,NAM*72,TITL*72
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER outs*124,DESC*48,NAM*72,TITL*72,CSTR*25
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
 C Open the material db if not already done.
       IF(.NOT.MATDBOK)THEN
@@ -238,7 +251,7 @@ C conposite construction database.
       ENDIF
 
 C Clear IPRZ to 1 (not 0 since that is an air gap).
-      do 45 ISUR=1,NSUR
+      do 45 ISUR=1,NZSUR(ICOMP)
         do 46 IL=1,ME
           IPRZ(ISUR,IL)=1
  46     continue
@@ -247,10 +260,11 @@ C Clear IPRZ to 1 (not 0 since that is an air gap).
 C If there is a mlc db scan it for properties of surfaces.
 C Reset number of layers, if at end of loop it is still 0 then
 C the element was not found.
-      do 44 ISUR=1,NSUR
+      do 44 ISUR=1,NZSUR(ICOMP)
+        CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
         DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SMLCN(ISUR))THEN
+          IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
             ICKNE=LAYERS(IC)
 
 C Gather information about each layer. Read in the material db info.
@@ -279,8 +293,8 @@ C we reading the raw data?
           ENDIF
    20   CONTINUE
         if(ICKNE.eq.0)then
-          write(outs,'(5A)') ' The construction ',SMLCN(ISUR),
-     &       ' of ',SNAME(ICOMP,ISUR),' was not found in the mlc db...'
+          write(outs,'(5A)') ' The construction ',SSMLCN(ICN)(1:12),
+     &       ' of ',SSNAME(ICN),' was not found in the mlc db...'
           call edisp(iuout,outs)
           call edisp(iuout,' ')
           IER=1
@@ -485,13 +499,16 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44
+      CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SN*12
+      character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40,SN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character act*1
+      integer lml   ! string length for construction name.
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. 
@@ -531,10 +548,12 @@ C and the simulation and output timesteps.
         call edisp(iuout,ETEXT)
       endif
 
-      SN=SNAME(ICOMP,ISUR)
+      CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
+      SN=SSNAME(ICN)
       ZN=zname(ICOMP)
-      WRITE(ETEXT,'(A,A,A,A)')' Temperature profiles within ',
-     &   SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN))
+      WRITE(ETEXT,'(6A)')' Temperature profiles within ',
+     &   SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN)),' facing ',
+     &   CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
         CALL viewtext(ETEXT,3,0,1)
       else
@@ -542,15 +561,17 @@ C and the simulation and output timesteps.
       endif
 
 C Determine if the surface is transparent or opaque.
-      IF(SOTF(ISUR).EQ.'OPAQ'.OR.SOTF(ISUR).EQ.'UNKN')THEN
+      IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
       ELSE
          TSTR='trnsp.'
       ENDIF
 
 C Print info on surface.
+      lml=lnblnk(SSMLCN(ICN))
       WRITE(ETEXT,'(5a,f6.2,a)')' It is ',TSTR,', composed of ',
-     &  SMLCN(ISUR),', with area ',SNA(ICOMP,ISUR),' m2.'
+     &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
         CALL viewtext(ETEXT,4,0,1)

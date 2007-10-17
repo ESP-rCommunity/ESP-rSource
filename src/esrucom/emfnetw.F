@@ -856,6 +856,11 @@ C Type 460 fixed flow rate controller.
 
 C Type 470 range based flow rate controller (defunct type).
         call MFERR(ICMP,' Use type 30 or 35 comp with range ctl.',IER)
+      ELSE IF(ITPCMP(ICMP).EQ.500) THEN
+
+C Type 500 multi configuration controller
+        IF(NSDC.NE.6)
+     &  call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
       ELSE
         call edisp(iuout,' Unknown component type...')
         goto 999
@@ -914,7 +919,7 @@ C MFLIST Fluid flow file: list common block contents.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,zname*12,zdesc*64
       CHARACTER LAPROB*72
-      CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4
+      CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4,tmnam*12
       logical written
 
       CALL EDISP(itru,' ')
@@ -1092,6 +1097,29 @@ C Provide a heading string for each different component type.
         ELSE IF(ITPCMP(ICMP).EQ.460) THEN
           call edisp(itru,
      &  '   Fluid, flow when S < Ssp, flow when S > Ssp.')
+        ELSE IF(ITPCMP(ICMP).EQ.500) THEN
+          call edisp(itru,
+     &  '   multi configuration flow component ')
+          ICSP=NINT(SUPCMP(ICMP,2))
+          TMNAM=CMNAM(ICSP)
+          write(outs,'(3A,F5.2)')
+     &    '  ',TMNAM(1:lnblnk(TMNAM)),
+     &    ' above control action ',SUPCMP(ICMP,3)
+          call edisp(itru,outs)
+          ICSP=NINT(SUPCMP(ICMP,4))
+          TMNAM=CMNAM(ICSP)
+          write(outs,'(3A,F5.2,A,F5.2)')
+     &    '  ',TMNAM(1:lnblnk(TMNAM)),
+     &    ' between control action ',
+     &    SUPCMP(ICMP,3),' and ',SUPCMP(ICMP,5)
+          call edisp(itru,outs)
+          ICSP=NINT(SUPCMP(ICMP,6))
+          TMNAM=CMNAM(ICSP)
+          write(outs,'(3A,F5.2)')
+     &    '  ',TMNAM(1:lnblnk(TMNAM)),
+     &    ' below control action ',SUPCMP(ICMP,5)
+          call edisp(itru,outs)
+          WRITTEN=.TRUE.
         endif
 
 C If not already written out.

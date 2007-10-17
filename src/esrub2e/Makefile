@@ -13,7 +13,7 @@ PROG = b2e$(EXE)
 
 OBJECTS = b2e.o c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o simcomis.o sort.o startup.o tdfile.o readTrnsys.o \
+	nwkrewr.o pltcfg.o readTrnsys.o simcomis.o sort.o startup.o tdfile.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -66,15 +66,15 @@ pltcfg.F:
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
-readTrnsys.F:
-	rm -f readTrnsys.F
-	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi

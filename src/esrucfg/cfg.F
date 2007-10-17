@@ -81,7 +81,7 @@ C ITPPSW current view - perspective/plan/south/west
       common/C3F/LCNN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Path to problem.
       common/rpath/path
@@ -125,7 +125,7 @@ C Material data arrays.
       CHARACTER LCFGF*72,H*72,CFGFN*72,LTMP*144
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER ITEMS1*30,inf*144,CXSTR*78,outs*124,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character DCNN*72,LLCNN*72,LCNN*72
       character path*72,upath*72,esprc*72
       character dfdblbl*20,defdbfl*72
@@ -1013,8 +1013,15 @@ C the user to confirm before writing to temporary configuration file.
       common/ground/grdtmp(12,mgrdp)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+C << G5 needed until geometry write can be done via G6 commons >>
+
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
@@ -1022,15 +1029,21 @@ C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
 
       DIMENSION COORD1(MV,3), COORD2(MV,3)
-      dimension ICVALS(MCOM),TOTHER(MS),ipmz(3),ipms(3)
+      dimension ICVALS(MCOM),TOTHER(MS,3),ipmz(3),ipms(3)
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,DOIT,OTHEROK,UPDGEO
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical closea,closee,close,longpause
-      character outs*124,CXSTR*78,zname*12,SN*12,ZN*12,SO*12,TOTHER*12
-      character SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,DESCRC*25
+      character outs*124,CXSTR*78,zname*12,SN*12,ZN*12
+      character SO*24,TOTHER*24
+      character DESCRC*25
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
       character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,zdesc*64,bl*2
+      integer icother
 
 C CACC is the tolerance allowed between two vertices.
 C TOTHER is array of temporary new topology attributes for current zone.
@@ -1088,10 +1101,15 @@ C skiped.
 
 C Display the reference zone (if type 3 then display both).
 C Remember topology attributes for reference zone.
+
+C << except that egomin does not fill ssother common block >>
         IUO=IFIL+1
         CALL EGOMIN(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
         do 322 IJ=1,NSUR
-          TOTHER(IJ)=SOTHER(IJ)(1:12)
+          ICN=IZSTOCN(iz,ij)
+          TOTHER(IJ,1)=SSOTHER(ICN,1)
+          TOTHER(IJ,2)=SSOTHER(ICN,2)
+          TOTHER(IJ,3)=SSOTHER(ICN,3)
   322   continue
         MODIFY=.TRUE.
         MODBND=.TRUE.
@@ -1134,11 +1152,24 @@ C surface attribute if it does not match and jump around.
                 call pausems(400)
               endif
             endif
-            ZN=zname(IC2(IC))
-            WRITE(SO,'(A)')TOTHER(JS)
-            if(SO(1:lnblnk(SO)).ne.ZN(1:lnblnk(ZN)))then
-               TOTHER(JS)=ZN
-               UPDGEO=.TRUE.
+
+C Compare the index of ic2(ic) with integer value of tother(JS,2).
+C If tother(JS,2) is a dash then update with IC2 IE2.
+
+C << this logic needs to be tested >>
+            if(TOTHER(JS,2)(1:1).ne.'-')then
+              read(TOTHER(JS,2),'(i2.2)') icother
+              if(icother.ne.IC2(ic))then
+                write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+              endif
+            else
+              write(TOTHER(JS,1),'(a)') 'ANOTHER'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
+              UPDGEO=.TRUE.
             endif
             goto 110
           endif
@@ -1194,7 +1225,7 @@ C Depending on how many matches were found, proceed.
 
 C If user said skip marked IDENTICAL, check and update the
 C surface attribute if it does not match and jump around.
-            WRITE(SO,'(A)')TOTHER(JS)
+            WRITE(SO,'(A)') TOTHER(JS,1)
             if(M1SKP.and.(ICT(IC).eq.1))then
               call edisp(iuout,'known connection skipped.')
               if(MMOD.eq.8)then
@@ -1205,7 +1236,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:7).ne.'SIMILAR')then
-                TOTHER(JS)='SIMILAR'
+                TOTHER(JS,1)='SIMILAR'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
             goto 110
@@ -1223,7 +1256,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:8).ne.'CONSTANT')then
-                TOTHER(JS)='CONSTANT'
+                TOTHER(JS,1)='CONSTANT'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1241,7 +1276,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:6).ne.'GROUND')then
-                TOTHER(JS)='GROUND'
+                TOTHER(JS,1)='GROUND'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1259,7 +1296,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:9).ne.'ADIABATIC')then
-                TOTHER(JS)='ADIABATIC'
+                TOTHER(JS,1)='ADIABATIC'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1277,7 +1316,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:8).ne.'BASESIMP')then
-                TOTHER(JS)='BASESIMP'
+                TOTHER(JS,1)='BASESIMP'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1295,7 +1336,9 @@ C surface attribute if it does not match and jump around.
                 endif
               endif
               if(SO(1:9).ne.'IDENT_CEN')then
-                TOTHER(JS)='IDENT_CEN'
+                TOTHER(JS,1)='IDENT_CEN'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
               goto 110
@@ -1311,7 +1354,9 @@ C set connection to exterior and proceed.
                 IE2(IC)=0
                 IC2(IC)=0
                 if(SO(1:8).ne.'EXTERIOR')then
-                  TOTHER(JS)='EXTERIOR'
+                  TOTHER(JS,1)='EXTERIOR'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
                   UPDGEO=.TRUE.
                 endif
                 call edisp(iuout,'no match found setting to EXTERIOR.')
@@ -1407,7 +1452,9 @@ C Setup contextural help for boundary conditions.
                   IE2(IC)=0
                   IC2(IC)=0
                   if(SO(1:8).ne.'EXTERIOR')then
-                    TOTHER(JS)='EXTERIOR'
+                    TOTHER(JS,1)='EXTERIOR'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.2)then
@@ -1417,7 +1464,9 @@ C Setup contextural help for boundary conditions.
                   IE2(IC)=0
                   IC2(IC)=0
                   if(SO(1:7).ne.'SIMILAR')then
-                    TOTHER(JS)='SIMILAR'
+                    TOTHER(JS,1)='SIMILAR'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.3)then
@@ -1433,7 +1482,9 @@ C Setup contextural help for boundary conditions.
                   IE2(IC)=INT(VAL2)
                   IC2(IC)=INT(VAL)
                   if(SO(1:8).ne.'CONSTANT')then
-                    TOTHER(JS)='CONSTANT'
+                    TOTHER(JS,1)='CONSTANT'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.4)then
@@ -1467,7 +1518,9 @@ C profile has not been defined.
                     IC2(IC)=iic2
                     IE2(IC)=0
                     if(SO(1:6).ne.'GROUND')then
-                      TOTHER(JS)='GROUND'
+                      TOTHER(JS,1)='GROUND'
+                      write(tother(JS,2),'(i2.2)') IC2(ic)
+                      write(tother(JS,3),'(i2.2)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   ELSE
@@ -1498,7 +1551,9 @@ C profile has not been defined.
                     IC2(IC)=0
                     IE2(IC)=iie2
                     if(SO(1:6).ne.'GROUND')then
-                      TOTHER(JS)='GROUND'
+                      TOTHER(JS,1)='GROUND'
+                      write(tother(JS,2),'(i2.2)') IC2(ic)
+                      write(tother(JS,3),'(i2.2)') IE2(ic)
                       UPDGEO=.TRUE.
                     endif
                   else
@@ -1515,7 +1570,9 @@ C Link to a 3D conduction model..
                   IC2(IC)=-3
                   IE2(IC)=0
                   if(SO(1:6).ne.'GROUND')then
-                    TOTHER(IE1(JS))='GROUND'
+                    TOTHER(IE1(JS),1)='GROUND'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.7)then
@@ -1525,7 +1582,9 @@ C Link to a 3D conduction model..
                   IE2(IC)=0
                   IC2(IC)=0
                   if(SO(1:9).ne.'ADIABATIC')then
-                    TOTHER(JS)='ADIABATIC'
+                    TOTHER(JS,1)='ADIABATIC'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 elseif(iart.eq.8)then 
@@ -1559,7 +1618,9 @@ C attribute to the surface under consideration.
      &              IER,6)
                   IE2(IC)=Ifrac
                   if(SO(1:8).ne.'BASESIMP')then
-                    TOTHER(IE1(JS))='BASESIMP'
+                    TOTHER(IE1(JS),1)='BASESIMP'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 C BASESIMP end.
@@ -1570,7 +1631,9 @@ C BASESIMP end.
                   IE2(IC)=0
                   IC2(IC)=0
                   if(SO(1:7).ne.'IDENT_CEN')then
-                    TOTHER(JS)='IDENT_CEN'
+                    TOTHER(JS,1)='IDENT_CEN'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
 
@@ -1578,11 +1641,13 @@ C CEN 13791 partition end.
                 elseif(IART.eq.10)then
                   IC1(IC)=IZ
                   IE1(IC)=JS
-                  ICT(IC)=0
+                  ICT(IC)=-1
                   IE2(IC)=0
                   IC2(IC)=0
                   if(SO(1:7).ne.'UNKNOWN')then
-                    TOTHER(JS)='UNKNOWN'
+                    TOTHER(JS,1)='UNKNOWN'
+                    write(tother(JS,2),'(i2.2)') IC2(ic)
+                    write(tother(JS,3),'(i2.2)') IE2(ic)
                     UPDGEO=.TRUE.
                   endif
                 endif
@@ -1622,14 +1687,24 @@ C Only one possible match, inform user and then proceed.
             endif
 
 C Update surface attributes.
-            SN=SNAME(II,JJ)
-            ZN=zname(II)
-            WRITE(SO,'(A)')TOTHER(JS)
-            if(SO(1:lnblnk(SO)).ne.ZN(1:lnblnk(ZN)))then
-              TOTHER(JS)=ZN
+            ICN=IZSTOCN(II,JJ)
+            if(TOTHER(JS,2)(1:1).ne.'-')then
+              WRITE(icother,'(i2.2)') TOTHER(JS,2)
+              if(icother.ne.IC2(icn))then
+                write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+              endif
+            else
+              write(TOTHER(JS,1),'(a)') 'ANOTHER'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
               UPDGEO=.TRUE.
             endif
-            WRITE(outs,'(a,a,a,a)')' accepting match to surface ',
+            SN=SSNAME(icn)
+            ZN=zname(II)
+            WRITE(outs,'(4a)')' accepting match to surface ',
      &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
             call edisp(iuout,outs)
           elseif(ipmatch.gt.1)then
@@ -1650,14 +1725,15 @@ C is of a reasonable orientation.
               DAZI=ABS(DAZI)
               call eclose(DAZI,180.0,3.0,closea)
               call eclose(SELV,0.0,3.0,closee)
-              SN=SNAME(IIx,JJx)
+              ICN=IZSTOCN(IIx,JJx)
+              SN=SSNAME(ICN)
               ZN=zname(IIx)
               if(closea.and.closee)then
-                WRITE(outs,'(a,a,a,a)')
+                WRITE(outs,'(4a)')
      &            ' Probable (orientation close) match to surface ',
      &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               else
-                WRITE(outs,'(a,a,a,a)')
+                WRITE(outs,'(4a)')
      &            ' Possible (orientation not close) match to surface ',
      &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               endif
@@ -1700,9 +1776,10 @@ C the view on it and calculate the angle of view to that box.
               if(MMOD.eq.8)LINSTY(ICO)=2
               izgfoc = IZ
               if(MMOD.eq.8)CALL CADJVIEW(0,IER)
-              SN=SNAME(II,JJ)
+              ICN=IZSTOCN(II,JJ)
+              SN=SSNAME(ICN)
               ZN=zname(II)
-              WRITE(outs,'(a,a,a,a)')' Probable match to surface ',
+              WRITE(outs,'(4a)')' Probable match to surface ',
      &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               dok=.true.
               h(1)='If there is more than ONE possible matching '
@@ -1719,11 +1796,10 @@ C the view on it and calculate the angle of view to that box.
                 IE2(IC)=JJ
 
 C Update surface attributes and then restore the view points.
-                WRITE(SO,'(A)')TOTHER(JS)
-                if(SO(1:lnblnk(SO)).ne.ZN(1:lnblnk(ZN)))then
-                  TOTHER(JS)=ZN
-                  UPDGEO=.TRUE.
-                endif
+                write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
                 if(MMOD.eq.8)call recoview
                 ITBND=1
                 MODLEN=.TRUE.
@@ -1757,7 +1833,9 @@ C If reached this point then no surface selected.
               IE2(IC)=0
               IC2(IC)=0
               if(SO(1:7).ne.'UNKNOWN')then
-                TOTHER(JS)='UNKNOWN'
+                TOTHER(JS,1)='UNKNOWN'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
             elseif(irta.eq.3)then
@@ -1767,7 +1845,9 @@ C If reached this point then no surface selected.
               IE2(IC)=0
               IC2(IC)=0
               if(SO(1:7).ne.'EXTERIOR')then
-                TOTHER(JS)='EXTERIOR'
+                TOTHER(JS,1)='EXTERIOR'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
             elseif(irta.eq.4)then
@@ -1785,7 +1865,13 @@ C Update geometry file if required.
           call edisp(iuout,' Updating surface attributes...')
           CALL EGOMIN(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
           do 323 IJ=1,NSUR
-            SOTHER(IJ)=TOTHER(IJ)
+            SOTHER(IJ,1)=TOTHER(IJ,1)
+            SOTHER(IJ,2)=TOTHER(IJ,2)
+            SOTHER(IJ,2)=TOTHER(IJ,3)
+            ICN=IZSTOCN(iz,ij)
+            SSOTHER(ICN,1)=TOTHER(IJ,1)
+            SSOTHER(ICN,2)=TOTHER(IJ,2)
+            SSOTHER(ICN,3)=TOTHER(IJ,3)
   323     continue
           CALL EMKGEO(IFIL+2,LGEOM(IZ),IZ,iuout,3,IER)
           IF(IER.NE.0)THEN
@@ -1828,8 +1914,10 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1844,7 +1932,9 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       CHARACTER CXSTR*78,outs*124
       CHARACTER OUTSTR*124,SO*12,TMP*54,zname*12,zdesc*64,H*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,bl*2
+      CHARACTER bl*2
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
 C General image option flags.
@@ -1898,7 +1988,8 @@ C If surface attribute is something other than UNKNOWN then see about
 C upgrading the current connection. Display the connection and the
 C surface attribute and ask user if attribute should be used. First
 C check for easy matches.
-        WRITE(SO,'(A)')SOTHER(ISS)(1:12)
+        ICN=IZSTOCN(IC1(ICC),iss)
+        WRITE(SO,'(A)')SSOTHER(ICN,1)(1:12)
         WRITE(TMP,'(A,I3,A,A15)')'Surface ',ISS,' attribute: ',SO
         WRITE(OUTSTR,'(A,A)')'Topology: ',CXSTR(1:lnblnk(CXSTR))
         IF(SO(1:8).EQ.'EXTERIOR'.AND.ICT(ICC).EQ.0)THEN

@@ -52,6 +52,7 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
       COMMON/C4/XLAT,XLON
+
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -942,9 +943,14 @@ C if possible. If ICON=0 then generate a text heading.
 #include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8986)  
@@ -961,62 +967,70 @@ C Trap out of range IC1 and IE1 variables.
         CXSTR='  '
         RETURN
       endif
-      SST1=SNAME(IC1(ICON),IE1(ICON))
+      SST1=SSNAME(ICON)
+      lsn1=lnblnk(SST1)
       ZST1=ZNAME(IC1(ICON))
-      IF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,8985)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
- 8985   FORMAT(I3,2X,a,' in ',a,' is External')
+      lzn1=lnblnk(ZST1)
+      IF(ICT(ICON).EQ.-1.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,7985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 7985   FORMAT(I4,1X,a,' in ',a,' not yet defined')
+      ELSEIF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,8985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 8985   FORMAT(I4,1X,a,' in ',a,' is External')
       ELSEIF(ICT(ICON).EQ.1.AND.ICF.GT.0)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
-          WRITE(CXSTR,8984)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
- 8984     FORMAT(I3,2X,a,' in ',a,' >|< Identical environment ')
+          WRITE(CXSTR,8984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 8984     FORMAT(I4,1X,a,' in ',a,' >|< Identical environment ')
         else
-          WRITE(CXSTR,8987)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 8987     FORMAT(I3,2X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
+          WRITE(CXSTR,8987)ICON,SST1(1:lsn1),
+     &      ZST1(1:lzn1),IC2(ICON),IE2(ICON)
+ 8987     FORMAT(I4,1X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ELSEIF(ICT(ICON).EQ.2.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,8983)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1)),
+        WRITE(CXSTR,8983)ICON,SST1(1:lsn1),ZST1(1:lzn1),
      &                   IC2(ICON),IE2(ICON)
- 8983   FORMAT(I3,2X,a,' in ',a,' >|< Constant @',I3,' dC &',
+ 8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &         I4,' W rad')
       ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
-        SST2=SNAME(IC2(ICON),IE2(ICON))
-        ZST2=ZNAME(IC2(ICON))
-        WRITE(CXSTR,8982)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1)),
-     &                        SST2(:LNBLNK(SST2)),ZST2(:LNBLNK(ZST2))
- 8982   FORMAT(I3,2X,a,' in ',a,' >|< ',a,' in ',a)
+        ICM=IZSTOCN(IC2(ICON),IE2(ICON))
+        SST2=SSNAME(ICM)
+        lsn2=lnblnk(SST2)
+        ZST2=zname(IC2(ICON))
+        lzn2=lnblnk(ZST2)
+        WRITE(CXSTR,8982)ICON,SST1(1:lsn1),ZST1(1:lzn1),
+     &                        SST2(1:lsn2),ZST2(1:lzn2)
+ 8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)
       ELSEIF(ICT(ICON).EQ.4.AND.ICF.GT.0)THEN
         IF(IC2(ICON).GT.0)THEN
-          WRITE(CXSTR,8981)ICON,SST1(:LNBLNK(SST1)),
-     &                     ZST1(:LNBLNK(ZST1)),IC2(ICON)
- 8981     FORMAT(I3,2X,a,' in ',a,' >|< ground profile',I2)
+          WRITE(CXSTR,8981)ICON,SST1(1:lsn1),
+     &                     ZST1(1:lzn1),IC2(ICON)
+ 8981     FORMAT(I4,1X,a,' in ',a,' >|< ground profile',I2)
         ELSE
-          WRITE(CXSTR,8980)ICON,SST1(:LNBLNK(SST1)),
-     &                     ZST1(:LNBLNK(ZST1)),IE2(ICON)
- 8980     FORMAT(I3,2X,a,' in ',a,
+          WRITE(CXSTR,8980)ICON,SST1(1:lsn1),
+     &                     ZST1(1:lzn1),IE2(ICON)
+ 8980     FORMAT(I4,1X,a,' in ',a,
      &         ' >|< user def ground profile',I2)
         ENDIF
       ELSEIF(ICT(ICON).EQ.5.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,7984)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
- 7984   FORMAT(I3,2X,a,' in ',a,' is adiabatic')
+        WRITE(CXSTR,7984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 7984   FORMAT(I4,1X,a,' in ',a,' is adiabatic')
 
 C BASESIMP start.
       ELSEIF(ICT(ICON).EQ.6.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,7986)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
- 7986   FORMAT(I3,2X,a,' in ',a,' is BASESIMP fndtn')
+        WRITE(CXSTR,7986)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 7986   FORMAT(I4,1X,a,' in ',a,' is BASESIMP fndtn')
 C BASESIMP end.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
-C CEN 13791 boundary condition start.
+C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
-          WRITE(CXSTR,9984)ICON,SST1(:LNBLNK(SST1)),ZST1(:LNBLNK(ZST1))
- 9984     FORMAT(I3,2X,a,' in ',a,' >|< Identical environment ')
+          WRITE(CXSTR,9984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 9984     FORMAT(I4,1X,a,' in ',a,' >|< Identical CEN 13791   ')
         else
-          WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
- 9987     FORMAT(I3,2X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
+          WRITE(CXSTR,9987)ICON,SST1(1:lsn1),
+     &      ZST1(1:lzn1),IC2(ICON),IE2(ICON)
+ 9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ENDIF
@@ -1035,21 +1049,33 @@ C ****** Scan and report current mis-matches.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical prob,dup,first
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CXSTR*78
 
+      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        call eclose(gversion(iz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        else
+          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        endif
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

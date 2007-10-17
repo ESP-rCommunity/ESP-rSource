@@ -449,7 +449,13 @@ C Deal with file manipulation (shifting data from temp file to db).
       IF(IER.NE.0)THEN
         IER=1
         call usrmsg('Problem managing optical db files. ',' ','W')
+        goto 3
       ENDIF
+      if(nopt+1.ge.MGOPT)then
+        call usrmsg('No more optical items can be added.',' ','W')
+        goto 3
+      endif
+
       write(ioptl,'(a)')'# optical properties db for transparent,'
       write(ioptl,'(a)')'# constructions (TMC) and casual gain control'
       write(ioptl,'(a)')'# '

@@ -398,11 +398,11 @@ C in a string instpath.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
       CHARACTER OUTSTR*124,WORD*20,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
       logical unixok,dll
@@ -441,6 +441,7 @@ C file or failure reading it).
         write(dgendbfn(11),'(2a)') di(1:ln),'/databases/profiles.gdb'
         write(dgendbfn(12),'(2a)') di(1:ln),'/databases/plantc.gdb'
         write(dgendbfn(13),'(2a)') di(1:ln),'/databases/components.gdb'
+        write(DSBEM,'(2a)') di(1:ln),'/databases/SBEM.db1'
       else
 C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
@@ -478,6 +479,7 @@ C        dinstpath = 'c:/esru/esp-r'
         write(dgendbfn(11),'(2a)') di(1:ln),'/databases/profiles.gdb'
         write(dgendbfn(12),'(2a)') di(1:ln),'/databases/plantc.gdb'
         write(dgendbfn(13),'(2a)') di(1:ln),'/databases/components.gdb'
+        write(DSBEM,'(2a)') di(1:ln),'/databases/SBEM.db1'
       endif
 
 C Check if running in dll mode, if so skip reading defaults file.
@@ -557,6 +559,8 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
         CALL EGETRM(OUTSTR,K,dgendbfn(13),'W','def components db',IER)
       elseif(WORD(1:4).eq.'*clm')then
         CALL EGETRM(OUTSTR,K,DCLIM,'W','def climate db',IER)
+      elseif(WORD(1:5).eq.'*sbem')then
+        CALL EGETRM(OUTSTR,K,DSBEM,'W','default SBEM db',IER)
       elseif(WORD(1:4).eq.'*end')then
         goto 45
       else

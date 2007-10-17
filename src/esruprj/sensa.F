@@ -610,10 +610,12 @@ C   specification and 2 if there was a cancel issued during editing.
 
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -623,7 +625,8 @@ C   specification and 2 if there was a cancel issued during editing.
       DIMENSION STMP(MS),IVALZ(MCOM),IVALS(MS)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER H*72, ZNAME*12, zdesc*64, STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.
@@ -715,7 +718,8 @@ C are applicable.
 
           INPIC=NZSUR(IZONE)
           do 511 I=1,INPIC
-            STMP(I)=SNAME(IZONE,I)
+            icn1=izstocn(izone,i)
+            STMP(I)=SSNAME(icn1)
             NSNOG(NILOC,IZ,I)=0
  511      continue
           call edisp(iuout,' Surface selection ')

@@ -467,7 +467,13 @@ C CGCTL - gain control fraction (present/future, gain type)
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/G0/CTYPE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -485,7 +491,8 @@ C Commons for electrical data
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/CASGFA/FLOORA(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Derived casual gain and electrical data.
@@ -512,7 +519,7 @@ C - Alex Feb. 20 2004
       INTEGER iNumb_Gain_coupling
       REAL Coupling_Gain_info
 
-      character outs*124,zname*12,zdesc*64,CTYPE*3
+      character outs*124,zname*12,zdesc*64
       logical close
 
       REAL PQ,PR,PA
@@ -520,7 +527,7 @@ C - Alex Feb. 20 2004
 C If zone is of type 'GEN' and casual gains are specified
 C relative to the floor area, then we need to ask user for
 C planes which comprise the floor.
-      IF(CTYPE.EQ.'GEN')THEN
+      IF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
 
 C Establish if floor area needs be specified.
         INDEX=0

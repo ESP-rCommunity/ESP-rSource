@@ -1657,7 +1657,8 @@ void createwin_ (long int *width,long int *height,long int *imenuchw,long int *i
     gint f_width;	/* pixel width of default font */
     gint iwidth, iheight;	/* local gint values of width and height */
     gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
-/*     gint menu_pix_wd;	pixel width of initial menu (based on nb of characters *imenuchw) */
+    float hratio;    /* use for the size difference (e.g. -s 90 0 0) in command line. */
+    gint hother; /* 3rd parameter for gtk_widget_set_size_request */
 
 /* << Note iappx and iappy from calling subroutine don't seem to be usable
    << as gtk only has limited options to place application on monitor */
@@ -1701,7 +1702,7 @@ char *gintstr[] = {
     gtk_init (NULL, NULL);
 
     menuchw = *imenuchw;	/* remember initial request */
-    fprintf(stderr,"WIN SIZE MENUCHW LIMTTY %ld %ld %ld %ld\n", *height,*imenuchw,*ilimtty,menuchw);	/* debug */
+    fprintf(stderr,"WIN SIZE H W MENUCHW LIMTTY %ld %ld %ld %ld %ld\n",*height,*width,*imenuchw,*ilimtty,menuchw);	/* debug */
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);	/* create top level window structure */
     head_local = g_strndup(head, (gsize) lhead);
     gtk_window_set_title (GTK_WINDOW (window), head_local);
@@ -1799,49 +1800,79 @@ char *gintstr[] = {
  * asked for a smaller initial size).
  */
     if(strncmp(cappl, "aco", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 560);
-    } else if(strncmp(cappl, "cfg", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 450);
+      hother = 560;
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "clm", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 470);
+      hratio = (float) iheight/570.0;
+      hother = (gint) (470 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "bld", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 450);
+      hratio = (float) iheight/560.0;
+      hother = (gint) (450 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "bps", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 450);
+      hratio = (float) iheight/560.0;
+      hother = (gint) (450 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "dfs", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 450);
+      hratio = (float) iheight/550.0;
+      hother = (gint) (450 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "e2r", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/520.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "eco", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 550);
+      hratio = (float) iheight/670.0;
+      hother = (gint) (550 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "grd", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/510.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "ish", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/530.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "mfs", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/560.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "mld", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/520.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "mrt", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/530.0;
+      hother = (gint) (440 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "net", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 550);
+      hratio = (float) iheight/670.0;
+      hother = (gint) (550 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "pdb", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 400);
+      hratio = (float) iheight/480.0;
+      hother = (gint) (400 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "plt", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 500);
+      hother = 500;
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "prj", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 520);
-    } else if(strncmp(cappl, "pro", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 440);
+      hratio = (float) iheight/630.0;
+      hother = (gint) (520 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else if(strncmp(cappl, "res", 3) == 0) {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 520);
+      hratio = (float) iheight/600.0;
+      hother = (gint) (520 * hratio);
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     } else {
-      gtk_widget_set_size_request (emenu, menu_pix_wd, 500);
+      hother = 500;
+      gtk_widget_set_size_request (emenu, menu_pix_wd, hother);
     }
 
     gtk_paned_pack2 (GTK_PANED (hpaned), emenu, FALSE, TRUE);
     gtk_widget_show (emenu);
+    fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd); /* debug */
 
 /* so the emenu is a frame which we could try
    using the esp_list_in_frame function with */

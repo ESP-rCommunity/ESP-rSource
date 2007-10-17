@@ -106,19 +106,19 @@ C          write(6,*)'idst ',nidst
         endif
         if(OUTSTR(1:5).eq.'*note')then
           k=6
-          CALL EGETRM(OUTSTR,K,CMDNOTE,'W','cmd note',IER)
+          CALL EGETRM(OUTSTR,K,CMDNOTE,'W','idst cmd note',IER)
         elseif(OUTSTR(1:9).eq.'*run_mode')then
           k=10
-          CALL EGETW(OUTSTR,K,runmode,'W','runmod',IER)
+          CALL EGETW(OUTSTR,K,runmode,'W','idst runmod',IER)
         elseif(OUTSTR(1:13).eq.'*keep_results')then
           k=14
-          CALL EGETW(OUTSTR,K,keepres,'W','keep',IER)
+          CALL EGETW(OUTSTR,K,keepres,'W','idst keep',IER)
         elseif(OUTSTR(1:9).eq.'*abs_path')then
           k=10
-          CALL EGETRM(OUTSTR,K,cpth,'W','cfg path',IER)
+          CALL EGETRM(OUTSTR,K,cpth,'W','idst cfg path',IER)
         elseif(OUTSTR(1:8).eq.'*win_cfg')then
           k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','config',IER)
+          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst winter model cfg',IER)
           if(cpth(1:2).ne.'  ')then
             write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
      &        cmdn(1:lnblnk(cmdn))
@@ -128,7 +128,7 @@ C          write(6,*)'idst ',nidst
           LCMDFL=CMDCFG
         elseif(OUTSTR(1:8).eq.'*tra_cfg')then
           k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','config',IER)
+          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst trans model cfg',IER)
           if(cpth(1:2).ne.'  ')then
             write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
      &        cmdn(1:lnblnk(cmdn))
@@ -138,7 +138,7 @@ C          write(6,*)'idst ',nidst
           LCMDFL=CMDCFG
         elseif(OUTSTR(1:8).eq.'*sum_cfg')then
           k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','config',IER)
+          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst summer model cfg',IER)
           if(cpth(1:2).ne.'  ')then
             write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
      &        cmdn(1:lnblnk(cmdn))
@@ -148,20 +148,20 @@ C          write(6,*)'idst ',nidst
           LCMDFL=CMDCFG
         elseif(OUTSTR(1:13).eq.'*name_climate')then
           k=14
-          CALL EGETRM(OUTSTR,K,CMDCLMN,'W','climate alias',IER)
+          CALL EGETRM(OUTSTR,K,CMDCLMN,'W','idst climate alias',IER)
         elseif(OUTSTR(1:8).eq.'*climate')then
           k=9
-          CALL EGETRM(OUTSTR,K,CMDCLM,'W','climate',IER)
+          CALL EGETRM(OUTSTR,K,CMDCLM,'W','idst climate file',IER)
         elseif(OUTSTR(1:16).eq.'*name_ext_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'ext window long name',IER)
+     &      'idst ext window long name',IER)
         elseif(OUTSTR(1:11).eq.'*ext_window')then
 
 C Work with temporary string and strip of .prn or .wis at end of the name. 
           nidst=nidst+1
           k=12
-          CALL EGETRM(OUTSTR,K,word,'W','anchor loc',IER)
+          CALL EGETRM(OUTSTR,K,word,'W','idst anchor loc',IER)
           lw=lnblnk(word)
           if(word(lw-3:lw).eq.'.prn')then
             write(ALOC(nidst),'(a)') word(1:lw-4)
@@ -176,13 +176,13 @@ C          write(6,*) nidst,ALOC(nidst)
         elseif(OUTSTR(1:16).eq.'*name_int_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'int window long name',IER)
+     &      'idst int window long name',IER)
         elseif(OUTSTR(1:11).eq.'*int_window')then
 
 C Work with temporary string and strip of .prn or .wis at end of the name. 
           nidst=nidst+1
           k=12
-          CALL EGETRM(OUTSTR,K,word,'W','anchor loc',IER)
+          CALL EGETRM(OUTSTR,K,word,'W','ist anchor loc',IER)
           lw=lnblnk(word)
           if(word(lw-3:lw).eq.'.prn')then
             write(ALOC(nidst),'(a)') word(1:lw-4)
@@ -197,7 +197,7 @@ C          write(6,*) nidst,ALOC(nidst)
         elseif(OUTSTR(1:16).eq.'*name_atr_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'atr window long name',IER)
+     &      'idst atr window long name',IER)
         elseif(OUTSTR(1:11).eq.'*atr_window')then
 
 C Work with temporary string and strip of .prn or .wis at end of the name. 
@@ -217,18 +217,18 @@ C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
         elseif(OUTSTR(1:4).eq.'*res')then
           k=4
-          CALL EGETRM(OUTSTR,K,CMDRES,'W','report',IER)
+          CALL EGETRM(OUTSTR,K,CMDRES,'W','idst report',IER)
         elseif(OUTSTR(1:18).eq.'*update_ctl_period')then
 
 C Update control timing (for use with BEMS software). Data is:
 C bld control loop index, period number, (new) start time.
           K=19
           CALL EGETWI(OUTSTR,K,ibcli,1,ncf,'W',
-     &      'ctl loop indx',IER)
+     &      'idst ctl loop to adjust index',IER)
           CALL EGETWI(OUTSTR,K,ibcldt,1,nbcdt(ibcli),
-     &      'W','ctl day type',IER)
+     &      'W','idst ctl to adjust day type',IER)
           CALL EGETWI(OUTSTR,K,ibclp,1,
-     &       nbcdp(ibcli,ibcldt),'-','ctl period',IER)
+     &       nbcdp(ibcli,ibcldt),'-','idst ctl period',IER)
           CALL EGETWR(OUTSTR,K,bclst,0.,24.,'W','new time',IER)
           write(outs,'(a)') 'Updating control as follows:'
           call edisp(iuout,outs)
@@ -268,7 +268,8 @@ C Define information used in generating IPV.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C IPV description.

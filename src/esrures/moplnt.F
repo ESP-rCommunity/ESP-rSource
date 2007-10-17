@@ -76,10 +76,15 @@ C IPGETNO(*,6): Line type
 C IPGETNO(*,7): Symbol index
 C IPGETNO(*,8): Associated axis (1=temperature, 2=kg/s, 3=%, 4=KJ/Kg
 C               5=misc ??)
+
+C Note: there is a common block name clash between pcres as used in
+C moplnt.F and the common block pcres used elsewhere. The common
+C block in this source file has been renamed pcresres to avoid
+C this clash.
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
       common/pcnam/pcname(mpcom)
       common/adopdesc/adopdsc(mpcom,15)
-      common/pcres/ napout(mpcom),apcout(20)
+      common/pcresres/ napout(mpcom),apcout(20)
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/ntype/isv(mpcom,mnodec)
@@ -729,7 +734,7 @@ C default file names for databases
       common/rcmd/LCMDFL
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
-      common/pcres/ napout(mpcom),apcout(20)
+      common/pcresres/ napout(mpcom),apcout(20)
 
 
       character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
@@ -1070,7 +1075,7 @@ C data are stored in CSV?M and APCOUT arrays respectively.
       COMMON/LIBRCP/IRCPLP,nblock
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
-      common/pcres/ napout(mpcom),apcout(20)
+      common/pcresres/ napout(mpcom),apcout(20)
 
 C Find data location in result file.
       ier=0
@@ -1222,7 +1227,7 @@ C Simulator parameters.
       common/ntype/isv(mpcom,mnodec)
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
-      common/pcres/ napout(mpcom),apcout(20)
+      common/pcresres/ napout(mpcom),apcout(20)
 
       dimension Yold(65),TIMEold(65),val(MSYSRS)
       character outs*124,TLABEL*60,trange*20,tranged*20

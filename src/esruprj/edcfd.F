@@ -369,6 +369,11 @@ C IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C NREG(1,*) is X, NREG(2,*) is Y, NREG(3,*) is west, NREG(4,*) is east
@@ -401,12 +406,14 @@ C Arrays for sorting domains from (see code for comments).
       character outs*124
 
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Assume axes defined and set initial values for general resolution
 C of the X Y Z axis.
 C << Todo: set these based on a higher level concept of
 C << low/medium/high resolution and/or the size of the zone.
       origin=.TRUE.
+      newgeo=.false.  ! assume older format geometry.
       icellx=20
       icelly=20
       icellz=20
@@ -944,7 +951,14 @@ C to be refreshed.
             nzg=1
             nznog(1)=izone
             izgfoc=izone
-            CALL EGOMIN(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,IUOUT,IER)
+            call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+     &          IUOUT,IER)
+            else
+              call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+     &          IUOUT,IER)
+            endif
             CALL ESCZONE(izone)
             CALL BNDOBJ(0,IER)
             CALL ERCZONE(izone)
@@ -1665,6 +1679,11 @@ C IER=0 indicates no error.
       common/pophelp/h(60)
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -1692,11 +1711,13 @@ C IER=0 indicates no error.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
 C Create menu text.
+      newgeo=.false.  ! assume older format geometry.
  5    M=0
       do 10 I=1,NVOL(ICFD)
         M=M+1
@@ -1793,7 +1814,14 @@ C to be refreshed.
             nzg=1
             nznog(1)=izone
             izgfoc=izone
-            CALL EGOMIN(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,IUOUT,IER)
+            call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+     &          IUOUT,IER)
+            else
+              call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+     &          IUOUT,IER)
+            endif
             CALL ESCZONE(izone)
             CALL BNDOBJ(0,IER)
             CALL ERCZONE(izone)
@@ -2264,12 +2292,15 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
 
       character ITMSS(12)*50,H*72
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,t20*20
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER t20*20
 
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.

@@ -180,6 +180,8 @@ C     2 Minimum indoor surface temperature (C)
      &     ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),NAPDAT(MPCOM)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
 C     building construction common block data
       COMMON/C6/INDCFG

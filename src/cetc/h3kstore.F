@@ -1672,9 +1672,9 @@ C MPCOM       maximum number of plant components in configuration (set to 50 in 
 C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
 C IPCOMP      index number of the component under consideration
 C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?,3)/10)
-      COMMON/PCRES/QDATA,PCAOUT,napdat
-      REAL QDATA(MPCOM),PCAOUT(MPCOM,MPCRES)
-      INTEGER napdat(mpcom)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER   NPCDAT(MPCOM,9)

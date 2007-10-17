@@ -43,6 +43,11 @@ C control file.
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -66,11 +71,13 @@ C control file.
       character docpth*24,tmppth*24,dbspth*24
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 
 C Before presenting hc regime, make up a suitable file name
 C in case it is useful.
       modcfg=.false.
+      newgeo=.false.  ! assume older format geometry.
       IHCFP=0
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.htc'
@@ -246,7 +253,12 @@ C and jump back if hc facility entered in error.
   43  if(modcfg)CALL EMKCFG('-',IER)
 
 C Display the reference zone.
-      CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      else
+        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      endif
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -493,7 +505,7 @@ C IOPT: 1 = in-floor heating, 2 = heated wall panel, 3 = other.
 #include "building.h"
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -506,7 +518,7 @@ C IOPT: 1 = in-floor heating, 2 = heated wall panel, 3 = other.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical OK,dok
@@ -773,7 +785,7 @@ C IOPT: 1 = heater under a window, 2 = heater not under a window.
 #include "building.h"
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -786,7 +798,7 @@ C IOPT: 1 = heater under a window, 2 = heater not under a window.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical OK,dok
@@ -888,7 +900,7 @@ C Vertical surface. Set control law to 1:
             CVdata(IPER,ISUR,1) = 1.
 
 C Treatment (ICOR) depends on whether this is a wall or window.
-            if(SSOTF(icc).eq.'TRAN')then
+            if(SSOTF(icc)(1:4).ne.'OPAQ')then
 
 C It's a window. Use Khalifa window correlation or wall correlation?
 C Add some help here to explain that the window correlations may
@@ -963,7 +975,7 @@ C Vertical surface. See `heater under window'for definitions of CVdata.
             CVdata(IPER,ISUR,1) = 1.
 
 C Treatment depends on whether this is a wall or window.
-            if(SSOTF(ICC).eq.'TRAN')then
+            if(SSOTF(ICC)(1:4).ne.'OPAQ')then
 
 C It's a window. Use Khalifa window correlation (ICOR=31)
 C or wall correlation (ICOR=6)?
@@ -1398,7 +1410,7 @@ C        intentional supply or extract of air from the room.
 #include "building.h"
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -1411,7 +1423,7 @@ C        intentional supply or extract of air from the room.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical OK,dok
@@ -2273,7 +2285,7 @@ C NS is the number of surface in the zone << why pass this value? >>
 #include "building.h"
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
@@ -2282,7 +2294,7 @@ C NS is the number of surface in the zone << why pass this value? >>
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       character H*72,outs*124,SN*12,ITEM(MS+5)*30,KEY*1,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER stuff*10
       character hcfpdescr*72
       logical close,ok,dok
@@ -2913,7 +2925,7 @@ C As well as documentation based on the last edit by the user.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       COMMON/HCCEN/CENLOC(MP,14)
@@ -2929,7 +2941,7 @@ C As well as documentation based on the last edit by the user.
       character hcfpdescr*72,dstmp*24,t117*117,FILE*72
       CHARACTER zname*12,zdesc*64,louts*248
       CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       logical Vldtng
 
       if(Vldtng)then
@@ -3215,9 +3227,9 @@ C CEN mode sets values for specific conditions.
             CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen floor',IER)
             if(OUTSTR(1:6).eq.'*floor')then
               K=6
-              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
               CENLOC(i,3)=V1
               CENLOC(i,4)=V2
               CENLOC(i,5)=V3
@@ -3225,9 +3237,9 @@ C CEN mode sets values for specific conditions.
             CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen ceiling',IER)
             if(OUTSTR(1:8).eq.'*ceiling')then
               K=8
-              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
               CENLOC(i,6)=V1
               CENLOC(i,7)=V2
               CENLOC(i,8)=V3
@@ -3235,9 +3247,9 @@ C CEN mode sets values for specific conditions.
             CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen slope',IER)
             if(OUTSTR(1:6).eq.'*slope')then
               K=6
-              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen upward',IER)
-              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen down',IER)
-              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen upward',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen down',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
               CENLOC(i,9)=V1
               CENLOC(i,10)=V2
               CENLOC(i,11)=V3
@@ -3245,9 +3257,9 @@ C CEN mode sets values for specific conditions.
             CALL STRIPC(IUF,OUTSTR,99,num,1,'htc cen wall',IER)
             if(OUTSTR(1:5).eq.'*wall')then
               K=5
-              CALL EGETWR(OUTSTR,K,V1,0.,20.,'F','htc cen inside',IER)
-              CALL EGETWR(OUTSTR,K,V2,0.,20.,'F','htc cen ptn',IER)
-              CALL EGETWR(OUTSTR,K,V3,0.,20.,'F','htc cen ext',IER)
+              CALL EGETWR(OUTSTR,K,V1,0.,30.,'F','htc cen inside',IER)
+              CALL EGETWR(OUTSTR,K,V2,0.,30.,'F','htc cen ptn',IER)
+              CALL EGETWR(OUTSTR,K,V3,0.,30.,'F','htc cen ext',IER)
               CENLOC(i,12)=V1
               CENLOC(i,13)=V2
               CENLOC(i,14)=V3
@@ -3278,7 +3290,7 @@ C held in a *.htc file.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -3288,7 +3300,7 @@ C held in a *.htc file.
 
       character H*72,outs*124
       CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character hcfpdescr*72
 
 C Check if there is a *.htc file for this zone.

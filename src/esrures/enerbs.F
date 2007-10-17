@@ -43,7 +43,13 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -56,16 +62,25 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER TSTR*10,CSTR*25,zname*12,zdesc*64
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SN*12,ZN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER SN*12,ZN*12
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Read in the zone geometry data.
+      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
-      CALL EGOMIN(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
+      call eclose(gversion(izone),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
+      else
+        call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
+      endif
 
 C Assume that the operation file name has been read in via MOINIT.
 C Read in the zone operational file data.
@@ -88,15 +103,15 @@ C Read casual gain control file.
 C Determine which surface is of interest.
       if(isfn.eq.0)CALL ASKSUR(IZONE,ISFN)
 
-C Determine if the surface is transparent or opaque.
-      IF(SOTF(ISFN).EQ.'OPAQ'.OR.SOTF(ISFN).EQ.'UNKN')THEN
-         TSTR='opaque MLC'
-      ELSE
-         TSTR='trnsp. MLC'
-      ENDIF
-
-C Determine the 'other' zone and connection information.
+C Determine the 'other' zone and connection information
+C and then if the surface is transparent or opaque.
       CALL SURADJ(IZONE,ISFN,IE,T,IZC,ISC,ICN,CSTR)
+      IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
+        TSTR='opaque MLC'
+      ELSE
+        TSTR='trnsp. MLC'
+      ENDIF
 
 C Reset ouput channel if redirecting.
       itru = icout
@@ -106,7 +121,7 @@ C Reset ouput channel if redirecting.
 
 C Output general header information for load or energy use.
 C Get surface and zone name.
-      SN=SNAME(IZONE,ISFN)
+      SN=SSNAME(ICN)
       ZN=zname(IZONE)
       if(SNAPSH)then
         call edisp(itru,' ')

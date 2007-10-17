@@ -235,13 +235,16 @@ C FACDRW draws the elevation of the surface.
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS), SMLCN(MS), SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
 
       CHARACTER*72 ETEXT
       CHARACTER*3 MTHNAM
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
@@ -249,7 +252,8 @@ C Display header information.
       call startbuffer()
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
 
-      WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SNAME(ICOMP,ISUR)
+      icon=IZSTOCN(icomp,isur)
+      WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)
     1 FORMAT(' Shading patterns: ',A3,' at hour',I3,' for surface',I3,
      &       ' ',a)
       CALL viewtext(ETEXT,1,1,2)

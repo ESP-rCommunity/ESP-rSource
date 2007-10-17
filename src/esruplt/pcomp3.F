@@ -225,6 +225,8 @@ C            2 condensate flow rate (kg/s)
      &             icondx(mpcom,mnodec,mpconc)
       COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       parameter (small=1.0e-20)
       real      cout(mpcoe)
@@ -1245,6 +1247,8 @@ C ************************************************
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
       PARAMETER (SMALL=1.0E-15)
@@ -2169,6 +2173,8 @@ C            2 Hot fluid temperature (C)
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
@@ -2883,6 +2889,8 @@ C
       COMMON/Pctime/TIMSEC
       COMMON/PCTC/TC(MPCOM)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
       COMMON/PCEQU/IMPEXP,RATIMP
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -3144,6 +3152,8 @@ C     CDATA: 1  Loading for CHP unit (%)
       COMMON/PTIME/PTIMEP,PTIMEF
       COMMON/PCTC/TC(MPCOM)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
       COMMON/PCEQU/IMPEXP,RATIMP
 
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,

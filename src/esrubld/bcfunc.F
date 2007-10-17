@@ -366,7 +366,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -593,7 +593,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -5419,6 +5419,11 @@ C if 0 for a wetted surface 1 for a swiming pool.
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
@@ -5434,6 +5439,7 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fatal error test.
 c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
@@ -5443,6 +5449,7 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
 
+      newgeo=.false.  ! assume older format geometry.
       QFUT=0.
       TFUT=TNP
 
@@ -5501,7 +5508,12 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
         cw=4180.
 
 C Read in surface details and calculate the area weighted radiant temperature. 
-        call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        else
+          call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        endif
         tsurf=0.
         do 20 isurf=1,nsur
           if(isurf.ne.isur)then
@@ -5926,7 +5938,13 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tpmod/itpmod(mcom)
@@ -5957,10 +5975,12 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C << for the case of bcl being called from solar is the limit >>
 C << of 3 surface to change will have to be increased!        >>
@@ -5969,6 +5989,7 @@ C << of 3 surface to change will have to be increased!        >>
       logical itpmod, close, usealt, CHANGED
       
       iunit=ifil+1
+      newgeo=.false.  ! assume older format geometry.
       
 C Debug...
 C      write (6,*) 'BCL 99 ',btimef
@@ -6055,7 +6076,12 @@ C Find version of materials database. If 1.1 then use material arrays.
 C Reset properties by reading in zone descriptor files.
         write (6,*)'Resetting tp properties at btimef ',btimef
 
-        call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        call eclose(gversion(ICMP),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        else
+          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        endif
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
         itpmod(ICMP)=.false.
       elseif ((.not.itpmod(ICMP)).and.usealt) then
@@ -6064,7 +6090,12 @@ C Reset properties by reading in zone descriptor files.
 C Change to alternate properties (up to three constructions).
 C Read in the thermophysical properties for this zone 
 C (needed in subroutine mzcoe1).
-        call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        call eclose(gversion(ICMP),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        else
+          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        endif
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
 
 C Get replacement properties for up to 3 constructions from 

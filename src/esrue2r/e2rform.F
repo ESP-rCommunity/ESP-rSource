@@ -288,6 +288,11 @@ C ACT = 's' silent, ACT = 'i' interactive.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -305,6 +310,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
 
       LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
       logical skydone,outdone,indone,misdone,vewdone,glzdone
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(17)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -316,6 +322,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
       ITA1 = IFIL+6
       outdone=.false.
       fict=.false.
+      newgeo=.false.  ! assume older format geometry.
       iscope=2
       ier=0
 C      GTGEOM = 'UNKNOWN'
@@ -438,7 +445,12 @@ C Write out materials, composition & glazing files.
 
 C Re-Read in the initial zone geometry file into common & restore
 C the image.
-        CALL EGOMIN(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        endif
         nzg=1
         nznog(1)=ICOMP
         MODIFY=.TRUE.
@@ -538,13 +550,21 @@ C If ACT='i' then interactive, ACT='s' for silent.
       common/pophelp/h(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -605,6 +625,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
@@ -612,7 +633,8 @@ C Arrays of material properties.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,LBSRIF,aglzfil
       character BLKNAME*8,BLKMAT*12,ZSN*28
@@ -633,6 +655,7 @@ C Arrays of material properties.
       nobs=0
       ISTAT=0
       IER=0
+      newgeo=.false.  ! assume older format geometry.
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat)
@@ -878,9 +901,16 @@ C Aternative glazing descriptions file.
 
 C Check for blind shutter control.
             do 100 newfoc=1,ncomp
-             call EGOMIN(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+              call eclose(gversion(newfoc),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+              else
+                call egomin(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+              endif
               do 111 isf=1,nsur
-               if(ITMCFL(newfoc,isf).gt.0.AND.SMLCN(isf).eq.MLCN)then
+               ICN=IZSTOCN(newfoc,isf)
+               if(ITMCFL(newfoc,isf).gt.0.AND.
+     &            SSMLCN(icn)(1:12).eq.MLCN(1:12))then
                 if (IBCMT(newfoc,ITMCFL(newfoc,isf)).gt.0) then
                  VTRAN=TVTR2(newfoc,ITMCFL(newfoc,isf),NABS)
                  if(VTRN.gt.0.02)then
@@ -1065,11 +1095,20 @@ C Clear properties.
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
+        call eclose(gversion(newfoc),1.1,0.01,newgeo)
         if(ACT.eq.'i')then
           call usrmsg(' ',outs,'-')
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
         else
-          CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+          endif
         endif
         call FINDFIL(LTHRM(newfoc),XST)
         if(XST)then
@@ -1099,19 +1138,20 @@ C Display the other zone, resetting all surface lines to std.
 
 C Generate combined zone & generate surface names as identifiers.
         DO 60 IS=1,NSUR
-          write(zsn(is),'(a,a,a)') ZN(1:lnblnk(ZN)),':',SNAME(newfoc,is)
+          ICN=IZSTOCN(newfoc,is)
+          write(zsn(is),'(3a)') ZN(1:lnblnk(ZN)),':',SSNAME(icn)
   60    continue
 
-        WRITE(irofil,'(a,a,a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
+        WRITE(irofil,'(3a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
         WRITE(irofil,'(a)') '  '
-        WRITE(irzfil,'(a,a,a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
+        WRITE(irzfil,'(3a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
         WRITE(irzfil,'(a)') '  '
-        WRITE(iglzfil,'(a,a,a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
+        WRITE(iglzfil,'(3a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
         WRITE(iglzfil,'(a)') '  '
 
 C Aternative glazing descriptions file.
         if (NABS.gt.0) then
-          WRITE(ita2,'(a,a,a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
+          WRITE(ita2,'(3a)')'# ',ZN(1:lnblnk(ZN)),' Surface defs..'
           WRITE(ita2,'(a)') '  '
         endif
 
@@ -1172,6 +1212,7 @@ C   Other connections: create one surface (shift 3mm inwards).
 C Transparent,
 C   All connections: create one surface (no shift).
           CALL SURADJ(newfoc,isf,IE,TMP,IZC,ISC,icnx,DESCRC)
+          ICN=IZSTOCN(newfoc,isf)
           if(IE.eq.0) then
             extern=.true.
           elseif(IE.eq.1) then
@@ -1182,16 +1223,16 @@ C Find the matching mlc index and set the material name.
           ICF=-1
           ifict=0
           DO 201 IC=1,NMLC
-            IF(DESC(IC)(1:12).EQ.SMLCN(isf)(1:12))ICF=IC
+            IF(DESC(IC)(1:12).EQ.SSMLCN(icn)(1:12))ICF=IC
  201      CONTINUE
-          if(ICF.eq.-1.or.SMLCN(isf)(1:4).eq.'UNKN')then
-            if (SOTF(isf).eq.'TRAN') then
+          if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
+            if (SSOTF(icn)(1:4).ne.'OPAQ') then
               material='unknown_glz'
             else
               material='unknown'
             endif
           else
-            material=SMLCN(isf)
+            write(material,'(a)') SSMLCN(icn)(1:12)
             if(iskip(icf).eq.1)ifict=1
           endif
 
@@ -1208,7 +1249,7 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') outs
               WRITE(ita2,'(a)') '  '
             endif
-          elseif(SOTF(isf).eq.'TRAN')then
+          elseif(SSOTF(icn)(1:4).ne.'OPAQ')then
 
 C Create surface based on the following:
 C  Focus zone - create.

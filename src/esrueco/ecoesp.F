@@ -841,8 +841,14 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -850,7 +856,8 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
@@ -858,17 +865,27 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER H*72,zname*12,zdesc*64
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
+      logical changedit
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       zbzero=.FALSE.
+      changedit=.false.
+
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
       ITRC=1
       itru=6
-      call EGOMIN(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      else
+        call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      endif
       MODIFY =.TRUE.
       MODBND =.TRUE.
       If (Icomp .eq. 1) then
@@ -1015,7 +1032,7 @@ C Selected more thane once.
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,' ')
         WRITE(OUTSTR,8894)SNAME(ICOMP,IS),SNA(IS),PAZI(IS),
-     &       PELV(IS),SOTF(IS),SVFC(IS),SMLCN(IS),SOTHER(IS)
+     &       PELV(IS),SOTF(IS),SVFC(IS),SMLCN(IS),SOTHER(IS,1)(1:13)
  8894   FORMAT(1X,A12,1X,F7.2,F5.0,F5.0,1X,A4,1X,A4,1X,A12,1X,A13)
         CALL EDISP(ITRU,OUTSTR)
       ELSE
@@ -1147,7 +1164,8 @@ C square meter of the selected composite.
 #include "LCA.h"
 
       COMMON/CompDim/HeightCo,WidthCo, Perimeter, Area
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/EIAScnPt/FabPt(MMAT),TrPt(MMAT,MNbTrans),
@@ -1424,15 +1442,21 @@ C
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1533,8 +1557,10 @@ C
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15,SSPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
@@ -1550,9 +1576,11 @@ C
       REAL LCAValue(MIMP),LCAValuP(MIMP),LCAValuS(MIMP),StepImp
       REAL LayerTot(MIMP),CompoTot(MIMP),ZoneTot(MIMP),StageTot(MIMP),
      &     WholeTot(MIMP),ProjTot(MIMP)
+      logical newgeo  ! to use for testing if new/old geometry file.
  
 
 C Initialisation
+      newgeo=.false.  ! assume older format geometry.
       do 142 I=1,MIMP
         LCAValue(I)=0.0
         LCAValuP(I)=0.0
@@ -1932,7 +1960,12 @@ C ------------------------
 C If approach is model based, read the current zone information
         IF (ICalType.EQ.1) THEN
           ICurZone=nznog(IZ)
-          call EGOMIN(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+          call eclose(gversion(ICurZone),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+          endif
           call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
           context=.false.
         ENDIF
@@ -1985,8 +2018,8 @@ C previous zone. Thus, partition are not taken into account twice.
 C No need to test the first zone 
           IF(IZ.GT.1)THEN
             Iother = iCurCon
-            if ( (SSOTHER(Iother)(1:8).NE.'EXTERIOR') .OR.
-     &                 (SSOTHER(Iother)(1:7).NE.'SIMILAR')) then
+            if ( (SSOTHER(Iother,1)(1:8).NE.'EXTERIOR') .OR.
+     &                 (SSOTHER(Iother,1)(1:7).NE.'SIMILAR')) then
               IF (zname(nznog(IZ)).eq.'zname(nznog(1)') THEN
                       ii = 0
               ENDIF
@@ -1995,7 +2028,7 @@ C Loop over all zones to find if other side is a zone that was
 C already scaned. No need to test the last zone 
               DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
-                if( SSOTHER(Iother)(1:lnblnk(SSOTHER(Iother))).EQ. 
+                if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
      &             Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
                   Exist=.TRUE.
                   IOpsitZone= ic2(IZSTOCN(ICurZone,N))
@@ -2457,10 +2490,15 @@ C phylosophy as LCACalc
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2575,6 +2613,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(NbSteps+5)
       DIMENSION WeitLayr(ME),WtLayrDu(ME),WtLayrBu(ME),WtLayrRe(ME)
@@ -2591,8 +2630,10 @@ C Arrays of material properties.
       CHARACTER*72 MatDesc,MatCat,LayerDes, TITL
 
 
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15,SSPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER SSPARENT*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
@@ -2613,6 +2654,7 @@ C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat)
 
       dupedges=.false.
+      newgeo=.false.  ! assume older format geometry.
       IV = 0
 
       LabelImp = '    GWP    |    AP     |   POCP    |   NRE   '
@@ -3089,7 +3131,14 @@ C ------------------------
 C If approach is model based, read the current zone information
           IF (ICalType.EQ.1) THEN
             ICurZone=nznog(IZ)
-            call EGOMIN(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+            call eclose(gversion(ICurZone),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
+     &          IER)
+            else
+              call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
+     &          IER)
+            endif
             call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
             context=.false.
           ENDIF
@@ -3154,8 +3203,8 @@ C partition are not taken into account twice.
 C No need to test the first zone 
             IF(IZ.GT.1)THEN
               Iother = iCurCon
-              if ( (SSOTHER(Iother)(1:8).NE.'EXTERIOR') .OR.
-     &                 (SSOTHER(Iother)(1:7).NE.'SIMILAR')) then
+              if ( (SSOTHER(Iother,1)(1:8).NE.'EXTERIOR') .OR.
+     &                 (SSOTHER(Iother,1)(1:7).NE.'SIMILAR')) then
                 IF (zname(nznog(IZ)).eq.'zname(nznog(1)') THEN
                       ii = 0
                 ENDIF
@@ -3164,7 +3213,7 @@ C Loop over all zones to find if other side is a zone that was
 C already scaned. No need to test the last zone 
                 DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
-                  if( SSOTHER(Iother)(1:lnblnk(SSOTHER(Iother))).EQ. 
+                  if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
      &              Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
                     Exist=.TRUE.
                     IOpsitZone= ic2(IZSTOCN(ICurZone,N))

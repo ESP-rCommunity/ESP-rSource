@@ -70,6 +70,10 @@ C DPCDB - default plant components
       character*72 DCLIM,DAPRES,DFCON,DFMUL,DPCDB
       character DOPTDB*144,DPRFDB*144
 
+C LSBEM - (72 char) default SBEM building type and systems db file name
+      COMMON/SBEM00/LSBEM
+      character*72 LSBEM
+
 C Define as integers.
       integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
 

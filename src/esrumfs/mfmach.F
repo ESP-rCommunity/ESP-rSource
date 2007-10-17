@@ -119,6 +119,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+      COMMON/mfctl/ctlpos(MCNN)
 
       PARAMETER       (SMALL=1.0E-15)
       PARAMETER       (RLARG=1.0E+15)
@@ -130,7 +131,7 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       DOUBLE PRECISION RESR,RESAMX,RESRMX
       character outs*124,outw*254
       CHARACTER NDNAM*12,CONTMNAM*12
-      LOGICAL FIRST,ACTCNN,close
+      LOGICAL ACTCNN,close
 
       IOK=1
       NDWABS=1
@@ -151,7 +152,6 @@ C Start of iteration loop
 C First zeroise node residual, sum of flows and Jacobian matrix and
 C set diagonal elements of the Jacobian matrix for known pressure nodes
       ITER=0
-      FIRST=.TRUE.
    20 ITER=ITER+1
       DO 24 INOD=1,NNOD
         RESID(INOD)=0.0
@@ -164,9 +164,6 @@ C set diagonal elements of the Jacobian matrix for known pressure nodes
           END IF
    22   CONTINUE
    24 CONTINUE
-
-C Set number of CFD nodes to zero.
-      ICFND=0
 
 C Start of connections fluid mass flow calculations
       DO 30 ICNN=1,NCNN
@@ -186,6 +183,31 @@ C If connection is not active set the flow rate equal to zero.
           DFDDP=0d0
         ELSE
         
+C If multi configuration flow component then change it to 
+C relevant flow component
+          IF(ITCN.EQ.500)THEN
+            icontc=1
+            ICMP=ITPCON(ICNN)
+            IF(CTLPOS(ICNN).LE.SUPCMP(ICMP,5))THEN
+              ICOMPNO=INT(SUPCMP(ICMP,6))
+              ITPCON(ICNN)=INT(SUPCMP(ICMP,6))
+            ELSEIF(CTLPOS(ICNN).LE.SUPCMP(ICMP,3).AND.
+     &        CTLPOS(ICNN).GT.SUPCMP(ICMP,5))THEN
+              ICOMPNO=INT(SUPCMP(ICMP,4))
+              ITPCON(ICNN)=INT(SUPCMP(ICMP,4))
+            ELSE
+              ICOMPNO=INT(SUPCMP(ICMP,2))
+              ITPCON(ICNN)=INT(SUPCMP(ICMP,2))
+            ENDIF
+            ITCN=ITPCMP(ICOMPNO)
+
+C Allow this replaced component to operate fully i.e. ctlpos=1
+            ctlposp=ctlpos(icnn)
+            ctlpos(icnn)=1.
+          ELSE
+            icontc=0
+          ENDIF
+
 C Calculate, depending on flow component type, fluid mass flow(s)
 C and partial derivative dFlow/d(dPressure)
           IF(ITCN.EQ. 10) THEN
@@ -234,18 +256,18 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF420C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.460) THEN
             CALL MF460C(ICNN,DP,DFDDP)
-          ELSE IF(ITCN.EQ.500) THEN
-            IF(FIRST)THEN
-              ICFND=ICFND+1
-              CALL MF500C(ICNN,DFDDP,ICFND)
-              IF(ICNN.EQ.NCNN)FIRST=.FALSE.
-            ENDIF
           ELSE
             call edisp(IMFTU,' MFSOLV: unresolvable error !')
             call epwait
             call epagend
             STOP 
           END IF
+
+C Restore original values if multi configuration control
+          if(icontc.eq.1)then
+            ITPCON(ICNN)=ICMP
+            ctlpos(icnn)=ctlposp
+          endif
         ENDIF
 
 C Adjust fluid mass flow residual of connected nodes
@@ -2523,96 +2545,6 @@ C If DELP > 0 , flow is +ve; ie +ve side to -ve side
       FLW2(ICNN)=0.
 
       DERIV=0.0
-
-      RETURN
-      END
-
-C ***************** MF500C
-C CFD component
-
-      SUBROUTINE MF500C(ICNN,DERIV,ICFND)
-
-#include "net_flow.h"
-#include "cfd.h"
-
-      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
-     1            Wf(ntcelx,ntcely,ntcelz),
-     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
-     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
-      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
-     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
-     2            DZHP(ntcelz),DZPL(ntcelz),
-     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
-     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
-      COMMON/FLUPRf/URFVIS,VISCOS,PRANDT,SH,
-     1            DENf(ntcelx,ntcely,ntcelz),VIS(ntcelx,ntcely,ntcelz),
-     2            BETA(ntcelx,ntcely,ntcelz)
-      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
-
-      COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
-     &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
-     &             JOPENf(MCFND,MNZ),KOPENi(MCFND,MNZ),
-     &             KOPENf(MCFND,MNZ),FIXM(MCFND,MNZ),
-     &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
-     &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
-     &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
-      COMMON/ICFNOD/ICFD,ICP
-      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
-     &              RESID(MNOD),SAFLW(MNOD)
-
-      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
-
-      DOUBLE PRECISION DERIV
-C>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-C--- Observe that at the moment the opening can be placed only at the
-C--- boundary of the rectangular domain.
-C>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-      FLW1(ICNN)=0d0
-      FLW2(ICNN)=0d0
-      DERIV=0d0
-
-      M=ICFND
-      DO 10 I=IOPENi(M,ICFD),IOPENf(M,ICFD)
-      DO 10 J=JOPENi(M,ICFD),JOPENf(M,ICFD)
-      DO 10 K=KOPENi(M,ICFD),KOPENf(M,ICFD)
-
-        VEL=Uf(I,J,K)
-        IF(I.EQ.2)VEL=0.0
-        RHO=0.5*(DENf(i-1,j,K)+DENf(i,j,K))
-        AREA=SNS(J)*SHL(K)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-
-        VEL=-Uf(I+1,J,K)
-        IF(I.EQ.NIM1)VEL=0.0
-        RHO=0.5*(DENf(i,j,K)+DENf(i+1,j,K))
-        AREA=SNS(J)*SHL(K)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-
-        VEL=Vf(I,J,K)
-        IF(J.EQ.2)VEL=0.0
-        RHO=0.5*(DENf(i,j-1,K)+DENf(i,j,K))
-        AREA=SEW(I)*SHL(K)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-
-        VEL=-Vf(I,J+1,K)
-        IF(J.EQ.NJM1)VEL=0.0
-        RHO=0.5*(DENf(i,j,K)+DENf(i,j+1,K))
-        AREA=SEW(I)*SHL(K)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-
-        VEL=Wf(I,J,K)
-        IF(K.EQ.2)VEL=0.0
-        RHO=0.5*(DENf(i,j,K-1)+DENf(i,j,K))
-        AREA=SEW(I)*SNS(J)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-
-        VEL=-Wf(I,J,K+1)
-        IF(K.EQ.NKM1)VEL=0.0
-        RHO=0.5*(DENf(i,j,K)+DENf(i,j,K+1))
-        AREA=SEW(I)*SNS(J)
-        FLW1(ICNN)=FLW1(ICNN)+RHO*VEL*AREA
-  10  CONTINUE
 
       RETURN
       END

@@ -86,7 +86,7 @@ C Zone information
       COMMON/AirPro/RTair,RHR
 
 C Defaults and paths
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
@@ -140,7 +140,7 @@ C Material data array.
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 path,upath,esprc
       CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
       CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72

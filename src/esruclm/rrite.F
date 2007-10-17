@@ -43,8 +43,12 @@ C climate file.
       CHARACTER H*72,outs*124,item*40,holdd*34,hold*36,key*1
       character head*16
       logical ok,dok,altered
+      integer onleft  ! number of left axis
+      integer onright ! number of right axis
 
       altered=.false.
+      onleft = 2      ! assume all axes to be drawn
+      onright = 3
   31  CONTINUE
 
 C Day to be transferred.
@@ -72,7 +76,7 @@ C more of the graph can be seen.
           LIMTTY=8
           LIMIT =8
         endif
-        call clmdrwd(iday)
+        call clmdrwd(iday,onleft,onright)
       endif
 
       write(item(1),'(2a)') '  ',clmloc

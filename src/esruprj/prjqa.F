@@ -61,11 +61,15 @@ C espriou.h provides currentfile.
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -85,7 +89,8 @@ C LPNF (72 char) plant network file name.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -192,10 +197,10 @@ C Remember if each zone is fully attributed.
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
-      character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,DESC*48
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      character DESC*48
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,SNAME*12,cfgroot*24,ZN*12,SN*12
+      character zname*12,cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
       character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
       character outs*124,outs248*248
@@ -222,12 +227,16 @@ C in the current model. A -1 means not applicable
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
       integer destination
 
+      integer iercl  ! error state returned for scanning climate list.
+
       character*10 wkd1, wkd2
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
 
       changedit=.false.
+      newgeo=.false.  ! assume older format geometry.
       IUF=IFIL+2
       siteinfo=2
       databaseinfo=1
@@ -720,15 +729,22 @@ C Generate report sorted by surface attributes.
             write(outs,'(3a)') ' Scanning: ',zn(1:lnblnk(zn)),
      &         '...'
             CALL USRMSG(' ',outs,'-')
+
+C << it might not be necesary to scan geometry file >>
             LTMP=LGEOM(IVALS(IZ))
-            CALL EGOMIN(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+            call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+            else
+              call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+            endif
 
 C For each surface in current zone check for match to attributes.
-            do 11 i=1,nsur
+            do 11 i=1,nzsur(ivals(iz))
               icc=izstocn(ivals(iz),i)
               apply=.true.
-              if(ins1.eq.1.and.SOTF(i)(1:4).ne.'OPAQ')apply=.false.
-              if(ins1.eq.2.and.SOTF(i)(1:4).ne.'TRAN')apply=.false.
+              if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ')apply=.false.
+              if(ins1.eq.2.and.SSOTF(icc)(1:4).ne.'TRAN')apply=.false.
 
 C Determine the match in the system topology. 
               CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESC)
@@ -751,16 +767,16 @@ C Determine the match in the system topology.
 C Orientation check.
 C 'vertical','sloped','horizontal up','horizontal down',
 C 'any horizontal','any orien.','cancel'.
-              if(ins3.eq.1.and.SVFC(i)(1:4).ne.'VERT')then
+              if(ins3.eq.1.and.SSVFC(icc)(1:4).ne.'VERT')then
                 apply=.false.
-              elseif(ins3.eq.2.and.SVFC(i)(1:4).ne.'SLOP')then
+              elseif(ins3.eq.2.and.SSVFC(icc)(1:4).ne.'SLOP')then
                 apply=.false.
-              elseif(ins3.eq.3.and.SVFC(i)(1:4).ne.'CEIL')then
+              elseif(ins3.eq.3.and.SSVFC(icc)(1:4).ne.'CEIL')then
                 apply=.false.
-              elseif(ins3.eq.4.and.SVFC(i)(1:4).ne.'FLOR')then
+              elseif(ins3.eq.4.and.SSVFC(icc)(1:4).ne.'FLOR')then
                 apply=.false.
-              elseif((ins3.eq.5.and.SVFC(i)(1:4).eq.'FLOR').or.
-     &               (ins3.eq.5.and.SVFC(i)(1:4).eq.'CEIL'))then
+              elseif((ins3.eq.5.and.SSVFC(icc)(1:4).eq.'FLOR').or.
+     &               (ins3.eq.5.and.SSVFC(icc)(1:4).eq.'CEIL'))then
                 continue
               elseif(ins3.eq.6)then
                 continue
@@ -768,10 +784,10 @@ C 'any horizontal','any orien.','cancel'.
               if(ins4.eq.1)then
                 continue
               elseif(ins4.eq.2)then
-                if(SMLCN(i)(1:4).ne.'UNKN')apply=.false.
+                if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-                if(SMLCN(i)(1:4).eq.'UNKN')apply=.false.
-                if(SMLCN(i)(1:12).ne.DESC(ISEL)(1:12))apply=.false.
+                if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
+                if(SSMLCN(icc)(1:12).ne.DESC(ISEL)(1:12))apply=.false.
               endif
               
               if(apply)then
@@ -782,7 +798,7 @@ C 'any horizontal','any orien.','cancel'.
                 WRITE(outs,'(a,1X,F7.2,F6.1,F6.1,1X,A4,
      &            1X,A4,1X,A12,1X,A13)') head,SSNA(icc),SSPAZI(icc),
      &            SSPELV(icc),SSOTF(icc),SSVFC(icc),SSMLCN(icc),
-     &            SSOTHER(icc)
+     &            SSOTHER(icc,1)
                 call edisp(itu,outs)
                 totalarea = totalarea + SSNA(icc)
               endif
@@ -1013,16 +1029,24 @@ C if verbose print periods, seasons and ratios as well.
             elseif(contextinfo.eq.2)then
 
 C Rescan the climatelist file to get seasons. If this was successful
-C then include a description of the IPV.
+C then include a description of the IPV. Otherwise warn user about
+C the climate file and attempt to print out IPV contents.
               INQUIRE (FILE=cdblfil,EXIST=XST)
               if(XST)then
                 IUF=IFIL+2
-                call scancdblist(IUF,cdblfil,LCLIM,ok,ieripv)
-                if(ieripv.eq.0)then
+                call scancdblist(IUF,cdblfil,LCLIM,ok,iercl)
+                if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
                   call edisp(itu,
-     &              'And the IPV file was incomplete or missing.')
+     &              'The climatelist was incomplete or missing so the')
+                  call edisp(itu,'IPV details might be incorrect.')
+                  if(ieripv.eq.0)then
+                    call listipvdat(itu,'a',ier)
+                  else
+                    call edisp(itu,
+     &                'The IPV description was incomplete or missing.')
+                  endif
                 endif
               endif
             endif
@@ -1219,15 +1243,20 @@ C Jump if no zones.
       do 97 IZ=1,INPIC
         if(IVALS(IZ).GT.0)then
           LTMP=LGEOM(IVALS(IZ))
-          CALL EGOMIN(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+          else
+            call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+          endif
           OPQ=0.
           TRN=0.
           attribok(IVALS(IZ))=.true.
-          DO 41 I=1,NSUR
+          DO 41 I=1,NZSUR(ivals(iz))
             icc=izstocn(ivals(iz),i)
-            if(SOTHER(I)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SMLCN(I)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SOTF(I).EQ.'TRAN')then
+            if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
+            if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
+            if(SSOTF(icc)(1:4).NE.'OPAQ')then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -1236,13 +1265,13 @@ C Jump if no zones.
           if(attribok(IVALS(IZ)))then
             aok=' attributed  '
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
-     &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NSUR,OPQ,TRN,
+     &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),OPQ,TRN,
      &      ZBASEA(IVALS(IZ)),
      &      zdesc(IVALS(IZ))(1:lnblnk(zdesc(IVALS(IZ))))
           else
             aok=' part-attributed '
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),
-     &      zname(IVALS(IZ)),VOL(ivals(iz)),NSUR,OPQ,TRN,
+     &      zname(IVALS(IZ)),VOL(ivals(iz)),NZSUR(ivals(iz)),OPQ,TRN,
      &      ZBASEA(IVALS(IZ)),aok
           endif
           call edisp(itu,outs)
@@ -1296,13 +1325,19 @@ C Jump if no zones or no zone info requested.
         IZZ=IVALS(IZ)
         if(IZZ.eq.0)goto 98
         LTMP=LGEOM(IZZ)
-        CALL EGOMIN(IUF,LTMP,IZZ,1,0,itu,IER)
+        call eclose(gversion(izz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUF,LTMP,IZZ,1,0,itu,IER)
+        else
+          call egomin(IUF,LTMP,IZZ,1,0,itu,IER)
+        endif
 
         call edisp(itu,'  ')
         WRITE(outs,240)
  240    format(1x,60('_'))
         if(iz.gt.1)call edisp(itu,outs)
-        call ZINFOREP(itu,IZZ)
+
+        call ZINFOREP(itu,IZZ)  ! not dependant on georead.
 
 C If there are external opaque and transparent surfaces report.
 C Zero zone code complence data. xfloor is project floor area,
@@ -1333,9 +1368,9 @@ C floor area for each.
         flatroofper(IZZ) = 0.0
         exposed(IZZ) = 0.0
         vexposed(IZZ) = 0.0
-        do 111 ij=1,nsur
+        do 111 ij=1,nzsur(izz)
           icc=izstocn(izz,ij)
-          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESC)
+          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESC) ! not dependant on georead
           if(IE.eq.0)then 
 
 C Check the U value for each external surface.
@@ -1344,7 +1379,7 @@ C exposed walls and floors, pitched roofs, flat roofs
             UVU = 0.0
             UVD = 0.0
             do 511 ii=1,nmlc
-              if(SMLCN(ij)(1:12).eq.DESC(ii)(1:12)) then
+              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
 
 C Recover the ISO 6946 U values for horizontal, upwards and downwards
 C flow as well as internal partition (horizontal 0.13 both sides).
@@ -1362,8 +1397,8 @@ C     &            ii,UVH,UVU,UVD,UVI
   511       continue
             exposed(IZZ) = exposed(IZZ) + SSNA(icc)
             xexposed = xexposed + SSNA(icc)
-            if(SOTF(ij)(1:4).eq.'OPAQ')then
-              if(SVFC(ij)(1:4).eq.'VERT')then
+            if(SSOTF(icc)(1:4).eq.'OPAQ')then
+              if(SSVFC(icc)(1:4).eq.'VERT')then
 
 C For vertical walls assume horizontal hc coef.
                 areawall(IZZ) = areawall(IZZ) + SSNA(icc)
@@ -1372,14 +1407,14 @@ C For vertical walls assume horizontal hc coef.
                 xvexposed = xvexposed + SSNA(icc)
                 xareawall = xareawall + SSNA(icc)
                 xuavwall = xuavwall + (SSNA(icc) * UVH)
-              elseif(SVFC(ij)(1:4).eq.'SLOP')then
+              elseif(SSVFC(icc)(1:4).eq.'SLOP')then
 
 C For sloped surfaces.
                 areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
                 uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVH)
                 xareaslproof = xareaslproof + SSNA(icc)
                 xuavslproof = xuavslproof + (SSNA(icc) * UVH)
-              elseif(SVFC(ij)(1:4).eq.'CEIL')then
+              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
 
 C For ceilings.
                 areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
@@ -1394,16 +1429,16 @@ C For floors.
                 xareawall = xareawall + SSNA(icc)
                 xuavwall = xuavwall + (SSNA(icc) * UVH)
               endif
-            elseif(SOTF(ij)(1:4).eq.'TRAN')then
-              if(SVFC(ij)(1:4).eq.'CEIL'.or.
-     &           SVFC(ij)(1:4).eq.'SLOP')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ')then
+              if(SSVFC(icc)(1:4).eq.'CEIL'.or.
+     &           SSVFC(icc)(1:4).eq.'SLOP')then
 
 C Consider glazing on ceiling or sloped to be a skylight.
                 areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
                 uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVH) 
                 xareaskylt = xareaskylt + SSNA(icc)
                 xuavgsky = xuavgsky + (SSNA(icc) * UVH)
-              elseif(SVFC(ij)(1:4).eq.'VERT')then
+              elseif(SSVFC(icc)(1:4).eq.'VERT')then
 
 C Consider glazing on walls to be a part of facade.
                 areatran(IZZ) = areatran(IZZ) + SSNA(icc)
@@ -1525,13 +1560,14 @@ C If there is external glazing or skylights then report.
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
         endif
-            
+
+C Note: surinfo not dependant on recent geometry scan.
         if(geominfo.eq.2)then
           context=.true.
           CALL SURINFO(IVALS(IZ),itu,context)
         endif
 
-C Check if the edges are proprly bounded.
+C Check if the edges are proprly bounded. Uses G1 common.
         call ckvert(0,IVALS(IZ),bound,iub,inv,ier)
         if(.NOT.bound)then
           iprb=MAX0(iub,inv)
@@ -1640,25 +1676,25 @@ C Note optional zone extensions.
 
 C Check for mismatch in surface attributes and boundary conditions.
         bndrysxc=.true.
-        DO 1243 IS=1,NSUR
+        DO 1243 IS=1,NZSUR(IVALS(IZ))
           icc=IZSTOCN(IVALS(IZ),is)
-          if(ICT(icc).eq.0.and.SSOTHER(icc)(1:5).ne.'EXTER')
+          if(ICT(icc).eq.0.and.SSOTHER(icc,1)(1:5).ne.'EXTER')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.1.and.SSOTHER(icc)(1:5).ne.'SIMIL')
+          if(ICT(icc).eq.1.and.SSOTHER(icc,1)(1:5).ne.'SIMIL')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.2.and.SSOTHER(icc)(1:5).ne.'CONST')
+          if(ICT(icc).eq.2.and.SSOTHER(icc,1)(1:5).ne.'CONST')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'CONST')
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'CONST')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'SIMIL')
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'SIMIL')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'EXTER')
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'EXTER')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.3.and.SSOTHER(icc)(1:5).eq.'GROUN')
+          if(ICT(icc).eq.3.and.SSOTHER(icc,1)(1:5).eq.'GROUN')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.4.and.SSOTHER(icc)(1:5).ne.'GROUN')
+          if(ICT(icc).eq.4.and.SSOTHER(icc,1)(1:5).ne.'GROUN')
      &       bndrysxc=.false.
-          if(ICT(icc).eq.5.and.SSOTHER(icc)(1:5).ne.'ADIAB')
+          if(ICT(icc).eq.5.and.SSOTHER(icc,1)(1:5).ne.'ADIAB')
      &       bndrysxc=.false.
  1243   continue
         if(.NOT.bndrysxc)then
@@ -1858,32 +1894,249 @@ C ************ mupdate
 C Mupdate checks whether current model should be updated and guides
 C the user through several of the tasks. Assumes that the user is
 C not browsing.
+
       subroutine mupdate(ier)
 #include "building.h"
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/appw/iappw,iappx,iappy
       common/pophelp/h(60)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
+      common/p3ver/ip3ver
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CTLDOC*248,LCTLF*72
-      character zname*12,zdesc*64,ZN*12,doit*248,tmode*8
-      character longtfile*144,longtfiledos*144
-      logical ok,dok,ddok,found,XST,concat,anyish,unixok
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character zname*12,zdesc*64,ZN*12
+      logical ok,dok,ddok,found,XST,anyish,unixok
+      logical newgeo  ! to use for testing if new/old geometry file.
+      logical forceupgrade  ! if any other zone is version 1.1
+      logical MODOPR ! to flag if zone operations file needs changing.
+
+C Flags noting whether casual gain periods are currently sorted.
+      logical sorted,problem
+      integer iuo  ! file unit for operations file.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      newgeo=.false.  ! assume older format geometry.
+      sorted=.false.  ! assume casual gains not sorted.
+
+C Loop through and find out if any zone geometry files are
+C version 1.0 and also if the upgrade policy is non-zero.
+C So if the model is mixed then force an upgrade. If the
+C igupgrade was set to 2 in preferences also force an upgrade.
+      forceupgrade=.false.
+      do 777 iz=1,ncomp
+        if(gversion(iz).gt.1.0) forceupgrade=.true.
+  777 continue
+      if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
+      if(igupgrade.eq.2) forceupgrade=.true.
+
+      if(forceupgrade)then
+        dok=.true.
+        h(1)='Older models should be updated to take advantage of'
+        h(2)='extended geometric data structures and file formats'
+        h(3)=' '
+        h(4)='An update will also reduce the number of model '
+        h(5)='files which have to be managed. '
+        call askok('The current model uses an out-of-date format for',
+     &    'some geometry files. Update this?',ok,dok,5)
+        if(ok)then
+          do 776 iz=1,ncomp
+            call eclose(gversion(iz),1.1,0.01,newgeo)
+            if(newgeo)then
+
+C If all of the shading directives are zero then double check to
+C see if there are shading and obstruction files.
+              call georead(IFIL+2,LGEOM(iz),iz,0,0,iuout,IER)
+              if(nsurfcalc(iz).eq.0.and.nsurfinso(iz).eq.0)then
+                if(ISI(iz).eq.0.and.IOBS(iz).eq.0)then
+                  continue
+                elseif(ISI(iz).gt.0.and.IOBS(iz).eq.0)then
+                  iaplic(iz,1)=0   ! reset for insolation only
+                  iaplic(iz,2)=1
+                  nsurfcalc(iz)=0
+                  nsurfinso(iz)=0
+                  DO 678 I=1,NZSUR(iz)
+                    ioc=IZSTOCN(iz,i)
+                    if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+                      nsurfinso(iz)=nsurfinso(iz)+1
+                      isurfinso(iz,nsurfinso(iz))=I
+                    endif
+  678             continue
+                  call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+                elseif(ISI(iz).gt.0.and.IOBS(iz).gt.0)then
+                  iaplic(iz,1)=1   ! reset for insolation only
+                  iaplic(iz,2)=1
+                  nsurfcalc(iz)=0
+                  nsurfinso(iz)=0
+                  DO 679 I=1,NZSUR(iz)
+                    ioc=IZSTOCN(iz,i)
+                    if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+                      nsurfinso(iz)=nsurfinso(iz)+1
+                      isurfinso(iz,nsurfinso(iz))=I
+                    endif
+                    if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
+                      nsurfcalc(iz)=nsurfcalc(iz)+1
+                      lstsfcalc(iz,nsurfcalc(iz))=I
+                    endif
+  679             continue
+                  call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+                endif
+              endif 
+            else
+
+C On first entry for version 1.0 several common blocks need to be
+C filled in case the model is a mix of 1.0 and 1.1 versions. First
+C figure out implied shading and insolation directives. If there
+C is no shading file or obstruction file assume nothing. If there
+C is a shading file an no obstruction set for insolation only.
+C Otherwise assume all applicable for shading and insolation.
+              call egomin(IFIL+2,LGEOM(iz),iz,0,0,iuout,IER)
+              if(ISI(iz).eq.0.and.IOBS(iz).eq.0)then
+                iaplic(iz,1)=0   ! reset for no implied shading or insolation
+                iaplic(iz,2)=0
+                nsurfcalc(iz)=0
+                nsurfinso(iz)=0
+              elseif(ISI(iz).gt.0.and.IOBS(iz).eq.0)then
+                iaplic(iz,1)=0   ! reset for insolation only
+                iaplic(iz,2)=1
+                nsurfcalc(iz)=0
+                nsurfinso(iz)=0
+                DO 778 I=1,NZSUR(iz)
+                  ioc=IZSTOCN(iz,i)
+                  if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
+     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+                    nsurfinso(iz)=nsurfinso(iz)+1
+                    isurfinso(iz,nsurfinso(iz))=I
+                  endif
+  778           continue
+              elseif(ISI(iz).gt.0.and.IOBS(iz).gt.0)then
+                iaplic(iz,1)=1   ! reset for insolation only
+                iaplic(iz,2)=1
+                nsurfcalc(iz)=0
+                nsurfinso(iz)=0
+                DO 779 I=1,NZSUR(iz)
+                  ioc=IZSTOCN(iz,i)
+                  if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
+     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+                    nsurfinso(iz)=nsurfinso(iz)+1
+                    isurfinso(iz,nsurfinso(iz))=I
+                  endif
+                  if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
+                    nsurfcalc(iz)=nsurfcalc(iz)+1
+                    lstsfcalc(iz,nsurfcalc(iz))=I
+                  endif
+  779           continue
+              endif
+              gversion(iz) =1.1
+              newgeo = .true.
+              call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+            endif
+
+C The documentation in the zone construction and tmc files might
+C have changed to scan and write out these files.
+C << to be done >>
+
+C Check for the version of the zone operations file and if it is
+C an older format write to new format.
+            IUO=IFIL+1
+            call FINDFIL(LPROJ(iz),XST)
+            IF(XST)THEN
+              CALL ERPFREE(IUO,ISTAT)
+              CALL EROPER(ITRC,ITRU,IUO,iz,IER)
+
+C Do cursory check to see if the file is sorted.
+              sorted=.true.
+              problem=.false.
+              call checksort(iz,1,problem,ier)
+              if(problem)then
+                sorted=.false.
+                MODOPR=.true.
+                call edisp(iuout,
+     &           'Weekday casual gains might be unsorted.')
+              endif
+              problem=.false.
+              call checksort(iz,2,problem,ier)
+              if(problem)then
+                sorted=.false.
+                MODOPR=.true.
+                call edisp(iuout,
+     &            'Saturday casual gains might be unsorted.')
+              endif
+              problem=.false.
+              call checksort(iz,3,problem,ier)
+              if(problem)then
+                sorted=.false.
+                MODOPR=.true.
+                call edisp(iuout,
+     &            'Sunday casual gains might be unsorted.')
+              endif
+
+C If older format ip3ver=0 then force it to write to the
+C current format.
+              if(ip3ver.eq.0)then
+                MODOPR=.true.
+                ip3ver=1
+              endif
+
+C Save the file, sorting the periods if necessary.
+              if(MODOPR)then
+                if(sorted)then
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                else
+                  call PROCESSOLDCAS(iz,0,iuout,IER)
+                  MODOPR=.true.
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                endif
+              endif
+            endif
+  776     continue
+
+C Save the model configuration file before continuing.
+          CALL EMKCFG('-',IER)
+
+C While we are at it, control files often include out of date descriptions
+C and if there is a control file scan it and write it back out again.
+          if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
+            continue
+          else
+            ICTLF=IFIL+1
+            CALL ERPFREE(ICTLF,ISTAT)
+            XST=.false.
+            call FINDFIL(LCTLF,XST)
+            if(XST)then
+              CALL EZCTLR(ICTLF,0,IUOUT,IER)
+              CALL CTLWRT(ICTLF,IER)
+              call usrmsg(' ',' ','-')
+            endif
+          endif
+        endif
+      endif
 
 C Check to see if version of configuration file requires updating.
       if(icfgv.lt.3)then
@@ -1999,69 +2252,15 @@ C If there are no shading files, don't bother trying to update.
         do 43 iz=1,ncomp
           if(ISI(iz).eq.0) goto 43
           call FINDFIL(LSHAD(iz),XST)
-          write(ZN,'(A)') zname(iz)
-          LNZ=max(1,LNBLNK(ZN))
           if(XST)then
 
-C Get logical name of terminal type, expand problem name
-C to include the path and create a string to drive ish.
 C If user asked for silent recalculation then do each
 C one in forground in an xterm with `-act update_silent`
 C as the command line.
             if(IRT.eq.1)then
-              if(unixok)then
-                call addpath(LCFGF,longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(LCFGF,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
-              write(doit,'(5a)') 'ish -mode text -file ',
-     &          longtfile(1:lnblnk(longtfile)),' -zone ',
-     &          ZN(1:lnz),' -act update_silent'
-              call usrmsg('starting shading analysis via',doit,'-')
-              call runit(doit,'text')
-              write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &        ' has been recalculated.'
-              call edisp(iuout,outs)
+              call comissionish(iz,'sr ',ier)
             else
-              call tstamp('>','PRJ: start shading recalculation')
-              doit = ' '
-              call tchild(ICPMOD)
-              call termode(ICPMOD,tmode)
-              if(unixok)then
-                call addpath(LCFGF,longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(LCFGF,longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
-
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,5a)') 'ish -mode ',
-     &          tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &          longtfile(1:lnblnk(longtfile)),' -zone ',
-     &          ZN(1:lnblnk(ZN)),' -act recalculate'
-              else
-                write(doit,'(7a)') 'ish -mode ',tmode,
-     &           ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
-     &           ' -zone ',ZN(1:lnblnk(ZN)),' -act recalculate'
-              endif
-              call usrmsg('starting shading analysis via',doit,'-')
-              call runit(doit,tmode)
-              write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &            ' has been recalculated.'
-              call edisp(iuout,outs)
+              call comissionish(iz,'ir ',ier)
             endif
           endif
   43    continue

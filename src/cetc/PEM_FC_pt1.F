@@ -224,6 +224,8 @@ C=======================================================================
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &     ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -251,14 +253,14 @@ C-------------------------------------------------------------------------
 C     Declare common variables (req'd for use of IMPLICIT NONE statement
 C     w/FORTRAN 90 compilers
 C-------------------------------------------------------------------------
-      INTEGER napdat,MAXITP,ICSV,itrclp,NPCOMP,
+      INTEGER MAXITP,ICSV,itrclp,NPCOMP,
      &     NCI,ICONTP,ICONDX,ITCF,iuout,iuin,
      &     ITRACE,IZNTRC,ITU,ITC,ICNT,NPCDAT,
      &     IPOFS1,IPOFS2,NPCON,IPC1,
      &     IPN1,IPCT,IPC2,IPN2,IHRP,IHRF,
      &     IDYP,IDYF,IDWP,IDWF,NSINC,ITS,IMPEXP,NPEL,
      &     IPFP,IPHP
-      REAL QDATA,PCAOUT,PERREL,PERTMP,PERFLX,PERMFL
+      REAL PERREL,PERTMP,PERFLX,PERMFL
      &     ,CSVI,ADATA,BDATA,
      &     CDATA,CONVAR,
      &     CSVF,CSVP,PCONDR,

@@ -48,9 +48,10 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -71,7 +72,12 @@ C espriou.h provides currentfile.
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-      COMMON/G0/CTYPE
+
+C CTYPE (3 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*3
+      real gversion
+      COMMON/G0/CTYPE,gversion
 
 C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -223,7 +229,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,CTYPE*3,ZN*12
+      CHARACTER WORD*20,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
@@ -238,8 +244,10 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER dmdsdesc*248,bdmds*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
@@ -1242,7 +1250,7 @@ C Read in the building connectivity information.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),0,7,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),-1,7,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -1283,7 +1291,86 @@ C NOTE: call to zgupdate is after connection lists established.
             SSOTF(icc)=SOTF(is)
             SSMLCN(icc)=SMLCN(is)
             SSVFC(icc)=SVFC(is)
-            SSOTHER(icc)=SOTHER(is)
+
+C If this is an older model only sother(is,1) will have a value
+C so do some tests before instanciating.
+            IF(SOTHER(is,1)(1:2).EQ.'  ')then
+              SSOTHER(icc,1)='UNKNOWN'
+              SSOTHER(icc,2)='0'
+              SSOTHER(icc,3)='0'
+            ELSEIF(SOTHER(is,1)(1:7).EQ.'UNKNOWN')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:8).EQ.'EXTERIOR')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:9).EQ.'ADIABATIC')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:9).EQ.'IDENT_CEN')then
+              SSOTHER(icc,1)=SOTHER(is,1)
+              SSOTHER(icc,2)=SOTHER(is,2)
+              SSOTHER(icc,3)=SOTHER(is,3)
+            ELSEIF(SOTHER(is,1)(1:7).EQ.'SIMILAR'.OR.
+     &             SOTHER(is,1)(1:8).EQ.'CONSTANT'.OR.
+     &             SOTHER(is,1)(1:8).EQ.'BASESIMP')then
+
+C If similar check if 2nd item is a '-', if so use the values
+C from IC2 and IE2, otherwise use sother data.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            ELSEIF(SOTHER(is,1)(1:6).EQ.'GROUND')then
+
+C If constant check if 2nd item is a '-', if so use the values
+C from IC2 and IE2, otherwise use sother data.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            ELSEIF(SOTHER(is,1)(1:7).EQ.'ANOTHER')then
+
+C ANOTHER is a key word from new format geometry file so the 2nd
+C and 3rd slots might have useful data.
+
+C If partition check if 2nd item is a '-', if so we are missing
+C the surface info so get from the connection variables.
+C from IC2 (zone) and IE2 (surf), otherwise use sother data.
+C Note ssother(icc,2) is a slot for surface and ssother(icc,3) is zone.
+              if(SOTHER(is,2)(1:1).EQ.'-')then
+                SSOTHER(icc,1)=SOTHER(is,1)
+                write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+                write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+              else
+                SSOTHER(icc,1)=SOTHER(is,1)
+                SSOTHER(icc,2)=SOTHER(is,2)
+                SSOTHER(icc,3)=SOTHER(is,3)
+              endif
+            else
+
+C We have probably been passed a zone name from a legacy file so
+C fill SSOTHER from IC2 & IE2.
+              SSOTHER(icc,1)(1:7)='ANOTHER'
+              write(SSOTHER(icc,2),'(i2.2)') IC2(icc)
+              write(SSOTHER(icc,3),'(i2.2)') IE2(icc)
+            endif
+            SSUSE(icc,1)=SUSE(is,1)
+            SSUSE(icc,2)=SUSE(is,2)
+            SSPARENT(icc)=SPARENT(is)
  243      continue
           call zgupdate(0,icomp,ier)
         endif
