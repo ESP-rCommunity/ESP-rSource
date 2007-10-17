@@ -1,5 +1,4 @@
 
-
 C This file is part of the ESP-r system.
 C Copyright CANMET Energy Technology Centre 
 C Natural Resources Canada, Government of Canada
@@ -1095,7 +1094,7 @@ C Error handling.
       STOP ' Error in TRNSYS input file.'
 
 
-      END SUBROUTINE 
+      END 
 
 
 
@@ -1170,5 +1169,5 @@ C Error handling.
       CALL edisp(iuout,outstr)
       STOP ' Error in TRNSYS input file.'
 
-      END SUBROUTINE readTrnsysNodes
+      END   ! of subroutine readTrnsysNodes
 

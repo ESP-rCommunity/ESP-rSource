@@ -64,11 +64,20 @@ C Mzini2 initialises the nodal energy injection terms.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &npgap(mcom,ms,mgp)
 
+C Thermal bridge common block is described in esruprj/edgeo.F
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent
+
 C Special for blc09.
       common/bcl9/ihpzon,ihpcon,ihpndo,qnopf,qhpsv
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       qnopf=0.
+
+      totheatloss(icomp)=0.0
 
       nc=nconst(icomp)
       zgef(icomp)=0.

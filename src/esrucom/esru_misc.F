@@ -62,14 +62,28 @@ C in a new model file.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/AFNZN/zmfn1,zmfn2
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 C << G7 and G8 need to be cleared >>
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation. 
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
 C HOT3000:HVAC
 C Flag indicating presence of HVAC models:
@@ -187,11 +201,42 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
      &                SHOCCshzFile(mcom)
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
+      
+C Thermal bridge common block: 
+C nbrdg is the number of thermal bridge types in the zone
+C psi is the linear thermal transmittance value, 
+C lngth is the length of the thermal bridge and
+C ibrdg is an index defining the type of thermal bridge as follows:
+C   1 to 8 (NOT metal cladding)
+C   1 is "roof-wall", 2 is "wall-ground floor"
+C   3 is "wall-wall (convex corner)", 4 is "wall-wall (concave corner)"
+C   5 is "wall-floor (not ground floor)", 6 is "lintel above window or door"
+C   7 is "Sill below window", 8 is "jamb at window or door"
+C   9 to 15 (metal cladding)
+C   9 is "roof-wall-mc", 10 is "wall-ground floor-mc"
+C  11 is "wall-wall (corner)-mc", 12 is "wall-floor (not ground floor)-mc"
+C  13 is "lintel above window or door-mc", 14 is "Sill below window-mc"
+C  15 is "jamb at window or door-mc"
+C  16 is for any other categories of thermal bridges
 
+C losspercent is W/K for an alternative method  where the calculated heat flow
+C   is augmented by a fixed percentage of the UA (fabric loss)
+C totheatloss is W/K for all length*psi plus losspercent for the zone
+C thbrpercent is the user defined fraction for thermal bridges used by
+C   losspercent and is assumed to apply to all zones in the model.
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent
+      
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
@@ -253,6 +298,7 @@ C Initial assumption is no SHOCC files.
       ispmxist=0
       entflnam='UNKNOWN'
       ientxist=0
+      igupgrade=0   ! no opinion about upgrading model files
 
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
@@ -271,7 +317,7 @@ C Clear pre-simulation sets.
       isavgh=0
       issave= -1
       sipvres=' '
-      do 39 i=1,5
+      do 39 i=1,MSPS
         spfdescr(i)=' '
         sblres(i)=' '
         sflres(i)=' '
@@ -384,6 +430,8 @@ C Clear SHOCC zone information as well.
         IDPN(IX,1)=0
         IDPN(IX,2)=0
         IDPN(IX,3)=0
+        CTYPE(IX)=' '
+        gversion(ix)=1.0
         zdesc(IX)=' '
         zname(IX)=' '
         LPROJ(IX)='UNKNOWN'
@@ -419,13 +467,18 @@ C HOT3000: BASESIMP.
         ZONE3D(IX)=.FALSE.
         MSTRZN(IX)=.FALSE.
         LMOIST(IX)='UNKNOWN'
+
+        iaplic(IX,1)=0   ! reset shanding and insolation directives
+        iaplic(IX,2)=0
+        nsurfcalc(IX)=0
+        nsurfinso(IX)=0
    42 continue
 
 C Clear the connection list.
       DO 32 ICC=1,MCON
         IC1(ICC)=0
         IE1(ICC)=0
-        ICT(ICC)=0
+        ICT(ICC)=-1   ! Set to -1 to signal connection type is not yet defined.
         IC2(ICC)=0
         IE2(ICC)=0
         SSPARENT(icc)=' '
@@ -433,7 +486,11 @@ C Clear the connection list.
         SSOTF(icc)=' '
         SSMLCN(icc)=' '
         SSVFC(icc)=' '
-        SSOTHER(icc)=' '
+        SSOTHER(icc,1)='UNKNOWN'
+        SSOTHER(icc,2)='0'
+        SSOTHER(icc,3)='0'
+        SSUSE(icc,1)='-'
+        SSUSE(icc,2)='-'
    32 CONTINUE
       icfgv=3
       NCON=0
@@ -448,6 +505,16 @@ C Clear the connection list.
    60 CONTINUE
       SNFNAM=' '
 
+C Clear the linear thermal bridges variables
+      DO 3 I=1,16
+        DO 2 IX=1,MCOM
+          psi(IX,I) = 0.0
+          lngth(IX,I) = 0.0
+          losspercent(IX) = 0.0
+          thbrpercent = 0.0
+          totheatloss(ix) = 0.0
+    2   CONTINUE
+    3 CONTINUE
       return
       end
 
@@ -2064,23 +2131,33 @@ C ESZONE makes a copy of the current contents of common blocks G1 G3
 C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ESCZONE(ICOMP)
 #include "building.h"
-      COMMON/G0/CTYPE
-      COMMON/SG0/CTYPE1
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion,gversion1
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),SOTHER1(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),
+     &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
-      CHARACTER CTYPE*3,SOTHER*15,SNAME*12,SMLCN*12
-      CHARACTER CTYPE1*3,SOTHER1*15,SNAME1*12,SMLCN1*12
-      CHARACTER SVFC*4,SOTF*4,SVFC1*4,SOTF1*4
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
-      CTYPE1=CTYPE
+      CTYPE1=CTYPE(icomp)
+      gversion1=gversion(icomp)
       NSUR1=NSUR
       NDP1=NDP(ICOMP)
       IDPN1(1)=IDPN(ICOMP,1)
@@ -2099,7 +2176,12 @@ C block for later recovery.
         SOTF1(IS)=SOTF(IS)
         SMLCN1(IS)=SMLCN(IS)
         SVFC1(IS)=SVFC(IS)
-        SOTHER1(IS)=SOTHER(IS)
+        SOTHER1(IS,1)=SOTHER(IS,1)
+        SOTHER1(IS,2)=SOTHER(IS,2)
+        SOTHER1(IS,3)=SOTHER(IS,3)
+        SUSE1(IS,1)=SUSE(IS,1)
+        SUSE1(IS,2)=SUSE(IS,2)
+        SPARENT1(IS)=SPARENT(IS)
         NVER1(IS)=NVER(IS)
         DO 67 IV=1,NVER1(IS)
           JVN1(IS,IV)=JVN(IS,IV)
@@ -2116,23 +2198,32 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ERCZONE(ICOMP)
 #include "building.h"
 
-      COMMON/G0/CTYPE
-      COMMON/SG0/CTYPE1
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion,gversion1
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),SOTHER1(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),
+     &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
-      CHARACTER CTYPE*3,SOTHER*15,SNAME*12,SMLCN*12
-      CHARACTER CTYPE1*3,SOTHER1*15,SNAME1*12,SMLCN1*12
-      CHARACTER SVFC*4,SOTF*4,SVFC1*4,SOTF1*4
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
+      CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
 
 C Loop through all data and copy their contents into a parallel common
 C block for later recovery.
-      CTYPE=CTYPE1
+      CTYPE(icomp)=CTYPE1
+      gversion(icomp)=gversion1
       NSUR=NSUR1
       NDP(ICOMP)=NDP1
       IDPN(ICOMP,1)=IDPN1(1)
@@ -2151,7 +2242,12 @@ C block for later recovery.
         SOTF(IS)=SOTF1(IS)
         SMLCN(IS)=SMLCN1(IS)
         SVFC(IS)=SVFC1(IS)
-        SOTHER(IS)=SOTHER1(IS)
+        SOTHER(IS,1)=SOTHER1(IS,1)
+        SOTHER(IS,2)=SOTHER1(IS,2)
+        SOTHER(IS,3)=SOTHER1(IS,3)
+        SUSE(IS,1)=SUSE1(IS,1)
+        SUSE(IS,2)=SUSE1(IS,2)
+        SPARENT(IS)=SPARENT1(IS)
         NVER(IS)=NVER1(IS)
         DO 67 IV=1,NVER(IS)
           JVN(IS,IV)=JVN1(IS,IV)
@@ -3074,7 +3170,7 @@ C show attributes in list.
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3083,8 +3179,9 @@ C show attributes in list.
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
-      CHARACTER SSPARENT*12,zname*12,zdesc*64
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER zname*12,zdesc*64
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       LOGICAL SELECT
 
       IER=0
@@ -3129,8 +3226,10 @@ C current menu line index. Build up text strings for the menu.
             WRITE(VERT(M),14)KEY,SSNAME(icc)
    14       FORMAT(A1,1X,A)
           else
-            WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc),
-     &        SSOTHER(icc)(1:12)
+
+C << consider writing out different info depending on what SSOTHER is >>
+            WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
+     &        SSOTHER(icc,1)(1:12)
    13       FORMAT(A1,1X,A,1X,A,1X,A12)
           endif
         ENDIF
@@ -3238,7 +3337,7 @@ C databases have been opened.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Material data arrays.
       real matver
@@ -3257,15 +3356,15 @@ C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32,DESC*48,NAM*72,PNAM*20,H*72,outs*124
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       logical close  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
       imatch=0
       icc=IZSTOCN(icomp,is)
       do 5 i=1,nmlc
-        if(SSMLCN(icc).eq.DESC(i)(1:12)) then
+        if(SSMLCN(icc)(1:12).eq.DESC(i)(1:12)) then
           imatch=i          
         endif
   5   continue
@@ -3372,6 +3471,7 @@ C connections between surfaces.  Given IZONE & ISFN (the zone and
 C surface under consideration) it returns the following information:
 C IE identifies the zone coupling index
 
+C IE=-1: not yet defined
 C IE=0 : external and both TMP=0.0/ISC=0
 C IE=1 : internal to identical environment, both TMP=0.0/ISC=0
 C IE=2 : internal to environment with temperature TMP.
@@ -3382,6 +3482,7 @@ C IE=6 : BASESIMP foundation
 C IE=7 : CEN 13791 partition
 C DESCR: descriptive string 25 characters wide
 C IC   : connection number.
+C TMP  : is IE2 (constant temperature if IE=2)
 
       SUBROUTINE SURADJ(IZONE,ISFN,IE,TMP,IZC,ISC,IC,DESCR)
 #include "building.h"
@@ -3427,6 +3528,8 @@ C Knowing IE establish TMP, IZC,ISC.
         endif
       ELSEIF(IE.EQ.0)THEN
         DESCR=' the outside             '
+      ELSEIF(IE.EQ.-1)THEN
+        DESCR=' not yet defined         '
       ELSEIF(IE.EQ.4)THEN
         DESCR=' the ground/month profile'
       ELSEIF(IE.EQ.5)THEN
@@ -3501,14 +3604,21 @@ C << not required for this. >>
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,zdesc*64,ZSDESS*16
-      CHARACTER zname*12,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       ZSDESC=' '
       ZSDESS='  '
       ZSDES =' '
+      if(iz.eq.0)then
+        ZSDESC='-'
+        ZSDESS='-'
+        ZSDES ='-'
+        return
+      endif
       icc=izstocn(iz,is)
       SST1=SSNAME(icc)
       lsn0=lnblnk(SST1)

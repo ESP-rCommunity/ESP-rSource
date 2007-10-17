@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(18),GMENUS(18)
-      DIMENSION ISGGT(21),IVAL(21)
+      COMMON/TDFGH2/GTYPES(19),GMENUS(19)
+      DIMENSION ISGGT(22),IVAL(22)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -90,7 +90,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(18),GMENUS(18)
+      COMMON/TDFGH2/GTYPES(19),GMENUS(19)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -122,7 +122,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=18
+      NITEMS=19
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2)='CASUALT'
@@ -159,7 +159,9 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(17)='Object rotation:'
       GTYPES(18)='CASUAL3T'
       GMENUS(18)='Casual OccLtEqp:'
- 
+      GTYPES(19)='ACTIVITY'
+      GMENUS(19)='Activity Type:'
+       
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -425,6 +427,57 @@ C Non-static infiltration and 1st and 2nd zone ventilation.
         GMF(1)='REAL,1,0.0,-360.0,360.0'
         MGMA(1)='Object rotation (deg):          '
         FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:8).EQ.'ACTIVITY')THEN
+        GAIDE   ='Activity db (DOE/SBEM)'
+        GHELP(1)='Data based on activity profiles'
+        GHELP(2)='(e.g. for UN NCM compliance)'
+        GMH='2,5,12,0,5,12,-999.0'
+        write(GDHDRT(1),'(a)')
+     &   ' time  | ocupant | lights| equipm.| Heati.|Cooli. '
+        write(GDHDRT(2),'(a)')
+     &   ' of day| fraction| fract.| fract. | Setp. | Setp. ' 
+        GDHDRT(3)='activities database:'
+
+C Need: fraction-reals: occupants, lights, equipment
+C                reals: setpoint H, setpoint C
+C       single entries: .....airflow
+        GMF(1)='REAL,1,0.0,0.0,100.0'
+        MGMA(1)='Occupant density (pers/m2):     '
+        GMF(2)='INTG,2,0,0,999'
+        MGMA(2)='Metabolic rate (W/pers):        '
+        GMF(3)='INTG,3,0,0,100'
+        MGMA(3)='Occup. Latent gain % (0-100):   '
+        GMF(4)='REAL,4,0.0,0.0,400.0'
+        MGMA(4)='Equipment (W/m2):               '
+        GMF(5)='INTG,5,0,0,100'
+        MGMA(5)='Equip. Latent gain % (0-100):   '
+        GMF(6)='INTG,6,0,0,999'
+        MGMA(6)='Number of luxes (lux):          '
+        GMF(7)='REAL,7,0.0,0.0,400.0'
+        MGMA(7)='Display Lighting (W/m2):        '
+        GMF(8)='REAL,8,0.0,0.0,400.0'
+        MGMA(8)='Display Lighting (W/m2):        '
+        GMF(9)='REAL,9,0.0,0.0,400.0'
+        MGMA(9)='Dom. Hot Water (l/d/m2):        '
+        GMF(10)='REAL,10,0.0,0.0,400.0'
+        MGMA(10)='Outdoor air (l/s/pers.):       '
+        GMF(11)='INTG,11,0,0,100'
+        MGMA(11)='Min Humidity levels (%):       '
+        GMF(12)='INTG,12,0,0,100'
+        MGMA(12)='Max Humidity levels (%):       '
+        GMF(13)='REAL,13,0.0,0.0,1.0'
+        MGMA(13)='Occupant fraction:             '
+        GMF(14)='REAL,14,0.0,0.0,1.0'
+        MGMA(14)='Lights fraction:               '
+        GMF(15)='REAL,15,0.0,0.0,1.0'
+        MGMA(15)='Equipment fraction:            '
+        GMF(16)='REAL,16,0.0,-49.0,49.0'
+        MGMA(16)='Heating setpoint (C):          '
+        GMF(17)='REAL,17,0.0,-49.0,49.0'
+        MGMA(17)='Cooling setpoint (C):          '                        
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 

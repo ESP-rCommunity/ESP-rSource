@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Basic 3 zone model with shading. defined in
-bld_basic_shd.cfg generated on Wed Jun 20 10:32:45 2007. Notes associated with
+bld_basic_shd.cfg generated on Thu Aug 23 19:26:41 2007. Notes associated with
 the model are in bld_basic_shd.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -92,25 +92,30 @@ ID Zone         Volume|          Surface
  
  A summary of the surfaces in reception( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  16.5    180.   0. south        OPAQ VERT extern_wall  ||< external
-  2  8.00     90.   0. east         OPAQ VERT extern_wall  ||< external
-  3  11.0     90.   0. pasg         OPAQ VERT gyp_blk_ptn  ||< identical environment
-  4  12.0      0.   0. north        OPAQ VERT extern_wall  ||< external
-  5  9.50    270.   0. part_a       OPAQ VERT gyp_gyp_ptn  ||< part_a:office
-  6  12.0      0.   0. part_b       OPAQ VERT gyp_gyp_ptn  ||< part_b:office
-  7  9.50    270.   0. west         OPAQ VERT extern_wall  ||< external
-  8  48.0      0.  90. ceiling      OPAQ CEIL ceiling      ||< Ceiling_r:roof_space
-  9  48.0      0. -90. floor        OPAQ FLOR floor_1      ||< constant @ 20dC &   0W rad
- 10  7.50    180.   0. glz_s        TRAN VERT dbl_glz      ||< external
- 11  2.50     90.   0. door_p       OPAQ VERT door         ||< identical environment
- 12  2.50    270.   0. door_a       OPAQ VERT door         ||< door_a:office
- 13  2.50    270.   0. door_w       OPAQ VERT door         ||< external
- 14  2.50     90.   0. east_glz     TRAN VERT dbl_glz      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  16.5    180.   0. south        OPAQUE   VERT -     extern_wall  ||< external
+  2  8.00     90.   0. east         OPAQUE   VERT -     extern_wall  ||< external
+  3  11.0     90.   0. pasg         OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  4  12.0      0.   0. north        OPAQUE   VERT -     extern_wall  ||< external
+  5  9.50    270.   0. part_a       OPAQUE   VERT -     gyp_gyp_ptn  ||< part_a:office
+  6  12.0      0.   0. part_b       OPAQUE   VERT -     gyp_gyp_ptn  ||< part_b:office
+  7  9.50    270.   0. west         OPAQUE   VERT -     extern_wall  ||< external
+  8  48.0      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< Ceiling_r:roof_space
+  9  48.0      0. -90. floor        OPAQUE   FLOR -     floor_1      ||< constant @ 20dC &   0W rad
+ 10  7.50    180.   0. glz_s        DCF7671_ VERT -     dbl_glz      ||< external
+ 11  2.50     90.   0. door_p       OPAQUE   VERT -     door         ||< identical environment
+ 12  2.50    270.   0. door_a       OPAQUE   VERT -     door         ||< door_a:office
+ 13  2.50    270.   0. door_w       OPAQUE   VERT -     door         ||< external
+ 14  2.50     90.   0. east_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
  An hourly solar radiation distribution is used for this zone.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ Surfaces (all applicable) for shading analysis:
+south east north west glz_s door_w east_glz
+ Insolation sources (all applicable):
+glz_s east_glz
  
  
  Shading patterns have not yet been calculated.
@@ -155,19 +160,21 @@ Sun  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  
  A summary of the surfaces in office( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  12.0    180.   0. part_b       OPAQ VERT gyp_gyp_ptn  ||< part_b:reception
-  2  9.50     90.   0. part_a       OPAQ VERT gyp_gyp_ptn  ||< part_a:reception
-  3  12.0      0.   0. North_w      OPAQ VERT extern_wall  ||< external
-  4  9.50    270.   0. West_w       OPAQ VERT extern_wall  ||< external
-  5  16.0      0.  90. Ceiling      OPAQ CEIL ceiling      ||< Ceiling_o:roof_space
-  6  16.0      0. -90. Floor        OPAQ FLOR floor_1      ||< ground profile  1
-  7  2.50     90.   0. door_a       OPAQ VERT door         ||< door_a:reception
-  8  2.50    270.   0. west_glz     TRAN VERT d_glz        ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  12.0    180.   0. part_b       OPAQUE   VERT -     gyp_gyp_ptn  ||< part_b:reception
+  2  9.50     90.   0. part_a       OPAQUE   VERT -     gyp_gyp_ptn  ||< part_a:reception
+  3  12.0      0.   0. North_w      OPAQUE   VERT -     extern_wall  ||< external
+  4  9.50    270.   0. West_w       OPAQUE   VERT -     extern_wall  ||< external
+  5  16.0      0.  90. Ceiling      OPAQUE   CEIL -     ceiling      ||< Ceiling_o:roof_space
+  6  16.0      0. -90. Floor        OPAQUE   FLOR -     floor_1      ||< ground profile  1
+  7  2.50     90.   0. door_a       OPAQUE   VERT -     door         ||< door_a:reception
+  8  2.50    270.   0. west_glz     DCF7671_ VERT -     d_glz        ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
@@ -205,18 +212,20 @@ Wkd  6 LightsW   17 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in roof_space( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  48.0      0. -90. Ceiling_r    OPAQ FLOR ceiling_rev  ||< ceiling:reception
-  2  16.0      0. -90. Ceiling_o    OPAQ FLOR ceiling_rev  ||< Ceiling:office
-  3  23.5    180.  73. s_roof       OPAQ SLOP roof_1       ||< external
-  4  9.75     90.   0. Fire_wall    OPAQ VERT extern_wall  ||< constant @ 12dC &   0W rad
-  5  6.75      0.   0. North_wall   OPAQ VERT extern_wall  ||< external
-  6  59.3    270.  81. w_roof       OPAQ SLOP roof_1       ||< external
-  7  17.0      0. -90. soffit       OPAQ FLOR ceiling_rev  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  48.0      0. -90. Ceiling_r    OPAQUE   FLOR -     ceiling_rev  ||< ceiling:reception
+  2  16.0      0. -90. Ceiling_o    OPAQUE   FLOR -     ceiling_rev  ||< Ceiling:office
+  3  23.5    180.  73. s_roof       OPAQUE   SLOP -     roof_1       ||< external
+  4  9.75     90.   0. Fire_wall    OPAQUE   VERT -     extern_wall  ||< constant @ 12dC &   0W rad
+  5  6.75      0.   0. North_wall   OPAQUE   VERT -     extern_wall  ||< external
+  6  59.3    270.  81. w_roof       OPAQUE   SLOP -     roof_1       ||< external
+  7  17.0      0. -90. soffit       OPAQUE   FLOR -     ceiling_rev  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  Control: no control of air flow
  

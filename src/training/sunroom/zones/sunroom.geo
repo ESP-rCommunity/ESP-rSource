@@ -1,41 +1,47 @@
-# geometry of sunroom defined in: ../zones/sunroom.geo
-GEN  sunroom  sunroom describes the only zone in the problem  # type, name, descr
-      12       7   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      0.00000     0.00000     0.00000  # vert   1
-      3.00000     0.00000     0.00000  # vert   2
-      3.00000     4.00000     0.00000  # vert   3
-      0.00000     4.00000     0.00000  # vert   4
-      0.00000     0.00000     2.70000  # vert   5
-      3.00000     0.00000     2.70000  # vert   6
-      3.00000     4.00000     2.70000  # vert   7
-      0.00000     4.00000     2.70000  # vert   8
-      0.50000     0.00000     0.50000  # vert   9
-      2.50000     0.00000     0.50000  # vert  10
-      2.50000     0.00000     2.20000  # vert  11
-      0.50000     0.00000     2.20000  # vert  12
-# no of vertices followed by list of associated vert
-  10,  1,  2,  6,  5,  1,  9, 12, 11, 10,  9,
-   4,  2,  3,  7,  6,
-   4,  3,  4,  8,  7,
-   4,  4,  1,  5,  8,
-   4,  5,  6,  7,  8,
-   4,  1,  4,  3,  2,
-   4,  9, 10, 11, 12,
-# unused index
-  0 0 0 0 0 0 0
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000 0.000
-    1   6   0   6    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, sud           OPAQ  VERT  typical_wall EXTERIOR       
-  2, est           OPAQ  VERT  typical_wall EXTERIOR       
-  3, nord          OPAQ  VERT  typical_wall EXTERIOR       
-  4, ouest         OPAQ  VERT  typical_wall EXTERIOR       
-  5, haut          OPAQ  CEIL  typical_wall EXTERIOR       
-  6, bas           OPAQ  FLOR  typical_wall EXTERIOR       
-  7, fenetre       TRAN  VERT  d_glz        EXTERIOR       
-# base
-  6  0  0  0  0  0    12.00
+*Geometry 1.1,GEN,sunroom # tag version, format, zone name
+*date Thu Aug 23 18:49:19 2007  # latest file modification 
+sunroom describes the only zone in the problem
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,3.00000,0.00000,0.00000  #   2
+*vertex,3.00000,4.00000,0.00000  #   3
+*vertex,0.00000,4.00000,0.00000  #   4
+*vertex,0.00000,0.00000,2.70000  #   5
+*vertex,3.00000,0.00000,2.70000  #   6
+*vertex,3.00000,4.00000,2.70000  #   7
+*vertex,0.00000,4.00000,2.70000  #   8
+*vertex,0.50000,0.00000,0.50000  #   9
+*vertex,2.50000,0.00000,0.50000  #  10
+*vertex,2.50000,0.00000,2.20000  #  11
+*vertex,0.50000,0.00000,2.20000  #  12
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9  #  1
+*edges,4,2,3,7,6  #  2
+*edges,4,3,4,8,7  #  3
+*edges,4,4,1,5,8  #  4
+*edges,4,5,6,7,8  #  5
+*edges,4,1,4,3,2  #  6
+*edges,4,9,10,11,12  #  7
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,sud,VERT,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,est,VERT,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,nord,VERT,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,ouest,VERT,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,haut,CEIL,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,bas,FLOR,-,-,-,typical_wall,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fenetre,VERT,-,-,-,d_glz,DCF7671_06nb,EXTERIOR,0,0  #   7 ||< external
+# 
+*insol,1,6,0,6  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,6,    12.00 0  # zone base list

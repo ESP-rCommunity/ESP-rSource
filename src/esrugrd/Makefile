@@ -15,8 +15,8 @@ OBJECTS = grd.o arrow.o ascii_mat.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o
 	 cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
-         grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o sort.o startup.o \
-	 tdfile.o trnsf.o readTrnsys.o
+         grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o readTrnsys.o \
+	 sort.o startup.o tdfile.o trnsf.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -102,6 +102,9 @@ plelev.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -114,9 +117,6 @@ tdfile.F:
 trnsf.F:
 	rm -f trnsf.F
 	ln -s $(ISHdir)/trnsf.F .
-readTrnsys.F:
-	rm -f readTrnsys.F
-	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi

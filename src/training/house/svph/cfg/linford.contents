@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Linford house in winter buffer vent mode
-(lower flow rates). defined in linford.cfg generated on Thu Jun 21 09:55:14
+(lower flow rates). defined in linford.cfg generated on Thu Aug 23 18:14:21
 2007. Notes associated with the model are in linford.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -34,7 +34,52 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  hot water: 190.00   0.30   0.20
  
 An Integrated Performance View has been defined:
-And the IPV file was incomplete or missing.
+The climatelist was incomplete or missing so the
+IPV details might be incorrect.
+Title : Linford house in winter buffer vent mode
+Version   : Version linford base case winter
+synopsis:
+The linford house (typical detached UK housing stock).
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Mon-06-Feb to Sun-12-Feb   7 linford 1st winter run
+spring  Mon-17-Apr to Sun-23-Apr   7 linford spring run
+summer  Mon-03-Jul to Sun-09-Jul   7 linford summer run
+autumn  Mon-02-Oct to Sun-08-Oct   7 linford autumn run
+2nd win Mon-20-Nov to Sun-26-Nov   7 linford 2nd winter run
+ 
+display day Tue-07-Feb.
+display day Tue-18-Apr.
+display day Tue-04-Jul.
+display day Tue-03-Oct.
+display day Tue-21-Nov.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  finish 00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  days      1        1       1       1       1
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating      10.00   9.00  23.47   8.42   9.00
+ cooling      10.00   9.00  16.00   8.00   9.00
+ lighting     10.00   9.00  16.00   8.00   9.00
+ small power  10.00   9.00  16.00   8.00   9.00
+ fans&pumps   10.00   9.00  16.00   8.00   9.00
+ DHW          10.00   9.00  16.00   8.00   9.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)    9   98.70 1.000 1.000 comfort ocup_zones
+Zones: living_room dining_room hall kitchen bath bedroom_1 bedroom_2 bedroom_3
+bedroom_4
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 zone_heated   10  107.80 1.000
+Zones: living_room dining_room hall kitchen bath bedroom_1 bedroom_2 bedroom_3
+bedroom_4 upper_hall
+ 
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
@@ -561,20 +606,22 @@ ID Zone         Volume|          Surface
  
  A summary of the surfaces in living_room( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  10.4    345.  -0. hall_liv     OPAQ VERT int_part_1   ||< p_living:hall
-  2  2.82    345.   0. kit_liv      OPAQ VERT int_part_1   ||< kit_liv:kitchen
-  3  7.56    255.   0. din_liv      OPAQ VERT int_part_1   ||< din_liv:dining_room
-  4  5.64    165.   0. liv_con      OPAQ VERT ext_wall     ||< liv_con:conservatory
-  5  7.56     75.   0. e_ext        OPAQ VERT ext_wall     ||< external
-  6  10.9      0.  90. ceil_b2      OPAQ CEIL grnd_ceiling ||< flr_liv:bedroom_2
-  7  6.45      0.  90. ceil_b4      OPAQ CEIL grnd_ceiling ||< flr_liv:bedroom_4
-  8  17.3      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
-  9  7.56    165.   0. glazing      TRAN VERT double_glaz  ||< glazing:conservatory
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  10.4    345.  -0. hall_liv     OPAQUE   VERT -     int_part_1   ||< p_living:hall
+  2  2.82    345.   0. kit_liv      OPAQUE   VERT -     int_part_1   ||< kit_liv:kitchen
+  3  7.56    255.   0. din_liv      OPAQUE   VERT -     int_part_1   ||< din_liv:dining_room
+  4  5.64    165.   0. liv_con      OPAQUE   VERT -     ext_wall     ||< liv_con:conservatory
+  5  7.56     75.   0. e_ext        OPAQUE   VERT -     ext_wall     ||< external
+  6  10.9      0.  90. ceil_b2      OPAQUE   CEIL -     grnd_ceiling ||< flr_liv:bedroom_2
+  7  6.45      0.  90. ceil_b4      OPAQUE   CEIL -     grnd_ceiling ||< flr_liv:bedroom_4
+  8  17.3      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+  9  7.56    165.   0. glazing      DCF7672_ VERT -     double_glaz  ||< glazing:conservatory
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -604,20 +651,22 @@ Sun  2 OccuptW    9 - 24    550.0      0.0       0.20       0.80
  
  A summary of the surfaces in dining_room( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.68    345.   0. kit_din      OPAQ VERT int_part_1   ||< kit_din:kitchen
-  2  4.08    255.   0. gar_kit      OPAQ VERT ext_wall     ||< gar_din:garage
-  3  3.48    255.   0. w_ext        OPAQ VERT ext_wall     ||< external
-  4  3.90    165.  -0. s_ext        OPAQ VERT ext_wall     ||< external
-  5  7.56     75.   0. din_liv      OPAQ VERT int_part_1   ||< din_liv:living_room
-  6  0.500     0.  90. ceil_b4      OPAQ CEIL grnd_ceiling ||< flr_din:bedroom_4
-  7  9.58      0.  90. ceil_b1      OPAQ CEIL grnd_ceiling ||< flr_din:bedroom_1
-  8  10.1      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
-  9  3.78    165.   0. glazing      TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.68    345.   0. kit_din      OPAQUE   VERT -     int_part_1   ||< kit_din:kitchen
+  2  4.08    255.   0. gar_kit      OPAQUE   VERT -     ext_wall     ||< gar_din:garage
+  3  3.48    255.   0. w_ext        OPAQUE   VERT -     ext_wall     ||< external
+  4  3.90    165.  -0. s_ext        OPAQUE   VERT -     ext_wall     ||< external
+  5  7.56     75.   0. din_liv      OPAQUE   VERT -     int_part_1   ||< din_liv:living_room
+  6  0.500     0.  90. ceil_b4      OPAQUE   CEIL -     grnd_ceiling ||< flr_din:bedroom_4
+  7  9.58      0.  90. ceil_b1      OPAQUE   CEIL -     grnd_ceiling ||< flr_din:bedroom_1
+  8  10.1      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+  9  3.78    165.   0. glazing      DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -660,23 +709,25 @@ Sun  7 OccuptW   20 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in hall( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  1.88    345.   0. north_b      OPAQ VERT ext_wall     ||< external
-  2  3.00    255.   0. p_lobbya     OPAQ VERT int_part_1   ||< inl_halc:int_lobby
-  3  3.48    345.   0. p_lobbyb     OPAQ VERT int_part_1   ||< inl_halb:int_lobby
-  4  3.00     75.   0. p_lobbyc     OPAQ VERT int_part_1   ||< inl_hal:int_lobby
-  5  4.62    345.   0. north_c      OPAQ VERT ext_wall     ||< external
-  6  7.56    255.   0. p_kitchen    OPAQ VERT int_part_1   ||< kit_hall:kitchen
-  7  10.4    165.   0. p_living     OPAQ VERT int_part_1   ||< hall_liv:living_room
-  8  7.56     75.   0. east         OPAQ VERT ext_wall     ||< external
-  9  5.75      0.  90. ceil_b3      OPAQ CEIL grnd_ceiling ||< flr_hall:bedroom_3
- 10  6.06      0.  90. ceil_z10     OPAQ CEIL grnd_ceiling ||< flr_hall:upper_hall
- 11  11.8      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
- 12  0.397   345.   0. glass        TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  1.88    345.   0. north_b      OPAQUE   VERT -     ext_wall     ||< external
+  2  3.00    255.   0. p_lobbya     OPAQUE   VERT -     int_part_1   ||< inl_halc:int_lobby
+  3  3.48    345.   0. p_lobbyb     OPAQUE   VERT -     int_part_1   ||< inl_halb:int_lobby
+  4  3.00     75.   0. p_lobbyc     OPAQUE   VERT -     int_part_1   ||< inl_hal:int_lobby
+  5  4.62    345.   0. north_c      OPAQUE   VERT -     ext_wall     ||< external
+  6  7.56    255.   0. p_kitchen    OPAQUE   VERT -     int_part_1   ||< kit_hall:kitchen
+  7  10.4    165.   0. p_living     OPAQUE   VERT -     int_part_1   ||< hall_liv:living_room
+  8  7.56     75.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  9  5.75      0.  90. ceil_b3      OPAQUE   CEIL -     grnd_ceiling ||< flr_hall:bedroom_3
+ 10  6.06      0.  90. ceil_z10     OPAQUE   CEIL -     grnd_ceiling ||< flr_hall:upper_hall
+ 11  11.8      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+ 12  0.397   345.   0. glass        DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -698,22 +749,24 @@ GEN
  
  A summary of the surfaces in kitchen( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  5.92    345.  -0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  2.69    345.   0. exl_kit      OPAQ VERT int_part_1   ||< exl_kit:ext_lobby
-  3  7.56    255.   0. gar_kit      OPAQ VERT ext_wall     ||< gar_kit:garage
-  4  7.68    165.   0. kit_din      OPAQ VERT int_part_1   ||< kit_din:dining_room
-  5  2.82    165.   0. kit_liv      OPAQ VERT int_part_1   ||< kit_liv:living_room
-  6  7.56     75.   0. kit_hall     OPAQ VERT int_part_1   ||< p_kitchen:hall
-  7  3.04      0.  90. kit_uh       OPAQ CEIL grnd_ceiling ||< flr_kit:upper_hall
-  8  7.57      0.  90. ceil_k_bth   OPAQ CEIL grnd_ceiling ||< flr_kit:bath
-  9  3.17      0.  90. ceil_k_b1    OPAQ CEIL grnd_ceiling ||< flr_kit:bedroom_1
- 10  13.8      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
- 11  1.89    345.   0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.92    345.  -0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  2.69    345.   0. exl_kit      OPAQUE   VERT -     int_part_1   ||< exl_kit:ext_lobby
+  3  7.56    255.   0. gar_kit      OPAQUE   VERT -     ext_wall     ||< gar_kit:garage
+  4  7.68    165.   0. kit_din      OPAQUE   VERT -     int_part_1   ||< kit_din:dining_room
+  5  2.82    165.   0. kit_liv      OPAQUE   VERT -     int_part_1   ||< kit_liv:living_room
+  6  7.56     75.   0. kit_hall     OPAQUE   VERT -     int_part_1   ||< p_kitchen:hall
+  7  3.04      0.  90. kit_uh       OPAQUE   CEIL -     grnd_ceiling ||< flr_kit:upper_hall
+  8  7.57      0.  90. ceil_k_bth   OPAQUE   CEIL -     grnd_ceiling ||< flr_kit:bath
+  9  3.17      0.  90. ceil_k_b1    OPAQUE   CEIL -     grnd_ceiling ||< flr_kit:bedroom_1
+ 10  13.8      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+ 11  1.89    345.   0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -756,22 +809,24 @@ Sun  7 OccuptW   19 - 24     60.0      0.0       0.20       0.80
  
  A summary of the surfaces in bath( 5) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  5.75    345.   0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  1.19    345.   0. u_exl_bth    OPAQ VERT int_part_1   ||< exl_bath:ext_lobby
-  3  3.72    255.   0. gar_bth      OPAQ VERT ext_wall     ||< gar_bath:garage
-  4  1.46    255.  -0. w_ext        OPAQ VERT ext_wall     ||< external
-  5  7.68    165.   0. bth_b1       OPAQ VERT int_part_2   ||< p_bath_b1:bedroom_1
-  6  0.738   165.   0. bth_uhb      OPAQ VERT int_part_2   ||< prt_btha:upper_hall
-  7  5.18     75.   0. bth_uha      OPAQ VERT int_part_2   ||< prt_bth:upper_hall
-  8  7.57      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_bath:loft
-  9  7.57      0. -90. flr_kit      OPAQ FLOR grd_ceil_rev ||< ceil_k_bth:kitchen
- 10  1.08    345.   0. winda        TRAN VERT double_glaz  ||< external
- 11  0.396   345.   0. windb        TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.75    345.   0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  1.19    345.   0. u_exl_bth    OPAQUE   VERT -     int_part_1   ||< exl_bath:ext_lobby
+  3  3.72    255.   0. gar_bth      OPAQUE   VERT -     ext_wall     ||< gar_bath:garage
+  4  1.46    255.  -0. w_ext        OPAQUE   VERT -     ext_wall     ||< external
+  5  7.68    165.   0. bth_b1       OPAQUE   VERT -     int_part_2   ||< p_bath_b1:bedroom_1
+  6  0.738   165.   0. bth_uhb      OPAQUE   VERT -     int_part_2   ||< prt_btha:upper_hall
+  7  5.18     75.   0. bth_uha      OPAQUE   VERT -     int_part_2   ||< prt_bth:upper_hall
+  8  7.57      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_bath:loft
+  9  7.57      0. -90. flr_kit      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_k_bth:kitchen
+ 10  1.08    345.   0. winda        DCF7672_ VERT -     double_glaz  ||< external
+ 11  0.396   345.   0. windb        DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -793,23 +848,25 @@ GEN
  
  A summary of the surfaces in bedroom_1( 6) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.68    345.  -0. p_bath_b1    OPAQ VERT int_part_2   ||< bth_b1:bath
-  2  2.51    255.  -0. p_garage     OPAQ VERT ext_wall     ||< gar_b1:garage
-  3  7.43    255.  -0. w_ext        OPAQ VERT ext_wall     ||< external
-  4  3.06    165.   0. s_ext        OPAQ VERT ext_wall     ||< external
-  5  2.40     75.   0. p_bed4b      OPAQ VERT int_part_1   ||< prt_b1_b4b:bedroom_4
-  6  1.20    165.   0. p_bed4a      OPAQ VERT int_part_1   ||< prt_b1_b4a:bedroom_4
-  7  5.16     75.   0. p_bed4       OPAQ VERT int_part_1   ||< prt_b1_b4:bedroom_4
-  8  2.38     75.   0. p_hall       OPAQ VERT int_part_1   ||< prt_b1:upper_hall
-  9  12.8      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_b1:loft
- 10  3.17      0. -90. flr_kit      OPAQ FLOR grd_ceil_rev ||< ceil_k_b1:kitchen
- 11  9.58      0. -90. flr_din      OPAQ FLOR grd_ceil_rev ||< ceil_b1:dining_room
- 12  3.42    165.   0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.68    345.  -0. p_bath_b1    OPAQUE   VERT -     int_part_2   ||< bth_b1:bath
+  2  2.51    255.  -0. p_garage     OPAQUE   VERT -     ext_wall     ||< gar_b1:garage
+  3  7.43    255.  -0. w_ext        OPAQUE   VERT -     ext_wall     ||< external
+  4  3.06    165.   0. s_ext        OPAQUE   VERT -     ext_wall     ||< external
+  5  2.40     75.   0. p_bed4b      OPAQUE   VERT -     int_part_1   ||< prt_b1_b4b:bedroom_4
+  6  1.20    165.   0. p_bed4a      OPAQUE   VERT -     int_part_1   ||< prt_b1_b4a:bedroom_4
+  7  5.16     75.   0. p_bed4       OPAQUE   VERT -     int_part_1   ||< prt_b1_b4:bedroom_4
+  8  2.38     75.   0. p_hall       OPAQUE   VERT -     int_part_1   ||< prt_b1:upper_hall
+  9  12.8      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_b1:loft
+ 10  3.17      0. -90. flr_kit      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_k_b1:kitchen
+ 11  9.58      0. -90. flr_din      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_b1:dining_room
+ 12  3.42    165.   0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -839,20 +896,22 @@ Sun  2 OccuptW    7 - 24     60.0      0.0       0.20       0.80
  
  A summary of the surfaces in bedroom_2( 7) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  5.76    345.   0. p_bed3       OPAQ VERT int_part_1   ||< p_bed2:bedroom_3
-  2  2.52    345.   0. p_hall       OPAQ VERT int_part_1   ||< prt_b2:upper_hall
-  3  7.56    255.   0. p_bed4       OPAQ VERT int_part_2   ||< prt_b4_b2:bedroom_4
-  4  3.83    165.   0. s_ext        OPAQ VERT ext_wall     ||< external
-  5  1.04    165.   0. p_conserv    OPAQ VERT ext_wall     ||< b2_con:conservatory
-  6  7.56     75.   0. e_ext        OPAQ VERT ext_wall     ||< external
-  7  10.9      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_b2:loft
-  8  10.9      0. -90. flr_liv      OPAQ FLOR grd_ceil_rev ||< ceil_b2:living_room
-  9  3.42    165.   0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.76    345.   0. p_bed3       OPAQUE   VERT -     int_part_1   ||< p_bed2:bedroom_3
+  2  2.52    345.   0. p_hall       OPAQUE   VERT -     int_part_1   ||< prt_b2:upper_hall
+  3  7.56    255.   0. p_bed4       OPAQUE   VERT -     int_part_2   ||< prt_b4_b2:bedroom_4
+  4  3.83    165.   0. s_ext        OPAQUE   VERT -     ext_wall     ||< external
+  5  1.04    165.   0. p_conserv    OPAQUE   VERT -     ext_wall     ||< b2_con:conservatory
+  6  7.56     75.   0. e_ext        OPAQUE   VERT -     ext_wall     ||< external
+  7  10.9      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_b2:loft
+  8  10.9      0. -90. flr_liv      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_b2:living_room
+  9  3.42    165.   0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -882,19 +941,21 @@ Sun  2 OccuptW    7 - 24     60.0      0.0       0.20       0.80
  
  A summary of the surfaces in bedroom_3( 8) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  4.68    345.   0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  7.56    255.   0. p_hall       OPAQ VERT int_part_1   ||< prt_h_b3:upper_hall
-  3  5.76    165.   0. p_bed2       OPAQ VERT int_part_1   ||< p_bed3:bedroom_2
-  4  7.56     75.   0. e_ext        OPAQ VERT ext_wall     ||< external
-  5  7.56      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_b3:loft
-  6  5.75      0. -90. flr_hall     OPAQ FLOR grd_ceil_rev ||< ceil_b3:hall
-  7  1.81      0. -90. flr_lobby    OPAQ FLOR grd_ceil_rev ||< ceil:int_lobby
-  8  1.08    345.  -0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  4.68    345.   0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  7.56    255.   0. p_hall       OPAQUE   VERT -     int_part_1   ||< prt_h_b3:upper_hall
+  3  5.76    165.   0. p_bed2       OPAQUE   VERT -     int_part_1   ||< p_bed3:bedroom_2
+  4  7.56     75.   0. e_ext        OPAQUE   VERT -     ext_wall     ||< external
+  5  7.56      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_b3:loft
+  6  5.75      0. -90. flr_hall     OPAQUE   FLOR -     grd_ceil_rev ||< ceil_b3:hall
+  7  1.81      0. -90. flr_lobby    OPAQUE   FLOR -     grd_ceil_rev ||< ceil:int_lobby
+  8  1.08    345.  -0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -924,22 +985,24 @@ Sun  2 OccuptW    7 - 24     60.0      0.0       0.20       0.80
  
  A summary of the surfaces in bedroom_4( 9) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  4.91    345.   0. p_hall       OPAQ VERT int_part_1   ||< prt_b4:upper_hall
-  2  5.16    255.   0. prt_b1_b4    OPAQ VERT int_part_1   ||< p_bed4:bedroom_1
-  3  1.20    345.   0. prt_b1_b4a   OPAQ VERT int_part_1   ||< p_bed4a:bedroom_1
-  4  2.40    255.   0. prt_b1_b4b   OPAQ VERT int_part_1   ||< p_bed4b:bedroom_1
-  5  2.08    165.   0. s_ext        OPAQ VERT ext_wall     ||< external
-  6  7.56     75.   0. prt_b4_b2    OPAQ VERT int_part_2   ||< p_bed4:bedroom_2
-  7  6.95      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_b4:loft
-  8  6.45      0. -90. flr_liv      OPAQ FLOR grd_ceil_rev ||< ceil_b4:living_room
-  9  0.500     0. -90. flr_din      OPAQ FLOR grd_ceil_rev ||< ceil_b4:dining_room
- 10  0.614   165.   0. Surf-10      OPAQ VERT ext_wall     ||< b4_con:conservatory
- 11  3.42    165.   0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  4.91    345.   0. p_hall       OPAQUE   VERT -     int_part_1   ||< prt_b4:upper_hall
+  2  5.16    255.   0. prt_b1_b4    OPAQUE   VERT -     int_part_1   ||< p_bed4:bedroom_1
+  3  1.20    345.   0. prt_b1_b4a   OPAQUE   VERT -     int_part_1   ||< p_bed4a:bedroom_1
+  4  2.40    255.   0. prt_b1_b4b   OPAQUE   VERT -     int_part_1   ||< p_bed4b:bedroom_1
+  5  2.08    165.   0. s_ext        OPAQUE   VERT -     ext_wall     ||< external
+  6  7.56     75.   0. prt_b4_b2    OPAQUE   VERT -     int_part_2   ||< p_bed4:bedroom_2
+  7  6.95      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_b4:loft
+  8  6.45      0. -90. flr_liv      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_b4:living_room
+  9  0.500     0. -90. flr_din      OPAQUE   FLOR -     grd_ceil_rev ||< ceil_b4:dining_room
+ 10  0.614   165.   0. Surf-10      OPAQUE   VERT -     ext_wall     ||< b4_con:conservatory
+ 11  3.42    165.   0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -969,22 +1032,24 @@ Sun  2 OccuptW    7 - 24     60.0      0.0       0.20       0.80
  
  A summary of the surfaces in upper_hall(10) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  5.41    345.  -0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  5.18    255.   0. prt_bth      OPAQ VERT int_part_2   ||< bth_uha:bath
-  3  0.738   345.   0. prt_btha     OPAQ VERT int_part_2   ||< bth_uhb:bath
-  4  2.38    255.   0. prt_b1       OPAQ VERT int_part_1   ||< p_hall:bedroom_1
-  5  4.91    165.   0. prt_b4       OPAQ VERT int_part_1   ||< p_hall:bedroom_4
-  6  2.52    165.   0. prt_b2       OPAQ VERT int_part_1   ||< p_hall:bedroom_2
-  7  7.56     75.   0. prt_h_b3     OPAQ VERT int_part_1   ||< p_hall:bedroom_3
-  8  9.10      0.  90. ceil         OPAQ CEIL 1st_ceiling  ||< ceil_hall:loft
-  9  3.31      0. -90. flr_hall     OPAQ FLOR grd_ceil_rev ||< ceil_z10:hall
- 10  5.79      0. -90. flr_kit      OPAQ FLOR grd_ceil_rev ||< kit_uh:kitchen
- 11  1.30    345.   0. window       TRAN VERT double_glaz  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.41    345.  -0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  5.18    255.   0. prt_bth      OPAQUE   VERT -     int_part_2   ||< bth_uha:bath
+  3  0.738   345.   0. prt_btha     OPAQUE   VERT -     int_part_2   ||< bth_uhb:bath
+  4  2.38    255.   0. prt_b1       OPAQUE   VERT -     int_part_1   ||< p_hall:bedroom_1
+  5  4.91    165.   0. prt_b4       OPAQUE   VERT -     int_part_1   ||< p_hall:bedroom_4
+  6  2.52    165.   0. prt_b2       OPAQUE   VERT -     int_part_1   ||< p_hall:bedroom_2
+  7  7.56     75.   0. prt_h_b3     OPAQUE   VERT -     int_part_1   ||< p_hall:bedroom_3
+  8  9.10      0.  90. ceil         OPAQUE   CEIL -     1st_ceiling  ||< ceil_hall:loft
+  9  3.31      0. -90. flr_hall     OPAQUE   FLOR -     grd_ceil_rev ||< ceil_z10:hall
+ 10  5.79      0. -90. flr_kit      OPAQUE   FLOR -     grd_ceil_rev ||< kit_uh:kitchen
+ 11  1.30    345.   0. window       DCF7672_ VERT -     double_glaz  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -1006,19 +1071,21 @@ GEN
  
  A summary of the surfaces in ext_lobby(11) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  2.69    345.   0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  2.51    255.  -0. gar_exl      OPAQ VERT ext_wall     ||< gar_exl:garage
-  3  2.69    165.   0. exl_kit      OPAQ VERT int_part_1   ||< exl_kit:kitchen
-  4  1.19    165.   0. exl_bath     OPAQ VERT int_part_1   ||< u_exl_bth:bath
-  5  4.40     75.   0. e_ext        OPAQ VERT ext_wall     ||< external
-  6  2.06    345.  55. roof         OPAQ SLOP grnd_ceiling ||< external
-  7  1.68      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
-  8  1.89    255.   0. door         OPAQ VERT door         ||< door:garage
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  2.69    345.   0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  2.51    255.  -0. gar_exl      OPAQUE   VERT -     ext_wall     ||< gar_exl:garage
+  3  2.69    165.   0. exl_kit      OPAQUE   VERT -     int_part_1   ||< exl_kit:kitchen
+  4  1.19    165.   0. exl_bath     OPAQUE   VERT -     int_part_1   ||< u_exl_bth:bath
+  5  4.40     75.   0. e_ext        OPAQUE   VERT -     ext_wall     ||< external
+  6  2.06    345.  55. roof         OPAQUE   SLOP -     grnd_ceiling ||< external
+  7  1.68      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+  8  1.89    255.   0. door         OPAQUE   VERT -     door         ||< door:garage
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: lbye
  
@@ -1037,18 +1104,20 @@ GEN
  
  A summary of the surfaces in int_lobby(12) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  1.59    345.  -0. n_ext        OPAQ VERT ext_wall     ||< external
-  2  3.00    255.   0. inl_hal      OPAQ VERT int_part_1   ||< p_lobbyc:hall
-  3  3.48    165.   0. inl_halb     OPAQ VERT int_part_1   ||< p_lobbyb:hall
-  4  3.00     75.   0. inl_halc     OPAQ VERT int_part_1   ||< p_lobbya:hall
-  5  1.81      0.  90. ceil         OPAQ CEIL grnd_ceiling ||< flr_lobby:bedroom_3
-  6  1.81      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
-  7  1.89    345.   0. door         OPAQ VERT door         ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  1.59    345.  -0. n_ext        OPAQUE   VERT -     ext_wall     ||< external
+  2  3.00    255.   0. inl_hal      OPAQUE   VERT -     int_part_1   ||< p_lobbyc:hall
+  3  3.48    165.   0. inl_halb     OPAQUE   VERT -     int_part_1   ||< p_lobbyb:hall
+  4  3.00     75.   0. inl_halc     OPAQUE   VERT -     int_part_1   ||< p_lobbya:hall
+  5  1.81      0.  90. ceil         OPAQUE   CEIL -     grnd_ceiling ||< flr_lobby:bedroom_3
+  6  1.81      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+  7  1.89    345.   0. door         OPAQUE   VERT -     door         ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: lbyi
  
@@ -1068,21 +1137,23 @@ GEN
  
  A summary of the surfaces in loft(13) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  34.8    345.  52. north        OPAQ SLOP roof         ||< external
-  2  7.76    255.   0. west         OPAQ VERT ext_wall     ||< external
-  3  34.8    165.  52. south        OPAQ SLOP roof         ||< external
-  4  7.76     75.   0. east         OPAQ VERT ext_wall     ||< external
-  5  7.56      0. -90. ceil_b3      OPAQ FLOR 1st_ceil_rev ||< ceil:bedroom_3
-  6  9.10      0. -90. ceil_hall    OPAQ FLOR 1st_ceil_rev ||< ceil:upper_hall
-  7  7.57      0. -90. ceil_bath    OPAQ FLOR 1st_ceil_rev ||< ceil:bath
-  8  12.8      0. -90. ceil_b1      OPAQ FLOR 1st_ceil_rev ||< ceil:bedroom_1
-  9  6.95      0. -90. ceil_b4      OPAQ FLOR 1st_ceil_rev ||< ceil:bedroom_4
- 10  10.9      0. -90. ceil_b2      OPAQ FLOR 1st_ceil_rev ||< ceil:bedroom_2
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  34.8    345.  52. north        OPAQUE   SLOP -     roof         ||< external
+  2  7.76    255.   0. west         OPAQUE   VERT -     ext_wall     ||< external
+  3  34.8    165.  52. south        OPAQUE   SLOP -     roof         ||< external
+  4  7.76     75.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  5  7.56      0. -90. ceil_b3      OPAQUE   FLOR -     1st_ceil_rev ||< ceil:bedroom_3
+  6  9.10      0. -90. ceil_hall    OPAQUE   FLOR -     1st_ceil_rev ||< ceil:upper_hall
+  7  7.57      0. -90. ceil_bath    OPAQUE   FLOR -     1st_ceil_rev ||< ceil:bath
+  8  12.8      0. -90. ceil_b1      OPAQUE   FLOR -     1st_ceil_rev ||< ceil:bedroom_1
+  9  6.95      0. -90. ceil_b4      OPAQUE   FLOR -     1st_ceil_rev ||< ceil:bedroom_4
+ 10  10.9      0. -90. ceil_b2      OPAQUE   FLOR -     1st_ceil_rev ||< ceil:bedroom_2
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: loft
  
@@ -1102,25 +1173,27 @@ LOFT
  
  A summary of the surfaces in garage(14) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  4.80    345.   0. n_ext        OPAQ VERT int_part_1   ||< external
-  2  22.3    255.   0. w_ext        OPAQ VERT int_part_1   ||< external
-  3  4.80    165.   0. s_ext        OPAQ VERT int_part_1   ||< external
-  4  4.08     75.   0. gar_din      OPAQ VERT ext_wall_rev ||< gar_kit:dining_room
-  5  7.56     75.  -0. gar_kit      OPAQ VERT ext_wall_rev ||< gar_kit:kitchen
-  6  2.51     75.   0. gar_exl      OPAQ VERT ext_wall_rev ||< gar_exl:ext_lobby
-  7  2.50     75.  -0. gar_b1       OPAQ VERT ext_wall_rev ||< p_garage:bedroom_1
-  8  3.72     75.   0. gar_bath     OPAQ VERT ext_wall_rev ||< gar_bth:bath
-  9  3.68    345.  55. north        OPAQ SLOP int_part_1   ||< external
- 10  4.04    345.  56. north_up     OPAQ SLOP int_part_1   ||< external
- 11  6.55    165.  55. south        OPAQ SLOP int_part_1   ||< external
- 12  1.19    165.  55. south_up     OPAQ SLOP int_part_1   ||< external
- 13  12.7      0. -90. floor        OPAQ FLOR grnd_floor   ||< user def grnd profile  1
- 14  1.89     75.   0. door         OPAQ VERT door         ||< door:ext_lobby
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  4.80    345.   0. n_ext        OPAQUE   VERT -     int_part_1   ||< external
+  2  22.3    255.   0. w_ext        OPAQUE   VERT -     int_part_1   ||< external
+  3  4.80    165.   0. s_ext        OPAQUE   VERT -     int_part_1   ||< external
+  4  4.08     75.   0. gar_din      OPAQUE   VERT -     ext_wall_rev ||< gar_kit:dining_room
+  5  7.56     75.  -0. gar_kit      OPAQUE   VERT -     ext_wall_rev ||< gar_kit:kitchen
+  6  2.51     75.   0. gar_exl      OPAQUE   VERT -     ext_wall_rev ||< gar_exl:ext_lobby
+  7  2.50     75.  -0. gar_b1       OPAQUE   VERT -     ext_wall_rev ||< p_garage:bedroom_1
+  8  3.72     75.   0. gar_bath     OPAQUE   VERT -     ext_wall_rev ||< gar_bth:bath
+  9  3.68    345.  55. north        OPAQUE   SLOP -     int_part_1   ||< external
+ 10  4.04    345.  56. north_up     OPAQUE   SLOP -     int_part_1   ||< external
+ 11  6.55    165.  55. south        OPAQUE   SLOP -     int_part_1   ||< external
+ 12  1.19    165.  55. south_up     OPAQUE   SLOP -     int_part_1   ||< external
+ 13  12.7      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< user def grnd profile  1
+ 14  1.89     75.   0. door         OPAQUE   VERT -     door         ||< door:ext_lobby
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: gar
  
@@ -1142,24 +1215,28 @@ GEN
  
  A summary of the surfaces in conservatory(15) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  5.64    345.  -0. liv_con      OPAQ VERT ext_wall_rev ||< liv_con:living_room
-  2  7.56    345.   0. glazing      TRAN VERT double_glaz  ||< glazing:living_room
-  3  3.90    255.   0. w_glaz       TRAN VERT single_glaz  ||< external
-  4  8.46    165.   0. s_glaz       TRAN VERT single_glaz  ||< external
-  5  3.90     75.   0. e_glaz       TRAN VERT single_glaz  ||< external
-  6  9.09    165.  71. r_glazing    TRAN SLOP single_glaz  ||< external
-  7  0.800   255.   0. w_frame      OPAQ VERT cons_frame   ||< external
-  8  2.54    165.  -0. s_frame      OPAQ VERT cons_frame   ||< external
-  9  0.800    75.   0. e_frame      OPAQ VERT cons_frame   ||< external
- 10  2.57    165.  71. r_frame      OPAQ SLOP cons_frame   ||< external
- 11  11.0      0. -90. floor        OPAQ FLOR cons_floor   ||< user def grnd profile  1
- 12  1.04    345.  -0. b2_con       OPAQ VERT ext_wall_rev ||< p_conserv:bedroom_2
- 13  0.615   345.   0. b4_con       OPAQ VERT ext_wall_rev ||< Surf-10:bedroom_4
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  5.64    345.  -0. liv_con      OPAQUE   VERT -     ext_wall_rev ||< liv_con:living_room
+  2  7.56    345.   0. glazing      DCF7672_ VERT -     double_glaz  ||< glazing:living_room
+  3  3.90    255.   0. w_glaz       SCF8782_ VERT -     single_glaz  ||< external
+  4  8.46    165.   0. s_glaz       SCF8782_ VERT -     single_glaz  ||< external
+  5  3.90     75.   0. e_glaz       SCF8782_ VERT -     single_glaz  ||< external
+  6  9.09    165.  71. r_glazing    SCF8782_ SLOP -     single_glaz  ||< external
+  7  0.800   255.   0. w_frame      OPAQUE   VERT -     cons_frame   ||< external
+  8  2.54    165.  -0. s_frame      OPAQUE   VERT -     cons_frame   ||< external
+  9  0.800    75.   0. e_frame      OPAQUE   VERT -     cons_frame   ||< external
+ 10  2.57    165.  71. r_frame      OPAQUE   SLOP -     cons_frame   ||< external
+ 11  11.0      0. -90. floor        OPAQUE   FLOR -     cons_floor   ||< user def grnd profile  1
+ 12  1.04    345.  -0. b2_con       OPAQUE   VERT -     ext_wall_rev ||< p_conserv:bedroom_2
+ 13  0.615   345.   0. b4_con       OPAQUE   VERT -     ext_wall_rev ||< Surf-10:bedroom_4
  
  
  An hourly solar radiation distribution is used for this zone.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ Insolation sources (all applicable):
+w_glaz s_glaz e_glaz r_glazing
  
  
  Shading patterns have not yet been calculated.

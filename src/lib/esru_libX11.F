@@ -2345,7 +2345,7 @@ C there is more than one alternative to pick from.
 C Initialise menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
 C If paged menu include another control line (blank for readability).
-C      CALL USRMSG(PROMP1,PROMP2,'-')
+      CALL USRMSG(PROMP1,PROMP2,'-')
       ALL=.FALSE.
       MHEAD=0
       MCTL=5
@@ -2704,7 +2704,7 @@ C Number of actual items displayed.
       if(ISTRW.lt.25)VERT(nopt+1)=  '  ______________________'
       if(ISTRW.lt.21)VERT(nopt+1)=  '  __________________'
       if(ISTRW.lt.17)VERT(nopt+1)=  '  ______________'
-      if(idindex.ne.0)then
+      if(idindex.gt.0)then
         CALL EMKEY(idindex,KEY,IER)
         write(VERT(nopt+2),'(a,a,a)') '* default is option `',KEY,'`'
         if(ISTRW.lt.17)write(VERT(nopt+2),'(a,a,a)')

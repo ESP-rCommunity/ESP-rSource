@@ -193,7 +193,8 @@ C in elevation and azimuth.
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -313,7 +314,8 @@ C Required for WATSUN-PV model
       logical bCloseToZero     ! Boolean used for comparison to zero
 
       character outs*124,zname*12,zdesc*64,vsnam*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
       DIMENSION QIABS(MS),IANS(MS),IND1(MS),IND2(MS),ANGI(MS),
      &SRADDO(MS),SRADF(MS)

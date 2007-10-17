@@ -495,6 +495,15 @@ C CFD
 C Drylink variables:
       common/gan/qgan1,qgan2,wgan
 
+C Thermal bridge common block is described in esruprj/edgeo.F
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
       character outs*144,LCFD*72
       logical atrace,MSTROK,MSTRZN
       logical WATERZ
@@ -892,7 +901,9 @@ C Convection terms.
    50 CONTINUE
 
 C Air node term.
-      E(N1,N1)=1.0+SUM1+(ZAUGEF+ZAUGIF+CVIF+CVVF)*GAM*ACAP
+C First set thermal bridge term: tbrig (W/K).
+      tbrig=totheatloss(icomp)      
+      E(N1,N1)=1.0+SUM1+(ZAUGEF+ZAUGIF+CVIF+CVVF+tbrig)*GAM*ACAP
 
 C If air node is plant interaction point set coefficient.
       IF(NCF.EQ.0.OR.IC.EQ.0)then
@@ -906,11 +917,17 @@ C If air node is plant interaction point set coefficient.
          E(N1,N2)=-ACAP*GAM
       ENDIF
 
-C Set-up present coefficient.
+C Get convective plant input.
       PADDC=QPLTP(ICOMP)*CONV(ICOMP)
+
+C Calculate thermal bridge term.
+      qtbridge=ACAP*RGAM*tbrig*(TP-TFA(icomp))+ACAP*GAM*tbrig*TF
+
+C Set-up present coefficient.
       E(N1,N3)=SUM2*RGAM+(1.-SUM3*RGAM)*TNair+
      &ACAP*RGAM*(QNair+QCASC(1)+QWCP+
      &QVNP+PADDC)+(XX1+XX3+QCASC(2))*ACAP*GAM
+     &+qtbridge
 
       IGAN=0
       if(IGAN.eq.1)then

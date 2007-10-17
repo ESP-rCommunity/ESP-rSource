@@ -249,13 +249,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
-      call edisp(IUOUT,' ')
-      CALL ESPrVersion("summary")
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
 
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.
@@ -310,7 +303,6 @@ C Take command line file name to LCMDF and use as initial climate file.
         LCMDFL=inf
         write(outs248,'(a,a)')' the input file is: ',LCMDFL
         if(itrc.gt.1)call edisp248(iuout,outs248,80)
-        call tstamp('>',outs)
       endif
 
 C Take command line action parameter:
@@ -383,19 +375,27 @@ C Import climate data from EPW file.
           CALL EPAGEND
           STOP
         else
+
+C In interactive mode so do splash-screen and then read
+C in the climate file name via list
+C selection, editing or accepting the LCMDFL.
+          call edisp(IUOUT,' ')
+          CALL ESPrVersion("summary")
+          call edisp(IUOUT,' ')
           paction='INTERACTIVE'
           silent=.false.
-
-C Read in the climate file name via list
-C selection, editing or accepting the LCMDFL.
           CALL CFILIN(silent)
         endif
       else
+
+C In interactive mode so do splash-screen and then read
+C in the climate file name via list
+C selection, editing or accepting the LCMDFL.
+        call edisp(IUOUT,' ')
+        CALL ESPrVersion("summary")
+        call edisp(IUOUT,' ')
         paction='INTERACTIVE'
         silent=.false.
-
-C Read in the climate file name via list
-C selection, editing or accepting the LCMDFL.
         CALL CFILIN(silent)
       endif
 
@@ -463,7 +463,6 @@ C Present the opening display and control menu.
         write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
         write(6,*)outs248(1:lnblnk(outs248))
-        call tstamp('>',outs)
         call tstamp('>','Finished climate module')
         CALL EPAGEND
         STOP
@@ -695,8 +694,6 @@ C name with the full path.
 C Cast back to 72 char name.
         llt=MIN0(lnblnk(llasci),72)
         write(LASCI,'(a)') LLASCI(1:llt)
-C        CALL EASKS(LASCI,' ASCII climate file? ',
-C     &      ' ',72,'./newclim.a','ASCII climate file',IER,1)
  
 C Confirm the period to transfer.
         NTSPH=1
@@ -778,8 +775,6 @@ C If user canceled loop show menu again.
 C Cast back to 72 char name and do the conversion.
           llt=MIN0(lnblnk(llasci),72)
           write(LASCI,'(a)') LLASCI(1:llt)
-C          CALL EASKS(LASCI,' ASCII (EPW) climate file? ',
-C     &    ' ',72,' ','ASCII (EPW) climate file',IER,1)
           CALL EPWTOBCLM(LASCI,IUNIT,IER)
         elseif(IICT.eq.2)then
 

@@ -847,6 +847,11 @@ C *********************************************************************
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -863,6 +868,7 @@ C *********************************************************************
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
       logical xst
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if the root validation directory is available.
       INQUIRE (FILE=VlDirR,EXIST=XST)
@@ -874,6 +880,7 @@ C Check if the root validation directory is available.
       endif
 
 C Copy the default validation model.
+      newgeo=.false.  ! assume older format geometry.
       VlDirL='Validation'
       H(1)=' Enter the name of the directory within which the'
       H(2)=' Validation model will be defined, and results will be'
@@ -899,7 +906,12 @@ C Copy the default validation model.
       CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
       NZONES=NCOMP
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
-      CALL EGOMIN(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
+      call eclose(gversion(IComp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
+      else
+        call egomin(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
+      endif
       CALL ECONST(LTHRM(IComp),IUnit,IComp,ITRC,IUOUT,IER)
       CALL EROPER(ITRC,IUOUT,IUnit,IComp,IER)
       CALL EZCTLR(IUnit,ITRC,IUOUT,IER)
@@ -999,6 +1011,10 @@ C *********************************************************************
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GR1D05/LGRD1D
@@ -1011,8 +1027,10 @@ C *********************************************************************
       CHARACTER ctldoc*248,LCTLF*72
 
       logical QUIET,IGR1D,XST
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       QUIET=.true.
+      newgeo=.false.  ! assume older format geometry.
       ITRC=0
       IComp=1
 
@@ -1032,7 +1050,12 @@ C Save control file.
 
 C Save geometry file.
       IUF=IFIL+2
-      CALL EMKGEO(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+      else
+        call emkgeo(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+      endif
 
 C Save construction file.
       CALL EMKCON(LTHRM(ICOMP),IUF,IComp,IUOUT,QUIET,IER)

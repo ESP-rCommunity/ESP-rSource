@@ -2894,7 +2894,7 @@ C Number of actual items displayed.
       if(ISTRW.lt.25)VERT(nopt+1)=  '  ______________________'
       if(ISTRW.lt.21)VERT(nopt+1)=  '  __________________'
       if(ISTRW.lt.17)VERT(nopt+1)=  '  ______________'
-      if(idindex.ne.0)then
+      if(idindex.gt.0)then
         CALL EMKEY(idindex,KEY,IER)
         write(VERT(nopt+2),'(a,a)') '* Deflt is item ',KEY
         if(ISTRW.lt.17)write(VERT(nopt+2),'(a,a)') '* Deflt is ',KEY

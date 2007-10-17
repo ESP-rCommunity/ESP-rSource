@@ -602,7 +602,7 @@ C << to a graphic network flow file.
      &LAPROB(1:LNBLNK(LAPROB))
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')
-      ELSEIF(INO.EQ.22)THEN
+      ELSEIF(INO.EQ.23)THEN
         CALL PHELPD('network data summary',58,'-',0,0,IER)
       ELSEIF(INO.EQ.24)THEN
 
@@ -707,6 +707,11 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -720,9 +725,11 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 
+      newgeo=.false.  ! assume older format geometry.
       IFNOD=INOD
 C Add/Edit a node to the network. 
       IF(MOD.EQ.'A'.OR.MOD.EQ.'E')THEN
@@ -986,7 +993,12 @@ C (Re)Set all surfaces to standard line width.
           if(IZ.eq.0) goto 20
 
 C General image option flags.
-          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
+          endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
@@ -1440,6 +1452,8 @@ C Then call appropriate supplementary data input subroutine.
           CALL MF420I(IFCMP,IERL)
         ELSE IF(ITPCMP(IFCMP).EQ.460) THEN
           CALL MF460I(IFCMP,IERL)
+        ELSE IF(ITPCMP(IFCMP).EQ.500) THEN
+          CALL MF500I(IFCMP,IERL)
         ELSE
           CALL USRMSG(' Unknown component type',' try again..','W')
             goto 20
@@ -1825,6 +1839,11 @@ C Fluid flow model file: edit or input wind speed reduction factor
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -1836,8 +1855,10 @@ C Fluid flow model file: edit or input wind speed reduction factor
       CHARACTER outs*124,H*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Warn if current wind reduction factor is zero
+      newgeo=.false.  ! assume older format geometry.
       H(1)='Edit / input local wind speed reduction factor'
       H(2)=' -------------------------------------------- '
       H(3)='which is the ratio of local wind speed at roof'
@@ -1889,7 +1910,12 @@ C Allow the user to select the roof of the building
       if(IZ.eq.0) goto 11
 
       itrc=0
-      CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      call eclose(gversion(IZ),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      else
+        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      endif
 
 C General image option flags.
 C << might want to save current values for later recovery >>

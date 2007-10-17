@@ -83,7 +83,7 @@ C Where default db list is kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Simulation period and save option.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -145,7 +145,7 @@ C Name of current application
       CHARACTER*72 H,LTMP,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG,DSBEM
       character path*72,upath*72,esprc*72,spsname*8,paction*16
       character dfdblbl*20,defdbfl*72,cfgroot*24,fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124

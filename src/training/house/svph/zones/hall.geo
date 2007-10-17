@@ -1,60 +1,66 @@
-# geometry of hall defined in: ../zones/hall.geo
-GEN  hall  hall describes a...  # type, name, descr
-      21      12   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      9.77300    11.33700     0.00000  # vert   1
-      8.85500    11.09100     0.00000  # vert   2
-      9.17900     9.88400     0.00000  # vert   3
-      7.77800     9.50800     0.00000  # vert   4
-      7.45500    10.71600     0.00000  # vert   5
-      5.59600    10.21800     0.00000  # vert   6
-      6.41200     7.17500     0.00000  # vert   7
-     10.58800     8.29400     0.00000  # vert   8
-      9.77300    11.33700     2.40000  # vert   9
-      8.85500    11.09100     2.40000  # vert  10
-      9.17900     9.88400     2.40000  # vert  11
-      7.77800     9.50800     2.40000  # vert  12
-      7.45500    10.71600     2.40000  # vert  13
-      5.59600    10.21800     2.40000  # vert  14
-      6.41200     7.17500     2.40000  # vert  15
-      8.27000     7.67300     2.40000  # vert  16
-     10.58800     8.29400     2.40000  # vert  17
-      9.57981    11.28523     1.48000  # vert  18
-      8.97129    11.12216     1.48000  # vert  19
-      8.97129    11.12216     2.11000  # vert  20
-      9.57981    11.28523     2.11000  # vert  21
-# no of vertices followed by list of associated vert
-  10,  1,  2, 10,  9,  1, 18, 21, 20, 19, 18,
-   4,  2,  3, 11, 10,
-   4,  3,  4, 12, 11,
-   4,  4,  5, 13, 12,
-   4,  5,  6, 14, 13,
-   4,  6,  7, 15, 14,
-   5,  7,  8, 17, 16, 15,
-   4,  8,  1,  9, 17,
-   6,  9, 10, 11, 12, 16, 17,
-   5, 13, 14, 15, 16, 12,
-   8,  8,  7,  6,  5,  4,  3,  2,  1,
-   4, 18, 19, 20, 21,
-# unused index
- 0,0,0,0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, north_b       OPAQ  VERT  ext_wall     EXTERIOR       
-  2, p_lobbya      OPAQ  VERT  int_part_1   int_lobby      
-  3, p_lobbyb      OPAQ  VERT  int_part_1   int_lobby      
-  4, p_lobbyc      OPAQ  VERT  int_part_1   int_lobby      
-  5, north_c       OPAQ  VERT  ext_wall     EXTERIOR       
-  6, p_kitchen     OPAQ  VERT  int_part_1   kitchen        
-  7, p_living      OPAQ  VERT  int_part_1   living_room    
-  8, east          OPAQ  VERT  ext_wall     EXTERIOR       
-  9, ceil_b3       OPAQ  CEIL  grnd_ceiling bedroom_3      
- 10, ceil_z10      OPAQ  CEIL  grnd_ceiling Zone-10        
- 11, floor         OPAQ  FLOR  grnd_floor   GROUND         
- 12, glass         TRAN  VERT  double_glaz  EXTERIOR       
-# base
- 11  0  0  0  0  0    11.81 0
+*Geometry 1.1,GEN,hall # tag version, format, zone name
+*date Thu Aug 23 18:13:58 2007  # latest file modification 
+hall describes a...
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,9.77300,11.33700,0.00000  #   1
+*vertex,8.85500,11.09100,0.00000  #   2
+*vertex,9.17900,9.88400,0.00000  #   3
+*vertex,7.77800,9.50800,0.00000  #   4
+*vertex,7.45500,10.71600,0.00000  #   5
+*vertex,5.59600,10.21800,0.00000  #   6
+*vertex,6.41200,7.17500,0.00000  #   7
+*vertex,10.58800,8.29400,0.00000  #   8
+*vertex,9.77300,11.33700,2.40000  #   9
+*vertex,8.85500,11.09100,2.40000  #  10
+*vertex,9.17900,9.88400,2.40000  #  11
+*vertex,7.77800,9.50800,2.40000  #  12
+*vertex,7.45500,10.71600,2.40000  #  13
+*vertex,5.59600,10.21800,2.40000  #  14
+*vertex,6.41200,7.17500,2.40000  #  15
+*vertex,8.27000,7.67300,2.40000  #  16
+*vertex,10.58800,8.29400,2.40000  #  17
+*vertex,9.57981,11.28523,1.48000  #  18
+*vertex,8.97129,11.12216,1.48000  #  19
+*vertex,8.97129,11.12216,2.11000  #  20
+*vertex,9.57981,11.28523,2.11000  #  21
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,10,1,2,10,9,1,18,21,20,19,18  #  1
+*edges,4,2,3,11,10  #  2
+*edges,4,3,4,12,11  #  3
+*edges,4,4,5,13,12  #  4
+*edges,4,5,6,14,13  #  5
+*edges,4,6,7,15,14  #  6
+*edges,5,7,8,17,16,15  #  7
+*edges,4,8,1,9,17  #  8
+*edges,6,9,10,11,12,16,17  #  9
+*edges,5,13,14,15,16,12  # 10
+*edges,8,8,7,6,5,4,3,2,1  # 11
+*edges,4,18,19,20,21  # 12
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,north_b,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,p_lobbya,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,12,04  #   2 ||< inl_halc:int_lobby
+*surf,p_lobbyb,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,12,03  #   3 ||< inl_halb:int_lobby
+*surf,p_lobbyc,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,12,02  #   4 ||< inl_hal:int_lobby
+*surf,north_c,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,p_kitchen,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,04,06  #   6 ||< kit_hall:kitchen
+*surf,p_living,VERT,-,-,-,int_part_1,OPAQUE,ANOTHER,01,01  #   7 ||< hall_liv:living_room
+*surf,east,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,ceil_b3,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,08,06  #   9 ||< flr_hall:bedroom_3
+*surf,ceil_z10,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,10,09  #  10 ||< flr_hall:upper_hall
+*surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,00,01  #  11 ||< user def grnd profile  1
+*surf,glass,VERT,-,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #  12 ||< external
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,11,    11.81 0  # zone base list

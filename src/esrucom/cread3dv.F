@@ -41,7 +41,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
@@ -73,7 +73,7 @@ C NZJVN : topology of vertices associated with each connection.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
@@ -334,14 +334,14 @@ C ITHLS = 3 partial attributes
             else
               IPEN= 1
             endif
-            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
+            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).ne.'OPAQ')then
               IPEN= -305
             else
               IPEN= 1
             endif
           elseif(ITHLS.eq.3)then
-            if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
-     &         SSOTHER(ICC)(1:3).eq.'UNK')then
+            if(SSMLCN(ICC)(1:4).eq.'UNKN'.or.
+     &         SSOTHER(ICC,1)(1:4).eq.'UNKN')then
               IPEN= -305
             else
               IPEN= 1

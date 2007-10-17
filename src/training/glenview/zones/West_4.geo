@@ -1,126 +1,133 @@
-# geometry of West_4 defined in: ../zones/West_4.geo
-GEN  West_4                 # type   zone name
-      62      24   0.000    # vertices, surfaces, rotation angle 
-#  X co-ord, Y co-ord, Z co-ord 
-     16.00000     4.30000     0.00000  # vert   1
-     20.30000     4.30000     0.00000  # vert   2
-     20.30000     1.00000     0.00000  # vert   3
-     16.00000     1.00000     0.00000  # vert   4
-     16.00000     4.30000     2.60000  # vert   5
-     20.30000     4.30000     3.80110  # vert   6
-     20.30000     1.00000     2.60000  # vert   7
-     16.00000     1.00000     2.60000  # vert   8
-     18.58000     1.00000     2.60000  # vert   9
-     18.58000     3.58000     3.53904  # vert  10
-     19.30000     4.30000     3.80110  # vert  11
-     17.72000     2.72000     3.22603  # vert  12
-     16.00000     2.30000     2.60000  # vert  13
-     17.68000     4.30000     3.21147  # vert  14
-     16.00000     2.30000     0.00000  # vert  15
-     16.35280     2.72000     2.72841  # vert  16
-     16.00000     2.30000     0.75000  # vert  17
-     16.00000     1.00000     0.75000  # vert  18
-     20.30000     1.00000     0.75000  # vert  19
-     16.05000     1.11840     2.61820  # vert  20
-     16.05000     2.26000     2.61820  # vert  21
-     17.62000     2.67000     3.18963  # vert  22
-     16.39280     2.67000     2.74297  # vert  23
-     16.47280     2.77000     2.77208  # vert  24
-     17.72000     4.25000     3.22603  # vert  25
-     19.17200     4.25000     3.75451  # vert  26
-     17.68000     2.77000     3.21146  # vert  27
-     18.39164     3.47592     3.47048  # vert  28
-     18.46038     3.54410     3.49550  # vert  29
-     17.06504     3.47279     2.98764  # vert  30
-     17.12778     3.54724     3.01048  # vert  31
-     18.53000     1.05000     2.61820  # vert  32
-     16.14500     1.05000     2.61800  # vert  33
-     18.53000     3.44300     3.48918  # vert  34
-     17.77000     1.05000     2.61814  # vert  35
-     17.67000     1.05000     2.61813  # vert  36
-     17.77000     2.68045     3.20951  # vert  37
-     17.67000     2.58012     3.17285  # vert  38
-     20.25000     1.04698     2.61710  # vert  39
-     19.49000     1.04698     2.61710  # vert  40
-     19.49000     4.25228     3.78373  # vert  41
-     20.25000     4.25228     3.78373  # vert  42
-     19.39000     1.04698     2.61710  # vert  43
-     18.63000     1.04698     2.61710  # vert  44
-     18.63000     3.53900     3.52412  # vert  45
-     19.39000     4.25228     3.78373  # vert  46
-     16.00000     1.10000     0.85000  # vert  47
-     16.00000     2.20000     0.85000  # vert  48
-     16.00000     2.20000     2.05000  # vert  49
-     16.00000     1.10000     2.05000  # vert  50
-     16.00000     1.10000     2.15000  # vert  51
-     16.00000     2.20000     2.15000  # vert  52
-     16.00000     2.20000     2.50000  # vert  53
-     16.00000     1.10000     2.50000  # vert  54
-     16.10000     1.00000     0.85000  # vert  55
-     20.20000     1.00000     0.85000  # vert  56
-     20.20000     1.00000     2.05000  # vert  57
-     16.10000     1.00000     2.05000  # vert  58
-     16.10000     1.00000     2.15000  # vert  59
-     20.20000     1.00000     2.15000  # vert  60
-     20.20000     1.00000     2.50000  # vert  61
-     16.10000     1.00000     2.50000  # vert  62
-# no of vertices followed by list of associated vert
-   6,  2,  1,  5, 14, 11,  6,
-   5,  3,  2,  6,  7, 19,
-  17, 18, 19, 56, 55, 58, 57, 56, 19,  7, 61, 60, 59, 62, 61,  7,  9,  8,
-  16, 17, 18, 47, 48, 49, 50, 47, 18,  8, 54, 51, 52, 53, 54,  8, 13,
-   4, 14,  5, 13, 16,
-   5, 15,  1,  2,  3,  4,
-  15, 32,  9, 10, 12,  8, 33, 38, 36, 33,  8,  9, 32, 35, 37, 34,
-  17,  9,  7, 39, 40, 41, 42, 39,  7,  6, 11, 10,  9, 44, 45, 46, 43, 44,
-  10, 13,  8, 20, 21, 23, 22, 20,  8, 12, 16,
-  17, 24, 16, 12, 10, 11, 14, 25, 26, 29, 31, 25, 14, 16, 24, 30, 28, 27,
-   5,  1, 15, 17, 13,  5,
-   4, 15,  4, 18, 17,
-   4,  4,  3, 19, 18,
-   4, 21, 20, 22, 23,
-   4, 30, 24, 27, 28,
-   4, 25, 31, 29, 26,
-   3, 33, 36, 38,
-   4, 35, 32, 34, 37,
-   4, 40, 39, 42, 41,
-   4, 44, 43, 46, 45,
-   4, 48, 47, 50, 49,
-   4, 52, 51, 54, 53,
-   4, 55, 56, 57, 58,
-   4, 59, 60, 61, 62,
-# number of default windows within each surface 
-   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-# surfaces indentation (m)
- 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
- 0.000 0.000 0.000 0.000 0.000 0.000
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  mlc db       environment
-# no  name         type  posn  name         other side
-  1, Fict-1-w4     TRAN  VERT  Fict-trans   West_3         
-  2, Fict-2-e3     TRAN  VERT  Fict-trans   East_2         
-  3, Frame-v-n     OPAQ  VERT  Frame-vert   EXTERIOR       
-  4, Frame-v-w     OPAQ  VERT  Frame-vert   EXTERIOR       
-  5, Fict-2-w2     TRAN  SLOP  Fict-trans   West_2         
-  6, Floor         OPAQ  FLOR  Floor        GROUND         
-  7, Frame-r-n1    OPAQ  SLOP  Frame-roof   EXTERIOR       
-  8, Frame-r-n2    OPAQ  SLOP  Frame-roof   EXTERIOR       
-  9, Frame-r-w1    OPAQ  SLOP  Frame-roof   EXTERIOR       
- 10, Frame-r-w2    OPAQ  SLOP  Frame-roof   EXTERIOR       
- 11, Fict-1-w2     TRAN  VERT  Fict-trans   West_2         
- 12, Parapet-w     OPAQ  VERT  Parapet      EXTERIOR       
- 13, Parapet-n     OPAQ  VERT  Parapet      EXTERIOR       
- 14, Glass-r-w1    TRAN  SLOP  DSC132414b   EXTERIOR       
- 15, Glass-r-w2    TRAN  SLOP  DSC132414b   EXTERIOR       
- 16, Glass-r-w3    TRAN  SLOP  DSC132414b   EXTERIOR       
- 17, Glass-r-n1    TRAN  SLOP  DSC132414b   EXTERIOR       
- 18, Glass-r-n2    TRAN  SLOP  DSC132414b   EXTERIOR       
- 19, Glass-r-n4    TRAN  SLOP  DSC132414b   EXTERIOR       
- 20, Glass-r-n3    TRAN  SLOP  DSC132414b   EXTERIOR       
- 21, Glass-v-w1    TRAN  VERT  DSC644213n   EXTERIOR       
- 22, Glass-v-w2    TRAN  VERT  DSC644213n   EXTERIOR       
- 23, Glass-v-n1    TRAN  VERT  DSC644213n   EXTERIOR       
- 24, Glass-v-n2    TRAN  VERT  DSC644213n   EXTERIOR       
-# base
-   6   0   0   0    14.19
+*Geometry 1.1,GEN,West_4 # tag version, format, zone name
+*date Thu Aug 23 18:04:04 2007  # latest file modification 
+West_4 describes a
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,16.00000,4.30000,0.00000  #   1
+*vertex,20.30000,4.30000,0.00000  #   2
+*vertex,20.30000,1.00000,0.00000  #   3
+*vertex,16.00000,1.00000,0.00000  #   4
+*vertex,16.00000,4.30000,2.60000  #   5
+*vertex,20.30000,4.30000,3.80110  #   6
+*vertex,20.30000,1.00000,2.60000  #   7
+*vertex,16.00000,1.00000,2.60000  #   8
+*vertex,18.58000,1.00000,2.60000  #   9
+*vertex,18.58000,3.58000,3.53904  #  10
+*vertex,19.30000,4.30000,3.80110  #  11
+*vertex,17.72000,2.72000,3.22603  #  12
+*vertex,16.00000,2.30000,2.60000  #  13
+*vertex,17.68000,4.30000,3.21147  #  14
+*vertex,16.00000,2.30000,0.00000  #  15
+*vertex,16.35280,2.72000,2.72841  #  16
+*vertex,16.00000,2.30000,0.75000  #  17
+*vertex,16.00000,1.00000,0.75000  #  18
+*vertex,20.30000,1.00000,0.75000  #  19
+*vertex,16.05000,1.11840,2.61820  #  20
+*vertex,16.05000,2.26000,2.61820  #  21
+*vertex,17.62000,2.67000,3.18963  #  22
+*vertex,16.39280,2.67000,2.74297  #  23
+*vertex,16.47280,2.77000,2.77208  #  24
+*vertex,17.72000,4.25000,3.22603  #  25
+*vertex,19.17200,4.25000,3.75451  #  26
+*vertex,17.68000,2.77000,3.21146  #  27
+*vertex,18.39164,3.47592,3.47048  #  28
+*vertex,18.46038,3.54410,3.49550  #  29
+*vertex,17.06504,3.47279,2.98764  #  30
+*vertex,17.12778,3.54724,3.01048  #  31
+*vertex,18.53000,1.05000,2.61820  #  32
+*vertex,16.14500,1.05000,2.61800  #  33
+*vertex,18.53000,3.44300,3.48918  #  34
+*vertex,17.77000,1.05000,2.61814  #  35
+*vertex,17.67000,1.05000,2.61813  #  36
+*vertex,17.77000,2.68045,3.20951  #  37
+*vertex,17.67000,2.58012,3.17285  #  38
+*vertex,20.25000,1.04698,2.61710  #  39
+*vertex,19.49000,1.04698,2.61710  #  40
+*vertex,19.49000,4.25228,3.78373  #  41
+*vertex,20.25000,4.25228,3.78373  #  42
+*vertex,19.39000,1.04698,2.61710  #  43
+*vertex,18.63000,1.04698,2.61710  #  44
+*vertex,18.63000,3.53900,3.52412  #  45
+*vertex,19.39000,4.25228,3.78373  #  46
+*vertex,16.00000,1.10000,0.85000  #  47
+*vertex,16.00000,2.20000,0.85000  #  48
+*vertex,16.00000,2.20000,2.05000  #  49
+*vertex,16.00000,1.10000,2.05000  #  50
+*vertex,16.00000,1.10000,2.15000  #  51
+*vertex,16.00000,2.20000,2.15000  #  52
+*vertex,16.00000,2.20000,2.50000  #  53
+*vertex,16.00000,1.10000,2.50000  #  54
+*vertex,16.10000,1.00000,0.85000  #  55
+*vertex,20.20000,1.00000,0.85000  #  56
+*vertex,20.20000,1.00000,2.05000  #  57
+*vertex,16.10000,1.00000,2.05000  #  58
+*vertex,16.10000,1.00000,2.15000  #  59
+*vertex,20.20000,1.00000,2.15000  #  60
+*vertex,20.20000,1.00000,2.50000  #  61
+*vertex,16.10000,1.00000,2.50000  #  62
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,6,2,1,5,14,11,6  #  1
+*edges,5,3,2,6,7,19  #  2
+*edges,17,18,19,56,55,58,57,56,19,7,61,60,59,62,61,7,9,8  #  3
+*edges,16,17,18,47,48,49,50,47,18,8,54,51,52,53,54,8,13  #  4
+*edges,4,14,5,13,16  #  5
+*edges,5,15,1,2,3,4  #  6
+*edges,15,32,9,10,12,8,33,38,36,33,8,9,32,35,37,34  #  7
+*edges,17,9,7,39,40,41,42,39,7,6,11,10,9,44,45,46,43,44  #  8
+*edges,10,13,8,20,21,23,22,20,8,12,16  #  9
+*edges,17,24,16,12,10,11,14,25,26,29,31,25,14,16,24,30,28,27  # 10
+*edges,5,1,15,17,13,5  # 11
+*edges,4,15,4,18,17  # 12
+*edges,4,4,3,19,18  # 13
+*edges,4,21,20,22,23  # 14
+*edges,4,30,24,27,28  # 15
+*edges,4,25,31,29,26  # 16
+*edges,3,33,36,38  # 17
+*edges,4,35,32,34,37  # 18
+*edges,4,40,39,42,41  # 19
+*edges,4,44,43,46,45  # 20
+*edges,4,48,47,50,49  # 21
+*edges,4,52,51,54,53  # 22
+*edges,4,55,56,57,58  # 23
+*edges,4,59,60,61,62  # 24
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,Fict-1-w4,VERT,-,-,-,Fict-trans,SC_fictit,ANOTHER,03,01  #   1 ||< Fict-1-w4:West_3
+*surf,Fict-2-e3,VERT,-,-,-,Fict-trans,SC_fictit,ANOTHER,06,02  #   2 ||< Fict-2-e3:East_2
+*surf,Frame-v-n,VERT,-,-,-,Frame-vert,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,Frame-v-w,VERT,-,-,-,Frame-vert,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,Fict-2-w2,SLOP,-,-,-,Fict-trans,SC_fictit,ANOTHER,00,00  #   5 ||< identical environment
+*surf,Floor,FLOR,-,-,-,Floor,OPAQUE,GROUND,00,01  #   6 ||< user def grnd profile  1
+*surf,Frame-r-n1,SLOP,-,-,-,Frame-roof,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,Frame-r-n2,SLOP,-,-,-,Frame-roof,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,Frame-r-w1,SLOP,-,-,-,Frame-roof,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,Frame-r-w2,SLOP,-,-,-,Frame-roof,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,Fict-1-w2,VERT,-,-,-,Fict-trans,SC_fictit,ANOTHER,00,00  #  11 ||< identical environment
+*surf,Parapet-w,VERT,-,-,-,Parapet,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,Parapet-n,VERT,-,-,-,Parapet,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,Glass-r-w1,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  14 ||< external
+*surf,Glass-r-w2,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  15 ||< external
+*surf,Glass-r-w3,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  16 ||< external
+*surf,Glass-r-n1,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  17 ||< external
+*surf,Glass-r-n2,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  18 ||< external
+*surf,Glass-r-n4,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  19 ||< external
+*surf,Glass-r-n3,SLOP,-,-,-,DSC132414b,DSC132414b_o,EXTERIOR,0,0  #  20 ||< external
+*surf,Glass-v-w1,VERT,-,-,-,DSC644213n,DSC644213n_o,EXTERIOR,0,0  #  21 ||< external
+*surf,Glass-v-w2,VERT,-,-,-,DSC644213n,DSC644213n_o,EXTERIOR,0,0  #  22 ||< external
+*surf,Glass-v-n1,VERT,-,-,-,DSC644213n,DSC644213n_o,EXTERIOR,0,0  #  23 ||< external
+*surf,Glass-v-n2,VERT,-,-,-,DSC644213n,DSC644213n_o,EXTERIOR,0,0  #  24 ||< external
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,all_applicable  19 # list of surfs
+  3  4  7  8  9 10 12 13 14 15 16 17 18 19 20 21 22 23 24
+# 
+*insol_calc,all_applicable  11 # insolation sources
+ 14 15 16 17 18 19 20 21 22 23 24
+# 
+*base_list,1,6,    14.19 0  # zone base list

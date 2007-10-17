@@ -67,6 +67,9 @@ C Format of the IPV report.
 C  = 1 is human readable text, 2 is tab separated, 3 is java
       common/IPVFORMAT/ipvform,ipvversion
 
+C Selection menu for graphs and/or tables.
+      dimension item(8)
+      character item*24
       character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
       character SLABEL*32,GLABEL*20,TLABEL*60,trange*20,tab*1
@@ -486,17 +489,32 @@ C We now have the data in bins therefore ask how it should be displayed.
       elseif(act(1:1).eq.'p')then
         IG=3
       else
-        H(1)='Frequency distribution choices. '
-        IDG=1
-        IG=1
-        CALL MENUATOL('Frequency choices','Frequency reports:',
-     &    'a frequency distribution','b cumulative freq. dist.',
-     &    'c summary table ','d frequency dist. + table',
-     &    'e cumulative dist. + table','f none of the above',
-     &    ' ',' ',' ',' ',' ',' ',IG,IDG,1)
-        if(IG.eq.6) goto 1
-        CALL EASKABCD('Choices:',' ','frequency distribution',
-     &     'cumulative freq. dist.','summary table ','continue',IG,1)
+
+C << convert this block of code to use a standard menu
+C << call so users can just exit and not have to click
+C << on 'none of the above'.
+    5   H(1)='Frequency distribution opions allow you to look at '
+        H(2)='graphs or tables or both. When you want to do something'
+        H(3)='select the exit choice.'
+        item(1)='a frequency graph       '
+        item(2)='b cumulative graph      '
+        item(3)='c summary table         '
+        item(4)='d frequency graph+table '
+        item(5)='e cumulative graph+table'
+        item(6)=' ______________________ '
+        item(7)='? help                  '
+        item(8)='- exit                  '
+        nitms=8
+        CALL EMENU(' Frequency analysis',ITEM,NITMS,IG)
+        if(IG.eq.8)then
+          goto 1
+        elseif(IG.eq.7)then
+
+C Help.
+          CALL PHELPD('frequency help',3,'-',0,0,IER)
+        elseif(IG.eq.6)then
+          goto 5
+        endif
       endif
       IF(IG.EQ.1.OR.IG.EQ.2.OR.IG.EQ.4.OR.IG.EQ.5)then
 
@@ -524,6 +542,7 @@ C Output to file - should sense automatically if graphical.
           endif
         endif
       endif
+
       if(IG.EQ.3.OR.IG.EQ.4.OR.IG.EQ.5)then
 
 C If output to file alter the edisp unit number and then write out
@@ -775,7 +794,12 @@ C text dialogue box that would normally be displayed.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 #endif
-          call win3d(menuchw,12,20,5,3,igl,igr,igt,igb,igw,igwh)
+C Older layout with lots of white space.
+C          call win3d(menuchw,12,20,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Reduce the white space on the right so the label percent is not
+C so separated from the axis.
+          call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
           call startbuffer()
         endif
       ENDIF

@@ -21,11 +21,10 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  esru_misc.o esystem.o fabcon.o fabtmp.o frqdis.o iaq.o initalc.o \
 	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
-	  pltcfg.o psychart.o psychro.o recover.o replsim.o resdef.o resutil.o \
-	  rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
+	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
+	  resutil.o rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
-	  vgraph.o visgrd.o visual.o visvec.o TReports_dummy.o readTrnsys.o \
-	  mimo_dummy.o
+	  vgraph.o visgrd.o visual.o visvec.o TReports_dummy.o mimo_dummy.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -117,6 +116,9 @@ pltcfg.F:
 psychro.F:
 	rm -f psychro.F
 	ln -s $(COMdir)/psychro.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
@@ -138,6 +140,9 @@ tdfile.F:
 tdrecres.F:
 	rm -f tdrecres.F
 	ln -s $(TDFdir)/tdrecres.F .
+TReports_dummy.F:
+	rm -f TReports_dummy.F
+	ln -s $(REPdir)/TReports_dummy.F .
 visgrd.F:
 	rm -f visgrd.F
 	ln -s $(DFSdir)/visgrd.F .
@@ -147,12 +152,6 @@ visual.F:
 visvec.F:
 	rm -f visvec.F
 	ln -s $(DFSdir)/visvec.F .
-TReports_dummy.F:
-	rm -f TReports_dummy.F
-	ln -s $(REPdir)/TReports_dummy.F .
-readTrnsys.F:
-	rm -f readTrnsys.F
-	ln -s $(COMdir)/readTrnsys.F .
 mimo_dummy.F:
 	rm -f mimo_dummy.F
 	ln -s $(CTLdir)/mimo_dummy.F .
@@ -169,6 +168,6 @@ clean:
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
-	psychro.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	tdrecres.F visgrd.F visual.F visvec.F TReports_dummy.F readTrnsys.F \
-	mimo_dummy.F
+	psychro.F readTrnsys.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
+	tdrecres.F visgrd.F visual.F visvec.F TReports_dummy.F mimo_dummy.F
+

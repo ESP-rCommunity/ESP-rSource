@@ -1,7 +1,7 @@
 *Operations 1.0
-*date Wed Mar 15 14:35:04 2006  # latest file modification 
-# operations of mainfloor defined in: 
-# ../zones_detailed/main_airflow_gain.opr
+*date Fri Aug 17 15:30:15 2007  # latest file modification 
+# operations of main_second defined in: 
+# ../zones_basic/main_second_sorted_gains.opr
 nil_operations
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000

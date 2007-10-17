@@ -1,43 +1,49 @@
-# geometry of tube_a defined in: ../zones/tube_a.geo
-GEN  tube_a  tube_a describes the a section of earth tube  # type, name, descr
-      12       8   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-     -3.96110    -3.18252    -1.00000  # vert   1
-      7.50000    -3.00000    -1.00000  # vert   2
-      7.50000    -2.00000    -1.00000  # vert   3
-      7.00000    -2.00000    -1.00000  # vert   4
-      7.00000    -2.50000    -1.00000  # vert   5
-     -3.99333    -2.69990    -1.00000  # vert   6
-     -3.96110    -3.18252    -0.80000  # vert   7
-      7.50000    -3.00000    -0.80000  # vert   8
-      7.50000    -2.00000    -0.80000  # vert   9
-      7.00000    -2.00000    -0.80000  # vert  10
-      7.00000    -2.50000    -0.80000  # vert  11
-     -3.99333    -2.69990    -0.80000  # vert  12
-# no of vertices followed by list of associated vert
-   4,  1,  2,  8,  7,
-   4,  2,  3,  9,  8,
-   4,  3,  4, 10,  9,
-   4,  4,  5, 11, 10,
-   4,  5,  6, 12, 11,
-   4,  6,  1,  7, 12,
-   6,  7,  8,  9, 10, 11, 12,
-   6,  1,  6,  5,  4,  3,  2,
-# unused index
- 0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, side_a        OPAQ  VERT  earth_side   GROUND         
-  2, side_b        OPAQ  VERT  earth_side   GROUND         
-  3, side_c        OPAQ  VERT  insul_frame  tube_b         
-  4, side_e        OPAQ  VERT  earth_side   GROUND         
-  5, side_f        OPAQ  VERT  earth_side   GROUND         
-  6, side_g        OPAQ  VERT  earth_side   GROUND         
-  7, top           OPAQ  CEIL  earth_top    EXTERIOR       
-  8, base          OPAQ  FLOR  below        GROUND         
-# base
-  8  0  0  0  0  0     5.94 0
+*Geometry 1.1,GEN,tube_a # tag version, format, zone name
+*date Thu Aug 23 17:43:01 2007  # latest file modification 
+tube_a describes the a section of earth tube
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,-3.96110,-3.18252,-1.00000  #   1
+*vertex,7.50000,-3.00000,-1.00000  #   2
+*vertex,7.50000,-2.00000,-1.00000  #   3
+*vertex,7.00000,-2.00000,-1.00000  #   4
+*vertex,7.00000,-2.50000,-1.00000  #   5
+*vertex,-3.99333,-2.69990,-1.00000  #   6
+*vertex,-3.96110,-3.18252,-0.80000  #   7
+*vertex,7.50000,-3.00000,-0.80000  #   8
+*vertex,7.50000,-2.00000,-0.80000  #   9
+*vertex,7.00000,-2.00000,-0.80000  #  10
+*vertex,7.00000,-2.50000,-0.80000  #  11
+*vertex,-3.99333,-2.69990,-0.80000  #  12
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,8,7  #  1
+*edges,4,2,3,9,8  #  2
+*edges,4,3,4,10,9  #  3
+*edges,4,4,5,11,10  #  4
+*edges,4,5,6,12,11  #  5
+*edges,4,6,1,7,12  #  6
+*edges,6,7,8,9,10,11,12  #  7
+*edges,6,1,6,5,4,3,2  #  8
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,side_a,VERT,-,-,-,earth_side,OPAQUE,GROUND,00,01  #   1 ||< user def grnd profile  1
+*surf,side_b,VERT,-,-,-,earth_side,OPAQUE,GROUND,00,01  #   2 ||< user def grnd profile  1
+*surf,side_c,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,05,01  #   3 ||< end_a:tube_b
+*surf,side_e,VERT,-,-,-,earth_side,OPAQUE,GROUND,00,01  #   4 ||< user def grnd profile  1
+*surf,side_f,VERT,-,-,-,earth_side,OPAQUE,GROUND,00,01  #   5 ||< user def grnd profile  1
+*surf,side_g,VERT,-,-,-,earth_side,OPAQUE,GROUND,00,01  #   6 ||< user def grnd profile  1
+*surf,top,CEIL,-,-,-,earth_top,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,base,FLOR,-,-,-,below,OPAQUE,GROUND,00,01  #   8 ||< user def grnd profile  1
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,8,     5.94 0  # zone base list

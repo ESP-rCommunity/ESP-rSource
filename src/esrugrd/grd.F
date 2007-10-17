@@ -479,6 +479,11 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -499,11 +504,13 @@ C Material data arrays.
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
       LOGICAL GRDOK
+      logical newgeo  ! to use for testing if new/old geometry file.
       DIMENSION ICLN(30)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       CHARACTER VERTX*2,outs*124
 
       GRDOK=.true.
+      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       FMIN=0.45
       FREF=0.5
@@ -514,7 +521,12 @@ C Material data arrays.
       BCNV=5.0
       NNDS=0
       DO 10 ICOMP=1,NCOMP
-        CALL EGOMIN(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        endif
         IF(IER.NE.0)THEN
           GRDOK=.FALSE.
           RETURN

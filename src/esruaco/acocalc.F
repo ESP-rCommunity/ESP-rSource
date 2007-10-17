@@ -146,7 +146,9 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
 
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/AbsoCoef/SysAbsCo(MMLC,MNbAbs),PubAbsCo(MaxPub,MNbAbs),
@@ -164,7 +166,8 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
       COMMON/MetNam/ACOName,CalName(4),LabFreq(MNbAbs)
       CHARACTER CalName*12
       CHARACTER zname*12,zdesc*64, outs*124
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER PubType*12, FurType*12, FurCat*4, CovSurf*12
       CHARACTER LabFreq*4,ACOName*72
 
@@ -193,7 +196,8 @@ C Surface area (SNA) - Furniture area (XnbFur)
       DO 50 IFur = 1,MaxFur
         IF (CovSurf(IFur).NE.'none') THEN          
           DO 51 ISurf = 1, NSUR
-            IF (CovSurf(IFur).EQ.SNAME(IZone,ISurf)) THEN
+            icon=IZSTOCN(izone,isurf)
+            IF (CovSurf(IFur).EQ.SSNAME(icon)) THEN
               SNAeff(ISurf) =  SNAeff(ISurf) - XNbFur(IFur)
               GOTO 50
             ENDIF
@@ -206,11 +210,12 @@ C Next Furniture
 C For each surface in the zone, find the MLC number in BCF file according 
 C to its surface name and calcule the equivalente area of the MATERIAL
       DO 100 ICurSurf = 1,NSUR
+        icon=IZSTOCN(izone,ICurSurf)
         IF ((SNAeff(ICurSurf) .GT. 0.) .OR. (ICurSurf .EQ. MS)) THEN
 
           if (SNAeff(ICurSurf) .GT. 0.) then
             SurfTot = SurfTot + SNAeff(ICurSurf)
-            ICurComp = MLCIndex(SMLCN(ICurSurf))
+            ICurComp = MLCIndex(SSMLCN(icon))
           endif
 
 C For each frenquency, compute the equivalente surface FOR MATERIAL and 

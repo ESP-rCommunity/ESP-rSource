@@ -85,9 +85,16 @@ C wshad.f  - WSHAD:  Performs ASHRAE window shading.
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/DATA2/ICAL
       COMMON/MTFILE/LTRNS,MULTC,MONS,MONF
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -105,8 +112,6 @@ C Indicator of possible focus zone and action to take.
 
 C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
@@ -114,7 +119,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -144,10 +149,11 @@ C Material data arrays.
       character path*72,upath*72,esprc*72,cfgroot*24
       character dfdblbl*20,defdbfl*72
       character inz*16,inzone*16,ZN*12,pact*16,paction*16,OUTSTR*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       logical silent,unixok,there,context,existing
-      character xfile*144,tg*1,delim*1
+      logical newgeo  ! to use for testing if new/old geometry file.
+      character xfile*144,tg*1,delim*1,MODE*4
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
@@ -195,6 +201,7 @@ C Set folder separator (fs) to \ or / as required.
       ITC=0
       ICOUT=IUOUT
       tok=.false.
+      newgeo=.false.  ! assume older format geometry.
 
 C Initial coords for eyepoint, viewing point, angle of view.
       EYEM(1)=-100.
@@ -318,7 +325,7 @@ C All subsequent tstamp messages will be appended to root journal.
           close(iuj)
         endif
 
-        write(outs,'(a,a)')'Journal (shading analysis) for:',
+        write(outs,'(2a)')'Journal (shading analysis) for:',
      &    uname(1:lnblnk(uname))
         call tstamp('>',outs)
       endif
@@ -403,7 +410,8 @@ C If an input file has been specified then load it.
           if(paction(1:13).ne.'update_silent')then
             call usrmsg(' Scanning the model...',' ','-')
           endif
-          call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+          MODE='NONE'
+          call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(paction(1:13).ne.'update_silent')then
             call usrmsg(' Scanning the model...done.',' ','-')
           endif
@@ -603,7 +611,8 @@ C name with the full path.
           call edisp(iuout,' Scanning the model description')
           call tstamp('>','ISH: scanning new model')
           call tstamp('>',LCFGF)
-          call ESCSYS(LCFGF,IFCFG,IAIRP,IER)
+          MODE='NONE'
+          call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
             NZONES=NCOMP
@@ -662,7 +671,12 @@ C preparation for any calculations to be done.
         if(IW.eq.1)then
           call tstamp('>','ISH: look at siteplan')
           CALL SITPLN(ICOMP)
-          CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+          else
+            call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+          endif
         else
 
 C Draw the zone and any obstructions associated with it based on
@@ -818,7 +832,7 @@ C << transitional file to read. >>
               goto 300
             ENDIF
           endif
-          CALL RETRV1
+          CALL RETRV1(icomp)
           if(IW.EQ.2)CALL SYNOP(ICOMP)
           if(IW.EQ.3.and.MMOD.eq.8)then
             call tstamp('>','ISH: view shading patterns')
@@ -837,8 +851,8 @@ C Insolation computation.
           call tstamp('>','ISH: start insolation computation')
           call INSCOM(ICOMP,ICSTAT,'-')
         else
-          call usrmsg(' Unknown shading:insolation db or utility',
-     &                ' file. Please choose another zone...','W')
+          call usrmsg(' Unknown shading:insolation file.',
+     &                ' Please choose another zone...','W')
         endif
       ELSEIF(INOS.EQ.14)THEN
 
@@ -983,6 +997,11 @@ C file names manually.
       common/pophelp/h(60)
 
       COMMON/FILEP/IFIL
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -998,13 +1017,24 @@ C file names manually.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character h*72
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       IUF=IFIL+1
+      newgeo=.false.  ! assume older format geometry.
 
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(silent)then
-        CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        if(newgeo)then
+          call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        else
+          call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        endif
       else
-        CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,1,IUOUT,IER)
+        if(newgeo)then
+          call georead(IUF,LGEOM(ICOMP),ICOMP,1,1,IUOUT,IER)
+        else
+          call egomin(IUF,LGEOM(ICOMP),ICOMP,1,1,IUOUT,IER)
+        endif
       endif
       IF(IER.NE.0)THEN
         CALL edisp(iuout,'Problem detected while trying to open/read')

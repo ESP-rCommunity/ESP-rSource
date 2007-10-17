@@ -1454,18 +1454,28 @@ C Error trap on read error
 
 C ********************* IDSURF *********************
 C IDSURF - Identify ESP-r building surface number (used for thermal conflation).
-C   This function identify bld surface associate with cfd surface.
+C   This function identify bld surface associated with cfd surface.
+C   surf (12 char) is passed parameter. The current zone is taken
+C   from common block variable icp.
       FUNCTION IDSURF(SURF)
 #include "building.h"
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER SURF*12
+      integer lnssn,lnsurf
 
-      do 10 IS=1,MS
-        IF(SNAME(ICP,IS).EQ.SURF)then
+      do 10 IS=1,nzsur(icp)
+        icon=IZSTOCN(icp,is)
+        lnssn=lnblnk(SSNAME(icon))
+        lnsurf=lnblnk(SURF)
+        IF(SSNAME(icon)(1:lnssn).EQ.SURF(1:lnsurf))then
           IDSURF=IS
           GOTO 99
         ENDIF

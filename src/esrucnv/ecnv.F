@@ -118,7 +118,7 @@ C Material data array.
       character dfdblbl*20,defdbfl*72,upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character cfgroot*24,dstmp*24
+      character cfgroot*24,dstmp*24,MODE*4
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
       character htmlfile*72
@@ -273,7 +273,8 @@ C to update commons for configuration.
           call blnksys
           call edisp(iuout,' Scanning the problem before updating...')
           call escdef(dfdblbl,defdbfl,iotmp2,IER)
-          call ESCSYS(LCFGF,ioout,iotmp2,IER)
+          MODE='NONE'
+          call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
           else
@@ -350,7 +351,8 @@ C Make temporary use of file unit iotmp2.
 C Find the path and local file name.
         call fdroot(LTMP,path,LCFGF)
         call edisp(iuout,' Scanning the model description...')
-        call ESCSYS(LCFGF,ioin,iotmp2,IER)
+        MODE='NONE'
+        call ERSYS(LCFGF,ioin,iotmp2,MODE,itrc,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
         else
@@ -1464,12 +1466,6 @@ C calls in esru_lib.F
       end
 
       SUBROUTINE INLNST(ITYP)
-      return
-      end
-
-      SUBROUTINE PLELEV(IUF,direc,ier)
-      CHARACTER direc*1
-      ier=0
       return
       end
 

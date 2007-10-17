@@ -1,47 +1,53 @@
-# geometry of ceil_j defined in: ../zones/ceil_j.geo
-GEN  ceil_j  ceil_j describes a...  # type, name, descr
-      14       9   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-     10.00000     0.00000     2.70000  # vert   1
-     34.00000     0.00000     2.70000  # vert   2
-     34.00000     9.50000     2.70000  # vert   3
-     29.00000     9.50000     2.70000  # vert   4
-     29.00000    12.00000     2.70000  # vert   5
-     12.00000    12.00000     2.70000  # vert   6
-      9.99900    12.00000     2.70000  # vert   7
-     10.00000     0.00000     3.80000  # vert   8
-     34.00000     0.00000     3.80000  # vert   9
-     34.00000     9.50000     3.80000  # vert  10
-     29.00000     9.50000     3.80000  # vert  11
-     29.00000    12.00000     3.80000  # vert  12
-     12.00000    12.00000     3.80000  # vert  13
-     10.00000    12.00000     3.80000  # vert  14
-# no of vertices followed by list of associated vert
-   4,  1,  2,  9,  8,
-   4,  2,  3, 10,  9,
-   4,  3,  4, 11, 10,
-   4,  4,  5, 12, 11,
-   4,  5,  6, 13, 12,
-   4,  6,  7, 14, 13,
-   4,  7,  1,  8, 14,
-   7,  8,  9, 10, 11, 12, 13, 14,
-   7,  1,  7,  6,  5,  4,  3,  2,
-# unused index
- 0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, south         OPAQ  VERT  insul_mtl_p  EXTERIOR       
-  2, east          OPAQ  VERT  insul_mtl_p  EXTERIOR       
-  3, str_3         OPAQ  VERT  gyp_blk_ptn  stair_deij     
-  4, str_4         OPAQ  VERT  gyp_blk_ptn  stair_deij     
-  5, prt_i-j       OPAQ  VERT  gyp_blk_ptn  ceil_chi       
-  6, cor_dj        OPAQ  VERT  gyp_blk_ptn  ceil_chi       
-  7, west          OPAQ  VERT  insul_mtl_p  EXTERIOR       
-  8, upper         OPAQ  CEIL  susp_flr_re  Unit_e         
-  9, lower         OPAQ  FLOR  susp_ceil    Unit_j         
-# base
-  9  0  0  0  0  0   275.51 0
+*Geometry 1.1,GEN,ceil_j # tag version, format, zone name
+*date Thu Aug 23 18:32:19 2007  # latest file modification 
+ceil_j describes a...
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,10.00000,0.00000,2.70000  #   1
+*vertex,34.00000,0.00000,2.70000  #   2
+*vertex,34.00000,9.50000,2.70000  #   3
+*vertex,29.00000,9.50000,2.70000  #   4
+*vertex,29.00000,12.00000,2.70000  #   5
+*vertex,12.00000,12.00000,2.70000  #   6
+*vertex,9.99900,12.00000,2.70000  #   7
+*vertex,10.00000,0.00000,3.80000  #   8
+*vertex,34.00000,0.00000,3.80000  #   9
+*vertex,34.00000,9.50000,3.80000  #  10
+*vertex,29.00000,9.50000,3.80000  #  11
+*vertex,29.00000,12.00000,3.80000  #  12
+*vertex,12.00000,12.00000,3.80000  #  13
+*vertex,10.00000,12.00000,3.80000  #  14
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,9,8  #  1
+*edges,4,2,3,10,9  #  2
+*edges,4,3,4,11,10  #  3
+*edges,4,4,5,12,11  #  4
+*edges,4,5,6,13,12  #  5
+*edges,4,6,7,14,13  #  6
+*edges,4,7,1,8,14  #  7
+*edges,7,8,9,10,11,12,13,14  #  8
+*edges,7,1,7,6,5,4,3,2  #  9
+# 
+# surf attributes:
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,south,VERT,-,-,-,insul_mtl_p,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,east,VERT,-,-,-,insul_mtl_p,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,str_3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,15,08  #   3 ||< prt_cj1:stair_deij
+*surf,str_4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,15,10  #   4 ||< prt_cj:stair_deij
+*surf,prt_i-j,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,12,07  #   5 ||< prt_ij:ceil_chi
+*surf,cor_dj,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,12,06  #   6 ||< cor_j:ceil_chi
+*surf,west,VERT,-,-,-,insul_mtl_p,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,upper,CEIL,-,-,-,susp_flr_re,OPAQUE,ANOTHER,08,09  #   8 ||< floor:Unit_e
+*surf,lower,FLOR,-,-,-,susp_ceil,OPAQUE,ANOTHER,05,08  #   9 ||< ceil_j:Unit_j
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,9,   275.51 0  # zone base list

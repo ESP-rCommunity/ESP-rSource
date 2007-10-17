@@ -355,7 +355,16 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
+C << rewrite logic using G6 common block >>
+
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -395,6 +404,8 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
+C << rewrite logic to use G7 commons instead of these local variables. >>
+
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),spdesc(40),
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
@@ -402,17 +413,21 @@ C Arrays of material properties.
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
-      CHARACTER TITL*72,SNAME*12,DADESC*72,spitem2*32
-      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,spflnam*72,spdesc*72
+      CHARACTER TITL*72,DADESC*72,spitem2*32
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
 
 C Set the special components reporting variable
       SPREPT=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
 C Set the number of special maperials
       ispmn=ispm
@@ -627,7 +642,15 @@ c      ISO=ispmloc(IVAL,2)
       CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
       call usrmsg(' ',' ','-')
       if(IZ.eq.0) return
-      CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+      call eclose(gversion(IZ),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+      else
+        call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+      endif
+
+C << rewrite logic to use G7 common rather than call zinfo >>
+
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
@@ -665,7 +688,7 @@ C General image option flags.
       CALL EPMENRC
       if(SOTF(ISO)(1:4).eq.'OPAQ')then
         ISPMF=1
-      elseif(SOTF(ISO)(1:4).eq.'TRAN')then
+      else
         ISPMF=0
       endif              
 
@@ -673,7 +696,12 @@ C Edit item identified by KEYIND. Recover the related zone.
 c      CALL KEYIND(MVERT,IVERT,IFOC,IO)
 c      IVAL=IFOC
 
-      CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      call eclose(gversion(IZ),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      else
+        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      endif
       CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
       MODIFY=.TRUE.
@@ -689,7 +717,7 @@ c      IVAL=IFOC
       MODBND=.TRUE.
       if(SOTF(ISO)(1:4).eq.'OPAQ')then
         ISPMF=1
-      elseif(SOTF(ISO)(1:4).eq.'TRAN')then
+      else
         ISPMF=0
       endif
 
@@ -851,7 +879,12 @@ C For ducted wind turbine - select the position of the DWT outlet
         CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
         call usrmsg(' ',' ','-')
         if(IZ.eq.0) return
-        CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        endif
         CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
@@ -884,11 +917,13 @@ C General image option flags.
         CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','outlet.',IER)
         CALL EPMENRC
 
-C Edit item identified by KEYIND. Recover the related zone.
-c      CALL KEYIND(MVERT,IVERT,IFOC,IO)
-c      IVAL=IFOC
-
-        CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+C Recover the related zone.
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        endif
         CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
         MODIFY=.TRUE.

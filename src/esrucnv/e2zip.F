@@ -30,6 +30,11 @@ C file.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -37,9 +42,11 @@ C file.
 
       character zname*12,zdesc*64,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.
       IFIL=11
+      newgeo=.false.  ! assume older format geometry.
 
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
@@ -54,7 +61,12 @@ C If zip output required.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        call eclose(gversion(newfoc),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        endif
 
 C Write surface information to the zip file. (Rotation set to 0 deg).
         WRITE(ioout,'(a,a12)')'GEN ',zname(newfoc)

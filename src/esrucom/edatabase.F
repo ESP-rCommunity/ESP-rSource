@@ -353,8 +353,8 @@ C Clear parameters to be returned and then copy from DES.
       MLCSYM=' '
       WRITE(MLCN,'(A)')DES(1:12)
       WRITE(OTF,'(A)') DES(15:18)
-      IF(OTF.EQ.' ')OTF='OPAQ'
-      IF(OTF.EQ.'TRAN')THEN
+      IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
+      IF(OTF(1:4).NE.'OPAQ')THEN
         WRITE(OPT,'(A)') DES(21:32)
         IF(OPT.EQ.' ')OPT='UNKNOWN'
       ELSE
@@ -489,7 +489,7 @@ C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
-        IF(OTF.EQ.'TRAN')THEN
+        IF(OTF(1:4).NE.'OPAQ')THEN
           WRITE(OUTSTR,'(5a)')' Details of transparent construction: ',
      &      MLCN,' with ',OPT,' optics.'
           CALL EDISP(ITRU,OUTSTR)
@@ -612,7 +612,7 @@ C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
-      if(OTF.EQ.'TRAN')then
+      if(OTF(1:4).NE.'OPAQ')then
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
@@ -727,7 +727,7 @@ C an inside wall to inside wall hc 0.13 both sides.
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
-        IF(OTF.EQ.'TRAN')THEN
+        IF(OTF(1:4).NE.'OPAQ')THEN
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3)')
      &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,

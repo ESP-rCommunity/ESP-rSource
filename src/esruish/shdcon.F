@@ -193,9 +193,12 @@ C order from the top).
       COMMON/PROJ/XP(8),YP(8),ZP(8)
       COMMON/SHAD2/ISHD,XS(6),ZS(6)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/ract/paction
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character outs*124,BLKNAME*8,BLKMAT*12,paction*16
 
 C If any projected point YP value > 0 then the associated obstruction
@@ -326,8 +329,10 @@ C XP(4) is less:
       goto 7
 
 C Block crosses plane of face under consideration.
-    1 WRITE(outs,'(A,A,A,A,A,I3)')' Block ',BLKNAME(IB),
-     &' ignored (X face of ',SNAME(ICOMP,II),') @ time',JJ
+    1 continue
+      ICN=IZSTOCN(icomp,ii)
+      WRITE(outs,'(5A,I3)')' Block ',BLKNAME(IB),
+     &' ignored (X face of ',SSNAME(ICN),') @ time',JJ
       if(paction(1:13).ne.'update_silent')then
         call edisp(iuout,outs)
       endif

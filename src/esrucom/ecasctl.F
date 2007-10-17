@@ -475,7 +475,10 @@ C ACT - 's' do not ask the user for confirmation of file write.
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
       COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -494,8 +497,9 @@ C Daylight coefficient common block data definition:
      & IDCFID(MCOM,MLCOM,MDF)
 
       character cgcdesc*64
-      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,tmp*16,LCGCIN*72
-      CHARACTER SNAME*12, ACT*1
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER tmp*16,LCGCIN*72,ACT*1
 
       IER=0
       if (ACT(1:1).eq.'s') then
@@ -550,7 +554,8 @@ C Write data to file.
           WRITE(IUNIT,'(I3,A)',IOSTAT=ios,ERR=1) NUDWIN(ICOMP),
      &     ' # No of TMC(s) in zone ' 
           DO 112 IL=1,NZSUR(ICOMP)
-            IF(SOTF(IL)(1:4).EQ.'TRAN')THEN
+            icc=IZSTOCN(icomp,il)
+            IF(SSOTF(icc)(1:4).NE.'OPAQ')THEN
               DO 114 L=1,NDF(ICOMP,N) 
                 WRITE(IUNIT,'(I3,F7.4,A)',IOSTAT=ios,ERR=1)IL,
      &               DFDAT(ICOMP,N,IL,L),' # TMC number & coresp DF '

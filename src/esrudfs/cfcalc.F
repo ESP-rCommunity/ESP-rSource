@@ -328,8 +328,8 @@ C Initialise plot counter.
       IPLOT=0
 
 C Iteration loop.
- 320  NPLT=MAXIT/100
-      IF (mod(MAXIT,100).NE.0) NPLT=NPLT+1
+ 320  NPLT=MAXIT/MFRP
+      IF (mod(MAXIT,MFRP).NE.0) NPLT=NPLT+1
       ICALL=0
 
 C If in text mode, print monitoring headlines.
@@ -611,10 +611,8 @@ C need to be done again using lower velocity URFs
         CALL EDISP(IUOUT,'Solution did not converge')       
       ELSE
         CONVER=.TRUE.
-C        WRITE(OUT,'(A,I4,A,I3,A,I4,A)')'Solution converged in ',
-C     &  NITER,' iterations, for day no. ',idyp,' at ',ihrp,' hours.'
         WRITE(OUT,'(A,I4,A,I3,A,F6.3,A)')'Solution converged in ',
-     &  NITER,' iterations, for day no. ',idyp,' at ',btimef,'...'
+     &  NITER,' iterations, for day no. ',idyf,' at ',btimef,'...'
         CALL EDISP(IUOUT,OUT)
       ENDIF
 

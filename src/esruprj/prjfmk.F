@@ -505,14 +505,9 @@ C Each of these leaves the user to define the casual gains manually.
           H(23)='at least one period and define a casual gain).'
           CALL PHELPD('operation setup',23,'-',0,0,IER)
 
-C          call edisp(iuout,' ')
-C          call edisp(iuout,'For Weekdays....')
           call initcasday('wk',ier)
-C          call edisp(iuout,'For Saturdays....')
           call initcasday('sa',ier)
-C          call edisp(iuout,'For Sundays....')
           call initcasday('su',ier)
-C          call edisp(iuout,'Casual gain details ready for editing.')
 
 C debug
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
@@ -4228,7 +4223,8 @@ C Electrical data flag and elctrical data.
      &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
 
 C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       logical OK,DOK,CLOSE,silent
 
@@ -4858,7 +4854,8 @@ C Descriptive label for a zone load or casual gain.
      &             dbspth
 
 C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
 C Storage arrays for weekdays, saturdays, sundays
       common/P3WK/NCAS1C,ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
@@ -5248,7 +5245,8 @@ C  ICOMP zone number
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 

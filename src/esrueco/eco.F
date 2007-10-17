@@ -89,11 +89,12 @@ C Composites information
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       common/rpath/path
       common/uhome/upath
       common/udot/esprc
@@ -179,7 +180,7 @@ C Arrays of material properties.
       CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
       CHARACTER zname*12,zdesc*64
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER path*72,upath*72,esprc*72,L144*144
       CHARACTER dfdblbl*20,defdbfl*72
       CHARACTER NAM*72,TITL*72
@@ -187,8 +188,9 @@ C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8, Oldunit*8
-      CHARACTER xfile*144,tg*1,delim*1
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER xfile*144,tg*1,delim*1,MODE*4
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
       INTEGER IWHICH
       LOGICAL close
@@ -412,7 +414,8 @@ C properties, display it and then present the main menu.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        call ESCSYS(LCFGF,IFCFG,IUF,IER)
+        MODE='NONE'
+        call ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
         if(IER.eq.0)then
           NZONES=NCOMP
           CALL ZDATA (ITRC,IER,NZONES,ISFSUM)

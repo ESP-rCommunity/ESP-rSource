@@ -42,8 +42,6 @@ dfs:
 	cd $(SRCdir)/esrudfs; $(MAKE)
 c2e: 
 	cd $(SRCdir)/esruc2e; $(MAKE)
-cfg: 
-	cd $(SRCdir)/esrucfg; $(MAKE)
 clm: 
 	cd $(SRCdir)/esruclm; $(MAKE)
 e2r: 
@@ -85,7 +83,6 @@ clean:
 	cd $(SRCdir)/esrudbm; $(MAKE) clean
 	cd $(SRCdir)/esrudfs; $(MAKE) clean
 	cd $(SRCdir)/esruc2e; $(MAKE) clean
-	cd $(SRCdir)/esrucfg; $(MAKE) clean
 	cd $(SRCdir)/esruclm; $(MAKE) clean
 	cd $(SRCdir)/esrue2r; $(MAKE) clean
 	cd $(SRCdir)/esrucnv; $(MAKE) clean
@@ -112,7 +109,6 @@ strip:
 	cd $(SRCdir)/esrudbm; $(MAKE) strip
 	cd $(SRCdir)/esrudfs; $(MAKE) strip
 	cd $(SRCdir)/esruc2e; $(MAKE) strip
-	cd $(SRCdir)/esrucfg; $(MAKE) strip
 	cd $(SRCdir)/esruclm; $(MAKE) strip
 	cd $(SRCdir)/esrue2r; $(MAKE) strip
 	cd $(SRCdir)/esrucnv; $(MAKE) strip
@@ -137,7 +133,6 @@ InstBins:
 	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrucfg; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruclm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrue2r; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrucnv; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install

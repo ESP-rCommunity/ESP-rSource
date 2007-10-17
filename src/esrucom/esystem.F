@@ -78,6 +78,7 @@ C IC1 &   - zone and surface numbers defining the start
 C IE1       point of each connection.
 
 C ICT     - connection type where:
+C          -1 ; unknown at this time.
 C           0 ; connection to external conditions
 C           1 ; connection to identical environmental conditions
 C               as the source zone (OR, relative temp and absolute 
@@ -122,6 +123,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+C LSBEM (for SBEM database)
 C default file names for databases
 
 #include "net_flow.h"
@@ -135,7 +137,7 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "lookup_data.h"
-
+#include "sbem.h"
       PARAMETER (MSTMC=1)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -145,9 +147,7 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -191,7 +191,13 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-      COMMON/G0/CTYPE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -462,7 +468,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,CTYPE*3,ZN*12
+      CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
@@ -477,8 +483,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
@@ -494,11 +498,14 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
       character HDR*12
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
+
+      newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -904,8 +911,6 @@ C Lookup table definition
         call EGETRM(OUTSTR,K,cTemp,'W','Lookup table data file', IER)
         cLookup_data_file_name = cTemp(1:lnblnk(cTemp))
         bLookup_data_defined = .true.
-
-
       elseif(WORD(1:4).eq.'*ctm')then
 
 C Contaminant model 
@@ -1221,6 +1226,16 @@ C CPCALC global information.
 
 C Radiance scene file.
         CALL EGETRM(OUTSTR,K,lradcf,'W','radiance scene file',IER)
+      elseif(WORD(1:5).eq.'*sbem')then
+
+C SBEM database file
+        CALL EGETW(OUTSTR,K,LSBEM,'W','SBEM db',IER)
+        ISBEM=1
+      elseif(WORD(1:4).eq.'*ncm')then
+
+C SBEM project specific file
+        CALL EGETW(OUTSTR,K,LASBEM,'W','SBEM db',IER)
+        ISBEM=1
       elseif(WORD(1:4).eq.'*nlt')then
 
 C Non-linear thermophysical properties configuration file.
@@ -1820,45 +1835,64 @@ C line. Make temporary use of file unit IUF.
         zname(ICOMP)='UNKNOWN'
         call FINDFIL(LGEOM(ICOMP),XST)
 
-C Quick read, get the zone name and the number of surfaces.
+C Quick read, if version 1.1 or newer then the file must be
+C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
           IF(IER.NE.0)goto 1
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
-          K=0
-          IF(ND.EQ.1)THEN
+          if(OUTSTR(1:13).eq.'*Geometry 1.1')then
+            K=13
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
+            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             zname(ICOMP)=' '
-            zdesc(ICOMP)=' '
-          ELSEIF(ND.EQ.2)THEN
-            CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
-            zdesc(ICOMP)=' '
-          ELSEIF(ND.gt.2)THEN
-            CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            CTYPE=WORD(1:3)
-            CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-            ZN=WORD(1:12)
-            call st2name(ZN,zname(ICOMP))
-            call egetrm(outstr,K,phrase,'W','Z description',IER)
-            ZDESC(ICOMP)=phrase
-          ENDIF
-          CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
-          K=0
-          CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no verts',IER)
-          CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no surfs',IER)
-          NZSUR(ICOMP)=NSUR
-          NZTV(ICOMP)=NTV
-          IF(IFLAG.NE.0)GOTO 1
+            CALL ERPFREE(IUF,ios)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            gversion(icomp) = 1.1   ! set the version number.
+            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+          else
 
-C Close geometry file.
-          CALL ERPFREE(IUF,ISTAT)
-          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+C Quick read, get the zone name and the number of surfaces if the
+C file version is prior to version 1.1.
+            K=0
+            IF(ND.EQ.1)THEN
+              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
+              zname(ICOMP)=' '
+              zdesc(ICOMP)=' '
+            ELSEIF(ND.EQ.2)THEN
+              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
+              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+              ZN=WORD(1:12)
+              call st2name(ZN,zname(ICOMP))
+              zdesc(ICOMP)=' '
+            ELSEIF(ND.gt.2)THEN
+              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
+              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+              ZN=WORD(1:12)
+              call st2name(ZN,zname(ICOMP))
+              call egetrm(outstr,K,phrase,'W','Z description',IER)
+              ZDESC(ICOMP)=phrase
+            ENDIF
+            CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
+            K=0
+            CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no verts',IER)
+            CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no surfs',IER)
+            NZSUR(ICOMP)=NSUR
+            NZTV(ICOMP)=NTV
+            IF(IFLAG.NE.0)GOTO 1
+
+C Close geometry file and set version number.
+            gversion(icomp) = 1.0   ! set the version number.
+            CALL ERPFREE(IUF,ISTAT)
+            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+          endif
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
           write(outs,'(a)')LGEOM(ICOMP)
@@ -2034,7 +2068,7 @@ C Read from either the connections file or configuration file.
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IE1(ICON),1,MS,'F','conn src surf',IER)
         IF(IER.NE.0) GOTO 1
-        CALL EGETWI(OUTSTR,K,ICT(ICON),0,7,'F','conn type',IER)
+        CALL EGETWI(OUTSTR,K,ICT(ICON),-1,7,'F','conn type',IER)
         IF(IER.NE.0) GOTO 1
         CALL EGETWI(OUTSTR,K,IC2(ICON),0,0,'-','conn other zone',IER)
         IF(IER.NE.0) GOTO 1
@@ -2071,13 +2105,19 @@ C Close connections file and build zone:surface to connections hash array.
         IZSTOCN(IC1(icc),IE1(icc))=icc
  42   continue
 
-C With hash known, re-scan geometry files and build connection based
-C surface attributes and recover zone volume and surface derived data.
-C NOTE: call to zgupdate is after connection lists established.
+C With hash known, re-scan geometry files (connection based
+C surface attributes will be instanciated during geometry read).
+C Warn if izstocn returns zero. Recover zone volume and surface
+C derived data. Use georead or egomin depending on version.
       do 242 ICOMP=1,NCOMP
         call FINDFIL(LGEOM(ICOMP),XST)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(XST)then
-          CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+          if(newgeo)then
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+          else
+            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+          endif
           DO 243 IS=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,is)
             if(icc.eq.0)then
@@ -2085,12 +2125,9 @@ C NOTE: call to zgupdate is after connection lists established.
      &          ' & sur',is
               goto 243
             endif
-            SSNAME(icc)=SNAME(icomp,is)
-            SSOTF(icc)=SOTF(is)
-            SSMLCN(icc)=SMLCN(is)
-            SSVFC(icc)=SVFC(is)
-            SSOTHER(icc)=SOTHER(is)
  243      continue
+
+C Call to zgupdate is after connection lists established.
           call zgupdate(0,icomp,ier)
 
 C Trace geometry related information. Because not all zones will have
@@ -2562,13 +2599,19 @@ C CONXINFO returns an English description in CXSTR of the inter-connection
 C information in common blocks  which are filled by reading the
 C system configuration file. If ICF=1 then display with zone and surface names 
 C if possible. If ICON=0 then generate a text heading.
+
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer ICM  ! connection for current surface.
 
       if(ICON.EQ.0.AND.ICF.GT.0)then
         WRITE(CXSTR,8986)  
@@ -2586,66 +2629,71 @@ C Trap out of range IC1 and IE1 variables.
         RETURN
       endif
 
-      SST1=SNAME(IC1(ICON),IE1(ICON))
+      SST1=SSNAME(ICON)
+      lsn1=lnblnk(SST1)
       ZST1=zname(IC1(ICON))
-      IF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,8985)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
+      lzn1=lnblnk(ZST1)
+      IF(ICT(ICON).EQ.-1.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,7985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
+ 7985   FORMAT(I4,1X,a,' in ',a,' not yet defined')
+      ELSEIF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
+        WRITE(CXSTR,8985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  8985   FORMAT(I4,1X,a,' in ',a,' is External')
       ELSEIF(ICT(ICON).EQ.1.AND.ICF.GT.0)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
-          WRITE(CXSTR,8984)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1))
+          WRITE(CXSTR,8984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  8984     FORMAT(I4,1X,a,' in ',a,' >|< Identical environment ')
         else
-          WRITE(CXSTR,8987)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
+          WRITE(CXSTR,8987)ICON,SST1(1:lsn1),
+     &      ZST1(1:lzn1),IC2(ICON),IE2(ICON)
  8987     FORMAT(I4,1X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
       ELSEIF(ICT(ICON).EQ.2.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,8983)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1)),
+        WRITE(CXSTR,8983)ICON,SST1(1:lsn1),ZST1(1:lzn1),
      &                   IC2(ICON),IE2(ICON)
  8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &    I4,' W rad')
       ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
-        SST2=SNAME(IC2(ICON),IE2(ICON))
+        ICM=IZSTOCN(IC2(ICON),IE2(ICON))
+        SST2=SSNAME(ICM)
+        lsn2=lnblnk(SST2)
         ZST2=zname(IC2(ICON))
-        WRITE(CXSTR,8982)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1)),
-     &                        SST2(1:LNBLNK(SST2)),ZST2(1:LNBLNK(ZST2))
+        lzn2=lnblnk(ZST2)
+        WRITE(CXSTR,8982)ICON,SST1(1:lsn1),ZST1(1:lzn1),
+     &                        SST2(1:lsn2),ZST2(1:lzn2)
  8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)
       ELSEIF(ICT(ICON).EQ.4.AND.ICF.GT.0)THEN
         IF(IC2(ICON).GT.0)THEN
-          WRITE(CXSTR,8981)ICON,SST1(1:LNBLNK(SST1)),
-     &                     ZST1(1:LNBLNK(ZST1)),IC2(ICON)
+          WRITE(CXSTR,8981)ICON,SST1(1:lsn1),
+     &                     ZST1(1:lzn1),IC2(ICON)
  8981     FORMAT(I4,1X,a,' in ',a,' >|< ground profile',I2)
         ELSEIF(IC2(ICON).EQ.-3)THEN
-          WRITE(CXSTR,8998)ICON,SST1(1:LNBLNK(SST1)),
-     &                     ZST1(1:LNBLNK(ZST1))
+          WRITE(CXSTR,8998)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  8998     FORMAT(I4,1X,a,' in ',a,' >|< 3D ground model')
         ELSE
-          WRITE(CXSTR,8980)ICON,SST1(1:LNBLNK(SST1)),
-     &                     ZST1(1:LNBLNK(ZST1)),IE2(ICON)
+          WRITE(CXSTR,8980)ICON,SST1(1:lsn1),
+     &                     ZST1(1:lzn1),IE2(ICON)
  8980     FORMAT(I4,1X,a,' in ',a,
      &         ' >|< user def ground profile',I2)
         ENDIF
       ELSEIF(ICT(ICON).EQ.5.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,7984)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
+        WRITE(CXSTR,7984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  7984   FORMAT(I4,1X,a,' in ',a,' is adiabatic')
-C BASESIMP start.
       ELSEIF(ICT(ICON).EQ.6.AND.ICF.GT.0)THEN
-        WRITE(CXSTR,7986)ICON,SST1(1:LNBLNK(SST1)),ZST1(1:LNBLNK(ZST1))
+
+C BASESIMP connection.
+        WRITE(CXSTR,7986)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  7986   FORMAT(I4,1X,a,' in ',a,' is BASESIMP fndtn')
-C BASESIMP end.
       ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
 
 C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
-          WRITE(CXSTR,9984)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1))
+          WRITE(CXSTR,9984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  9984     FORMAT(I4,1X,a,' in ',a,' >|< Identical CEN 13791 ')
         else
-          WRITE(CXSTR,9987)ICON,SST1(1:LNBLNK(SST1)),
-     &      ZST1(1:LNBLNK(ZST1)),IC2(ICON),IE2(ICON)
+          WRITE(CXSTR,9987)ICON,SST1(1:lsn1),
+     &      ZST1(1:lzn1),IC2(ICON),IE2(ICON)
  9987     FORMAT(I4,1X,a,' in ',a,' >|< CEN13791+-',i3,'dC & ',
      &      I4,' W rad')
         endif

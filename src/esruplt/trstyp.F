@@ -1289,7 +1289,7 @@ C *********************** Type60 Dummy*****************
 
 
       RETURN 1
-      END SUBROUTINE
+      END ! of type60
 
 
 C *********************** Type505 Dummy*****************
@@ -1302,7 +1302,7 @@ C *********************** Type505 Dummy*****************
       INTEGER           icntrl, info(15)
 
       RETURN 1
-      END SUBROUTINE
+      END ! of type505
 
 
 C *********************** Type152 Dummy*****************
@@ -1315,7 +1315,7 @@ C *********************** Type152 Dummy*****************
       INTEGER           icntrl, info(15)
 
       RETURN 1
-      END SUBROUTINE
+      END ! of type152
 
 
 

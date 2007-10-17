@@ -85,7 +85,7 @@ C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Activation of connections
       COMMON/ACT/ACTCNN(MCNN)
@@ -106,7 +106,7 @@ C Name of current application
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
       CHARACTER H*72,OUTSTR*124,inf*144,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character path*72,upath*72,esprc*72
       character dfdblbl*20,defdbfl*72
       character tg*1,delim*1,xfile*144

@@ -796,6 +796,10 @@ C ZBFLG()=0 bounds must be recalculated, ZBFLG()=1 use current value.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -809,12 +813,15 @@ C Ground geometry.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
+      logical newgeo  ! to use for testing if new/old geometry file.
+
       LOGICAL   ISTOK,CLOSE
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER OUTSTR*124
 
+      newgeo=.false.  ! assume older format geometry.
       if(ITDSP.le.5.and.nzg.lt.1)then
         CALL USRMSG(' ',' No zones to bounds check! ','W')
         IER=1
@@ -924,10 +931,15 @@ C If zone bounds known jump to next zone.
 C If in single zone mode recover common data from memory 
 C otherwise read from file.
         IF(IVZ.NE.izgfoc)THEN
-          WRITE(OUTSTR,78)LGEOM(IVZ)(:LNBLNK(LGEOM(IVZ)))
+          call eclose(gversion(IVZ),1.1,0.01,newgeo)
+          WRITE(OUTSTR,78)LGEOM(IVZ)(1:LNBLNK(LGEOM(IVZ)))
    78     FORMAT(' Bounds: ',A)
           if(itrc.gt.1)CALL USRMSG(' ',OUTSTR,'-')
-          CALL EGOMIN(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+          endif
         ELSEIF(IVZ.EQ.izgfoc)THEN
           CALL ERCZONE(IVZ)
         ENDIF

@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model house with sun space, winter operations
-defined in house_win.cfg generated on Thu Jun 21 09:51:13 2007. Notes
+defined in house_win.cfg generated on Thu Aug 23 18:12:15 2007. Notes
 associated with the model are in house_sun.log
  
 The model is located at latitude   58.20 with a longitude difference of  -6.21
@@ -244,21 +244,26 @@ ID Zone         Volume|          Surface
  
  A summary of the surfaces in kitliv( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.68    120.  -0. s_buf        OPAQ VERT int_buf      ||< s_liv:buf_1
-  2  9.60     30.   0. s_hall       OPAQ VERT int_buf      ||< s_liv:hall
-  3  10.1    300.   0. s_adjhouse   OPAQ VERT ext_west     ||< identical environment
-  4  12.3    210.   0. s_west       OPAQ VERT int_west     ||< s_liv:west_space
-  5  26.0      0.  90. ceil         OPAQ CEIL int_roof     ||< liv:roof
-  6  26.0      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
-  7  1.27    210.   0. win1         TRAN VERT doub_glaz    ||< external
-  8  2.40    120.   0. win3         TRAN VERT doub_glaz    ||< int_win:buf_1
-  9  1.27    210.   0. win2         TRAN VERT doub_glaz    ||< external
- 10  5.28     30.   0. s_bath       OPAQ VERT int_buf      ||< s_liv:bath
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.68    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_liv:buf_1
+  2  9.60     30.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_liv:hall
+  3  10.1    300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
+  4  12.3    210.   0. s_west       OPAQUE   VERT -     int_west     ||< s_liv:west_space
+  5  26.0      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< liv:roof
+  6  26.0      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
+  7  1.27    210.   0. win1         DC_8074_ VERT -     doub_glaz    ||< external
+  8  2.40    120.   0. win3         DC_8074_ VERT -     doub_glaz    ||< int_win:buf_1
+  9  1.27    210.   0. win2         DC_8074_ VERT -     doub_glaz    ||< external
+ 10  5.28     30.   0. s_bath       OPAQUE   VERT -     int_buf      ||< s_liv:bath
  
  
  An hourly solar radiation distribution is used for this zone.
+ Solar insolation focused on surface floor        (if shading not calculated).
+ Surfaces (all applicable) for shading analysis:
+win1 win2
+ Insolation sources (all applicable):
+win1 win2
  
  
  Shading patterns have not yet been calculated.
@@ -325,24 +330,27 @@ Sun 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in west_space( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  0.959   120.   0. s_buf        OPAQ VERT int_buf      ||< s_west:buf_1
-  2  12.3     30.   0. s_liv        OPAQ VERT int_westrev  ||< s_west:kitliv
-  3  0.959   300.   0. s_adjhouse   OPAQ VERT ext_west     ||< identical environment
-  4  12.3    210.  -0. ext_west     OPAQ VERT ext_west     ||< external
-  5  2.48      0.  90. ceil         OPAQ CEIL int_roof     ||< west_sp:roof
-  6  2.48      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
-  7  0.605   127.   0. jambl        OPAQ VERT ext_west     ||< external
-  8  0.605   307.   0. jambr        OPAQ VERT ext_west     ||< external
-  9  0.340     0.  90. sill         OPAQ CEIL ext_west     ||< external
- 10  0.340     0. -90. head         OPAQ FLOR ext_west     ||< external
- 11  0.605   127.   0. jl           OPAQ VERT ext_west     ||< external
- 12  0.605   307.   0. jr           OPAQ VERT ext_west     ||< external
- 13  0.341     0.  90. sillr        OPAQ CEIL ext_west     ||< external
- 14  0.341     0. -90. headr        OPAQ FLOR ext_west     ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  0.959   120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_west:buf_1
+  2  12.3     30.   0. s_liv        OPAQUE   VERT -     int_westrev  ||< s_west:kitliv
+  3  0.959   300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
+  4  12.3    210.  -0. ext_west     OPAQUE   VERT -     ext_west     ||< external
+  5  2.48      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< west_sp:roof
+  6  2.48      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
+  7  0.605   127.   0. jambl        OPAQUE   VERT -     ext_west     ||< external
+  8  0.605   307.   0. jambr        OPAQUE   VERT -     ext_west     ||< external
+  9  0.340     0.  90. sill         OPAQUE   CEIL -     ext_west     ||< external
+ 10  0.340     0. -90. head         OPAQUE   FLOR -     ext_west     ||< external
+ 11  0.605   127.   0. jl           OPAQUE   VERT -     ext_west     ||< external
+ 12  0.605   307.   0. jr           OPAQUE   VERT -     ext_west     ||< external
+ 13  0.341     0.  90. sillr        OPAQUE   CEIL -     ext_west     ||< external
+ 14  0.341     0. -90. headr        OPAQUE   FLOR -     ext_west     ||< external
  
  
+ Solar insolation focused on head         & sill         (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  Control: no control of air flow
  
@@ -361,19 +369,21 @@ west_space
  
  A summary of the surfaces in hall( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  2.40    120.  -0. s_buf        OPAQ VERT int_buf      ||< s_hall:buf_2
-  2  7.44     30.  -0. s_bed1       OPAQ VERT int_buf      ||< s_hall:bed1
-  3  4.08    300.   0. s_bath       OPAQ VERT int_buf      ||< s_hall:bath
-  4  9.60    210.   0. s_liv        OPAQ VERT int_buf      ||< s_hall:kitliv
-  5  6.80      0.  90. ceil         OPAQ CEIL int_roof     ||< hall:roof
-  6  6.80      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
-  7  1.68    120.   0. door         OPAQ VERT door         ||< door:buf_2
-  8  2.16     30.   0. s_bed2       OPAQ VERT door         ||< s_hall:bed2
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  2.40    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_hall:buf_2
+  2  7.44     30.  -0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_hall:bed1
+  3  4.08    300.   0. s_bath       OPAQUE   VERT -     int_buf      ||< s_hall:bath
+  4  9.60    210.   0. s_liv        OPAQUE   VERT -     int_buf      ||< s_hall:kitliv
+  5  6.80      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< hall:roof
+  6  6.80      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
+  7  1.68    120.   0. door         OPAQUE   VERT -     door         ||< door:buf_2
+  8  2.16     30.   0. s_bed2       OPAQUE   VERT -     door         ||< s_hall:bed2
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: hall
  
@@ -390,17 +400,19 @@ hall
  
  A summary of the surfaces in bath( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  4.08    120.   0. s_hall       OPAQ VERT int_buf      ||< s_bath:hall
-  2  5.28     30.   0. s_bed2       OPAQ VERT int_buf      ||< s_bath:bed2
-  3  4.08    300.   0. s_adjhouse   OPAQ VERT ext_west     ||< identical environment
-  4  5.28    210.   0. s_liv        OPAQ VERT int_buf      ||< s_bath:kitliv
-  5  3.74      0.  90. ceil         OPAQ CEIL int_roof     ||< bath:roof
-  6  3.74      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  4.08    120.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_bath:hall
+  2  5.28     30.   0. s_bed2       OPAQUE   VERT -     int_buf      ||< s_bath:bed2
+  3  4.08    300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
+  4  5.28    210.   0. s_liv        OPAQUE   VERT -     int_buf      ||< s_bath:kitliv
+  5  3.74      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< bath:roof
+  6  3.74      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: bath
  
@@ -437,18 +449,23 @@ Sun  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in bed1( 5) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.44    120.   0. s_buf        OPAQ VERT int_buf      ||< s_bed:buf_2
-  2  6.16     30.   0. ext_east     OPAQ VERT ext_east     ||< external
-  3  7.44    300.   0. s_bed2       OPAQ VERT int_buf      ||< s_bed1:bed2
-  4  7.44    210.   0. s_hall       OPAQ VERT int_buf      ||< s_bed1:hall
-  5  9.61      0.  90. ceil         OPAQ CEIL int_roof     ||< bed1:roof
-  6  9.61      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
-  7  1.28     30.   0. win          TRAN VERT doub_glaz    ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.44    120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_bed:buf_2
+  2  6.16     30.   0. ext_east     OPAQUE   VERT -     ext_east     ||< external
+  3  7.44    300.   0. s_bed2       OPAQUE   VERT -     int_buf      ||< s_bed1:bed2
+  4  7.44    210.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_bed1:hall
+  5  9.61      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< bed1:roof
+  6  9.61      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
+  7  1.28     30.   0. win          DC_8074_ VERT -     doub_glaz    ||< external
  
  
  An hourly solar radiation distribution is used for this zone.
+ Solar insolation focused on surface floor        (if shading not calculated).
+ Surfaces (all applicable) for shading analysis:
+ext_east win
+ Insolation sources (all applicable):
+win
  
  
  Shading patterns have not yet been calculated.
@@ -488,19 +505,24 @@ Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  A summary of the surfaces in bed2( 6) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.44    120.   0. s_bed1       OPAQ VERT int_buf      ||< s_bed2:bed1
-  2  6.16     30.   0. ext_east     OPAQ VERT ext_east     ||< external
-  3  7.44    300.   0. s_adjhouse   OPAQ VERT ext_west     ||< identical environment
-  4  5.28    210.   0. s_bath       OPAQ VERT int_buf      ||< s_bed2:bath
-  5  9.61      0.  90. ceil         OPAQ CEIL int_roof     ||< bed2:roof
-  6  9.61      0. -90. floor        OPAQ FLOR house_floor  ||< ground profile  1
-  7  1.27     30.   0. win          TRAN VERT doub_glaz    ||< external
-  8  2.16    210.   0. s_hall       OPAQ VERT door         ||< s_bed2:hall
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  7.44    120.   0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_bed2:bed1
+  2  6.16     30.   0. ext_east     OPAQUE   VERT -     ext_east     ||< external
+  3  7.44    300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
+  4  5.28    210.   0. s_bath       OPAQUE   VERT -     int_buf      ||< s_bed2:bath
+  5  9.61      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< bed2:roof
+  6  9.61      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
+  7  1.27     30.   0. win          DC_8074_ VERT -     doub_glaz    ||< external
+  8  2.16    210.   0. s_hall       OPAQUE   VERT -     door         ||< s_bed2:hall
  
  
  An hourly solar radiation distribution is used for this zone.
+ Solar insolation focused on surface floor        (if shading not calculated).
+ Surfaces (all applicable) for shading analysis:
+ext_east win
+ Insolation sources (all applicable):
+win
  
  
  Shading patterns have not yet been calculated.
@@ -540,20 +562,22 @@ Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  A summary of the surfaces in buf_1( 7) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  11.0    120.   0. ext_wall     OPAQ VERT ext_buf      ||< external
-  2  2.64    210.   0. west         OPAQ VERT ext_west     ||< external
-  3  13.3      0.  90. fict         TRAN CEIL fictitious   ||< buf_1:buf_roof
-  4  13.3      0. -90. floor        OPAQ FLOR buf_floor    ||< ground profile  1
-  5  4.32    210.   0. westwin      TRAN VERT doub_glaz    ||< external
-  6  7.68    300.   0. s_liv        OPAQ VERT int_buf      ||< s_buf:kitliv
-  7  0.957   300.   0. s_west       OPAQ VERT int_buf      ||< s_buf:west_space
-  8  2.40    300.   0. int_win      TRAN VERT doub_glaz    ||< win3:kitliv
-  9  6.96     30.   0. fictv        TRAN VERT fictitious   ||< fictv:buf_2
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.0    120.   0. ext_wall     OPAQUE   VERT -     ext_buf      ||< external
+  2  2.64    210.   0. west         OPAQUE   VERT -     ext_west     ||< external
+  3  13.3      0.  90. fict         SC_ficti CEIL -     fictitious   ||< buf_1:buf_roof
+  4  13.3      0. -90. floor        OPAQUE   FLOR -     buf_floor    ||< ground profile  1
+  5  4.32    210.   0. westwin      DC_8074_ VERT -     doub_glaz    ||< external
+  6  7.68    300.   0. s_liv        OPAQUE   VERT -     int_buf      ||< s_buf:kitliv
+  7  0.957   300.   0. s_west       OPAQUE   VERT -     int_buf      ||< s_buf:west_space
+  8  2.40    300.   0. int_win      DC_8074_ VERT -     doub_glaz    ||< win3:kitliv
+  9  6.96     30.   0. fictv        SC_ficti VERT -     fictitious   ||< fictv:buf_2
  
  
- Solar radiation is focused on surface s_liv       .
+ Solar insolation focused on surface s_liv        (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -575,20 +599,22 @@ buf_1
  
  A summary of the surfaces in buf_2( 8) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  11.5    120.   0. ext_wall     OPAQ VERT ext_buf      ||< external
-  2  2.64     30.   0. east         OPAQ VERT ext_west     ||< external
-  3  7.44    300.   0. s_bed        OPAQ VERT int_buf      ||< s_buf:bed1
-  4  13.9      0.  90. fict         TRAN CEIL fictitious   ||< buf_2:buf_roof
-  5  13.9      0. -90. floor        OPAQ FLOR buf_floor    ||< ground profile  1
-  6  4.32     30.   0. eastwin      TRAN VERT doub_glaz    ||< external
-  7  2.40    300.  -0. s_hall       OPAQ VERT int_buf      ||< s_buf:hall
-  8  1.68    300.   0. door         OPAQ VERT door         ||< door:hall
-  9  6.96    210.   0. fictv        TRAN VERT fictitious   ||< fictv:buf_1
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.5    120.   0. ext_wall     OPAQUE   VERT -     ext_buf      ||< external
+  2  2.64     30.   0. east         OPAQUE   VERT -     ext_west     ||< external
+  3  7.44    300.   0. s_bed        OPAQUE   VERT -     int_buf      ||< s_buf:bed1
+  4  13.9      0.  90. fict         SC_ficti CEIL -     fictitious   ||< buf_2:buf_roof
+  5  13.9      0. -90. floor        OPAQUE   FLOR -     buf_floor    ||< ground profile  1
+  6  4.32     30.   0. eastwin      DC_8074_ VERT -     doub_glaz    ||< external
+  7  2.40    300.  -0. s_hall       OPAQUE   VERT -     int_buf      ||< s_buf:hall
+  8  1.68    300.   0. door         OPAQUE   VERT -     door         ||< door:hall
+  9  6.96    210.   0. fictv        SC_ficti VERT -     fictitious   ||< fictv:buf_1
  
  
- Solar radiation is focused on surface eastwin     .
+ Solar insolation focused on surface eastwin      (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -611,18 +637,21 @@ nil_operations
  
  A summary of the surfaces in buf_roof( 9) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.3      0. -90. buf_1        TRAN FLOR fictitious   ||< fict:buf_1
-  2  14.7    210.  60. roof_e       OPAQ SLOP roof         ||< external
-  3  13.8     30.  58. roof_w       OPAQ SLOP roof         ||< external
-  4  13.2    120.  -0. roof_s       OPAQ VERT ext_buf      ||< external
-  5  1.64    210.  60. win2         TRAN SLOP doub_glaz    ||< external
-  6  1.60     30.  58. glz_w        TRAN SLOP doub_glaz    ||< external
-  7  13.9      0. -90. buf_2        TRAN FLOR fictitious   ||< fict:buf_2
-  8  13.2    300.  -0. roof_buf     OPAQ VERT int_buf      ||< roof_buf:roof
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.3      0. -90. buf_1        SC_ficti FLOR -     fictitious   ||< fict:buf_1
+  2  14.7    210.  60. roof_e       OPAQUE   SLOP -     roof         ||< external
+  3  13.8     30.  58. roof_w       OPAQUE   SLOP -     roof         ||< external
+  4  13.2    120.  -0. roof_s       OPAQUE   VERT -     ext_buf      ||< external
+  5  1.64    210.  60. win2         DC_8074_ SLOP -     doub_glaz    ||< external
+  6  1.60     30.  58. glz_w        DC_8074_ SLOP -     doub_glaz    ||< external
+  7  13.9      0. -90. buf_2        SC_ficti FLOR -     fictitious   ||< fict:buf_2
+  8  13.2    300.  -0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:roof
  
  
+ Solar insolation focused on glz_w        & buf_1        (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -644,20 +673,23 @@ buf_roof
  
  A summary of the surfaces in roof(10) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.2    300.  -0. roof_n       OPAQ VERT ext_west     ||< external
-  2  26.0      0. -90. liv          OPAQ FLOR int_roofrev  ||< ceil:kitliv
-  3  6.80      0. -90. hall         OPAQ FLOR int_roofrev  ||< ceil:hall
-  4  3.74      0. -90. bath         OPAQ FLOR int_roofrev  ||< ceil:bath
-  5  9.61      0. -90. bed1         OPAQ FLOR int_roofrev  ||< ceil:bed1
-  6  9.61      0. -90. bed2         OPAQ FLOR int_roofrev  ||< ceil:bed2
-  7  2.48      0. -90. west_sp      OPAQ FLOR int_roofrev  ||< ceil:west_space
-  8  13.2    120.   0. roof_buf     OPAQ VERT int_buf      ||< roof_buf:buf_roof
-  9  35.0    210.  60. roof_w       OPAQ SLOP ni_roof      ||< external
- 10  32.9     30.  58. roof_e       OPAQ SLOP ni_roof      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.2    300.  -0. roof_n       OPAQUE   VERT -     ext_west     ||< external
+  2  26.0      0. -90. liv          OPAQUE   FLOR -     int_roofrev  ||< ceil:kitliv
+  3  6.80      0. -90. hall         OPAQUE   FLOR -     int_roofrev  ||< ceil:hall
+  4  3.74      0. -90. bath         OPAQUE   FLOR -     int_roofrev  ||< ceil:bath
+  5  9.61      0. -90. bed1         OPAQUE   FLOR -     int_roofrev  ||< ceil:bed1
+  6  9.61      0. -90. bed2         OPAQUE   FLOR -     int_roofrev  ||< ceil:bed2
+  7  2.48      0. -90. west_sp      OPAQUE   FLOR -     int_roofrev  ||< ceil:west_space
+  8  13.2    120.   0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:buf_roof
+  9  35.0    210.  60. roof_w       OPAQUE   SLOP -     ni_roof      ||< external
+ 10  32.9     30.  58. roof_e       OPAQUE   SLOP -     ni_roof      ||< external
  
  
+ Solar insolation focused on bed2         & roof_n       (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  Uses same operations as zone buf_roof
  
  ____________________________________________________________

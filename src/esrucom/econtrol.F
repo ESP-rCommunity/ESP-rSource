@@ -1824,7 +1824,9 @@ C control file sensors, actuator, control types, control laws.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
@@ -1855,8 +1857,9 @@ C control file sensors, actuator, control types, control laws.
 
       CHARACTER SSTR*72,SSTRB*48
       CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15
-      CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,SN*12
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       dimension icsn(4)   ! for passing sensor location to decodesensor
       integer icsn
@@ -1884,7 +1887,8 @@ C Actuator.
         IF(IBAN(II,1).GT.0)THEN
           write(zn,'(a)') zname(IBAN(II,1))
           if(IBAN(II,2).gt.0)then
-            write(sn,'(a)') SNAME(IBAN(II,1),IBAN(II,2))
+            icc=IZSTOCN(IBAN(II,1),IBAN(II,2))
+            write(sn,'(a)') SSNAME(icc)
           else
             sn='-'
           endif
@@ -3047,7 +3051,9 @@ C SSTRB is brief string (48 char) returned
 #include "plant.h"
 #include "net_flow.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -3060,7 +3066,9 @@ C SSTRB is brief string (48 char) returned
       character sstr*72,sstrb*48
       CHARACTER ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
-      CHARACTER SNAME*12,SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,sn*12
+      CHARACTER sn*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       sstr=' '
       sstrb=' '
@@ -3070,7 +3078,8 @@ C Ideal Sensor.
         IF(icsn(1).GT.0)THEN
           write(zn,'(a)') zname(icsn(1))
           if(icsn(2).gt.0)then
-            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+            icc=IZSTOCN(icsn(1),icsn(2))
+            write(sn,'(a)') SSNAME(icc)
           else
             sn='-'
           endif
@@ -3144,7 +3153,8 @@ C Plant Sensor.
         IF(icsn(1).GT.0)THEN
           write(zn,'(a)') zname(icsn(1))
           if(icsn(2).gt.0)then
-            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+            icc=IZSTOCN(icsn(1),icsn(2))
+            write(sn,'(a)') SSNAME(icc)
           else
             sn='-'
           endif
@@ -3218,7 +3228,8 @@ C Flow Sensor.
         IF(icsn(1).GT.0)THEN
           write(zn,'(a)') zname(icsn(1))
           if(icsn(2).gt.0)then
-            write(sn,'(a)') SNAME(icsn(1),icsn(2))
+            icc=IZSTOCN(icsn(1),icsn(2))
+            write(sn,'(a)') SSNAME(icc)
           else
             sn='-'
           endif
