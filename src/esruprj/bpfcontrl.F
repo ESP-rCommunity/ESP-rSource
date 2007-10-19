@@ -62,7 +62,7 @@ C          block sctl to have been filled for the current period.
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -850,7 +850,7 @@ C Edit sensor location.
             isn3=IBSN(II,3)
             isn4=IBSN(II,4)
             call senloc('Options:','Zone sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'zone sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'zone sensor',IER)
             IBSN(II,1)=isn1
             IBSN(II,2)=isn2
             IBSN(II,3)=isn3
@@ -859,8 +859,10 @@ C Edit sensor location.
             isn1=IPSN(II,1)
             isn2=IPSN(II,2)
             isn3=IPSN(II,3)
+            isn4=IPSN(II,4)
+            isn5=IPSN(II,5)
             call senloc('Options:','Plant sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'plant sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'plant sensor',IER)
             IPSN(II,1)=isn1
             IPSN(II,2)=isn2
             IPSN(II,3)=isn3
@@ -870,7 +872,7 @@ C Edit sensor location.
             isn3=IFSN(II,3)
             isn4=IFSN(II,4)
             call senloc('Options:','Flow sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'flow sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'flow sensor',IER)
             IFSN(II,1)=isn1
             IFSN(II,2)=isn2
             IFSN(II,3)=isn3
@@ -896,7 +898,7 @@ C call the flow actuation interactions now.
             ign3=IGSN(II,3)
             ign4=IGSN(II,4)
             call senloc('Options:','Global sensor',icfoc,II,
-     &        ign1,ign2,ign3,ign4,isense,nsupl,'global sensor',IER)
+     &        ign1,ign2,ign3,ign4,ign5,isense,nsupl,'global sensor',IER)
             IGSN(II,1)=ign1
             IGSN(II,2)=ign2
             IGSN(II,3)=ign3
@@ -906,7 +908,7 @@ C call the flow actuation interactions now.
             ien2=IESN(II,2)
             ien3=IESN(II,3)
             call senloc('Options:','Electrical sensor',icfoc,II,
-     &        ien1,ien2,ien3,ien4,isense,nsupl,'power sensor',IER)
+     &        ien1,ien2,ien3,ien4,ien5,isense,nsupl,'power sensor',IER)
             IESN(II,1)=ien1
             IESN(II,2)=ien2
             IESN(II,3)=ien3
@@ -1062,7 +1064,7 @@ C of type icfoc.
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -2531,7 +2533,7 @@ C Edit plant control function II.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -4080,7 +4082,7 @@ C (isn1,isn2,isn3,isn4). isense is the condition sensed in the case of
 C flow control, nsup is the number of supplemental items for associated
 C flow connections.It is assumed that the user will make one selection only.
       subroutine senloc(prompt,title,icfoc,II,isn1,isn2,isn3,isn4,
-     &  isense,nsup,errmsg,IER)
+     &  isn5,isense,nsup,errmsg,IER)
 #include "building.h"
 #include "net_flow.h"
 #include "plant.h"
@@ -4298,7 +4300,31 @@ C Offer the user a cancel option.
         CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
         if(IP.eq.0) goto 3
         ISN2T=IP
-
+        H(1)='This value specifies the plant component node (see '
+        H(2)='the plant component database). '
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Plant component node for sensor ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,5)
+        if(ieri.eq.-3) goto 3
+        H(1)='This value specifies the 2nd plant component index '
+        H(2)='in the plant network definition file. This is used '
+        H(3)='only with a controller that senses temp diff' 
+        H(4)='between two plant components'
+        isn4T=isn4 
+        CALL EASKI(isn4T,' ',' 2nd Plant component index for sensor? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,4)
+        if(ieri.eq.-3) goto 3
+        H(1)='This value specifies the 2nd plant component node (see '
+        H(2)='the plant component database). This is used only with ' 
+        H(3)='a controller that senses temp diff between two ' 
+        H(4)='plant components'
+        isn5T=isn5
+        CALL EASKI(isn5T,' ',' 2nd Plant component node for sensor? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,4)
+        if(ieri.eq.-3) goto 3
 
         if(nnodes(ip).eq.1) then
           ISN3T=1

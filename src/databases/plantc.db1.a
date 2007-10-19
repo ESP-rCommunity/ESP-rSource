@@ -5562,3 +5562,293 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     86
+
+ Component Description
+    Generic type     : Storage Tank with Immersed Coil
+    Description      : 2-node Storage Tank with Immersed Coil 
+    Insertion date   : 11 Feb 10th 2006
+    Type: Single component                    Component code :   1200
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  13   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Mass of tank side node 1 (liquid+solid) (kg)
+      Value =   200.00         Range (Min Max):    10.0000  1000.0000
+    2 Specific heat of tank side node 1 (kJ/kg-K)
+      Value =  4200.00         Range (Min Max):   100.0000 10000.0000
+    3 Mass of tube side node 2 (liquid + solid) (kg)
+      Value =    10.00         Range (Min Max):     0.0010   100.0000
+    4 Specific heat of tube side node 2 (kJ/kg-K)
+      Value =  4200.0000       Range (Min Max):   100.0000 10000.0000
+    5 Tank UA value (W/K)
+      Value =     5.0000       Range (Min Max):     0.0000  1000.0000
+    6 Total length of tube (m)
+      Value =    10.0000       Range (Min Max):     0.1000   100.0000
+    7 Inside diameter of tube (m)
+      Value =     0.0120       Range (Min Max):     0.0010     0.1000
+    8 Outside diameter of tube (m)
+      Value =     0.0140       Range (Min Max):     0.0010     0.1000
+    9 Tube wall thermal conductivity (W/m-K) 
+      Value =   300.0000       Range (Min Max):     0.0010  1000.0000
+   10 Diamter of coil (m)
+      Value =     0.500        Range (Min Max):     0.0100     10.000
+   11 Coil height (-)
+      Value =     0.5          Range (Min Max):     0.0100     10.000
+   12 Shell diameter (m)
+      Value =     0.500        Range (Min Max):     0.010      10.000
+   13 Coil type (=1 hor. tube;=2 ver. helix)
+      Value =     1.0000       Range (Min Max):     1.0000     5.0000
+
+ Number of additional output parameters:     4
+ Additional output variables:
+    1 Heat transfer (W)              Type :    1
+    2 Tube heat coeff (W/m2-K)       Type :    1
+    3 Tank heat coeff (W/m2-K)       Type :    1
+    4 Total Ui-value  (W/m2-K)       Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     87
+
+ Component Description
+    Generic type     : Mains water temperature and draw profiles
+    Description      : 1-node mains water temperature and draw profiles
+    Insertion date   : 20th Feb 2006
+    Type: Single component                    Component code :   1210
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1
+    Node connections :   1,
+    Variable type    :  20
+
+ Miscellaneous Data
+    Adata items   :  37   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Temperature Method (=1 Moore model,=2 User input)
+      Value =     1.00         Range (Min Max):     1.0000     2.0000
+    2 January mains temperature (Deg C)
+      Value =     6.55         Range (Min Max):     0.0000    30.0000
+    3 February mains temperature (Deg C)
+      Value =     5.77         Range (Min Max):     0.0000    30.0000
+    4 March mains temperature (Deg C)
+      Value =     6.55         Range (Min Max):     0.0000    30.0000
+    5 April mains temperature (Deg C)
+      Value =     8.69         Range (Min Max):     0.0000    30.0000
+    6 May mains temperature (Deg C)
+      Value =    11.61         Range (Min Max):     0.0000    30.0000
+    7 June mains temperature (Deg C)
+      Value =    14.53         Range (Min Max):     0.0000    30.0000
+    8 July mains temperature (Deg C)
+      Value =    16.67         Range (Min Max):     0.0000    30.0000
+    9 August mains temperature (Deg C)) 
+      Value =    17.46         Range (Min Max):     0.0000    30.0000
+   10 September mains temperature (Deg C)
+      Value =    16.67         Range (Min Max):     0.0000    30.0000
+   11 October mains temperature (Deg C)
+      Value =    14.53         Range (Min Max):     0.0000    30.0000
+   12 November mains temperature (Deg C)
+      Value =    11.61         Range (Min Max):     0.0000    30.0000
+   13 December mains temperature (Deg C)
+      Value =     8.69         Range (Min Max):     0.0000    30.0000
+   14 Water draw for hour ending 1:00 a.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000  1000.0000
+   15 Water draw for hour ending 2:00 a.m. (L/hr)
+      Value =     7.00         Range (Min Max):     0.0000  1000.0000
+   16 Water draw for hour ending 3:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   17 Water draw for hour ending 4:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   18 Water draw for hour ending 5:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   19 Water draw for hour ending 6:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   20 Water draw for hour ending 7:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   21 Water draw for hour ending 8:00 a.m. (L/hr)
+      Value =     8.00         Range (Min Max):     0.0000  1000.0000
+   22 Water draw for hour ending 9:00 a.m. (L/hr)
+      Value =    18.00         Range (Min Max):     0.0000  1000.0000
+   23 Water draw for hour ending 10:00 a.m. (L/hr)
+      Value =    15.00         Range (Min Max):     0.0000  1000.0000
+   24 Water draw for hour ending 11:00 a.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   25 Water draw for hour ending 12:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   26 Water draw for hour ending  1:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000  1000.0000
+   27 Water draw for hour ending  2:00 p.m. (L/hr)
+      Value =    13.00         Range (Min Max):     0.0000  1000.0000
+   28 Water draw for hour ending  3:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   29 Water draw for hour ending  4:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000  1000.0000
+   30 Water draw for hour ending  5:00 p.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000  1000.0000
+   31 Water draw for hour ending  6:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000  1000.0000
+   32 Water draw for hour ending  7:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   33 Water draw for hour ending  8:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   34 Water draw for hour ending  9:00 p.m. (L/hr)
+      Value =    17.00         Range (Min Max):     0.0000  1000.0000
+   35 Water draw for hour ending 10:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000  1000.0000
+   36 Water draw for hour ending 11:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   37 Water draw for hour ending 12:00 a.m. (L/hr)
+      Value =    11.00         Range (Min Max):     0.0000  1000.0000
+
+ Number of additional output parameters:     0
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     88
+
+ Component Description
+    Generic type     : Water hourly draw profile
+    Description      : 1-node water hourly draw profile
+    Insertion date   : 23rd November 2006
+    Type: Single component                    Component code :   1220
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1
+    Node connections :   1,
+    Variable type    :  20
+
+ Miscellaneous Data
+    Adata items   :  24   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+   1  Water draw for hour ending 1:00 a.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000  1000.0000
+   2  Water draw for hour ending 2:00 a.m. (L/hr)
+      Value =     7.00         Range (Min Max):     0.0000  1000.0000
+   3  Water draw for hour ending 3:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   4  Water draw for hour ending 4:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   5  Water draw for hour ending 5:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   6  Water draw for hour ending 6:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   7  Water draw for hour ending 7:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000  1000.0000
+   8  Water draw for hour ending 8:00 a.m. (L/hr)
+      Value =     8.00         Range (Min Max):     0.0000  1000.0000
+   9  Water draw for hour ending 9:00 a.m. (L/hr)
+      Value =    18.00         Range (Min Max):     0.0000  1000.0000
+   10 Water draw for hour ending 10:00 a.m. (L/hr)
+      Value =    15.00         Range (Min Max):     0.0000  1000.0000
+   11 Water draw for hour ending 11:00 a.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   12 Water draw for hour ending 12:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   13 Water draw for hour ending  1:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000  1000.0000
+   14 Water draw for hour ending  2:00 p.m. (L/hr)
+      Value =    13.00         Range (Min Max):     0.0000  1000.0000
+   15 Water draw for hour ending  3:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   16 Water draw for hour ending  4:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000  1000.0000
+   17 Water draw for hour ending  5:00 p.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000  1000.0000
+   18 Water draw for hour ending  6:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000  1000.0000
+   19 Water draw for hour ending  7:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   20 Water draw for hour ending  8:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000  1000.0000
+   21 Water draw for hour ending  9:00 p.m. (L/hr)
+      Value =    17.00         Range (Min Max):     0.0000  1000.0000
+   22 Water draw for hour ending 10:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000  1000.0000
+   23 Water draw for hour ending 11:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000  1000.0000
+   24 Water draw for hour ending 12:00 a.m. (L/hr)
+      Value =    11.00         Range (Min Max):     0.0000  1000.0000
+
+ Number of additional output parameters:     0
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     89
+
+ Component Description
+    Generic type     : Stratified storage tank model
+    Description      : Stratified tank with up to 100 layers; 2 node model
+    Insertion date   : 23 May 2007 
+    Type: Single component                    Component code :   1230
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  13    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.2730         Range (Min Max):    0.0100         10.0000
+    2 Tank height (m)
+      Value =   1.5000         Range (Min Max):    0.1000         10.0000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =  -1.0000         Range (Min Max):   -1.0000          5.0000
+    4 Height of flow inlet 1 (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    5 Height of flow outlet 1 (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    6 Height of flow inlet 2 (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    7 Height of flow outlet 2 (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    8 Tank heat loss coefficient (W/m2-K)
+      Value =    0.1000        Range (Min Max):    0.0000         100.000
+    9 Additional destratification conductivity (W/m-K)
+      Value =   0.0000         Range (Min Max):    0.0000         100.000
+   10 Number of nodes 
+      Value =   50.0000        Range (Min Max):    0.0000         100.000
+   11 Internal time steps per simulation time step
+      Value =   5.0000         Range (Min Max):    1.0000         100.000
+   12 Initial temperature of tank (C)
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+   13 Boiling temperature of fluid (C)
+      Value =  100.0000        Range (Min Max):   50.0000         200.000
+
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+

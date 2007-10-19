@@ -61,7 +61,7 @@ C
       COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -252,7 +252,7 @@ C component type's control variable (IPCVR)
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -297,6 +297,8 @@ C Establish sensor location
       IPS1=IPSN(ICFP,1)
       IPS2=IPSN(ICFP,2)
       IPS3=IPSN(ICFP,3)
+      IPS4=IPSN(ICFP,4)
+      IPS5=IPSN(ICFP,5)
 
       IF(IPS1.EQ.-6.AND.IPS2.EQ.9)THEN
         IPS1=int(clfgsd(icfp,1))
@@ -330,7 +332,7 @@ C Sensor measures plant component containment loss
          SVCTL=QDATA(IPS2)
 
 C Sensor measures plant node state-space variable
-      ELSE IF(IPS1.EQ.-1.AND.IPS3.GT.0) THEN
+      ELSE IF(IPS1.EQ.-1.AND.IPS3.GT.0.AND.IPS5.EQ.0) THEN
          IN=NPCDAT(IPS2,9)+IPS3-1
 
 C Jump depending on sensed property for control loop controller type
@@ -404,6 +406,15 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
             call epagend
             STOP
          END IF
+
+C Sensure measures temperature difference between two nodes
+      ELSE IF(IPS1.EQ.-1.AND.IPS3.GT.0.AND.IPS5.GT.0) THEN
+C Matrix position of 1st node data
+        NODE1ID=NPCDAT(IPS2,9)+IPS3-1
+C Matrix position of 2nd node data
+        NODE2ID=NPCDAT(IPS4,9)+IPS5-1
+C Temperature difference betwen two nodes
+        SVCTL=CSVF(NODE1ID,1) - CSVF(NODE2ID,1)
 
 C Sensor measures a mix of zone air and mean radiant temperature
       ELSE IF(IPS1.EQ.-2) THEN
@@ -496,7 +507,7 @@ C determines sensed condition SVCTLM(?,?).
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -862,7 +873,7 @@ C CLFNGR is a (user-defined) function generator.
 
       common/pclsol/icfp,idtypp,iperp
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1142,7 +1153,7 @@ C the sensed variable returned from CFVAR routine.
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/Pctime/TIMSEC
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -1253,7 +1264,7 @@ C the controller output sent from the calling routine.
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/Pctime/TIMSEC
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -1544,7 +1555,7 @@ C by setting all plant component control variables to zero
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PTIME/PTIMEP,PTIMEF
-      COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -1613,7 +1624,7 @@ C    or type 10: senses relative humidity
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -2051,7 +2062,7 @@ C                 or type 11: senses relative humidity.
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -2478,7 +2489,7 @@ C                   or type 17: senses relative humidity
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -2600,7 +2611,7 @@ C or on a variable expecting some numerical value
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -2710,7 +2721,7 @@ C                   or type 40: senses numerical value.
       common/ptime/ptimep,ptimef
 
       common/pclsol/icfp,idtypp,iperp
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -2857,7 +2868,7 @@ C controller's input sensor value.
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -2909,7 +2920,7 @@ C to zero.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -3022,7 +3033,7 @@ C PCL08 is a `Two-Position` controller.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -3130,7 +3141,7 @@ C PCL09 is a multi-sensor `Two-Position` controller.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),NPCDT(MCL),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -3261,7 +3272,7 @@ C PCL10 is a `Zero Energy Band' controller.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)

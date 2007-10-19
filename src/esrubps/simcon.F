@@ -1797,7 +1797,7 @@ C prior to each simulation commencing.
      &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
      &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),TPCPS(MCL,MPCDT,MPCDP),
      &IPCTYP(MCL,MPCDT,MPCDP),IPCLAW(MCL,MPCDT,MPCDP),
      &PMISCD(MCL,MPCDT,MPCDP,MISC)
@@ -2431,7 +2431,7 @@ C if itru=33 then works as a header to the trace.
      &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &pmiscd(mcl,mpcdt,mpcdp,misc)

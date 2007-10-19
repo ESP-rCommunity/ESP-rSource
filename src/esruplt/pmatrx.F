@@ -1404,6 +1404,22 @@ C 1 node simple solar collector model
          ELSE IF (ITYPE .EQ. 119) THEN
 C X-node generic TRNSYS type
             CALL trnsys_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 120) THEN 
+C 2-node storage tank with immersed heat exchanger
+            CALL tank_intank_hx_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 121) THEN
+C 1-node mains daily temperature and monthly draw profiles
+           CALL 
+     &     mains_temp_draw_profile_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 122) THEN
+C 1-node mains monthly draw profile
+           CALL 
+     &     mains_draw_daily_profile_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 123) THEN
+C 2-node stratified storage tank model
+            CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
+C 2-node stratified storage tank model
+            CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 
@@ -1692,7 +1708,7 @@ C     &     pcaout(mpcom,mpcres), ! not used in current context
 C     &     napdat(mpcom)        ! # of plant additional outputs
 C       REAL QDATA,PCAOUT
 C       INTEGER NAPDAT
-
+C
 C
 CC COMMON DELAY required only by primitive parts components.
 C      COMMON/DELAY/TEMPF(MPCOM,MDLY),YPOSF(MPCOM,MDLY),NSECTF(MPCOM),

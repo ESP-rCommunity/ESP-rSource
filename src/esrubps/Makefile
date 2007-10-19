@@ -56,7 +56,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o
 
 # Additional C and Fortran objectives needed for H3Kreports
 XML_COBJECTS =TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
@@ -660,6 +660,15 @@ trnsys_wrapper.F:
 trnsys_lib.F:
 	rm -f trnsys_lib.F
 	ln -s $(CETCdir)/trnsys_lib.F .
+tank_intank_hx.F:
+	rm -f tank_intank_hx.F
+	ln -s $(PLTdir)/tank_intank_hx.F .
+mains_temp_draw_profiles.F:
+	rm -f mains_temp_draw_profiles.F
+	ln -s $(PLTdir)/mains_temp_draw_profiles.F
+stratified_tank.F:
+	rm -f stratified_tank.F
+	ln -s $(PLTdir)/stratified_tank.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -705,6 +714,7 @@ clean:
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F
+	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
+	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F
 
 

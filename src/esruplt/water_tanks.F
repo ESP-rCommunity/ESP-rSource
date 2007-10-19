@@ -536,6 +536,9 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "SOFC.h"
 #include "cogen_tanks.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1248,6 +1251,9 @@ C---------No exhaust: make exhaust temperature equal room temperature.
           COUT(9) = Troom_future
         END IF
 
+C-------Store time step burner output for h3kstore output
+        fSDHW_TSTank_fuel_watts = q_burner
+
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********
 C*********************************************************************************
@@ -1873,6 +1879,9 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "SOFC.h"
 #include "cogen_tanks.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -2316,6 +2325,11 @@ C Save the `additional' output variables for outputting on time-step basis.
 C---------------------------------------------------------------------------------
       NAPDAT(IPCOMP)    = 1                    ! number of additional outputs
       PCAOUT(IPCOMP,1)  = q_element            ! output of heating element (W)
+
+C---------------------------------------------------------------------------------
+C Save time step electric element input for solar DHW .h3k output
+C---------------------------------------------------------------------------------
+      fSDHW_TSTank_Elec_watts = q_element
            
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********

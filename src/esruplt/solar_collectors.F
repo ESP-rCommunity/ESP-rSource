@@ -266,6 +266,9 @@ C---- Include statements
 
 #include "building.h"
 #include "plant.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"  
 
 C---- Arguments
 
@@ -393,6 +396,7 @@ C---- Local variables
       REAL    XIAM            ! Incidence angle modifier (-)
       REAL    HEATLOSS_ACTUAL ! Actual heat loss from collector (W)
       REAL    HEATGAIN_ACTUAL ! Actual heat gain to the collector (W)
+      REAL    NETHEATGAIN     ! Heat gain - Heat loss for collector (W)
       REAL    RADIANS_TO_DEGREES
                               ! Conversion factor from radians --> degrees
       INTEGER ICOUNTER        ! Loop counter
@@ -823,6 +827,20 @@ C---- Establish additional output variables
         PCAOUT(IPCOMP,4) = HEATGAIN_ACTUAL
         PCAOUT(IPCOMP,5) = HEATLOSS_ACTUAL
 
+C---- Net collector heat gain
+        call eclose(CONVAR(ICON1,2),0.00,0.000001,closea)
+        IF(.NOT.closea) THEN
+          NETHEATGAIN = HEATGAIN_ACTUAL - HEATLOSS_ACTUAL
+        ELSE
+          NETHEATGAIN = 0.
+        ENDIF 
+
+C---- Store collector net heat gain for h3kstore output
+        fSDHW_TScoll_netheatgain_watts = NETHEATGAIN
+
+C---- Call h3k store routine for solar DHW systems
+        call H3KSTORE_SDHW
+
 C=======================================================================
 C     Generate coefficients for 1st phase flow equation.
 C=======================================================================
@@ -1198,7 +1216,7 @@ C---- Check whether volume fraction is 0 or 50%
 
       IF(close0) THEN
 
-        IF(TEMP.LT.20) THEN
+        IF(TEMP.LT.20.) THEN
 
           GLYCOL_WATER_VISCOSITY = (-8.06667E-6 * TEMP**4 +
      &                 3.20667E-4 * TEMP**3 -
@@ -1206,7 +1224,7 @@ C---- Check whether volume fraction is 0 or 50%
      &                 4.38167E-2 * TEMP +
      &                 1.794) / 1.E3
 
-        ELSEIF((TEMP.GE.20).AND.(TEMP.LT.50)) THEN
+        ELSEIF((TEMP.GE.20.).AND.(TEMP.LT.50.)) THEN
 
           GLYCOL_WATER_VISCOSITY = (-6.44444E-6 * TEMP**3 +
      &                  9.21429E-4 * TEMP**2 -
@@ -1220,7 +1238,7 @@ C---- Check whether volume fraction is 0 or 50%
      &                  2.04219E-2 * TEMP +
      &                  1.27443) / 1.E3
 
-        ENDIF ! Matches IF(TEMP.LT.20)
+        ENDIF ! Matches IF(TEMP.LT.20.)
 
       ELSE
 
