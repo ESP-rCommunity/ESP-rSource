@@ -132,6 +132,7 @@ c     iterates through zones
  46   CONTINUE
       CALL H3KOUTPUT_DHW(IWU)
       CALL H3KOUTPUT_FC(IWU)
+      CALL H3KOUTPUT_SDHW(IWU)
       RETURN
       END  
 
@@ -1446,5 +1447,158 @@ C     erase old runs if present.
 
        
       ENDIF
+      RETURN
+      END
+
+C     *********************************************************************      
+C     SUBROUTINE H3KOUTPUT_SDHW
+C    
+C     Created by: Kamel Haddad
+C     Initial Creation Date: April 27th 2006
+C     Copyright 2000: NRCan Buildings Group
+C
+C     This subroutine outputs the monthly and yearly consumptions for the 
+C     following variables for solar DHW systems:
+C       circulation pumps electricity consumptions (kWhr)
+C       electric storage tank electricity consumption (kWhr)
+C       fuel-fired storage tank fuel consumption (kWhr)
+C       solar gain to the collector (kWhr)
+
+      SUBROUTINE H3KOUTPUT_SDHW(IWU)
+
+      IMPLICIT NONE
+
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+
+      INTEGER   IWU    ! output unit number for .h3k file
+      INTEGER IMONTH    ! index for month of the year
+      CHARACTER OUTS*256    ! output string
+      DIMENSION MTHNAM(12)    ! array for names for months of the year
+      CHARACTER MTHNAM*3     ! name for months of the year
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      INTEGER   ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+      DATA MTHNAM/'JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG',
+     &     'SEP','OCT','NOV','DEC'/
+
+      REAL fYEARH3KSTORE_dhwtank_elec    ! electricity consumption for
+                                         ! storage tank for whole year
+      REAL fYEARH3KSTORE_dhwtank_fuel    ! fuel consumption for storage
+                                         ! tank for full year
+      REAL fYEARH3KSTORE_coll_solar_gain    ! solar gain to the solar 
+                                            ! collector for the year
+      REAL fYEARH3KSTORE_coll_pump_elec    ! electricity consumption of the
+                                           ! collector pump for the year
+      REAL fMONTH_SDHW_pump_elec_KWHR    ! electricity consumption of the
+                                         ! collector pump for the month in kWhr
+      REAL fMONTH_SDHW_Tank_elec_KWHR    ! electricity consumption of storage tank in kWhr
+      REAL fMONTH_SDHW_Tank_fuel_KWHR    ! fuel consumption of storage tank in Kwhr
+      REAL fMONTH_SDHW_coll_netgain_KWHR ! collector net heat gain in kWhr
+					 
+C     Output headers for solar DHW
+      WRITE (OUTS,'(A)')' ' 
+      CALL EDISP(IWU,OUTS)
+      WRITE (OUTS,'(A)')'SDHW Data' 
+      CALL EDISP(IWU,OUTS)
+      WRITE(OUTS,'(A15,5(1X,A17))')
+     &     'Month',
+     &     'Tank Elec (kWhr)',
+     &     'Tank Fuel (kWhr)',
+     &     'Solar Gain (kWhr)',
+     &     'Pump Elec (kWhr)'     
+      CALL EDISP(IWU,OUTS)
+
+C Initialize yearly sums
+      fYEARH3KSTORE_dhwtank_elec = 0.
+      fYEARH3KSTORE_dhwtank_fuel = 0.
+      fYEARH3KSTORE_coll_solar_gain = 0.
+      fYEARH3KSTORE_coll_pump_elec = 0.
+
+C     Loop through each of the months of the simulation
+      DO 10 IMONTH = ISM1,ISM2
+
+C     sum of electricity consumption of DHW tank (kWhr)
+        fYEARH3KSTORE_dhwtank_elec = 
+     &  fYEARH3KSTORE_dhwtank_elec +
+     &  fH3KSTORE_SDHW_dhwtank_elec(IMONTH) / 1000.
+
+C     sum of fuel consumption of DHW tank (kWhr)
+        fYEARH3KSTORE_dhwtank_fuel = 
+     &  fYEARH3KSTORE_dhwtank_fuel +
+     &  fH3KSTORE_SDHW_dhwtank_fuel(IMONTH) / 1000.
+
+C     sum of collector solar gain (kWhr)
+        fYEARH3KSTORE_coll_solar_gain = 
+     &  fYEARH3KSTORE_coll_solar_gain +
+     &  fH3KSTORE_SDHW_coll_solar_gain(IMONTH) / 1000.
+
+C     sum of collector pump electricity (kWhr)
+        fYEARH3KSTORE_coll_pump_elec = 
+     &  fYEARH3KSTORE_coll_pump_elec +
+     &  fH3KSTORE_SDHW_Pump_Elec(IMONTH) / 1000.
+      
+C     Convert monthly electricity consumption of collector
+C     pump to kWhr
+        fMONTH_SDHW_pump_elec_KWHR = 
+     &           fH3KSTORE_SDHW_Pump_Elec(IMONTH) / 1000.
+
+C     Convert monthly electricity consumption of storage tank
+C     to kWhr
+        fMONTH_SDHW_Tank_elec_KWHR = 
+     &           fH3KSTORE_SDHW_dhwtank_elec(IMONTH) / 1000.
+
+C     Convert monthly electricity consumption of storage tank
+C     to kWhr
+        fMONTH_SDHW_Tank_fuel_KWHR = 
+     &           fH3KSTORE_SDHW_dhwtank_fuel(IMONTH) / 1000.
+
+C     Convert collector net heat gain to kWhr
+        fMONTH_SDHW_coll_netgain_KWHR =  
+     &         fH3KSTORE_SDHW_coll_solar_gain(IMONTH) / 1000. 
+     
+C     Output monthly values
+        WRITE(OUTS,'(A15,5(1X,e17.4))')
+
+C     Month
+     &  MTHNAM(IMONTH),
+
+C     Electricity consumption of the DHW tank (kWhr)     
+     &  fMONTH_SDHW_Tank_elec_KWHR,
+
+C     Fuel consumption of the DHW tank (kWhr)     
+     &  fMONTH_SDHW_Tank_fuel_KWHR,
+ 
+C     Collector solar gain (kWhr) 
+     &  fMONTH_SDHW_coll_netgain_KWHR,
+
+C     Collector pump electricity consumption (kWhr)
+     &  fMONTH_SDHW_pump_elec_KWHR 
+
+        CALL EDISP(IWU,OUTS)
+
+ 10   CONTINUE
+
+C     Output overall totals
+      WRITE(OUTS,'(A15,5(1X,e17.4))')
+     &     'Total',
+
+C     sum of electricity consumption of DHW tank (kWhr)
+     &fYEARH3KSTORE_dhwtank_elec,
+
+C     sum of fuel consumption of DHW tank (kWhr)
+     &fYEARH3KSTORE_dhwtank_fuel,
+
+C     sum of collector solar gain (kWhr)
+     &fYEARH3KSTORE_coll_solar_gain,
+
+C     sum of collector pump electricity (kWhr)
+     &fYEARH3KSTORE_coll_pump_elec
+
+      CALL EDISP(IWU,OUTS)
+
       RETURN
       END

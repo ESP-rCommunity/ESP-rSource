@@ -1646,6 +1646,10 @@ C     1 node (ISV=20) PEM cogeneration fuel cell
 C         elseif ( iComponent_type .eq. 95 ) then
 C            CALL PEM_coeff_gen(IPCOMP,OUT,ISTATS)
 
+C     1 node tank with immersed HX coil
+          elseif ( iComponent_type .eq. 119 ) then
+             CALL tank_intank_hx_H3Kreports_module(iComponent_Index)  
+
          else
 
 C     Assume post-processor doesn't exist

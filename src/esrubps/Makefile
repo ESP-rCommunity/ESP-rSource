@@ -57,8 +57,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o mimo_ctl.o mimo_laws.o \
 	  hvacinput_versioned.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-	  Int_Mech_Sys.o
-
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o \
+	  Int_Mech_Sys.o 
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -675,6 +675,15 @@ trnsys_lib.F:
 Int_Mech_Sys.F:
 	rm -f Int_Mech_Sys.F
 	ln -s $(PLTdir)/Int_Mech_Sys.F .
+tank_intank_hx.F:
+	rm -f tank_intank_hx.F
+	ln -s $(PLTdir)/tank_intank_hx.F .
+mains_temp_draw_profiles.F:
+	rm -f mains_temp_draw_profiles.F
+	ln -s $(PLTdir)/mains_temp_draw_profiles.F
+stratified_tank.F:
+	rm -f stratified_tank.F
+	ln -s $(PLTdir)/stratified_tank.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -720,7 +729,9 @@ clean:
 	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F Lookup_data.F mimo_ctl.F mimo_laws.F hvacinput_versioned.F \
-	Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F Int_Mech_Sys.F
+	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
+	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
+	mimo_ctl.F mimo_laws.F hvacinput_versioned.F Int_Mech_Sys.F 
+
 
 

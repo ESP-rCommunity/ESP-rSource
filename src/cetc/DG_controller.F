@@ -163,7 +163,7 @@ C-------------------------------------------------------------------------------
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-C      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+C      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
 C     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
 C     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
 C     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1181,7 +1181,7 @@ C-------------------------------------------------------------------------------
       common/ptime/ptimep,ptimef
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)

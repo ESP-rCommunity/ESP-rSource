@@ -851,6 +851,9 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
@@ -877,6 +880,44 @@ C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
       ICON1=ICONDX(IPCOMP,1,1)
       INOD1=NPCDAT(IPCOMP,9)
 
+      ICSV(INOD1,1)=1
+      CSVI(INOD1,1)=CSVF(INOD1,1)
+      ICSV(INOD1,2)=1
+      CSVI(INOD1,2)=CSVF(INOD1,2)
+      ICSV(INOD1,3)=1
+      CSVI(INOD1,3)=CSVF(INOD1,3)
+
+C Total mass flow rate into pump      
+      TOTAL_MASS_FR = PCONDR(ICON1) * 
+     &                (CONVAR(ICON1,2) + CONVAR(ICON1,3)) 
+
+C Mass fraction of glycol in incoming flow      
+      GLYCOL_MASS_FRACTION = 
+     &            100. * CONVAR(ICON1,3) / (TOTAL_MASS_FR + SMALL)
+
+C Find volume fraction of glycol in mixture of incoming flow
+      GLYCOL_VOL_FRACTION = 
+     &GLYCOL_VOL_FRACTION_FIND(GLYCOL_MASS_FRACTION,CONVAR(ICON1,1))
+
+C Boiling temperature of glycol mixture
+      TBOIL = GLYCOL_WATER_TBOIL(GLYCOL_VOL_FRACTION)
+
+C Freezing temperature of glycol-water mixture
+      TFREEZE = GLYCOL_WATER_TFREEZE(GLYCOL_VOL_FRACTION)
+
+C Set incoming flow temperature using upper and lower bounds
+      TEMP_INFLOW = MAX(TFREEZE,MIN(TBOIL,CONVAR(ICON1,1)))
+
+C Set specific heat of incoming flow
+      GLY_WATER_CP = GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION,TEMP_INFLOW)
+      
+C Set temperature of pump using lower and upper bounds
+      TEMP_PUMP = MAX(TFREEZE,MIN(TBOIL,CSVF(INOD1,1)))
+
+C Density of fluid based on exit pump temperature
+      GLY_WATER_DEN = GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,
+     &                 TEMP_PUMP)
+
 C Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN
 
@@ -892,10 +933,10 @@ C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
             ICNN=ICFFS(ICON1)
             E=real((FLW1(ICNN)+FLW2(ICNN))
      &        *(PRES(NODNE(ICNN))-PRES(NODPS(ICNN)))
-     &        /(BDATA(IPCOMP,3)*RHOFLD(3,CSVF(INOD1,1))))
+     &        /(BDATA(IPCOMP,3)*GLY_WATER_DEN))
          ELSE
-            E=(CSVF(INOD1,2)
-     &         /(RHOFLD(3,CSVF(INOD1,1))*BDATA(IPCOMP,2)))**3
+            E=((CSVF(INOD1,2) + CSVF(INOD1,3))
+     &         /(GLY_WATER_DEN*BDATA(IPCOMP,2)))**3
      &         *BDATA(IPCOMP,1)
          END IF
 
@@ -910,7 +951,7 @@ C Now Q is made up of all inefficiencies
 C Establish heat capacity of component mass CM (J/K) and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
          CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)
-         C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
+         C1=TOTAL_MASS_FR*GLY_WATER_CP
 
 C Calculate current component time-constant TC
          TC(IPCOMP)=CM/AMAX1(SMALL,(C1+UA))
@@ -956,20 +997,27 @@ C Save plant additional output data.
 C 1st phase mass (ie. water) balance coefficients
 C Note that if fluid mass flow solver active, source of mass zeroised
       ELSE IF(ISTATS.EQ.2) THEN
-         COUT(1)=1.
-         IF(IFLWN.EQ.0) THEN
-            COUT(2)=0.
-            COUT(3)=CDATA(IPCOMP,1)*RHOFLD(3,CSVF(INOD1,1))
-         ELSE
-            COUT(2)=-PCONDR(ICON1)
-            COUT(3)=0.
-         END IF
+        COUT(1)=1.
+        IF(IFLWN.EQ.0) THEN
+          COUT(2)=0.
+          COUT(3)=CDATA(IPCOMP,1)*GLY_WATER_DEN*
+     &            (1.-GLYCOL_MASS_FRACTION/100.)
+        ELSE
+          COUT(2)=-PCONDR(ICON1)
+          COUT(3)=0.
+        END IF
 
 C 2nd phase mass (ie. "vapour") balance coefficients
       ELSE IF(ISTATS.EQ.3) THEN
-         COUT(1)=1.
-         COUT(2)=0.
-         COUT(3)=0.
+        COUT(1)=1.
+        IF(IFLWN.EQ.0) THEN
+          COUT(2)=0.
+          COUT(3)=CDATA(IPCOMP,1)*GLY_WATER_DEN*
+     &    GLYCOL_MASS_FRACTION/100.
+        ELSE
+          COUT(2)=-PCONDR(ICON1)
+          COUT(3)=0.
+        END IF
       END IF
 
 C Trace output
@@ -2438,16 +2486,82 @@ C and flows for iteration.
       ICSV(INOD1,2)=1
       CSVI(INOD1,2)=CSVF(INOD1,2)
       ICSV(INOD2,2)=1
-      CSVI(INOD2,2)=CSVF(INOD2,2)       
+      CSVI(INOD2,2)=CSVF(INOD2,2)
+      ICSV(INOD1,3)=1
+      CSVI(INOD1,3)=CSVF(INOD1,3)
+      ICSV(INOD2,3)=1
+      CSVI(INOD2,3)=CSVF(INOD2,3)       
+
+C Total mass flow rate into node 1     
+      TOTAL_MASS_FR1 = PCONDR(ICON1) * 
+     &                (CONVAR(ICON1,2) + CONVAR(ICON1,3))
+
+C Total mass flow rate into node 2
+      TOTAL_MASS_FR2 = PCONDR(ICON2) * 
+     &                (CONVAR(ICON2,2) + CONVAR(ICON2,3)) 
+
+C Mass fraction of glycol in incoming flow to node 1      
+      GLYCOL_MASS_FRACTION1 = 
+     &            100 * CONVAR(ICON1,3) / (TOTAL_MASS_FR1 + SMALL)
+
+C Mass fraction of glycol in incoming flow to node 2      
+      GLYCOL_MASS_FRACTION2 = 
+     &            100 * CONVAR(ICON2,3) / (TOTAL_MASS_FR2 + SMALL)
+
+C Find volume fraction of glycol in mixture of incoming flow for node 1
+      GLYCOL_VOL_FRACTION1 = 
+     &GLYCOL_VOL_FRACTION_FIND(GLYCOL_MASS_FRACTION1,CONVAR(ICON1,1))
+
+C Find volume fraction of glycol in mixture of incoming flow for node 2
+      GLYCOL_VOL_FRACTION2 = 
+     &GLYCOL_VOL_FRACTION_FIND(GLYCOL_MASS_FRACTION2,CONVAR(ICON2,1))
+
+C Boiling temperature of glycol mixture for node 1
+      TBOIL1 = GLYCOL_WATER_TBOIL(GLYCOL_VOL_FRACTION1)
+
+C Boiling temperature of glycol mixture for node 2
+      TBOIL2 = GLYCOL_WATER_TBOIL(GLYCOL_VOL_FRACTION2)
+
+C Freezing temperature of glycol-water mixture for node 1
+      TFREEZE1 = GLYCOL_WATER_TFREEZE(GLYCOL_VOL_FRACTION1)
+
+C Freezing temperature of glycol-water mixture for node 2
+      TFREEZE2 = GLYCOL_WATER_TFREEZE(GLYCOL_VOL_FRACTION2)
+
+C Set incoming flow temperature using upper and lower bounds for node 1
+      TEMP_INFLOW1 = MAX(TFREEZE1,MIN(TBOIL1,CONVAR(ICON1,1)))
+
+C Set incoming flow temperature using upper and lower bounds for node 2
+      TEMP_INFLOW2 = MAX(TFREEZE2,MIN(TBOIL2,CONVAR(ICON2,1)))
+
+C Set specific heat of incoming flow for node 1
+      GLY_WATER_CP1 = GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION1,TEMP_INFLOW1)
+
+C Set specific heat of incoming flow for node 2
+      GLY_WATER_CP2 = GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION2,TEMP_INFLOW2)
+      
+C Set temperature of node 1
+      TEMP_NODE1 = MAX(TFREEZE1,MIN(TBOIL1,CSVF(INOD1,1)))
+
+C Set temperature of node 2
+      TEMP_NODE2 = MAX(TFREEZE2,MIN(TBOIL2,CSVF(INOD2,1)))
+
+C Set specific heat of node 1
+      GLY_WATER_CP_NODE1 = 
+     &          GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION1,TEMP_NODE1)
+
+C Set specific heat of node 2
+      GLY_WATER_CP_NODE2 = 
+     &          GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION2,TEMP_NODE2)
 
 C Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN 
 
 C Establish fluid thermal capacity rates
-        CW1=SHTFLD(3,CSVF(INOD1,1))*ADATA(IPCOMP,1)
-        CW2=SHTFLD(3,CSVF(INOD2,1))*ADATA(IPCOMP,2)
-        C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
-        C2=PCONDR(ICON2)*CONVAR(ICON2,2)*SHTFLD(3,CONVAR(ICON2,1))
+        CW1=GLY_WATER_CP_NODE1*ADATA(IPCOMP,1)
+        CW2=GLY_WATER_CP_NODE2*ADATA(IPCOMP,2)
+        C1=TOTAL_MASS_FR1*GLY_WATER_CP1
+        C2=TOTAL_MASS_FR2*GLY_WATER_CP2
 
 C Establish the overall K value
         K=ADATA(IPCOMP,3)*ADATA(IPCOMP,4)
@@ -2588,8 +2702,8 @@ C 2nd phase mass (ie. "vapour") balance coefficients
       ELSE IF(ISTATS.EQ.3) THEN
          COUT(1)=1.
          COUT(2)=1.
-         COUT(3)=0.
-         COUT(4)=0.
+         COUT(3)=-PCONDR(ICON1)
+         COUT(4)=-PCONDR(ICON2)
          COUT(5)=0.
          COUT(6)=0.
       END IF

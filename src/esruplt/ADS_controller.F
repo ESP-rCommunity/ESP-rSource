@@ -121,7 +121,7 @@ C-----------------------------------------------------------------------------
        REAL    BTIMEP          !-present time row time building side
        REAL    BTIMEF          !-future time row time building side
 
-       COMMON/PCTL/NCL,IPSN(MCL,4),IPAN(MCL,4),NPCDT(MCL),
+       COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &             IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &             TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &             IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
