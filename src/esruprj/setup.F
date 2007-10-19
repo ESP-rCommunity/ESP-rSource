@@ -27,7 +27,6 @@ C << maintain the .esprc file and the defaults file!
 
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
       integer igraphiclib  ! external definition
 
@@ -330,9 +329,8 @@ C If vi then spawn a new window to do the editing in.
      &      ' ',96,'xxx.txt','ASCII file',IER,2)
           write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
         endif
-        iunit=IAPRES
-C        IUNIT=IFIL+1
-        call silentread(iunit,LFIL,ier)
+        IUNIT=IFIL+1
+        call silentread(iunit,longtfile,ier)
         return
       ELSEIF(INO1.EQ.10)THEN
 

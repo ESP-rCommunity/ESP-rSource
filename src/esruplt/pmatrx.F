@@ -1417,8 +1417,6 @@ C 1-node mains monthly draw profile
          ELSE IF (ITYPE .EQ. 123) THEN
 C 2-node stratified storage tank model
             CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
-C 2-node stratified storage tank model
-            CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 

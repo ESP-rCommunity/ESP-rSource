@@ -2725,6 +2725,10 @@ C          call edisp248(6,message,80)
      &    cm(6),'m^3/s' 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.23)then
+          SSTR='Sensed temp setpts '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
         ELSEIF(IBSN(II,1).EQ.-99)then
           SSTR='control law not used'
           message='type -99 control law not used'

@@ -179,6 +179,8 @@ void	vrtaxis_(float *ymn,float *ymx,long int *offl,long int *offb,long int *offt
 	float *yadd,float *sca,long int *mode,long int *side,char* msg,int mlen);
 void	horaxis_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
 	float *xadd,float *sca,long int *mode,char* msg,int mlen);
+void	horaxishdw_(float *xmn,float *xmx,long int *offl,long int *offr,long int *offb,
+	float *xadd,float *sca,long int *mode,long int *ind,long int *idiv,long int *isjday,char* msg,int mlen);
 void	labelstr(long int *n,float *val,long int *WticC,char* sstr);
 void	popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lendocu,int lenact,int lenfile);
 

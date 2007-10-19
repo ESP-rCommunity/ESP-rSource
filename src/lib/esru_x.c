@@ -7169,7 +7169,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  }
  if (saved_font != butn_fnt) winfnt_(&saved_font);
  return;
-} /* horaxis_ */
+} /* horaxishdw_ */
 
 /* *************** ESRU menu text update. *************** */
 /*

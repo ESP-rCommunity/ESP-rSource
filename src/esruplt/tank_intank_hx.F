@@ -358,7 +358,7 @@ C----------------------------------------------------------------------
       REAL equiv_dia               ! Equivalent diameter defined to find hydraulic diameter of coil HX
       REAL cross_sec_area          ! Cross sectional area for coil/shell HX
       REAL coil_hyd_dia            ! Hydraulic diamter used for Nusselt Number correlation for coil HX
-tank_intank_hx_coeff_gen      REAL rayleigh_number         ! Rayleigh Number for natural convection flow outside of coil
+      REAL rayleigh_number         ! Rayleigh Number for natural convection flow outside of coil
       REAL tank_fluid_prandtl      ! Prandtl Number of tank fluid
       REAL tank_fluid_dyn_vis      ! Dynamic viscosity of tank fluid
       REAL tube_mean_temp_heat_trans

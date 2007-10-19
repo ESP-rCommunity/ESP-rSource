@@ -125,14 +125,6 @@ C << add logic to check for existance of obstructions file and
 C << shading file in subsequent read and then update the values
 C << as appropriate
 
-C iaplic(1) toggle for shading; iaplic(2) toggle for insolation; iaplic(3)
-C   toggle for assessment where:
-C   1 is 'all_applicable', 0 is manual selection of surfaces.
-C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
-C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
-      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
-     &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-
 C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)
 C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
@@ -205,7 +197,7 @@ C MLC commons to recover optical property name.
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER OUTSTR*124,LGEOM*72,WORD*20,zname*12
-      CHARACTER tmpvfc*4,tmpsot*32,tother*15,t12*12
+      CHARACTER tmpvfc*4,tmpsot*32,tother*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -242,16 +234,6 @@ C Initialise geometry data file. and set currentfile.
         endif
       ENDIF
       write(currentfile,'(a)') LGEOM(1:lnblnk(LGEOM))
-
-C << to do - these arrays need to be cleared in the subroutine
-C << that clears the data prior to reading in a new model.
-C << place this code there...
-C Fill shading/insolation directives assuming nothing requested.
-C      iaplic(icomp,1)=0
-C      iaplic(icomp,2)=0
-C      iaplic(icomp,3)=0
-C      nsurfcalc(icomp)=0
-C      nsurfinso(icomp)=0
 
 C Read lines from file, if one item then assumed to 
 C be CTYPE, if 2 then the second is the zone name which
@@ -582,7 +564,6 @@ C Interpret positional portion of the string.
 
 C Interpret the construction name.
         write(SMLCN(ISN),'(a)') OUTSTR(32:43)
-        write(t12,'(a)') OUTSTR(32:43)   ! for use with parsemlcdesc
         if(havec24) write(SSMLCN(icn),'(a)') OUTSTR(32:43)
 
 C Now that we know the construction try and work out the optics.
@@ -933,7 +914,8 @@ C << calling code to signal that ZNDATA could be used instead.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
@@ -1141,7 +1123,6 @@ C       +ve).
  
        SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
-#include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 
@@ -1247,7 +1228,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*32,zname*12,t12*12
+      CHARACTER OUTSTR*124,LGEOM*72,WORD*32,zname*12
       CHARACTER tmpvfc*4,tmpsot*32,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1537,7 +1518,6 @@ C Surface construction name, allow for spaces.
             CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
             if(havec24) write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
-            write(t12,'(a)') WORD(1:12)   ! for use with parsemlcdesc
 
 C Surface optics set name or OPAQ/TRAN, allow for spaces.
             CALL EGETP(OUTSTR,K,WORD,'W','surface optics',IER)

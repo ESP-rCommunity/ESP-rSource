@@ -420,7 +420,7 @@ C file or failure reading it).
         write(DFCTL,'(2a)') di(1:ln),
      &    '/training/3z_bld/ctl/building.ctl'
         write(DAPROB,'(2a)') di(1:ln),
-     &    'training/basic/networks/bld_basic_af1.afn'
+     &    'training/basic/nets/bld_basic_af1.afn'
         write(DPNF,'(2a)') di(1:ln),
      &    '/training/plant/vent_simple/cfg/vent.cfg'
         write(DFCFD,'(2a)') di(1:ln),
@@ -449,7 +449,7 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DFCTL,'(2a)') di(1:ln),
      &    '/training/3z_bld/ctl/building.ctl'
         write(DAPROB,'(2a)') di(1:ln),
-     &    'training/basic/networks/bld_basic_af1.afn'
+     &    'training/basic/nets/bld_basic_af1.afn'
         write(DPNF,'(2a)') di(1:ln),
      &    '/training/plant/vent_simple/cfg/vent.cfg'
         write(DFCFD,'(2a)') di(1:ln),
