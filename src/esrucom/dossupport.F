@@ -49,9 +49,6 @@ C lcopy (72 char) destination file (with path)
 C message (48 char) feedback to echo when preparing doit
 C doit (248 char) the command to execute
 C ier is zero if ok.
-
-C << The source and lcopy are currently 72 char. At some point
-C << this might need to be *(*) or 144 char.
       subroutine dbdoscopy(source,lcopy,message,doit,ier)
       common/OUTIN/IUOUT,IUIN
 
@@ -64,7 +61,7 @@ C Strings for dos version of source and destination of db file.
       integer lnup  ! length of destination file name
       integer lnblankup ! position of blank in source file
 
-C Set folder separator (fs) to \ or / as required.
+C If running unix this subroutine should not have been called.
       call isunix(unixok)
       if(unixok)then
         call usrmsg('dbdoscopy is being called on a Unix/Linux/OSX',
@@ -85,15 +82,23 @@ C in rootp and upath to '\'.
       upathdos=' '
       lnrp=lnblnk(source)
       lnblankrp=iprevblnk(source,lnrp)
-      call backslashit(source,rootpdos) ! change / to \
+      call backslashit(source,rootpdos)
       write(outs,'(3a)') message,' ',rootpdos(1:lnrp)
       call edisp(iuout,outs)
+C      write(outs,'(a,2i3)') 'lnrp lnblankrp ',lnrp,lnblankrp
+C      call edisp(iuout,outs)
 
-      lnup=lnblnk(LCOPY)
-      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
-      call backslashit(LCOPY,upathdos)
+      lnup=lnblnk(lcopy)
+      lnblankup=iprevblnk(lcopy,lnup)
+      if(lnblankup.eq.1)then
+        upathdos = lcopy
+      else
+        call backslashit(lcopy,upathdos)
+      endif
       write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
       call edisp(iuout,outs)
+C      write(outs,'(a,2i3)') 'lnup lnblankup ',lnup,lnblankup
+C      call edisp(iuout,outs)
 
 C Create the doit command based on where there are blanks in the strings.
       if(lnblankrp.gt.1.and.lnblankup.gt.1)then
@@ -145,10 +150,11 @@ C ier is zero if ok.
 C Strings for dos version of source and destination of db file.
       character rootpdos*144,upathdos*144,dq*1,louts*248
       character source*144,lcopy*144,message*48,ldoit*300
+C      character outs*124
       logical unixok
       integer lnrp  ! length of source file name
       integer lnblankrp ! position of blank in source file
-      integer lnup  ! length of destination file name
+      integer lncp  ! length of destination file name
       integer lnblankup ! position of blank in source file
 
 C Set folder separator (fs) to \ or / as required.
@@ -172,14 +178,23 @@ C in rootp and upath to '\'.
       upathdos=' '
       lnrp=lnblnk(source)
       lnblankrp=iprevblnk(source,lnrp)
-      call backslashit(source,rootpdos) ! change / to \
+      call backslashit(source,rootpdos)
       write(louts,'(3a)') message,' ',rootpdos(1:lnrp)
       call edisp248(iuout,louts,100)
+C      write(outs,'(a,2i3)') 'lnrp lnblankrp ',lnrp,lnblankrp
+C      call edisp(iuout,outs)
 
-      lnup=lnblnk(LCOPY)
-      lnblankup=iprevblnk(LCOPY,lnup) ! change / to \
-      call backslashit(LCOPY,upathdos)
-      write(louts,'(2a)') 'destination = ',upathdos(1:lnup)
+C Change any / to \ and if lnblankup returns as a 1 then there
+C was nothing to change so copy lcopyto upathdos.
+      lncp=lnblnk(lcopy)
+      lnblankup=iprevblnk(lcopy,lncp)
+      if(lnblankup.eq.1)then
+        upathdos = lcopy
+      else
+        call backslashit(lcopy,upathdos)
+      endif
+      write(louts,'(2a,2i3)') 'destination = ',upathdos(1:lncp),
+     &  lncp,lnblankup
       call edisp248(iuout,louts,100)
 
 C Create the ldoit command based on where there are blanks in the strings.
@@ -187,22 +202,22 @@ C Create the ldoit command based on where there are blanks in the strings.
 
 C There are blanks in both source or destination strings.
         write(ldoit,'(8a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lnup),dq
+     &    dq,rootpdos(1:lnrp),dq,' ',dq,upathdos(1:lncp),dq
       elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
 
 C There are blanks in destination string.
         write(ldoit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lnup),dq
+     &    rootpdos(1:lnrp),' ',dq,upathdos(1:lncp),dq
       elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
 
 C There are blanks in source string.
         write(ldoit,'(6a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lnup)
+     &    dq,rootpdos(1:lnrp),dq,' ',upathdos(1:lncp)
       elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
 
 C There are no blanks in either source or destination strings.
         write(ldoit,'(4a)',IOSTAT=IOS,ERR=552) 'copy /y ',
-     &    rootpdos(1:lnrp),' ',upathdos(1:lnup)
+     &    rootpdos(1:lnrp),' ',upathdos(1:lncp)
       endif
 
       return

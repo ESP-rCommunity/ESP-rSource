@@ -111,7 +111,7 @@ C the floor area (one) or it was calculated (zero).
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10),trnalt(17),IVLST(MTV)
-      CHARACTER H*72,zname*12,zdesc*64,HEAD*25,SALT*33,hold*36
+      CHARACTER H*72,zname*12,zdesc*64,HEAD*32,SALT*33,hold*36
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER DESC*48,DESCRC*25
@@ -1455,7 +1455,7 @@ C Help for rotation/transform/mirror options
         H(49)='zone can cause problems.'
         H(50)='Take care: there is no undo facility.'
 
-        WRITE(HEAD,'(a,a15)')'Transforms for Zone ',zname(ICOMP)
+        WRITE(HEAD,'(2a)')'Transforms for Zone ',zname(ICOMP)
 
 C Menu for zone rotations and transforms.
         CALL EMENU(HEAD,trnalt,17,INOR)

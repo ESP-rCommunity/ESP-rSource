@@ -200,11 +200,11 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
 
 C Set initial menu width and text feedback number of lines.
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(27*iappw*0.01),18)
+        menuchw = MAX0(int(29*iappw*0.01),18)
         LIMTTY= MAX0(int(8*iappw*0.01),4)
         LIMIT = MAX0(int(8*iappw*0.01),4)
       else
-        menuchw = 27
+        menuchw = 29
         LIMTTY=8
         LIMIT =8
       endif
@@ -520,11 +520,11 @@ C Graphic analysis. Enlarge graphics area if small.
           if(LIMTTY.gt.12)then
 #ifdef X11
             if(iappw.gt.0.and.iappw.lt.100)then
-              menuchw = MAX0(int(28*iappw*0.01),10)
+              menuchw = MAX0(int(29*iappw*0.01),10)
               LIMTTY= MAX0(int(6*iappw*0.01),4)
               LIMIT = MAX0(int(6*iappw*0.01),4)
             else
-              menuchw = 28
+              menuchw = 29
               LIMTTY=6
               LIMIT =6
             endif
@@ -551,11 +551,11 @@ C Psychrometric analysis. Enlarge graphics area if small.
           if(LIMTTY.gt.12)then
 #ifdef X11
             if(iappw.gt.0.and.iappw.lt.100)then
-              menuchw = MAX0(int(28*iappw*0.01),10)
+              menuchw = MAX0(int(29*iappw*0.01),10)
               LIMTTY= MAX0(int(6*iappw*0.01),4)
               LIMIT = MAX0(int(6*iappw*0.01),4)
             else
-              menuchw = 28
+              menuchw = 29
               LIMTTY=6
               LIMIT =6
             endif
@@ -1283,6 +1283,7 @@ C Generate view period string based on IBDOY,IEDOY,BTIM,ETIM
       RETURN
   10  write(6,*) 'EPERSTR: error writing warning or strings.'
       END
+
 
 C ***** dummy routines for c code active descriptions buttons.
       subroutine cfgpk(act)

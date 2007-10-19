@@ -27,6 +27,8 @@ C  DELZONE: systematically removes a thermal zone.
 C  WARNMOD: provide warnings when model evolves.
 C  SUMRCHG: provides a summary of updates needed after model changes.
 C  POINTTOLINE: determines distance from a 3D point to a 3D line.
+C  silentzone: creates a zone (or limited complexity) based on parameters
+C              passed to it.
 C  SILENTREAD: Reads silent (compact) zones geometry data.
 
 
@@ -2043,11 +2045,13 @@ C hasdoor (real array) for each surface in the initial shape a zero indicates
 C   no door and a non-zero indicates the width of the door (m).
 C hasname (string array) the surface name for each surface
 C hasconstruction (string array) the name of the MLC to use for each surface
-C boundarytype (integer (MS,3) the connection data for each surface
+C boundarytype (integer (MS,3) the connection data for each surface.
+C use integer*3 directives for zone use pattern.,
+c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,name,shape,nbwalls,origin,size,
      &  coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
-     &  hasconstruction,boundarytype,IER)
+     &  hasconstruction,boundarytype,use,usefile,IER)
 #include "building.h"
 #include "esprdbfile.h"
       COMMON/FILEP/IFIL
@@ -2073,7 +2077,6 @@ C IER=0 OK.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -2084,6 +2087,26 @@ C IER=0 OK.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*48
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+      common/p3ver/ip3ver
+      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
+     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
+     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
+     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
+     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
+     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
+     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
+      COMMON/P1/oprdesc,ctlstr
+      CHARACTER oprdesc*248,ctlstr*24
+
+      common/loadlabel/lodlabel(mcom,7)
+      CHARACTER*6 lodlabel
 
 C Paremeters passed in:
       character name*12   ! name given to the zone
@@ -2100,6 +2123,8 @@ C Paremeters passed in:
       character hasname*12
       dimension hasname(MS)  ! name to use for each surface
       integer boundarytype(MS,3)
+      character use*8,usefile*32  ! usage pattern directives
+      dimension use(3)
       
       DIMENSION XX(MS),YY(MS)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -2108,15 +2133,16 @@ C Paremeters passed in:
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character MODE*4,fs*1,DESC*48
+      character fs*1,DESC*48
       CHARACTER zname*12,zdesc*64
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
+      character docpth*24,tmppth*24,dbspth*24
       character act*2
+      character subpath*72,sfile*144
+      character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
       LOGICAL browse,OKC,XST,unixok
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical willneedtmc  !  if a tmc file will be required.
       LOGICAL QUIET
 
@@ -2132,7 +2158,6 @@ C If browsing then user cannot create a new zone.
      &    'mode, you must `own` the model!','W')
         return
       endif
-      newgeo=.false.  ! assume older format geometry.
 
 C Set folder separator (fs) to \ or / as required.
       willneedtmc=.false.
@@ -2203,6 +2228,7 @@ C Convert box into a gen description.
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
+        IZBASELIST(ICOMP)=1
       ELSEIF(IW2.eq.2)THEN
 
 C User begins with an extruded shape.
@@ -2227,6 +2253,7 @@ C Convert into a gen body and rotate if required.
         NSUR=NW+2
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
+        IZBASELIST(ICOMP)=1
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite.
@@ -2319,16 +2346,12 @@ C Reset to represent UNKNOWN
       NZTV(ICOMP)=NTV
  
 C Save this to file before passing into the geometry editing facility.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(igupgrade.eq.2.and.(.NOT.newgeo))then
+C Use gversion 1.1.
+      if(igupgrade.lt.2)then
+        igupgrade=2
         gversion(icomp) =1.1
-        newgeo = .true.
       endif
-      if(newgeo)then
-        call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-      else
-        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-      endif
+      call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       IF(IER.EQ.1)THEN
         call usrmsg('Problem creating geometry file.','giving up','W')
         return
@@ -2365,11 +2388,7 @@ C parent surface.  Later add logic to better place the door..
       if(nbdoor.gt.0)then
         do 78 ids=1,NZSUR(ICOMP)
           if(hasdoor(ids).gt.0.0)then
-            if(newgeo)then
-              call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
-            else
-              call egomin(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
-            endif
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
@@ -2410,11 +2429,7 @@ C section of the string DESC.
             call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
-            if(newgeo)then
-              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-            else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-            endif
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
   78    continue
       endif
@@ -2424,11 +2439,7 @@ C the parent surface as a percentage of area.
       if(nbglz.gt.0)then
         do 77 ids=1,NZSUR(ICOMP)
           if(hasglaze(ids).gt.0.0)then
-            if(newgeo)then
-              call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
-            else
-              call egomin(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
-            endif
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             act='sp'
@@ -2464,11 +2475,7 @@ C section of the string DESC.
             call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 
-            if(newgeo)then
-              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-            else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
-            endif
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
   77    continue
       endif
@@ -2499,10 +2506,64 @@ C call edcon to complete the process.
      &    'files. Please check','W')
       endif
 
-C << Operational details for this zone need to be handled. One
-C << option is to rely on a file within the pattern folder for
-C << the initial description.
-C      LPROJ(ICOMP)=OFILE
+C Operational details for this zone need to be handled. One
+C option is to rely on a file within the pattern folder for
+C the initial description (usefile) and use(3) parameters.
+      if(use(1)(1:7).eq.'pattern')then
+        LPROJ(ICOMP)=OFILE
+        call isunix(unixok)
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
+        write(subpath,'(6a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
+        write(sfile,'(2a)')subpath(1:lnblnk(subpath)),
+     &    usefile(1:lnblnk(usefile))
+C Debug.
+        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+
+C Clear commons.
+        NAC1=0
+        NAC2=0
+        NAC3=0
+        NCAS1=0
+        NCAS2=0
+        NCAS3=0
+        ctlstr='no control of air flow  '
+        oprdesc='no operations notes (yet)'
+        lodlabel(icomp,1)='Occupt'
+        lodlabel(icomp,2)='Lights'
+        lodlabel(icomp,3)='Equipt'  
+        lodlabel(icomp,4)='N/A   '  
+        lodlabel(icomp,5)='Ann.El'  
+        lodlabel(icomp,6)='N/A   ' 
+        lodlabel(icomp,7)='N/A   '      
+
+C Fill common blocks for new zone based on information in the
+C pattern file.
+        ip3ver=1
+        afact = use(2)
+        iflow='ach-ach '
+        vflow='ach-ach '
+        isource=0
+        idest=icomp
+        call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
+     &    itrc,ier)
+
+        isource=0
+        idest=icomp
+        icact = use(3)
+        iwatt='W-W     '
+        itrc=1
+        call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,ier)
+
+C Just in case sort the data.
+        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        IUO=IFIL+2
+        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+      endif
 
 C Update configuration file to know about the construction files.
       CALL EMKCFG('-',IER)
@@ -2516,6 +2577,11 @@ C Update configuration file to know about the construction files.
       endif
       return
 
+C Errors when creating string buffers.
+   1  write(6,*) 'error creating subpath: ',subpath
+      ier=2
+      return
+
       END
  
 C ******************** SILENTREAD 
@@ -2523,6 +2589,8 @@ C SILENTREAD reads compact zones data from a file. Data input is
 C based on 3rd party generators.
  
        SUBROUTINE SILENTREAD(IUNIT,LFILE,IER)
+       integer MSZ   ! number of silent zones array sizes
+       PARAMETER (MSZ=10) 
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -2538,37 +2606,69 @@ C espriou.h provides currentfile.
       character weather*144    ! name for the location
       character*(*) lfile       ! name of the file
       logical dll
-      integer nbglz       ! nb of windows
-      integer nbdoor      ! nb of doors
-      integer nbcord      ! nb of coordinates (for extruded shape)
       real valx,valy      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
       character name*12   ! name given to the zone
+      dimension name(MSZ)
       character shape*8   ! box or extrude
-      integer nbwalls     ! nb of vertical walls
-      real origin(3)      ! values dependant on shape
-      real size(3)        ! values dependant on shape
-      real coords(MS,2)
-      real rotateit       ! angle of rotation
-      real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
-      real hasdoor(MS)    ! width of door in each surface of the initial shape
-      character hasconstruction*32
-      dimension hasconstruction(MS)  ! construction to use for each surface
-      character hasname*12
-      dimension hasname(MS)  ! construction to use for each surface
-      integer boundarytype(MS,3)
+      dimension shape(MSZ)
+      character use*8,szuse*8,usefile*32  ! usage pattern directives
+      dimension use(3),szuse(MSZ,3),usefile(MSZ)
+      integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbglz(MSZ)       ! nb of windows
+      integer nbdoor(MSZ)      ! nb of doors
+      integer nbcord(MSZ)      ! nb of coordinates (for extruded shape)
+      real rotateit(MSZ)        ! angle of rotation
+      real origin(3),szorigin(MSZ,3)      ! values dependant on shape
+      real size(3),szsize(MSZ,3)        ! values dependant on shape
+      real coords(MS,2),szcoords(MSZ,MS,2) 
+      real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
+      real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
+      character hasconstruction*32,szhasconstruction*32
+      dimension hasconstruction(MS),szhasconstruction(MSZ,MS)  ! construction to use for each surface
+      character hasname*12,szhasname*12
+      dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
+      integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
-C << still an issue as to how to signal the number of surfaces that
-C << are initially in the zone and how to insert the doors and
-C << windows so they are properly counted and also have the correct
-C << materials and names.
       IER=0
-      shape=' '
+
+C Clear the sz array structures. The logic is to scan all of the
+C zone details and then process the zones after *end is detected
+C in the file.
+      do 42 iz=1,MSZ
+        name(iz) = ' '
+        shape(iz) = ' '
+        szuse(iz,1) = ' '
+        szuse(iz,2) = ' '
+        szuse(iz,3) = ' '
+        usefile(iz) = ' '
+        nbwalls(iz) = 0
+        nbglz(iz) = 0
+        nbdoor(iz) = 0
+        nbcord(iz) = 0
+        rotateit(iz) = 0
+        szorigin(iz,1) = 0.0
+        szorigin(iz,2) = 0.0
+        szorigin(iz,3) = 0.0
+        szsize(iz,1) = 0.0
+        szsize(iz,2) = 0.0
+        szsize(iz,3) = 0.0
+        do 52 isu=1,MS
+          szcoords(iz,isu,1)=0.0
+          szcoords(iz,isu,2)=0.0
+          szhasglaze(iz,isu)=0.0
+          szhasdoor(iz,isu)=0.0
+          szhasconstruction(iz,isu)=' '
+          szhasname(iz,isu)=' '
+          szboundarytype(iz,isu,1)=0
+          szboundarytype(iz,isu,2)=0
+          szboundarytype(iz,isu,3)=0
+  52    continue
+  42  continue
+
       NS=0     ! temporary array for counting surfaces.
-      nbglz = 0
-      nbdoor = 0
-      nbcord = 0
+      nsz=0
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -2607,126 +2707,116 @@ C file so close the file and set error message.
         return
       endif
 
-C Read weather_station line.: 
+C Read weather_station line. If end of file found then jump
+C to 1000 to see if there are zones to process.
 C *weather_station,dublin
   43  CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'silent tags',IER)
-      IF(IER.NE.0)goto 1001
+      IF(IER.NE.0)goto 1000
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','*vertex or *surface tags',IER)
       if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
         CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
       elseif(WORD(1:11).eq.'*start_zone')then
         icomp=ncomp+1    ! increment zone index
+        nsz=nsz+1
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-        name=WORD(1:12)
+        write(name(nsz),'(a)') WORD(1:12)
         goto 43
       elseif(WORD(1:9).eq.'*end_zone')then
-
-C Call silent zone and then loop back for more possible definiitons.
-        call silentzone(ICOMP,name,shape,nbwalls,origin,size,
-     &    coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
-     &    hasconstruction,boundarytype,IER)
-
-C Process the construction and operation data for this zone.
-C << to be done >>
-
         goto 43
       elseif(WORD(1:5).eq.'*end ')then
-        CALL ERPFREE(IUNIT,ios)
-        RETURN
+
+C Jump to process the collected data.
+        goto 1000
       elseif(WORD(1:5).eq.'*cord')then
-        nbcord=nbcord+1
+        nbcord(nsz)=nbcord(nsz)+1
+        nbc=nbcord(nsz)
         CALL EGETWR(OUTSTR,K,valx,0.,0.,'-','cord-x',IER)
         CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','cord-y',IER)
-        coords(nbcord,1)=valx
-        coords(nbcord,2)=valy
+        szcoords(nsz,nbc,1)=valx
+        szcoords(nsz,nbc,2)=valy
         goto 43
       elseif(WORD(1:5).eq.'*door')then
-        CALL EGETWI(OUTSTR,K,nbdoor,0,MS,'W','no of doors',IER)
+        CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
 
 C Scan for pairs of parent surface index and the door width.
-        if(nbdoor.gt.0)then
-          do 47 igl=1,nbdoor
+        nbdoor(nsz)=nbd
+        if(nbdoor(nsz).gt.0)then
+          do 47 igl=1,nbdoor(nsz)
             CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
             CALL EGETWR(OUTSTR,K,val,0.,0.,'-','width',IER)
-            hasdoor(iparen)=val
+            szhasdoor(nsz,iparen)=val
   47      continue
         endif
         goto 43
       elseif(WORD(1:6).eq.'*glaze')then
-        CALL EGETWI(OUTSTR,K,nbglz,0,MS,'W','no of glzaings',IER)
+        CALL EGETWI(OUTSTR,K,nbg,0,MS,'W','no of glzaings',IER)
 
 C Scan for pairs of parent surface index and the percentage of the parent
 C surface area to have as glazing.
-        if(nbglz.gt.0)then
-          do 144 igl=1,nbglz
+        nbglz(nsz)=nbg
+        if(nbglz(nsz).gt.0)then
+          do 144 igl=1,nbglz(nsz)
             CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
             CALL EGETWR(OUTSTR,K,val,0.,0.,'-','percent',IER)
-            hasglaze(iparen)=val
+            szhasglaze(nsz,iparen)=val
  144      continue
         endif
         goto 43
       elseif(WORD(1:6).eq.'*shape')then
         CALL EGETW(OUTSTR,K,WORD,'W','shape type',IFLAG)
         if(WORD(1:3).eq.'box')then
-          shape='box '
-          nbwalls=6
+          write(shape(nsz),'(a)') 'box '
+          nbwalls(nsz)=6
         elseif(WORD(1:7).eq.'extrude')then
-          shape='extrude'
-          nbwalls=0
-          nbcord=0
+          write(shape(nsz),'(a)') 'extrude'
         endif
         NS=0     ! reset number of surfaces and clear arrays.
-        origin(1)=0.0
-        origin(2)=0.0
-        origin(3)=0.0
-        size(1)=0.0
-        size(2)=0.0
-        size(3)=0.0
-        rotateit=0.0
-        nbdoor=0
-        do 46 isu=1,MS
-          coords(isu,1)=0.0
-          coords(isu,2)=0.0
-          hasglaze(isu)=0.0
-          hasdoor(isu)=0.0
-          hasconstruction(isu)=' '
-          hasname(isu)=' '
-  46    continue
         goto 43
       elseif(WORD(1:8).eq.'*nbwalls')then
 
 C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
 C box shapes.
-        if(shape(1:7).eq.'extrude')then
-          CALL EGETWI(OUTSTR,K,nbwalls,1,MS,'W','nb parent surfs',IER)
+        if(shape(nsz)(1:7).eq.'extrude')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
         else
-          nbwalls=4
+          nbwalls(nsz)=4
         endif
         goto 43
       elseif(WORD(1:7).eq.'*origin')then
-        if(shape(1:3).eq.'box')then
+        if(shape(nsz)(1:3).eq.'box')then
           CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','box X origin',IER)
           CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','box Y origin',IER)
           CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','box Z origin',IER)
-        elseif(shape(1:7).eq.'extrude')then
+          szorigin(nsz,1)=origin(1)
+          szorigin(nsz,2)=origin(2)
+          szorigin(nsz,3)=origin(3)
+        elseif(shape(nsz)(1:7).eq.'extrude')then
           CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','extrude Z base',IER)
           CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','extrude Z top',IER)
           CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','extrude ignore',IER)
+          szorigin(nsz,1)=origin(1)
+          szorigin(nsz,2)=origin(2)
+          szorigin(nsz,3)=origin(3)
         endif
         goto 43
       elseif(WORD(1:7).eq.'*rotate')then
-        CALL EGETWR(OUTSTR,K,rotateit,0.,0.,'-','rotation angle',IER)
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
+        rotateit(nsz)=rot
         goto 43
       elseif(WORD(1:5).eq.'*size')then
-        if(shape(1:3).eq.'box')then
+        if(shape(nsz)(1:3).eq.'box')then
           CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
           CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
           CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
-        elseif(shape(1:7).eq.'extrude')then
-          size(1)=0.0   ! this is ignored for extruded shape
-          size(2)=0.0
-          size(3)=0.0
+          szsize(nsz,1)=size(1)
+          szsize(nsz,2)=size(2)
+          szsize(nsz,3)=size(3)
+        elseif(shape(nsz)(1:7).eq.'extrude')then
+          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          szsize(nsz,2)=0.0
+          szsize(nsz,3)=0.0
         endif
         goto 43
       elseif(WORD(1:8).eq.'*surface')then
@@ -2737,21 +2827,39 @@ C then any windows and then any doors.
 
 C Surface name, allow for future spaces in name.
         CALL EGETP(OUTSTR,K,WORD,'W','surface name',IER)
-        write(hasname(NS),'(a)') WORD(1:lnblnk(WORD))
+        write(szhasname(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Surface construction name, allow for spaces.
         CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
-        write(hasconstruction(NS),'(a)') WORD(1:lnblnk(WORD))
+        write(szhasconstruction(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Read three indices representing boundary condition.
         CALL EGETWI(OUTSTR,K,ival1,-1,4,'W','connection type',IER)
         CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
         CALL EGETWI(OUTSTR,K,ival3,0,MS,'W','connection ie2',IER)
-        boundarytype(NS,1)=ival1
-        boundarytype(NS,2)=ival2
-        boundarytype(NS,3)=ival3
+        szboundarytype(nsz,NS,1)=ival1
+        szboundarytype(nsz,NS,2)=ival2
+        szboundarytype(nsz,NS,3)=ival3
         goto 43
       elseif(WORD(1:6).eq.'*usage')then
+
+C After *usage the next token is 'pattern' (tag indicating that
+C an operations file in the training/pattern folder to use to
+C get infiltration and casual gains). Note usefile is only
+C 32 char buffer because other source code knowns the path
+C to the training/pattern folder.
+        CALL EGETW(OUTSTR,K,use(1),'W','pattern',IFLAG)
+        if(use(1)(1:7).eq.'pattern')then
+          szuse(nsz,1) = use(1)
+          CALL EGETW(OUTSTR,K,use(2),'W','pattern infil',IFLAG)
+          szuse(nsz,2) = use(2)
+          CALL EGETW(OUTSTR,K,use(3),'W','pattern casual',IFLAG)
+          szuse(nsz,3) = use(3)
+          CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
+          write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
+        else
+          call usrmsg('Usage 2nd parameter not recognised',' ','W')
+        endif
         goto 43
       elseif(WORD(1:9).eq.'*occupant')then
         goto 43
@@ -2772,10 +2880,57 @@ C Read three indices representing boundary condition.
         goto 43
       endif
 
-C << to this point in the logic... >>
-
 C Now close silent data file.
       CALL ERPFREE(IUNIT,ios)
+      RETURN
+
+C Process the data if the end of the file reached or if the
+C *end mark was found.
+ 1000 CALL ERPFREE(IUNIT,ios)
+      if(nsz.eq.0)then
+        return
+      else
+        if(ncomp.eq.0)then
+          icomp=0
+        elseif(ncomp.gt.0)then
+          icomp=ncomp
+        endif
+        do 53 isz=1,nsz
+
+C Call silent zone and then loop back for more possible definiitons.
+C Copy from sz* arrays into parameter arrays prior to silentzone call.
+          origin(1)=szorigin(isz,1)
+          origin(2)=szorigin(isz,2)
+          origin(3)=szorigin(isz,3)
+          size(1)=szsize(isz,1)
+          size(2)=szsize(isz,2)
+          size(3)=szsize(isz,3)
+          use(1)= szuse(isz,1)
+          use(2)= szuse(isz,2)
+          use(3)= szuse(isz,3)
+C        usefile(iz) = ' '
+          do 48 isu=1,nbcord(isz)
+            coords(isu,1)=szcoords(isz,isu,1)
+            coords(isu,2)=szcoords(isz,isu,2)
+  48      continue
+          do 49 isu=1,MS
+            hasglaze(isu)=szhasglaze(isz,isu)
+            hasdoor(isu)=szhasdoor(isz,isu)
+            hasconstruction(isu)=szhasconstruction(isz,isu)
+            hasname(isu)=szhasname(isz,isu)
+            boundarytype(isu,1)=szboundarytype(isz,isu,1)
+            boundarytype(isu,2)=szboundarytype(isz,isu,2)
+            boundarytype(isu,3)=szboundarytype(isz,isu,3)
+  49      continue
+          icomp=icomp+1
+          write(outs,'(2a)') 'Processing ',name(isz)
+          call edisp(iuout,outs)
+          call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
+     &      origin,size,coords,rotateit(isz),nbglz(isz),hasglaze,
+     &      nbdoor(isz),hasdoor,hasname,hasconstruction,
+     &      boundarytype,use,usefile(isz),IER)
+  53    continue
+      endif
       RETURN
 
  1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'

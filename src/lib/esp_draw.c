@@ -32,6 +32,7 @@
      etlabel_() display text as in old teklib tlabel
      vrtaxis_() draws a vertical axis (tic & labels on right or left side).
      horaxis_() construct and draw a horiz axis
+     horaxishdw_() construct and draw a hour/day/week horizontal axis
      testcscale_() test drawing primitives & colors
 */
 
@@ -2438,6 +2439,189 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  g_object_unref (layout);	/* clear the layout */
  return;
 } /* horaxis_ */
+
+
+/* ************ horaxishdw_() construct and draw a horiz axis *************** */
+/*
+ Construct and draw a horizontal axis via WW where: XMN,XMX are the data
+ minimum & maximum values, offL & offB are the pixel coords of the
+ left start of the axis.  SCA is the scaling factor and Xadd is a data
+ offset to adjust plotting for various data ranges. mode defines how
+ left starting point is adjusted.
+*/
+
+void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
+
+ float *xmn, *xmx, *sca, *xadd;
+ long int   *offl,*offr,*offb, *mode, *ind, *idiv, *isjday;
+ int   mlen;
+ char  *msg;
+{
+/*
+ Local variables:
+ WticC is the pixel shift (horizontal) to centre the tic label, ix & iy
+ are the pixel coords.
+*/
+ PangoLayout *layout;	/* pango layout for the text in the buffer */
+ gint f_height;	/* pixel height of default font */
+ gint f_width;	/* pixel width of default font */
+ gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
+ gint width;	/* width of line */
+ gint s_1, s_2, s_3, s_4, s_5;
+ gint ofl,ofb,ofr;
+ char sstr[10];
+ gint l, n, ix, iy, ix1, iy1, nintvl, ilen, iind, iidiv, iisjday;
+ gint last_label_right_pixel, label_width, mid, msglen;
+ long int nx,wticc,mde,saved_font;
+ float xticv,xxticv,ddx,rintvl,resid;
+ char msg2[80];
+
+/* Use Pango context previously setup in esp-r.c */
+ f_height = PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics) +
+            pango_font_metrics_get_descent (pango_metrics));
+ f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (pango_metrics));
+ layout = pango_layout_new (pango_context);	/* clear and set layout */
+
+ ilen = 0;
+ f_to_c_l(msg,&mlen,&ilen); strncpy(msg2,msg,(unsigned int)ilen); msg2[ilen] = '\0';
+/* saved_font = current_font;
+ if (saved_font != butn_fnt) winfnt_(&butn_fnt); */
+
+ if ( wwc_ok == 1) {
+   fprintf(wwc,"*horaxishdw\n");
+   fprintf(wwc,"%f %f %ld %ld %ld %f %f %ld\n",
+                *xmn,*xmx,*offl,*offr,*offb,*xadd,*sca,*mode);
+   fprintf(wwc,"%s\n",msg2);
+ }
+/* debug   fprintf(stderr,"%f %f %ld %ld %ld %f %f %ld\n",
+                *xmn,*xmx,*offl,*offr,*offb,*xadd,*sca,*mode); */
+
+ ofl = (gint) *offl; ofr = (gint) *offr; ofb = (gint) *offb; mde = *mode;
+ iind = (gint) *ind; iidiv = (gint) *idiv; iisjday = (gint) *isjday;
+
+/* set box extents of graphic for user later */
+ b_top = 0; b_left = 0; b_right = graphic->allocation.width; b_bottom = graphic->allocation.height;
+
+/* Define tic intervals (DDX data increment, NX num decimal places). */
+ nx = 0;
+ ddx = 0.;
+ dinterval_(xmn, xmx, &ddx, &nx, &mde);
+
+/* Find the maximum label text width based on which ind.  */
+ label_width = 0;
+ if(iind == 0) {
+   xticv = *xmn/(float)iidiv;
+ } else if (iind == 1) {
+   xticv = *xmn/(float)iidiv;
+ } else if (iind == 2) {
+   xticv = *xmn/(float)iidiv;
+ } else if (iind == 3) {
+   xticv = *xmn/(float)iidiv;
+ } else if (iind == 4) {
+   xticv = *xmn;
+ }
+ labelstr(&nx, &xticv, &wticc, sstr);
+ label_width = (int) strlen(sstr);
+ if(iind == 0) {
+   xticv = *xmx/(float)iidiv;
+ } else if (iind == 1) {
+   xticv = *xmx/(float)iidiv;
+ } else if (iind == 2) {
+   xticv = *xmx/(float)iidiv;
+ } else if (iind == 3) {
+   xticv = *xmx/(float)iidiv;
+ } else if (iind == 4) {
+   xticv = *xmx;
+ }
+ labelstr(&nx, &xticv, &wticc, sstr);
+ if( (int) strlen(sstr) > label_width) label_width = (int) strlen(sstr);
+
+/* Draw a horizontal axis. */
+ ix = ix1 = ofl;
+ iy = iy1 = ofb;
+
+/*
+ If mode=1 and axis does not begin on an integer the location of
+ the first tic needs to be adjusted.
+*/
+ xticv = *xmn;
+ rintvl = (*xmx - *xmn) / ddx + 1.0;
+ nintvl = (gint) rintvl;
+ width = 1;
+ gdk_gc_set_line_attributes(gc,width,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_MITER); /* gives same as default */
+ if (mde == 1) {
+   resid = *xmn - (int) *xmn;
+   if(*xmn < 0. && fabs(resid) > 0.0001) {
+       xticv = (int) *xmn;
+       ix = ofl + (int) (((float) xticv + *xadd) * *sca);
+       iy = ofb;
+       gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
+       xticv = (int) (*xmn + ddx);
+       ix = ofl + (int) (((float) xticv + *xadd) * *sca);
+       iy = ofb;
+       gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
+       nintvl--;     /* adjust to account for shift */
+   }
+   iy1 = iy; ix1 = ix;	/* remember position */
+ }
+
+/* Loop from minimum to maximum by DDX incriments. */
+
+ s_1 = nintvl;
+ last_label_right_pixel = 0;
+ for (l = 1; l <= s_1; ++l) {
+
+/* Based on the DINTT info generate the appropriate tic label "sstr". */
+   if(iind == 0) {
+     xxticv = xticv/(float)iidiv;
+   } else if (iind == 1) {
+     xxticv = xticv/(float)iidiv;
+   } else if (iind == 2) {
+     xxticv = xticv/(float)iidiv;
+   } else if (iind == 3) {
+     xxticv = xticv/(float)iidiv;
+   } else if (iind == 4) {
+     xxticv = xticv;
+   }
+   labelstr(&nx, &xxticv, &wticc, sstr);
+   ix = ofl + (int) ((xticv + *xadd) * *sca);
+   iy = ofb;
+   gdk_draw_line(gr_image,gc,ix1,iy1,ix,iy);
+   s_4 = iy + 5;                    /* tic descender position  */
+   gdk_draw_line(gr_image,gc,ix,iy,ix,s_4);
+   s_2 = (gint) (ix - wticc);                /* current label position  */
+   s_5 = ix - ((label_width * f_width)/2); /* position if all label characters */
+/*    s_3 = iy +f_height + 5; bottom of font  */
+   s_3 = iy + 7; /* tick characters position (at top of font) below descender  */
+   n = (int) strlen(sstr);
+   if (s_5 >= (last_label_right_pixel + f_width)) {
+     pango_layout_set_text (layout, sstr, -1);	/* add text */
+     gdk_draw_layout (gr_image, gc,s_2,s_3,layout);	/* draw it on the pixmap */
+     last_label_right_pixel = s_5 + (label_width * f_width);
+     gdk_draw_line(gr_image,gc,ix,iy,ix,s_4+2);  /* extra tic length at label */
+   }
+   ix = ix1 = ofl; iy1 = iy;	/* remember position */
+   xticv += ddx;
+ }
+/* Finish off the rest of the axis if less than the full width  */
+ ix = ofl + (int) ((*xmx + *xadd) * *sca);
+ iy = ofb;
+ gdk_draw_line(gr_image,gc,ix1,iy1,ix,iy);
+
+/* Print out the axis label. Note: gdk_draw_layout coordinates seem to
+   be at the top of the font. */
+ iy = b_bottom- (10 +f_height);
+ mid = ofl + ((ofr - ofl)/2);
+ ix = mid - (f_width * ilen /2);
+ if (ix > 5){
+   pango_layout_set_text (layout, msg2, -1);	/* add text */
+   gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
+ }
+/* if (saved_font != butn_fnt) winfnt_(&saved_font); */
+ g_object_unref (layout);	/* clear the layout */
+ return;
+} /* horaxishdw_ */
 
 
 /* ***** popupimage_() display image with documentation */

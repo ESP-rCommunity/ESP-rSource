@@ -23,6 +23,7 @@ C system databases:
 C  EDDB  : Controls specification/ browsing of databases.
 C  opendb: Standard opening of thermophysical and optical databases.
 C EDDBMAT Changes the materials database current cfg file references.
+C EDDBMLC Changes the Constructions db references in the cfg file.
 C EDDBPROFILE Changes the events profile database current cfg file references.
 C EDDBOPT Changes the optical database current cfg file references.
 C EDDBCLM: Changes the climate database current cfg file references.
@@ -687,7 +688,6 @@ C Check to see if the file has correct info.
           else
             call eclose(matver,1.1,0.001,close)
             if(close)then
-C              call edisp(iuout,'Filled material data arrays.')
               MATDBOK=.TRUE.
             else
               call usrmsg(
@@ -699,7 +699,6 @@ C              call edisp(iuout,'Filled material data arrays.')
         elseif(ier.eq.0)then
           call eclose(matver,1.1,0.001,close)
           if(close)then
-C            call edisp(iuout,'Filled material data arrays...')
             MATDBOK=.TRUE.
           endif
         endif
@@ -936,6 +935,7 @@ C Default ESP-r distribution path.
       character cfgroot*24,LCFGF*72,fs*1,message*48
       character doit*248,LCOPY*72,dinstpath*48,APP*4
       character DFILE*72,LASCI*72,LTMPFL*72
+      character sourcefile*72  ! the file to copy
       DIMENSION ICLN(30)
 
 C Set folder separator (fs) to \ or / as required.
@@ -950,8 +950,6 @@ C Set folder separator (fs) to \ or / as required.
       modcon=.false.
 
  138  LTMP=LFMAT
-C      write(outs,'(2a)') 'Options for materials db: ',
-C     &  LTMP(1:lnblnk(LTMP))
 
 C If db does not exist offer the following choices.
       H(1)='The Materials database holds the density, specific' 
@@ -1052,8 +1050,6 @@ C re-read as a legacy materials file.
      &                      'or was corrupt!','W')
                 goto 138
               endif
-            elseif(ier.eq.0)then
-C              call edisp(iuout,'Filled material data arrays.')
             endif
           else
 
@@ -1311,15 +1307,15 @@ C file name based on the project root name. Lastly do the copy.
 
 C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to ESP-r and LCOPY for the system cp call.   
+        call edisp(iuout,'The source file is:')
         if(copydef)then
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,DFCON)
-          call edisp(iuout,' ')
+          sourcefile = LFMAT
         else
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,LFMAT)
-          call edisp(iuout,' ')
+          sourcefile = DFCON
         endif
+        call edisp(iuout,' ')
         h(1)='The suggested name of this db is related to the'
         h(2)='active project name.'
         lr=lnblnk(cfgroot)
@@ -1336,35 +1332,24 @@ C the file name as known to ESP-r and LCOPY for the system cp call.
         IF(LTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
      &      LTMP(1:lnblnk(LTMP))
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          DFCON(1:lnblnk(DFCON)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Use similar logic as DAPRES to set up copy command.
-              message='getting materials db file from '
-              call dbdoscopy(DFCON,lcopy,message,doit,ier)
-            endif
-C            call lusrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
-            LFMAT=LTMP
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LFMAT(1:lnblnk(LFMAT)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Similar logic but using LFMAT.
-              message='getting materials db file from '
-              call dbdoscopy(LFMAT,lcopy,message,doit,ier)
-            endif
-C            call lusrmsg('copying file via',doit,'-')
-            call runit(doit,'-')
-            LFMAT=LTMP
+            message='getting materials db file from '
+            call dbdoscopy(sourcefile,lcopy,message,doit,ier)
           endif
+
+C Debug.
+C          call lusrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+          LFMAT=LTMP
+
+C Debug.
 C          write(outs,'(2a)') 'Accessing materials db: ',
 C     &      LFMAT(1:lnblnk(LFMAT))
 C          call edisp(iuout,outs)
@@ -1577,6 +1562,7 @@ C Default esp-r distribution path.
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48
       character doit*248,LCOPY*72,dinstpath*48,APP*4
+      character sourcefile*72  ! the file to copy
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1590,8 +1576,6 @@ C Set folder separator (fs) to \ or / as required.
       modcon=.false.
 
   38  LTMP=LFMUL
-C      write(outs,'(2a)') 'Options for constructions db: ',
-C     &  LTMP(1:lnblnk(LTMP))
 
 C If db does not exist offer the following choices:
       CALL ERPFREE(IFMUL,ISTAT)
@@ -1801,16 +1785,19 @@ C Copy the standard db to project folder. Suggest a local
 C file name based on the project root name. Lastly do the copy.
 
 C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.   
+C the file name as known to esp-r and LCOPY for the system cp call.
+C Note: use of easks is so that the file name can be specified
+C as local to the model. If easkf was used then it would need to
+C be passed the full path to the destination file.   
+        call edisp(iuout,'The source file is:')
         if(copydef)then
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,DFMUL)
-          call edisp(iuout,' ')
+          sourcefile = DFMUL
         else
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,LFMUL)
-          call edisp(iuout,' ')
+          sourcefile = LFMUL
         endif
+        call edisp(iuout,' ')
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -1827,35 +1814,22 @@ C the file name as known to esp-r and LCOPY for the system cp call.
         IF(LTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
      &      LTMP(1:lnblnk(LTMP))
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          DFMUL(1:lnblnk(DFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Logic as in materials database copy command.
-              message='getting constructions db file from '
-              call dbdoscopy(DFMUL,lcopy,message,doit,ier)
-            endif
-C            call lusrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
-            LFMUL=LTMP
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
           else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LFMUL(1:lnblnk(LFMUL)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
 
 C Logic as in materials database copy command.
-              message='getting constructions db file from '
-              call dbdoscopy(LFMUL,lcopy,message,doit,ier)
-            endif
-C            call lusrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
-            LFMUL=LTMP
+            message='getting constructions db file from '
+            call dbdoscopy(sourcefile,lcopy,message,doit,ier)
           endif
+
+C Debug.
+C          call lusrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+          LFMUL=LTMP
           write(outs,'(2a)') 'Accessing Constructions db: ',
      &      LCOPY(1:lnblnk(LCOPY))
           call edisp(iuout,outs)
@@ -1926,6 +1900,7 @@ C     if blank then no file name change implied.
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,linstd*60,tmode*8
+      character sourcefile*72  ! the file to copy
       CHARACTER ZPDESC*25
 
 C Set folder separator (fs) to \ or / as required.
@@ -1939,8 +1914,6 @@ C Set folder separator (fs) to \ or / as required.
       moddb=.false.
 
   60  LTMP=LPCDB
-C      write(outs,'(2a)') 'Options for plant template db: ',
-C     &  LTMP(1:lnblnk(LTMP))
       H(1)='The plant components database is a binary, random '
       H(2)='access file holding plant component descriptions to '
       H(3)='enable the establishment of component state-space '
@@ -2047,7 +2020,6 @@ C name to include the path and create a string to drive pdb.
      &          ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &          ' &'
             endif
-C            call usrmsg(' ','staring plant db module.','-')
             call runit(doit,tmode)
           else
             call usrmsg('Error opening db. Please use one',
@@ -2201,15 +2173,15 @@ C Copy the standard db to project folder. Suggest a local
 C file name based on the project root name. Lastly do the copy.
 C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.   
+        call edisp(iuout,'The source file is:')
         if(copydef)then
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,DPCDB)
-          call edisp(iuout,' ')
+          sourcefile = DPCDB
         else
-          call edisp(iuout,'The source file is:')
           call edisp(iuout,LPCDB)
-          call edisp(iuout,' ')
+          sourcefile = LPCDB
         endif
+        call edisp(iuout,' ')
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -2226,35 +2198,23 @@ C the file name as known to esp-r and LCOPY for the system cp call.
         IF(LTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
      &      LTMP(1:lnblnk(LTMP))
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          DPCDB(1:lnblnk(DPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Logic same as other copy database commands.
-              message='getting constructions db file from '
-              call dbdoscopy(DPCDB,lcopy,message,doit,ier)
-            endif
-C            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
-            LPCDB=LTMP
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Logic as other copy database.
-              message='getting Constructions db file from '
-              call dbdoscopy(LPCDB,lcopy,message,doit,ier)
-            endif
-C            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
-            LPCDB=LTMP
+            message='getting constructions db file from '
+            call dbdoscopy(sourcefile,lcopy,message,doit,ier)
           endif
+
+C Debug.
+C          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+          LPCDB=LTMP
+
           write(outs,'(2a)') 'Accessing Plant Components db: ',
      &      LCOPY(1:lnblnk(LCOPY))
           call edisp(iuout,outs)
@@ -2272,7 +2232,6 @@ C            call usrmsg('copying default file via',doit,'-')
             write(doit,'(5a)') 'pdb -mode ',tmode,
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
           endif
-C          call usrmsg(' ','staring plant db module.','-')
           call runit(doit,tmode)
           moddb=.true.
         else
@@ -2319,6 +2278,7 @@ C
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28,opth*28,opti*28
+      character sourcefile*144  ! the file to copy
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2338,9 +2298,6 @@ C Setup string buffer with distribution database folder name.
 
  40   lltmp=LPRFDB
       llt=lnblnk(lltmp)
-C      write(outs248,'(2a)') 'Options for event profiles db: ',
-C     &  lltmp(1:lnblnk(lltmp))
-C      write(outs,'(a)') outs248(1:123)
       H(1)= '   Events Database '
       H(3)= ' '
       H(4)= 'Profiles in this database are currently used to  '
@@ -2571,6 +2528,7 @@ C and LCOPY for the system cp call.
           write(outs248,'(2a)') 'The source file is:',
      &      DPRFDB(1:lnblnk(DPRFDB))
           call edisp248(iuout,outs248,100)
+          sourcefile = DPRFDB
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
@@ -2591,12 +2549,15 @@ C and LCOPY for the system cp call.
               CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
      &          144,DPRFDB,'binary events db',IER,2)
             endif
+            sourcefile = lltmp
           elseif(iglib.eq.2)then
             CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
      &        144,DPRFDB,'binary events db',IER,2)
+            sourcefile = lltmp
           else
             CALL EASKF(lltmp,' ','Event Profiles db (source)?',
      &        96,DPRFDB,'binary events db',IER,2)
+            sourcefile = lltmp
           endif
 
 C If user request jump back and re-display the menu.
@@ -2637,57 +2598,34 @@ C no need to duplicat the file separator.
             write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
      &        LTMP(1:lnblnk(LTMP))
           endif
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          DPRFDB(1:lnblnk(DPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Logic for copy similar to the pattern established above.
-              message='getting events db file from '
-              call dblongdoscopy(DPRFDB,lcopy,message,doit,ier)
-            endif
-C            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
+            message='getting events db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+C          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+          else
+            call FINDFIL(LTMP,XST)
             if(XST)then
-              write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
             else
               write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Logic for copy similar to the pattern established above.
-              message='getting events db file from '
-              call dblongdoscopy(LPRFDB,lcopy,message,doit,ier)
-            endif
-C            call usrmsg('copying file via',doit,'-')
-            call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
-            if(XST)then
-              write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
-            else
-              call FINDFIL(LTMP,XST)
-              if(XST)then
-                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-              else
-                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-                call edisp(iuout,'Problem locating the new database.')
-                call edisp(iuout,'Try browsing ../dbs to find it.')
-                call edisp(iuout,' ')
-              endif
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
             endif
           endif
           moddb=.true.
@@ -2972,9 +2910,6 @@ C Remember the initial file name in case user choice fails.
       lprev=LOPTDB
 
   50  lltmp=LOPTDB
-C      write(outs248,'(2a)') 'Options for optical properties db: ',
-C     &  LLTMP(1:lnblnk(LLTMP))
-C      write(outs,'(a)') outs248(1:123)
       H(1)='The optical properties of multilayer constructions'
       H(2)='are defined in an optical database.  The data include'
       H(3)='angular (0, 40, 55, 70, 80 degrees from normal) solar' 
@@ -3469,7 +3404,7 @@ C from version manager
       CHARACTER*72 H,CDBLFIL,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
       CHARACTER CDBLBL*20,DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
-      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER OUTS*124,APP*4,ext*4,llclmdb*144
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
@@ -3477,6 +3412,7 @@ C from version manager
       character dinstpath*48,path*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,NNAME
       dimension ICLM(24,6)
+      integer llt  ! length of string buffer
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3487,8 +3423,9 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
       moddb=.false.
+ 552  llt=MIN0(lnblnk(LCLIM),72)
+      write(llclmdb,'(a)') lclim(1:llt)
 
- 552  LTMP=LCLIM
       H(1)='Climate databases are hourly sets of values from '
       H(2)='1h00 on 1 Jan to 24h00 on 31 December.  For each hour' 
       H(3)=' the following data is held:'
@@ -3536,7 +3473,7 @@ C Get length of path to where esp-r databases were installed.
       write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
       linst=lnblnk(linstd)
-      call FINDFIL(LTMP,XST)
+      call FINDFIL(llclmdb,XST)
       IF(.NOT.XST)THEN
         idno=2
         isw=0
@@ -3545,7 +3482,7 @@ C Get length of path to where esp-r databases were installed.
      &      'c create new db','d copy default db',
      &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,36)
         copydef=.true.
-      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+      elseif(llclmdb(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
         idno=1
@@ -3577,11 +3514,13 @@ C Act on the users choice. If no choice return to main menu.
 C If file exists read it and enter editing facility.
         if(XST)then
           IER=0
-          call EFOPRAN(ICLIM,LTMP,144,0,IER)
+          call EFOPRAN(ICLIM,llclmdb,144,0,IER)
           if(ier.eq.0)then
             moddb=.true.
-            LCLIM=LTMP
-C            CALL USRMSG(' Climate db opened.',' ','P')
+
+C Cast back to 72 char name.
+            llt=MIN0(lnblnk(llclmdb),72)
+            write(LCLIM,'(a)') llclmdb(1:llt)
           else
             call usrmsg('Problem encountered with Climate db!',
      &                  'Please check db location and content.','W')
@@ -3596,6 +3535,9 @@ C            CALL USRMSG(' Climate db opened.',' ','P')
 
 C Get logical name of child process terminal type, expand climate 
 C name to include the path and create a string to drive clm.
+
+C << update to deal with dos paths >>
+
         call tstamp('>','PRJ: start clm')
         doit = ' '
         call tchild(ICPMOD)
@@ -3611,11 +3553,13 @@ C name to include the path and create a string to drive clm.
         endif
         CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
         if(ok)then
-C          call edisp(iuout,'Invoking climate analysis facility.')
-C          call edisp(iuout,doit)
           call runit(doit,tmode)
         endif
       elseif(isw.eq.2)then
+
+C Pull up the official list of climate files and if the user selects
+C one that exists then assign it. If the user picks USER_DEFINED then
+C use a file browser to go looking for it.
         H(1)='Climate databases are hourly sets of values from '
         H(2)='1h00 on 1 Jan to 24h00 on 31 December. Please' 
         H(3)='specify which file in the list.'
@@ -3625,15 +3569,39 @@ C          call edisp(iuout,doit)
           call rdblist(IUF,cdblfil,LTMP,ier)
           if(ier.eq.0)then
             if(LTMP(1:12).eq.'USER_DEFINED')then
-              LTMP='newclim'
- 291          CALL EASKS(LTMP,' New climate file (esp-r binary) ?',
-     &         ' ',72,DCLIM,'new climate file',IER,15)
-              IF(LTMP.EQ.' ')GOTO 291
+              write(llclmdb,'(a)') 'newclim'
+ 291          llt=lnblnk(llclmdb)
+              iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+              if(iglib.eq.1.or.iglib.eq.3)then
+                if(llt.lt.96)then
+                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &              ' ',96,DCLIM,'climate file name',IER,4)
+                elseif(llt.ge.96.and.llt.lt.124)then
+                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &              ' ',124,DCLIM,'climate file name',IER,4)
+                elseif(llt.ge.124.and.llt.le.144)then
+                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &              ' ',144,DCLIM,'climate file name',IER,4)
+                endif
+              elseif(iglib.eq.2)then
+                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &            ' ',144,DCLIM,'climate file name',IER,4)
+              else
+                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &            ' ',96,DCLIM,'climate file name',IER,4)
+              endif
+              IF(llclmdb(1:2).EQ.'  ')GOTO 291
               IER=0
+
+C Cast back to 72 char names.
+              llt=MIN0(lnblnk(llclmdb),72)
+              write(LCLIM,'(a)') llclmdb(1:llt)
+              write(LTMP,'(a)') llclmdb(1:llt)
             elseif(LTMP.eq.'UNKNOWN'.or.LTMP(1:2).eq.'  ')then
               call usrmsg('Nothing selected from the list!',' ','W')
+              goto 552
             else
-              LCLIM=LTMP
+              write(LCLIM,'(a)') LTMP(1:lnblnk(LTMP))
             endif
           endif
         else
@@ -3649,11 +3617,12 @@ C          call edisp(iuout,doit)
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
+
+C << next try using llclmdb for the file opening and then try >>
+C << it instead of longtfile >>
           IER=0
           call EFOPRAN(ICLIM,LTMP,144,0,IER)
           if(ier.eq.0)then
-C            write(outs,'(2a)') 'Accessing ',LCLIM(1:lnblnk(LCLIM))
-C            call edisp(iuout,outs)
             call tstamp('>','PRJ: start clm')
             doit = ' '
             call tchild(ICPMOD)
@@ -3670,8 +3639,6 @@ C            call edisp(iuout,outs)
             CALL ASKOK(' ','Browse/edit selected climate data?',
      &                  OK,dok,3)
             if(ok)then
-C              call edisp(iuout,'Invoking climate analysis facility.')
-C              call edisp(iuout,doit)
               call runit(doit,tmode)
             endif
           else
@@ -3688,6 +3655,9 @@ C              call edisp(iuout,doit)
 
 C No climate db found so set-up minimal common block, create
 C a new db, populate it and present editing facility.
+
+C << revise to support browsing for the file (askf has a cancel option now) >>
+
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -3777,8 +3747,6 @@ C name to include the path and create a string to drive clm.
           endif
           CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
           if(ok)then
-C            call edisp(iuout,' Invoking climate analysis facility.')
-C           call edisp(iuout,doit)
             call runit(doit,tmode)
           endif
         endif
@@ -3824,7 +3792,6 @@ C Similar logic but using DCLIM.
               message='getting climate file from '
               call dbdoscopy(DCLIM,lcopy,message,doit,ier)
             endif
-C            call usrmsg('copying default file via',doit,'-')
             call runit(doit,'-')
             LCLIM=LTMP
           else
@@ -3838,14 +3805,10 @@ C Similar logic but using LCLIM.
               message='getting climate file from '
               call dbdoscopy(LCLIM,lcopy,message,doit,ier)
             endif
-C            call usrmsg('copying file via',doit,'-')
             call runit(doit,'-')
             LCLIM=LTMP
           endif
           moddb=.true.
-C          write(outs,'(2a)') 'Accessing climate file: ',
-C     &        LCLIM(1:lnblnk(LCLIM))
-C          call edisp(iuout,outs)
           call tstamp('>','PRJ: start clm')
           doit = ' '
           call tchild(ICPMOD)
@@ -3865,10 +3828,7 @@ C latitude & longitude and year pop-up over the climate module.
           endif
           CALL ASKOK(' ','Browse/edit copied climate data?',OK,dok,3)
           if(ok)then
-C            call edisp(iuout,'Invoking climate analysis facility.')
-C            call edisp(iuout,doit)
             call runit(doit,tmode)
-C            call edisp(iuout,'Climate analysis facility complete.')
           endif
         else
           goto 554
@@ -3895,9 +3855,6 @@ C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
           call addpath(LCLIM,longtfile,concat)
           call addpath(LASCI,longtafile,concat)
-C          write(outs,'(2a)') 'Converting climate data: ',
-C     &        LCLIM(1:lnblnk(LCLIM))
-C          call edisp(iuout,outs)
           call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
@@ -3905,10 +3862,7 @@ C          call edisp(iuout,outs)
      &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
-C            call edisp(iuout,'Invoking climate analysis facility.')
-C            call edisp(iuout,doit)
             call runit(doit,tmode)
-C            call edisp(iuout,'Climate conversion complete.')
           endif
         endif
       elseif(isw.eq.6)then
@@ -3940,9 +3894,6 @@ C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
           call addpath(LCLIM,longtfile,concat)
           call addpath(LASCI,longtafile,concat)
-C          write(outs,'(2a)') 'Converting climate data: ',
-C     &        LCLIM(1:lnblnk(LCLIM))
-C          call edisp(iuout,outs)
           call tstamp('>','PRJ: start clm for conversion')
           doit = ' '
           write(doit,'(5a)') 'clm -mode text -file ',
@@ -3950,10 +3901,7 @@ C          call edisp(iuout,outs)
      &        longtafile(1:lnblnk(longtafile))
           CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
           if(ok)then
-C            call edisp(iuout,'Invoking climate analysis facility.')
-C            call edisp(iuout,doit)
             call runit(doit,tmode)
-C            call edisp(iuout,'Climate conversion complete.')
           endif
         endif
       elseif(isw.eq.7)then
@@ -3997,10 +3945,7 @@ C to asking clm to do the conversion.
           dok=.false.
           CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
           if(ok)then
-C            call edisp(iuout,'Invoking climate analysis facility.')
-C            call edisp(iuout,doit)
             call runit(doit,tmode)
-C            call edisp(iuout,'Climate conversion complete.')
           endif
         endif
       endif
@@ -4013,7 +3958,6 @@ C otherwise create with 0 length.
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
-C        call edisp(iuout,'Opened climate to collect information.')
         IREC=366
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
         IREC=368
