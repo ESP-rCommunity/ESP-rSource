@@ -62,7 +62,7 @@ C          block sctl to have been filled for the current period.
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -850,7 +850,7 @@ C Edit sensor location.
             isn3=IBSN(II,3)
             isn4=IBSN(II,4)
             call senloc('Options:','Zone sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'zone sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'zone sensor',IER)
             IBSN(II,1)=isn1
             IBSN(II,2)=isn2
             IBSN(II,3)=isn3
@@ -859,8 +859,10 @@ C Edit sensor location.
             isn1=IPSN(II,1)
             isn2=IPSN(II,2)
             isn3=IPSN(II,3)
+            isn4=IPSN(II,4)
+            isn5=IPSN(II,5)
             call senloc('Options:','Plant sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'plant sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'plant sensor',IER)
             IPSN(II,1)=isn1
             IPSN(II,2)=isn2
             IPSN(II,3)=isn3
@@ -870,7 +872,7 @@ C Edit sensor location.
             isn3=IFSN(II,3)
             isn4=IFSN(II,4)
             call senloc('Options:','Flow sensor',icfoc,II,
-     &        isn1,isn2,isn3,isn4,isense,nsupl,'flow sensor',IER)
+     &        isn1,isn2,isn3,isn4,isn5,isense,nsupl,'flow sensor',IER)
             IFSN(II,1)=isn1
             IFSN(II,2)=isn2
             IFSN(II,3)=isn3
@@ -896,7 +898,7 @@ C call the flow actuation interactions now.
             ign3=IGSN(II,3)
             ign4=IGSN(II,4)
             call senloc('Options:','Global sensor',icfoc,II,
-     &        ign1,ign2,ign3,ign4,isense,nsupl,'global sensor',IER)
+     &        ign1,ign2,ign3,ign4,ign5,isense,nsupl,'global sensor',IER)
             IGSN(II,1)=ign1
             IGSN(II,2)=ign2
             IGSN(II,3)=ign3
@@ -906,7 +908,7 @@ C call the flow actuation interactions now.
             ien2=IESN(II,2)
             ien3=IESN(II,3)
             call senloc('Options:','Electrical sensor',icfoc,II,
-     &        ien1,ien2,ien3,ien4,isense,nsupl,'power sensor',IER)
+     &        ien1,ien2,ien3,ien4,ien5,isense,nsupl,'power sensor',IER)
             IESN(II,1)=ien1
             IESN(II,2)=ien2
             IESN(II,3)=ien3
@@ -1062,7 +1064,7 @@ C of type icfoc.
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1155,7 +1157,7 @@ C Plant common required for building/plant flux linkage
       common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
 
-      DIMENSION SALT(22),IVALS(22)
+      DIMENSION SALT(23),IVALS(23)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
@@ -1305,7 +1307,7 @@ C law can be jumped around.
         useold=.false.
         iclawt=-1
   77    if(useold)then
-          if(iclawt.ge.0.and.iclawt.le.22)then
+          if(iclawt.ge.0.and.iclawt.le.23)then
             iclaw=iclawt
             IBCLAW(II,JJ,KK)=iclaw
             useold=.false.
@@ -1361,6 +1363,7 @@ C starting up the menu based control period definition.
         SALT(20)='Evaporative source (surface)           '
         SALT(21)='Slave capacity control                 '
         SALT(22)='VAV cooling with CAV reheat            '
+        SALT(23)='Match sensed values (ideal:2 setpoints)'
         if(iclaw.ne.0)then
           write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1423,8 +1426,13 @@ C starting up the menu based control period definition.
         H(53)='slave control is used to represent an environmental'
         H(54)='control with a thermostat in one zone and actions in'
         H(55)='a number of zones.'
+        H(56)=' '
+        H(57)='Match sensed values (ideal:2 setpoints) control law:'
+        H(58)='this is a combination of the ideal controller and'
+        H(59)='control law 11 where values from the temporal file'
+        H(60)='are taken to set the setpoints for heating and cooling'
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
-     &    40,22,SALT,'control law (indented=old or obscure)',IER,55)
+     &    40,23,SALT,'control law (indented=old or obscure)',IER,60)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -2081,7 +2089,6 @@ C Logic Optimum Stop Controller.
             call edisp(iuout,outs)
             call edisp(iuout,' ')
           endif
-
           cm(1)=9.0
           CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
      &      0.,'F',0.,'-',1000.,' max htg capacity',IER,0)
@@ -2123,9 +2130,7 @@ C Fuzzy Logic PI-PD Controller.
             call edisp(iuout,outs)
             call edisp(iuout,' ')
           endif
-
           cm(1)=7.0
-
           H(1)=' Reference must be made to a fuzzy data set.'
           H(2)=' A fuzzy data set holds all the information about'
           H(3)=' the fuzzy membership functions. At least one such '
@@ -2389,7 +2394,6 @@ C Latent/evaporative source, see bcl20 for details.
           abasw= cm(10)  
           ubasw= cm(11) 
 
-
 C Ask for data.
           h(1)='A wetted surface can either be a wet opaque surface '
           h(2)='in the zone or the floor of the zone can' 
@@ -2486,7 +2490,26 @@ C Slave Capacity Controller or VAV controller.
             goto 77
           endif
           goto 92
+        elseif(IBCLAW(II,JJ,KK).eq.23)then  
 
+C Read setpoints from temporal file. This control law was developed for
+C the UK NCM and takes in setpoints from tdf data and is based on the
+C logic on control law 1
+          H(1)='This control law sets the setpoints based on heating'
+          H(2)='and cooling temperatures as read from a temporal file'
+          H(3)='defined in the model context > impose measured data'
+          H(4)='section of the project manager interface. Any amount'
+          H(5)='of heating and cooling is added so that the setpoints'
+          H(6)='are met.'
+          HOLD='  8   9  '
+          CALL EASKS(HOLD,'Column number in tdf file for heating ',
+     &    'and cooling setpoints',40,'8 9','column # ',IER,6)   
+          cm(1)=2.
+          K=0
+          CALL EGETWI(HOLD,K,IH,1,20,'F','htg column no.',IER)
+          CALL EGETWI(HOLD,K,IC,1,20,'F','cool column no.',IER)
+          cm(2)=real(IH)
+          cm(3)=real(IC)
         else
 
 C The fall-through (none of the above) control edit.
@@ -2531,7 +2554,7 @@ C Edit plant control function II.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -4080,7 +4103,7 @@ C (isn1,isn2,isn3,isn4). isense is the condition sensed in the case of
 C flow control, nsup is the number of supplemental items for associated
 C flow connections.It is assumed that the user will make one selection only.
       subroutine senloc(prompt,title,icfoc,II,isn1,isn2,isn3,isn4,
-     &  isense,nsup,errmsg,IER)
+     &  isn5,isense,nsup,errmsg,IER)
 #include "building.h"
 #include "net_flow.h"
 #include "plant.h"
@@ -4298,7 +4321,31 @@ C Offer the user a cancel option.
         CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
         if(IP.eq.0) goto 3
         ISN2T=IP
-
+        H(1)='This value specifies the plant component node (see '
+        H(2)='the plant component database). '
+        H(3)=' '
+        H(4)='If you choose cancel the controller data will not be'
+        H(5)='altered and you will be returned to the main menu. '
+        isn3T=isn3
+        CALL EASKI(isn3T,' ',' Plant component node for sensor ? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,5)
+        if(ieri.eq.-3) goto 3
+        H(1)='This value specifies the 2nd plant component index '
+        H(2)='in the plant network definition file. This is used '
+        H(3)='only with a controller that senses temp diff' 
+        H(4)='between two plant components'
+        isn4T=isn4 
+        CALL EASKI(isn4T,' ',' 2nd Plant component index for sensor? ',
+     &      0,'F',0,'-',1,'plant comp no',IERI,4)
+        if(ieri.eq.-3) goto 3
+        H(1)='This value specifies the 2nd plant component node (see '
+        H(2)='the plant component database). This is used only with ' 
+        H(3)='a controller that senses temp diff between two ' 
+        H(4)='plant components'
+        isn5T=isn5
+        CALL EASKI(isn5T,' ',' 2nd Plant component node for sensor? ',
+     &      0,'F',0,'-',1,'plant node no',IERI,4)
+        if(ieri.eq.-3) goto 3
 
         if(nnodes(ip).eq.1) then
           ISN3T=1
@@ -5113,7 +5160,7 @@ C   for control law one.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
-      DIMENSION VERT(35),SALT(22),IVALS(22)
+      DIMENSION VERT(35),SALT(23),IVALS(23)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -5351,6 +5398,7 @@ C control law to trap changes.
           SALT(20)=' Evaporative source (surface)          '
           SALT(21)='Slave Capacity Controller              '
           SALT(22)='VAV cooling with CAV reheat (BETA)     '
+          SALT(23)='Match sensed values (ideal:2 setpoints)'
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -5417,10 +5465,12 @@ C Re-instanciate help specifically for summary of control laws.
           H(54)='control with a thermostat in one zone and actions in'
           H(55)='a number of zones. '
           H(56)=' '
-          H(57)='Further details within each control law interface.'
-          H(58)=' '
+          H(57)='Match sensed values (ideal:2 setpoints) control law:'
+          H(58)='is a combination of ideal controller and ctrl law 11.'
+          H(59)='Values from the temporal file are taken to set setpnts'
+          H(60)='Further details within each control law interface. '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,22,SALT,'control law (indented=old or obscure)',IER,58)
+     &      42,23,SALT,'control law (indented=old or obscure)',IER,60)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -5621,6 +5671,15 @@ C the new menu structure return to the calling subroutine.
               cmlocal(10)=0.0
               cmlocal(12)=0.0
               goto 90
+
+C new controller for tdf 
+C At the moment it does what the control law 11 does
+            elseif(iclaw.eq.23)then
+              cmlocal(1)=2.0    
+              cmlocal(2)=8.0    
+              cmlocal(3)=9.0
+              ier=23
+              return
             else
 
             endif
@@ -6966,6 +7025,21 @@ C using reheat for heating mode.
           prompt1(6)='Air supply flow minimum rate (m^3/sec) '
           prompt2(6)=' '
           ndec(6)=4; vmin(6)=0.0; vmax(6)=100.0; vdef(6)=0.5
+        elseif(iclaw.eq.23)then
+
+C Reading heating and cooling setpoints from temporal file
+          menu(1)=' '
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=0; vmin(1)=1.0; vmax(1)=20.0; vdef(1)=8.0
+          menu(2)='Heating setpoint column number'
+          prompt1(2)='Set the column number which contains heating'
+          prompt2(2)='setpoint value in the temporal (tdf) file'
+          ndec(2)=0; vmin(2)=1.0; vmax(2)=20.0; vdef(2)=8.0
+          menu(3)='Heating setpoint column number'
+          prompt1(3)='Set the column number which contains cooling'
+          prompt2(3)='setpoint value in the temporal (tdf) file'
+          ndec(3)=0; vmin(3)=1.0; vmax(3)=20.0; vdef(3)=9.0
         else
           h(1)=' '
           h(2)=' '

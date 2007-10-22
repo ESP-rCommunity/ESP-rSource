@@ -25,14 +25,14 @@ C USER-SPECIFIED PERIOD.
       SUBROUTINE CLMGRF
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/RADTYP/IDNGH
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
-      CHARACTER*24 ITEM(16)
+      CHARACTER*26 ITEM(16)
       character hold*72,h*72
       DIMENSION IPICK(6)
       LOGICAL mxmn
@@ -182,10 +182,13 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
-          write(6,*)'igl igr igt igb igw igwh',igl,igr,igt,igb,igw,igwh
+
+C Debug.
+          write(6,*)'clmgrf igl igr igt igb igw igwh',igl,igr,igt,
+     &      igb,igw,igwh
 
           mxmn=.TRUE.
-          CALL CLMDRW(IPICK,mxmn,onleft,onright)
+          CALL CLMDRW(IPICK,mxmn,onleft,onright,'-')
           call usrmsg('  ','  ','-')
           goto 6
         else
@@ -236,7 +239,7 @@ C Second set of axis.
           Yadd(I)=addY
   70    CONTINUE
         mxmn=.FALSE.
-        CALL CLMDRW(IPICK,mxmn,onleft,onright)
+        CALL CLMDRW(IPICK,mxmn,onleft,onright,'-')
         goto 6
       elseif(ino.eq.12)then
 
@@ -310,17 +313,12 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()
-        write(6,*)'igl igr igt igb igw igwh ',igl,igr,igt,igb,igw,igwh
 
-C with this uncommented then the horizontal axis seems to redraw
-C to the wider graphing area. When commented out then the above
-C cal win3d does not seem to change as in tgraph.F
-C        DO 61 I=1,6
-C          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,
-C     &              YSC(I),sca,Xadd,Yadd(I))
-C  61    CONTINUE
+C Debug.
+C        write(6,*)'igl igr igt igb igw igwh ',igl,igr,igt,igb,igw,igwh
+
         mxmn=.FALSE.
-        CALL CLMDRW(IPICK,mxmn,onleft,onright)
+        CALL CLMDRW(IPICK,mxmn,onleft,onright,'-')
         goto 6
       elseif(ino.eq.13)then
 
@@ -362,8 +360,8 @@ C 'CLMDRW' displays the axis and draws the selected climate data
 C over the specified period. onleft and onright are passed in to
 C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
-
-      SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright)
+C season (1 char) '-' do not bother 's' indicate season.
+      SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright,season)
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -378,20 +376,25 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
+
+C Typical periods and season definitions.
+      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+     &              is2sprs,is2sprf,is1sums,is1sumf
+
+      character season*1
       logical mxmn,colok
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer months
 
 C The 6 dimensions are as follows:
 C  1= diff solar, 2= db temperature, 3 = dir solar rad,
 C  4= wind speed, 5= wind direction, 6= rh
       DIMENSION IPICK(6)
       DIMENSION IPEN(6),MARK(6)
-#ifdef X11
-      DATA IPEN/-5,1,-5,-105,-105,-205/
-#else
       DATA IPEN/-5,1,-5,-105,-105,-204/
-#endif
       DATA MARK/8,6,1,4,5,3/
 
 C Check if can draw in colour.
@@ -399,11 +402,20 @@ C Check if can draw in colour.
       if(nzonec.ge.6)colok=.true.
 
 C HEADER INFORMATION
-      CALL GHEAD(27,onleft,onright)
+      imh=menuchw
+      CALL GHEAD(imh,onleft,onright)
 
 C Initiate display of axes (where dx is the X-axis tick interval).
+C If we are displaying more than 4 months use day ticks.
       if(mxmn)CALL CLMXMN
-      CALL DCAXES(IPICK,onleft,onright)
+      months=im2-im1
+      if(months.ge.5)then
+        CALL DCAXES(IPICK,onleft,onright,'w')
+      elseif(months.ge.2.and.months.lt.5)then
+        CALL DCAXES(IPICK,onleft,onright,'d')
+      else
+        CALL DCAXES(IPICK,onleft,onright,'-')
+      endif
 
 C NOW DRAW DISTRIBUTIONS.
       DO 30 J=IDS,IDF
@@ -466,6 +478,100 @@ C NOW PLOT DISRTIBUTION.
             if(K.eq.KF)PT24(I)=Y
    40     CONTINUE
    20   CONTINUE
+
+C If user interesed in the seasons provide some symbols along
+C the top of the graph.
+        if(season.eq.'s')then
+          if(ID.ge.is1wins.and.ID.lt.is1winf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',1) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            if(ID.eq.is1wins+2)then
+              call wstxpt(ix,igt-10,'Winter')
+            endif
+            call esymbol(ix,igt-5,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.is1sprs.and.ID.lt.is1sprf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',2) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            if(ID.eq.is1sprs+2)then
+              call wstxpt(ix,igt-10,'Spring')
+            endif
+            call esymbol(ix,igt-5,3,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.is1sums.and.ID.lt.is1sumf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',3) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            if(ID.eq.is1sums+2)then
+              call wstxpt(ix,igt-10,'Summer')
+            endif
+            call esymbol(ix,igt-5,32,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.is2sprs.and.ID.lt.is2sprf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',4) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            if(ID.eq.is2sprs+2)then
+              call wstxpt(ix,igt-10,'Autumn')
+            endif
+            call esymbol(ix,igt-5,3,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.is2wins.and.ID.lt.is2winf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',6) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            if(ID.eq.is2wins+2)then
+              call wstxpt(ix,igt-10,'Winter')
+            endif
+            call esymbol(ix,igt-5,17,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          endif
+
+C Typical week in each season.
+          if(ID.ge.ia1wins.and.ID.lt.ia1winf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',1) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            call esymbol(ix,igt,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.ia1sprs.and.ID.lt.ia1sprf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',2) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            call esymbol(ix,igt,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.iasums.and.ID.lt.iasumf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',3) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            call esymbol(ix,igt,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.ia2sprs.and.ID.lt.ia2sprf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',4) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            call esymbol(ix,igt,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          elseif(ID.ge.ia2wins.and.ID.lt.ia2winf)then
+            if(IFS.ne.IMFS)call winfnt(IFS)
+            if(colok) call winscl('z',6) ! symbol using line colour
+            call u2pixel(TIME,0.0,ix,iy)
+            call esymbol(ix,igt,8,0)
+            if(IFS.ne.IMFS)call winfnt(IMFS)
+            if(colok) call winscl('-',0)
+          endif
+        endif
    30 CONTINUE
       if(colok)then
         call winscl('-',0)
@@ -530,7 +636,7 @@ C was called.  Pass onleft and onright into ghead.
 
 C NOW INITIATE DISPLAY OF AXES (DX IS TICK INTERVAL ON X-AXIS).
       CALL CLMXMN
-      CALL DCAXES(IPICK,onleft,onright)
+      CALL DCAXES(IPICK,onleft,onright,'-')
 
 C READ VALUES OF THE CLIMATIC PARAMETERS FOR THIS DAY.
       KS=0
@@ -598,18 +704,21 @@ C NOW PLOT DISRTIBUTION.
 C ************** DCAXES
 C 'DCAXES' Draws the time axis as well as the vertical axis based on the
 C current values of he array ipick and the state of onleft and onright.
-
-      SUBROUTINE DCAXES(IPICK,onleft,onright)
+C acthor (1 char) '-' standard, 'd' day, 'w' week.
+      SUBROUTINE DCAXES(IPICK,onleft,onright,acthor)
 
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+
       DIMENSION IPICK(6),IPAX(6)
       integer onleft  ! number of left axis
       integer onright ! number of right axis
       logical colok
+      character acthor*1
 
 C Check if can draw in colour.
       colok=.false.
@@ -618,9 +727,19 @@ C Check if can draw in colour.
 C DRAW TIME AXIS
 C Pick up the data increment for the horizontal axis.
       write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
-     &  igl,igr,igt,igb,igw,igwh,onleft,onright
+     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
       call dinterval(TMIN,TMAX,DT,NDEC,1)
-      call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')
+      if(acthor.eq.'-')then
+        call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')
+      elseif(acthor.eq.'d')then
+        CALL EDAY(id1,im1,isjday)
+        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,2,24,isjday,
+     &    'Time (days)')
+      elseif(acthor.eq.'w')then
+        CALL EDAY(id1,im1,isjday)
+        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,3,168,isjday,
+     &    'Time (weeks)')
+      endif
       call forceflush()
 
 C DRAW Y AXES

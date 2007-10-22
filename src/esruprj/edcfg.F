@@ -94,7 +94,7 @@ C Controls.
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1143,6 +1143,7 @@ C Control editing of zone composition ITRU unit number for user
 C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
 #include "building.h"
+#include "esprdbfile.h"
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -2448,8 +2449,22 @@ C Loop back and see if another zone is requested.
 
       elseif(INO.EQ.3)THEN
 
-C Construction file.
-C Tell the user to create a model configuration file!
+C Zone construction files. Prior to working with the zones rescan
+C the construction database (occassionally the initial item in this
+C database gets its name corrupted requiring a re-scan).
+        CALL ERPFREE(IFMUL,ISTAT)
+        call FINDFIL(LFMUL,XST)
+        if(XST)then
+          CALL ERMLDB(0,IUOUT,IER)
+        else
+
+C Could not find Constructions db at this time, report to user.
+          write(outs,'(3a)') 'Constructions db ',
+     &       LFMUL(1:lnblnk(LFMUL)),' not found!'
+          call edisp(iuout,outs)
+          call edisp(iuout,' ')
+        endif
+
         IC=-1
  249    CALL EASKGEOF('Select a zone to focus on:',CFGOK,IC,'t',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)THEN

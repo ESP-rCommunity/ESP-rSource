@@ -93,7 +93,7 @@ C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
-      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22),
+      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23),
      &  IFUNC
       GOTO 98
 
@@ -203,6 +203,10 @@ C CL21 slave capacity controller
 
 C CL22 VAV and CAV air based controller
    22 call BCL22
+      goto 99
+      
+C CL23 sensed setpoint based controller
+   23 call BCL23
       goto 99
       
 C New control laws should be inserted here.
@@ -5893,6 +5897,131 @@ C Trace output format depending on whether VAV or CAV active.
       call epwait
       call epagend
       STOP
+      END
+
+C ******************** BCL23
+C This subroutine dynamically allocates heating and cooling setpoint
+C temperatures from a previously defined temporal file based on column
+C numbers specifed in the contol law. It is a simplified implementation
+C of control law 1 (basic heating and cooling)
+      SUBROUTINE BCL23
+#include "building.h"
+#include "tdf2.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/btime/btimep,btimef
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
+     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
+     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
+     &BMISCD(MCF,MBCDT,MBCDP,MISC)
+      common/dllerr/dllsubr,dllmesg
+
+C TDF commons.
+C Index for each potential temporal db entry type 0=not used, 2=tabular data.
+C For each zone a pointer to relevant temporal db entry type 0=not used.
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+
+      character dllsubr*12,dllmesg*124,outs*124
+      logical dll
+      DIMENSION VAL(MBITS+2)
+
+C Check to see if running in dll mode.
+      call isadll(dll)
+
+C Fatal error test.
+      IF(BMISCD(ICF,IDTYP,IPER,1).LT.2.)GOTO 99
+
+C Determine sensed temperature.
+      CALL CFVAR(TCTL,IER)
+      if(ier.eq.2)then
+        return
+      endif
+
+C QHM = max heating capacity (W)
+C QHN = min heating capacity (W)
+C QCM = max cooling capacity (W)
+C QCN = min cooling capacity (W)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
+      QHM=999999.0
+      QHN=0.0
+      QCM=999999.0
+      QCN=0.0
+
+C<< Read setpoints from tdf here (CSP and HSP)
+C First read HSP
+       ISD=NINT(BMISCD(ICF,IDTYP,IPER,2))
+       itdi=IACTIV(ICF)
+       IFOC=itdi
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       CSP=VAL(ISD)
+       ISD=NINT(BMISCD(ICF,IDTYP,IPER,3))
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       HSP=VAL(ISD)
+
+C Debug.
+c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+      
+      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
+
+C Since sensed temperature is not within range, attempt to control
+C THIS zone's temperature.
+C      TCTL=TNP
+
+C Is temp. too high ?
+      IF(TCTL.GT.CSP)GOTO 1
+
+C May need these parameters in future
+*      IPLT=1
+*      QMX=QHM
+*      QMN=QHN
+*      TCONT=HSP
+
+C Too low, heat to HSP.
+      Q=(BB3-BB1*HSP)/BB2
+
+C Is this capacity available ?
+      IF(Q.LE.QHM.AND.Q.GE.QHN)GOTO 2
+      IF(Q.GT.QHM)GOTO 3
+      Q=QHN
+      GOTO 2
+    3 Q=QHM
+      GOTO 2
+
+C Temp. too high, cool to CSP.
+    1 Q=(BB3-BB1*CSP)/BB2
+*      IPLT=2
+      QMX=QCM
+      QMN=QCN
+*      TCONT=CSP
+
+C Is this available ?
+      IF(Q.GE.QCM.AND.Q.LE.QCN)GOTO 2
+      IF(Q.LT.QCM)GOTO 5
+      Q=QCN
+      GOTO 2
+    5 Q=QCM
+    2 TFUT=(BB3-BB2*Q)/BB1
+      QFUT=Q
+
+   99 write(outs,'(a)')' BCL23: data incomplete.'
+      if(dll)then
+        dllsubr='BCL23'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call edisp(iuout,outs)
+        call epwait
+        call epagend
+        STOP
+      endif
+      return
       END
 
 C ******************** BCL99

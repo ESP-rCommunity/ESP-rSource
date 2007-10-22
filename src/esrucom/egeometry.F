@@ -204,7 +204,7 @@ C MLC commons to recover optical property name.
       character SSPARENT*12
       character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
       character dllsubr*12,dllmesg*124
-      character MLCN*12,OTF*4,OPT*12,MLCSYM*12 ! for use with parsemlcdesc
+      character MLCN*12,OTF*4,OPT*12
       logical dll,checkbase
       logical havec24
 
@@ -1237,7 +1237,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
-      character OTF*4,OPT*12,MLCSYM*12 ! for use with parsemlcdesc
+      character OTF*4,OPT*12
       logical dll,checkbase
       logical havec24
 

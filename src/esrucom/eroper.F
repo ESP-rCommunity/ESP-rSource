@@ -712,6 +712,8 @@ C                all 3 (4).
 
 C Maximum number of air change periods/day MA=5
 C Maximum number of casual gains/day       MC=20
+C IUO is the file unit to use
+C FILE (variable width char) is the name of the file to scan.
 
       SUBROUTINE ERZSCHED(IUO,FILE,IER)
 #include "building.h"
@@ -759,9 +761,10 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124,lodlabelc*6
-      CHARACTER FILE*72
+      CHARACTER*(*) FILE
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
+      character louts*248
       logical havehi,dll
 
       IER=0
@@ -772,15 +775,15 @@ C Check if running in dll mode.
 C Initialise project data file.
       CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
-        write(outs,'(3a)') 'Operations file ',
+        write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
         if(dll)then
           dllsubr='ERZSCHED'
-          dllmesg=outs
+          write(dllmesg,'(a)') louts(1:124)
           ier=2
           return
         else
-          call edisp(iuout,outs)
+          call edisp248(iuout,louts,100)
           IER=1
           RETURN
         endif
@@ -1063,12 +1066,12 @@ C Now free project data file.
 C Error messages.
  1000 if(dll)then
         dllsubr='ERZSCHED'
-        dllmesg=outs
+        write(dllmesg,'(a)') louts(1:124)
         ier=2
         CALL ERPFREE(IUO,ISTAT)
         return
       else
-        call edisp(iuout,outs)
+        call edisp248(iuout,louts,100)
         IER=1
         CALL ERPFREE(IUO,ISTAT)
         RETURN
@@ -1110,7 +1113,8 @@ C ******************** ZSCHEDHINT
 C ZSCHEDHINT scans documentation in an operation file and reports on
 C it so a user can decide if they want to use it. It is written to
 C not alter any common blocks.
-
+C IUO is the file unit to use
+C FILE (variable width char) is the name of the file to scan.
       SUBROUTINE ZSCHEDHINT(IUO,FILE,IER)
 #include "building.h"
 #include "espriou.h"
@@ -1122,9 +1126,10 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124
-      CHARACTER FILE*72
+      CHARACTER*(*) FILE
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
+      character louts*248
       logical havehi,dll
 
       IER=0
@@ -1136,15 +1141,15 @@ C Check if running in dll mode.
 C Initialise project data file.
       CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
-        write(outs,'(3a)') 'Operations file ',
+        write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
         if(dll)then
           dllsubr='ERZSCHED'
-          dllmesg=outs
+          write(dllmesg,'(a)') louts(1:124)
           ier=2
           return
         else
-          call edisp(iuout,outs)
+          call edisp248(iuout,louts,100)
           IER=1
           RETURN
         endif

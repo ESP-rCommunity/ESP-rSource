@@ -235,6 +235,22 @@ C values from the previous timestep (once converged).
 c      REAL      fCurrentTS_Plant_Fan_Elec
 c      REAL      fCurrentTS_Plant_Pump_Elec
 
-c================================== Common H3KSTORE_FC_DATA End===================================      
+c================================== Common H3KSTORE_FC_DATA End=================================== 
+
+c================================== Common H3KSTORE_SDHW_DATA Start ==============================
+      common/H3KSTORE_SDHW_DATA/fH3KSTORE_SDHW_dhwtank_elec(months),
+     &fH3KSTORE_SDHW_dhwtank_fuel(months),
+     &fH3KSTORE_SDHW_coll_solar_gain(months),
+     &fH3KSTORE_SDHW_Pump_Elec(months),fSDHW_TSTank_Elec_watts,
+     &fSDHW_TSTank_fuel_watts,fSDHW_TScoll_netheatgain_watts
+
+      real fH3KSTORE_SDHW_dhwtank_elec
+      real fH3KSTORE_SDHW_dhwtank_fuel
+      real fH3KSTORE_SDHW_coll_solar_gain
+      real fH3KSTORE_SDHW_Pump_Elec
+      real fSDHW_TSTank_Elec_watts
+      real fSDHW_TSTank_fuel_watts
+      real fSDHW_TScoll_netheatgain_watts
+c================================== Common H3KSTORE_SDHW_DATA End ================================     
 
 

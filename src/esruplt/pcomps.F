@@ -284,6 +284,19 @@ C 1 node simple solar collector model
 C X node generic TRNSYS type
       ELSE IF(ITYPE.EQ.119) THEN
          CALL trnsys_static_temp(IPCOMP)
+      ELSE IF(ITYPE.EQ.120) THEN
+C 2-node storage tank with immersed coil
+         CALL tank_intank_hx_static(IPCOMP)
+      ELSE IF(ITYPE.EQ.121) THEN
+C 1-node mains 24-hour flow rate and 12-hour temperature profiles
+         CALL mains_temp_draw_profile_static(IPCOMP) 
+C 1-node mains 24-hour flow rate profile
+      ELSE IF(ITYPE.EQ.122) THEN
+         CALL mains_draw_daily_profile_static(IPCOMP)
+C 2-node stratified storage tank model
+      ELSE IF(ITYPE.EQ.123) THEN
+         CALL stratified_tank_static(IPCOMP)
+
       ELSE
 
         call elinc(1)

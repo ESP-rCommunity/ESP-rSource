@@ -191,7 +191,7 @@ C CEDATE required when reading plant data base record
 C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20
 
-      INTEGER :: id_trnsysCMP  !trnsys component number
+      INTEGER   id_trnsysCMP  !trnsys component number
 
       call usrmsg(' ','Reading plant network description...','P')
 
@@ -506,7 +506,7 @@ C     check is performed in MZPMXT.
          if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.nnodes) goto 914
          END IF
 
-         if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.5) goto 913
+         if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
          if(ipc2(ipcon).lt.1.or.ipc2(ipcon).gt.npcomp) goto 913
          irec=npcdat(ipc2(ipcon),2)
 
@@ -579,7 +579,7 @@ C  in the database. In this case, reading file can be avoided here.
             READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
      &           NNODES
             END IF
-               if(cntdat(icont,1).lt.1.0.or.cntdat(icont,1).gt.
+            if(cntdat(icont,1).lt.0.0.or.cntdat(icont,1).gt.
      &            float(npcomp).or.cntdat(icont,2).lt.0.0.or.
      &            cntdat(icont,2).gt.float(nnodes)) goto 916
           ENDIF
@@ -765,3 +765,5 @@ C through pcname(?) until a match is found.
    10 continue
    20 return
       end
+
+

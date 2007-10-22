@@ -263,7 +263,7 @@ C espriou.h provides currentfile.
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -702,6 +702,12 @@ C then new format file, otherwise old format so set IBSN(II,4)=0.
         else
           ipsn(ii,4)=0
         endif
+        if(ND.gt.4) then
+          CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 5th ',IER)
+          ipsn(ii,5) = IVAL
+        else
+          ipsn(ii,5) = 0
+        endif        
         IF(IER.NE.0)GOTO 99
 
 C Range checking.
@@ -1698,7 +1704,7 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1813,7 +1819,7 @@ C control file sensors, actuator, control types, control laws.
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
      &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
      &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1842,7 +1848,7 @@ C control file sensors, actuator, control types, control laws.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
-      dimension icsn(4)   ! for passing sensor location to decodesensor
+      dimension icsn(5)   ! for passing sensor location to decodesensor
       integer icsn
 
       SSTR=' '
@@ -1921,6 +1927,7 @@ C Plant Sensor.
         icsn(2)=IPSN(II,2)
         icsn(3)=IPSN(II,3)
         icsn(4)=IPSN(II,4)
+        icsn(5)=IPSN(II,5)
         call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
 
       ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
@@ -2088,7 +2095,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
      &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
      &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -2113,7 +2120,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 
       dimension cm(misc)  ! for passing miscel control data
       real cm
-      dimension icsn(4)   ! for passing sensor location to
+      dimension icsn(5)   ! for passing sensor location to
       integer icsn
 
 C sub-strings for describing multi-sensor flow controls.
@@ -2699,6 +2706,10 @@ C          call edisp248(6,message,80)
      &    cm(6),'m^3/s' 
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.23)then
+          SSTR='Sensed temp setpts '
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
         ELSEIF(IBSN(II,1).EQ.-99)then
           SSTR='control law not used'
           message='type -99 control law not used'
@@ -2887,7 +2898,7 @@ C List one day type of a building/plant/flow/global control.
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -3024,7 +3035,7 @@ C ******************** decodesensor
 C Decodesensor takes the 4 indices that define a sensor
 C and returns a descriptive string.
 C icfoc is the index of the control domain
-C icsn(4) is the array of indices
+C icsn(5) is the array of indices
 C SSTR is the string (72 char) returned
 C SSTRB is brief string (48 char) returned
       subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
@@ -3043,7 +3054,7 @@ C SSTRB is brief string (48 char) returned
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       integer icfoc
-      dimension icsn(4)
+      dimension icsn(5)
       character sstr*72,sstrb*48
       CHARACTER ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
@@ -3155,7 +3166,7 @@ C Plant Sensor.
             WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
      &        ' in ',zn(1:lnblnk(zn)),'.'
           ENDIF
-        ELSEIF(icsn(1).EQ.-1)THEN
+        ELSEIF((icsn(1).EQ.-1).AND.(icsn(4).LE.0)) THEN
           WRITE(SSTR,113)
      &      icsn(2),pcname(icsn(2))(1:LNBLNK(pcname(icsn(2)))),
      &      icsn(3)
@@ -3163,6 +3174,14 @@ C Plant Sensor.
           WRITE(SSTRB,114)
      &      icsn(2),pcname(icsn(2))(1:LNBLNK(pcname(icsn(2))))
  114      FORMAT('senses var in compt. ',I2,':',a)
+        ELSEIF((icsn(1).EQ.-1).AND.(icsn(4).GT.0))THEN
+          WRITE(SSTR,1132)
+     &icsn(2),pcname(icsn(2))(1:LNBLNK(pcname(icsn(2)))),
+     &icsn(3),icsn(4),
+     &pcname(icsn(4))(1:LNBLNK(pcname(icsn(4)))),icsn(5)
+ 1132     FORMAT('sen var diff bet compt. ',I2,':',a,
+     &    ' @ node ',I2,'and compt ', I2,':',a,
+     &    ' @ node ', I2)     
         ELSEIF(icsn(1).EQ.-2)THEN
           write(zn,'(a)') zname(icsn(2))
           WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
@@ -3326,7 +3345,7 @@ C control loops for legality.
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -3403,6 +3422,8 @@ C Set up data for plant control loop ii.
       isn1=ipsn(ii,1)
       isn2=ipsn(ii,2)
       isn3=ipsn(ii,3)
+      isn4=ipsn(ii,4)
+      isn5=ipsn(ii,5)
       ian1=ipan(ii,1)
       ian2=ipan(ii,2)
       ian3=ipan(ii,3)
@@ -3441,6 +3462,8 @@ C Check to see if component exists
     6 if(isn2.lt.0.or.isn2.gt.npcomp)goto 1002
 C Check to see if sensed node exists    
       if(isn3.lt.1.or.isn3.gt.npcdat(isn2,8))goto 1003
+      if(isn4.lt.0.or.isn4.gt.npcomp)goto 1009
+      if(isn5.lt.0.or.isn5.gt.npcdat(isn4,8))goto 1010      
       goto 9
 
 C Sensor located externally.
@@ -3562,6 +3585,14 @@ C Error messages.
  1008 call edisp(iuout,' Sensor node: 2nd item invalid item: it is > 9')
       goto 1000
  1022 call edisp(iuout,' Sensor node: 2nd item < 1 or > columns/items.')
+      goto 1000
+ 1009 write(outstr,'(A,I3,A)') ' Sensor node: 3rd item (',
+     &  isn3,') < 0 or > surfaces.'
+      call edisp(iuout,outstr)
+      goto 1000
+ 1010 write(outstr,'(A,I3,A)')' Sensor node: 5th item (',isn5,
+     &  ') invalid.'
+      call edisp(iuout,outstr)
       goto 1000
 
  1000 if(m.eq.2)then

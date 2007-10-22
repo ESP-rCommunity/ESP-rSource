@@ -54,8 +54,6 @@ c**********************************************************************
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
 
-
-
 C Local Variables
         INTEGER iSystem
         INTEGER iPercent
@@ -199,6 +197,18 @@ c     Solar and Casual Variables
       bQ2Started = .false.
       bQ3Started = .false.
       bQ4Started = .false.
+
+c Solar DHW h3k output variables
+      DO imonth = 1,12
+        fH3KSTORE_SDHW_dhwtank_elec(imonth) = 0.
+        fH3KSTORE_SDHW_dhwtank_fuel(imonth) = 0.
+        fH3KSTORE_SDHW_coll_solar_gain(imonth) = 0.
+        fH3KSTORE_SDHW_Pump_Elec(imonth) = 0.
+      END DO
+      fSDHW_TSTank_Elec_watts = 0.
+      fSDHW_TSTank_fuel_watts = 0.
+      fSDHW_TScoll_netheatgain_watts = 0.
+
       return
       end
 
@@ -1686,13 +1696,10 @@ C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?
       INTEGER   NCI(MPCOM)
       REAL      CDATA(MPCOM,MMISCD)
 
-
-
       COMMON/PCTSTP/NTSTPP
       INTEGER NTSTPP
 
-
-      INTEGER  IDAYN,iMonth, I
+      INTEGER  IDAYN,iMonth,I
 
 C These two real variables are only used in this subroutine to sum up the plant
 C pump and fan electrical loads.  
@@ -1704,7 +1711,6 @@ c      INTEGER   I
       LOGICAL  bInStartup            !Function to see if still in start up mode.
 C      LOGICAL  bPltCon               !Variable to see if plant matrix values have
                                        !converged and the ptimestep has incremented
-
 
 C  Now get the current variable values..
       
@@ -1769,7 +1775,7 @@ c h3kstore_module.F).
                 fPlant_Fan_Elec(imonth) = fPlant_Fan_Elec(imonth) +
      &                                   (fCurrentTS_Plant_Fan_Elec
      &                                  / REAL(NTSTPP)/ REAL(NTSTEP))
-               END IF
+              END IF
     
 
 c If a pump has been specified in the explicit plant model, 
@@ -1779,9 +1785,8 @@ c h3kstore_module.F):
                 fPlant_Pump_Elec(imonth) =  fPlant_Pump_Elec(imonth) +
      &                                     (fCurrentTS_Plant_Pump_Elec           
      &                                    / REAL(NTSTPP)/ REAL(NTSTEP))
-             END IF
-
-
+              END IF
+        
         ENDIF
 
       RETURN
@@ -2065,4 +2070,114 @@ C.....Fuel cell data
 
 
       RETURN
+      END
+
+c*****************************************************************
+c H3KSTORE_SDHW
+c Stores energy consumption sums for output for solar DHW system 
+c
+c Created by: Kamel Haddad
+c Initial Creation Date:  April 26th, 2006
+c Copyright 2000: NRCan Buildings Group
+
+      SUBROUTINE H3KSTORE_SDHW
+
+      IMPLICIT NONE
+
+#include "building.h"
+#include "hvac_parameters.h"
+#include "h3kstore_parameters.h"
+#include "h3kstore_common.h"
+#include "SOFC.h"
+#include "plant.h"
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      INTEGER ISD1
+      INTEGER ISM1
+      INTEGER ISD2
+      INTEGER ISM2
+      INTEGER ISDS
+      INTEGER ISDF
+      INTEGER NTSTEP
+
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
+c Variable to see if plant matrix values have converged and the ptimestep has incremented
+      COMMON/pltcon/bPltCon, LastTSTP
+       REAL     LastTSTP
+       LOGICAL  bPltCon
+
+C Common block used for Plant Additional Outputs (PCAOUT)
+C MPCOM       maximum number of plant components in configuration (set to 50 in plant.h) 
+C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
+C IPCOMP      index number of the component under consideration
+C NPCDAT(?,4) plant component model type number for component ? (equals NPCDAT(?,3)/10)
+      COMMON/PCRES/QDATA,PCAOUT,napdat
+      REAL QDATA(MPCOM),PCAOUT(MPCOM,MPCRES)
+      INTEGER napdat(mpcom)
+
+      COMMON/PCTSTP/NTSTPP
+      INTEGER NTSTPP
+
+      INTEGER  IDAYN,iMonth,I
+
+C This real variable is only used in this subroutine to sum up the plant
+C pump electrical loads. 
+      REAL fTS_Plant_Pump_Elec
+
+      LOGICAL  bInStartup            !Function to see if still in start up mode.
+
+C  Now get the current variable values..
+      
+C  Initialize the pump electrical power variable. 
+      fTS_Plant_Pump_Elec = 0.0
+
+C Determine plant component numbers within the plant network for the pumps within
+C the solar DHW system
+      call FC_pump_fan_comp_number
+
+C The real power draw [PCAOUT(pump_IPCOMP(?),1)] for the current time-step is taken as the
+C value for the most recent plant matrix iteration
+
+      IF (Num_pumps .ne. 0) THEN  
+C Sum the power consumption of all the pumps.
+         DO I=1,Num_pumps
+            fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec + 
+     &                               (-1 * PCAOUT(pump_IPCOMP(I),1))
+         END DO
+      END IF
+        
+C The plant matrix converged the previous solver iteration. Therefore, save the results.
+c If the last time step is not the same as the next time step and not in start up
+      IF( bPltCon .and. .not.bInStartUp() )then
+         CALL EDAYR(idyp,IDAYN,imonth)
+
+c If a pump has been specified in the explicit plant model, 
+c sum up the monthly electrical energy and store in array
+         IF (Num_pumps .ne. 0) THEN
+           fH3KSTORE_SDHW_Pump_Elec(imonth) =  
+     &     fH3KSTORE_SDHW_Pump_Elec(imonth) + (fTS_Plant_Pump_Elec           
+     &     / REAL(NTSTPP)/ REAL(NTSTEP))
+         END IF
+
+c Sum up electricity consumption of electric storage tank
+         fH3KSTORE_SDHW_dhwtank_elec(imonth) =
+     &   fH3KSTORE_SDHW_dhwtank_elec(imonth) + 
+     &   fSDHW_TSTank_Elec_watts / REAL(NTSTPP)/ REAL(NTSTEP)      
+
+c Sum up fuel consumption of fuel-fired storage tank
+         fH3KSTORE_SDHW_dhwtank_fuel(imonth) =
+     &   fH3KSTORE_SDHW_dhwtank_fuel(imonth) + 
+     &   fSDHW_TSTank_fuel_watts / REAL(NTSTPP)/ REAL(NTSTEP)          
+
+c Sum up net heat gain to collector
+         fH3KSTORE_SDHW_coll_solar_gain(imonth) = 
+     &   fH3KSTORE_SDHW_coll_solar_gain(imonth) +
+     &   fSDHW_TScoll_netheatgain_watts 
+     &   / REAL(NTSTPP)/ REAL(NTSTEP) 
+      ENDIF
+
+      RETURN
+
       END
