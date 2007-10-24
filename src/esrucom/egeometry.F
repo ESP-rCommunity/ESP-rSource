@@ -504,10 +504,10 @@ C this if user supplied information exists.
 C Instanciate defaults for the surfaces to be read in.
       CALL FILSUR(itru,ICOMP,0)
 
-C Debug.
       icn1=izstocn(icomp,1)
       if(icn1.gt.0)then
-        call edisp(iuout,'Subsequent geometry scan...')
+C Debug.
+C        call edisp(iuout,'Subsequent geometry scan...')
       endif
 
       DO 42 I=1,NSUR
@@ -1440,7 +1440,8 @@ C can probably be filled. Each surface needs to be tested
 C in case the master list is corrupt.
             icn1=izstocn(icomp,1)
             if(icn1.gt.0)then
-              call edisp(iuout,'Subsequent geometry 1.1 scan...')
+C Debug.
+C              call edisp(iuout,'Subsequent geometry 1.1 scan...')
             endif
           endif
           if(NS.le.MS)then
@@ -3169,9 +3170,9 @@ C     &          jes,jee,kes,kee
 
 C Debug...
                 if(itrc.gt.1)then
-                  write(outs,*) 'dupl edges for conn ',icc,' is ',
-     &              iedgdup(icc,m),' m n ',m,n
-                  call edisp(iuout,outs)
+C                  write(outs,*) 'dupl edges for conn ',icc,' is ',
+C     &              iedgdup(icc,m),' m n ',m,n
+C                  call edisp(iuout,outs)
                 endif
               endif
   41        continue
@@ -3179,10 +3180,10 @@ C Debug...
 
 C Debug...
           if(itrc.gt.1)then
-            write(outs,*) 'duplicate edges for conn ',icc,' ',
-     &        ssname(icc)(1:lnblnk(ssname(icc))),
-     &        ' is ',nbedgdup(icc)
-            call edisp(iuout,outs)
+C            write(outs,*) 'duplicate edges for conn ',icc,' ',
+C     &        ssname(icc)(1:lnblnk(ssname(icc))),
+C     &        ' is ',nbedgdup(icc)
+C            call edisp(iuout,outs)
           endif
 
 C Step through the vertices of each edge in turn and check to see
@@ -3226,9 +3227,9 @@ C If an edge matches, test if other surface is facing the same way.
                 if(j.eq.kk.and.k.eq.jj)then
 C Debug...
                   if(itrc.gt.0)then
-                    write(outs,*) 'edges for conns ',icc,' & ',icco,
-     &                ' are ',j,k,' & ',jj,kk
-                    call edisp(iuout,outs)
+C                    write(outs,*) 'edges for conns ',icc,' & ',icco,
+C     &                ' are ',j,k,' & ',jj,kk
+C                    call edisp(iuout,outs)
                   endif
 
 C Test if azimuth are within two degrees. For the special case of the
@@ -3266,18 +3267,18 @@ C increment nbedgshr once even if other surface shares several edges).
 
 C Debug...
             if(itrc.gt.1)then
-              write(outs,*) 'iedgshr ',iedgshr(icc,i),
-     &          ' shared construction ',imatshr(icc,i)
-              call edisp(iuout,outs)
+C              write(outs,*) 'iedgshr ',iedgshr(icc,i),
+C     &          ' shared construction ',imatshr(icc,i)
+C              call edisp(iuout,outs)
             endif
   42      continue
 
 C Debug...
           if(itrc.gt.1)then
-            write(outs,*) 'nbedgshr for ',
-     &        ssname(icc)(1:lnblnk(ssname(icc))),
-     &        ' is ',nbedgshr(icc)
-            call edisp(iuout,outs)
+C            write(outs,*) 'nbedgshr for ',
+C     &        ssname(icc)(1:lnblnk(ssname(icc))),
+C     &        ' is ',nbedgshr(icc)
+C            call edisp(iuout,outs)
           endif
 
 C If most the edges are shared with other similarly facing surfaces
@@ -3501,10 +3502,10 @@ C<< Division mod 360 may be a more generic way for angle checking
           if(closeazi.and.closeelv)then
 
             SSPARENT(JCC)=SSNAME(ICC)
-C Debug...
-            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
-     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
-     &        ' nverts in child ',NVER(JSUR)
+C Debug.
+C            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
+C     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
+C     &        ' nverts in child ',NVER(JSUR)
           endif
  105      continue
  102    CONTINUE
