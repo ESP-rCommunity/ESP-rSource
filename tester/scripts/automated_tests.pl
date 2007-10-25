@@ -967,8 +967,7 @@ if ($test_builds){
 }
 
 #-----------------------------------------------------------
-# Finished static analysis. Now test compile of test version
-# with X11, gtk and noX versions 
+# Finished static analysis. Now run regression test 
 #-----------------------------------------------------------
 my $regression_fail = 0;
 if ( $test_regression ) {
@@ -981,8 +980,12 @@ if ( $test_regression ) {
   while ( my ($key, $revision ) = each  %revisions ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
-    execute("make clean");
-    buildESPr($build_args{"$key"},"default","clean","together");
+    if ( $debug_forcheck ) {
+      buildESPr($build_args{"$key"},"default","debug","together");
+    }else{
+      execute("make clean");
+      buildESPr($build_args{"$key"},"default","clean","together");
+    }
     execute("mv $TestFolder/esp-r $TestFolder/esp-r_$key");
     stream_out(" Done\n");
   }
@@ -993,19 +996,20 @@ if ( $test_regression ) {
   my $test_esp = "$TestFolder/esp-r_test/bin/";
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
-  execute ("./tester.pl "
+  execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
-           ."-d $TestFolder/esp-r "
+           ."-d $TestFolder/esp-r_test "
            ."--ref_res $ref_esp --test_res $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite --no_data" );
+           ."-p $TestFolder/$src_dirs{\"reference\"}/tester/test_suite/plt_elec_net --save_results -v" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
   # Digest test report 
   my $regression_results = `cat bps_test_report.txt`;
-  if ( $regression_results =~ /^ Overall result: Fail\./m ) {
+  if ( $regression_results =~ /^ Overall result: Fail/ ) {
     $regression_fail = 1;
   }
+  
   $results .= `cat bps_test_report.txt`;
   stream_out("Done\n");
 }
