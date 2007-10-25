@@ -507,7 +507,7 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                   "csv" => 1,
                   "h3k" => 1,
                   "data" => 1,
-                  "fcts" => 1
+                  "fcts" => 0
              );
                                                       
 # value for close-to-zero comparisons
@@ -1386,9 +1386,9 @@ sub create_report(){
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
-                  ."^^^^^^^^^^^^^^^^^^";
+                  ."^^^^^^^^^^^^";
   push @output, $current_rule;
-  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> .fcts<> overall<> dt-CPU(%%)", "Folder", "Model");
+  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> overall<> dt-CPU(%%)", "Folder", "Model");
   push @output, $current_rule;
 
   # Loop throug results, and report to buffer
@@ -1398,7 +1398,6 @@ sub create_report(){
     my $csv_pass  = result_to_string($test,"csv");
     my $h3k_pass  = result_to_string($test,"h3k");
     my $data_pass = result_to_string($test,"data");
-    my $fcts_pass = result_to_string($test,"fcts");
     my $overall_pass = result_to_string($test,"overall");
     my $cpu_change = $gRun_Times{"$folder/$model"}{"chg"};
     # add extra space to align +ive and -ive CPU runtime changes
@@ -1410,7 +1409,7 @@ sub create_report(){
       $cpu_change = "N/A";
     }
     
-    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $fcts_pass, $overall_pass, $cpu_change);
+    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $overall_pass, $cpu_change);
   }
   push @output, $current_rule;
   push @output, "  ";
@@ -1752,9 +1751,13 @@ sub process_historical_archive(){
           $error_msgs .= "      - Results file model/extention/path".
                          " ($values[1]/$values[2]$values[3])".
                          " not understood (line: $line_number)\n";
-                         
+
+
         }
+
       }
+
+
 
       # Parse recorded runtimes.
       if ( $values[0] eq "*runtime" ){
@@ -1782,6 +1785,8 @@ sub process_historical_archive(){
   foreach my $parameter (keys %gRef_Sys_params ){
      $gRef_Sys_params{$parameter} =~ s/~/ /g;
   }
+
+
 
   if ( $error_msgs ){
     print $error_msgs;
@@ -2492,11 +2497,6 @@ sub compare_results($$){
       }
     }
 
-    # update global pass flag upon failure.
-    if ( $gTest_Results{"$folder/$model"}{"overall"} =~ /fail/ ){
-      $gAll_tests_pass = 0;
-    }
-
     # Compute average CPU runtimes for all save-levels
     # and determine increase / reduction. Run times are
     # not available in very verbose mode.
@@ -2534,6 +2534,11 @@ sub compare_results($$){
     
   }
 
+  # update global pass flag upon failure.
+  if ( $gTest_Results{"$folder/$model"}{"overall"} =~ /fail/ ){
+    $gAll_tests_pass = 0;
+  }
+
   # Report overall test result to buffer
   stream_out (
                 sprintf ("    - %-12s %s \n","Overall:",
@@ -2541,6 +2546,7 @@ sub compare_results($$){
                           {"overall"})
                              
   );
+  
 }
 
 
