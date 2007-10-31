@@ -144,7 +144,7 @@ C Dimensions of token/data arrays for version 2+ format.
       integer iFurnaceTokenCount
       parameter (iFurnaceTokenCount = 8)
       integer iP10_IMSTokenCount
-      parameter (iP10_IMSTokenCount = 20)
+      parameter (iP10_IMSTokenCount = 21)
       integer iBaseboardTokenCount
       parameter (iBaseboardTokenCount = 4)
       integer iHPTokenCount

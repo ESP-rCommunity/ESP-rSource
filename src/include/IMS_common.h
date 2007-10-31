@@ -29,6 +29,19 @@ C.....Named consants for ventilaton modes
      &            iMode_HighVent = 3,
      &            iMode_SHVent   = 4 )
 
+C.....Named constants for ventilation recovery effcicencies
+      integer iNumDefrostModes
+      parameter ( iNumDefrostModes = 3 )
+
+      integer iVentEff_Sensible,
+     &        iVentEff_Condensing,
+     &        iVentEff_Defrost
+
+      parameter ( iVentEff_Sensible    = 1,
+     &            iVentEff_Condensing  = 2,
+     &            iVentEff_Defrost     = 3 )
+     
+
 C.....Water heater performance factor (-)
       real fP10_WaterH_PF(max_sys)
 
@@ -47,7 +60,7 @@ C.....Fresh and exhaust fan power consumption (W)
       real fP10_Vent_EA_Power(max_sys,iNum_vent_modes)
 
 C.....Sensible heat recovery efficiecy
-      real fP10_Vent_SRE(max_sys, iNum_vent_modes)
+      real fP10_Vent_SRE(max_sys)
 
 C.....P10 input common
       common/IMS_P10_inputs/
@@ -143,6 +156,12 @@ C.....Estimated WaterH skin losses
 C.....Flue/Skin loss ratio
       real fIMS_FlueSkinLossRatio(max_sys)
 
+C.....Ventilation heat recovery efficiency:
+      real fIMS_VentHREfficiency(max_sys, iNumDefrostModes)
+
+C.....Temperature for outdoor defrost conditions
+      real fIMS_VentDefrostTemp(max_sys)
+
 C.....General model input common
       common/IMS_General_inputs/
      &   iIMS_HeatSource,
@@ -165,7 +184,9 @@ C.....General model input common
      &   fIMS_WaterHEff,
      &   fIMS_WaterHSkinLoss,
      &   fIMS_WaterHPower,
-     &   fIMS_FlueSkinLossRatio
+     &   fIMS_FlueSkinLossRatio,
+     &   fIMS_VentHREfficiency,
+     &   fIMS_VentDefrostTemp
 
 
 

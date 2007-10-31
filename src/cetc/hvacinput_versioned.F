@@ -1760,6 +1760,20 @@ C-----------------------------------------------------------------------
      &       0.0, 1.0E04,
      &       bFound,
      &       bInLimits )
+
+C-----------------------------------------------------------------------
+C     Ventilation heat recovery efficiency (SRE)
+C-----------------------------------------------------------------------
+      fP10_Vent_SRE(iSystem)
+     &   = fHVAC_FindTokenWithLimits(
+     &       iSystem,
+     &       'vent-SRE',
+     &      'IMS unit sensible recovery efficiency (SRE,-)',
+     &       bRequired,
+     &       0.0, 1.0,
+     &       bFound,
+     &       bInLimits )
+     
 C-----------------------------------------------------------------------
 C     Controls power
 C-----------------------------------------------------------------------
@@ -3239,7 +3253,8 @@ C-----------------------------------------------------------------------
      &                          'vent-FA-fan-power-H  ',
      &                          'vent-EA-fan-power-H  ',
      &                          'controls-power       ',
-     &                          'circ-fan-power       ' /
+     &                          'circ-fan-power       ',
+     &                          'vent-SRE             ' /
      
 
 

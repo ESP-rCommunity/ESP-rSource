@@ -148,6 +148,7 @@ c     *********************************************************************
 
 #include "gcep_common.h"
 
+#include "IMS_common.h"
 
 
 c hvac system file and flag:  	ihvacflag=1 there is hvac file
@@ -233,13 +234,16 @@ c Local integer variables
       INTEGER i, j, month, iday, icomp
 
 C IMS variables
-      real fIMS_SpaceHLoad      ! Space heating load (W)
-      real fIMS_WaterHLoad      ! Water heating load (W)
-      real fIMS_WaterHDuration  ! Duration of water heating load (s)
-      real fIMS_FuelUseRate     ! Fuel use (kg/s)
-      real fIMS_ElecUseRate     ! Electricity use (W)
-      real fIMS_VentFlow        ! IMS ventilation flow (kg/s)
-      real fIMS_VaporChangeRate ! Moisture balance ass. w/ IMS (kg/s)
+      real fIMS_SpaceHLoad        ! Space heating load (W)
+      real fIMS_WaterHLoad        ! Water heating load (W)
+      real fIMS_WaterHDuration    ! Duration of water heating load (s)
+      real fIMS_FuelUseRate       ! Fuel use (kg/s)
+      real fIMS_ElecUseRate       ! Electricity use (W)
+      real fIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
+      real fIMS_VentLoad          ! Thermal load associated with vent. (W)
+      real fIMS_AddGains          ! Heat added/removed from zones
+                                  !   by IMS fans/systems/ventilation (W)
+      real fIMS_VaporChange       ! Moisture balance assoc. w/ IMS (kg/s)
 
 C.....H3Kreports.(HVAC_ELEC_DEC).start......................
 C.....DECLARATIONS for H3Kreporting object
@@ -320,6 +324,8 @@ C...........PIN is within construction
             else
                req_load = 0.5 * (qfa(isys_zone_num(i,j)) + 
      &              qpa(isys_zone_num(i,j)))
+
+               req_load = qfa(isys_zone_num(i,j)) 
 
             endif
             if(req_load.gt.0) then
@@ -470,18 +476,21 @@ C      routine
      &
 
 C.........Collect space and water heating loads.
-          fIMS_SpaceHLoad     = heating_load
-          fIMS_WaterHLoad     = 1000.0      ! W
-          fIMS_WaterHDuration = 600.0    ! Seconds
+          fIMS_SpaceHLoad     = heating_load  ! W
+          fIMS_WaterHLoad     = 0.0 !1000.0        ! W
+          fIMS_WaterHDuration = 600.0         ! Seconds
 C.........Superviosry routine for IMS characteriztion
-          call IMS_CharPerformance (i,
-     &                              fIMS_SpaceHLoad,
-     &                              fIMS_WaterHLoad,
-     &                              fIMS_WaterHDuration,
-     &                              fIMS_FuelUseRate,
-     &                              fIMS_ElecUseRate,
-     &                              fIMS_VentFlow,
-     &                              fIMS_VaporChangeRate )
+          call IMS_CharPerformance ( i,
+     &                               iMode_LowVent,
+     &                               fIMS_SpaceHLoad,
+     &                               fIMS_WaterHLoad,
+     &                               fIMS_WaterHDuration,
+     &                               fIMS_FuelUseRate,
+     &                               fIMS_ElecUseRate,
+     &                               fIMS_VentFlowRate,
+     &                               fIMS_VentLoad,
+     &                               fIMS_AddGains,
+     &                               fIMS_VaporChange )
 
 C.........Translate IMS outputs into hvac-friendly params.
  
