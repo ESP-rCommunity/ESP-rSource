@@ -1301,45 +1301,45 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Debugging:
 C-----------------------------------------------------------------------
-
-      print*, "IMS: space heating load:", fSpaceHLoad
-      print*, "     SH PLR            :", fPLR_SpaceH
-      print*, "     SH eff            :", fSpaceHEff
-      print*, "     SH fan power      :", fFanPower
-      print*, "     SH aux power      :", fAuxPower
-      print*, "     SH elec power     :", fSpaceHPower
-      print*, "     SH fuel power     :", fQFuel_SH
-      print*, "     SH deficit        :", fQSpaceH_deficit
-      print*, "     Additional xfer   :", fAddGains
-      print*, "     water heating load:", fWaterHLoad
-      print*, "     WH flue/skin ratio:",
-     &                             fIMS_FlueSkinLossRatio(iSystem)
-      print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
-      print*, "     WH PLR            :", fPLR_WaterH
-      print*, "     WH Eff            :", fWaterHEff
-      print*, "     WH Power          :", fWaterHPower
-      print*, "     WH Fuel power     :", fQFuel_WH
-      print*, "     Vent Power        :",
-     &                             fIMS_VentPower(iSystem,iVentMode)
-      print*, "     Vent Flow         :",
-     &                             fIMS_VentFlow(iSystem,iVentMode)
-      print*, "     Vent Load         :", fVentLoad
-      print*, "     Zone HR           :", fHR_zone
-      print*, "     Amb  HR           :", fHR_amb
-
-      print*, "     EA Mf Dry         :", fMEA_dry
-      print*, "     EA Mf Vap         :", fMEA_vap
-      print*, "     FA MF Dry         :", fMFA_dry
-      print*, "     FA MF Vap         :", fMFA_vap
-      print*, "     FA MF UL          :", fMFA_dry_UL
-      print*, "     FA MF LL          :", fMFA_dry_LL
-
-      print*, "     Temp Zone         :", fDBTemp_zone
-      print*, "     Temp OA           :", fDBTemp_amb
-      print*, "     Temp Exhaust      :", fDBTemp_exhaust
-      print*, "     Temp Supply       :", fDBTemp_supply
-      print*, "     dMV/dt            :", fVaporChangeRate
-
+! 
+!       print*, "IMS: space heating load:", fSpaceHLoad
+!       print*, "     SH PLR            :", fPLR_SpaceH
+!       print*, "     SH eff            :", fSpaceHEff
+!       print*, "     SH fan power      :", fFanPower
+!       print*, "     SH aux power      :", fAuxPower
+!       print*, "     SH elec power     :", fSpaceHPower
+!       print*, "     SH fuel power     :", fQFuel_SH
+!       print*, "     SH deficit        :", fQSpaceH_deficit
+!       print*, "     Additional xfer   :", fAddGains
+!       print*, "     water heating load:", fWaterHLoad
+!       print*, "     WH flue/skin ratio:",
+!      &                             fIMS_FlueSkinLossRatio(iSystem)
+!       print*, "     WH Skin loss      :", fIMS_WaterHSkinLoss(iSystem)
+!       print*, "     WH PLR            :", fPLR_WaterH
+!       print*, "     WH Eff            :", fWaterHEff
+!       print*, "     WH Power          :", fWaterHPower
+!       print*, "     WH Fuel power     :", fQFuel_WH
+!       print*, "     Vent Power        :",
+!      &                             fIMS_VentPower(iSystem,iVentMode)
+!       print*, "     Vent Flow         :",
+!      &                             fIMS_VentFlow(iSystem,iVentMode)
+!       print*, "     Vent Load         :", fVentLoad
+!       print*, "     Zone HR           :", fHR_zone
+!       print*, "     Amb  HR           :", fHR_amb
+! 
+!       print*, "     EA Mf Dry         :", fMEA_dry
+!       print*, "     EA Mf Vap         :", fMEA_vap
+!       print*, "     FA MF Dry         :", fMFA_dry
+!       print*, "     FA MF Vap         :", fMFA_vap
+!       print*, "     FA MF UL          :", fMFA_dry_UL
+!       print*, "     FA MF LL          :", fMFA_dry_LL
+! 
+!       print*, "     Temp Zone         :", fDBTemp_zone
+!       print*, "     Temp OA           :", fDBTemp_amb
+!       print*, "     Temp Exhaust      :", fDBTemp_exhaust
+!       print*, "     Temp Supply       :", fDBTemp_supply
+!       print*, "     dMV/dt            :", fVaporChangeRate
+! 
 
 C-----------------------------------------------------------------------
 C     Now report data to h3kreports facility
