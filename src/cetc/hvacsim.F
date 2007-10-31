@@ -487,10 +487,7 @@ C.........Superviosry routine for IMS characteriztion
      &                               fIMS_WaterHDuration,
      &                               fIMS_FuelUseRate,
      &                               fIMS_ElecUseRate,
-     &                               fIMS_VentFlowRate,
-     &                               fIMS_VentLoad,
-     &                               fIMS_AddGains,
-     &                               fIMS_VaporChange )
+     &                               fIMS_AddGains )
 
 C.........Translate IMS outputs into hvac-friendly params.
  

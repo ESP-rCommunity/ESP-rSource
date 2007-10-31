@@ -355,47 +355,30 @@ C-----------------------------------------------------------------------
       return
       end
 
-C=======================================================================
-C IMS_CharPerformance
-C=======================================================================
+C=IMS_CharVentilation===================================================
 C
 C SYNOPSYS:
-C This supervisory routine characterizes the performance of an IMS
-C system in response to building loads.
+C This procedure characterizes the ventilation operation of the IMS
+C system. It reports the resulting ventilation flow rate,
+C rate of mosture addition/extraction and thermal flux associated
+C with the IMS unit's ventilaiton operation.
 C
 C INPUTS:
-C  - iSystem:         System index
-C  - iVentMode:       Flag indicating ventilation mode
-C                         No ventilation = 1,
-C                         Low (continuious ventilation) = 2,
-C                         High ventilation = 3
-C  - fSpaceHLoad:     Combined space heating load (W)
-C  - fWaterHLoad:     Combined water heating load (W)
-C  - fWaterHDuration: Duration of water heating load (s)
+C   - iSystem: index of system
+C   - iVentMode: Flag indicating which ventilation mode the
+C                system is in.
 C
 C OUTPUTS:
-C  - fFuelUseRate:     Rate of fuel consumption (kg/s)
-C  - fElecUseRate:     Rate of electrical consumption (kg/s)
 C  - fVentFlow:        Ventilation flow rate (kg/s)
 C  - fVentLoad:        Thermal load associated with ventilation (W)
-C  - fAddGains:        Additional heating/cooling unaccounted
-C                      for in space-heaing load.
 C  - fVaporChangeRate: Total rate of change in building moisture
 C                      distribution (kg/s)
-C
 C=======================================================================
-      subroutine IMS_CharPerformance( iSystem,
-     &                                iVentMode,
-     &                                fSpaceHLoad,
-     &                                fWaterHLoad,
-     &                                fWaterHLoadDuration,
-     &                                fFuelUseRate,
-     &                                fElecUseRate,
-     &                                fVentFlow,
-     &                                fVentLoad,
-     &                                fAddGains,
-     &                                fVaporChangeRate )
-
+      subroutine IMS_CharVentilation(iSystem,
+     &                               iVentMode,
+     &                               fVentFlow,
+     &                               fVentLoad,
+     &                               fVaporChangeRate)
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
@@ -404,29 +387,19 @@ C=======================================================================
 C-----------------------------------------------------------------------
 C     Passed variables
 C-----------------------------------------------------------------------
-      integer iSystem          ! system index
-      integer iVentMode        ! Ventilation mode
-      real fSpaceHLoad         ! space heating load (W)
-      real fWaterHLoad         ! water heating load (W)
-      real fWaterHLoadDuration ! duration of water heating load
-      real fFuelUseRate        ! Computed fuel use (kg/s)
-      real fElecUseRate        ! Computed electric use (W)
-      real fVentFlow           ! Ventilation flow rate (kg/s)
-      real fVentLoad           ! Additional thermal load associated
-                               !   with ventilation. (W)
-      real fAddGains           ! Additional heat injection/extraction
-                               !   that is not accounted for in space-
-                               !   heating load (W)
-      real fVaporChangeRate    ! Rate of change in building encapsulated
-                               !   moisture. (kg/s)
-
+      integer iSystem         ! System index
+      real fVentFlow          ! Flow rate of ventilation air (kg/s)
+      real fVentLoad          ! Thermal load associated with ventilation
+                              !  (W)
+      integer iVentMode       ! Ventilation mode. 
+      real fVaporChangeRate   ! Rate of change in zone moisture balance
+                              !  (kg/s)
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
-
 C.....Climate:
       common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
-      real qfp,               ! Not used in current context 
+      real qfp,               ! Not used in current context
      &     qff,               !
      &     tp,                !
      &     qdp,               !
@@ -447,67 +420,11 @@ C.....Building conditions:
 
       common/fvalg/gfa
       real gfa(mcom)           ! Zone future relative humitity.
-C.....Time
-      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      integer isd1,             ! not used in current context
-     &        ism1,             !
-     &        isd2,             !
-     &        ism2,             !
-     &        isds,             !
-     &        isdf              !
-      integer ntstep            ! number of building steps/hour
-      common/pctstp/ntstpp
-      integer ntstpp            ! number of plant timesteps / building timestep
 
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      logical bCloseToZero     ! Result of close-to-zero comparison
-      logical bNoSpaceHLoad    ! Flag space heating load
-      logical bNoWaterHLoad    ! Flag for water heating load
-      logical bSpaceAndWaterLoad ! Flag for combined load
-
-      real fTS_Duration        ! Duration of timestep (S)
-
-      real fTS_FracWaterH,     ! Fraction of time step spend in
-     &     fTS_FracSpaceH,     !   space, water, and combined
-     &     fTS_FracSpaceWaterH,!   space and water heating modes.
-     &     fTS_NoDemand,
-     &     fTS_FracSpaceH_unadj
-
-      real fPLR_SpaceH,        ! Part-load ratios for space, water
-     &     fPLR_WaterH         !   heating
-
-      real fSpaceHEff,         ! Space heating efficiency, fan power (W)
-     &     fFanPower,          !   and auxiliary sys. power (W)
-     &     fAuxPower,          !
-     &     fSpaceHPower        !
-
-      real fWaterHEff,         ! Water heater efficiency (-)
-     &     fWaterHPower,       !   and power consumption (W)
-     &     fWaterHIncPower     !
-
-      real fQCoil              ! Heat transfer at the coil. (W)
-      real fQSpaceH_deficit    ! Heating deficit
-      real fQFuel_SH,          ! Fuel power required for space-heating,
-     &     fQFuel_WH,          !   water-heating functions (W)
-     &     fQFuel_SWH
-
-      real fSpaceWaterHPower   ! Power used by both space and water-heating
-                               !   mode.
-
-      real fNoDemandPower      ! Power used for ventilation in no-demand
-                               !   mode.
-
-      real fDistPower          ! Power required to distribute
-                               !   ventilation air.
-
-      real fAddGains_WaterH,      ! Additional heat transfer to zone
-     &     fAddGains_SpaceH,      !  that is unaccounted for in 
-     &     fAddGains_SpaceWaterH, !  ideal controller's zone heat
-     &     fAddGains_NoDemand     !  injection. (W)
-
-
+      
 C.....Climatic and Zone conditions
       real fDBTemp_amb,        ! Ambient and zone dry bulb temperatures (K)
      &     fDBTemp_zone
@@ -539,9 +456,7 @@ C.....Climatic and Zone conditions
       real fQVent_HR           ! Heat recovery in IMS HE core (W)
       real fQVentLoad          ! Additional space-heating load
                                !   associated with ventilation (W)
-      real fQOutput_SH         ! Space heating themal output (W).
 
-      
 C.....Initialization flag for h3kreprots module
       logical bH3KReportsInitialized(max_sys)
       save bH3KReportsInitialized
@@ -561,14 +476,10 @@ C     Named constants
 C-----------------------------------------------------------------------
       real fIG_R_air           ! Ideal gas constant for air
       parameter ( fIG_R_air = 0.2870 ) ! kJ/kg K
-      
+
 C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
-      real fIMS_Interpolate    ! Function to interpolate between
-                               !   operating points in IMS system
-                               !   performance map
-
       real Hum_Ratio_OA        ! Function returning humitity ratio
                                !   for outdoor air.
       real Ret_Air_Hum_Ratio   ! Humitity ratio of return air
@@ -587,56 +498,17 @@ C-----------------------------------------------------------------------
       integer LNBlnk           ! Returns length of a string.
 
 C-----------------------------------------------------------------------
-C     Compute number of seconds/timestep
-C
-C                                 3600s/hour
-C     TS duration =   -------------------------------------
-C                     (# bld ts / hour)*(# plt ts / bld ts)
-C
-C-----------------------------------------------------------------------
-      fTS_Duration = ( 60.0 * 60.0 ) / real ( ntstep * ntstpp )   ! (s)
-
-C-----------------------------------------------------------------------
-C     Initialize additional gains variable.
-C-----------------------------------------------------------------------
-      fAddGains = 0.0
-
-C-----------------------------------------------------------------------
-C     Begin characterization of ventilation system.
+C     Characterize ventilation operation
 C-----------------------------------------------------------------------
 
 C.....Collect ventilation flow rates and ventilation power
       fVentFlow  = fIMS_VentFlow(iSystem,iVentMode)        ! (kg/s)
 
-C.....Assign distrubution fan power consumption based on
-C.....ventilation mode:
-      vent_mode_Dist: select case ( iVentMode )
-
-        case ( iMode_NoVent )
-
-          fDistPower = 0.0
-
-        case ( iMode_LowVent, iMode_HighVent )
-
-          fDistPower = fIMS_IncDistPower(iSystem)
-
-        case default
-
-C.........Shouldn't happen, as iVentMode is set programmically.
-          STOP
-     &    'IMS_CharPerformance: ventilation mode must be 1, 2, or 3'
-
-      end select vent_mode_Dist
-
-C-----------------------------------------------------------------------
-C     Characterize ventilation operation 
-C-----------------------------------------------------------------------
-
       vent_mode_ND: select case ( iVentMode )
 
         case ( iMode_NoVent )
 
-          fNoDemandPower     = fIMS_ControlsPower(iSystem)    ! (W)
+          fVentFlow          = 0.0                            ! (kg/s)
           fVaporChangeRate   = 0.0                            ! (kg/s)
           fQVentLoad         = 0.0                            ! (W)
 
@@ -647,9 +519,6 @@ C            Compute ventilation thermal load and resulting moisture
 C            balance.
 C-----------------------------------------------------------------------
 
-          fNoDemandPower =   fIMS_ControlsPower(iSystem)
-     &                     + fIMS_VentPower(iSystem,iVentMode)
-     &                     + fDistPower
 
 C.........Collect outside and return-air temperatures, humidity ratios
 
@@ -662,7 +531,7 @@ C.........Collect outside and return-air temperatures, humidity ratios
 C-----------------------------------------------------------------------
 C         Compute partial pressure of dry air in zone, ambinet:
 C
-C         p.pressure = (atm press.) - (saturation press.) 
+C         p.pressure = (atm press.) - (saturation press.)
 C
 C         Note: Function Pvpr01 returns the vapor pressure directly
 C
@@ -685,7 +554,7 @@ C
 C         The supply air flow rate will depend on the temperature at the
 C         heat exchanger outlet, which in turn depends on the heat capacity
 C         flowing through the heat exchanger. Therefore iteration is
-C         required. 
+C         required.
 C-----------------------------------------------------------------------
 
 
@@ -698,14 +567,14 @@ C.........Exhaust moisture flow rate (kg/s)
 
 C-----------------------------------------------------------------------
 C         Establish iteration loop for heat transfer, supply air mass
-C         flow rate: 
+C         flow rate:
 C-----------------------------------------------------------------------
 
 C.........Guesstimate fresh air mass flow(kg/s)
           fMFA_dry = fMEA_dry
 
 C.........And corresponding moisture flow rate (kg/s)
-          fMFA_vap = fMFA_dry * fHR_amb 
+          fMFA_vap = fMFA_dry * fHR_amb
 
 C.........Assume unit operates sensibly, to start, unless amb. temperature
 C.........is below defrost temperature
@@ -856,7 +725,7 @@ C-----------------------------------------------------------------------
 
 
 C...........Fresh dry air flow rate (kg/s)
-            fMFA_dry = fVentFlow * fIG_R_air 
+            fMFA_dry = fVentFlow * fIG_R_air
      &           * ( fDBTemp_supply + 273.15 ) / fPPres_amb
 
 
@@ -934,6 +803,238 @@ C.........Shouldn't happen, as iVentMode is trapped above
       end select vent_mode_ND
 
 C-----------------------------------------------------------------------
+C     Now report data to h3kreports facility
+C-----------------------------------------------------------------------
+
+      h3kreports_init:
+     &if ( .not. bH3KReportsInitialized ( iSystem ) ) then
+
+        if ( iSystem > 9 ) then
+          cFormat = '(A,I2,A)'
+
+        else
+          cFormat = '(A,I1,A)'
+        endif
+
+        write (cRootName(iSystem),cFormat)
+     &        'plant/CETC_HVAC/system_' , iSystem,
+     &        '(IMS)'
+
+        iStrLen(iSystem) = lnblnk( cRootName( iSystem ) )
+
+        bH3KReportsInitialized ( iSystem ) = .true.
+
+      endif h3kreports_init
+
+      call add_to_xml_reporting(
+     &    fIMS_VentFlow(iSystem,iVentMode),
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/vent/flow_rate',
+     &    'units','(l/s)',
+     &    'IMS ventilation air flow rate.' )
+
+      call add_to_xml_reporting(
+     &    fHR_zone,
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/return_air/humidity_ratio',
+     &    'units','(kg/kg)',
+     &    'Humidity ratio of return air' )
+
+      call add_to_xml_reporting(
+     &    fHR_amb,
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/fresh_air/humidity_ratio',
+     &    'units','(kg/kg)',
+     &    'Humidity ratio of fresh air' )
+
+
+      return
+      end subroutine IMS_CharVentilation
+
+C=======================================================================
+C IMS_CharPerformance
+C=======================================================================
+C
+C SYNOPSYS:
+C This supervisory routine characterizes the performance of an IMS
+C system in response to building loads.
+C
+C INPUTS:
+C  - iSystem:         System index
+C  - iVentMode:       Flag indicating ventilation mode
+C                         No ventilation = 1,
+C                         Low (continuious ventilation) = 2,
+C                         High ventilation = 3
+C  - fSpaceHLoad:     Combined space heating load (W)
+C  - fWaterHLoad:     Combined water heating load (W)
+C  - fWaterHDuration: Duration of water heating load (s)
+C
+C OUTPUTS:
+C  - fFuelUseRate:     Rate of fuel consumption (kg/s)
+C  - fElecUseRate:     Rate of electrical consumption (kg/s)
+C  - fAddGains:        Additional heating/cooling unaccounted
+C                      for in space-heaing load.
+C
+C=======================================================================
+      subroutine IMS_CharPerformance( iSystem,
+     &                                iVentMode,
+     &                                fSpaceHLoad,
+     &                                fWaterHLoad,
+     &                                fWaterHLoadDuration,
+     &                                fFuelUseRate,
+     &                                fElecUseRate,
+     &                                fAddGains )
+
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "IMS_common.h"
+C-----------------------------------------------------------------------
+C     Passed variables
+C-----------------------------------------------------------------------
+      integer iSystem          ! system index
+      integer iVentMode        ! Ventilation mode
+      real fSpaceHLoad         ! space heating load (W)
+      real fWaterHLoad         ! water heating load (W)
+      real fWaterHLoadDuration ! duration of water heating load
+      real fFuelUseRate        ! Computed fuel use (kg/s)
+      real fElecUseRate        ! Computed electric use (W)
+      real fAddGains           ! Additional heat injection/extraction
+                               !   that is not accounted for in space-
+                               !   heating load (W)
+
+C-----------------------------------------------------------------------
+C     ESP-r commons
+C-----------------------------------------------------------------------
+
+C.....Time
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer isd1,             ! not used in current context
+     &        ism1,             !
+     &        isd2,             !
+     &        ism2,             !
+     &        isds,             !
+     &        isdf              !
+      integer ntstep            ! number of building steps/hour
+      common/pctstp/ntstpp
+      integer ntstpp            ! number of plant timesteps / building timestep
+
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      logical bCloseToZero     ! Result of close-to-zero comparison
+      logical bNoSpaceHLoad    ! Flag space heating load
+      logical bNoWaterHLoad    ! Flag for water heating load
+      logical bSpaceAndWaterLoad ! Flag for combined load
+
+      real fTS_Duration        ! Duration of timestep (S)
+
+      real fTS_FracWaterH,     ! Fraction of time step spend in
+     &     fTS_FracSpaceH,     !   space, water, and combined
+     &     fTS_FracSpaceWaterH,!   space and water heating modes.
+     &     fTS_NoDemand,
+     &     fTS_FracSpaceH_unadj
+
+      real fPLR_SpaceH,        ! Part-load ratios for space, water
+     &     fPLR_WaterH         !   heating
+
+      real fSpaceHEff,         ! Space heating efficiency, fan power (W)
+     &     fFanPower,          !   and auxiliary sys. power (W)
+     &     fAuxPower,          !
+     &     fSpaceHPower        !
+
+      real fWaterHEff,         ! Water heater efficiency (-)
+     &     fWaterHPower,       !   and power consumption (W)
+     &     fWaterHIncPower     !
+
+      real fQCoil              ! Heat transfer at the coil. (W)
+      real fQSpaceH_deficit    ! Heating deficit
+      real fQFuel_SH,          ! Fuel power required for space-heating,
+     &     fQFuel_WH,          !   water-heating functions (W)
+     &     fQFuel_SWH
+
+      real fSpaceWaterHPower   ! Power used by both space and water-heating
+                               !   mode.
+
+      real fNoDemandPower      ! Power used for ventilation in no-demand
+                               !   mode.
+
+      real fDistPower          ! Power required to distribute
+                               !   ventilation air.
+
+      real fAddGains_WaterH,      ! Additional heat transfer to zone
+     &     fAddGains_SpaceH,      !  that is unaccounted for in 
+     &     fAddGains_SpaceWaterH, !  ideal controller's zone heat
+     &     fAddGains_NoDemand     !  injection. (W)
+
+
+      real fQOutput_SH         ! Space heating themal output (W).
+
+      
+C.....Initialization flag for h3kreprots module
+      logical bH3KReportsInitialized(max_sys)
+      save bH3KReportsInitialized
+      integer iNumber
+
+      data ( bH3KReportsInitialized(iNumber),
+     &       iNumber=1,max_sys ) / max_sys * .false. /
+C.....Storage string.
+      character*128 cRootName(max_sys)
+      save cRootName
+      character*8 cFormat
+      integer iStrLen(max_sys)
+      save iStrLen
+
+C-----------------------------------------------------------------------
+C     References
+C-----------------------------------------------------------------------
+      real fIMS_Interpolate    ! Function to interpolate between
+                               !   operating points in IMS system
+                               !   performance map
+
+      integer LNBlnk           ! Returns length of a string.
+
+C-----------------------------------------------------------------------
+C     Compute number of seconds/timestep
+C
+C                                 3600s/hour
+C     TS duration =   -------------------------------------
+C                     (# bld ts / hour)*(# plt ts / bld ts)
+C
+C-----------------------------------------------------------------------
+      fTS_Duration = ( 60.0 * 60.0 ) / real ( ntstep * ntstpp )   ! (s)
+
+C-----------------------------------------------------------------------
+C     Begin characterization of ventilation system.
+C-----------------------------------------------------------------------
+
+C.....Assign distrubution fan power consumption based on
+C.....ventilation mode:
+      vent_mode_Dist: select case ( iVentMode )
+
+        case ( iMode_NoVent )
+
+          fDistPower = 0.0
+          fNoDemandPower     = fIMS_ControlsPower(iSystem)    ! (W)
+          
+        case ( iMode_LowVent, iMode_HighVent )
+
+          fDistPower = fIMS_IncDistPower(iSystem)
+
+          fNoDemandPower =   fIMS_ControlsPower(iSystem)
+     &                     + fIMS_VentPower(iSystem,iVentMode)
+     &                     + fDistPower
+     
+        case default
+
+C.........Shouldn't happen, as iVentMode is set programmically.
+          STOP
+     &    'IMS_CharPerformance: ventilation mode must be 1, 2, or 3'
+
+      end select vent_mode_Dist
+
+C-----------------------------------------------------------------------
 C     Compute fraction of time step spent in water heating mode.
 C
 C     Fraction in water-heating mode:
@@ -979,12 +1080,12 @@ C-----------------------------------------------------------------------
 
 C.....Is space heating load close to zero? Use 1 W tolerance for
 C.....comparison
-      call eclose ( fSpaceHLoad + fVentLoad, 0.0, 1.0, bNoSpaceHLoad )
+      call eclose ( fSpaceHLoad, 0.0, 1.0, bNoSpaceHLoad )
       call eclose ( fIMS_SpaceHMinCapacity(iSystem),
      &              0.0, 1.0, bCloseToZero )
      
       no_SH_load: if ( bNoSpaceHLoad .or.
-     &                 fVentLoad + fSpaceHLoad < 0.0 ) then
+     &                 fSpaceHLoad < 0.0 ) then
 
         bNoSpaceHLoad = .true.
         fTS_FracSpaceH = 0.0
@@ -992,7 +1093,7 @@ C.....comparison
       elseif ( .not. bCloseToZero .and.
      &         fIMS_SpaceHMinCapacity(iSystem) > 0.0 ) then
 
-        fTS_FracSpaceH = ( fSpaceHLoad + fVentLoad )
+        fTS_FracSpaceH = ( fSpaceHLoad )
      &        / fIMS_SpaceHMinCapacity(iSystem) - fTS_FracWaterH
 
 
@@ -1137,7 +1238,7 @@ C-----------------------------------------------------------------------
 C       First, estimate the part-load ratio. See eqn. 25 in
 C       Ferguson et al. (2007)
 C-----------------------------------------------------------------------
-        fPLR_SpaceH = ( fSpaceHLoad + fVentLoad )
+        fPLR_SpaceH = ( fSpaceHLoad )
      &                      / fIMS_SpaceHCapacity(iSystem)
      &                      / fTS_FracSpaceH ! (-)
 
@@ -1180,7 +1281,7 @@ C
 C       See Equation 9 in Ferguson et al. (2007)
 C-----------------------------------------------------------------------
 
-        fQCoil = fSpaceHLoad + fVentLoad - fFanPower
+        fQCoil = fSpaceHLoad - fFanPower
 
         if  ( fQCoil < 0. ) fQCoil = 0.0
 
@@ -1280,7 +1381,7 @@ C                      * ( efficiency @ full load )
 C
 C-----------------------------------------------------------------------
 
-      fQSpaceH_deficit = fSpaceHLoad + fVentLoad - fQOutput_SH !(W)
+      fQSpaceH_deficit = fSpaceHLoad - fQOutput_SH !(W)
 
 C-----------------------------------------------------------------------
 C     Finally, compute additional heat transfer from unit to
@@ -1381,12 +1482,12 @@ C-----------------------------------------------------------------------
      &    'units','(W)',
      &    'Water-heating load placed on IMS unit' )
 
-      call add_to_xml_reporting(
-     &    fVentLoad,
-     &    cRootName(iSystem)(1:iStrLen(iSystem))
-     &       // '/loads/ventilation',
-     &    'units','(W)',
-     &    'Ventilation load placed on IMS unit' )
+!       call add_to_xml_reporting(
+!      &    fVentLoad,
+!      &    cRootName(iSystem)(1:iStrLen(iSystem))
+!      &       // '/loads/ventiltion',
+!      &    'units','(W)',
+!      &    'Ventilation load placed on IMS unit' )
 
       call add_to_xml_reporting(
      &    fPLR_SpaceH,
@@ -1498,26 +1599,7 @@ C-----------------------------------------------------------------------
      &    'units','(W)',
      &    'Power used by IMS ventilation fans.' )
 
-      call add_to_xml_reporting(
-     &    fIMS_VentFlow(iSystem,iVentMode),
-     &    cRootName(iSystem)(1:iStrLen(iSystem))
-     &       // '/vent/flow_rate',
-     &    'units','(l/s)',
-     &    'IMS ventilation air flow rate.' )
 
-      call add_to_xml_reporting(
-     &    fHR_zone,
-     &    cRootName(iSystem)(1:iStrLen(iSystem))
-     &       // '/return_air/humidity_ratio',
-     &    'units','(kg/kg)',
-     &    'Humidity ratio of return air' )
-
-      call add_to_xml_reporting(
-     &    fHR_amb,
-     &    cRootName(iSystem)(1:iStrLen(iSystem))
-     &       // '/fresh_air/humidity_ratio',
-     &    'units','(kg/kg)',
-     &    'Humidity ratio of fresh air' )
      
 ! 
 !       call add_to_xml_reporting(
