@@ -584,6 +584,8 @@ C-----------------------------------------------------------------------
 
       real Atm_Pressure        ! Function returing atmospheric pressure
 
+      integer LNBlnk           ! Returns length of a string.
+
 C-----------------------------------------------------------------------
 C     Compute number of seconds/timestep
 C
@@ -1201,7 +1203,7 @@ C        power =  ( fan power ) + ( auxiliary systems power )
 C                     ( ventilation power ) + ( controls power )
 C-----------------------------------------------------------------------
 
-        fSpaceHPower = fFanPower + fAuxPower +
+        fSpaceHPower = fFanPower + fAuxPower 
      &                           + fIMS_VentPower(iSystem,iVentMode)
      &                           + fIMS_ControlsPower(iSystem)     ! (W)
 
@@ -1476,7 +1478,7 @@ C-----------------------------------------------------------------------
      &    'Heat transfer through IMS unit`s casing' )
 
       call add_to_xml_reporting(
-     &    fIMS_WaterHPLR,
+     &    fPLR_WaterH,
      &    cRootName(iSystem)(1:iStrLen(iSystem))
      &       // '/water_heating_PLR',
      &    'units','(-)',
