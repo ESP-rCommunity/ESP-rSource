@@ -8,6 +8,7 @@
   <output_dictionary>true</output_dictionary>
   <report_startup_period_data>false</report_startup_period_data>
   <time_step_averaging>false</time_step_averaging>
+  <log_variable>*</log_variable>
   <step_variable>building/time_step</step_variable>
   <step_variable>plant/fuel-cell/node*/temperature</step_variable>
   <step_variable>electrical_net/generation/onsite_generation</step_variable>
