@@ -88,10 +88,10 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
        case GTK_RESPONSE_OK:
        /* Terminate this string properly for return to fortran via strcpy. */
          reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
-         g_print ("askdialog local %d is %s\n",lnblankstr,reply_local); /* debug */
+         /* g_print ("askdialog local %d is %s\n",lnblankstr,reply_local);  debug */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
-         g_print ("askdialog reply is now %s",reply);  /* debug */
+         /* g_print ("askdialog reply is now %s",reply);   debug */
          g_free (reply_local);
          no_valid_event = FALSE;
          break;
@@ -200,7 +200,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
        /* Terminate this string properly for return to fortran via strcpy. */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
-         g_print ("askdialogcmd reply is now %s",reply);  /* debug */
+         /* g_print ("askdialogcmd reply is now %s",reply);   debug */
          g_free (reply_local);
 	 no_valid_event = FALSE;
          break;
@@ -313,7 +313,7 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
        /* Terminate this string properly for return to fortran via strcpy. */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
-         g_print ("askdialogcncl reply is now %s",reply);  /* debug */
+         /* g_print ("askdialogcncl reply is now %s",reply);   debug */
          g_free (reply_local);
 	 no_valid_event = FALSE;
          break;
@@ -427,7 +427,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
        /* Terminate this string properly for return to fortran via strcpy. */
          reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
-         g_print ("askdialog2cmd reply is now %s",reply);  /* debug */
+         /* g_print ("askdialog2cmd reply is now %s",reply);   debug */
          g_free (reply_local);
          no_valid_event = FALSE;
          break;
